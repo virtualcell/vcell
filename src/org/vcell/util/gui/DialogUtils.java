@@ -166,6 +166,22 @@ public class DialogUtils {
 	}
 	
 	/**
+	 * safely convert any object to String; equivalent to
+	 * cast to String for String objects or call {@link #toString()}
+	 * for non String objects
+	 * @param obj input object of any type, may be null
+	 * @return String or null
+	 */
+	private static String objectToString(Object obj) {
+		if (obj != null) {
+			return obj.toString();
+		}
+		return null;
+	}
+	
+	
+	
+	/**
 	 * Insert the method's description here.
 	 * Creation date: (5/21/2004 3:23:18 AM)
 	 * @return int
@@ -175,8 +191,7 @@ public class DialogUtils {
 	 * @param preferenceName java.lang.String
 	 */
 	protected static String showDialog(final Component requester, final UserPreferences preferences, final UserMessage userMessage, final String replacementText, final int jOptionPaneMessageType) {
-		return (String)
-		new SwingDispatcherSync() {
+		Object obj = new SwingDispatcherSync() {
 			public Object runSwing() throws Exception{
 				//
 				// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
@@ -227,6 +242,7 @@ public class DialogUtils {
 				}
 			}
 		}.dispatchWrapRuntime();
+		return objectToString(obj);
 	}
 
 	
@@ -384,7 +400,7 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
  * @param preferenceName java.lang.String
  */
 public static String showAnnotationDialog(final Component requester, final String oldAnnotation) throws Exception{
-	return (String)
+	Object obj = 
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			JPanel panel = new JPanel(new BorderLayout());
@@ -416,7 +432,7 @@ public static String showAnnotationDialog(final Component requester, final Strin
 			}
 		}
 	}.dispatchWithException();
-
+	return objectToString(obj);
 }
 
 
