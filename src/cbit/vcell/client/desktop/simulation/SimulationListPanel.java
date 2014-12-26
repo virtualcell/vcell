@@ -53,6 +53,8 @@ import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.resource.LicenseManager;
+import cbit.vcell.resource.LicensedLibrary;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -625,6 +627,10 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void newSimulation() {
+	LicensedLibrary supportLibrary = getSimulationWorkspace().getSimulationOwner().getRequiredLibrary();
+	if (supportLibrary != null && !supportLibrary.isLicensed()) {
+		LicenseManager.promptForLicense(this, supportLibrary,true); 
+	}
 	AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		
 		@Override
