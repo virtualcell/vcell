@@ -2,6 +2,7 @@ package org.vcell.workflow;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -158,7 +159,7 @@ public class Workflow implements Serializable, IssueSource {
 			for (Task task : tasks){
 				boolean bInputDirty = false;
 				for (DataInput<? extends Object> dataInput : task.getInputs()){
-					if (context.getRepository().isDirty(this, dataInput) && !dataInput.bOptional){
+					if (!dataInput.bOptional && context.getRepository().isDirty(this, dataInput)){
 						bInputDirty = true;
 						bSomethingDirty = true;
 					}
@@ -192,7 +193,7 @@ public class Workflow implements Serializable, IssueSource {
 		//
 		for (Task task : tasks) {
 			for (DataInput input : task.getInputs()){
-				if (getConnectorSource(input)==null && !input.bOptional){
+				if (!input.bOptional && getConnectorSource(input)==null){
 					issues.add(new Issue(this, issueContext, IssueCategory.Workflow_missingInput, "input "+(task.getName()+"."+input.getName())+"is not connected and is not optional", Issue.SEVERITY_ERROR));
 				}
 			}
@@ -297,7 +298,7 @@ public class Workflow implements Serializable, IssueSource {
 				// defining a new task
 				//
 				String className = token1.substring(0, token1.length()-2);
-				String prefix = "cbit.vcell.microscopy.workflow";
+				String prefix = "org.vcell.vmicro.workflow.task";
 				Task task = null;
 				try {
 					Class<? extends Task> taskClass = (Class<? extends Task>)Workflow.class.forName(prefix+"."+className);
@@ -361,7 +362,21 @@ public class Workflow implements Serializable, IssueSource {
 							workflow.connectParameter(generalParameter, dataInput);
 						}else{
 							// token1 may be a literal ... create an anonymous parameter
-							if (token1.startsWith("\"") && token1.endsWith("\"")){
+							if (token1.startsWith("file(\"") && token1.endsWith("\")")){
+								//
+								// input is a filename (type File)
+								//
+								// file("filename") --> filename
+								//
+								currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
+								String filename = token1.replace("file(\"", "").replace("\")", "");
+								File file = new File(filename);
+								WorkflowParameter<File> fileParameter = workflow.addParameter(File.class,currAnonymousParameterName, repository, file);
+								if (!dataInput.getType().equals(File.class)){
+									throw new RuntimeException("cannot assign file parameter "+fileParameter.getPath()+" to input "+dataInput.getPath()+" of type "+dataInput.getType().getName());
+								}
+								workflow.connectParameter(fileParameter, (DataInput<File>)dataInput);
+							}else if (token1.startsWith("\"") && token1.endsWith("\"")){
 								// RHS is a string
 								currAnonymousParameterName = TokenMangler.getNextEnumeratedToken(currAnonymousParameterName);
 								WorkflowParameter<String> stringParameter = workflow.addParameter(String.class,currAnonymousParameterName, repository, token1.replace("\"", ""));
@@ -410,8 +425,17 @@ public class Workflow implements Serializable, IssueSource {
 				//
 				String parameterName = token0;
 				String sourceToken = token1;
-				if (sourceToken.startsWith("\"") && sourceToken.endsWith("\"")){
-					// input is a string
+				if (sourceToken.startsWith("file(\"") && sourceToken.endsWith("\")")){
+					//
+					// input is a filename (type File)
+					//
+					// file("filename") --> filename
+					//
+					String filename = sourceToken.replace("file(\"", "").replace("\")", "");
+					File file = new File(filename);
+					workflow.addParameter(File.class, parameterName, repository, file);
+				}else if (sourceToken.startsWith("\"") && sourceToken.endsWith("\"")){
+					// input is a string   "string" --> string
 					workflow.addParameter(String.class,parameterName, repository, sourceToken.replace("\"", ""));
 				}else{
 					try {
