@@ -6,10 +6,13 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
@@ -34,6 +37,8 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
 
+	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
+	
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext) {
 		this.pattern = false;
 		this.mt = mt;
@@ -47,6 +52,9 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponent mc = getSpeciesType().getComponentList().get(i);
+			// WARNING! we create temporary component shapes whose coordinates are invented, we use them only to compute 
+			// the width of the species type shape; only after that is known we can finally compute the exact coordinates
+			// of the components
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
@@ -55,6 +63,18 @@ public class SpeciesTypeLargeShape implements LargeShape {
 //		width += 6 * name.length();				// adjust for the length of the name of the species type
 		width += getStringWidth(name);				// adjust for the length of the name of the species type
 		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+
+		int fixedPart = xPos + width;
+		offsetFromRight = 10;
+		for(int i=numComponents-1; i >=0; i--) {
+			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
+			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
+			// now that we know the dimensions of the species type shape we create the component shapes
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			componentShapes.add(0, mlcls);
+		}
 	}
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext) {
 		this.pattern = true;
@@ -63,7 +83,8 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.graphicsContext = graphicsContext;
-		int numComponents = mt.getComponentList().size();
+		
+		int numComponents = mt.getComponentList().size();	// components
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
@@ -74,6 +95,18 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 		width += getStringWidth(name);				// adjust for the length of the name of the species type
 		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+		
+		int fixedPart = xPos + width;
+		offsetFromRight = 10;
+		for(int i=numComponents-1; i >=0; i--) {
+			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
+			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
+
+			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			componentShapes.add(0, mlcls);
+		}
 	}
 	
 	public MolecularType getSpeciesType() {
@@ -131,6 +164,19 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	public final MolecularTypePattern getMolecularTypePattern() {
 		return mtp;
 	}
+	public MolecularComponentLargeShape getComponentShape(int index) {
+		return componentShapes.get(index);
+	}
+	public MolecularComponentLargeShape getShape(MolecularComponentPattern mcpTo) {
+		for(MolecularComponentLargeShape mcls : componentShapes) {
+			MolecularComponentPattern mcpThis = mcls.getMolecularComponentPattern();
+			if(mcpThis == mcpTo) {
+				return mcls;
+			}
+		}
+		return null;
+	}
+
 	
 	@Override
 	public void paintSelf(Graphics g) {
@@ -161,6 +207,8 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 		
-		MolecularComponentLargeShape.paintComponents(g, this, graphicsContext);
+		for(MolecularComponentLargeShape mcls : componentShapes) {
+			mcls.paintSelf(g);
+		}
 	}
 }

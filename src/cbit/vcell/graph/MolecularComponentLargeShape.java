@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
@@ -59,19 +60,38 @@ public class MolecularComponentLargeShape {
 		this.mcp = mcp;
 		this.mc = mcp.getMolecularComponent();
 		this.graphicsContext = graphicsContext;
-		displayName = adjustForSize(mc.getDisplayName());
 		
-		String longestName = "";	// we find the longest State name
-		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
-			String stateName = mc.getComponentStateDefinitions().get(i).getDisplayName();
-			stateName = adjustForSize(stateName);
-			longestName = stateName.length() > longestName.length() ? stateName : longestName;
+		// no more than 1 state possible, we show the component name and state on the same row, inside the shape
+		// as componentName + "~" + stateName
+		String componentName = adjustForSize(mc.getDisplayName());
+		ComponentStatePattern csp = mcp.getComponentStatePattern();
+		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
+			String stateName = adjustForSize(csd.getDisplayName());
+			displayName = componentName + "~" + stateName;
+		} else {
+			displayName = componentName;
 		}
-		longestName = displayName.length() > longestName.length() ? displayName : longestName;
-		textWidth = getStringWidth(longestName.substring(1)) + 5;	// we provide space for the component name and a bit extra
+		textWidth = getStringWidth(displayName) + 5;	// we provide space for the component name and a bit extra
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
+	}
+
+	public MolecularComponentPattern getMolecularComponentPattern() {
+		return mcp;
+	}
+	public int getX(){
+		return xPos;
+	}
+	public int getY(){
+		return yPos;
+	}
+	public int getWidth(){
+		return width;
+	} 
+	public int getHeight(){
+		return height;
 	}
 
 	private String adjustForSize(String input) {
@@ -107,32 +127,28 @@ public class MolecularComponentLargeShape {
 		return stringHeight;
 	}
 
-	public static void paintComponents(Graphics g, SpeciesTypeLargeShape parent, Graphics graphicsContext) {
-		int size = parent.getSpeciesType().getComponentList().size();
-		int fixedPart = parent.getX() + parent.getWidth();
-		int offsetFromRight = 10;
-		for(int i=size-1; i >=0; i--) {
-			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = parent.getY() + parent.getHeight() - componentDiameter;
-			// we draw the components from left to right, so we start with the last
-			
-			if(parent.getPattern() == false) {
-				MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
-				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
-				offsetFromRight += mlcls.getWidth() + componentSeparation;
-				mlcls.paintSelf(g);
-			} else {
-				MolecularComponentPattern mcp = parent.getMolecularTypePattern().getComponentPatternList().get(i);
-				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
-				offsetFromRight += mlcls.getWidth() + componentSeparation;
-				mlcls.paintSelf(g);
-			}
-		}
-	}
-	
-	public int getWidth() {
-		return width;
-	}
+//	public static void paintComponents(Graphics g, SpeciesTypeLargeShape parent, Graphics graphicsContext) {
+//		int numComponents = parent.getSpeciesType().getComponentList().size();
+//		int fixedPart = parent.getX() + parent.getWidth();
+//		int offsetFromRight = 10;
+//		for(int i=numComponents-1; i >=0; i--) {
+//			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
+//			int y = parent.getY() + parent.getHeight() - componentDiameter;
+//			// we draw the components from left to right, so we start with the last
+//			
+//			if(parent.getPattern() == false) {
+//				MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
+//				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
+//				offsetFromRight += mlcls.getWidth() + componentSeparation;
+//				mlcls.paintSelf(g);
+//			} else {
+//				MolecularComponentPattern mcp = parent.getMolecularTypePattern().getComponentPatternList().get(i);
+//				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
+//				offsetFromRight += mlcls.getWidth() + componentSeparation;
+//				mlcls.paintSelf(g);
+//			}
+//		}
+//	}
 
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
