@@ -181,7 +181,7 @@ public class MicroscopyXmlproducer {
 	 * @throws XmlParseException
 	 * @throws cbit.vcell.parser.ExpressionException
 	 */
-	private static Element getXML(ImageDataset param,Xmlproducer vcellXMLProducer, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+	public static Element getXML(ImageDataset param,Xmlproducer vcellXMLProducer, ClientTaskStatusSupport progressListener,boolean bSaveCompressed) throws XmlParseException, cbit.vcell.parser.ExpressionException {
 		Element imageDatasetNode = new Element(MicroscopyXMLTags.ImageDatasetTag);
 		//Get ImageDataset
 		UShortImage[] images = param.getAllImages();

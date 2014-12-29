@@ -213,7 +213,7 @@ public AnnotatedImageDataset getAnnotatedImageDataset(Element param/*root, fraps
 	
 	Namespace ns = param.getNamespace();
 	List<Element> roiList = frapDataElement.getChildren(MicroscopyXMLTags.ROITag);
-	ROI[] rois = null;
+	ROI[] rois = new ROI[0];
 	int numROIs = roiList.size();
 	if (numROIs>0){
 		rois = new ROI[numROIs];
