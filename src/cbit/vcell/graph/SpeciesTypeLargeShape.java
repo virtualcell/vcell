@@ -18,6 +18,9 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.util.Displayable;
+
+import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesTypeLargeShape implements LargeShape {
 	
@@ -30,16 +33,36 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	private int yPos = 0;
 	private int width = baseWidth;
 	private int height = baseHeight;
-	
+
 	final Graphics graphicsContext;
 	
 	private final String name;
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
+	private Displayable owner;
 
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 	
+	public SpeciesTypeLargeShape(Displayable owner, int xPos, int yPos, Graphics graphicsContext) {
+		this.owner = owner;
+		this.pattern = false;
+		this.mt = null;
+		this.mtp = null;
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.graphicsContext = graphicsContext;
+		// adjustment for name width and for the width of the components
+		// TODO: properly calculate the width based on the font and size of each letter
+		int offsetFromRight = 0;		// total width of all components, based on the length of their names
+
+		name = adjustForSize();
+		width = baseWidth + offsetFromRight;	// adjusted for # of components
+//		width += 6 * name.length();				// adjust for the length of the name of the species type
+		width += getStringWidth(name);				// adjust for the length of the name of the species type
+		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+	}
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext) {
+		this.owner = null;
 		this.pattern = false;
 		this.mt = mt;
 		this.mtp = null;
@@ -77,6 +100,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		}
 	}
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext) {
+		this.owner = null;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
 		this.mtp = mtp;
@@ -116,11 +140,21 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	private String adjustForSize() {
 		// we truncate to 12 characters any name longer than 12 characters
 		// we keep the first 7 letters, then 2 points, then the last 3 letters
-		int len = mt.getName().length();
-		if(len > 12) {
-			return(mt.getName().substring(0,7) + ".." + mt.getName().substring(len-3, len));
+		String s = null;
+		if(mt == null) {
+			if(owner instanceof SpeciesContext) {
+				s = ((SpeciesContext)owner).getDisplayName();
+			} else {
+				s = "?";
+			}
 		} else {
-			return(mt.getName());
+			s = mt.getDisplayName();
+		}
+		int len = s.length();
+		if(len > 12) {
+			return(s.substring(0,7) + ".." + s.substring(len-3, len));
+		} else {
+			return(s);
 		}
 	}
 	
@@ -186,7 +220,14 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	private void paintSpecies(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		GradientPaint p = new GradientPaint(xPos, yPos, Color.GRAY, xPos, yPos + baseHeight/2, Color.WHITE, true);
+		
+		Color primaryColor = null;
+		if(mt == null && mtp == null) {	// plain species context
+			 primaryColor = Color.green.darker().darker();
+		} else {						// molecular type, species pattern
+			primaryColor = Color.gray;
+		}
+		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);
 		g2.setPaint(p);
 
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
