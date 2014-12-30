@@ -658,7 +658,7 @@ private void updateInterface() {
 		nameTextField.setText(null);
 	}
 	listLinkedPathwayObjects();
-	if(fieldSpeciesContext!= null && fieldSpeciesContext.getSpeciesPattern() != null) {
+	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
 		sps = new SpeciesPatternShape(20, 5, fieldSpeciesContext, sp, panelContext);

@@ -1,7 +1,11 @@
 package cbit.vcell.graph;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -14,6 +18,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
+
+import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
 public class SpeciesPatternShape {
 
@@ -61,8 +67,14 @@ public class SpeciesPatternShape {
 		this.yPos = yPos;
 		this.graphicsContext = graphicsContext;
 
-		int numPatterns = sp.getMolecularTypePatterns().size();
 		int xPattern = xPos;
+		if(sp == null) {
+			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(owner, xPattern, yPos, graphicsContext);
+			speciesShapes.add(stls);
+			return;
+		}
+		
+		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
 			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, mtp, graphicsContext);
@@ -126,13 +138,34 @@ public class SpeciesPatternShape {
 		}
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
-			final int offset = 7;
-			final int separ = 5;
-			g.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+offset+i*separ);
-			g.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
-			g.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);
-						
+			final int offset = 12;			// initial lenth of vertical bar
+			final int separ = 5;			// distance between 2 adjacent bars
+			Graphics2D g2 = (Graphics2D)g;
+			Color colorOld = g2.getColor();
+			Font fontOld = g.getFont();
+//			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			
+			g2.setColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]);
+			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+offset+i*separ);
+			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
+			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);
+			
+			Font font = fontOld.deriveFont((float) (MolecularComponentLargeShape.componentDiameter/2));
+			g.setFont(font);
+			String nr = bp.id+"";
+			if(nr.length()<2) {
+				g2.drawString(nr, bp.from.x-6, bp.from.y+9);
+			} else {
+				g2.drawString(nr, bp.from.x-11, bp.from.y+9);
+			}
 
+			g2.setColor(Color.lightGray);
+			g2.drawLine(bp.from.x+1, bp.from.y+1, bp.from.x+1, bp.from.y+offset+i*separ);
+			g2.drawLine(bp.to.x+1, bp.to.y+1, bp.to.x+1, bp.to.y+offset+i*separ);
+			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ+1, bp.to.x+1, bp.to.y+offset+i*separ+1);
+			
+			g.setFont(fontOld);
+			g2.setColor(colorOld);
 		}
 	}
 	
