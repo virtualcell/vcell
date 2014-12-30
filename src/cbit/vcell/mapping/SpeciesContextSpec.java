@@ -215,6 +215,22 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
+		/**
+		 * return 0 if {@link #getRole()} initial concentration, diffusion rate, or initial count
+		 */
+		@Override
+		public Expression getDefaultExpression() {
+		 //functionality moved from ParameterPropertiesPanel Dec 2014
+			switch (getRole()) {
+				case ROLE_InitialConcentration:
+				case ROLE_DiffusionRate:
+				case ROLE_InitialCount:
+					return new Expression(0);
+				default:
+					return null;
+			}
+		}
+
 		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
