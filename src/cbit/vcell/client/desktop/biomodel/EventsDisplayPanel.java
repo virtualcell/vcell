@@ -90,16 +90,15 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 			if(result != JOptionPane.OK_OPTION){
 				return;
 			}
-			BioEvent mybioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
-			if(triggerTemplatePanel.getTriggerExpr() != null){
-				try{
-					EventPanel.setNewTrigger(mybioEvent, simulationContext, triggerTemplatePanel.getTriggerExpr());
-				}catch(Exception e){
-					e.printStackTrace();
-					DialogUtils.showErrorDialog(this, "Error setting trigger : " + e.getMessage());
-					if(mybioEvent != null){
-						simulationContext.removeBioEvent(mybioEvent);
-					}
+			BioEvent mybioEvent = null;
+			try{
+				mybioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
+				EventPanel.setNewTrigger(mybioEvent, simulationContext, triggerTemplatePanel.getTriggerExpr());
+			}catch(Exception e){
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, "Error setting trigger : " + e.getMessage());
+				if(mybioEvent != null){
+					simulationContext.removeBioEvent(mybioEvent);
 				}
 			}
 
