@@ -16,13 +16,18 @@ import javax.swing.JLabel;
 import javax.swing.JComboBox;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 
 import java.awt.Font;
@@ -215,6 +220,23 @@ public class TriggerTemplatePanel extends JPanel {
 		gbl_panel_1.rowWeights = new double[]{0.0};
 		panel_1.setLayout(gbl_panel_1);
 		
+		
+//		private void editScanValues(String name, int r) throws DivideByZeroException, ExpressionException {
+//			ParameterScanPanel panel = new ParameterScanPanel();
+//			ConstantArraySpec spec = null;
+//			if (getMathOverrides().isScan(name)) {
+//				spec = getMathOverrides().getConstantArraySpec(name);
+//			} else {
+//				spec = ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
+//			}
+//			panel.setConstantArraySpec(spec);
+//			int confirm = DialogUtils.showComponentOKCancelDialog(ownerTable, panel, "Scan values for parameter '" + fieldKeys[r]);
+//			if (confirm == javax.swing.JOptionPane.OK_OPTION) {
+//				panel.applyValues();
+//				getMathOverrides().putConstantArraySpec(panel.getConstantArraySpec());
+//			}
+//		}
+
 		textFieldMultiTimes = new JTextField();
 		textFieldMultiTimes.setText(".5, 1.0, 1.5, 2.0");
 		GridBagConstraints gbc_textFieldMultiTimes = new GridBagConstraints();
@@ -243,8 +265,11 @@ public class TriggerTemplatePanel extends JPanel {
 		return txtEventName.getText();
 	}
 //	private SimulationContext simulationContext;
-	public void setSimulationContext(SimulationContext simulationContext){
+	public void init(SimulationContext simulationContext,String preferredEventName){
 //		this.simulationContext = simulationContext;
+		if(preferredEventName != null && preferredEventName.length() > 0){
+			txtEventName.setText(preferredEventName);
+		}
 		if(simulationContext != null){
 			mathOpComboBox.removeAllItems();
 			mathOpComboBox.addItem("==");

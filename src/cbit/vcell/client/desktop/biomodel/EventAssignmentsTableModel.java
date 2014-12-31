@@ -54,7 +54,7 @@ public class EventAssignmentsTableModel extends VCellSortTableModel<EventAssignm
 		public final static int COLUMN_EVENTASSGN_VARNAME = 0;
 		public final static int COLUMN_EVENTASSIGN_EXPRESSION = 1;
 		public final static int COLUMN_EVENTASSIGN_UNITS = 2;
-		private static String[] columnNames = new String[] {"Variable", "Expression", "Units"};
+		private static String[] columnNames = new String[] {"Variable to modify", "Expression to evaluate when action triggered", "Units"};
 		
 		private SimulationContext fieldSimContext = null;
 		private BioEvent fieldBioEvent = null;
