@@ -85,7 +85,7 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		}
 		try {
 			TriggerTemplatePanel triggerTemplatePanel = new TriggerTemplatePanel();
-			triggerTemplatePanel.setSimulationContext(simulationContext);
+			triggerTemplatePanel.init(simulationContext,simulationContext.getFreeEventName(null));
 			int result = DialogUtils.showComponentOKCancelDialog(this, triggerTemplatePanel, "Enter event name and choose 1 suitable template");
 			if(result != JOptionPane.OK_OPTION){
 				return;
