@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 
 import javax.swing.JRadioButton;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
@@ -14,12 +15,14 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Model.ReservedSymbol;
@@ -44,7 +47,8 @@ public class TriggerTemplatePanel extends JPanel {
 	private JTextField textFieldSingleTime;
 	private JTextField txtEventName;
 	private JTextField textFieldOneVarVal;
-	private JTextField textFieldMultiTimes;
+//	private JTextField textFieldMultiTimes;
+	private ParameterScanPanel multiTimesPanel;
 	private JComboBox<String> varComboBox = null;
 	private JComboBox<String> mathOpComboBox = null;
 	private ButtonGroup buttonGroup = new ButtonGroup();
@@ -65,7 +69,7 @@ public class TriggerTemplatePanel extends JPanel {
 					generalLabel.setEnabled(false);
 					BeanUtils.enableComponents(varValuePanel, false);
 					textFieldSingleTime.setEnabled(false);
-					textFieldMultiTimes.setEnabled(false);
+					BeanUtils.enableComponents(multiTimesPanel, false);
 					if(e.getSource() == rdbtnGeneral && rdbtnGeneral.isSelected()){
 						generalLabel.setEnabled(true);
 					}if(e.getSource() == rdbtnOneVar && rdbtnOneVar.isSelected()){
@@ -73,7 +77,7 @@ public class TriggerTemplatePanel extends JPanel {
 					}else if(e.getSource() == rdbtnSingleTime && rdbtnSingleTime.isSelected()){
 						textFieldSingleTime.setEnabled(true);
 					}else if(e.getSource() == rdbtnMultiTimes && rdbtnMultiTimes.isSelected()){
-						textFieldMultiTimes.setEnabled(true);
+						BeanUtils.enableComponents(multiTimesPanel, true);
 					}
 				}
 			};
@@ -219,34 +223,16 @@ public class TriggerTemplatePanel extends JPanel {
 		gbl_panel_1.columnWeights = new double[]{0};
 		gbl_panel_1.rowWeights = new double[]{0.0};
 		panel_1.setLayout(gbl_panel_1);
-		
-		
-//		private void editScanValues(String name, int r) throws DivideByZeroException, ExpressionException {
-//			ParameterScanPanel panel = new ParameterScanPanel();
-//			ConstantArraySpec spec = null;
-//			if (getMathOverrides().isScan(name)) {
-//				spec = getMathOverrides().getConstantArraySpec(name);
-//			} else {
-//				spec = ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
-//			}
-//			panel.setConstantArraySpec(spec);
-//			int confirm = DialogUtils.showComponentOKCancelDialog(ownerTable, panel, "Scan values for parameter '" + fieldKeys[r]);
-//			if (confirm == javax.swing.JOptionPane.OK_OPTION) {
-//				panel.applyValues();
-//				getMathOverrides().putConstantArraySpec(panel.getConstantArraySpec());
-//			}
-//		}
 
-		textFieldMultiTimes = new JTextField();
-		textFieldMultiTimes.setText(".5, 1.0, 1.5, 2.0");
+		multiTimesPanel = new ParameterScanPanel();
+		multiTimesPanel.setBorder(new LineBorder(Color.black));
 		GridBagConstraints gbc_textFieldMultiTimes = new GridBagConstraints();
 		gbc_textFieldMultiTimes.weightx = 1.0;
 		gbc_textFieldMultiTimes.insets = new Insets(4,4,4,4);
 		gbc_textFieldMultiTimes.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldMultiTimes.gridx = 0;
 		gbc_textFieldMultiTimes.gridy = 0;
-		panel_1.add(textFieldMultiTimes, gbc_textFieldMultiTimes);
-		textFieldMultiTimes.setColumns(10);
+		panel_1.add(multiTimesPanel, gbc_textFieldMultiTimes);
 		
 		buttonGroup.add(rdbtnGeneral);
 		buttonGroup.add(rdbtnOneVar);
@@ -294,46 +280,50 @@ public class TriggerTemplatePanel extends JPanel {
 //			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext,false);
 		}
 	}
-	public String getTriggerExpr(){
+	public String getTriggerExpr() throws Exception{
 		String expr = null;
 		if(rdbtnGeneral.isSelected()){
-			expr = null;
+			expr = "0.0";
 		}else if(rdbtnOneVar.isSelected()){
 			expr = varComboBox.getSelectedItem().toString() + mathOpComboBox.getSelectedItem().toString() + textFieldOneVarVal.getText();
 		}else if(rdbtnSingleTime.isSelected()){
 			expr = ReservedVariable.TIME.getName()+">="+textFieldSingleTime.getText();
 		}else if(rdbtnMultiTimes.isSelected()){
-			StringBuffer sb = new StringBuffer();
-			java.util.StringTokenizer st = new java.util.StringTokenizer(textFieldMultiTimes.getText(), ", \n");
-//			double[] times = new double[st.countTokens()];
-//			int count = 0;
-			HashMap<String, Double> numMap = new HashMap<>();
-			while (st.hasMoreTokens()) {
-				try {
-					String token = st.nextToken();
-					double num = Double.parseDouble(token);// check number
-					numMap.put(token, num);
-//					times[count ++] = time;
-				} catch (Exception ex) {
-					throw new RuntimeException("Times must be numbers seperated by commas.");
-				}			
-			}
+			multiTimesPanel.applyValues();
+			Constant[] constantArray = multiTimesPanel.getConstantArraySpec().getConstants();
 			// calc epsilon
-			Double[] sortNums = numMap.values().toArray(new Double[0]);
-			Arrays.sort(sortNums);
+			final Exception[] failFlag = new Exception[1];
+			Arrays.sort(constantArray,new Comparator<Constant>() {
+				@Override
+				public int compare(Constant o1, Constant o2) {
+					// TODO Auto-generated method stub
+					try{
+						return (int)Math.signum(o1.getConstantValue()-o2.getConstantValue());
+					}catch(Exception e){
+						if(failFlag[0] == null){
+							failFlag[0] = e;
+						}
+						return 0;
+					}
+				}
+			});
+			if(failFlag[0] != null){
+				throw failFlag[0];
+			}
 			double epsilon = Double.MAX_VALUE;
-			double prevNum = sortNums[0];
-			for(double sortNum:sortNums){
+			Constant prevNum = constantArray[0];
+			for(Constant sortNum:constantArray){
 				if(sortNum != prevNum){
-					if((sortNum-prevNum)<epsilon){
-						epsilon = sortNum-prevNum;
+					if((sortNum.getConstantValue()-prevNum.getConstantValue())<epsilon){
+						epsilon = sortNum.getConstantValue()-prevNum.getConstantValue();
 					}
 				}
 			}
 			epsilon/= 2.0;
 			
-			for(String numStr:numMap.keySet()){
-				String subExpr = "(("+ReservedVariable.TIME.getName()+">="+numStr+") && ("+ReservedVariable.TIME.getName()+"<("+numStr+"+"+epsilon+")))";
+			StringBuffer sb = new StringBuffer();
+			for(Constant sortNum:constantArray){
+				String subExpr = "(("+ReservedVariable.TIME.getName()+">="+sortNum.getExpression().infix()+") && ("+ReservedVariable.TIME.getName()+"<("+sortNum.getExpression().infix()+"+"+epsilon+")))";
 				sb.append((sb.length()!=0?" || ":"")+subExpr);
 			}
 			expr = sb.toString();
