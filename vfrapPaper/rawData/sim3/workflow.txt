@@ -1,4 +1,4 @@
-cellRadius= 400.0
+cellRadius= 50.0
 cytosolName = "cytosol"
 extracellularName = "ec"
 deltaX = 0.3
@@ -16,7 +16,7 @@ secondaryDiffusionRate = 0.0
 secondaryFraction =  0.0
 bNoise = true
 maxIntensity =  60000.0
-vfrapFile = file("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim1\\workflow.txt.save")
+vfrapFile = file("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim3\\workflow.txt.save")
 
 generateExpModel = Generate2DExpModel()
 	generateExpModel.bleachDuration = bleachDuration
