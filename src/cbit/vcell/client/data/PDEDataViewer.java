@@ -339,7 +339,7 @@ public class PDEDataViewer extends DataViewer {
 					if (getPdeDataContext() != null) {
 						getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
 					}					
-					CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
+					CartesianMesh cartesianMesh = (getPdeDataContext()==null?null:getPdeDataContext().getCartesianMesh());
 					if (cartesianMesh != null && cartesianMesh.getGeometryDimension() == 3
 							&& cartesianMesh.getNumMembraneElements() > 0){
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) < 0) {
@@ -406,6 +406,9 @@ public class PDEDataViewer extends DataViewer {
 						(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER) 
 						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VARIABLE) 
 						|| evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))) {
+					if(getJTabbedPane1().getTitleAt(getJTabbedPane1().getSelectedIndex()).equals(POST_PROCESS_TABNAME)){
+						dataProcessingResultsPanel.update(getPdeDataContext());
+					}
 					getPDEDataContextPanel1().recodeDataForDomain();
 					if (getPdeDataContext().getDataIdentifier().getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE) {
 						if (viewDataTabbedPane.indexOfComponent(getDataValueSurfaceViewer()) >= 0) {
@@ -2078,7 +2081,7 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 	}else if(propertyChangeEvent.getPropertyName().equals("spatialDataSamplers")){
 		boolean shouldEnablePlot = ((Boolean)(propertyChangeEvent.getNewValue())).booleanValue();
 		getSpatialPlotMenuItem().setEnabled(shouldEnablePlot);
-		getKymographMenuItem().setEnabled((getPdeDataContext().getTimePoints().length > 1) && shouldEnablePlot);
+		getKymographMenuItem().setEnabled(getPdeDataContext() != null && (getPdeDataContext().getTimePoints().length > 1) && shouldEnablePlot);
 	}
 	getPlotButton().setEnabled(getSpatialPlotMenuItem().isEnabled() || getTimePlotMenuItem().isEnabled() || getKymographMenuItem().isEnabled());
 	

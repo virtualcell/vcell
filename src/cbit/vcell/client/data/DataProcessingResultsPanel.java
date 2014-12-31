@@ -11,12 +11,15 @@
 package cbit.vcell.client.data;
 
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -29,7 +32,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -37,6 +40,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.gui.DisplayAdapterService;
@@ -52,25 +56,17 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.DataProcessingOutput;
 
-import javax.swing.border.LineBorder;
-
-import java.awt.Color;
-import java.awt.Dimension;
-
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
 
-//	private PDEDataContext pdeDataContext;
-//	private NetcdfFile ncfile;
-	private JList varJList;
+	private JList<String> varJList;
 	private PlotPane plotPane = null;
 	private double[] timeArray;
-	private int[] lastSelectedIdxArray = null;
 	private DataProcessingOutput dpo;
 	private JScrollPane graphScrollPane;
 	private ImagePlaneManagerPanel imagePlaneManagerPanel;
 	private JScrollPane imageScrollPane;
-	private JList imageList;
+	private JList<String> imageList;
 	private JSlider spatialTimeSlider;
 	private JPanel timePanel;
 	private JLabel minTimeLabel;
@@ -89,7 +85,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		gridBagLayout.rowWeights = new double[]{0.0, 0, 0.0, 0.0, 0.0, 0.0};
 		gridBagLayout.columnWeights = new double[]{0, 0};
 		setLayout(gridBagLayout);
-		varJList = new JList();
+		varJList = new JList<String>();
 		varJList.setVisibleRowCount(5);
 		varJList.addListSelectionListener(new ListSelectionListener() {
 			
@@ -151,7 +147,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			DisplayAdapterService.createBlueRedSpecialColors(),
 			DisplayAdapterService.BLUERED);
 		das.setActiveColorModelID(DisplayAdapterService.BLUERED);
-
+		
 		cardLayoutPanel.add(imagePlaneManagerPanel, "imagePlaneManagerPanel1");
 		
 		lblNewLabel_1 = new JLabel("Post Process Image Data");
@@ -172,7 +168,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		gbc_imageScrollPane.gridy = 3;
 		add(imageScrollPane, gbc_imageScrollPane);
 		
-		imageList = new JList();
+		imageList = new JList<String>();
 		imageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		imageList.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
@@ -252,44 +248,6 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		
 		enableTimePanel(false);
 	}
-	
-//	private JSlider getJSliderTime(){
-//		return spatialTimeSlider;
-//	}
-//	private void newTimePoints(double[] newTimes) {
-//		//
-//		getJSliderTime().setSnapToTicks(true);//So arrow keys work correctly with no minor tick marks
-//		//
-//		if (newTimes == null || newTimes.length == 1) {
-//			getJSliderTime().setMinimum(0);
-//			getJSliderTime().setMaximum(0);
-//			getJLabelMin().setText((newTimes == null?"":newTimes[0]+""));
-//			getJLabelMax().setText((newTimes == null?"":newTimes[0]+""));
-//			getJTextField1().setText((newTimes == null?"":newTimes[0]+""));
-//			if(getJSliderTime().isEnabled()){
-//				BeanUtils.enableComponents(getTimeSliderJPanel(),false);
-//			}
-//		} else {
-//			if(!getJSliderTime().isEnabled()){
-//				BeanUtils.enableComponents(getTimeSliderJPanel(),true);
-//			}
-//			int sValue = getJSliderTime().getValue();
-//			getJSliderTime().setMinimum(0);
-//			//getJSliderTime().setExtent(1);//Can't do this because of bug in JSlider won't set last value
-//			getJSliderTime().setMaximum(newTimes.length - 1);
-//			if(sValue >= 0 && sValue < newTimes.length){
-//				getJSliderTime().setValue(sValue);
-//			}else{
-//				getJSliderTime().setValue(0);
-//			}
-//			getJSliderTime().setMajorTickSpacing((newTimes.length < 10?1:newTimes.length/10));
-////			getJSliderTime().setMinorTickSpacing(getJSliderTime().getMajorTickSpacing());//hides minor tick marks
-//			getJSliderTime().setMinorTickSpacing(1);// testing....
-//			//
-//			getJLabelMin().setText(NumberUtils.formatNumber(newTimes[0],8));
-//			getJLabelMax().setText(NumberUtils.formatNumber(newTimes[newTimes.length - 1],8));
-//		}
-//	}
 
 	private void updateImageDisplay(){
 		String selectedVarName = (String)imageList.getSelectedValue();
@@ -302,41 +260,29 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			Vector<SourceDataInfo> dataV = dpo.getDataGenerators().get(selectedVarName);
 			int timeIndex = spatialTimeSlider.getValue();
 			SourceDataInfo sdi = dataV.get(timeIndex);
+			BeanUtils.enableComponents(imagePlaneManagerPanel.getDisplayAdapterServicePanel(), true);
 			imagePlaneManagerPanel.getDisplayAdapterServicePanel().getDisplayAdapterService().setValueDomain(sdi.getMinMax());
+			BeanUtils.enableComponents(imagePlaneManagerPanel.getDisplayAdapterServicePanel(), false);
 			imagePlaneManagerPanel.setSourceDataInfo(sdi);
 		}
 	}
 	
 	private void enableTimePanel(boolean bEnable){
-		if(postProcessImageTimeLabel.isEnabled() != bEnable){
-			postProcessImageTimeLabel.setEnabled(bEnable);
-			BeanUtils.enableComponents(timePanel, bEnable);
-		}
+		postProcessImageTimeLabel.setEnabled(bEnable);
+		BeanUtils.enableComponents(timePanel, bEnable);
 	}
-//	public void setPdeDataContext(PDEDataContext newValue) {
-//		if (this.pdeDataContext == newValue) {
-//			return;
-//		}
-//		PDEDataContext oldValue = pdeDataContext;
-//		if (oldValue != null) {
-//			oldValue.removePropertyChangeListener(this);
-//		}
-//		this.pdeDataContext = newValue;	
-//		if (newValue != null) {
-//			newValue.addPropertyChangeListener(this);
-//		}
-//		update();
-//	}
 
+	private VCDataIdentifier lastVCDataIdentifier;
 	private void read(PDEDataContext pdeDataContext) throws Exception {
 		
-		if(dpo != null && timeArray!= null && timeArray.length == pdeDataContext.getTimePoints().length){
+		if(dpo != null && timeArray!= null && (timeArray.length == pdeDataContext.getTimePoints().length) && pdeDataContext.getVCDataIdentifier().equals(lastVCDataIdentifier)){
 			System.out.println("--------------------"+timeArray.length+"=="+pdeDataContext.getTimePoints().length);
 			//we already read this
 			throw UserCancelException.CANCEL_GENERIC;
 		}
 		dpo = null;
 		timeArray = null;
+		lastVCDataIdentifier = pdeDataContext.getVCDataIdentifier();// parameter scan check
 		
 		try {
 			dpo = pdeDataContext.getDataProcessingOutput();
@@ -348,10 +294,26 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
 		}
 	}
-	
 	public void update(final PDEDataContext pdeDataContext) {
-		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		
+		final String SELECTED_LIST = "SELECTED_LIST";
+		final String SELECTED_ITEMS = "SELECTED_ITEMS";
+		final String SELECTED_TIME = "SELECTED_TIME";
+		AsynchClientTask task0 = new AsynchClientTask("save user choices", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				hashTable.put(SELECTED_TIME, spatialTimeSlider.getValue());
+				if(imageList.getSelectedValue() != null){
+					hashTable.put(SELECTED_LIST, imageList);
+					hashTable.put(SELECTED_ITEMS, imageList.getSelectedIndices());
+				}else if(varJList.getSelectedValue() != null){
+					hashTable.put(SELECTED_LIST, varJList);
+					hashTable.put(SELECTED_ITEMS, varJList.getSelectedIndices());
+				}
+			}
+		};
 
+		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {		
 				read(pdeDataContext);
@@ -372,7 +334,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					minTimeLabel.setText(timeArray[0]+"");
 					maxTimeLabel.setText(timeArray[timeArray.length-1]+"");
 					
-					DefaultListModel imageListModel = new DefaultListModel();
+					DefaultListModel<String> imageListModel = new DefaultListModel<String>();
 					 HashMap<String, Vector<SourceDataInfo>> imgHashMap = dpo.getDataGenerators();
 					 if (imgHashMap != null) {
 						Set<String> imgNamesset = imgHashMap.keySet();
@@ -387,7 +349,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					 
 					 
 					//					List<Variable> varList = ncfile.getVariables();
-					DefaultListModel dlm = new DefaultListModel();
+					DefaultListModel<String> dlm = new DefaultListModel<String>();
 					for (int i = 0; i < dpo.getVariableStatNames().length; i++) {
 						if(dpo.getVariableUnits() != null && dpo.getVariableUnits()[i] != null && dpo.getVariableUnits()[i].length() > 0){
 							dlm.addElement(dpo.getVariableStatNames()[i] + "_(" + dpo.getVariableUnits()[i] + ")");
@@ -395,44 +357,29 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 							dlm.addElement(dpo.getVariableStatNames()[i]);
 						}
 					}
-//					for (Variable var : varList) {
-//						if (!var.getName().equals(ReservedSymbol.TIME.getName())) {
-//							dlm.addElement(var.getName());
-//						}
-//					}
-					int[] lastSelectedIdxArray0 = varJList.getSelectedIndices(); 
 					varJList.setModel(dlm);
-					lastSelectedIdxArray = lastSelectedIdxArray0;
-					if(lastSelectedIdxArray == null || lastSelectedIdxArray.length == 0)
-					{
+					
+					//set user previous choices if possible
+					if(hashTable.get(SELECTED_ITEMS) != null && hashTable.get(SELECTED_LIST) != null){
+						((JList<JList<String>>)hashTable.get(SELECTED_LIST)).setSelectedIndices((int[])hashTable.get(SELECTED_ITEMS));
+						spatialTimeSlider.setValue((Integer)hashTable.get(SELECTED_TIME));
+					}else{
 						varJList.setSelectedIndex(0);
-					}
-					else
-					{
-						varJList.setSelectedIndices(lastSelectedIdxArray);
 					}
 				}
 			}
 		};
 		
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task0,task1, task2});
 	}
 	
 	private void onVariablesChange() {
 		try {
-			//keep old indices
-			lastSelectedIdxArray = varJList.getSelectedIndices();
-			Object[] selectedObjects = varJList.getSelectedValues();
-			int numSelectedVars = selectedObjects.length;
+			List<String> selectedObjects = varJList.getSelectedValuesList();
+			int numSelectedVars = selectedObjects.size();
 			int totalColumns = 1;
 			for (int v = 0; v < numSelectedVars; v ++) {
 				totalColumns++;
-//				String varName = (String)selectedObjects[v];
-//				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
-//				int[] shape = volVar.getShape();
-//				int numColumns = shape[1];
-//				
-//				totalColumns += numColumns;
 			}
 			int numTimes = timeArray.length;
 			double[][] plotDatas = new double[totalColumns][numTimes];
@@ -440,23 +387,12 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			String[] plotNames = new String[totalColumns - 1];
 			int columnCount = 0;
 			for (int v = 0; v < numSelectedVars; v ++) {
-				String varName = ((String)selectedObjects[v]);
+				String varName = ((String)selectedObjects.get(v));
 				//remove the unit from name if exist
 				if(varName.indexOf("_(") > 0) //"_(" doesn't suppose to be the first char
 				{
 					varName = varName.substring(0, varName.indexOf("_("));
 				}
-//				ucar.nc2.Variable volVar = ncfile.findVariable(varName);
-//				int[] shape = volVar.getShape();
-//				int numColumns = shape[1];
-//				int[] origin = new int[2];
-//				ArrayDouble.D2 data = null;
-//				try {
-//					data = (ArrayDouble.D2) volVar.read(origin, shape);
-//				} catch (Exception e) {
-//					e.printStackTrace(System.err);
-//					throw new IOException("Can not read volVar data.");
-//				}
 				for (int i = 0; i < /*numColumns*/ 1; i++) {
 					String plotName = varName ;
 					if (i > 0) {
@@ -477,12 +413,4 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 			e1.printStackTrace();
 		}
 	}
-//	public void propertyChange(PropertyChangeEvent evt) {
-//		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS)) {
-//			update();
-//		}
-//		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER)) {
-//			update();
-//		}
-//	}
 }
