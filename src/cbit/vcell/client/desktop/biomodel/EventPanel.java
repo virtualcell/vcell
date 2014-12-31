@@ -187,7 +187,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					addButton = new javax.swing.JButton();
 					addButton.setName("AddEventAssgnButton");
-					addButton.setText("Add Assignment");
+					addButton.setText("Add Action");
 					addButton.setEnabled(true);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -201,7 +201,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					deleteButton = new javax.swing.JButton();
 					deleteButton.setName("DeleteEventAssgnButton");
-					deleteButton.setText("Delete Assignment");
+					deleteButton.setText("Delete Action");
 					deleteButton.setEnabled(false);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
@@ -216,7 +216,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					eventAssgnLabel = new javax.swing.JLabel();
 					eventAssgnLabel.setName("EventAssgnLabel");
 					eventAssgnLabel.setFont(eventAssgnLabel.getFont().deriveFont(Font.BOLD));
-					eventAssgnLabel.setText("  Event Assignments: ");
+					eventAssgnLabel.setText("  Event Actions: ");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -269,7 +269,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					delayLabel = new javax.swing.JLabel();
 					delayLabel.setName("DelayLabel");
 					delayLabel.setFont(delayLabel.getFont().deriveFont(Font.BOLD));
-					delayLabel.setText("Assignment Delay (s):");
+					delayLabel.setText("Action Delay (sec):");
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -432,7 +432,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					eventAssgnVarNameLabel = new javax.swing.JLabel();
 					eventAssgnVarNameLabel.setName("EventAssignVarNameLabel");
-					eventAssgnVarNameLabel.setText("Event Assignment Variable Name");
+					eventAssgnVarNameLabel.setText("Variable to modifiy when action triggered");
 //					eventAssgnVarNameLabel.setMinimumSize(new java.awt.Dimension(45, 14));
 //					eventAssgnVarNameLabel.setMaximumSize(new java.awt.Dimension(45, 14));
 				} catch (java.lang.Throwable e) {
@@ -487,17 +487,17 @@ public class EventPanel extends DocumentEditorSubPanel {
 					constraintsEAVarNameTextField.insets = new java.awt.Insets(4, 4, 4, 4);
 					getEventAssignmentPanel().add(getEventAssignVarNameComboBox(), constraintsEAVarNameTextField);
 
-					java.awt.GridBagConstraints constraintsEAExprLabel = new java.awt.GridBagConstraints();
-					constraintsEAExprLabel.gridx = 0; constraintsEAExprLabel.gridy = 1;
-					constraintsEAExprLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-					getEventAssignmentPanel().add(getEventAssignExprLabel(), constraintsEAExprLabel);
-
-					java.awt.GridBagConstraints constraintsEAExpressionTextField = new java.awt.GridBagConstraints();
-					constraintsEAExpressionTextField.gridx = 1; constraintsEAExpressionTextField.gridy = 1;
-					constraintsEAExpressionTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-					constraintsEAExpressionTextField.weightx = 1.0;
-					constraintsEAExpressionTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-					getEventAssignmentPanel().add(getEventAssignExpressionTextField(), constraintsEAExpressionTextField);
+//					java.awt.GridBagConstraints constraintsEAExprLabel = new java.awt.GridBagConstraints();
+//					constraintsEAExprLabel.gridx = 0; constraintsEAExprLabel.gridy = 1;
+//					constraintsEAExprLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+//					getEventAssignmentPanel().add(getEventAssignExprLabel(), constraintsEAExprLabel);
+//
+//					java.awt.GridBagConstraints constraintsEAExpressionTextField = new java.awt.GridBagConstraints();
+//					constraintsEAExpressionTextField.gridx = 1; constraintsEAExpressionTextField.gridy = 1;
+//					constraintsEAExpressionTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//					constraintsEAExpressionTextField.weightx = 1.0;
+//					constraintsEAExpressionTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+//					getEventAssignmentPanel().add(getEventAssignExpressionTextField(), constraintsEAExpressionTextField);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -640,7 +640,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			// event assignment, add it to the list of event assignments in bioEvent
 			// Else, pop-up an error dialog indicating that event assignment cannot be added.
 			//
-			int ok = JOptionPane.showOptionDialog(this, eventAssignmentPanel, "Add Event Assignment" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
+			int ok = JOptionPane.showOptionDialog(this, eventAssignmentPanel, "New Action Event" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
 			if (ok == javax.swing.JOptionPane.OK_OPTION) {
 				String varName = (String)getEventAssignVarNameComboBox().getSelectedItem();
 				EventAssignment newEventAssignment = null;
