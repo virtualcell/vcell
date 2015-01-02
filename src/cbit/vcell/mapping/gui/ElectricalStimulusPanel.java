@@ -1261,21 +1261,25 @@ private void setsimulationContext1(SimulationContext newValue) {
 		return btnGraphElectricalStimulus;
 	}
 	
+	public static Expression getProtocolParameterExprPreview(Expression expr,SymbolTable symbolTable,ReservedSymbol timeSymbol) throws Exception{
+		Expression protocolParameterExp = new Expression(expr);
+		protocolParameterExp = MathUtilities.substituteModelParameters(protocolParameterExp, symbolTable);
+		String[] symbols = protocolParameterExp.getSymbols();
+		for (int i = 0; symbols!=null && i < symbols.length; i++) {
+			SymbolTableEntry ste = protocolParameterExp.getSymbolBinding(symbols[i]);
+			if (!ste.equals(timeSymbol) &&
+				!(ste instanceof LocalProxyParameter && ((LocalProxyParameter)ste).getTarget().equals(timeSymbol))){
+				throw new ExpressionException("Expression symbol '"+ste.getName()+"' doesn't match timeSymbol "+timeSymbol.getName());
+			}
+		}
+		return protocolParameterExp;
+	}
+	
 	public static void graphTimeFunction(Component owner,Expression expr,SymbolTable symbolTable,ReservedSymbol timeSymbol,String title){
 		
 		final TimeFunctionPanel timeFunctionPanel = new TimeFunctionPanel();
 		try {
-			Expression protocolParameterExp = new Expression(expr);
-			protocolParameterExp = MathUtilities.substituteModelParameters(protocolParameterExp, symbolTable);
-			String[] symbols = protocolParameterExp.getSymbols();
-			for (int i = 0; symbols!=null && i < symbols.length; i++) {
-				SymbolTableEntry ste = protocolParameterExp.getSymbolBinding(symbols[i]);
-				if (!ste.equals(timeSymbol) &&
-					(ste instanceof LocalProxyParameter && !((LocalProxyParameter)ste).getTarget().equals(timeSymbol))){
-					throw new ExpressionException("Error, Only 'time' allowed as variable for plot previews.");
-				}
-			}
-			timeFunctionPanel.setTimeFunction(protocolParameterExp.flatten().infix());
+			timeFunctionPanel.setTimeFunction(getProtocolParameterExprPreview(expr, symbolTable, timeSymbol).flatten().infix());
 		} catch (Exception e) {			
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(owner, "For plot preview only simple expressions of time are allowed.", e);
