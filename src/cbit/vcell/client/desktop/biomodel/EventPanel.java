@@ -11,14 +11,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeListener;
@@ -36,16 +40,17 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputVerifier;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -57,8 +62,8 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.model.Model;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
@@ -66,17 +71,6 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
-
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.GridBagLayout;
-
-import javax.swing.JRadioButton;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import java.awt.Color;
 
 @SuppressWarnings("serial")
 public class EventPanel extends DocumentEditorSubPanel {
@@ -156,7 +150,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			public void focusGained(FocusEvent e) {
 			}
 			public void focusLost(FocusEvent e) {
-				if (!isEnabled() || fieldBioEvent == null) {
+				if (!isEnabled() || getBioEvent() == null) {
 					return;
 				}
 				if (e.isTemporary()) {
@@ -164,10 +158,12 @@ public class EventPanel extends DocumentEditorSubPanel {
 				}
 				if (e.getSource() == getTriggerTextField()) {
 					try{
-						setNewTrigger(getBioEvent(),getSimulationContext(),getTriggerTextField().getText());
+						if (getBioEvent() == null || getSimulationContext() == null) {
+							return;
+						}
+						getBioEvent().setTriggerExpression(bindTriggerExpression(getTriggerTextField().getText(), getSimulationContext()));
 					} catch (Exception e1) {
 						e1.printStackTrace(System.out);
-						DialogUtils.showErrorDialog(EventPanel.this, e1.getMessage());
 					}
 				}
 				if (e.getSource() == getDelayTextField()) {
@@ -243,25 +239,22 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					triggerTextfield = new TextFieldAutoCompletion();
 					triggerTextfield.setName("TriggerTextField");
+					triggerTextfield.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							getTriggerTextField().getInputVerifier().verify(getTriggerTextField());
+//							if(!getTriggerTextField().getInputVerifier().verify(getTriggerTextField())){
+//								DialogUtils.showErrorDialog(getTriggerTextField(), "Trigger expression invalid");
+//							}
+						}
+					});
+
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
 			}
 			return triggerTextfield;
 		}
-
-//		private JCheckBox getUseValuesAtTriggerTimeCheckBox() {
-//			if (useValuesAtTriggerTimeCheckBox == null) {
-//				try {
-//					useValuesAtTriggerTimeCheckBox = new JCheckBox("Use Values at Trigger Time");
-//					useValuesAtTriggerTimeCheckBox.setSelected(true);
-//				} catch (java.lang.Throwable e) {
-//					e.printStackTrace(System.out);
-//				}
-//			}
-//			return useValuesAtTriggerTimeCheckBox;
-//		}
-
 		
 		private JLabel getDelayLabel() {
 			if (delayLabel == null) {
@@ -282,13 +275,13 @@ public class EventPanel extends DocumentEditorSubPanel {
 				try {
 					delayTextField = new TextFieldAutoCompletion();
 					delayTextField.setName("DelayTextField");
-					delayTextField.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseExited(MouseEvent e) {
-							super.mouseExited(e);
-							setNewDelay();
-						}
-					});
+//					delayTextField.addMouseListener(new MouseAdapter() {
+//						@Override
+//						public void mouseExited(MouseEvent e) {
+//							super.mouseExited(e);
+//							setNewDelay();
+//						}
+//					});
 					delayTextField.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -325,6 +318,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					constraintsTriggerTextField.weightx = 1.0;
 					constraintsTriggerTextField.insets = new Insets(4, 4, 5, 5);
 					labels_n_textfields_Panel.add(getTriggerTextField(), constraintsTriggerTextField);
+					
 					GridBagConstraints gbc_btnPlotTrigger = new GridBagConstraints();
 					gbc_btnPlotTrigger.anchor = GridBagConstraints.EAST;
 					gbc_btnPlotTrigger.fill = GridBagConstraints.VERTICAL;
@@ -354,11 +348,6 @@ public class EventPanel extends DocumentEditorSubPanel {
 					gbc_panel_1.gridy = 1;
 					labels_n_textfields_Panel.add(getPanel_1(), gbc_panel_1);
 					
-//					java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-//					gbc.gridx = 5; 
-//					gbc.gridy = 1;
-//					gbc.insets = new java.awt.Insets(4, 4, 4, 4);
-//					labels_n_textfields_Panel.add(getUseValuesAtTriggerTimeCheckBox(), gbc);
 				} catch (java.lang.Throwable e) {
 					e.printStackTrace(System.out);
 				}
@@ -547,18 +536,39 @@ public class EventPanel extends DocumentEditorSubPanel {
 			getTriggerTextField().setInputVerifier(new InputVerifier() {
 				
 				@Override
-				public boolean shouldYieldFocus(JComponent input) {
+				public boolean verify(JComponent input) {
 					boolean bValid = true;
 					if (fieldBioEvent != null && getTriggerTextField().isEnabled()) {
 						String text = getTriggerTextField().getText();
+						String errorText = null;
 						if (text == null || text.trim().length() == 0) {
 							bValid = false;
-							DialogUtils.showErrorDialog(EventPanel.this, "Invalid expression for Trigger!");
+							errorText = "Trigger expression cannot be empty";
+						}else{
+							Expression expr = null;
+							try{
+								expr = bindTriggerExpression(getTriggerTextField().getText(), getSimulationContext());
+							}catch(Exception e){
+								bValid = false;
+								errorText = e.getMessage();
+							}
+//							if(expr != null){
+//								try{
+//									ElectricalStimulusPanel.getProtocolParameterExprPreview(expr, getSimulationContext(), getSimulationContext().getModel().getTIME());
+//									getBtnPlotTrigger().setEnabled(true);
+//								}catch(Exception e){
+//									getBtnPlotTrigger().setEnabled(false);
+//								}
+//							}
 						}
 						if (bValid) {
 							getTriggerTextField().setBorder(UIManager.getBorder("TextField.border"));
+							getBtnPlotTrigger().setEnabled(true);
+							getTriggerTextField().setToolTipText(null);
 						} else {
 							getTriggerTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
+							getBtnPlotTrigger().setEnabled(false);
+							getTriggerTextField().setToolTipText(errorText);
 							SwingUtilities.invokeLater(new Runnable() { 
 							    public void run() { 
 							    	getTriggerTextField().requestFocus();
@@ -567,11 +577,6 @@ public class EventPanel extends DocumentEditorSubPanel {
 						}
 					}
 					return bValid;
-				}
-
-				@Override
-				public boolean verify(JComponent input) {
-					return false;
 				}
 			});
 		}
@@ -762,8 +767,8 @@ public class EventPanel extends DocumentEditorSubPanel {
 								
 				setEnabled(true);
 				// we are initializing EventsPanel, hence no focuslistener should not be active on the text fields
-				getTriggerTextField().removeFocusListener(ivjEventHandler);
-				getDelayTextField().removeFocusListener(ivjEventHandler);
+//				getTriggerTextField().removeFocusListener(ivjEventHandler);
+//				getDelayTextField().removeFocusListener(ivjEventHandler);
 
 				// set 
 				getTriggerTextField().setText(fieldBioEvent.getTriggerExpression().infix());
@@ -787,16 +792,16 @@ public class EventPanel extends DocumentEditorSubPanel {
 				getEventAssignmentsTableModel().setBioEvent(fieldBioEvent);
 				// for some reason, when events are selected in the table, the delayTextField gains focus (this fires table update whenever
 				// another selection is made. To avoid this, adding a request focus for the events table.
-				requestFocusInWindow();
-				addFocusListener(new FocusListener() {					
-					public void focusLost(FocusEvent e) {						
-					}					
-					public void focusGained(FocusEvent e) {
-						removeFocusListener(this);
-						getTriggerTextField().addFocusListener(ivjEventHandler);
-						getDelayTextField().addFocusListener(ivjEventHandler);						
-					}
-				});
+//				requestFocusInWindow();
+//				addFocusListener(new FocusListener() {					
+//					public void focusLost(FocusEvent e) {						
+//					}					
+//					public void focusGained(FocusEvent e) {
+//						removeFocusListener(this);
+//						getTriggerTextField().addFocusListener(ivjEventHandler);
+//						getDelayTextField().addFocusListener(ivjEventHandler);						
+//					}
+//				});
 			}
 		}
 
@@ -820,13 +825,10 @@ public class EventPanel extends DocumentEditorSubPanel {
 			}
 		}
 
-		public static void setNewTrigger(BioEvent bioEvent,SimulationContext simulationContext,String expr) throws ExpressionBindingException,ExpressionException{
-			if (bioEvent == null) {
-				return;
-			}
+		public static Expression bindTriggerExpression(String expr,SimulationContext simulationContext) throws ExpressionBindingException,ExpressionException{
 			Expression triggerExpr = new Expression(expr);
 			triggerExpr.bindExpression(simulationContext);
-			bioEvent.setTriggerExpression(triggerExpr);
+			return triggerExpr;
 		}
 		
 	@Override
@@ -855,10 +857,10 @@ public class EventPanel extends DocumentEditorSubPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try{
-						setNewTrigger(getBioEvent(),getSimulationContext(),getTriggerTextField().getText());
 						ElectricalStimulusPanel.graphTimeFunction(
 								EventPanel.this,
 								getBioEvent().getTriggerExpression(),
+//								bindTriggerExpression(getTriggerTextField().getText(), getSimulationContext()),
 								getSimulationContext(),
 								getSimulationContext().getModel().getTIME(),
 								"Trigger Expression");

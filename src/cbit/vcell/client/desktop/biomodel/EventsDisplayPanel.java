@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.parser.Expression;
 
 @SuppressWarnings("serial")
 public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<BioEvent> {	
@@ -83,6 +84,7 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 		if (simulationContext == null) {
 			return;
 		}
+		BioEvent mybioEvent = null;
 		try {
 			TriggerTemplatePanel triggerTemplatePanel = new TriggerTemplatePanel();
 			triggerTemplatePanel.init(simulationContext,simulationContext.getFreeEventName(null));
@@ -90,20 +92,16 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 			if(result != JOptionPane.OK_OPTION){
 				return;
 			}
-			BioEvent mybioEvent = null;
-			try{
-				mybioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
-				EventPanel.setNewTrigger(mybioEvent, simulationContext, triggerTemplatePanel.getTriggerExpr());
-			}catch(Exception e){
-				e.printStackTrace();
-				DialogUtils.showErrorDialog(this, "Error setting trigger : " + e.getMessage());
-				if(mybioEvent != null){
-					simulationContext.removeBioEvent(mybioEvent);
-				}
-			}
-
-		} catch (PropertyVetoException e) {
+			
+			//precheck expression binding before making bioevent
+			Expression triggerBindExpression = EventPanel.bindTriggerExpression(triggerTemplatePanel.getTriggerExpr(), simulationContext);
+			mybioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
+			mybioEvent.setTriggerExpression(triggerBindExpression);
+		} catch (Exception e) {
 			e.printStackTrace(System.out);
+			if(mybioEvent != null){
+				System.err.println("-----Unexpected: Simcontext has malformed new BioEvent");
+			}
 			DialogUtils.showErrorDialog(this, "Error adding Event : " + e.getMessage());
 		}		
 	}
