@@ -103,8 +103,8 @@ public class MolecularComponentLargeShape {
 		}
 	}
 
-	private Font deriveComponentFontBold() {
-		Font fontOld = graphicsContext.getFont();
+	public static Font deriveComponentFontBold(Graphics gc) {
+		Font fontOld = gc.getFont();
 		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
 		return font;
 	}
@@ -116,7 +116,7 @@ public class MolecularComponentLargeShape {
 	
 	private int getStringWidth(String s) {
 //		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		Font font = deriveComponentFontBold();
+		Font font = deriveComponentFontBold(graphicsContext);
 		FontMetrics fm = graphicsContext.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
 		return stringWidth;
@@ -169,7 +169,7 @@ public class MolecularComponentLargeShape {
 		Font fontOld = g.getFont();
 		Color colorOld = g.getColor();
 //		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
-		Font font = deriveComponentFontBold();
+		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);
 		g.setColor(Color.black);
 		g2.drawString(displayName, xPos+3+componentDiameter/3, yPos+4+componentDiameter/2);
