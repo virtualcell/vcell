@@ -26,6 +26,8 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
+import com.ctc.wstx.ent.ParsedExtEntity;
+
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.vcell.math.ReservedVariable;
@@ -37,7 +39,7 @@ public class TimeFunctionPanel extends JPanel {
 	private JTextField funcTextField;
 	private JTextField timeBegTextField;
 	private JTextField timeStepTextField;
-	private JTextField timeStepCountTextField;
+	private JTextField endTimeTextField;
 	
 	public TimeFunctionPanel() {
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -111,12 +113,12 @@ public class TimeFunctionPanel extends JPanel {
 		timePanel.add(timeStepTextField);
 		timeStepTextField.setColumns(10);
 		
-		JLabel lblSteps = new JLabel("Step Count");
+		JLabel lblSteps = new JLabel("End Time");
 		timePanel.add(lblSteps);
 		
-		timeStepCountTextField = new JTextField();
-		timePanel.add(timeStepCountTextField);
-		timeStepCountTextField.setColumns(10);
+		endTimeTextField = new JTextField();
+		timePanel.add(endTimeTextField);
+		endTimeTextField.setColumns(10);
 		
 		JButton btnPlot = new JButton("Refresh Plot");
 		btnPlot.addActionListener(new ActionListener() {
@@ -140,7 +142,7 @@ public class TimeFunctionPanel extends JPanel {
 		funcTextField.setText("t");
 		timeBegTextField.setText("0");
 		timeStepTextField.setText(".1");
-		timeStepCountTextField.setText("100");
+		endTimeTextField.setText("10.0");
 		try {
 			refreshPlot();
 		} catch (Exception e) {
@@ -167,11 +169,7 @@ public class TimeFunctionPanel extends JPanel {
 			int totalTimePoints = 0;
 			double beginTime = 0;
 			double timeStep = 0;
-			try{
-				totalTimePoints = Integer.parseInt(timeStepCountTextField.getText())+1;
-			}catch (Exception e){
-				throw new Exception("Couldn't evaluate 'Step Count' as integer\n"+e.getMessage());
-			}
+			double parseEndTime = 0;
 			try{
 				beginTime = Double.parseDouble(timeBegTextField.getText());
 			}catch (Exception e){
@@ -179,8 +177,27 @@ public class TimeFunctionPanel extends JPanel {
 			}
 			try{
 				timeStep = Double.parseDouble(timeStepTextField.getText());
+				if(timeStep <= 0){
+					throw new Exception("timestep value = "+timeStep);
+				}
 			}catch (Exception e){
-				throw new Exception("Couldn't evaluate 'Time Step' as number\n"+e.getMessage());
+				throw new Exception("'Time Step' must be > 0\n"+e.getMessage());
+			}
+			try{
+				parseEndTime = Double.parseDouble(endTimeTextField.getText());
+			}catch (Exception e){
+				throw new Exception("Couldn't evaluate 'Time End' as number\n"+e.getMessage());
+			}
+			try{
+				if(beginTime > parseEndTime || beginTime == parseEndTime){
+					throw new Exception("endTime must be greater than beginTime");
+				}
+				totalTimePoints = (int)Math.ceil((parseEndTime-beginTime)/timeStep);
+//				if(totalTimePoints <= 0){
+//					throw new Exception("calculated number of time points ="+totalTimePoints);
+//				}
+			}catch(Exception e){
+				throw new Exception("check beginTime, endTime and timeStep: ((endTime-beginTime)/timeStep) must be greater than 0"+"\n"+e.getMessage());
 			}
 
 			double[] timePoints = new double[totalTimePoints];
