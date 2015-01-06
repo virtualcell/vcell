@@ -94,6 +94,10 @@ public class SpeciesPatternShape {
 				MolecularComponentPattern mcpFrom = mtpFrom.getComponentPatternList().get(j);
 				if(mcpFrom.getBondType().equals(BondType.Specified)) {
 					Bond b = mcpFrom.getBond();
+					if(b == null) {		// it's half of a bond at this time, we skip it for now
+						System.out.println("Null bond for " + mcpFrom.getMolecularComponent().getDisplayName());
+						break;
+					}
 					MolecularTypePattern mtpTo = b.molecularTypePattern;
 					SpeciesTypeLargeShape stlsTo = getShape(mtpTo); 
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
@@ -138,8 +142,13 @@ public class SpeciesPatternShape {
 		}
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
-			final int offset = 12;			// initial lenth of vertical bar
-			final int separ = 5;			// distance between 2 adjacent bars
+			final int offset = 14;			// initial lenth of vertical bar
+			final int separ = 6;			// distance between 2 adjacent bars
+			
+			final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
+			final int xTwoLetterOffset = 13;
+			final int yLetterOffset = 10;
+			
 			Graphics2D g2 = (Graphics2D)g;
 			Color colorOld = g2.getColor();
 			Font fontOld = g.getFont();
@@ -150,13 +159,16 @@ public class SpeciesPatternShape {
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
 			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);
 			
-			Font font = fontOld.deriveFont((float) (MolecularComponentLargeShape.componentDiameter/2));
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+//			Font font = fontOld.deriveFont((float) (MolecularComponentLargeShape.componentDiameter/2));
 			g.setFont(font);
 			String nr = bp.id+"";
 			if(nr.length()<2) {
-				g2.drawString(nr, bp.from.x-6, bp.from.y+9);
+				g2.drawString(nr, bp.from.x-xOneLetterOffset, bp.from.y+yLetterOffset);
+				g2.drawString(nr, bp.to.x-xOneLetterOffset, bp.to.y+yLetterOffset);
 			} else {
-				g2.drawString(nr, bp.from.x-11, bp.from.y+9);
+				g2.drawString(nr, bp.from.x-xTwoLetterOffset, bp.from.y+yLetterOffset);
+				g2.drawString(nr, bp.to.x-xTwoLetterOffset, bp.to.y+yLetterOffset);
 			}
 
 			g2.setColor(Color.lightGray);
