@@ -82,6 +82,8 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 //		rootNode.add(spNode);
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);
+
+		speciesContext.firePropertyChange("name", "aaa", "bbb");
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
@@ -132,7 +134,8 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 					}
 					SpeciesPattern newValue = (SpeciesPattern) evt.getNewValue();
 					if (newValue != null) {
-						RbmUtils.removePropertyChangeListener(newValue, this);
+						// TODO
+						RbmUtils.addPropertyChangeListener(newValue, this);
 					}
 				}
 			} else if (source instanceof SpeciesPattern) {
