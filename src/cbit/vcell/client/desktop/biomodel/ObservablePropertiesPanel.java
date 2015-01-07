@@ -10,7 +10,11 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -30,9 +34,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -61,6 +67,9 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.SpeciesPatternShape;
+import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.common.VCellErrorMessages;
 
@@ -73,7 +82,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == observable) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
-					updateTitleLabel();
+					updateInterface();
 				}
 			}
 		}
@@ -144,6 +153,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel titleLabel = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
+	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+	List<SpeciesPatternShape> spsList = new ArrayList<SpeciesPatternShape>();
+
 	private JPopupMenu popupMenu;
 	private JMenu addMenu;
 	private JMenuItem deleteMenuItem;	
@@ -273,6 +285,30 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	}
 
 	private void initialize() {
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new GridBagLayout());
+		leftPanel.setBackground(Color.white);		
+		JPanel rightPanel = new JPanel() {
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternShape sps : spsList) {
+					sps.paintSelf(g);
+				}
+			}
+		};
+		rightPanel.setLayout(new GridBagLayout());
+		rightPanel.setBackground(Color.white);		
+		
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(350);
+		splitPane.setResizeWeight(0.9);
+		splitPane.setLeftComponent(leftPanel);
+		splitPane.setRightComponent(rightPanel);
+
+		
+		
+		
 		showDetailsCheckBox = new JCheckBox("Show All Components");
 		showDetailsCheckBox.addActionListener(eventHandler);
 		
@@ -302,13 +338,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(2,2,0,2);
-		add(showDetailsCheckBox, gbc);
-		
-		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -317,7 +346,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		titleLabel = new JLabel("Observable");
 		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
-		add(titleLabel, gbc);
+		leftPanel.add(titleLabel, gbc);
 		
 		gridy ++;
 		gbc = new GridBagConstraints();
@@ -328,7 +357,21 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.gridwidth = 2;
 		gbc.insets = new Insets(2,2,2,2);
 		gbc.fill = GridBagConstraints.BOTH;
-		add(new JScrollPane(observableTree), gbc);
+		leftPanel.add(new JScrollPane(observableTree), gbc);
+		
+		Dimension minimumSize = new Dimension(100, 150);	//provide minimum sizes for the two components in the split pane
+		splitPane.setMinimumSize(minimumSize);
+		leftPanel.setMinimumSize(minimumSize);
+		rightPanel.setMinimumSize(minimumSize);
+		
+		setName("ObservablePropertiesPanel");
+		setLayout(new BorderLayout());
+
+		add(showDetailsCheckBox, BorderLayout.NORTH);
+		add(splitPane, BorderLayout.CENTER);
+		setBackground(Color.white);
+		
+		
 	}
 	
 	private JMenu getAddMenu() {
@@ -394,12 +437,30 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		observable = newValue;
 		observableTreeModel.setObservable(observable);
-		updateTitleLabel();
+		
+		updateInterface();
 	}
 	
+	private void updateInterface() {
+		updateTitleLabel();
+		updateShape();
+	}
 	private void updateTitleLabel() {
 		if (observable != null) {
 			titleLabel.setText("Properties for Observable : " + observable.getName());
+		}
+	}
+	private void updateShape() {
+		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
+			spsList.clear();
+			Graphics gc = splitPane.getRightComponent().getGraphics();
+			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
+				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
+				// TODO: count the number of bonds for this sp and allow enough vertical space for them
+				SpeciesPatternShape sps = new SpeciesPatternShape(20, 20+75*i, sp, gc, observable);
+				spsList.add(sps);
+			}
+			splitPane.getRightComponent().repaint();
 		}
 	}
 	

@@ -402,7 +402,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			titleLabel.setText("Properties for Species Type: " + molecularType.getDisplayName());
 			speciesTypeShapeList.clear();
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20, molecularType, panelContext);
+			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20, molecularType, panelContext, molecularType);
 			speciesTypeShapeList.add(stls);
 //			for(int i = 0; i<bioModel.getModel().getRbmModelContainer().getMolecularTypeList().size(); i++) {
 //				MolecularType mt = bioModel.getModel().getRbmModelContainer().getMolecularTypeList().get(i);

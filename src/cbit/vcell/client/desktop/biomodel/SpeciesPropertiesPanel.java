@@ -664,7 +664,7 @@ private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
-		sps = new SpeciesPatternShape(20, 5, fieldSpeciesContext, sp, panelContext);
+		sps = new SpeciesPatternShape(20, 5, sp, panelContext, fieldSpeciesContext);
 		shapePanel.repaint();
 	}
 }
