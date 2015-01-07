@@ -20,6 +20,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesTypeLargeShape implements LargeShape {
@@ -39,11 +40,11 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	private final String name;
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
-	private Displayable owner;
+	private final Displayable owner;
 
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 	
-	public SpeciesTypeLargeShape(Displayable owner, int xPos, int yPos, Graphics graphicsContext) {
+	public SpeciesTypeLargeShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
 		this.mt = null;
@@ -61,8 +62,8 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		width += getStringWidth(name);				// adjust for the length of the name of the species type
 		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
 	}
-	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext) {
-		this.owner = null;
+	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.pattern = false;
 		this.mt = mt;
 		this.mtp = null;
@@ -78,7 +79,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 			// WARNING! we create temporary component shapes whose coordinates are invented, we use them only to compute 
 			// the width of the species type shape; only after that is known we can finally compute the exact coordinates
 			// of the components
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize();
@@ -94,13 +95,14 @@ public class SpeciesTypeLargeShape implements LargeShape {
 			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
 			// now that we know the dimensions of the species type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 			componentShapes.add(0, mlcls);
 		}
 	}
-	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext) {
-		this.owner = null;
+	// called for observable
+	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
 		this.mtp = mtp;
@@ -112,7 +114,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, graphicsContext);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize();
@@ -127,7 +129,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
 
 			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 			componentShapes.add(0, mlcls);
 		}
@@ -143,7 +145,9 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		String s = null;
 		if(mt == null) {
 			if(owner instanceof SpeciesContext) {
-				s = ((SpeciesContext)owner).getDisplayName();
+				s = owner.getDisplayName();
+			} else if(owner instanceof RbmObservable) {
+				s = owner.getDisplayName();
 			} else {
 				s = "?";
 			}
@@ -225,7 +229,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		if(mt == null && mtp == null) {	// plain species context
 			 primaryColor = Color.green.darker().darker();
 		} else {						// molecular type, species pattern
-			primaryColor = Color.gray;
+			primaryColor = Color.blue.darker().darker();
 		}
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);
 		g2.setPaint(p);

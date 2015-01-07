@@ -11,6 +11,12 @@ import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
+
+import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentLargeShape {
 	
@@ -29,10 +35,11 @@ public class MolecularComponentLargeShape {
 	private final String displayName;
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
-
+	private final Displayable owner;
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.pattern = false;
 		this.mcp = null;
 		this.mc = mc;
@@ -55,7 +62,8 @@ public class MolecularComponentLargeShape {
 		xPos = rightPos-width;
 		yPos = y;
 	}
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.pattern = true;
 		this.mcp = mcp;
 		this.mc = mcp.getMolecularComponent();
@@ -127,44 +135,81 @@ public class MolecularComponentLargeShape {
 		return stringHeight;
 	}
 
-//	public static void paintComponents(Graphics g, SpeciesTypeLargeShape parent, Graphics graphicsContext) {
-//		int numComponents = parent.getSpeciesType().getComponentList().size();
-//		int fixedPart = parent.getX() + parent.getWidth();
-//		int offsetFromRight = 10;
-//		for(int i=numComponents-1; i >=0; i--) {
-//			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-//			int y = parent.getY() + parent.getHeight() - componentDiameter;
-//			// we draw the components from left to right, so we start with the last
-//			
-//			if(parent.getPattern() == false) {
-//				MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
-//				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext);
-//				offsetFromRight += mlcls.getWidth() + componentSeparation;
-//				mlcls.paintSelf(g);
-//			} else {
-//				MolecularComponentPattern mcp = parent.getMolecularTypePattern().getComponentPatternList().get(i);
-//				MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext);
-//				offsetFromRight += mlcls.getWidth() + componentSeparation;
-//				mlcls.paintSelf(g);
-//			}
-//		}
-//	}
-
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
 	}
 	
 	// ----------------------------------------------------------------------------------------------
 	private void paintComponent(Graphics g) {
+		
+		final Color myGreen = new Color(0xccffcc);
+		final Color myYellow = new Color(0xffff99);
+		final Color myBad = new Color(0xffb2b2);
+		
 		Graphics2D g2 = (Graphics2D)g;
-		if(mc.getComponentStateDefinitions().isEmpty()) {
-			g.setColor(Color.lightGray);
-		} else {
-			g.setColor(Color.yellow);
+		
+		g2.setColor(myBad);
+		if(owner instanceof MolecularType) {
+			g2.setColor(myGreen);
+			if(!mc.getComponentStateDefinitions().isEmpty()) {
+				g2.setColor(myYellow);
+			}
+		} else if(owner instanceof SpeciesContext) {
+			if(mc.getComponentStateDefinitions().isEmpty()) {
+				g2.setColor(myGreen);
+			} else {
+				g2.setColor(myYellow);
+			}
+		} else if(owner instanceof RbmObservable) {
+			g2.setColor(Color.white);
+			if(mcp.isbVisible()) {
+				g2.setColor(myGreen);
+			}
+			 if(mcp.getComponentStatePattern() != null && mcp.isFullyDefined()) {
+				 g2.setColor(myYellow);
+			 }
+		} else if(owner instanceof ReactionParticipant) {
+			
 		}
-		g.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
-		g.setColor(Color.BLACK);
-		g.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
+		
+		
+//		if(owner == null) {
+//			System.out.println("owner: null" + ", component: " + mc.getDisplayName());
+//		} else {
+//			System.out.println("owner: " + owner.getDisplayName() + ", component " + mc.getDisplayName());
+//		}
+//		
+//		if(!mc.getComponentStateDefinitions().isEmpty()) {
+//			g2.setColor(myYellow);
+//		}
+//
+//		
+//		if(mcp != null && mcp.isbVisible()) {
+//			g2.setColor(myGreen);
+//			if(mcp.getComponentStatePattern() != null && mcp.isFullyDefined()) {
+//				System.out.println("     " + mcp.getComponentStatePattern().getComponentStateDefinition());
+//				g2.setColor(myYellow);
+//			}
+//		}
+		
+/*		
+		RbmTreeCellRenderer
+*/
+//		if(mc.getComponentStateDefinitions().isEmpty()) {
+//			if(mcp != null && mcp.isbVisible()) {
+//				g.setColor(Color.white);
+//			} else {
+//				g.setColor(Color.lightGray);
+//			}
+//		} else {
+//			g.setColor(Color.yellow);
+//		}
+		
+		
+		
+		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
+		g2.setColor(Color.BLACK);
+		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 		
 		Font fontOld = g.getFont();
 		Color colorOld = g.getColor();
