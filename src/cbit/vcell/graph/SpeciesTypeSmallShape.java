@@ -76,7 +76,7 @@ public class SpeciesTypeSmallShape {
 	private void paintSpecies(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		GradientPaint p = new GradientPaint(xPos, yPos, Color.GRAY, xPos, yPos + baseHeight/2, Color.WHITE, true);
+		GradientPaint p = new GradientPaint(xPos, yPos, Color.blue.darker().darker(), xPos, yPos + baseHeight/2, Color.WHITE, true);
 		g2.setPaint(p);
 
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);

@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
@@ -26,7 +27,7 @@ public class SwingPaintDemo {
 			}
 		});
 	}
-		
+	
 	private static void createAndShowGUI() {
 		System.out.println("Created GUI on EDT? "+ SwingUtilities.isEventDispatchThread());
 		JFrame f = new JFrame("Swing Paint Demo");
@@ -40,9 +41,23 @@ public class SwingPaintDemo {
 
 class MyPanel extends JPanel {
 	
+	private class MyDisplayable implements Displayable {
+		String name = "myName";
+		String type = "myType";
+		@Override
+		public String getDisplayName() {
+			return name;
+		}
+		@Override
+		public String getDisplayType() {
+			return type;
+		}
+	}
+
 	MolecularType mt = new MolecularType("egfr");
 	Graphics panelContext = getGraphics();
-	LargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext);
+	Displayable d = new MyDisplayable();
+	LargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext, d);
 
 	public MyPanel() {
 		setBorder(BorderFactory.createLineBorder(Color.black));

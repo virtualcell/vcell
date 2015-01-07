@@ -60,7 +60,7 @@ public class SpeciesPatternShape {
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	
-	public SpeciesPatternShape(int xPos, int yPos, Displayable owner, SpeciesPattern sp, Graphics graphicsContext) {
+	public SpeciesPatternShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -69,7 +69,7 @@ public class SpeciesPatternShape {
 
 		int xPattern = xPos;
 		if(sp == null) {
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(owner, xPattern, yPos, graphicsContext);
+			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, graphicsContext, owner);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -77,7 +77,7 @@ public class SpeciesPatternShape {
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, mtp, graphicsContext);
+			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, mtp, graphicsContext, owner);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
@@ -143,7 +143,7 @@ public class SpeciesPatternShape {
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
 			final int offset = 14;			// initial lenth of vertical bar
-			final int separ = 6;			// distance between 2 adjacent bars
+			final int separ = 6;			// y distance between 2 adjacent bars
 			
 			final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 			final int xTwoLetterOffset = 13;
