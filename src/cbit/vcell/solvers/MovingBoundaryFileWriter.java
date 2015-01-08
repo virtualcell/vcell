@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import org.jdom.Element;
 
@@ -23,16 +24,20 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
@@ -137,8 +142,8 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 private Element getXMLProblem() {
 	Element e = new Element(MBTags.problem);
 	
-	e.addContent(getXMLnoOperation());
-	e.addContent(getXMLspecialFront());
+//	e.addContent(getXMLnoOperation());
+//	e.addContent(getXMLspecialFront());
 	e.addContent(getXMLxLimits());
 	e.addContent(getXMLyLimits());
 	
@@ -327,15 +332,17 @@ private Element manageCompartment(Element e, CompartmentSubDomain csd)
 		Equation equation = enum_equ.nextElement();
 		if (equation.getVariable().getDomain().getName().equals(csd.getName()))
 		{
-			// do nothing
+			System.out.println("ignore:   " + equation.getVariable().getName());
 		}
 		
 		if (equation instanceof PdeEquation){
+			System.out.println("add this: " + equation.getVariable().getName());
 			e.addContent(getSpecies((PdeEquation)equation));
 		}	
 	}
 	return e;
 }
+// TODO: flatten here
 private Element getSpecies(PdeEquation eq) {
 	Element e = new Element(MBTags.species);
 	e.setAttribute("name", eq.getVariable().getName());
@@ -344,28 +351,32 @@ private Element getSpecies(PdeEquation eq) {
 	e1 = new Element(MBTags.initial);
 	Expression ex = eq.getInitialExpression();
 	if(ex != null) {
-		e1.setText(ex.infix());
+		e1.setAttribute("value", ex.infix());
+		e1.setText(flattenExpression(ex));
 	}
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.source);
 	ex = eq.getDiffusionExpression();
 	if(ex != null) {
-		e1.setText(ex.infix());
+		e1.setAttribute("value", ex.infix());
+		e1.setText(flattenExpression(ex));
 	}
 	e.addContent(e1);
 	
 	e1 = new Element(MBTags.diffusionConstant);
 	ex = eq.getRateExpression();
 	if(ex != null) {
-		e1.setText(ex.infix());
+		e1.setAttribute("value", ex.infix());
+		e1.setText(flattenExpression(ex));
 	}
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.advectVelocityFunctionX);
 	ex = eq.getVelocityX();
 	if(ex != null) {
-		e1.setText(ex.infix());
+		e1.setAttribute("value", ex.infix());
+		e1.setText(flattenExpression(ex));
 	} else {
 		e1.setText("0");
 	}
@@ -373,13 +384,39 @@ private Element getSpecies(PdeEquation eq) {
 	e1 = new Element(MBTags.advectVelocityFunctionY);
 	ex = eq.getVelocityY();
 	if(ex != null) {
-		e1.setText(ex.infix());
+		e1.setAttribute("value", ex.infix());
+		e1.setText(flattenExpression(ex));
 	} else {
 		e1.setText("0");
 	}
 	e.addContent(e1);
 	return e;
 }
+
+private String flattenExpression(Expression ex) {
+	String name = ex.infix();
+//	Simulation simulation = simTask.getSimulation();
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
+
+	Variable[] variables = simTask.getSimulationJob().getSimulationSymbolTable().getVariables();
+	for (int i = 0; i < variables.length; i++){
+		if(variables[i].getName().equals(name)) {
+		
+			Expression rfexp = new Expression(ex);
+			try {
+				rfexp.bindExpression(simSymbolTable);
+				rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			} catch (MathException e) {
+				e.printStackTrace();
+			}
+			return rfexp.infix();
+		}
+	}
+	return null;
+}
+
 private Element getSpecies(VolVariable v) {
 	Element e = new Element(MBTags.species);
 	e.setAttribute("name", v.getName());
