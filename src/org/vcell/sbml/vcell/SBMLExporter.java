@@ -248,6 +248,10 @@ protected void addCompartments() {
 			}
 			sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
 			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			
+			ModelUnitSystem vcUnitSystem = vcModel.getUnitSystem();
+			UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlSizeUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
+			sbmlModel.addUnitDefinition(unitDefn);
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
@@ -1022,6 +1026,10 @@ protected void addUnitDefinitions() {
 	// Define actual units of substance in vol.,(eg. uM.um3 in default VCell units).
 //	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getVolumeSubstanceUnit(), sbmlLevel, sbmlVersion, vcUnitSystem);
 //	sbmlModel.addUnitDefinition(unitDefn);
+	
+	VCUnitDefinition sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlSizeUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
+	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Add units from parameter list in kinetics
 	ArrayList<String> unitList = new ArrayList<String>();
