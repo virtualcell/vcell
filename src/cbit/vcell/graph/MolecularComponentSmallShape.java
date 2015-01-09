@@ -9,10 +9,10 @@ import java.awt.Graphics2D;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 
-public class MolecularComponentSmallShape {
+public class MolecularComponentSmallShape extends AbstractComponentShape {
 	
 	static final int componentSeparation = 1;		// distance between components
-	static final int componentDiameter = 8;			// diameter of the component (circle 
+	static final int componentDiameter = 8;			// diameter of the component (circle)
 	
 	final Graphics graphicsContext;
 	
@@ -59,12 +59,12 @@ public class MolecularComponentSmallShape {
 	private void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		if(mc.getComponentStateDefinitions().isEmpty()) {
-			g.setColor(Color.lightGray);
+			g2.setColor(componentGreen);
 		} else {
-			g.setColor(Color.yellow);
+			g2.setColor(componentYellow);
 		}
-		g.fillOval(xPos, yPos, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
-		g.setColor(Color.BLACK);
-		g.drawOval(xPos, yPos, componentDiameter, componentDiameter);
+		g2.fillOval(xPos, yPos, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
+		g2.setColor(Color.BLACK);
+		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
 	}
 }

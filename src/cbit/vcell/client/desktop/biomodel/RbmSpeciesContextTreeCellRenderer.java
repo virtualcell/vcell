@@ -71,6 +71,7 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 				toolTip = toHtmlWithTip(mcp, true);
 				icon = VCellIcons.rbmMolecularComponentIcon;
 			} else if (userObject instanceof StateLocal) {
+				// this code is still here but we don't show the states or the bonds in the tree anymore
 				StateLocal sl = (StateLocal) userObject;
 				text = toHtml(sl, true);
 				toolTip = toHtmlWithTip(sl,true);

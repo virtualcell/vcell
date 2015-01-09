@@ -103,17 +103,17 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 	private BioModelNode createMolecularComponentPatternNode(MolecularComponentPattern molecularComponentPattern) {
 		MolecularComponent mc = molecularComponentPattern.getMolecularComponent();
 		BioModelNode node = new BioModelNode(molecularComponentPattern, true);
-		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
+//		ComponentStatePattern csp = molecularComponentPattern.getComponentStatePattern();
 //		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
 //			StateLocal sl = new StateLocal(molecularComponentPattern);
 //			BioModelNode ns = new BioModelNode(sl, false);
 //			node.add(ns);
 //		}
-		if(!molecularComponentPattern.getBondType().equals(BondType.None) || true) {	// we save space by not showing the Bond.None
-			BondLocal bl = new BondLocal(molecularComponentPattern);
-			BioModelNode nb = new BioModelNode(bl, false);
-			node.add(nb);
-		}
+//		if(!molecularComponentPattern.getBondType().equals(BondType.None) || true) {	// we save space by not showing the Bond.None
+//			BondLocal bl = new BondLocal(molecularComponentPattern);
+//			BioModelNode nb = new BioModelNode(bl, false);
+//			node.add(nb);
+//		}
 		return node;
 	}
 		

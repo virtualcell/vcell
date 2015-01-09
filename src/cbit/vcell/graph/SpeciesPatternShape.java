@@ -57,6 +57,16 @@ public class SpeciesPatternShape {
 			return 0;
 		}
 	}
+	class BondSingle {
+		public BondSingle(MolecularComponentPattern mcp, Point from) {
+			this.mcp = mcp;
+			this.from = from;
+		}
+		MolecularComponentPattern mcp;
+		Point from;
+	}
+	
+	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	
@@ -108,7 +118,12 @@ public class SpeciesPatternShape {
 					if(from.x < to.x) {		// the bonds with from.x > to.x are duplicates
 						BondPair bp = new BondPair(mcpFrom.getBondId(), from, to);
 						bondPairs.add(bp);
-					}
+					} 
+				} else {
+					Point from = new Point(mclsFrom.getX()+mclsFrom.getWidth()/2, mclsFrom.getY()+mclsFrom.getHeight());
+					String symbol = mcpFrom.getBondType().symbol;
+					BondSingle bs = new BondSingle(mcpFrom, from);
+					bondSingles.add(bs);
 				}
 			}
 		}
@@ -137,17 +152,37 @@ public class SpeciesPatternShape {
 	}
 	
 	public void paintSelf(Graphics g) {
+		final int offset = 14;			// initial lenth of vertical bar
+		final int separ = 6;			// y distance between 2 adjacent bars
+		
+		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
+		final int xTwoLetterOffset = 13;
+		final int yLetterOffset = 11;
+
 		for(SpeciesTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
+		for(int i=0; i<bondSingles.size(); i++) {
+			BondSingle bs = bondSingles.get(i);
+			Graphics2D g2 = (Graphics2D)g;
+			Color colorOld = g2.getColor();
+			Font fontOld = g.getFont();
+			
+			if(MolecularComponentLargeShape.isHidden(owner, bs.mcp)) {
+				g2.setColor(Color.gray);
+			} else {
+				g2.setColor(Color.black);
+			}
+			
+			
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			g2.setFont(font);
+			g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
+			g.setFont(fontOld);
+			g2.setColor(colorOld);
+		}
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
-			final int offset = 14;			// initial lenth of vertical bar
-			final int separ = 6;			// y distance between 2 adjacent bars
-			
-			final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
-			final int xTwoLetterOffset = 13;
-			final int yLetterOffset = 10;
 			
 			Graphics2D g2 = (Graphics2D)g;
 			Color colorOld = g2.getColor();

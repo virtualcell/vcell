@@ -59,7 +59,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				icon = VCellIcons.rbmMolecularTypeIcon;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
-				text = toHtml(mcp, true);
+				text = toHtml2(mcp, true);
 				toolTip = toHtmlWithTip(mcp, true);
 				icon = VCellIcons.rbmMolecularComponentIcon;
 			} else if (userObject instanceof StateLocal) {
