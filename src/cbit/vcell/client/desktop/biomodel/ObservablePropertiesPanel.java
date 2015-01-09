@@ -451,8 +451,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	private void updateShape() {
+		spsList.clear();
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
-			spsList.clear();
 			Graphics gc = splitPane.getRightComponent().getGraphics();
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
@@ -460,8 +460,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				SpeciesPatternShape sps = new SpeciesPatternShape(20, 20+75*i, sp, gc, observable);
 				spsList.add(sps);
 			}
-			splitPane.getRightComponent().repaint();
 		}
+		splitPane.getRightComponent().repaint();
 	}
 	
 	private void showPopupMenu(MouseEvent e){ 

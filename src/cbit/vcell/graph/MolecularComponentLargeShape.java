@@ -18,7 +18,7 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularComponentLargeShape {
+public class MolecularComponentLargeShape extends AbstractComponentShape {
 	
 	static final int componentSeparation = 4;		// distance between components
 	static final int componentDiameter = 17;		// diameter of the component (circle 
@@ -139,34 +139,52 @@ public class MolecularComponentLargeShape {
 		paintComponent(g);
 	}
 	
+	public static boolean isHidden(Displayable owner, MolecularComponentPattern mcp) {
+		boolean hidden = false;
+		if(owner == null || mcp == null) {
+			return false;
+		}
+		if(owner instanceof RbmObservable) {
+			hidden = true;
+			if(mcp.isbVisible()) {
+				hidden = false;
+			}
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			 if(csp != null && mcp.isFullyDefined()) {
+				 if(!csp.isAny()) {
+					hidden = false;
+				 }
+			 }
+		}
+		return hidden;
+	}
 	// ----------------------------------------------------------------------------------------------
 	private void paintComponent(Graphics g) {
 		
-		final Color myGreen = new Color(0xccffcc);
-		final Color myYellow = new Color(0xffff99);
-		final Color myBad = new Color(0xffb2b2);
-		
+		boolean hidden = isHidden(owner, mcp);
 		Graphics2D g2 = (Graphics2D)g;
 		
-		g2.setColor(myBad);
+		g2.setColor(componentBad);
 		if(owner instanceof MolecularType) {
-			g2.setColor(myGreen);
+			g2.setColor(componentGreen);
 			if(!mc.getComponentStateDefinitions().isEmpty()) {
-				g2.setColor(myYellow);
+				g2.setColor(componentYellow);
 			}
 		} else if(owner instanceof SpeciesContext) {
 			if(mc.getComponentStateDefinitions().isEmpty()) {
-				g2.setColor(myGreen);
+				g2.setColor(componentGreen);
 			} else {
-				g2.setColor(myYellow);
+				g2.setColor(componentYellow);
 			}
 		} else if(owner instanceof RbmObservable) {
-			g2.setColor(Color.white);
+			g2.setColor(componentHidden);
 			if(mcp.isbVisible()) {
-				g2.setColor(myGreen);
+				g2.setColor(componentGreen);
 			}
-			 if(mcp.getComponentStatePattern() != null && mcp.isFullyDefined()) {
-				 g2.setColor(myYellow);
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			 if(csp != null) {
+				 // components with states show in yellow, be it "Any" state or explicit state
+				 g2.setColor(componentYellow);
 			 }
 		} else if(owner instanceof ReactionParticipant) {
 			
@@ -208,7 +226,11 @@ public class MolecularComponentLargeShape {
 		
 		
 		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
-		g2.setColor(Color.BLACK);
+		if(hidden == false) {
+			g.setColor(Color.black);
+		} else {
+			g.setColor(Color.gray);
+		}
 		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 		
 		Font fontOld = g.getFont();
@@ -216,7 +238,11 @@ public class MolecularComponentLargeShape {
 //		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
 		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);
-		g.setColor(Color.black);
+		if(hidden == false) {
+			g.setColor(Color.black);
+		} else {
+			g.setColor(Color.gray);
+		}
 		g2.drawString(displayName, xPos+3+componentDiameter/3, yPos+4+componentDiameter/2);
 		g.setFont(fontOld);
 		g.setColor(colorOld);

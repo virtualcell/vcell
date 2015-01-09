@@ -336,6 +336,15 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	public static final String toHtml(MolecularComponentPattern mcp, boolean bShowWords) {
 		String text = (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
 		MolecularComponent mc = mcp.getMolecularComponent();
+//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+//			StateLocal sl = new StateLocal(mcp);
+//			text += "&#160;&#160;&#160;" + toHtmlWork(sl, bShowWords);
+//		}
+		return "<html> " + text + "</html>";
+	}
+	public static final String toHtml2(MolecularComponentPattern mcp, boolean bShowWords) {
+		String text = (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
+		MolecularComponent mc = mcp.getMolecularComponent();
 		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
 			StateLocal sl = new StateLocal(mcp);
 			text += "&#160;&#160;&#160;" + toHtmlWork(sl, bShowWords);
