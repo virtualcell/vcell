@@ -101,11 +101,11 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 //			BioModelNode ns = new BioModelNode(sl, false);
 //			node.add(ns);
 //		}
-		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
-			BondLocal bl = new BondLocal(molecularComponentPattern);
-			BioModelNode nb = new BioModelNode(bl, false);
-			node.add(nb);
-		}
+//		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
+//			BondLocal bl = new BondLocal(molecularComponentPattern);
+//			BioModelNode nb = new BioModelNode(bl, false);
+//			node.add(nb);
+//		}
 		return node;
 	}
 
@@ -250,13 +250,12 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 			RbmUtils.removePropertyChangeListener(speciesPattern, this);
 		}
 		observable = newValue;
-		populateTree();
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
 			SpeciesPattern speciesPattern = newValue.getSpeciesPattern(0);
 			RbmUtils.addPropertyChangeListener(speciesPattern, this);
 		}
-		
+		populateTree();
 	}
 	
 	public void setBioModel(BioModel bioModel) {
