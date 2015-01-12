@@ -44,6 +44,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 	
+	// this is only called for plain species context (no pattern)
 	public SpeciesTypeLargeShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
@@ -52,16 +53,12 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.graphicsContext = graphicsContext;
-		// adjustment for name width and for the width of the components
-		// TODO: properly calculate the width based on the font and size of each letter
-		int offsetFromRight = 0;		// total width of all components, based on the length of their names
+		this.name = "";
 
-		name = adjustForSize();
-		width = baseWidth + offsetFromRight;	// adjusted for # of components
-//		width += 6 * name.length();				// adjust for the length of the name of the species type
-		width += getStringWidth(name);				// adjust for the length of the name of the species type
+		width = baseWidth+4;	// we write no name inside, we'll just draw a roundish green shape
 		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
 	}
+	// this is only called for molecular type (species type)
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
@@ -100,7 +97,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 			componentShapes.add(0, mlcls);
 		}
 	}
-	// called for observable
+	// called for species contexts (with patterns) and observable
 	public SpeciesTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.pattern = true;
@@ -223,12 +220,15 @@ public class SpeciesTypeLargeShape implements LargeShape {
 	// --------------------------------------------------------------------------------------
 	private void paintSpecies(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
+		Font fontOld = g2.getFont();
+		Color colorOld = g2.getColor();
+		Color primaryColor = null;
+
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		Color primaryColor = null;
-		if(mt == null && mtp == null) {	// plain species context
+		if(mt == null && mtp == null) {		// plain species context
 			 primaryColor = Color.green.darker().darker();
-		} else {						// molecular type, species pattern
+		} else {							// molecular type, species pattern, observable
 			primaryColor = Color.blue.darker().darker();
 		}
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);
@@ -243,12 +243,14 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		g2.setPaint(Color.DARK_GRAY);
 		g2.draw(rect);
 		
-		Font fontOld = g.getFont();
-		Color colorOld = g.getColor();
-		Font font = fontOld.deriveFont(Font.BOLD);
-		g.setFont(font);
-		g.setColor(Color.black);
-		g2.drawString(name, xPos+11, yPos+baseHeight-9);
+		if(mt == null && mtp == null) {		// plain species context
+			 // don't write any text inside
+		} else {							// molecular type, species pattern
+			Font font = fontOld.deriveFont(Font.BOLD);
+			g.setFont(font);
+			g.setColor(Color.black);
+			g2.drawString(name, xPos+11, yPos+baseHeight-9);
+		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 		

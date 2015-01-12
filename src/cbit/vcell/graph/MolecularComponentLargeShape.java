@@ -182,7 +182,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 				g2.setColor(componentGreen);
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			 if(csp != null) {
+			 if(csp != null && !csp.isAny()) {
 				 // components with states show in yellow, be it "Any" state or explicit state
 				 g2.setColor(componentYellow);
 			 }
@@ -190,42 +190,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			
 		}
 		
-		
-//		if(owner == null) {
-//			System.out.println("owner: null" + ", component: " + mc.getDisplayName());
-//		} else {
-//			System.out.println("owner: " + owner.getDisplayName() + ", component " + mc.getDisplayName());
-//		}
-//		
-//		if(!mc.getComponentStateDefinitions().isEmpty()) {
-//			g2.setColor(myYellow);
-//		}
-//
-//		
-//		if(mcp != null && mcp.isbVisible()) {
-//			g2.setColor(myGreen);
-//			if(mcp.getComponentStatePattern() != null && mcp.isFullyDefined()) {
-//				System.out.println("     " + mcp.getComponentStatePattern().getComponentStateDefinition());
-//				g2.setColor(myYellow);
-//			}
-//		}
-		
-/*		
-		RbmTreeCellRenderer
-*/
-//		if(mc.getComponentStateDefinitions().isEmpty()) {
-//			if(mcp != null && mcp.isbVisible()) {
-//				g.setColor(Color.white);
-//			} else {
-//				g.setColor(Color.lightGray);
-//			}
-//		} else {
-//			g.setColor(Color.yellow);
-//		}
-		
-		
-		
-		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
+		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
+//		g2.fillArc(xPos, yPos, componentDiameter + textWidth, componentDiameter,0,180);		// fill half of the oval
 		if(hidden == false) {
 			g.setColor(Color.black);
 		} else {
