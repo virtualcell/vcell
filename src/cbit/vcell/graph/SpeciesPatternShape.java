@@ -168,16 +168,45 @@ public class SpeciesPatternShape {
 			Color colorOld = g2.getColor();
 			Font fontOld = g.getFont();
 			
+			Color fontColor = Color.red;
+			Color lineColor = Color.red;
 			if(MolecularComponentLargeShape.isHidden(owner, bs.mcp)) {
-				g2.setColor(Color.gray);
+				fontColor = Color.gray;
+				lineColor = Color.lightGray;
 			} else {
-				g2.setColor(Color.black);
+				fontColor = Color.black;
+				lineColor = Color.gray;
 			}
 			
-			
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
-			g2.setFont(font);
-			g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
+			if(bs.mcp.getBondType().equals(BondType.Possible)) {
+				Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+				g2.setFont(font);
+				g2.setColor(fontColor);
+				g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
+				
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
+
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+7);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+7);
+
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y+9, bs.from.x, bs.from.y+11);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y+9, bs.from.x+1, bs.from.y+11);
+
+			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+offset-4);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+offset-4);
+			} else {
+				// for BondType.None we show nothing at all
+			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
