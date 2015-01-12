@@ -562,15 +562,17 @@ public static BioModel cloneBioModelWithNewUnitSystem(BioModel origBiomodel, Mod
 		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		// If namespace is null, xml is the old-style xml with biomodel as root, so invoke XMLReader without namespace argument.
 		XmlReader reader = null;
+		VCellSoftwareVersion vCellSoftwareVersion = null;
 		if (ns == null) {
 			reader = new XmlReader(printkeys);
 		} else {
 			reader = new XmlReader(printkeys, ns);
+			vCellSoftwareVersion = VCellSoftwareVersion.fromString(root.getAttributeValue(XMLTags.SoftwareVersionAttrTag,ns));
 		}
 		if (forcedModelUnitSystem != null) {
 			reader.setForcedModelUnitSystem(forcedModelUnitSystem);
 		} 
-		bioModel = reader.getBioModel(root,VCellSoftwareVersion.fromString(root.getAttributeValue(XMLTags.SoftwareVersionAttrTag,ns)));
+		bioModel = reader.getBioModel(root,vCellSoftwareVersion);
 
 		//long l1 = System.currentTimeMillis();
 		bioModel.refreshDependencies();
