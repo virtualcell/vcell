@@ -79,6 +79,7 @@ public class SpeciesPatternShape {
 
 		int xPattern = xPos;
 		if(sp == null) {
+			// plain species context, no pattern
 			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, graphicsContext, owner);
 			speciesShapes.add(stls);
 			return;
@@ -185,19 +186,29 @@ public class SpeciesPatternShape {
 				g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
 				
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
+				g2.drawLine(bs.from.x, bs.from.y+2, bs.from.x, bs.from.y+5);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
+				g2.drawLine(bs.from.x+1, bs.from.y+2, bs.from.x+1, bs.from.y+5);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+7);
+				g2.drawLine(bs.from.x, bs.from.y+7, bs.from.x, bs.from.y+10);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+7);
-
-				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+9, bs.from.x, bs.from.y+11);
-				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+9, bs.from.x+1, bs.from.y+11);
+				g2.drawLine(bs.from.x+1, bs.from.y+7, bs.from.x+1, bs.from.y+10);
+				
+//				g2.setColor(lineColor);
+//				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
+//
+//				g2.setColor(lineColor);
+//				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+7);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+7);
+//
+//				g2.setColor(lineColor);
+//				g2.drawLine(bs.from.x, bs.from.y+9, bs.from.x, bs.from.y+11);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x+1, bs.from.y+9, bs.from.x+1, bs.from.y+11);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
 				g2.setColor(lineColor);
