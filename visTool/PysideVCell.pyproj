@@ -5,14 +5,15 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{72eb346c-0861-4337-8cb3-92e9078edf7b}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>visMainStandalone_VTK.py</StartupFile>
-    <SearchPath>\Program Files\LLNL\VisIt 2.7.0\lib\site-packages;\Program Files\LLNL\VisIt 2.7.0</SearchPath>
+    <StartupFile>visMainCLI.py</StartupFile>
+    <SearchPath>\Program Files\LLNL\VisIt 2.7.0\lib\site-packages;\Program Files\LLNL\VisIt 2.7.0;pyvcell;thrift</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <InterpreterId>{9bcd6947-fb5e-4257-9ef6-8a639c630bbb}</InterpreterId>
+    <InterpreterId>{dffc46f7-75ac-4f26-9876-0ea437c6e148}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -20,6 +21,39 @@
     <Compile Include="asynchClientTask.py" />
     <Compile Include="lineoutAsynchClientTask.py" />
     <Compile Include="asynchClientTaskManager.py" />
+    <Compile Include="pyvcell\constants.py" />
+    <Compile Include="pyvcell\ttypes.py" />
+    <Compile Include="pyvcell\VCellProxy.py" />
+    <Compile Include="pyvcell\VisitProxy.py" />
+    <Compile Include="pyvcell\__init__.py" />
+    <Compile Include="vcellProxy.py" />
+    <Compile Include="VCellProxyClientExample.py" />
+    <Compile Include="thrift\protocol\TBase.py" />
+    <Compile Include="thrift\protocol\TBinaryProtocol.py" />
+    <Compile Include="thrift\protocol\TCompactProtocol.py" />
+    <Compile Include="thrift\protocol\TJSONProtocol.py" />
+    <Compile Include="thrift\protocol\TMultiplexedProtocol.py" />
+    <Compile Include="thrift\protocol\TProtocol.py" />
+    <Compile Include="thrift\protocol\TProtocolDecorator.py" />
+    <Compile Include="thrift\protocol\__init__.py" />
+    <Compile Include="thrift\server\THttpServer.py" />
+    <Compile Include="thrift\server\TNonblockingServer.py" />
+    <Compile Include="thrift\server\TProcessPoolServer.py" />
+    <Compile Include="thrift\server\TServer.py" />
+    <Compile Include="thrift\server\__init__.py" />
+    <Compile Include="thrift\Thrift.py" />
+    <Compile Include="thrift\TMultiplexedProcessor.py" />
+    <Compile Include="thrift\transport\THttpClient.py" />
+    <Compile Include="thrift\transport\TSocket.py" />
+    <Compile Include="thrift\transport\TSSLSocket.py" />
+    <Compile Include="thrift\transport\TTransport.py" />
+    <Compile Include="thrift\transport\TTwisted.py" />
+    <Compile Include="thrift\transport\TZlibTransport.py" />
+    <Compile Include="thrift\transport\__init__.py" />
+    <Compile Include="thrift\TSCons.py" />
+    <Compile Include="thrift\TSerialization.py" />
+    <Compile Include="thrift\TTornado.py" />
+    <Compile Include="thrift\__init__.py" />
     <Compile Include="visGuiQueryControls.py" />
     <Compile Include="timeSeriesAsynchClientTask.py" />
     <Compile Include="visContextVTK.py" />
@@ -33,6 +67,30 @@
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{9bcd6947-fb5e-4257-9ef6-8a639c630bbb}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>{dffc46f7-75ac-4f26-9876-0ea437c6e148}</Id>
+      <BaseInterpreter>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</BaseInterpreter>
+      <Version>2.7</Version>
+      <Description>env (Python 2.7)</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <LibraryPath>Lib\</LibraryPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+    </Interpreter>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="pyvcell\" />
+    <Folder Include="thrift\" />
+    <Folder Include="thrift\protocol\" />
+    <Folder Include="thrift\server\" />
+    <Folder Include="thrift\transport\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="pyvcell\VCellProxy-remote" />
+    <Content Include="pyvcell\VisitProxy-remote" />
+    <Content Include="thrift\protocol\fastbinary.so" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 </Project>
