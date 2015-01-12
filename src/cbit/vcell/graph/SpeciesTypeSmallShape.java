@@ -10,13 +10,16 @@ import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
 
 public class SpeciesTypeSmallShape {
 	
-	private static final int baseWidth = 13;
+	private static final int baseWidth = 11;
 	private static final int baseHeight = 10;
 	private static final int cornerArc = 10;
 
@@ -28,8 +31,12 @@ public class SpeciesTypeSmallShape {
 	final Graphics graphicsContext;
 	
 	private final MolecularType mt;
+	private final Displayable owner;
+	
+	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public SpeciesTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext) {
+	public SpeciesTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.mt = mt;
 		this.xPos = xPos;
 		this.yPos = yPos;
@@ -38,11 +45,23 @@ public class SpeciesTypeSmallShape {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponent mc = getSpeciesType().getComponentList().get(i);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, graphicsContext);
+			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
+	
+		int fixedPart = xPos + width;
+		offsetFromRight = 4;
+		for(int i=numComponents-1; i >=0; i--) {
+			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
+			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
+			// now that we know the dimensions of the species type shape we create the component shapes
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, graphicsContext, owner);
+			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
+			componentShapes.add(0, mcss);
+		}
 	}
 	
 	public void setX(int xPos){ 
@@ -88,6 +107,8 @@ public class SpeciesTypeSmallShape {
 		g2.setPaint(Color.black);
 		g2.draw(rect);
 		
-		MolecularComponentSmallShape.paintComponents(g, this, graphicsContext);
+		for(MolecularComponentSmallShape mcss : componentShapes) {
+			mcss.paintSelf(g);
+		}
 	}
 }
