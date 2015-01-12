@@ -505,7 +505,7 @@ public DocumentManager getDocumentManager() {
  * Insert the method's description here.
  * Creation date: (5/13/2004 1:54:04 PM)
  */
-ExportController getExportController() {
+public ExportController getExportController() {
 	if (exportController == null) {
 		exportController = new ClientExportController(this);
 	}

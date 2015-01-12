@@ -275,7 +275,10 @@ private java.util.Hashtable<SimulationContext, ApplicationComponents> getApplica
  * Creation date: (5/5/2004 8:37:05 PM)
  * @return cbit.vcell.biomodel.BioModel
  */
-private BioModel getBioModel() {
+
+
+//NOTE: I changed the visibility of this from private to public - Ed
+public BioModel getBioModel() {
 	return bioModel;
 }
 

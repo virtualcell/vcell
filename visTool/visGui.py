@@ -5,11 +5,13 @@ QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 Qt = visQt.QtCore.Qt
 
-
+import zipfile, StringIO, glob, urllib2
 
 import visContextAbstract
 import visGuiSliceControls
 import visGuiQueryControls
+import visDataSetChooserDialog
+from visDataSetChooserDialog import DataSetChooserDialog
 
 
 # adapted from visitusers.org PySide_Recipes page.
@@ -198,15 +200,19 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         actionOpen = QtGui.QAction(self);
         actionOpen.setObjectName("actionOpen")
+        actionOpenSimFromOpenVCellModels = QtGui.QAction(self)
+        actionOpenSimFromOpenVCellModels.setObjectName("actionOpenSimFromOpenVCellModels")
         actionExit = QtGui.QAction(self);
         actionExit.setObjectName("actionExit")
         menuBar.addAction(menuFile.menuAction())
         menuFile.addAction(actionOpen)
+        menuFile.addAction(actionOpenSimFromOpenVCellModels)
         menuFile.addSeparator()
         menuFile.addAction(actionExit)
 
         self.setWindowTitle("VCell VisIt viewer")
         actionOpen.setText("Open")
+        actionOpenSimFromOpenVCellModels.setText("Load Sim from open VCell Models")
         actionExit.setText("Exit")
         tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Slice")
         tabWidget.setTabText(tabWidget.indexOf(volumeTab),"Volume")
@@ -214,11 +220,17 @@ class VCellPysideApp(QtGui.QMainWindow):
         timeGroup.setTitle("Time")
         menuFile.setTitle("File")
 
+
+        
+
+
         #
         # set up all connections
         #
         actionOpen.setStatusTip("Open file")
         actionOpen.triggered.connect(self._showLoadFile)
+        actionOpenSimFromOpenVCellModels.setStatusTip("Open Sim from VCell open models")
+        actionOpenSimFromOpenVCellModels.triggered.connect(self._showOpenSimFromVCellOpenModels)
         actionExit.setStatusTip("Exit viewer")
         actionExit.triggered.connect(self._exitApplication)
         self._variableListWidget.clicked.connect(self._onSelectedVariableChanged)
@@ -310,6 +322,59 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._timeSlider.setMaximum(len(times)-1)
             self._timeLabel.setText("0.0")
 
+    def _showOpenSimFromVCellOpenModels(self):
+        try:
+            dialog = DataSetChooserDialog(self)
+            dialog.simulationSelected.connect(self._onSimulationSelected)
+            dialog.initUI(self._vis)
+        except Exception as simFindException:
+            print("Error or no datasets found")
+            print(simFindException)
+            return
+        dialog.show()
+
+    def _onSimulationSelected(self, dialog):
+        sim = dialog.getSelectedSimulation()
+        dialog.close()
+        print(sim)
+        url = self._vis.getVCellProxy().getClient().exportAllRequest(sim)
+        print("returned from issuing exportAllRequests(sim)")
+        print("URL="+url)
+        exportBasePath="D:"+os.sep+"export"
+        folderStr = exportBasePath+os.sep+str(sim.simId)
+        print("making folder: "+ folderStr)
+        os.mkdir(folderStr)
+        print("folder created.  Now attempting to \"download\" zip document from: "+ url)
+        response = urllib2.urlopen(url)
+        zipDocument = zipfile.ZipFile(StringIO.StringIO(response.read()))
+        print("done with requests.get.  Now extracting all to the subdirectory")
+        zipDocument.extractall(folderStr)
+        print("extracted files should exist")
+        print("looking for file pattern: "+folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
+        fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
+        print("fileList=")
+        print(fileList)
+        if len(fileList)>0:
+            self._vis.open(fileList)
+        print("returned from calling self._vis.open(fileList)")
+        varNames = self._vis.getVariableNames()
+        assert isinstance(self._variableListWidget,QtGui.QListWidget)
+        self._variableListWidget.clear()
+        self._variableListWidget.addItems(varNames)
+        if visQt.isPyside():
+            self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
+        elif visQt.isPyQt4:
+            self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
+
+        times = self._vis.getTimes()
+        if times == None or len(times)==0:
+            self._timeSlider.setMinimum(0)
+            self._timeSlider.setMaximum(0)
+            self._timeLabel.setText("0.0")
+        else:
+            self._timeSlider.setMinimum(0)
+            self._timeSlider.setMaximum(len(times)-1)
+            self._timeLabel.setText("0.0")
 
 
     def _getStatusBar(self):
