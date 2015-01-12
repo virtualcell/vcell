@@ -187,7 +187,7 @@ protected void fireNewData(DataEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 1:03:08 AM)
- * @return java.lang.String
+ * @return java.awt.Component
  */
 public abstract Component getComponent();
 

@@ -155,7 +155,7 @@ public MDIManager getMdiManager() {
  * Creation date: (5/24/2004 12:26:43 PM)
  * @return cbit.vcell.client.RequestManager
  */
-RequestManager getRequestManager() {
+public RequestManager getRequestManager() {
 	return requestManager;
 }
 

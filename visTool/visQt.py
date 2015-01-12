@@ -26,7 +26,7 @@ def initPyside():
         qtbinding = "PySide"
         print('qtsupport using '+qtbinding)
     except ImportError as ex2:
-        print("failed to import PySide: "+str(ex))
+        print("failed to import PySide: "+str(ex2))
 
 
 def initPyQt4():

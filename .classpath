@@ -23,9 +23,10 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jgraphx_2.2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/colt_1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/libthrift-0.9.2.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_micro/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.4-trunk/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
@@ -33,7 +34,7 @@
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4_vmicro/nativelibs/win64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.4-trunk/nativelibs/win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src_vmicro">

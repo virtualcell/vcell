@@ -23,6 +23,9 @@ from timeSeriesAsynchClientTask import TimeSeriesAsynchClientTask
 
 from visContextAbstract import *
 
+import vcellProxy
+from vcellProxy import *
+
 class PlotWindow(QtGui.QWidget):
  
     def __init__(self,windowID):
@@ -75,6 +78,8 @@ class visContextVisit(visContextAbstract):
 
         self._pickMode = 0     # 0 = pickMode off   1 = pickMode on
 
+        self._vcellProxy = VCellProxyHandler()
+
         #visit.SuppressMessages(2)
         #visit.SuppressQueryOutputOn()
         #visQt.QtGui.QDockWidget().setWidget(visit.pyside_support.GetOtherWindow("Pick"))
@@ -88,6 +93,9 @@ class visContextVisit(visContextAbstract):
         self._infoWindowDockWidget = visQt.QtGui.QDockWidget()
         self._infoWindowDockWidget.setWidget(visit.pyside_support.GetOtherWindow("Information")) 
         self.setPickMode(1)
+
+    def getVCellProxy(self):
+        return self._vcellProxy
 
     def getRenderWindow(self, parent):
         return self._plotWindow
