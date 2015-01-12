@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
 
 public class MolecularComponentSmallShape extends AbstractComponentShape {
 	
@@ -22,31 +23,18 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	private int height = componentDiameter;
 	
 	private final MolecularComponent mc;
+	private final Displayable owner;
 
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
 		xPos = rightPos-width;
 		yPos = y;
 	}
 
-	public static void paintComponents(Graphics g, SpeciesTypeSmallShape parent, Graphics graphicsContext) {
-		int size = parent.getSpeciesType().getComponentList().size();
-		int fixedPart = parent.getX() + parent.getWidth();
-		int offsetFromRight = 3;
-		for(int i=size-1; i >=0; i--) {
-			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = parent.getY() + parent.getHeight() - componentDiameter;
-			// we draw the components from left to right, so we start with the last
-			MolecularComponent mc = parent.getSpeciesType().getComponentList().get(i);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(rightPos, y, mc, graphicsContext);
-			offsetFromRight += mlcls.getWidth() + componentSeparation;
-			mlcls.paintSelf(g);
-		}
-	}
-	
 	public int getWidth() {
 		return width;
 	}
