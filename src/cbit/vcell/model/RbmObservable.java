@@ -285,10 +285,16 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		MolecularType mtThat = mtpThis.getMolecularType();
 		for(MolecularComponentPattern mcpThis : mtpThis.getComponentPatternList()) {
 			if(mcpThis.isImplied()) {
-				continue;
+//				continue;
 			}
 			ComponentStatePattern cspThis = mcpThis.getComponentStatePattern();
 			String mcNameThis = mcpThis.getMolecularComponent().getName();
+
+			if(cspThis == null && mcpThis.getMolecularComponent().getComponentStateDefinitions().size()>0) {
+				String msg = "Component pattern " + mcNameThis + " is in no State while the component has possible States defined.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+			}
+			
 			MolecularComponent[] mcThatList = mtThat.getMolecularComponents(mcNameThis);
 			if(mcThatList.length == 0) {
 				System.out.println("we already fired an issue about component missing");
