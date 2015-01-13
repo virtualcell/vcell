@@ -6,7 +6,7 @@
     <ProjectGuid>{72eb346c-0861-4337-8cb3-92e9078edf7b}</ProjectGuid>
     <ProjectHome />
     <StartupFile>visMainCLI.py</StartupFile>
-    <SearchPath>\Program Files\LLNL\VisIt 2.7.0\lib\site-packages;\Program Files\LLNL\VisIt 2.7.0;pyvcell;thrift</SearchPath>
+    <SearchPath>pyvcell;thrift;\Program Files\LLNL\VisIt 2.8.1;\Program Files\LLNL\VisIt 2.8.1\lib\site-packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
