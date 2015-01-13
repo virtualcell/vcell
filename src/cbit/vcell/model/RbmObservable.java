@@ -292,7 +292,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 
 			if(cspThis == null && mcpThis.getMolecularComponent().getComponentStateDefinitions().size()>0) {
 				String msg = "Component pattern " + mcNameThis + " is in no State while the component has possible States defined.";
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 			}
 			
 			MolecularComponent[] mcThatList = mtThat.getMolecularComponents(mcNameThis);
@@ -301,7 +301,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				continue;	// nothing to do here, we already fired an issue about component missing 
 			} else if(mcThatList.length > 1) {
 				String msg = "Multiple components with the same name are not yet supported.";
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 			} else {	// found exactly 1 component
 				MolecularComponent mcThat = mcThatList[0];
 				List<ComponentStateDefinition> csdListThat = mcThat.getComponentStateDefinitions();

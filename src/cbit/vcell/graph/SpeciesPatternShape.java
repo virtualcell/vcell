@@ -18,10 +18,11 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
-public class SpeciesPatternShape {
+public class SpeciesPatternShape extends AbstractComponentShape {
 
 	private static final int separationWidth = 10;		// width between 2 molecular type patterns
 	private int xPos = 0;
@@ -140,7 +141,7 @@ public class SpeciesPatternShape {
 		}
 		return null;
 	}
-
+	
 	public SpeciesPattern getSpeciesPattern() {
 		return sp;
 	}
@@ -196,13 +197,19 @@ public class SpeciesPatternShape {
 				g2.drawLine(bs.from.x+1, bs.from.y+7, bs.from.x+1, bs.from.y+10);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
+				g2.setColor(plusSignGreen);								// draw a green '+' sign
+				g2.drawLine(bs.from.x-8, bs.from.y+6, bs.from.x-3, bs.from.y+6);	// horizontal
+				g2.drawLine(bs.from.x-8, bs.from.y+7, bs.from.x-3, bs.from.y+7);
+				g2.drawLine(bs.from.x-6, bs.from.y+4, bs.from.x-6, bs.from.y+9);	// vertical
+				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
+
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+offset-4);
 				g2.setColor(Color.gray);
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+offset-4);
 			} else {
 				// for BondType.None we show nothing at all
-
+				// below commented out: small line ended in a red "x"
 //				g2.setColor(lineColor);
 //				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+7);
 //				g2.setColor(Color.gray);

@@ -82,6 +82,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
@@ -1238,6 +1239,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTypeTableModel.setIssueManager(issueManager);
 		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
+		AbstractComponentShape.setIssueManager(issueManager);
 	}
 
 	private void showPathwayLinks() {
