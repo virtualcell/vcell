@@ -13,13 +13,19 @@ from thrift.protocol import TBinaryProtocol
 class VCellProxyHandler(object):
 
     def __init__(self):
-        transport = TSocket.TSocket('localhost',	9090)
-        transport = TTransport.TBufferedTransport(transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(transport)
+        self._transport = TSocket.TSocket('localhost',	9090)
+        self._transport = TTransport.TBufferedTransport(self._transport)
+        protocol = TBinaryProtocol.TBinaryProtocol(self._transport)
         self._client = VCellProxy.Client(protocol)
-        transport.open()
+        
+        
 
 
     def getClient(self):
         return(self._client)
 
+    def open(self):
+        self._transport.open()
+
+    def close(self):
+        self._transport.close()

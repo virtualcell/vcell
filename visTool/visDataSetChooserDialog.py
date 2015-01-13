@@ -47,9 +47,13 @@ class DataSetChooserDialog(QtGui.QDialog):
         simList = None
         try:
             print("calling self._vis.getVCellProxy().getSimsFromOpenModels()")
+            self._vis.getVCellProxy().open()
             simList = self._vis.getVCellProxy().getClient().getSimsFromOpenModels()
         except:
             simList = None
+            print("Exception looking for open model datasets")
+        finally:
+            self._vis.getVCellProxy().close()
 
         if (simList==None or len(simList)==0):
             raise Exception("No simulations found")
