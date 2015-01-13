@@ -22,7 +22,7 @@ import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
-public class SpeciesPatternShape extends AbstractComponentShape {
+public class SpeciesPatternLargeShape extends AbstractComponentShape {
 
 	private static final int separationWidth = 10;		// width between 2 molecular type patterns
 	private int xPos = 0;
@@ -71,7 +71,7 @@ public class SpeciesPatternShape extends AbstractComponentShape {
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	
-	public SpeciesPatternShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;

@@ -109,7 +109,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
-import cbit.vcell.graph.SpeciesPatternShape;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
@@ -144,7 +144,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem editMenuItem;
 	private JCheckBox showDetailsCheckBox;
 
-	private SpeciesPatternShape sps;
+	private SpeciesPatternLargeShape sps;
 	private JPanel shapePanel = null;
 	
 	public class BioModelNodeEditableTree extends JTree {
@@ -664,7 +664,7 @@ private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
-		sps = new SpeciesPatternShape(20, 5, sp, panelContext, fieldSpeciesContext);
+		sps = new SpeciesPatternLargeShape(20, 5, sp, panelContext, fieldSpeciesContext);
 		shapePanel.repaint();
 	}
 }
