@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.List;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -12,6 +13,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
@@ -158,6 +160,28 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		}
 		return hidden;
 	}
+	
+	public boolean hasIssues() {
+		if(issueManager == null) {
+			return false;
+		}
+		
+		List<Issue> allIssueList = issueManager.getIssueList();
+		for (Issue issue: allIssueList) {
+			if(issue.getSeverity() < Issue.SEVERITY_WARNING) {
+				continue;
+			}
+			
+			Object source = issue.getSource();
+			Object source2 = issue.getSource2();
+			if(source == owner && source2 == mcp) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	
 	// ----------------------------------------------------------------------------------------------
 	private void paintComponent(Graphics g) {
 		
@@ -192,12 +216,19 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			
 		}
 		
+		if(hasIssues()) {
+			g2.setColor(componentBad);
+		}
+		
 		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 //		g2.fillArc(xPos, yPos, componentDiameter + textWidth, componentDiameter,0,180);		// fill half of the oval
 		if(hidden == false) {
 			g.setColor(Color.black);
 		} else {
 			g.setColor(Color.gray);
+		}
+		if(hasIssues()) {
+			g2.setColor(Color.red);
 		}
 		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 		
