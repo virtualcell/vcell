@@ -6,6 +6,8 @@ try:
     import visQt 
     import visit.pyside_support
     import visit.writescript
+#    QtGui = visQt.QtGui
+#    QtCore = visQt.QtCore
     print("visit imported without an exception")
 except ImportError as ex:
     print("visit import : exception happened "+str(ex))
