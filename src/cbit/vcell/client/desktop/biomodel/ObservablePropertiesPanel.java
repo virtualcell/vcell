@@ -68,7 +68,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
-import cbit.vcell.graph.SpeciesPatternShape;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -154,7 +154,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-	List<SpeciesPatternShape> spsList = new ArrayList<SpeciesPatternShape>();
+	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();
 
 	private JPopupMenu popupMenu;
 	private JMenu addMenu;
@@ -292,7 +292,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				for(SpeciesPatternShape sps : spsList) {
+				for(SpeciesPatternLargeShape sps : spsList) {
 					sps.paintSelf(g);
 				}
 			}
@@ -457,7 +457,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternShape sps = new SpeciesPatternShape(20, 20+75*i, sp, gc, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(20, 20+75*i, sp, gc, observable);
 				spsList.add(sps);
 			}
 		}
