@@ -168,13 +168,14 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		if(owner instanceof MolecularType) {
 			g2.setColor(componentGreen);
 			if(!mc.getComponentStateDefinitions().isEmpty()) {
-				g2.setColor(componentYellow);
+//				g2.setColor(componentYellow);
 			}
 		} else if(owner instanceof SpeciesContext) {
 			if(mc.getComponentStateDefinitions().isEmpty()) {
 				g2.setColor(componentGreen);
 			} else {
-				g2.setColor(componentYellow);
+				g2.setColor(componentGreen);
+//				g2.setColor(componentYellow);
 			}
 		} else if(owner instanceof RbmObservable) {
 			g2.setColor(componentHidden);
@@ -182,10 +183,11 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 				g2.setColor(componentGreen);
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			 if(csp != null && !csp.isAny()) {
-				 // components with states show in yellow, be it "Any" state or explicit state
-				 g2.setColor(componentYellow);
-			 }
+			if(csp != null && !csp.isAny()) {
+				// components with states show in yellow, be it "Any" state or explicit state
+				g2.setColor(componentGreen);
+				//g2.setColor(componentYellow);
+			}
 		} else if(owner instanceof ReactionParticipant) {
 			
 		}
@@ -228,6 +230,14 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			
 			
 		}
+		
+		if(/*owner instanceof RbmObservable && */mc.getComponentStateDefinitions().size()>0) {
+			g2.setColor(Color.yellow);
+			g2.fillOval(xPos + componentDiameter + textWidth - 10, yPos-4, 10, 10);
+			g.setColor(Color.gray);
+			g2.drawOval(xPos + componentDiameter + textWidth - 10, yPos-4, 10, 10);
+		}
+		
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
