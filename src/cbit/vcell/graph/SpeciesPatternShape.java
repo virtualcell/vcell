@@ -194,21 +194,6 @@ public class SpeciesPatternShape {
 				g2.drawLine(bs.from.x, bs.from.y+7, bs.from.x, bs.from.y+10);
 				g2.setColor(Color.gray);
 				g2.drawLine(bs.from.x+1, bs.from.y+7, bs.from.x+1, bs.from.y+10);
-				
-//				g2.setColor(lineColor);
-//				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
-//				g2.setColor(Color.gray);
-//				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
-//
-//				g2.setColor(lineColor);
-//				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+7);
-//				g2.setColor(Color.gray);
-//				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+7);
-//
-//				g2.setColor(lineColor);
-//				g2.drawLine(bs.from.x, bs.from.y+9, bs.from.x, bs.from.y+11);
-//				g2.setColor(Color.gray);
-//				g2.drawLine(bs.from.x+1, bs.from.y+9, bs.from.x+1, bs.from.y+11);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
 				g2.setColor(lineColor);
@@ -217,6 +202,22 @@ public class SpeciesPatternShape {
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+offset-4);
 			} else {
 				// for BondType.None we show nothing at all
+
+//				g2.setColor(lineColor);
+//				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+7);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+7);
+//
+//				int vo = 8;
+//				g2.setColor(Color.red);
+//				g2.drawLine(bs.from.x-3, bs.from.y+2+vo, bs.from.x+4, bs.from.y-2+vo);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x-3, bs.from.y+3+vo, bs.from.x+4, bs.from.y-1+vo);
+//				
+//				g2.setColor(Color.red);
+//				g2.drawLine(bs.from.x-3, bs.from.y-2+vo, bs.from.x+4, bs.from.y+2+vo);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x-3, bs.from.y-1+vo, bs.from.x+4, bs.from.y+3+vo);
 			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
