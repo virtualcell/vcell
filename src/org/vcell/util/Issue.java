@@ -27,6 +27,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	private String tooltip = null;
 	private IssueCategory category = null;
 	private Object source = null;
+	private Object source2 = null;
 	private IssueContext issueContext = null;
 	private int severity = -1;
 
@@ -301,15 +302,19 @@ public class Issue implements java.io.Serializable, Matchable {
 //	}
 	
 	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
-		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+		this(argSource, null, issueContext, argCategory, argMessage, null, argSeverity);
+	}
+	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argTooltip, String argMessage, int argSeverity) {
+		this(argSource, null, issueContext, argCategory, argMessage, argTooltip, argSeverity);
 	}
 	
-	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+	public Issue(IssueSource argSource, IssueSource argSource2, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 		super();
 		if (argSeverity<0 || argSeverity>MAX_SEVERITY){
 			throw new IllegalArgumentException("unexpected severity="+argSeverity);
 		}
 		this.source = argSource;
+		this.source2 = argSource2;
 		this.issueContext = issueContext;
 		this.message = argMessage;
 		this.tooltip = argTooltip;
@@ -326,6 +331,9 @@ public boolean compareEqual(Matchable obj) {
 	if (obj instanceof Issue){
 		Issue other = (Issue)obj;
 		if (other.source!=this.source){
+			return false;
+		}
+		if (other.source2!=this.source2){
 			return false;
 		}
 		if (!other.category.equals(category)){
@@ -360,6 +368,9 @@ public boolean equal(Object object) {
 	if (object instanceof Issue){
 		Issue otherIssue = (Issue)object;
 		if (!source.equals(otherIssue.source)){
+			return false;
+		}
+		if (!source2.equals(otherIssue.source2)){
 			return false;
 		}
 		if (!category.equals(otherIssue.category)){
@@ -443,6 +454,9 @@ public String getSeverityName() {
  */
 public Object getSource() {
 	return source;
+}
+public Object getSource2() {
+	return source2;
 }
 
 public IssueContext getIssueContext() {
