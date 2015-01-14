@@ -795,7 +795,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	
 	public static final String PROPERTY_NAME_MODEL_PARAMETERS = "modelParameters";
 	
-	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource {
+	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable {
 		
 		private String fieldParameterName = null;
 		private Expression fieldParameterExpression = null;
@@ -910,6 +910,15 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			super.firePropertyChange("name", oldValue, name);
 		}
 
+		private static final String typeName = "GlobalParameter";
+		@Override
+		public final String getDisplayName() {
+			return getName();
+		}
+		@Override
+		public final String getDisplayType() {
+			return typeName;
+		}
 	}
 	
 	public class RbmModelContainer implements Matchable, Serializable, VetoableChangeListener, IssueSource {

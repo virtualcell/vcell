@@ -23,6 +23,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -1306,6 +1307,22 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						}
 					}
 				}
+			}
+		}
+		
+		// looking for local param which masks a global and issueing a warning
+		for (KineticsParameter kineticsParameter : fieldKineticsParameters){
+			String name = kineticsParameter.getName();
+			SymbolTableEntry ste = getReactionStep().getNameScope().getExternalEntry(name, getReactionStep());
+			String steName;
+			if(ste != null) {
+				if(ste instanceof Displayable) {
+					steName = ((Displayable) ste).getDisplayType() + " " + ste.getName();
+				} else {
+					steName = ste.getClass().getSimpleName() + " " + ste.getName();
+				}
+				String msg = steName + " is overriden by a local parameter " + name + " in reaction " + getReactionStep().getName();
+				issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.Identifiers,msg ,Issue.SEVERITY_WARNING));
 			}
 		}
 	}
