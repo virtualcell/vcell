@@ -7,13 +7,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
 public class MolecularComponentSmallShape extends AbstractComponentShape {
 	
 	static final int componentSeparation = 1;		// distance between components
-	static final int componentDiameter = 8;			// diameter of the component (circle)
+	static final int componentDiameter = 7;			// diameter of the component (circle)
 	
 	final Graphics graphicsContext;
 	
@@ -23,20 +24,43 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	private int height = componentDiameter;
 	
 	private final MolecularComponent mc;
+	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
 
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
 	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
+		this.mcp = null;
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
 		xPos = rightPos-width;
 		yPos = y;
 	}
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner) {
+		this.owner = owner;
+		this.mcp = mcp;
+		this.mc = mcp.getMolecularComponent();
+		this.graphicsContext = graphicsContext;
+		xPos = rightPos-width;
+		yPos = y;
+	}
 
-	public int getWidth() {
+	public MolecularComponentPattern getMolecularComponentPattern() {
+		return mcp;
+	}
+	
+	public int getX(){
+		return xPos;
+	}
+	public int getY(){
+		return yPos;
+	}
+	public int getWidth(){
 		return width;
+	} 
+	public int getHeight(){
+		return height;
 	}
 
 	public void paintSelf(Graphics g) {
