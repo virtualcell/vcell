@@ -33,6 +33,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
@@ -47,9 +48,10 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	
 	public final static int COLUMN_NAME = 0;
 	public final static int COLUMN_LINK = 1;
-	public final static int COLUMN_DEFINITION = 2;	
-	public final static int COLUMN_STRUCTURE = 3;	
-	private static String[] columnNames = new String[] {"Name","Link","Definition","Structure"};
+	public final static int COLUMN_DEPICTION = 2;	
+	public final static int COLUMN_DEFINITION = 3;	
+	public final static int COLUMN_STRUCTURE = 4;	
+	private static String[] columnNames = new String[] {"Name","Link","Depiction","Definition","Structure"};
 
 	public BioModelEditorSpeciesTableModel(EditorScrollTable table) {
 		super(table);
@@ -64,6 +66,9 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 			}
 			case COLUMN_LINK:{
 				return BioPaxObject.class;
+			}
+			case COLUMN_DEPICTION:{
+				return SpeciesPattern.class;
 			}
 			case COLUMN_DEFINITION:{
 				return SpeciesPattern.class;
@@ -120,6 +125,9 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 							return relObjsHash.iterator().next().getBioPaxObject();
 						}
 						return null;
+					} 
+					case COLUMN_DEPICTION: {
+						return speciesContext.getSpeciesPattern();
 					} 
 					case COLUMN_DEFINITION: {
 						return speciesContext.getSpeciesPattern();

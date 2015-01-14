@@ -85,6 +85,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.graph.SpeciesTypeSmallShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
@@ -591,7 +592,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		RbmTableRenderer rbmTableRenderer = new RbmTableRenderer();
 		structuresTable.setDefaultRenderer(Structure.class, tableRenderer);
 		speciesTable.setDefaultRenderer(Structure.class, tableRenderer);
-		speciesTable.setDefaultRenderer(SpeciesPattern.class, rbmTableRenderer);
 		reactionsTable.setDefaultRenderer(Structure.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(Kinetics.class, tableRenderer);
 		reactionsTable.setDefaultRenderer(RbmKineticLaw.class, tableRenderer);
@@ -780,7 +780,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		
 		//
-		// this renderer only paints the shape of the molecular type (species type)
+		// this renderer only paints the molecular type small shape in the MolecularType Table (species type)
 		//
 		DefaultScrollTableCellRenderer rbmMolecularTypeShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
 			SpeciesTypeSmallShape stls = null;
@@ -800,7 +800,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new SpeciesTypeSmallShape(4, 1, mt, cellContext, mt);
+								stls = new SpeciesTypeSmallShape(4, 3, mt, cellContext, mt);
 							}
 						}
 					} else {
@@ -817,7 +817,43 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
-		
+		// painting of species patterns small shapes inside the species context table
+		DefaultScrollTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == speciesTableModel) {
+						selectedObject = speciesTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof SpeciesContext) {
+							SpeciesContext sc = (SpeciesContext)selectedObject;
+							SpeciesPattern sp = sc.getSpeciesPattern();		// sp may be null for "plain" species contexts
+							Graphics panelContext = table.getGraphics();
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+						}
+					} else {
+						spss = null;
+					}
+				}
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(spss != null) {
+					spss.paintSelf(g);
+				}
+			}
+		};
+// TODO: !!! add renderers for depiction of small shapes in the observables and reactions tables !!!
+
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
@@ -827,6 +863,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		// all "depictions" have their own renderer
 		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
 		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
+		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);
