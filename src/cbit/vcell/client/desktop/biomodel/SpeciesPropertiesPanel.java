@@ -144,7 +144,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem editMenuItem;
 	private JCheckBox showDetailsCheckBox;
 
-	private SpeciesPatternLargeShape sps;
+	private SpeciesPatternLargeShape spls;
 	private JPanel shapePanel = null;
 	
 	public class BioModelNodeEditableTree extends JTree {
@@ -380,8 +380,8 @@ private void initialize() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				if(sps != null) {
-					sps.paintSelf(g);
+				if(spls != null) {
+					spls.paintSelf(g);
 				}
 			}
 		};
@@ -664,7 +664,7 @@ private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
-		sps = new SpeciesPatternLargeShape(20, 5, sp, panelContext, fieldSpeciesContext);
+		spls = new SpeciesPatternLargeShape(20, 5, sp, panelContext, fieldSpeciesContext);
 		shapePanel.repaint();
 	}
 }

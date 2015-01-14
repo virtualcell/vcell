@@ -257,5 +257,7 @@ public class SpeciesTypeLargeShape implements LargeShape {
 		for(MolecularComponentLargeShape mcls : componentShapes) {
 			mcls.paintSelf(g);
 		}
+		g.setFont(fontOld);
+		g.setColor(colorOld);
 	}
 }
