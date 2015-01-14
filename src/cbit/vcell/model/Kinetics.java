@@ -1305,6 +1305,17 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 			}
 		}
+		
+		// looking for local param which masks a global and issueing a warning
+		for (KineticsParameter kineticsParameter : fieldKineticsParameters){
+			String name = kineticsParameter.getName();
+			SymbolTableEntry ste = getReactionStep().getNameScope().getExternalEntry(name, getReactionStep());
+			if(ste != null) {
+				String steName = "Entity " + ste.getName();
+				String msg = steName + " is overriden by a local parameter " + name + " in reaction " + getReactionStep().getName();
+				issueList.add(new Issue(kineticsParameter,issueContext,IssueCategory.Identifiers,msg ,Issue.SEVERITY_WARNING));
+			}
+		}
 	}
 
 	try {
