@@ -141,23 +141,16 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 			varList = varStr +"  " + varList;
 		}	
 			
-
 			user = vcellClient.getClientServerManager().getUser();
-
-			KeyValue simKeyValue = new KeyValue("92733070");
-			//KeyValue bioModelKey = new KeyValue("92733091");
-			String modelKeyStr = "Model Key String";
+			KeyValue simKeyValue = new KeyValue(exportRequestSpec.getSimID());
+			String modelKeyStr = exportRequestSpec.getSimID();
 			vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
 			vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
 			ExportSpecs exportSpecs = null;
 			OutputContext outputContext = null;
-
-				
 			VariableSpecs variableSpecs = new VariableSpecs((String[]) exportRequestSpec.getVariables().toArray(new String[0]), ExportConstants.VARIABLE_ALL);
 			double dataTimes[] = null;
-					
-
-					
+				
 			try {
 				dataTimes = vcellClient.getClientServerManager().getDataSetController().getDataSetTimes(vcSimulationDataIdentifier);
 			} catch (Exception e) {
@@ -165,15 +158,9 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 				e.printStackTrace();
 			}
 			TimeSpecs timeSpecs = new TimeSpecs(0, dataTimes.length-1 , dataTimes, ExportConstants.TIME_RANGE);
-
-
-			
 			GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_FULL);
-			
-			FormatSpecificSpecs formatSpecificSpecs = null;
-            
+			FormatSpecificSpecs formatSpecificSpecs = null; 
 			exportSpecs = new ExportSpecs(vcSimulationDataIdentifier, ExportConstants.FORMAT_VTK_UNSTRUCT, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, modelKeyStr, modelKeyStr);
-			
 		
 			try {
 				ExportEvent event = vcellClient.getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
@@ -183,7 +170,6 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 				try {
 					throw new RemoteException(exc.getMessage());
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -191,7 +177,20 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 		
 		System.out.println("From time t="+exportRequestSpec.getStartTime()+" to t="+exportRequestSpec.getEndTime());
 		
-		exportedPath = "Path = "+exportRequestSpec.getSimID()+"_Exported_Path...  Variables = "+varList+"    EndTime = "+Integer.toString(exportRequestSpec.getEndTime());
+		try {
+			ExportEvent event = vcellClient.getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
+			System.out.println("Export location = "+event.getLocation());
+			String[] urlSplit = event.getLocation().split("/");
+			File exportFile = new File(new File(PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirProperty)), urlSplit[urlSplit.length - 1]);
+			exportedPath = exportFile.toURL().toString();
+			System.out.print("ExportedPath = "+exportedPath);
+			// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
+		} catch (org.vcell.util.DataAccessException | RemoteException | MalformedURLException exc) {
+			exc.printStackTrace();
+			throw new RuntimeException(exc.getMessage());
+		} 
+		
+		//exportedPath = "Path = "+exportRequestSpec.getSimID()+"_Exported_Path...  Variables = "+varList+"    EndTime = "+Integer.toString(exportRequestSpec.getEndTime());
 		
 
 		return exportedPath;
@@ -234,11 +233,11 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 	}
 
 	@Override
-	public cbit.vcell.client.pyvcellproxy.User getUser()
-			throws cbit.vcell.client.pyvcellproxy.DataAccessException,
-			TException {
-		// TODO Auto-generated method stub
-		return null;
+	public cbit.vcell.client.pyvcellproxy.User getUser() throws cbit.vcell.client.pyvcellproxy.DataAccessException, TException {
+		cbit.vcell.client.pyvcellproxy.User user = new cbit.vcell.client.pyvcellproxy.User();
+		user.setUserKey(this.vcellClient.getClientServerManager().getUser().getID().toString());
+		user.setUserName(this.vcellClient.getClientServerManager().getUser().getName());
+		return user;
 	}
 
 	@Override
@@ -285,15 +284,9 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 				e.printStackTrace();
 			}
 			TimeSpecs timeSpecs = new TimeSpecs(0, dataTimes.length-1 , dataTimes, ExportConstants.TIME_RANGE);
-
-
-			
 			GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_FULL);
-			
 			FormatSpecificSpecs formatSpecificSpecs = null;
-            
 			exportSpecs = new ExportSpecs(vcSimulationDataIdentifier, ExportConstants.FORMAT_VTK_UNSTRUCT, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, simulationDataSetRef.simName, null);
-			
 		
 			try {
 				ExportEvent event = vcellClient.getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
