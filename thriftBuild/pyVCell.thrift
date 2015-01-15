@@ -13,7 +13,15 @@ enum ModelType {
    MATHMODEL
 }
 
-typedef list<string> VariableList
+
+struct VariableInfo{
+   1: required string variableName;
+   2: optional string domainName;
+   3: optional string variableDomainType;
+   4: optional string unitsLabel;
+}
+
+typedef list<VariableInfo> VariableList
 
 struct User{
    1: required string userKey;

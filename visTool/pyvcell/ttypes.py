@@ -42,6 +42,112 @@ class ModelType:
   }
 
 
+class VariableInfo:
+  """
+  Attributes:
+   - variableName
+   - domainName
+   - variableDomainType
+   - unitsLabel
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'variableName', None, None, ), # 1
+    (2, TType.STRING, 'domainName', None, None, ), # 2
+    (3, TType.STRING, 'variableDomainType', None, None, ), # 3
+    (4, TType.STRING, 'unitsLabel', None, None, ), # 4
+  )
+
+  def __init__(self, variableName=None, domainName=None, variableDomainType=None, unitsLabel=None,):
+    self.variableName = variableName
+    self.domainName = domainName
+    self.variableDomainType = variableDomainType
+    self.unitsLabel = unitsLabel
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.variableName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.domainName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.variableDomainType = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.unitsLabel = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('VariableInfo')
+    if self.variableName is not None:
+      oprot.writeFieldBegin('variableName', TType.STRING, 1)
+      oprot.writeString(self.variableName)
+      oprot.writeFieldEnd()
+    if self.domainName is not None:
+      oprot.writeFieldBegin('domainName', TType.STRING, 2)
+      oprot.writeString(self.domainName)
+      oprot.writeFieldEnd()
+    if self.variableDomainType is not None:
+      oprot.writeFieldBegin('variableDomainType', TType.STRING, 3)
+      oprot.writeString(self.variableDomainType)
+      oprot.writeFieldEnd()
+    if self.unitsLabel is not None:
+      oprot.writeFieldBegin('unitsLabel', TType.STRING, 4)
+      oprot.writeString(self.unitsLabel)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.variableName is None:
+      raise TProtocol.TProtocolException(message='Required field variableName is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.variableName)
+    value = (value * 31) ^ hash(self.domainName)
+    value = (value * 31) ^ hash(self.variableDomainType)
+    value = (value * 31) ^ hash(self.unitsLabel)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class User:
   """
   Attributes:
@@ -135,7 +241,7 @@ class SimulationDataSetRef:
     None, # 0
     (1, TType.STRING, 'simId', None, None, ), # 1
     (2, TType.STRING, 'simName', None, None, ), # 2
-    (3, TType.LIST, 'variableList', (TType.STRING,None), None, ), # 3
+    (3, TType.LIST, 'variableList', (TType.STRUCT,(VariableInfo, VariableInfo.thrift_spec)), None, ), # 3
     (4, TType.STRING, 'modelId', None, None, ), # 4
   )
 
@@ -169,7 +275,8 @@ class SimulationDataSetRef:
           self.variableList = []
           (_etype3, _size0) = iprot.readListBegin()
           for _i4 in xrange(_size0):
-            _elem5 = iprot.readString();
+            _elem5 = VariableInfo()
+            _elem5.read(iprot)
             self.variableList.append(_elem5)
           iprot.readListEnd()
         else:
@@ -199,9 +306,9 @@ class SimulationDataSetRef:
       oprot.writeFieldEnd()
     if self.variableList is not None:
       oprot.writeFieldBegin('variableList', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRING, len(self.variableList))
+      oprot.writeListBegin(TType.STRUCT, len(self.variableList))
       for iter6 in self.variableList:
-        oprot.writeString(iter6)
+        iter6.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.modelId is not None:
@@ -357,7 +464,7 @@ class ExportRequestSpec:
     None, # 0
     (1, TType.I32, 'exportType', None, None, ), # 1
     (2, TType.STRING, 'SimID', None, None, ), # 2
-    (3, TType.LIST, 'variables', (TType.STRING,None), None, ), # 3
+    (3, TType.LIST, 'variables', (TType.STRUCT,(VariableInfo, VariableInfo.thrift_spec)), None, ), # 3
     (4, TType.I32, 'startTime', None, None, ), # 4
     (5, TType.I32, 'endTime', None, None, ), # 5
   )
@@ -393,7 +500,8 @@ class ExportRequestSpec:
           self.variables = []
           (_etype10, _size7) = iprot.readListBegin()
           for _i11 in xrange(_size7):
-            _elem12 = iprot.readString();
+            _elem12 = VariableInfo()
+            _elem12.read(iprot)
             self.variables.append(_elem12)
           iprot.readListEnd()
         else:
@@ -428,9 +536,9 @@ class ExportRequestSpec:
       oprot.writeFieldEnd()
     if self.variables is not None:
       oprot.writeFieldBegin('variables', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRING, len(self.variables))
+      oprot.writeListBegin(TType.STRUCT, len(self.variables))
       for iter13 in self.variables:
-        oprot.writeString(iter13)
+        iter13.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.startTime is not None:

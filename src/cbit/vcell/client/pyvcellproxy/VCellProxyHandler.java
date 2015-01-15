@@ -134,11 +134,11 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 		String varList = "";
 		String exportedPath = "";
 		System.out.println("VCellProxyHandler: I'm being asked to export SimID="+exportRequestSpec.getSimID()+" with the following variable(s):");
-		ListIterator<String> iter = exportRequestSpec.getVariables().listIterator();
+		ListIterator<VariableInfo> iter = exportRequestSpec.getVariables().listIterator();
 		while (iter.hasNext()) {
-			String varStr = iter.next();
-			System.out.println(varStr);
-			varList = varStr +"  " + varList;
+			VariableInfo varInfo = iter.next();
+			System.out.println(varInfo.getVariableName());
+			varList = varInfo +"  " + varList;
 		}	
 			
 			user = vcellClient.getClientServerManager().getUser();
@@ -203,17 +203,46 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 	public List<SimulationDataSetRef> getSimsFromModel(ModelRef modelRef)
 			throws cbit.vcell.client.pyvcellproxy.DataAccessException,
 			TException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	@Override
-	public List<String> getVariableList(
+	public List<VariableInfo> getVariableList(
 			SimulationDataSetRef simulationDataSetRef)
 			throws cbit.vcell.client.pyvcellproxy.DataAccessException,
 			TException {
-		// TODO Auto-generated method stub
-		return null;
+
+		user = vcellClient.getClientServerManager().getUser();
+		KeyValue simKeyValue = new KeyValue(simulationDataSetRef.simId);
+		vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
+		
+		DataIdentifier[] dataIdentifiers = null;
+		try {
+			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
+			if (vcSimulationDataIdentifier != null)  {
+				dataIdentifiers = vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true).getDataIdentifiers();
+			}
+		} catch (org.vcell.util.DataAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		ArrayList<VariableInfo> variableInfos = new ArrayList<VariableInfo>();
+		for (int ii=0; ii<dataIdentifiers.length; ii++){
+			VariableInfo varInfo = new VariableInfo();
+			varInfo.setVariableName(dataIdentifiers[ii].getDisplayName());
+			if (dataIdentifiers[ii].getDomain()!=null){
+				varInfo.setDomainName(dataIdentifiers[ii].getDomain().getName());
+			} else {
+				varInfo.setDomainName("None");
+			}
+			varInfo.setVariableDomainType(dataIdentifiers[ii].getVariableType().getTypeName());
+			varInfo.setUnitsLabel(dataIdentifiers[ii].getVariableType().getDefaultUnits());
+			variableInfos.add(varInfo);
+			
+		}
+		return variableInfos;
 	}
 
 	@Override
@@ -247,19 +276,12 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 		String varList = "";
 		String exportedPath = "";
 
-
-
-
-			user = vcellClient.getClientServerManager().getUser();
-		
+			user = vcellClient.getClientServerManager().getUser();		
 			KeyValue simKeyValue = new KeyValue(simulationDataSetRef.getSimId());
 			vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
 			vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
 			ExportSpecs exportSpecs = null;
 			OutputContext outputContext = null;
-
-				
-
 			double dataTimes[] = null;
 					
 			DataIdentifier[] dataIdentifiers = null;
@@ -286,6 +308,9 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 			TimeSpecs timeSpecs = new TimeSpecs(0, dataTimes.length-1 , dataTimes, ExportConstants.TIME_RANGE);
 			GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_FULL);
 			FormatSpecificSpecs formatSpecificSpecs = null;
+			
+		//	vcellClient.getClientServerManager().getDataSetController().getDataIdentifiers(null, vcSimulationDataIdentifier)[0].;
+			
 			exportSpecs = new ExportSpecs(vcSimulationDataIdentifier, ExportConstants.FORMAT_VTK_UNSTRUCT, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, simulationDataSetRef.simName, null);
 		
 			try {
