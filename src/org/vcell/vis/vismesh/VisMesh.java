@@ -14,6 +14,7 @@ public class VisMesh {
 	private final ArrayList<VisPolyhedron> polyhedra = new ArrayList<VisPolyhedron>();
 	private final ArrayList<VisSurfaceTriangle> surfaceTriangles = new ArrayList<VisSurfaceTriangle>();
 	private final ArrayList<VisLine> lines = new ArrayList<VisLine>();
+	private final List<VisPoint> surfacePoints = new ArrayList<VisPoint>();
 	
 	public VisMesh(int dimension, Vect3D origin, Vect3D extent) {
 		this.dimension = dimension;
@@ -73,4 +74,12 @@ public class VisMesh {
 		points.add(newVisPoint);
 	}
 	
+	public void addSurfacePoint(VisPoint newVisPoint) {
+		surfacePoints.add(newVisPoint);
+	}
+
+	public List<VisPoint> getSurfacePoints() {
+		return surfacePoints;
+	}
+
 }
