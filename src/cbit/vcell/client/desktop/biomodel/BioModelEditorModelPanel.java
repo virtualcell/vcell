@@ -29,6 +29,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -85,6 +86,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.graph.SpeciesTypeSmallShape;
@@ -851,7 +853,56 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
-// TODO: !!! add renderers for depiction of small shapes in the observables and reactions tables !!!
+		DefaultScrollTableCellRenderer rbmObservableShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			List<SpeciesPatternSmallShape> spssList = new ArrayList<SpeciesPatternSmallShape>();
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == observableTableModel) {
+						selectedObject = observableTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof RbmObservable) {
+							RbmObservable observable = (RbmObservable)selectedObject;
+							Graphics panelContext = table.getGraphics();
+
+							int xPos = 4;
+							spssList.clear();
+							for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
+								SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
+								// TODO: count the number of bonds for this sp and allow enough vertical space for them
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected);
+								xPos += spss.getWidth() + 6;
+								spssList.add(spss);
+							}
+
+						
+						
+						}
+					} else {
+						spssList.clear();
+					}
+				}
+				setText("");
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternSmallShape spss : spssList) {
+					if(spss == null) {
+						continue;
+					}
+					spss.paintSelf(g);
+				}
+			}
+		};
+// TODO: !!! add renderers for depiction of small shapes in the reactions table !!!
 
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
@@ -864,6 +915,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
+		observablesTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);
