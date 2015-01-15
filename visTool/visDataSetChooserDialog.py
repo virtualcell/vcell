@@ -14,6 +14,7 @@ class DataSetChooserDialog(QtGui.QDialog):
         self.setWindowTitle("Choose result set")
         self._dataSetComboBox = None
         self._selectedSim = None
+        self._domainSelected = None
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def initUI(self, vis):
@@ -31,8 +32,12 @@ class DataSetChooserDialog(QtGui.QDialog):
         gridLayout.setObjectName("gridLayout")
 
         self._dataSetComboBox = QtGui.QComboBox(self)
+        self._domainChoiceComboBox = QtGui.QComboBox(self)
+        self._dataSetComboBox.activated.connect(self._changeSimulationSelectionAction)
 
-        gridLayout.addWidget(self._dataSetComboBox,0,0,)  
+
+        gridLayout.addWidget(self._dataSetComboBox,0,0,) 
+        gridLayout.addWidget(self._domainChoiceComboBox,1,0) 
         openButton = QtGui.QPushButton("Open",self)
         cancelButton = QtGui.QPushButton("Cancel",self)
         buttonLayout = QtGui.QHBoxLayout()
@@ -41,7 +46,7 @@ class DataSetChooserDialog(QtGui.QDialog):
         buttonLayout.addWidget(cancelButton)
         openButton.pressed.connect(self._openButtonPressedAction)
         cancelButton.pressed.connect(self._cancelButtonPressedAction)
-        gridLayout.addLayout(buttonLayout,1,0)
+        gridLayout.addLayout(buttonLayout,2,0)
 
         # Get available simulation dataset of open models from the VCell client
         simList = None
@@ -62,6 +67,26 @@ class DataSetChooserDialog(QtGui.QDialog):
         # populate the QComboBox if we found datasets
         for sim in simList:
             self._dataSetComboBox.addItem(sim.simName,sim)
+            self._changeSimulationSelectionAction()
+
+
+    def _changeSimulationSelectionAction(self):
+        print('starting _changeSimulationSelectionAction')
+        currentIndex = self._dataSetComboBox.currentIndex()
+        currentSimSelection = self._dataSetComboBox.itemData(currentIndex)
+        try:
+            self._vis.getVCellProxy().open()
+            varList = self._vis.getVCellProxy().getClient().getVariableList(self._dataSetComboBox.itemData(currentIndex))
+            domainList = list(set([varList[i].domainName for i in range(len(varList)-1)]))
+            self._domainChoiceComboBox.clear()
+            for domain in domainList:
+                if (domain != "None"):
+                    self._domainChoiceComboBox.addItem(domain, domain)
+        except Exception as exc:
+            print("Exception occurred getting domains")
+            print(str(exc))
+        finally:
+            self._vis.getVCellProxy().close()
 
 
     def _openButtonPressedAction(self):
@@ -69,10 +94,18 @@ class DataSetChooserDialog(QtGui.QDialog):
         if (currentIndex == None):
             return(None)
         self._selectedSim = self._dataSetComboBox.itemData(currentIndex)
+        currentIndex = self._domainChoiceComboBox.currentIndex()
+        if (currentIndex == None):
+            return(None)
+        self._selectedDomain = self._domainChoiceComboBox.itemData(currentIndex)
+
         self.simulationSelected.emit(self)
 
     def _cancelButtonPressedAction(self):
         self.close()
+
+    def getSelectedDomain(self):
+        return self._selectedDomain
 
     def getSelectedSimulation(self):
         return self._selectedSim
