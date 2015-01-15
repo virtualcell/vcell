@@ -786,9 +786,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			SpeciesTypeSmallShape stls = null;
 			
 			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
@@ -822,10 +821,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			SpeciesPatternSmallShape spss = null;
 			
 			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				super.getTableCellRendererComponent(table, "", isSelected, hasFocus, row, column);
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
 					if (table.getModel() == speciesTableModel) {
@@ -842,6 +840,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						spss = null;
 					}
 				}
+				setText("");
 				return this;
 			}
 			@Override

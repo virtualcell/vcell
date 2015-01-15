@@ -99,8 +99,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				addNew();
 			} else if (source == getEditMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-			} else if (source == showDetailsCheckBox) {
-				observableTreeModel.setShowDetails(showDetailsCheckBox.isSelected());
+//			} else if (source == showDetailsCheckBox) {
+//				observableTreeModel.setShowDetails(showDetailsCheckBox.isSelected());
 			}
 		}
 
@@ -162,7 +162,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem renameMenuItem;
 	private JMenuItem editMenuItem;
 	private JMenuItem addSpeciesPatternMenuItem;
-	private JCheckBox showDetailsCheckBox;
+//	private JCheckBox showDetailsCheckBox;
 	
 	private BioModel bioModel;
 	public ObservablePropertiesPanel() {
@@ -301,20 +301,19 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		rightPanel.setBackground(Color.white);		
 		
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(350);
-		splitPane.setResizeWeight(0.9);
+		splitPane.setDividerLocation(240);
+		splitPane.setResizeWeight(0.1);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
-
 		
-		
-		
-		showDetailsCheckBox = new JCheckBox("Show All Components");
-		showDetailsCheckBox.addActionListener(eventHandler);
+//		showDetailsCheckBox = new JCheckBox("Show All Components");
+//		showDetailsCheckBox.addActionListener(eventHandler);
 		
 		observableTree = new BioModelNodeEditableTree();
 		observableTreeModel = new ObservableTreeModel(observableTree);
 		observableTree.setModel(observableTreeModel);
+		observableTreeModel.setShowDetails(true);
+		
 		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer();
 		observableTree.setCellRenderer(cro);
 		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(observableTree, (cro));
@@ -367,7 +366,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		setName("ObservablePropertiesPanel");
 		setLayout(new BorderLayout());
 
-		add(showDetailsCheckBox, BorderLayout.NORTH);
+//		add(showDetailsCheckBox, BorderLayout.NORTH);
 		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
 		
@@ -569,7 +568,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
 			List<String> itemList = new ArrayList<String>();
-			itemList.add("Any");
+			itemList.add(ComponentStatePattern.strAny);
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 				String name = csd.getName();
 				itemList.add(name);
@@ -580,7 +579,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						String name = e.getActionCommand();
-						if(name.equals("Any")) {
+						if(name.equals(ComponentStatePattern.strAny)) {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {

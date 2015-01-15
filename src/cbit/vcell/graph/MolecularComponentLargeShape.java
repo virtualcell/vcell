@@ -208,7 +208,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
 			if(csp != null && !csp.isAny()) {
-				// components with states show in yellow, be it "Any" state or explicit state
+				// components with states show in yellow, be it ComponentStatePattern.strAny state or explicit state
 				g2.setColor(componentGreen);
 				//g2.setColor(componentYellow);
 			}

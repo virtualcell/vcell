@@ -705,7 +705,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
 			List<String> itemList = new ArrayList<String>();
-			itemList.add("Any");
+			itemList.add(ComponentStatePattern.strAny);
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 				String name = csd.getName();
 				itemList.add(name);
@@ -716,7 +716,7 @@ public class ReactionRulePropertiesPanel extends DocumentEditorSubPanel {
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						String name = e.getActionCommand();
-						if(name.equals("Any")) {
+						if(name.equals(ComponentStatePattern.strAny)) {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {
