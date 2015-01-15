@@ -48,6 +48,17 @@ public class ChomboVtkFileWriter {
 				vtkGridUtils.write(vtkgrid, file.getPath());
 				vtkgrid.Delete(); // if needed for garbage collection
 				files.add(file);
+				
+				if (chomboMeshData.getVCellSolutions().size() > 0)
+				{
+					String filename = chomboFiles.getSimID() + "_" + chomboFiles.getJobIndex() + "_VCellVariableSolution_" + String.format("%06d",timeIndex);
+					File memfile = new File(destinationDirectory,filename+".vtu");
+					vtkgrid = vtkGridUtils.constructVCellVtkGrid(visMesh, chomboMeshData);
+					vtkGridUtils.write(vtkgrid, memfile.getPath());
+					vtkgrid.Delete();
+					files.add(memfile);
+				}
+
 				filesProcessed++;
 				if (progressListener!=null){
 					progressListener.progress(((double)filesProcessed)/numFiles);

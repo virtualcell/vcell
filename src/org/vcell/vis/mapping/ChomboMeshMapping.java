@@ -85,6 +85,7 @@ public class ChomboMeshMapping {
 	        String coordKey = newVisPoint.toStringKey();
 	        pointDict.put(coordKey, currPointIndex);
 	        visMesh.addPoint(newVisPoint);
+	        visMesh.addSurfacePoint(newVisPoint);
 	        currPointIndex += 1;
 	        
 	    }
@@ -220,6 +221,7 @@ public class ChomboMeshMapping {
 	        String coordKey = newVisPoint.toStringKey();
 	        pointDict.put(coordKey, currPointIndex);
 	        visMesh.addPoint(newVisPoint);
+	        visMesh.addSurfacePoint(newVisPoint);
 	        currPointIndex += 1;	        
 	    }
 	    for (ChomboBoundaries.SurfaceTriangle surfaceTriangle : chomboBoundaries.getSurfaceTriangles()){

@@ -2267,12 +2267,16 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 		SubDomain subDomain = subdomainEnum.nextElement();
 		if (subDomain instanceof CompartmentSubDomain){
 			for (int timeIndex : chomboFileIterationIndices){
-				String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol0.hdf5";
-				File file = amplistorHelper.getFile(expectedFile);
-				if (file.exists()){
-					chomboFiles.addDataFile(".feature_"+subDomain.getName(), timeIndex, file);
-				}else{
-					System.out.println("can't find expected chombo file : "+file.getAbsolutePath());
+				for (int ivol = 0; ivol < 20; ++ ivol)
+				{
+					// can be many vol, let us try 20
+					String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
+					File file = amplistorHelper.getFile(expectedFile);
+					if (file.exists()){
+						chomboFiles.addDataFile(".feature_"+subDomain.getName(), timeIndex, file);
+					}else{
+						System.out.println("can't find expected chombo file : "+file.getAbsolutePath());
+					}
 				}
 			}
 		}else{

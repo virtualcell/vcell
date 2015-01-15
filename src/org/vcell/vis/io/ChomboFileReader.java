@@ -2,13 +2,16 @@ package org.vcell.vis.io;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
+import ncsa.hdf.object.HObject;
 
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
@@ -20,6 +23,7 @@ import org.vcell.vis.chombo.ChomboLevel;
 import org.vcell.vis.chombo.ChomboLevelData;
 import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
+import org.vcell.vis.chombo.VCellSolution;
 import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
 
@@ -182,6 +186,8 @@ public class ChomboFileReader {
 				ChomboLevelData chomboLevelData = new ChomboLevelData(i,fractionComponentIndex,((Hdf5Reader.DoubleColumn)data[0]).data,((Hdf5Reader.LongColumn)offsets[0]).data);
 				chomboMeshData.addLevelData(chomboLevelData);
 			}
+			
+			readVCellData(chomboMeshData, rootGroup);
 		}finally{
 			vol0File.close();
 		}
@@ -212,6 +218,37 @@ public class ChomboFileReader {
 			System.out.println("read mesh of dimension "+meshdata.getMesh().getDimension());
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
+		}
+	}
+	
+	private static void readVCellData(ChomboMeshData chomboMeshData, Group rootGroup)
+	{
+			// I added solution and extrapolated_volumes group to hold all the solutions from vcell 
+		String[] groups = new String[]{"solution", "extrapolated_volumes"};
+		for (String group: groups)
+		{
+			try
+			{
+				Group vcellGroup = Hdf5Reader.getChildGroup(rootGroup, group);
+				if (vcellGroup != null)
+				{
+					List<HObject> children = vcellGroup.getMemberList();
+					for (HObject c: children)
+					{
+						if (c instanceof Dataset)
+						{
+							Dataset dataset = (Dataset)c;
+							String name = dataset.getName();
+							VCellSolution vcellSolution = new VCellSolution(name, (double[]) dataset.read());
+							chomboMeshData.addVCellSolution(vcellSolution);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// it is ok if there is no vcell group
+			}
 		}
 	}
 }

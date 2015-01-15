@@ -18,6 +18,7 @@ public class ChomboMeshData {
 	private ArrayList<ChomboLevelData> chomboLevelDatas = new ArrayList<ChomboLevelData>();
 	private ArrayList<String> componentNamesList = new ArrayList<String>();
 	private ArrayList<String> builtinNamesList = new ArrayList<String>();
+	private List<VCellSolution> vcellSolutionList = new ArrayList<VCellSolution>();
 	
 	public ChomboMeshData(ChomboMesh chomboMesh){
 		this.chomboMesh = chomboMesh;
@@ -167,4 +168,12 @@ public class ChomboMeshData {
 		return cellData;
 	}
 
+	public void addVCellSolution(VCellSolution vcellSolution){
+		vcellSolutionList.add(vcellSolution);
+	}
+		
+	public List<VCellSolution> getVCellSolutions()
+	{
+		return vcellSolutionList;
+	}
 }

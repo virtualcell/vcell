@@ -3,15 +3,20 @@ package org.vcell.vis.vtk;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.vcell.vis.chombo.ChomboMeshData;
+import org.vcell.vis.chombo.VCellSolution;
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
+import org.vcell.vis.vismesh.VisLine;
 import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
 import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
+import org.vcell.vis.vismesh.VisSurfaceTriangle;
 import org.vcell.vis.vismesh.VisTetrahedron;
 import org.vcell.vis.vismesh.VisVoxel;
 
@@ -24,6 +29,7 @@ import vtk.vtkFloatArray;
 import vtk.vtkGeometryFilter;
 import vtk.vtkIdList;
 import vtk.vtkIdTypeArray;
+import vtk.vtkLine;
 import vtk.vtkNativeLibrary;
 import vtk.vtkObjectBase;
 import vtk.vtkPointData;
@@ -355,6 +361,85 @@ public class VtkGridUtils {
 		}
 	
 		return grid;
+	}
+
+	public vtkUnstructuredGrid constructVCellVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData) {
+		vtkPoints vtkpoints = new vtkPoints();
+		List<VisPoint> surfacePoints = visMesh.getSurfacePoints();
+		for (VisPoint visPoint : surfacePoints) {
+		    vtkpoints.InsertNextPoint(visPoint.x,visPoint.y,visPoint.z);
+		}
+
+		vtkUnstructuredGrid vtkgrid = new vtkUnstructuredGrid();
+		vtkgrid.Allocate(surfacePoints.size(), surfacePoints.size());
+		vtkgrid.SetPoints(vtkpoints);
+
+		if (visMesh.getDimension() == 2)
+		{
+			int lineType = new vtkLine().GetCellType();
+		
+			for (VisLine line : visMesh.getLines()) 
+			{
+				vtkIdList pts = new vtkIdList();
+				pts.InsertNextId(line.getP1());
+				pts.InsertNextId(line.getP2());
+			  vtkgrid.InsertNextCell(lineType, pts);
+			}
+		}
+		else
+		{
+			int triangleType = new vtkTriangle().GetCellType();
+			for (VisSurfaceTriangle surfaceTriangle : visMesh.getSurfaceTriangles())
+			{
+				vtkIdList pts = new vtkIdList();
+				for (int pi : surfaceTriangle.getPointIndices())
+				{
+					pts.InsertNextId(pi);
+				}
+				// each triangle is a cell
+				vtkgrid.InsertNextCell(triangleType, pts);
+			}
+		}
+		
+		vtkgrid.BuildLinks();
+		
+		int numCells = vtkgrid.GetCells().GetNumberOfCells();
+		vtkCellData cellData = vtkgrid.GetCellData();
+		for (VCellSolution vcsol : chomboMeshData.getVCellSolutions())
+		{
+			double[] data = vcsol.getData();
+			if (visMesh.getDimension() == 3)
+			{
+				// reconstruct data based on triangles
+				double[] tridata = new double[numCells];
+				int cnt = 0;
+				for (VisSurfaceTriangle surfaceTriangle : visMesh.getSurfaceTriangles())
+				{
+					int memIndex = surfaceTriangle.getChomboIndex();
+					tridata[cnt ++] = data[memIndex];
+				}
+				data = tridata;
+			}
+			
+	    vtkDoubleArray cellScalars1 = new vtkDoubleArray();
+	    cellScalars1.SetNumberOfComponents(1);
+	    cellScalars1.SetNumberOfTuples(numCells);
+	    cellScalars1.SetName(vcsol.getName());
+	    cellScalars1.SetJavaArray(data);
+			cellData.AddArray(cellScalars1);
+		}
+		
+		vtkFieldData fieldData = vtkgrid.GetFieldData();
+		vtkFloatArray timeValue = new vtkFloatArray();
+		timeValue.SetNumberOfComponents(1);
+		timeValue.SetNumberOfTuples(1);
+		timeValue.SetName("TIME");
+    float time = (float)chomboMeshData.getTime();
+    float timeArray[] = new float[] { time };
+		timeValue.SetJavaArray(timeArray);
+		fieldData.AddArray(timeValue);
+		
+		return vtkgrid;
 	}
 
 }
