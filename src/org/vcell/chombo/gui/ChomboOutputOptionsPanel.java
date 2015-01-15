@@ -23,7 +23,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 
 @SuppressWarnings("serial")
 public class ChomboOutputOptionsPanel extends JPanel {
-	private static final boolean ENABLE_PARALLEL = false;
+	private static final boolean ENABLE_PARALLEL = true;
 
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener
 	{
