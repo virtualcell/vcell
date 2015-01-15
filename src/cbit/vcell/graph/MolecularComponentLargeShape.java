@@ -137,88 +137,44 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		return stringHeight;
 	}
 
-	public void paintSelf(Graphics g) {
-		paintComponent(g);
-	}
-	
-	public static boolean isHidden(Displayable owner, MolecularComponentPattern mcp) {
-		boolean hidden = false;
+	private Color setComponentColor() {
 		if(owner == null || mcp == null) {
-			return false;
+			return componentBad;
 		}
-		if(owner instanceof RbmObservable) {
-			hidden = true;
-			if(mcp.isbVisible()) {
-				hidden = false;
-			}
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			 if(csp != null && mcp.isFullyDefined()) {
-				 if(!csp.isAny()) {
-					hidden = false;
-				 }
-			 }
-		}
-		return hidden;
-	}
-	
-	public boolean hasIssues() {
-		if(issueManager == null) {
-			return false;
-		}
-		
-		List<Issue> allIssueList = issueManager.getIssueList();
-		for (Issue issue: allIssueList) {
-			if(issue.getSeverity() < Issue.SEVERITY_WARNING) {
-				continue;
-			}
-			
-			Object source = issue.getSource();
-			Object source2 = issue.getSource2();
-			if(source == owner && source2 == mcp) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	
-	// ----------------------------------------------------------------------------------------------
-	private void paintComponent(Graphics g) {
-		
-		boolean hidden = isHidden(owner, mcp);
-		Graphics2D g2 = (Graphics2D)g;
-		
-		g2.setColor(componentBad);
+		Color componentColor = componentBad;
 		if(owner instanceof MolecularType) {
-			g2.setColor(componentGreen);
-			if(!mc.getComponentStateDefinitions().isEmpty()) {
-//				g2.setColor(componentYellow);
-			}
+			componentColor = componentGreen;
 		} else if(owner instanceof SpeciesContext) {
-			if(mc.getComponentStateDefinitions().isEmpty()) {
-				g2.setColor(componentGreen);
-			} else {
-				g2.setColor(componentGreen);
-//				g2.setColor(componentYellow);
-			}
+			componentColor = componentGreen;
 		} else if(owner instanceof RbmObservable) {
-			g2.setColor(componentHidden);
+			componentColor = componentHidden;
 			if(mcp.isbVisible()) {
-				g2.setColor(componentGreen);
+				componentColor = componentGreen;
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
 			if(csp != null && !csp.isAny()) {
-				// components with states show in yellow, be it ComponentStatePattern.strAny state or explicit state
-				g2.setColor(componentGreen);
-				//g2.setColor(componentYellow);
+				componentColor = componentGreen;
 			}
 		} else if(owner instanceof ReactionParticipant) {
 			
 		}
-		
-		if(hasIssues()) {
-			g2.setColor(componentBad);
+		if(AbstractComponentShape.hasIssues(owner, mcp)) {
+			componentColor = componentBad;
 		}
+		return componentColor;
+	}
+
+	// ----------------------------------------------------------------------------------------------
+	public void paintSelf(Graphics g) {
+		paintComponent(g);
+	}
+	private void paintComponent(Graphics g) {
+		
+		boolean hidden = AbstractComponentShape.isHidden(owner, mcp);
+		Graphics2D g2 = (Graphics2D)g;
+		
+		Color componentColor = setComponentColor();
+		g2.setColor(componentColor);
 		
 		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 //		g2.fillArc(xPos, yPos, componentDiameter + textWidth, componentDiameter,0,180);		// fill half of the oval
@@ -227,7 +183,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		} else {
 			g.setColor(Color.gray);
 		}
-		if(hasIssues()) {
+		if(AbstractComponentShape.hasIssues(owner, mcp)) {
 			g2.setColor(Color.red);
 		}
 		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
@@ -262,8 +218,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			
 		}
 		
-		if(/*owner instanceof RbmObservable && */mc.getComponentStateDefinitions().size()>0) {
-			g2.setColor(Color.yellow);
+		// the smaller "State" yellow circle
+		if(mc.getComponentStateDefinitions().size()>0) {
+			g2.setColor(componentYellow);
 			g2.fillOval(xPos + componentDiameter + textWidth - 10, yPos-4, 10, 10);
 			g.setColor(Color.gray);
 			g2.drawOval(xPos + componentDiameter + textWidth - 10, yPos-4, 10, 10);

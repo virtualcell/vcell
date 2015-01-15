@@ -140,7 +140,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			
 			Color fontColor = Color.red;
 			Color lineColor = Color.red;
-			if(MolecularComponentLargeShape.isHidden(owner, bs.mcp)) {
+			if(AbstractComponentShape.isHidden(owner, bs.mcp)) {
 				fontColor = Color.gray;
 				lineColor = Color.lightGray;
 			} else {
@@ -231,5 +231,4 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g2.setColor(colorOld);
 		}
 	}
-	
 }
