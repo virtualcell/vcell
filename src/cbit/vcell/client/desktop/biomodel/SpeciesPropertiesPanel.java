@@ -401,7 +401,7 @@ private void initialize() {
 		rightPanel.setBackground(Color.white);		
 		
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(350);
+		splitPane.setDividerLocation(480);
 		splitPane.setResizeWeight(0.9);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
@@ -1006,7 +1006,7 @@ private void updateShape() {
 			editStateMenu.removeAll();
 			List<String> itemList = new ArrayList<String>();
 			// Any is not an option for species			
-//			itemList.add("Any");
+//			itemList.add(ComponentStatePattern.strAny);
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 				String name = csd.getName();
 				itemList.add(name);
@@ -1017,7 +1017,7 @@ private void updateShape() {
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						String name = e.getActionCommand();
-						if(name.equals("Any")) {
+						if(name.equals(ComponentStatePattern.strAny)) {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {

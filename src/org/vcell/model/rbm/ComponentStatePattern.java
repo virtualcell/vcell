@@ -12,6 +12,8 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	private final ComponentStateDefinition componentStateDefinition;
 	private final boolean bAny;
 	
+	public static final String strAny = "not specified";
+	
 	/* Examples:
 	begin molecule types
 		S(s,t,tyr~Y~pY)			- 
