@@ -14,11 +14,11 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	
 	public static final String strAny = "not specified";
 	
-	/* Examples:
-	begin molecule types
-		S(s,t,tyr~Y~pY)			- 
-		T(s)
-		dnaT()
+	/* Example:
+
+	S(tyr~Y)	// Y is the component state definition, the pattern points to it
+	S(tyr)		// the pattern is in any state (no specified state chosen)
+
 	 */
 	
 	public ComponentStatePattern() {
