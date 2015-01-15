@@ -81,7 +81,7 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 			
 			MolecularComponentPattern mcp = new MolecularComponentPattern(molecularComponent);
 			ComponentStatePattern csp = null;
-			if(state instanceof String && state.equals("Any")) {
+			if(state instanceof String && state.equals(ComponentStatePattern.strAny)) {
 				csp = new ComponentStatePattern();
 				mcp.setComponentStatePattern(csp);
 			} else if(state == null) {
@@ -218,10 +218,10 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 				stateComboBox.removeAllItems();
 				if(owner == species) {
 					if(componentStates.size() == 0) {
-						stateComboBox.addItem("Any");
+						stateComboBox.addItem(ComponentStatePattern.strAny);
 					}
 				} else {
-					stateComboBox.addItem("Any");
+					stateComboBox.addItem(ComponentStatePattern.strAny);
 				}
 				for (ComponentStateDefinition cs : componentStates) {
 					stateComboBox.addItem(cs);

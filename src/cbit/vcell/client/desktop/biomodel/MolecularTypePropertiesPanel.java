@@ -292,8 +292,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		rightPanel.setBackground(Color.white);		
 		
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(350);
-		splitPane.setResizeWeight(0.9);
+		splitPane.setDividerLocation(240);
+		splitPane.setResizeWeight(0.1);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
 		
