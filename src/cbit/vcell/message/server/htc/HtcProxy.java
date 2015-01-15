@@ -40,17 +40,24 @@ public abstract class HtcProxy {
 	 */
 	
 	public static class HtcJobInfo{
-		private HtcJobID htcJobID;
-		private String jobName;
-		private String errorPath;
-		private String outputPath;
-		private boolean bFound;
+		private final HtcJobID htcJobID;
+		private final String jobName;
+		//private String errorPath;
+		//private String outputPath;
+		private final boolean bFound;
+		/**
+		 * @param htcJobID
+		 * @param bFound
+		 * @param jobName
+		 * @param errorPath ignored
+		 * @param outputPath ignored
+		 */
 		public HtcJobInfo(HtcJobID htcJobID, boolean bFound, String jobName,String errorPath,String outputPath) {
 			this.htcJobID = htcJobID;
 			this.bFound = bFound;
 			this.jobName = jobName;
-			this.errorPath = errorPath;
-			this.outputPath = outputPath;
+			//this.errorPath = errorPath;
+			//this.outputPath = outputPath;
 		}
 		public HtcJobID getHtcJobID() {
 			return htcJobID;
@@ -74,7 +81,7 @@ public abstract class HtcProxy {
 		}
 		public String toString(){
 			if (bFound){
-				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+",errorPath="+errorPath+",outputPath="+outputPath+")";
+				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+",found=true,jobName="+jobName+")";
 			}else{
 				return "HtcJobInfo(jobID="+htcJobID.toDatabase()+", JOB NOT FOUND)";
 			}
@@ -98,7 +105,7 @@ public abstract class HtcProxy {
 		}
 	}
 	
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "HPT_";
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
 	protected final CommandService commandService;
 	protected final String htcUser;
 
