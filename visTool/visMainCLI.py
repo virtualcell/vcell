@@ -5,7 +5,7 @@ import sys, os
 sys.path.append(os.path.dirname(__file__))
 
 # Needed to attach to Visual Studio.  Adjust for your machine's paths.
-sys.path.append("C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\Common7\\IDE\\Extensions\\Microsoft\\Python Tools for Visual Studio\\2.0")
+#sys.path.append("C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\Common7\\IDE\\Extensions\\Microsoft\\Python Tools for Visual Studio\\2.0")
 import visQt
 visQt.initPyside()
 QtCore = visQt.QtCore
