@@ -51,7 +51,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 	public final static int COLUMN_DEPICTION = 2;	
 	public final static int COLUMN_DEFINITION = 3;	
 	public final static int COLUMN_STRUCTURE = 4;	
-	private static String[] columnNames = new String[] {"Name","Link","Depiction","Definition","Structure"};
+	private static String[] columnNames = new String[] {"Name","Link","Depiction","BioNetGen Definition","Structure"};
 
 	public BioModelEditorSpeciesTableModel(EditorScrollTable table) {
 		super(table);
