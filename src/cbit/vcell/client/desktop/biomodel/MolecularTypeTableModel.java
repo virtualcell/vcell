@@ -31,7 +31,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 	public enum Column {
 		name("Name"),
 		depiction("Depiction"),
-		bngl_pattern("BNGL Pattern");
+		bngl_pattern("BioNetGen Definition");
 		
 		String columeName;
 		Column(String col) {
