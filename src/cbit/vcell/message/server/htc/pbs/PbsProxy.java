@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -128,14 +127,14 @@ public final class PbsProxy extends HtcProxy {
 			System.err.println(standardOut);
 			
 			if (exitStatus!=null && exitStatus==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardError!=null && standardError.toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
-				throw new HtcJobNotFoundException(standardError);
+				throw new HtcJobNotFoundException(standardError, htcJobId);
 			}
 		}catch (ExecutableException e){
 			e.printStackTrace();
 			if (!e.getMessage().toLowerCase().contains(UNKNOWN_JOB_ID_QSTAT_RESPONSE.toLowerCase())){
 				throw e;
 			}else{
-				throw new HtcJobNotFoundException(e.getMessage());
+				throw new HtcJobNotFoundException(e.getMessage(), htcJobId);
 			}
 		}
 	}
@@ -163,98 +162,98 @@ public final class PbsProxy extends HtcProxy {
 		    	htcLogDirString = htcLogDirString+"/";
 		    }
 
-		    StringWriter sw = new StringWriter();
+		    StringBuilder sb = new StringBuilder(); 
 			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
 
-			sw.append("# Generated without file template. assuming /bin/bash shell\n");
-			sw.append("#PBS -N " + jobName+"\n");
-			sw.append("#PBS -l mem=" + (int)(memSize + JOB_MEM_OVERHEAD_MB) + "mb\n");
+			sb.append("# Generated without file template. assuming /bin/bash shell\n");
+			sb.append("#PBS -N " + jobName+"\n");
+			sb.append("#PBS -l mem=" + (int)(memSize + JOB_MEM_OVERHEAD_MB) + "mb\n");
 			String pbsQueueName = PropertyLoader.getProperty(PropertyLoader.htcBatchSystemQueue,null);
 			if (pbsQueueName!=null && pbsQueueName.trim().length()>0){
-				sw.append("#PBS -q "+pbsQueueName+"\n");
+				sb.append("#PBS -q "+pbsQueueName+"\n");
 			}
-			sw.append("#PBS -m a\n");
-			sw.append("#PBS -M schaff@uchc.edu\n");
-			sw.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
-			sw.append("#PBS -j oe\n");
+			sb.append("#PBS -m a\n");
+			sb.append("#PBS -M schaff@uchc.edu\n");
+			sb.append("#PBS -o "+htcLogDirString+jobName+".pbs.log\n");
+			sb.append("#PBS -j oe\n");
 //			sw.append("#PBS -k oe\n");
-			sw.append("#PBS -r n\n");
-			sw.append("#PBS -l nice=10\n");
+			sb.append("#PBS -r n\n");
+			sb.append("#PBS -l nice=10\n");
 			if (ncpus > 1) {
 				char newline = '\n';
-				sw.append("#PBS -l nodes=1:ppn=" + ncpus + newline); 
+				sb.append("#PBS -l nodes=1:ppn=" + ncpus + newline); 
 			}
-			sw.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-		    sw.append(CommandOutput.concatCommandStrings(command)+"\n");
-		    sw.append("retcode1=$?\n");
-		    sw.append("echo\n");
-		    sw.append("echo\n");
-		    sw.append("echo command1 returned $retcode1\n");
+			sb.append("export PATH=/cm/shared/apps/torque/2.5.5/bin/:$PATH\n");
+			sb.append("echo\n");
+			sb.append("echo\n");
+			sb.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
+			sb.append("echo\n");
+			sb.append("echo\n");
+		    sb.append(CommandOutput.concatCommandStrings(command)+"\n");
+		    sb.append("retcode1=$?\n");
+		    sb.append("echo\n");
+		    sb.append("echo\n");
+		    sb.append("echo command1 returned $retcode1\n");
 			if (secondCommand!=null){
-				sw.append("if [ $retcode1 = 0 ] ; then\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
-				sw.append("     retcode2=$?\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo command2 returned $retcode2\n");
-				sw.append("     echo returning return code $retcode2 to PBS\n");
+				sb.append("if [ $retcode1 = 0 ] ; then\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
+				sb.append("     retcode2=$?\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     echo command2 returned $retcode2\n");
+				sb.append("     echo returning return code $retcode2 to PBS\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("     exit $retcode2\n");
-				sw.append("else\n");
-				sw.append("		echo \"command1 failed, skipping command2\"\n");
-				sw.append("     echo returning return code $retcode1 to PBS\n");
+				sb.append("     exit $retcode2\n");
+				sb.append("else\n");
+				sb.append("		echo \"command1 failed, skipping command2\"\n");
+				sb.append("     echo returning return code $retcode1 to PBS\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("     exit $retcode1\n");
-				sw.append("fi\n");
+				sb.append("     exit $retcode1\n");
+				sb.append("fi\n");
 			}else{
-				sw.append("     echo returning return code $retcode1 to PBS\n");
+				sb.append("     echo returning return code $retcode1 to PBS\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("     exit $retcode1\n");
+				sb.append("     exit $retcode1\n");
 			}
 			if (postProcessingCommands != null) {
-				PortableCommandWrapper.insertCommands(sw, postProcessingCommands); 
+				PortableCommandWrapper.insertCommands(sb, postProcessingCommands); 
 			}
 			
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 
-			writeUnixStyleTextFile(tempFile, sw.getBuffer().toString());
+			writeUnixStyleTextFile(tempFile, sb.toString());
 			
 			// move submission file to final location (either locally or remotely).
 			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");

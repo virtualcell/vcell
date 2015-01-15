@@ -59,6 +59,7 @@ public abstract class HtcProxy {
 			validate();
 			return jobName;
 		}
+		/*
 		public String getErrorPath() {
 			validate();
 			return errorPath;
@@ -67,6 +68,7 @@ public abstract class HtcProxy {
 			validate();
 			return outputPath;
 		}
+		*/
 		public boolean isFound(){
 			return bFound;
 		}
@@ -96,7 +98,7 @@ public abstract class HtcProxy {
 		}
 	}
 	
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "HPT_";
 	protected final CommandService commandService;
 	protected final String htcUser;
 

@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -42,6 +41,7 @@ public class PropertyLoader {
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",RequiredFor.NOT,ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",RequiredFor.NOT,ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",RequiredFor.NOT,ValueType.GEN);
+	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",RequiredFor.SERVER,ValueType.DIR);
 
 	public static final String compilerProperty				= record("vcell.c++.compiler",RequiredFor.NOT,ValueType.GEN);
 	public static final String linkerProperty				= record("vcell.c++.linker",RequiredFor.NOT,ValueType.GEN);

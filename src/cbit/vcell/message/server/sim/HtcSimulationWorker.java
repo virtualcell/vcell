@@ -72,7 +72,6 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
-import cbit.vcell.tools.FailedPortableCommand;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -283,7 +282,6 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 			postProcessingCommands = new ArrayList<PortableCommand>(); 
 			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), rd.runDirectory,rd.finalDataDirectory); 
 			postProcessingCommands.add(csf);
-			postProcessingCommands.add(new FailedPortableCommand()); //test failure
 		}
 		
 		jobid = clonedHtcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING,postProcessingCommands);
