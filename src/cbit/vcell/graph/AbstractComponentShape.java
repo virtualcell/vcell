@@ -2,12 +2,20 @@ package cbit.vcell.graph;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.List;
 
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.SpeciesContext;
 
-public class AbstractComponentShape {
+public abstract class AbstractComponentShape {
 
 	class BondPair implements Comparable {
 		int id;
@@ -42,14 +50,15 @@ public class AbstractComponentShape {
 		Point from;
 	}
 
-	final Color componentGreen = new Color(0xccffcc);
-	final Color componentYellow = new Color(0xffff99);
-	final Color componentBad = new Color(0xffb2b2);
-	final Color componentHidden = new Color(0xe7e7e7);
-//	final Color componentHidden = new Color(0xffffff);
+	final static Color componentGreen = new Color(0xccffcc);
+	final static Color componentYellow = new Color(0xffdf00);
+//	final static Color componentYellow = new Color(0xffff99);
+	final static Color componentBad = new Color(0xffb2b2);
+	final static Color componentHidden = new Color(0xe7e7e7);
+//	final static Color componentHidden = new Color(0xffffff);
 
-	final Color plusSignGreen = new Color(0x37874f);
-//	final Color plusSignGreen = new Color(0x006b1f);
+	final static Color plusSignGreen = new Color(0x37874f);
+//	final static Color plusSignGreen = new Color(0x006b1f);
 	
 	// used to colorize components with issues
 	static protected IssueManager issueManager;
@@ -58,5 +67,47 @@ public class AbstractComponentShape {
 	}
 	public final static IssueManager getIssueManager() {
 		return issueManager;
+	}
+	
+	protected static boolean isHidden(Displayable owner, MolecularComponentPattern mcp) {
+		boolean hidden = false;
+		if(owner == null || mcp == null) {
+			return false;
+		}
+		if(owner instanceof RbmObservable) {
+			hidden = true;
+			if(mcp.isbVisible()) {
+				hidden = false;
+			}
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			 if(csp != null && mcp.isFullyDefined()) {
+				 if(!csp.isAny()) {
+					hidden = false;
+				 }
+			 }
+		}
+		return hidden;
+	}
+	protected static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp) {
+		if(issueManager == null) {
+			return false;
+		}
+		if(owner == null || mcp == null) {
+			return false;
+		}
+		
+		List<Issue> allIssueList = issueManager.getIssueList();
+		for (Issue issue: allIssueList) {
+			if(issue.getSeverity() < Issue.SEVERITY_WARNING) {
+				continue;
+			}
+			
+			Object source = issue.getSource();
+			Object source2 = issue.getSource2();
+			if(source == owner && source2 == mcp) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
