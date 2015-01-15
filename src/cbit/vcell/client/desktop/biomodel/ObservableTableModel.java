@@ -30,6 +30,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 
 	public enum Column {
 		name("Name"),
+		depiction("Depiction"),
 		species_pattern("Species Pattern"),
 		type("Type");
 		
@@ -168,6 +169,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		if (o == null) {
 			return false;
 		}
+		if (col == Column.depiction) {
+			return false;
+		}
 		final List<SpeciesPattern> spList = o.getSpeciesPatternList();
 		for(SpeciesPattern sp : spList) {
 			final List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
@@ -219,6 +223,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 			return String.class;
 		case type:
 			return RbmObservable.ObservableType.class;
+		case depiction:
+			return Object.class;
 		}
 		return String.class;
 	}

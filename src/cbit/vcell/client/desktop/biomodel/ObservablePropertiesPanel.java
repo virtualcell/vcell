@@ -293,6 +293,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
 				for(SpeciesPatternLargeShape sps : spsList) {
+					if(sps == null) {
+						continue;
+					}
 					sps.paintSelf(g);
 				}
 			}

@@ -28,6 +28,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	private static final int separationWidth = 3;		// width between 2 molecular type patterns
 	private int xPos = 0;
 	private int yPos = 0;
+	private int width = 0;
 	private List<SpeciesTypeSmallShape> speciesShapes = new ArrayList<SpeciesTypeSmallShape>();
 	private boolean isSelected = false;
 	
@@ -54,7 +55,6 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 			speciesShapes.add(stls);
 			return;
 		}
-		
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
@@ -62,6 +62,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
+		this.width = xPattern-xPos;
 		
 		// bonds - we have to deal with them here because they may be cross-molecular type patterns
 		// WARNING: we assume that the order of the Species Type Large Shapes in speciesShapes 
@@ -118,6 +119,9 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	}
 	public int getY(){
 		return yPos;
+	}
+	public int getWidth(){
+		return width;
 	}
 	
 	public void paintSelf(Graphics g) {
