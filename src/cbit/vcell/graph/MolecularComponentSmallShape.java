@@ -62,6 +62,24 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	public int getHeight(){
 		return height;
 	}
+	
+	private Color setComponentColor() {
+
+		Color componentColor = componentBad;
+		if(mc.getComponentStateDefinitions().isEmpty()) {
+			componentColor = componentGreen;
+		} else {
+			componentColor = componentYellow;
+		}
+		if(isHidden(owner, mcp)) {
+			componentColor = componentHidden;
+		}
+		if(hasIssues(owner, mcp)) {
+			componentColor = componentBad;
+		}
+		return componentColor;
+	}
+
 
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
@@ -70,11 +88,9 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	// ----------------------------------------------------------------------------------------------
 	private void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
-		if(mc.getComponentStateDefinitions().isEmpty()) {
-			g2.setColor(componentGreen);
-		} else {
-			g2.setColor(componentYellow);
-		}
+		Color componentColor = setComponentColor();
+		
+		g2.setColor(componentColor);
 		g2.fillOval(xPos, yPos, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
 		g2.setColor(Color.BLACK);
 		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
