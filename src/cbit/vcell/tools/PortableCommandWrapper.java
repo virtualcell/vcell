@@ -3,8 +3,6 @@ package cbit.vcell.tools;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -156,31 +154,35 @@ public class PortableCommandWrapper {
 	}
 
 	/**
-	 * insert commands into StreamWriter
-	 * @param sw destination
+	 * insert commands into StringBuilder 
+	 * @param sb destination
 	 * @param commands 
 	 * @throws IllegalArgumentException if either argument null
 	 */
-	public static void insertCommands(StringWriter sw, Collection<PortableCommand> commands) {
-		if (sw == null || commands == null) {
-			throw new IllegalArgumentException("StringWriter " + sw + "or commands " + commands + " null");
+	public static void insertCommands(StringBuilder sb, Collection<PortableCommand> commands) {
+		if (sb == null || commands == null) {
+			throw new IllegalArgumentException("StringWriter " + sb + "or commands " + commands + " null");
 		}
 		if (!commands.isEmpty()) {
 			PortableCommandWrapper wrapper = new PortableCommandWrapper( );
-			PrintWriter pw = new PrintWriter(sw);
+			//PrintWriter pw = new PrintWriter(sb);
 			for (PortableCommand cmd: commands) {
+				final char NEWLINE = '\n';
 				wrapper.setCommand(cmd);
-				pw.print(SCRIPT_COMMENT);
-				pw.println(POSTPROCESSOR_CMD_TOKEN);
+				sb.append(SCRIPT_COMMENT);
+				sb.append(POSTPROCESSOR_CMD_TOKEN);
+				sb.append(NEWLINE);
 				String json = wrapper.asJson();
 				//don't assume json single line -- 
 				StringTokenizer tokenizer = new StringTokenizer(json, "\n", true);
 				while (tokenizer.hasMoreTokens()) {
-					pw.print(SCRIPT_COMMENT);
-					pw.println(tokenizer.nextToken());
+					sb.append(SCRIPT_COMMENT);
+					sb.append(tokenizer.nextToken());
+					sb.append(NEWLINE);
 				}
-				pw.print(SCRIPT_COMMENT);
-				pw.println(POSTPROCESSOR_CMD_END_TOKEN);
+				sb.append(SCRIPT_COMMENT);
+				sb.append(POSTPROCESSOR_CMD_END_TOKEN);
+				sb.append(NEWLINE);
 			}
 		}
 	}

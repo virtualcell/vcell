@@ -2,14 +2,11 @@ package cbit.vcell.message.server.htc.sge;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -32,192 +29,42 @@ public class SgeProxy extends HtcProxy {
 	private final static int QDEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SGE_SUBMISSION_FILE_EXT = ".sge.sub";
+	private Map<HtcJobID, JobInfoAndStatus> statusMap;
+	/**
+	 * jobs that start with {@link HTC_SIMULATION_JOB_NAME_PREFIX}
+	 */
+	private List<HtcJobID> cachedList;
+	
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
 	private final static String JOB_CMD_SUBMIT = "qsub";
 	private final static String JOB_CMD_DELETE = "qdel";
 	private final static String JOB_CMD_STATUS = "qstat";
-	private final static String JOB_CMD_QACCT = "qacct";
-
+	//private final static String JOB_CMD_QACCT = "qacct";
+	private static String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
+	private static String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
+	private static String MPI_HOME= PropertyLoader.getRequiredProperty(PropertyLoader.MPI_HOME);
+	static {
+		if (!SGE_HOME.endsWith("/")){
+			SGE_HOME += "/";
+		}
+	    if (!htcLogDirString.endsWith("/")){
+	    	htcLogDirString = htcLogDirString+"/";
+	    }
+	}
 	
 	public SgeProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
-	}
-	
-
-	/**
-	 * qstat -j 6892
-	 * 
-==============================================================
-job_number:                 6892
-exec_file:                  job_scripts/6892
-submission_time:            Tue Oct  9 15:05:44 2012
-owner:                      vcell
-uid:                        10001
-group:                      Domain
-gid:                        10000
-sge_o_home:                 /home/VCELL/vcell
-sge_o_log_name:             vcell
-sge_o_path:                 /share/apps/vcell/visit/visit_x86_64/bin:/opt/torque/bin:/sbin:/usr/lib64/qt-3.3/bin:/usr/java/latest/bin:/opt/cuda/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/ganglia/bin:/opt/ganglia/sbin:/opt/bin:/opt/pdsh/bin:/opt/rocks/bin:/opt/rocks/sbin:/opt/gridengine/bin/lx26-amd64
-sge_o_shell:                /bin/bash
-sge_o_workdir:              /home/VCELL/vcell
-sge_o_host:                 sigcluster2
-account:                    sge
-mail_list:                  vcell@sigcluster2.local
-notify:                     FALSE
-job_name:                   calculatePi.sh
-jobshare:                   0
-env_list:
-job_args:                   100000
-script_file:                calculatePi.sh
-scheduling info:            (Collecting of scheduler job information is turned off)
-
-	 */
-	
-	/**
-	 * qstat -j 6892
-	 * 
-Following jobs do not exist:
-6892
-
-	 */
-	
-	/**
-	 * qacct -j 6894
-	 * 
-error: job id 6894 not found
-
-	 */
-	
-	
-	/**
-	 * qacct -j 6892
-	 * 
-==============================================================
-qname        all.q
-hostname     compute-5-0.local
-group        Domain
-owner        vcell
-project      NONE
-department   defaultdepartment
-jobname      calculatePi.sh
-jobnumber    6892
-taskid       undefined
-account      sge
-priority     0
-qsub_time    Tue Oct  9 15:05:44 2012
-start_time   Tue Oct  9 15:05:49 2012
-end_time     Tue Oct  9 15:05:52 2012
-granted_pe   NONE
-slots        1
-failed       0
-exit_status  1
-ru_wallclock 3
-ru_utime     0.215
-ru_stime     0.103
-ru_maxrss    2116
-ru_ixrss     0
-ru_ismrss    0
-ru_idrss     0
-ru_isrss     0
-ru_minflt    23740
-ru_majflt    1
-ru_nswap     0
-ru_inblock   296
-ru_oublock   24
-ru_msgsnd    0
-ru_msgrcv    0
-ru_nsignals  0
-ru_nvcsw     334
-ru_nivcsw    63
-cpu          0.318
-mem          0.000
-io           0.000
-iow          0.000
-maxvmem      49.582M
-arid         undefined
-	 * @throws HtcException 
-
-	 */
-	
-	private HashMap<String, String> parseOutput(CommandOutput commandOutput) throws HtcException{
-		
-		HashMap<String,String> map = new HashMap<String, String>();
-		
-		if (commandOutput.getStandardError().length()>0){
-			StringTokenizer lineTokens = new StringTokenizer(commandOutput.getStandardError(), "\r\n");
-			if (!lineTokens.hasMoreTokens()){
-				throw new RuntimeException("no output to parse");
-			}
-			String line = lineTokens.nextToken();
-			if (line.contains("Following jobs do not exist:")){
-				return null;
-			}else if (line.contains("error: job id") && line.contains("not found")){
-				return null;
-			}else{
-				throw new HtcException("can't interpret command output");
-			}
-		}else if (commandOutput.getStandardOutput().length()>0){
-			StringTokenizer lineTokens = new StringTokenizer(commandOutput.getStandardOutput(), "\r\n");
-			if (!lineTokens.hasMoreTokens()){
-				throw new RuntimeException("no output to parse");
-			}
-			String line = lineTokens.nextToken();
-			if (line.startsWith("========")){
-				while (lineTokens.hasMoreTokens()) {
-					line = lineTokens.nextToken();
-					StringTokenizer tokens = new StringTokenizer(line," ");
-					String key = tokens.nextToken();
-					String value = line.substring(key.length()).trim();
-					map.put(key, value);
-				}
-				return map;
-			}else{
-				throw new RuntimeException("unexpected command output: "+line);
-			}
-		}else{
-			throw new RuntimeException("no output to parse");
-		}
+		statusMap = new HashMap<HtcJobID,JobInfoAndStatus>( );
+		cachedList = new ArrayList<>(); 
 	}
 
 	@Override
 	public HtcJobStatus getJobStatus(HtcJobID htcJobId) throws HtcException, ExecutableException {
-		if (!(htcJobId instanceof SgeJobID)){
-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
+		if (statusMap.containsKey(htcJobId)) {
+			return statusMap.get(htcJobId).status;
 		}
-		SgeJobID sgeJobID = (SgeJobID)htcJobId;
-
-		HtcJobStatus iStatus = null;
-
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
-
-		String[] qstat_cmd = new String[]{SGE_HOME + JOB_CMD_STATUS, "-j", Long.toString(sgeJobID.getSgeJobNumber())};
-		
-		
-		//CommandOutput commandOutput = commandService.command(qstat_cmd,new int[] { 0,1});
-		
-		//CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])), new int[] { 0, 153 });
-
-		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, qstat_cmd), new int[] { 0, 1 });
-		
-		HashMap<String,String> outputMap = parseOutput(commandOutput);
-		
-		if (outputMap == null){
-			String[] qacct_cmd = new String[]{SGE_HOME + JOB_CMD_QACCT, "-j", Long.toString(sgeJobID.getSgeJobNumber())};
-			commandOutput = commandService.command(qacct_cmd);
-
-			outputMap = parseOutput(commandOutput);
-			if (outputMap == null){
-				throw new HtcJobNotFoundException("job not found");
-			}else{
-				return new HtcJobStatus(SGEJobStatus.EXITED);
-			}
-		}else{
-			return new HtcJobStatus(SGEJobStatus.RUNNING);
-		}
+		throw new HtcJobNotFoundException("job not found", htcJobId);
 	}
 	
 	/**
@@ -238,133 +85,152 @@ denied: job "6894" does not exist
 	
 	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
-		if (!(htcJobId instanceof SgeJobID)){
-			throw new HtcException("jobID ("+htcJobId.toDatabase()+") from another queuing system");
-		}
-		SgeJobID sgeJobID = (SgeJobID)htcJobId;
-		
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
 
-		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, Long.toString(sgeJobID.getSgeJobNumber())};
+		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			
-			CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmd), new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
+			CommandOutput commandOutput = commandService.command(cmd,new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardOut = commandOutput.getStandardOutput();
 			if (exitStatus!=null && exitStatus.intValue()==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
-				throw new HtcJobNotFoundException(standardOut);
+				throw new HtcJobNotFoundException(standardOut, htcJobId);
 			}
 		}catch (ExecutableException e){
 			e.printStackTrace();
 			if (!e.getMessage().toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
 				throw e;
 			}else{
-				throw new HtcJobNotFoundException(e.getMessage());
+				throw new HtcJobNotFoundException(e.getMessage(), htcJobId);
 			}
 		}
 	}
 	
+	/**
+	 * build numerics command, adding MPICH command if necessary
+	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
+	 * @param cmds command set
+	 * @return new String
+	 */
+	private final String buildExeCommand(int ncpus,String cmds[]) {
+		if (ncpus == 1) {
+			return CommandOutput.concatCommandStrings(cmds);
+		}
+		final char SPACE = ' ';
+		StringBuilder sb = new StringBuilder( );
+		sb.append(MPI_HOME);
+		sb.append("/bin/mpiexec -np ");
+		sb.append(ncpus);
+		sb.append(SPACE);
+		for (String s: cmds) {
+			sb.append(s);
+			sb.append(SPACE);
+		}
+		return sb.toString().trim( );
+	}
+	
 	@Override
 	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-		if (ncpus > 1) {
-			throw new ExecutableException("parallel processing not implemented on " + getClass( ).getName());
-		}
 		try {
+			final boolean isParallel = ncpus > 1;
 
-			String htcLogDirString = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDir);
-		    if (!(htcLogDirString.endsWith("/"))){
-		    	htcLogDirString = htcLogDirString+"/";
-		    }
 			
-			StringWriter sw = new StringWriter();
+			StringBuilder sb = new StringBuilder(); 
 
-		    sw.append("#!/bin/csh\n");
-		    sw.append("#$ -N " + jobName + "\n");
-		    sw.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
+		    sb.append("#!/bin/csh\n");
+		    sb.append("#$ -N " + jobName + "\n");
+		    sb.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
 //			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
 
-			int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
+			//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
 
-		    long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
-		    sw.append("#$ -j y\n");
+		    //long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
+		    sb.append("#$ -j y\n");
 //		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
-		    sw.append("# -cwd\n");
-		    sw.append("# the commands to be executed\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-			sw.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
-			sw.append("echo\n");
-			sw.append("echo\n");
-		    sw.append(CommandOutput.concatCommandStrings(command)+"\n");
-		    sw.append("set retcode1 = $status\n");
-		    sw.append("echo\n");
-		    sw.append("echo\n");
-		    sw.append("echo command1 returned $retcode1\n");
+		    sb.append("#$ -cwd\n");
+		    if (isParallel) {
+		    	final char NEWLINE = '\n';
+			    sb.append("#$ -pe mpich ");
+			    sb.append(ncpus);
+			    sb.append(NEWLINE);
+			    sb.append("#$ -v LD_LIBRARY_PATH=");
+			    sb.append(MPI_HOME);
+			    sb.append("/lib");
+			    sb.append(NEWLINE);
+		    }
+		    sb.append("# the commands to be executed\n");
+			sb.append("echo\n");
+			sb.append("echo\n");
+			sb.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
+			sb.append("echo\n");
+			sb.append("echo\n");
+		    sb.append(CommandOutput.concatCommandStrings(command)+"\n");
+		    sb.append("set retcode1 = $status\n");
+		    sb.append("echo\n");
+		    sb.append("echo\n");
+		    sb.append("echo command1 returned $retcode1\n");
 			if (secondCommand!=null){
-				sw.append("if ( $retcode1 == 0 ) then\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo \"command2 = '"+CommandOutput.concatCommandStrings(secondCommand)+"'\"\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     "+CommandOutput.concatCommandStrings(secondCommand)+"\n");
-				sw.append("     set retcode2 = $status\n");
-				sw.append("		echo\n");
-				sw.append("		echo\n");
-				sw.append("     echo command2 returned $retcode2\n");
-				sw.append("     echo returning return code $retcode2 to PBS\n");
+				final String exeString  = buildExeCommand(ncpus, secondCommand);
+				sb.append("if ( $retcode1 == 0 ) then\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     echo \"command2 = '" + exeString +"'\"\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     " + exeString + "\n");
+				sb.append("     set retcode2 = $status\n");
+				sb.append("		echo\n");
+				sb.append("		echo\n");
+				sb.append("     echo command2 returned $retcode2\n");
+				sb.append("     echo returning return code $retcode2 to PBS\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("     exit $retcode2\n");
-				sw.append("else\n");
-				sw.append("		echo \"command1 failed, skipping command2\"\n");
-				sw.append("     echo returning return code $retcode1 to SGE\n");
+				sb.append("     exit $retcode2\n");
+				sb.append("else\n");
+				sb.append("		echo \"command1 failed, skipping command2\"\n");
+				sb.append("     echo returning return code $retcode1 to SGE\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("     exit $retcode1\n");
-				sw.append("endif\n");
+				sb.append("     exit $retcode1\n");
+				sb.append("endif\n");
 			}else{
-				sw.append("echo returning return code $retcode1 to SGE\n");
+				sb.append("echo returning return code $retcode1 to SGE\n");
 				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
-					sw.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sw.append("		echo\n");
-					sw.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
+					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
+					sb.append("		echo\n");
+					sb.append("		echo\n");
 				}
-				sw.append("exit $retcode1\n");
+				sb.append("exit $retcode1\n");
 			}
 			if (postProcessingCommands != null) {
-				PortableCommandWrapper.insertCommands(sw, postProcessingCommands); 
+				PortableCommandWrapper.insertCommands(sb, postProcessingCommands); 
 			}
 			
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 
-			writeUnixStyleTextFile(tempFile, sw.getBuffer().toString());
+			writeUnixStyleTextFile(tempFile, sb.toString());
 			
 			// move submission file to final location (either locally or remotely).
 			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
@@ -376,12 +242,8 @@ denied: job "6894" does not exist
 			return null;
 		}
 
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
 		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
-		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, completeCommand));
+		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
 		
 		return new SgeJobID(jobid);
@@ -399,31 +261,16 @@ denied: job "6894" does not exist
 	
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
-/*
-   6951 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-4-1.local            1
-   6952 0.55500 TEST2_MySe vcell        r     10/10/2012 19:08:34 all.q@compute-0-1.local            1
- */
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
-		String[] cmd = constructShellCommand(commandService, new String[]{SGE_HOME + JOB_CMD_STATUS, "|", "grep", getHtcUser(),"|", "grep", jobNamePrefix,"|","cat"/*compensate grep behaviour*/});
-		CommandOutput commandOutput = commandService.command(cmd);
-		ArrayList<HtcJobID> serviceJobIDs = new ArrayList<HtcJobID>();
+		String[] cmds = {SGE_HOME + JOB_CMD_STATUS,"-f","-xml"};
+		CommandOutput commandOutput = commandService.command(cmds);
 		
 		String output = commandOutput.getStandardOutput();
-		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
-		while (st.hasMoreTokens()) {
-			String line = st.nextToken().trim();
-			StringTokenizer lineTokens = new StringTokenizer(line," \t");
-			serviceJobIDs.add(new SgeJobID(lineTokens.nextToken()));
-		}
-		return serviceJobIDs;
+		parseXML(output,jobNamePrefix);
+		return cachedList;
 	}
 
 	@Override
 	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
-		try{
 			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
 			for (HtcJobID htcJobID : htcJobIDs){
 				HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
@@ -432,81 +279,45 @@ denied: job "6894" does not exist
 				}
 			}
 			return jobInfoMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-			if(e instanceof ExecutableException){
-				throw (ExecutableException)e;
-			}else{
-				throw new ExecutableException("Error getJobInfo: "+e.getMessage());
+	}
+	
+	private static final String PSYM_QINFO = "queue_info";
+	private static final String PSYM_QLIST = "Queue-List";
+	//private static final String PSYM_NAME = "name";
+	private static final String PSYM_JLIST = "job_list";
+	private static final String PSYM_JNAME = "JB_name";
+	private static final String PSYM_JNUMBER = "JB_job_number";
+	private static final String PSYM_STATE = "state";
+	private void parseXML(String xmlString, String prefix) {
+		statusMap.clear();
+		cachedList.clear();
+		Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
+		Element rootElement = qstatDoc.getRootElement();
+		Element qElement = rootElement.getChild(PSYM_QINFO);
+		for (Element qList : XmlUtil.getChildren(qElement,PSYM_QLIST,Element.class) ) {
+			//String name = qList.getChildText(PSYM_NAME);
+			for (Element ji : XmlUtil.getChildren(qList, PSYM_JLIST, Element.class)) {
+				String jname = ji.getChildText(PSYM_JNAME);
+				if (prefix != null  && !jname.startsWith(prefix)) {
+					continue;
+				}
+				String jn = ji.getChildText(PSYM_JNUMBER);
+				String state = ji.getAttributeValue(PSYM_STATE);
+				SgeJobID id = new SgeJobID(jn);
+				HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
+				HtcJobStatus status = new HtcJobStatus(SGEJobStatus.parseStatus(state));
+				statusMap.put(id, new JobInfoAndStatus(hji, status));
+				cachedList.add(id);
 			}
 		}
 	}
-
-	public HtcJobInfo getJobInfo(HtcJobID htcJobID) throws ExecutableException {
-		Vector<String> cmdV = new Vector<String>();
-		String SGE_HOME = PropertyLoader.getRequiredProperty(PropertyLoader.htcSgeHome);
-		if (!SGE_HOME.endsWith("/")){
-			SGE_HOME += "/";
-		}
-		cmdV.add(SGE_HOME + JOB_CMD_STATUS);
-		cmdV.add("-f");
-		cmdV.add("-j");
-		cmdV.add(Long.toString(((SgeJobID)htcJobID).getSgeJobNumber()));
-		cmdV.add("-xml");
-		CommandOutput commandOutput = commandService.command(constructShellCommand(commandService, cmdV.toArray(new String[0])));
-		String xmlString = commandOutput.getStandardOutput();
-		if (xmlString.contains("unknown_jobs")){
-			/**
-			 * <unknown_jobs  xmlns:xsd='http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11'>
-			 * 		<>
-			 * 			<ST_name>12345</ST_name>
-			 * 		</>
-			 * </unknown_jobs>
-			 **/
-			return new HtcJobInfo(htcJobID,false,null,null,null);
-		}else{
-			/**
-			 * 
-			 * <detailed_job_info  xmlns:xsd="http://gridengine.sunsource.net/source/browse/checkout/gridengine/source/dist/util/resources/schemas/qstat/qstat.xsd?revision=1.11">
-			 *    <djob_info>
-			 *  	 <element>
-			 *  	    <JB_job_number>12345</JB_job_number>
-			 *  	    <JB_job_name>S_76915529_0_0</JB_job_name>
-			 *          <JB_stdout_path_list>
-			 *             <path_list>
-			 *                <PN_path>S_76915529_0_0.log</PN_path>
-			 *                <PN_host></PN_host>
-			 *                <PN_file_host></PN_file_host>
-			 *                <PN_file_staging>false</PN_file_staging>
-			 *             </path_list>
-			 *          </JB_stdout_path_list>
-			 *       </element>
-			 *    </djob_info>
-			 * </detailed_job_info>
-			 **/
-			Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
-			Element rootElement = qstatDoc.getRootElement();
-			Element dbJobInfoElement = rootElement.getChild("djob_info");
-			if(dbJobInfoElement == null){
-				return null;
-			}
-			List<Element> qstatInfoChildren = dbJobInfoElement.getChildren("element");
-			if(qstatInfoChildren == null){
-				return null;
-			}
-			for(Element jobInfoElement : qstatInfoChildren){
-				String jobID = jobInfoElement.getChildText("JB_job_number").trim();
-				String jobName =  jobInfoElement.getChildText("JB_job_name").trim();
-				String outputFile = jobInfoElement.getChild("JB_stdout_path_list").getChild("path_list").getChildText("PN_path").trim();
-				List<Element> envSublists = jobInfoElement.getChild("JB_env_list").getChildren("job_sublist");
-				for(Element envSublist : envSublists){
-					if(envSublist.getChildText("VA_variable").equals("__SGE_PREFIX__O_WORKDIR")){
-						return new HtcJobInfo(new SgeJobID(jobID),true,jobName,null, envSublist.getChildText("VA_value")+"/"+outputFile);
-					}
-				}
-			}
-		}
-		throw new RuntimeException("Error parsing job status for batch job id "+htcJobID.toDatabase());
+	
+	/**
+	 * @param htcJobID
+	 * @return job info or null
+	 */
+	public HtcJobInfo getJobInfo(HtcJobID htcJobID) {
+		return statusMap.get(htcJobID).info;
 	}
 	
 	public String[] getEnvironmentModuleCommandPrefix() {
@@ -518,5 +329,14 @@ denied: job "6894" does not exist
 		ar.add(PropertyLoader.getProperty(PropertyLoader.sgeModulePath, "htc/sge")+";");
 		return ar.toArray(new String[0]);
 	}
-
+	
+	private static class JobInfoAndStatus {
+		final HtcJobInfo info;
+		final HtcJobStatus status;
+		JobInfoAndStatus(HtcJobInfo info, HtcJobStatus status) {
+			this.info = info;
+			this.status = status;
+		}
+		
+	}
 }

@@ -20,6 +20,8 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -321,5 +323,46 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 			e.printStackTrace();
 		}
 		return xmlInput;
+	}
+	/**
+	 * get elements of specified type from collection
+	 * @param lst List to process (may not be null)
+	 * @param clzz desired type (may not be null)
+	 * @return lst properly cast or new List of filtered types
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> filterList(List<?> lst, Class<T> clzz) {
+		assert(lst != null);
+		assert(clzz != null);
+		boolean allGood = true;
+		for  (Object o : lst) {
+			if (!clzz.isAssignableFrom(o.getClass())) {
+				allGood = false;
+				break;
+			}
+		}
+		if (allGood) {
+			return (List<T>) lst;
+		}
+		List<T> rval = new ArrayList<T>(lst.size( ) );
+		for  (Object o : lst) {
+			if (clzz.isAssignableFrom(o.getClass())) {
+				rval.add((T) o);
+			}
+		}
+		return rval;
+	}
+	
+	/**
+	 * get children  of specified type from Element 
+	 * @param e parent (may not be null)
+	 * @param name of children (may not be null)
+	 * @param clzz desired type (may not be null)
+	 */
+	public static <T> List<T> getChildren(Element e, String name, Class<T> clzz) {
+		assert(e != null);
+		assert(name != null);
+		assert(clzz != null);
+		return filterList(e.getChildren(name),clzz);
 	}
 }
