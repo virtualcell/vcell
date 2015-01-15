@@ -108,6 +108,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		if (newValue != null && ret == true) {
 			newValue.addPropertyChangeListener(this);
 			resolveBonds();
+			resolveStates();
 		}
 		if(ret == true) {
 			firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN, null, newValue);	// is this correct?
@@ -180,6 +181,21 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				molecularTypePatterns.get(i).setIndex(i+1);
 			}
 			sp.resolveBonds();
+		}
+	}
+	// TODO: this will have to go once we get rid of ComponentStatePattern
+	// use as a stopgap measure to eliminate a bug where the ComponentStatePattern is null
+	// instead of being Any (which happens when the MolecularComponent has states defined)
+	private void resolveStates() {
+		for(SpeciesPattern sp : speciesPatternList) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					if(mcp.getComponentStatePattern() == null && mcp.getMolecularComponent().getComponentStateDefinitions().size()>0) {
+						ComponentStatePattern csp = new ComponentStatePattern();
+						mcp.setComponentStatePattern(csp);
+					}
+				}
+			}
 		}
 	}
 	
