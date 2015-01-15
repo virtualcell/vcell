@@ -335,6 +335,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
+        domain = dialog.getSelectedDomain()
         dialog.close()
         print(sim)
         exportBasePath="D:"+os.sep+"export"
@@ -360,7 +361,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         print("Extracted .vtu files should exist.")
         print("Looking for file pattern: "+folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
-        fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
+        fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*"+domain+"*.vtu")
         print("fileList=")
         print(fileList)
         if len(fileList)>0:

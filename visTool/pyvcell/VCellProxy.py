@@ -1102,7 +1102,7 @@ class getVariableList_result:
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
+    (0, TType.LIST, 'success', (TType.STRUCT,(VariableInfo, VariableInfo.thrift_spec)), None, ), # 0
     (1, TType.STRUCT, 'dataAccessException', (DataAccessException, DataAccessException.thrift_spec), None, ), # 1
   )
 
@@ -1124,7 +1124,8 @@ class getVariableList_result:
           self.success = []
           (_etype31, _size28) = iprot.readListBegin()
           for _i32 in xrange(_size28):
-            _elem33 = iprot.readString();
+            _elem33 = VariableInfo()
+            _elem33.read(iprot)
             self.success.append(_elem33)
           iprot.readListEnd()
         else:
@@ -1147,9 +1148,9 @@ class getVariableList_result:
     oprot.writeStructBegin('getVariableList_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
       for iter34 in self.success:
-        oprot.writeString(iter34)
+        iter34.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dataAccessException is not None:
