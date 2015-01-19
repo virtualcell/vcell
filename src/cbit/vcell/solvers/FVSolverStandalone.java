@@ -14,7 +14,6 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Vector;
 
-import org.apache.commons.math.MathRuntimeException;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;

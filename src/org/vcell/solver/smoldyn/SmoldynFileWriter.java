@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.math.random.RandomDataImpl;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -138,7 +138,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	}
 	private static final int MAX_MOL_LIMIT = 1000000;
 	private long randomSeed = 0; //value assigned in the constructor
-	private RandomDataImpl dist = new RandomDataImpl();
+	private RandomDataGenerator dist = new RandomDataGenerator();
 
 	@SuppressWarnings("serial")
 	private class NotAConstantException extends Exception {		

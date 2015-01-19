@@ -72,7 +72,7 @@
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry exported="true" kind="lib" path="lib/apache_commons_math_2.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libsbmlj.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmf.jar"/>
