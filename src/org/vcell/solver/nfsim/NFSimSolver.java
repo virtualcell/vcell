@@ -26,7 +26,7 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SubdomainInfo;
@@ -36,7 +36,7 @@ import cbit.vcell.solvers.SubdomainInfo;
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
-public class NFSimSolver extends AbstractCompiledSolver {
+public class NFSimSolver extends SimpleCompiledSolver {
 
 public NFSimSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
 	super(simTask, directory, sessionLog, bMsging);
@@ -155,7 +155,7 @@ private String getOutputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.nfsimExecutableProperty);
 	String inputFilename = getInputFilename();
 	String outputFilename = getOutputFilename();

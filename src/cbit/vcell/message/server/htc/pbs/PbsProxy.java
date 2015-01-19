@@ -25,6 +25,7 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
 
@@ -391,6 +392,11 @@ public final class PbsProxy extends HtcProxy {
 		ar.add("load");
 		ar.add(PropertyLoader.getProperty(PropertyLoader.pbsModulePath, "htc/pbs")+";");
 		return ar.toArray(new String[0]);
+	}
+
+	public PbsJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
+			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+		throw new UnsupportedOperationException("not implemented yet");
 	}
 	
 

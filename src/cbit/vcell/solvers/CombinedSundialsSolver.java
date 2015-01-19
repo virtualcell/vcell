@@ -27,8 +27,8 @@ import org.vcell.util.SessionLog;
  * Creation date: (9/26/2003 2:08:08 PM)
  * @author: Fei Gao
  */
-public class CombinedSundialsSolver extends AbstractCompiledSolver {
-	private AbstractCompiledSolver realSolver = null;
+public class CombinedSundialsSolver extends SimpleCompiledSolver {
+	private SimpleCompiledSolver realSolver = null;
 
 /**
  * LSFSolver constructor comment.
@@ -104,7 +104,7 @@ public Vector<AnnotatedFunction> createFunctionList() {
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	return realSolver.getMathExecutableCommand();
 }
 }

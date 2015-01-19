@@ -72,6 +72,8 @@ import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.AbstractSolver;
+import cbit.vcell.solvers.ExecutableCommand;
+import cbit.vcell.solvers.ExecutableCommand.Container;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -249,7 +251,9 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 
 	KeyValue simKey = simTask.getSimKey();
 	User simOwner = simTask.getSimulation().getVersion().getOwner();
-	String[] postprocessorCmd = new String[] { 
+	
+	ExecutableCommand.Container commandContainer = new ExecutableCommand.Container( );
+	ExecutableCommand postprocessorCmd = new ExecutableCommand(false, false, 
 			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor), 
 			simKey.toString(),
 			simOwner.getName(), 
@@ -257,51 +261,51 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 			Integer.toString(simTask.getSimulationJob().getJobIndex()),
 			Integer.toString(simTask.getTaskID()),
 			SOLVER_EXIT_CODE_REPLACE_STRING,
-			subFile
-	};
+			subFile);
+	postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
+	commandContainer.add(postprocessorCmd);
 	
 	int ncpus = simTask.getSimulation().getSolverTaskDescription().getNumProcessors(); //CBN? 
 
+	Collection<PortableCommand> postProcessingCommands = null;
 	if (realSolver instanceof AbstractCompiledSolver) {
+		AbstractCompiledSolver compiledSolver = (AbstractCompiledSolver)realSolver;
 		
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
-		String[] preprocessorCmd = new String[] { 
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(false, false, 
 				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
 				simTaskFilePath, 
-				forceUnixPath(userDir.getAbsolutePath())
-		};
-		String[] nativeExecutableCmd = ((AbstractCompiledSolver)realSolver).getMathExecutableCommand();
-		for (int i=0;i<nativeExecutableCmd.length;i++){
-			nativeExecutableCmd[i] = forceUnixPath(nativeExecutableCmd[i]);
+				forceUnixPath(userDir.getAbsolutePath()) );
+		commandContainer.add(preprocessorCmd);
+		for (ExecutableCommand ec  : compiledSolver.getCommands()) {
+			if (ec.isMessaging()) {
+				ec.addArgument("-tid");
+				ec.addArgument(simTask.getTaskID());
+			}
+			commandContainer.add(ec);
 		}
-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, "-tid");
-		nativeExecutableCmd = BeanUtils.addElement(nativeExecutableCmd, String.valueOf(simTask.getTaskID()));
 		
-		Collection<PortableCommand> postProcessingCommands = null;
 		if (rd.isCopyNeeded()) {
 			postProcessingCommands = new ArrayList<PortableCommand>(); 
 			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), rd.runDirectory,rd.finalDataDirectory); 
 			postProcessingCommands.add(csf);
 		}
 		
-		jobid = clonedHtcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING,postProcessingCommands);
-		if (jobid == null) {
-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
-		}
+		//jobid = clonedHtcProxy.submitJob(jobname, subFile, preprocessorCmd, nativeExecutableCmd, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING,postProcessingCommands);
 		
 	} else {
-		
-		String[] command = new String[] { 
+		ExecutableCommand ec = new ExecutableCommand(false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
 				simTaskFilePath,
 				forceUnixPath(userDir.getAbsolutePath())
-		};
-
-		jobid = clonedHtcProxy.submitJob(jobname, subFile, command, ncpus, simTask.getEstimatedMemorySizeMB(), postprocessorCmd, SOLVER_EXIT_CODE_REPLACE_STRING);
-		if (jobid == null) {
-			throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
-		}
+		);
+		commandContainer.add(ec);
 	}
+	
+	jobid = clonedHtcProxy.submitJob(jobname, subFile, commandContainer, ncpus, simTask.getEstimatedMemorySizeMB(), postProcessingCommands);
+	if (jobid == null) {
+		throw new RuntimeException("Failed. (error message: submitting to job scheduler failed).");
+		}
 	return jobid;
 }
 
