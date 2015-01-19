@@ -42,7 +42,7 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 /**
@@ -57,7 +57,7 @@ import cbit.vcell.solvers.MathExecutable;
  * Created in June 2007.
  * @version 1.0
  */
-public class HybridSolver extends AbstractCompiledSolver {
+public class HybridSolver extends SimpleCompiledSolver {
 	public static final int EMIntegrator = 1;
 	public static final int MilsteinIntegrator = 2;
 	public static final int AdaptiveMilsteinIntegrator = 3;
@@ -367,7 +367,7 @@ private String getInputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = "";
 	String randomNumber = "";
 	//if one of the following paras is applied, all the paras in front of it must be set.

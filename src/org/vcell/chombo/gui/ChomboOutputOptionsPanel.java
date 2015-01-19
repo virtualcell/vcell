@@ -29,7 +29,6 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	{
 		public void actionPerformed(ActionEvent e) 
 		{
-			enableGuiElements();
 			if (e.getSource() == chomboOutputCheckBox || e.getSource() == vcellOutputCheckBox) 
 			{
 				setChomboOutputOptions();
@@ -59,7 +58,7 @@ public class ChomboOutputOptionsPanel extends JPanel {
 			setLayout(new GridBagLayout());
 			setBorder(BorderFactory.createTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Save Output Files"));
 
-			vcellOutputCheckBox = new JCheckBox("VCell (single processor only)");
+			vcellOutputCheckBox = new JCheckBox("VCell");
 			chomboOutputCheckBox = new JCheckBox("Chombo");
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -100,29 +99,11 @@ public class ChomboOutputOptionsPanel extends JPanel {
 						solverTaskDescription.setNumProcessors(n.intValue());
 					}
 					setNumProcessorsField();
-					enableGuiElements();
 				}
 			});
 		}
 	}
 	
-	/**
-	 * set enabled state of VCell style output and num processors
-	 * based on setting of other. Give priority to num processors (just to pick one)
-	 */
-	private void enableGuiElements( ) {
-		vcellOutputCheckBox.setEnabled(!solverTaskDescription.isParallel());
-		if (solverTaskDescription.isParallel()) {
-			vcellOutputCheckBox.setSelected(false);
-		}
-		if (ENABLE_PARALLEL) {
-			numProcessors.setEnabled(!vcellOutputCheckBox.isSelected());
-		}
-		else {
-			numProcessors.setEnabled(false);
-		}
-	}
-
 	public ChomboOutputOptionsPanel() {
 		super(new BorderLayout());
 		add(new FileOptions(),BorderLayout.CENTER);

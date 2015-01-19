@@ -46,14 +46,14 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 /**
  * Insert the type's description here.
  * Creation date: (3/9/2001 3:04:39 PM)
  * @author: John Wagner
  */
-public abstract class SundialsSolver extends AbstractCompiledSolver implements ODESolver {
+public abstract class SundialsSolver extends SimpleCompiledSolver implements ODESolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 	private transient RateSensitivity rateSensitivity = null;

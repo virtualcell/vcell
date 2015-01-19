@@ -11,6 +11,8 @@
 package cbit.vcell.solvers;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Vector;
 
 import org.vcell.util.SessionLog;
@@ -29,8 +31,11 @@ import cbit.vcell.solver.server.SolverStatus;
  * @author: Ion Moraru
  */
 public abstract class AbstractCompiledSolver extends AbstractSolver implements java.beans.PropertyChangeListener {
-	private transient boolean fieldRunning = false;
+	/**
+	 * thread used to run solver. All access to this field should be synchronized
+	 */
 	private transient Thread fieldThread = null;
+	
 	private cbit.vcell.solvers.MathExecutable mathExecutable = null;
 	private double currentTime = -1;
 	protected final static String DATA_PREFIX = "data:";
@@ -125,7 +130,6 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
  */
 private void runSolver() {
 	try {
-		fieldRunning = true;
 		setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
 		// fireSolverStarting("initializing");
@@ -157,7 +161,9 @@ private void runSolver() {
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(throwable.getMessage())));
 		fireSolverAborted(SimulationMessage.solverAborted(throwable.getMessage()));
 	} finally {
-		fieldRunning = false;
+		synchronized(this) {
+			fieldThread = null;
+		}
 	}
 }
 /**
@@ -182,8 +188,8 @@ protected void setMathExecutable(MathExecutable newMathExecutable) {
 	}
 	mathExecutable = newMathExecutable;
 }
-public final void startSolver() {
-	if (!fieldRunning) {
+public synchronized final void startSolver() {
+	if (!(fieldThread != null && fieldThread.isAlive()) ) {
 		setMathExecutable(null);
 		fieldThread = new Thread() {
 			public void run() {
@@ -196,8 +202,9 @@ public final void startSolver() {
 }
 /**
  */
-public final void stopSolver() {
-	if (getMathExecutable()!=null){
+public synchronized final void stopSolver() {
+	if (fieldThread!= null && getMathExecutable()!=null){
+		fieldThread.interrupt();
 		getMathExecutable().stop();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STOPPED,SimulationMessage.MESSAGE_SOLVER_STOPPED_BY_USER));
 		fireSolverStopped();
@@ -225,6 +232,10 @@ public void writeFunctionsFile() {
 	}		
 }
 
-public abstract String[] getMathExecutableCommand();
+/**
+ * return set of {@link ExecutableCommand}s
+ * @return new Collection
+ */
+public abstract Collection<ExecutableCommand> getCommands( );
 
 }

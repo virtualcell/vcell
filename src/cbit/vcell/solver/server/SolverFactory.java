@@ -30,7 +30,6 @@ import cbit.vcell.solver.ode.RungeKuttaTwoSolver;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.CombinedSundialsSolver;
-import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.xml.XmlHelper;
 
@@ -79,7 +78,7 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
 		solver = new CombinedSundialsSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
-		solver = new FVSolver(simTask, directory, sessionLog, bMessaging);
+		throw new UnsupportedOperationException("Compiled solvers no longer supported");
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
 		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.SundialsPDE)) {

@@ -26,7 +26,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.JToolTip;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -37,8 +36,6 @@ import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.MultiLineToolTip;
-import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -59,6 +56,7 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -681,8 +679,9 @@ private void refreshButtonsLax() {
 			if (!simStatus.isRunning()){
 				bEditable = true;
 			}
-			bParticleView = firstSelection.getScanCount() == 1;	
-			bQuickRun = firstSelection.getScanCount() == 1 && !firstSelection.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume);
+			final boolean onlyOne = firstSelection.getScanCount() == 1;	
+			bParticleView = onlyOne; 
+			bQuickRun = onlyOne && !firstSelection.getSolverTaskDescription().getSolverDescription().supports(SolverFeature.Feature_ServerOnly);
 		}
 		
 		// we make'em true if at least one sim satisfies criterion (lax policy)
