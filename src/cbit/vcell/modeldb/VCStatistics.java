@@ -27,7 +27,7 @@ public class VCStatistics {
 	private OracleConnectionPoolDataSource oracleConnection = null;
 	private ArrayList<String> userNameList = new ArrayList<String>();
 	private ArrayList<Integer> userIDList = new ArrayList<Integer>();
-	private static String simDataDir = "\\\\cfs01\\ifs\\raid\\vcell\\users\\";
+	private static String simDataDir = "\\\\cfs02.cam.uchc.edu\\ifs\\raid\\vcell\\users\\";
 	private class UserModelCount {
 		int userID;
 		int modelCount;
