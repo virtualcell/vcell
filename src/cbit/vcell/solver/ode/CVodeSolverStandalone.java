@@ -79,7 +79,7 @@ private String getOutputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.sundialsSolverExecutableProperty);
 	String inputFilename = getInputFilename();
 	String outputFilename = getOutputFilename();

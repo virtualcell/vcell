@@ -22,8 +22,10 @@ import cbit.vcell.message.server.htc.HtcJobID;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
+import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
+import edu.uchc.connjur.wb.LineStringBuilder;
 
 public class SgeProxy extends HtcProxy {
 	private final static int QDEL_JOB_NOT_FOUND_RETURN_CODE = 1;
@@ -34,7 +36,7 @@ public class SgeProxy extends HtcProxy {
 	 * jobs that start with {@link HTC_SIMULATION_JOB_NAME_PREFIX}
 	 */
 	private List<HtcJobID> cachedList;
-	
+
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
 	private final static String JOB_CMD_SUBMIT = "qsub";
@@ -48,11 +50,11 @@ public class SgeProxy extends HtcProxy {
 		if (!SGE_HOME.endsWith("/")){
 			SGE_HOME += "/";
 		}
-	    if (!htcLogDirString.endsWith("/")){
-	    	htcLogDirString = htcLogDirString+"/";
-	    }
+		if (!htcLogDirString.endsWith("/")){
+			htcLogDirString = htcLogDirString+"/";
+		}
 	}
-	
+
 	public SgeProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
 		statusMap = new HashMap<HtcJobID,JobInfoAndStatus>( );
@@ -66,7 +68,7 @@ public class SgeProxy extends HtcProxy {
 		}
 		throw new HtcJobNotFoundException("job not found", htcJobId);
 	}
-	
+
 	/**
 	 * qdel 6894
 	 * 
@@ -81,17 +83,17 @@ job 6894 is already in deletion
 denied: job "6894" does not exist
 
 	 */
-	
-	
+
+
 	@Override
 	public void killJob(HtcJobID htcJobId) throws ExecutableException, HtcException {
 
 		String[] cmd = new String[]{SGE_HOME + JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
-			
+
 			CommandOutput commandOutput = commandService.command(cmd,new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
-			
+
 			Integer exitStatus = commandOutput.getExitStatus();
 			String standardOut = commandOutput.getStandardOutput();
 			if (exitStatus!=null && exitStatus.intValue()==QDEL_JOB_NOT_FOUND_RETURN_CODE && standardOut!=null && standardOut.toLowerCase().contains(QDEL_UNKNOWN_JOB_RESPONSE.toLowerCase())){
@@ -106,7 +108,7 @@ denied: job "6894" does not exist
 			}
 		}
 	}
-	
+
 	/**
 	 * build numerics command, adding MPICH command if necessary
 	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
@@ -129,47 +131,67 @@ denied: job "6894" does not exist
 		}
 		return sb.toString().trim( );
 	}
-	
+
+	/**
+	 * adding MPICH command if necessary
+	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
+	 * @param cmds command set
+	 * @return new String
+	 */
+	private final String buildExeCommand(int ncpus,String command) {
+		if (ncpus == 1) {
+			return command; 
+		}
+		final char SPACE = ' ';
+		StringBuilder sb = new StringBuilder( );
+		sb.append(MPI_HOME);
+		sb.append("/bin/mpiexec -np ");
+		sb.append(ncpus);
+		sb.append(SPACE);
+		sb.append(command);
+		return sb.toString().trim( );
+	}
+
 	@Override
 	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
 			final boolean isParallel = ncpus > 1;
 
-			
+
 			StringBuilder sb = new StringBuilder(); 
 
-		    sb.append("#!/bin/csh\n");
-		    sb.append("#$ -N " + jobName + "\n");
-		    sb.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
-//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
+			sb.append("#!/bin/csh\n");
+			sb.append("#$ -N " + jobName + "\n");
+			sb.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
+			//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
 
 			//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
 
-		    //long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
-		    sb.append("#$ -j y\n");
-//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
-		    sb.append("#$ -cwd\n");
-		    if (isParallel) {
-		    	final char NEWLINE = '\n';
-			    sb.append("#$ -pe mpich ");
-			    sb.append(ncpus);
-			    sb.append(NEWLINE);
-			    sb.append("#$ -v LD_LIBRARY_PATH=");
-			    sb.append(MPI_HOME);
-			    sb.append("/lib");
-			    sb.append(NEWLINE);
-		    }
-		    sb.append("# the commands to be executed\n");
+			//long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
+			sb.append("#$ -j y\n");
+			//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
+			sb.append("#$ -cwd\n");
+			if (isParallel) {
+				final char NEWLINE = '\n';
+				sb.append("#$ -pe mpich ");
+				sb.append(ncpus);
+				sb.append(NEWLINE);
+				sb.append("#$ -v LD_LIBRARY_PATH=");
+				sb.append(MPI_HOME);
+				sb.append("/lib");
+				sb.append(NEWLINE);
+			}
+			sb.append("# the commands to be executed\n");
 			sb.append("echo\n");
 			sb.append("echo\n");
 			sb.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
 			sb.append("echo\n");
 			sb.append("echo\n");
-		    sb.append(CommandOutput.concatCommandStrings(command)+"\n");
-		    sb.append("set retcode1 = $status\n");
-		    sb.append("echo\n");
-		    sb.append("echo\n");
-		    sb.append("echo command1 returned $retcode1\n");
+			sb.append(CommandOutput.concatCommandStrings(command)+"\n");
+			sb.append("set retcode1 = $status\n");
+			sb.append("echo\n");
+			sb.append("echo\n");
+			sb.append("echo command1 returned $retcode1\n");
 			if (secondCommand!=null){
 				final String exeString  = buildExeCommand(ncpus, secondCommand);
 				sb.append("if ( $retcode1 == 0 ) then\n");
@@ -227,11 +249,11 @@ denied: job "6894" does not exist
 			if (postProcessingCommands != null) {
 				PortableCommandWrapper.insertCommands(sb, postProcessingCommands); 
 			}
-			
+
 			File tempFile = File.createTempFile("tempSubFile", ".sub");
 
 			writeUnixStyleTextFile(tempFile, sb.toString());
-			
+
 			// move submission file to final location (either locally or remotely).
 			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
 			commandService.pushFile(tempFile,sub_file);
@@ -245,7 +267,7 @@ denied: job "6894" does not exist
 		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
 		CommandOutput commandOutput = commandService.command(completeCommand);
 		String jobid = commandOutput.getStandardOutput().trim();
-		
+
 		return new SgeJobID(jobid);
 	}
 
@@ -258,12 +280,12 @@ denied: job "6894" does not exist
 	public String getSubmissionFileExtension() {
 		return SGE_SUBMISSION_FILE_EXT;
 	}
-	
+
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
 		String[] cmds = {SGE_HOME + JOB_CMD_STATUS,"-f","-xml"};
 		CommandOutput commandOutput = commandService.command(cmds);
-		
+
 		String output = commandOutput.getStandardOutput();
 		parseXML(output,jobNamePrefix);
 		return cachedList;
@@ -271,16 +293,16 @@ denied: job "6894" does not exist
 
 	@Override
 	public Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException {
-			HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
-			for (HtcJobID htcJobID : htcJobIDs){
-				HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
-				if (htcJobInfo!=null){
-					jobInfoMap.put(htcJobID,htcJobInfo);
-				}
+		HashMap<HtcJobID,HtcJobInfo> jobInfoMap = new HashMap<HtcJobID,HtcJobInfo>();
+		for (HtcJobID htcJobID : htcJobIDs){
+			HtcJobInfo htcJobInfo = getJobInfo(htcJobID);
+			if (htcJobInfo!=null){
+				jobInfoMap.put(htcJobID,htcJobInfo);
 			}
-			return jobInfoMap;
+		}
+		return jobInfoMap;
 	}
-	
+
 	private static final String PSYM_QINFO = "queue_info";
 	private static final String PSYM_QLIST = "Queue-List";
 	//private static final String PSYM_NAME = "name";
@@ -311,7 +333,7 @@ denied: job "6894" does not exist
 			}
 		}
 	}
-	
+
 	/**
 	 * @param htcJobID
 	 * @return job info or null
@@ -319,7 +341,7 @@ denied: job "6894" does not exist
 	public HtcJobInfo getJobInfo(HtcJobID htcJobID) {
 		return statusMap.get(htcJobID).info;
 	}
-	
+
 	public String[] getEnvironmentModuleCommandPrefix() {
 		ArrayList<String> ar = new ArrayList<String>();
 		ar.add("source");
@@ -329,7 +351,123 @@ denied: job "6894" does not exist
 		ar.add(PropertyLoader.getProperty(PropertyLoader.sgeModulePath, "htc/sge")+";");
 		return ar.toArray(new String[0]);
 	}
+
+	/**
+	 * write bash script for submission
+	 * @param jobName
+	 * @param sub_file
+	 * @param commandSet
+	 * @param ncpus
+	 * @param memSize
+	 * @param postProcessingCommands
+	 * @return String containing script
+	 */
+	String generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) {
+		final boolean isParallel = ncpus > 1;
+
+
+		LineStringBuilder lsb = new LineStringBuilder(); 
+
+		lsb.write("#!/bin/bash");
+		lsb.write("#$ -N " + jobName);
+		lsb.write("#$ -o " + htcLogDirString+jobName+".sge.log");
+		//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
+
+		//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
+
+		//long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
+		lsb.write("#$ -j y");
+		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
+		lsb.write("#$ -cwd");
+		
+		if (isParallel) {
+			lsb.append("#$ -pe mpich ");
+			lsb.append(ncpus);
+			lsb.newline();
+			lsb.append("#$ -v LD_LIBRARY_PATH=");
+			lsb.append(MPI_HOME);
+			lsb.write("/lib");
+		}
+		lsb.newline();
+		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
+		if (hasExitProcessor) {
+			ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
+			lsb.write("callExitProcessor( ) {");
+			lsb.append("\techo exitCommand = ");
+			lsb.write(exitCmd.getJoinedCommands("$1"));
+			lsb.append('\t');
+			lsb.write(exitCmd.getJoinedCommands());
+			lsb.write("}");
+			lsb.write("echo");
+		}
+
+		for (ExecutableCommand ec: commandSet.getExecCommands()) { 
+			lsb.write("echo");
+			String cmd= ec.getJoinedCommands(); 
+			if (ec.isParallel()) {
+				if (isParallel) {
+					cmd = buildExeCommand(ncpus, cmd); 
+				}
+				else {
+					throw new UnsupportedOperationException("parallel command " + ec.getJoinedCommands() + " called in non-parallel submit");
+				}
+			}
+			lsb.append("echo command = ");
+			lsb.write(cmd);
+			
+			lsb.write(cmd);
+			lsb.write("stat=$?");
+			
+			lsb.append("echo ");
+			lsb.append(cmd);
+			lsb.write("returned $stat");
+			
+			lsb.write("if [ $stat -ne 0 ]; then");
+			if (hasExitProcessor) {
+				lsb.write("\tcallExitProcessor $stat");
+			}
+			lsb.write("\techo returning $stat to SGE");
+			lsb.write("\texit $stat");
+			lsb.write("fi");
+		}
+
+		if (postProcessingCommands != null) {
+			PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands); 
+		}
+		lsb.newline();
+		if (hasExitProcessor) {
+			lsb.write("callExitProcessor 0");
+		}
+		lsb.newline();
+		return lsb.sb.toString();
+	}
 	
+	@Override
+	public SgeJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+		try {
+			String text = generateScript(jobName, commandSet, ncpus, memSize, postProcessingCommands);
+
+			File tempFile = File.createTempFile("tempSubFile", ".sub");
+
+			writeUnixStyleTextFile(tempFile, text);
+
+			// move submission file to final location (either locally or remotely).
+			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+			commandService.pushFile(tempFile,sub_file);
+			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+			tempFile.delete();
+		} catch (IOException ex) {
+			ex.printStackTrace(System.out);
+			return null;
+		}
+
+		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-S","/bin/bash","-terse", sub_file};
+		CommandOutput commandOutput = commandService.command(completeCommand);
+		String jobid = commandOutput.getStandardOutput().trim();
+
+		return new SgeJobID(jobid);
+	}
+
 	private static class JobInfoAndStatus {
 		final HtcJobInfo info;
 		final HtcJobStatus status;
@@ -337,6 +475,6 @@ denied: job "6894" does not exist
 			this.info = info;
 			this.status = status;
 		}
-		
+
 	}
 }

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Vector;
 
+import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
@@ -21,11 +22,10 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SubdomainInfo;
@@ -35,7 +35,17 @@ import cbit.vcell.solvers.SubdomainInfo;
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
-public class SmoldynSolver extends AbstractCompiledSolver {
+public class SmoldynSolver extends SimpleCompiledSolver {
+	
+	static {
+		ExceptionInterpreter.instance().add("libglut.so", ".*no such file.*",
+				"Use Linux distribution's package manager to install libglut.so.3",
+				"OpenSuse install 'libglut3'",
+				"Fedora / Centos install 'freeglut'",
+				"Ubuntu install 'freeglut3'"
+				);
+		
+	}
 
 public SmoldynSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog, boolean bMsging) throws SolverException {
 	super(simTask, directory, sessionLog, bMsging);
@@ -130,7 +140,7 @@ private String getInputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.smoldynExecutableProperty);
 	String inputFilename = getInputFilename();
 	return new String[] { executableName, inputFilename };

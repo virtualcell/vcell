@@ -38,7 +38,7 @@ import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 
@@ -47,7 +47,7 @@ import cbit.vcell.solvers.MathExecutable;
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
-public class GibsonSolver extends AbstractCompiledSolver {
+public class GibsonSolver extends SimpleCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
@@ -254,7 +254,7 @@ private String getOutputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.stochExecutableProperty);
 	String inputFilename = getInputFilename();
 	String outputFilename = getOutputFilename();

@@ -1112,5 +1112,19 @@ public final class BeanUtils {
 			}
 		}).start();
 	}
+	
+	/**
+	 * customize error message for null pointers
+	 * @param clzz type of obj
+	 * @param obj to check for null
+	 * @return obj (not null)
+	 * @throws NullPointerException if obj is null
+	 */
+	public static <T> T notNull(Class<T> clzz, T obj) {
+		if (obj != null) {
+			return obj;
+		}
+		throw new NullPointerException("unexpected " + clzz.getName() + " null pointer");
+	}
 
 }

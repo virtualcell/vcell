@@ -113,7 +113,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.solvers.FVSolver;
+import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.util.EventRateLimiter;
 import cbit.vcell.xml.XmlParseException;
@@ -2710,7 +2710,7 @@ private Expression fieldFunctionSubstitution(OutputContext outputContext,final V
 				getMesh(simResampleInfoProvider),
 				simResampleInfoProvider,
 				getMesh(simResampleInfoProvider).getNumMembraneElements(),
-				FVSolver.HESM_KEEP_AND_CONTINUE);
+				FVSolverStandalone.HESM_KEEP_AND_CONTINUE);
 		
 		resampledFieldDatas = new double[fieldfuncArgumentsArr.length][];
 		for(int i=0;i<fieldfuncArgumentsArr.length;i+= 1){
@@ -4151,9 +4151,9 @@ public void writeFieldFunctionData(
 		int simResampleMembraneDataLength,
 		int handleExistingResampleMode) throws FileNotFoundException, DataAccessException, IOException {
 	
-	if(	handleExistingResampleMode != FVSolver.HESM_KEEP_AND_CONTINUE &&
-		handleExistingResampleMode != FVSolver.HESM_OVERWRITE_AND_CONTINUE &&
-		handleExistingResampleMode != FVSolver.HESM_THROW_EXCEPTION
+	if(	handleExistingResampleMode != FVSolverStandalone.HESM_KEEP_AND_CONTINUE &&
+		handleExistingResampleMode != FVSolverStandalone.HESM_OVERWRITE_AND_CONTINUE &&
+		handleExistingResampleMode != FVSolverStandalone.HESM_THROW_EXCEPTION
 	){
 		throw new IllegalArgumentException("Unknown mode "+handleExistingResampleMode);
 	}
@@ -4175,7 +4175,7 @@ public void writeFieldFunctionData(
 				newResampledFieldDataFile = new File(getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				SimulationData.createCanonicalResampleFileName(simResampleInfoProvider,argFieldDataIDSpecs[i].getFieldFuncArgs()));
 			}
-			if (handleExistingResampleMode == FVSolver.HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
+			if (handleExistingResampleMode == FVSolverStandalone.HESM_THROW_EXCEPTION && newResampledFieldDataFile.exists()){
 				throw new RuntimeException("Resample Error: mode not allow overwrite or ignore of " +
 						"existing file\n" + newResampledFieldDataFile.getAbsolutePath());
 			}
@@ -4188,7 +4188,7 @@ public void writeFieldFunctionData(
 		Iterator<Entry<FieldDataIdentifierSpec, File>> resampleSetIter = resampleSet.iterator();
 		while(resampleSetIter.hasNext()) {
 			Entry<FieldDataIdentifierSpec, File> resampleEntry = resampleSetIter.next();
-			if (handleExistingResampleMode == FVSolver.HESM_KEEP_AND_CONTINUE && resampleEntry.getValue().exists()){
+			if (handleExistingResampleMode == FVSolverStandalone.HESM_KEEP_AND_CONTINUE && resampleEntry.getValue().exists()){
 				continue;
 			}			
 			FieldDataIdentifierSpec fieldDataIdSpec = resampleEntry.getKey();

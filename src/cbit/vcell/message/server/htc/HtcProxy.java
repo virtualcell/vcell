@@ -17,11 +17,15 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
+import org.vcell.util.FileUtils;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.server.cmd.CommandService;
+import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
+import cbit.vcell.message.server.htc.sge.SgeJobID;
+import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 
 public abstract class HtcProxy {
@@ -134,6 +138,13 @@ public abstract class HtcProxy {
 	 */
 	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand, 
 			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
+	/**
+	 * @param postProcessingCommands may be null if no commands desired
+	 * @param ncpus must be > 1 if any {@link ExecutableCommand}s are marked parallel
+	 * @throws ExecutableException
+	 */
+	public abstract HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
+			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
 	
@@ -187,20 +198,24 @@ public abstract class HtcProxy {
 
 	public static void writeUnixStyleTextFile(File file, String javaString) throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(file)) {
-			FileChannel fc = fos.getChannel();
 			Charset asciiCharset = Charset.forName("US-ASCII");
 			CharsetEncoder encoder = asciiCharset.newEncoder();
 			CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
 			ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
 			byte[] asciiArray = asciiByteBuffer.array();
 			ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
+			int count = 0;
 			for (int i=0;i<asciiArray.length;i++){
 				if (asciiArray[i] != 0x0d){  // skip \r character
 					unixByteBuffer.put(asciiArray[i]);
+					count++;
 				}
 			}
-			unixByteBuffer.rewind();
-			fc.write(unixByteBuffer);
+			//do this to not write the zeros at the end of unixByteBuffer
+			ByteBuffer bb = ByteBuffer.wrap(unixByteBuffer.array(),0,count);
+			
+			FileChannel fc = fos.getChannel();
+			fc.write(bb);
 			fc.close();
 		}
 	}
@@ -236,6 +251,7 @@ public abstract class HtcProxy {
 		}
 		throw new RuntimeException("expected either SSH or Local CommandService");
 	}
+
 }
 
 

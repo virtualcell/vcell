@@ -131,7 +131,7 @@ private String getInputFilename(){
 }
 
 @Override
-public String[] getMathExecutableCommand() {
+protected String[] getMathExecutableCommand() {
 	String executableName = null;
 	Simulation simulation = getSimulationJob().getSimulation();
 	if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver()) {
