@@ -52,6 +52,7 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
+import cbit.vcell.math.CommentedBlockObject;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ConvFunctionDefinition;
@@ -1494,11 +1495,24 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 	return exp2;
 }
 
+/**
+ * see if names match
+ * @param name may not be null
+ * @param cbo may null
+ * @return true if cbo != null and names match
+ */
+public static boolean sameName(String name, CommentedBlockObject cbo) {
+	if (cbo != null) {
+		return name.equals(cbo.getName());
+	}
+	return false;
+}
 
 
 /**
  * This method was created in VisualAge.
  */
+@SuppressWarnings("deprecation")
 protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
@@ -2324,7 +2338,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			// if an independent volume variable, then create equation for it (if mapped to this subDomain)
 			//
-			if (!sm.getGeometryClass().getName().equals(subDomain.getName())){
+			final GeometryClass gc = sm.getGeometryClass();
+			if (gc == null || !gc.getName().equals(subDomain.getName())){
 				continue;
 			}
 			SpeciesContextSpecParameter initConcParameter = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
@@ -2558,17 +2573,24 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (scm.isPDERequired() || scm.getVariable() instanceof VolumeRegionVariable){
 				//Species species = scm.getSpeciesContext().getSpecies();
 				Variable var = scm.getVariable();
-				if (memSubDomain.getInsideCompartment().getName().equals(var.getDomain().getName()) || 
-					memSubDomain.getOutsideCompartment().getName().equals(var.getDomain().getName())){ 
-					JumpCondition jc = memSubDomain.getJumpCondition(var);
-					if (jc==null){
-//System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
-						if (var instanceof VolVariable){
-							jc = new JumpCondition((VolVariable)var);
-						}else if (var instanceof VolumeRegionVariable){
-							jc = new JumpCondition((VolumeRegionVariable)var);
+				final Domain dm = var.getDomain( );
+				if (dm != null) { 
+					final String domainName = dm.getName();
+					if (sameName(domainName, memSubDomain.getInsideCompartment()) ||sameName(domainName, memSubDomain.getOutsideCompartment())) { 
+						JumpCondition jc = memSubDomain.getJumpCondition(var);
+						if (jc==null){
+							//System.out.println("MathMapping.refreshMathDescription(), adding jump condition for diffusing variable "+var.getName()+" on membrane "+membraneStructureAnalyzer.getMembrane().getName());
+							if (var instanceof VolVariable){
+								jc = new JumpCondition((VolVariable)var);
+							}else if (var instanceof VolumeRegionVariable){
+								jc = new JumpCondition((VolumeRegionVariable)var);
+							}
+							else {
+								throw new RuntimeException("unexpected Variable type " + var.getClass().getName());
+							}
+
+							memSubDomain.addJumpCondition(jc);
 						}
-						memSubDomain.addJumpCondition(jc);
 					}
 				}
 			}
