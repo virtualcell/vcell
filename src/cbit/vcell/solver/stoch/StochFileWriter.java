@@ -14,7 +14,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.commons.math.random.RandomDataImpl;
+import org.apache.commons.math3.random.RandomDataGenerator;
 
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
@@ -29,7 +29,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -214,7 +213,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		List<VarIniCondition> varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
 		if((varInis != null) && (varInis.size()>0))
 	    {
-			RandomDataImpl dist = new RandomDataImpl();
+			RandomDataGenerator dist = new RandomDataGenerator();
 			if(simulation.getSolverTaskDescription().getStochOpt().isUseCustomSeed())
 			{
 				Integer randomSeed = simulation.getSolverTaskDescription().getStochOpt().getCustomSeed();

@@ -16,7 +16,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.apache.commons.math.random.RandomDataImpl;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import org.vcell.util.Compare;
 import org.vcell.util.PropertyLoader;
 
@@ -495,7 +495,7 @@ public class NetCDFWriter {
 				
 				//Species Initial Condition (in number of molecules).
 			    //Species iniCondition are sampled from a poisson distribution(which has a mean of the current iniExp value)
-			    RandomDataImpl dist = new RandomDataImpl();
+			     RandomDataGenerator dist = new RandomDataGenerator();
 			    if(stochOpt.isUseCustomSeed())
 				{
 					Integer randomSeed = stochOpt.getCustomSeed();

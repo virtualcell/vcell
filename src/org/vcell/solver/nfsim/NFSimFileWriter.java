@@ -13,7 +13,7 @@ package org.vcell.solver.nfsim;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.apache.commons.math.random.RandomDataImpl;
+import org.apache.commons.math3.random.RandomDataGenerator;
 import org.jdom.Element;
 
 import cbit.util.xml.XmlUtil;
@@ -32,7 +32,7 @@ import cbit.vcell.solver.server.SolverFileWriter;
 public class NFSimFileWriter extends SolverFileWriter 
 {
 	private long randomSeed = 0; //value assigned in the constructor
-	private RandomDataImpl dist = new RandomDataImpl();
+	private RandomDataGenerator dist = new RandomDataGenerator();
 	
 	private File inputFile = null;
 	private String baseFileName = null;
