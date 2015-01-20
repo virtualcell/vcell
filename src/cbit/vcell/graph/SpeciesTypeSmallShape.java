@@ -6,9 +6,13 @@ import java.awt.FontMetrics;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +27,8 @@ public class SpeciesTypeSmallShape {
 	
 	private static final int baseWidth = 11;
 	private static final int baseHeight = 9;
+//	private static final int baseWidth = 15;
+//	private static final int baseHeight = 10;
 	private static final int cornerArc = 10;
 
 	private int xPos = 0;
@@ -161,7 +167,23 @@ public class SpeciesTypeSmallShape {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if(mt == null && mtp == null) {		// plain species context
 			 primaryColor = Color.green.darker().darker();
-			 finalHeight = finalHeight+1;	// we make it a bit taller and as close to a circle as possible
+			 finalHeight = baseHeight+3;
+			Color exterior = Color.green.darker().darker();
+			Point2D center = new Point2D.Float(xPos+finalHeight/3, yPos+finalHeight/3);
+			float radius = finalHeight*0.5f;
+			Point2D focus = new Point2D.Float(xPos+finalHeight/3-1, yPos+finalHeight/3-1);
+			float[] dist = {0.1f, 1.0f};
+			Color[] colors = {Color.white, exterior};
+			RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
+			g2.setPaint(p);
+			Ellipse2D circle = new Ellipse2D.Double(xPos, yPos, finalHeight, finalHeight);
+			g2.fill(circle);
+			Ellipse2D circle2 = new Ellipse2D.Double(xPos-1, yPos-1, finalHeight, finalHeight);
+			g2.setPaint(Color.DARK_GRAY);
+			g2.draw(circle2);
+				
+			g.setColor(colorOld);
+			return;
 		} else {							// molecular type, species pattern, observable
 			primaryColor = Color.blue.darker().darker();
 		}

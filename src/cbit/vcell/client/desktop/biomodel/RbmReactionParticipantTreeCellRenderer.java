@@ -46,7 +46,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				ReactionRule rr = (ReactionRule) userObject;
 				text = toHtml(rr);
 				toolTip = toHtmlWithTip(rr);
-				icon = VCellIcons.rbmMolecularComponentIcon;
+				icon = VCellIcons.rbmSpeciesBlueIcon;
 			} else if (userObject instanceof ReactionRuleParticipantLocal) {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) userObject;
 				text = toHtml(rrp,true);
@@ -56,12 +56,12 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);
 				toolTip = toHtmlWithTip(molecularTypePattern, true);
-				icon = VCellIcons.rbmMolecularTypeIcon;
+				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
 				text = toHtml2(mcp, true);
 				toolTip = toHtmlWithTip(mcp, true);
-				icon = VCellIcons.rbmMolecularComponentIcon;
+				icon = VCellIcons.rbmComponentErrorIcon;
 			} else if (userObject instanceof StateLocal) {
 				StateLocal sl = (StateLocal) userObject;
 				text = toHtml(sl, true);

@@ -91,7 +91,7 @@ public abstract class AbstractComponentShape {
 		}
 		return hidden;
 	}
-	protected static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
+	public static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
 		if(issueManager == null) {
 			return false;
 		}

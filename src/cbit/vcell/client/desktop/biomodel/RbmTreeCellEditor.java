@@ -322,7 +322,7 @@ static String toHtml(MolecularComponent mc, int owner) {
 			} else if (userObject instanceof MolecularComponent) {
 				BioModelNode parentNode = (BioModelNode) node.getParent();
 				Object parentObject = parentNode == null ? null : parentNode.getUserObject();
-				icon = VCellIcons.rbmMolecularComponentIcon;
+				icon = VCellIcons.rbmComponentErrorIcon;		// TODO: look for the proper icon
 				if (parentObject instanceof MolecularType) {
 					text = ((MolecularComponent) userObject).getName();
 				} else if (parentObject instanceof MolecularTypePattern) {					
