@@ -70,7 +70,7 @@ public class RbmMolecularTypeTreeCellEditor extends DefaultTreeCellEditor {
 			} else if (userObject instanceof MolecularComponent) {
 				BioModelNode parentNode = (BioModelNode) node.getParent();
 				Object parentObject = parentNode == null ? null : parentNode.getUserObject();
-				icon = VCellIcons.rbmMolecularComponentIcon;
+				icon = VCellIcons.rbmComponentErrorIcon;
 				text = ((MolecularComponent) userObject).getName();
 			} else if (userObject instanceof ComponentStateDefinition) {
 				text = ((ComponentStateDefinition) userObject).getName();

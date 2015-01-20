@@ -59,17 +59,24 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 				SpeciesContext sc = (SpeciesContext)userObject;
 				text = toHtml(sc);
 				toolTip = toHtml(sc);
-				icon = VCellIcons.refLevelNewIcon;
+				if(sc.hasSpeciesPattern()) {
+					icon = VCellIcons.rbmSpeciesBlueIcon;
+				} else {
+					icon = VCellIcons.rbmSpeciesGreenIcon;
+				}
 			} else if (userObject instanceof MolecularTypePattern) {
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);
 				toolTip = toHtml(molecularTypePattern, true);
-				icon = VCellIcons.rbmMolecularTypeIcon;
+				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
 				text = toHtml(mcp, true);
 				toolTip = toHtmlWithTip(mcp, true);
-				icon = VCellIcons.rbmMolecularComponentIcon;
+				icon = VCellIcons.rbmComponentGreenIcon;
+				if(mcp.getMolecularComponent().getComponentStateDefinitions().size() > 0) {
+					icon = VCellIcons.rbmComponentGreenStateIcon;
+				}
 			} else if (userObject instanceof StateLocal) {
 				// this code is still here but we don't show the states or the bonds in the tree anymore
 				StateLocal sl = (StateLocal) userObject;

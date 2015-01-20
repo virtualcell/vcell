@@ -14,7 +14,7 @@ import org.vcell.util.Displayable;
 public class MolecularComponentSmallShape extends AbstractComponentShape {
 	
 	static final int componentSeparation = 1;		// distance between components
-	static final int componentDiameter = 7;			// diameter of the component (circle)
+	static final int componentDiameter = 8;			// diameter of the component (circle)
 	
 	final Graphics graphicsContext;
 	
