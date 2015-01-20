@@ -1,1 +1,1 @@
-__all__ = ['ttypes', 'constants', 'VisitProxy', 'VCellProxy']
+__all__ = ['ttypes', 'constants', 'VCellProxy']

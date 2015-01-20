@@ -26,8 +26,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Functions:')
   print('  FilePath exportRequest(ExportRequestSpec exportRequestSpec)')
   print('  FilePath exportAllRequest(SimulationDataSetRef simulationDataSetRef)')
+  print('  FilePath getDataSetFileOfDomainAtTimeIndex(SimulationDataSetRef simulationDataSetRef, DomainName domainName, TimeIndex timeIndex)')
+  print('  FilePath getDataSetFileOfDomainAtTimePoint(SimulationDataSetRef simulationDataSetRef, DomainName domainName, TimePoint timePoint)')
   print('  SimulationDataSetRefList getSimsFromOpenModels()')
   print('  SimulationDataSetRefList getSimsFromModel(ModelRef modelRef)')
+  print('  TimeIndex getEndTimeIndex(SimulationDataSetRef simulationDataSetRef)')
+  print('  TimePoints getTimePoints(SimulationDataSetRef simulationDataSetRef)')
   print('  VariableList getVariableList(SimulationDataSetRef simulationDataSetRef)')
   print('  ModelRefList getBioModels()')
   print('  ModelRefList getMathModels()')
@@ -100,6 +104,18 @@ elif cmd == 'exportAllRequest':
     sys.exit(1)
   pp.pprint(client.exportAllRequest(eval(args[0]),))
 
+elif cmd == 'getDataSetFileOfDomainAtTimeIndex':
+  if len(args) != 3:
+    print('getDataSetFileOfDomainAtTimeIndex requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.getDataSetFileOfDomainAtTimeIndex(eval(args[0]),eval(args[1]),eval(args[2]),))
+
+elif cmd == 'getDataSetFileOfDomainAtTimePoint':
+  if len(args) != 3:
+    print('getDataSetFileOfDomainAtTimePoint requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.getDataSetFileOfDomainAtTimePoint(eval(args[0]),eval(args[1]),eval(args[2]),))
+
 elif cmd == 'getSimsFromOpenModels':
   if len(args) != 0:
     print('getSimsFromOpenModels requires 0 args')
@@ -111,6 +127,18 @@ elif cmd == 'getSimsFromModel':
     print('getSimsFromModel requires 1 args')
     sys.exit(1)
   pp.pprint(client.getSimsFromModel(eval(args[0]),))
+
+elif cmd == 'getEndTimeIndex':
+  if len(args) != 1:
+    print('getEndTimeIndex requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getEndTimeIndex(eval(args[0]),))
+
+elif cmd == 'getTimePoints':
+  if len(args) != 1:
+    print('getTimePoints requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getTimePoints(eval(args[0]),))
 
 elif cmd == 'getVariableList':
   if len(args) != 1:

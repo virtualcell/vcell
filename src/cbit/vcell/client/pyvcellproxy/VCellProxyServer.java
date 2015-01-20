@@ -15,7 +15,7 @@ public static void startSimpleVCellProxyServer(VCellProxy.Processor<VCellProxyHa
 		TServerTransport serverTransport = new TServerSocket(9090);
 		TServer vcellProxyServer = new TSimpleServer(new org.apache.thrift.server.TServer.Args(serverTransport).processor(processor));
 		
-		System.out.println("Starting the simple VCellProxyServer...");
+		System.out.println("Starting the VCell-VisIt Data Server thread...");
 		vcellProxyServer.serve();
 	} catch (Exception e) {
 		e.printStackTrace();

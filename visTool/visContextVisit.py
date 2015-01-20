@@ -28,6 +28,7 @@ from visContextAbstract import *
 import vcellProxy
 from vcellProxy import *
 
+
 class PlotWindow(QtGui.QWidget):
  
     def __init__(self,windowID):
@@ -106,34 +107,39 @@ class visContextVisit(visContextAbstract):
     def getBareRenderWindow(self):
         return self._plotWindow.getRenderWindow()
 
-    def open(self,filenames):
-        if len(filenames) == 1:
-            filename = str(filenames[0])
-            if (not filename.startswith("localhost:")):
-                filename = "localhost:"+filename;
-            print("database name is "+filename)
-            self._databaseName = filename
-            visit.OpenDatabase(filename)
-        else:
-            count = 0
-            for fname in filenames:
-                print("filename("+str(count)+") = "+str(fname))
-                count = count+1
-            filename = filenames[0]
-            if ("_000000.vtu" in filename):
-                filename = filename.replace("_000000.vtu","_*.vtu")
-            if (not filename.startswith("localhost:")):
-                filename = "localhost:"+filename;
-            filename = filename + " database"
-            self._databaseName = filename
-            retcode = visit.OpenDatabase(self._databaseName)
+    def openForUpdatedState(self, filename):
+        self._databaseName = filename
+        retcode = visit.OpenDatabase(self._databaseName)
+        print("new database name is \"" + self._databaseName + "\"")
+        self._updateDisplay()
+
+    def open(self,filename):
+        #if len(filenames) == 1:
+        #    filename = str(filenames[0])
+        #    if (not filename.startswith("localhost:")):
+        #        filename = "localhost:"+filename;
+        #    print("database name is "+filename)
+        #    self._databaseName = filename
+        #    visit.OpenDatabase(filename)
+        #else:
+        #    count = 0
+        #    for fname in filenames:
+        #        print("filename("+str(count)+") = "+str(fname))
+        #        count = count+1
+        #    filename = filenames[0]
+        #    if ("_000000.vtu" in filename):
+        #        filename = filename.replace("_000000.vtu","_*.vtu")
+        #    if (not filename.startswith("localhost:")):
+        #        filename = "localhost:"+filename;
+        #    filename = filename + " database"
+        self._databaseName = filename
+        retcode = visit.OpenDatabase(self._databaseName)
         
         print("new database name is \"" + self._databaseName + "\"")
         self._variable = None
         self._updateDisplay()
         
-        
-    def getVariableNames(self):
+    def getMDVariableNames(self):
         initialVarList = list()
         md = self._getMetaData()
         for i in xrange(md.GetNumScalars()):
@@ -142,10 +148,35 @@ class visContextVisit(visContextAbstract):
         # remove duplicates
         varList = removeDupes(initialVarList)
         return varList
+        
+    def getVariableNames(self):
+        #initialVarList = list()
+        #md = self._getMetaData()
+        #for i in xrange(md.GetNumScalars()):
+        #    print md.GetScalars(i).name
+        #    initialVarList.append(md.GetScalars(i).name)
+        ## remove duplicates
+        #varList = removeDupes(initialVarList)
+        try:
+            self._vcellProxy.open()
+            varInfosList = self._vcellProxy.getClient().getVariableList(self._visDataContext.getCurrentDataSet())
+        except Exception as exc:
+            print(exc.message)
+        finally:
+            self._vcellProxy.close()
+
+        varList = [varInfo.variableName for varInfo in varInfosList]
+        print("visContextVisit - getVariableNames.  Var list is:")
+        print varList
+        return varList
 
     def setVariable(self,var):
         if var != None:
             var = str(var)
+        if not (var.startswith('vcRegion')):
+            domainStr = str(self._visDataContext.getCurrentDomain())
+            if len(domainStr)>0:
+                var=domainStr+'_colon__colon_'+var
         self._variable = var
         print("in visContextVisit.setVariable("+str(var)+"): begin")
         #SetActiveWindow(self.windowID)
@@ -205,9 +236,11 @@ class visContextVisit(visContextAbstract):
         #
         if (self._variable != None and self._currentPlot == None):
             print("    _updateDisplay() - adding 'Pseudocolor' plot for variable '"+str(self._variable)+"'")
-            visit.AddPlot("Pseudocolor", self._variable)
+            print("    _updateDisplay() -- variable without str = ")
+            print(self._variable)
+            visit.AddPlot("Pseudocolor", str(self._variable))
             visit.SetPlotOptions(self._pseudocolorAttributes)
-            self._currentPlot = ("Pseudocolor",self._variable)
+            self._currentPlot = ("Pseudocolor",str(self._variable))
 
         #
         # add new operator if needed
@@ -277,14 +310,25 @@ class visContextVisit(visContextAbstract):
         visit.Close()
 
     def setTimeIndex(self, index):
-        nStates = visit.TimeSliderGetNStates()      
+
+        #nStates = visit.TimeSliderGetNStates()      
         print(index)
-        visit.SetTimeSliderState(index) 
+        #visit.SetTimeSliderState(index)
+        self._visDataContext.setCurrentTimeIndex(index)
+        print("Setting time index.")
+        try:
+           self._vcellProxy.open()
+           self._visDataContext.setCurrentDataSetTimePoints(self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet()))
+        finally:
+            self._vcellProxy.close()
+        self._visDataContext.setCurrentTimePoint(self._visDataContext.getCurrentDataSetTimePoints()[index])
         visit.DrawPlots()
 
 
     def getNumberOfTimePoints(self):
-        numberOfStates = visit.GetMetaData(self._databaseName).numStates
+        numberOfStates = self.getVCellProxy().getClient().getEndTimeIndex() + 1
+        print("VCell Proxy says number of time points available is: "+str(numberOfStates))
+        #numberOfStates = visit.GetMetaData(self._databaseName).numStates
         assert (isinstance(numberOfStates, int))
         return numberOfStates
     
@@ -296,10 +340,16 @@ class visContextVisit(visContextAbstract):
     def getTimes(self):
         if (self._databaseName == None):
             return []
-        md = visit.GetMetaData(self._databaseName)
-        if (md != None):
-            times = md.times
-            assert (isinstance(times, tuple))
+        #md = visit.GetMetaData(self._databaseName)
+        #if (md != None):
+        #    times = md.times
+        try:
+            self._vcellProxy.open()
+            times = self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet())
+        finally:
+            self._vcellProxy.close()
+        if (times !=None):
+            #assert (isinstance(times, tuple))
             return times
         else:
             return []
