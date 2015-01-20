@@ -1,6 +1,7 @@
 package org.vcell.chombo.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -50,7 +51,6 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	
 	private JCheckBox vcellOutputCheckBox;
 	private JCheckBox chomboOutputCheckBox;
-//	private JTextField numProcessors = new JTextField(2);
 	private JFormattedTextField numProcessors = new JFormattedTextField(new DecimalFormat("##"));
 	
 	private class FileOptions extends JPanel {
@@ -104,6 +104,14 @@ public class ChomboOutputOptionsPanel extends JPanel {
 		}
 	}
 	
+	/**
+	 * force chombo output if parallel 
+	 */
+	private void enableGuiElements( ) {
+		final boolean isParallel = solverTaskDescription.isParallel();
+		chomboOutputCheckBox.setEnabled(!isParallel);
+	}
+
 	public ChomboOutputOptionsPanel() {
 		super(new BorderLayout());
 		add(new FileOptions(),BorderLayout.CENTER);
@@ -124,6 +132,7 @@ public class ChomboOutputOptionsPanel extends JPanel {
 			solverTaskDescription.setNumProcessors(1);
 		}
 		numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
+		enableGuiElements();
 	}
 
 	private void updateDisplay() {
@@ -156,4 +165,5 @@ public class ChomboOutputOptionsPanel extends JPanel {
 		}
 		updateDisplay();		
 	}
+	
 }
