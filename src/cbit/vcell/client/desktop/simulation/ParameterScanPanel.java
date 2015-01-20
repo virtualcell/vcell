@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
+import java.awt.Dimension;
+
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -520,7 +522,9 @@ private void initialize() {
 		// user code end
 		setName("ParameterScanPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(324, 231);
+		setPreferredSize(new Dimension(250, 130));
+		setMinimumSize(getPreferredSize());
+
 
 		java.awt.GridBagConstraints constraintsJRadioButtonList = new java.awt.GridBagConstraints();
 		constraintsJRadioButtonList.gridx = 0; constraintsJRadioButtonList.gridy = 0;

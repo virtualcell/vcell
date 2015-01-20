@@ -258,7 +258,7 @@ public class TriggerTemplatePanel extends JPanel {
 		}
 		if(simulationContext != null){
 			mathOpComboBox.removeAllItems();
-			mathOpComboBox.addItem("==");
+//			mathOpComboBox.addItem("==");
 			mathOpComboBox.addItem(">");
 			mathOpComboBox.addItem("<");
 			mathOpComboBox.addItem(">=");
