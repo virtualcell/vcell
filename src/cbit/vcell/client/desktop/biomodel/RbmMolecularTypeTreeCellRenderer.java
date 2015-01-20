@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
@@ -60,13 +63,17 @@ public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 				MolecularType mt = (MolecularType) userObject;
 				text = toHtml(mt, true);
 				toolTip = toHtmlWithTip(mt, true);
-				icon = VCellIcons.rbmMolecularTypeIcon;
+				//icon = VCellIcons.rbmMolecularTypeIcon;
+				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
 			} else if (userObject instanceof MolecularComponent) {
 				BioModelNode parentNode = (BioModelNode) node.getParent();
-				icon = VCellIcons.rbmMolecularComponentIcon;
 				MolecularComponent mc = (MolecularComponent) userObject;
 				text = toHtml(mc, true);
 				toolTip = toHtmlWithTip(mc, true);
+				icon = VCellIcons.rbmComponentGreenIcon;
+				if(mc.getComponentStateDefinitions().size() > 0) {
+					icon = VCellIcons.rbmComponentGreenStateIcon;
+				}
 				FontMetrics fm = getFontMetrics(getFont());		// here is how to set the cell minimum size !!!
 			    int width = fm.stringWidth(text);
 			    setMinimumSize(new Dimension(width + 50, fm.getHeight() + 5));
@@ -84,5 +91,22 @@ public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 		}
 		return this;
 	}
+
+//	@Override
+//	protected void paintComponent(Graphics g) {
+//		
+//		int h = 6;
+//		int w = 8;
+//		
+//        GradientPaint gradientPaint = new GradientPaint(0, 0, Color.LIGHT_GRAY, 0, h, Color.WHITE);
+//
+//        Graphics2D g2D = (Graphics2D) g;
+//        g2D.setPaint(gradientPaint);
+//        g2D.fillRect(0, 0, w, h);
+//
+//        this.setOpaque(false);
+//        super.paintComponent(g);
+//        this.setOpaque(true);
+//	}
 
 }

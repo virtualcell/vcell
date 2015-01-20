@@ -34,8 +34,19 @@ public abstract class VCellIcons {
 	
 	// Rule Based Modeling
 	public final static Icon rbmIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm.png"));
-	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule.png"));
-	public final static Icon rbmMolecularComponentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component.gif"));
+//	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule.png"));
+	public final static Icon rbmMolecularTypeIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule_type.png"));
+	public final static Icon rbmMolecularTypeSimpleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule_type2.png"));
+	public final static Icon rbmSpeciesGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_green.png"));
+	public final static Icon rbmSpeciesBlueIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_blue.png"));
+
+//	public final static Icon rbmMolecularComponentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component.gif"));
+	public final static Icon rbmComponentGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_green.gif"));
+	public final static Icon rbmComponentGreenStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_greenState.gif"));
+	public final static Icon rbmComponentGrayIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_gray.gif"));
+	public final static Icon rbmComponentGrayStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_grayState.gif"));
+	public final static Icon rbmComponentErrorIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_error.gif"));
+
 	public final static Icon rbmMolecularComponentErrIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component_err.gif"));
 	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.gif"));
 	public final static Icon rbmObservableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_observable.gif"));
