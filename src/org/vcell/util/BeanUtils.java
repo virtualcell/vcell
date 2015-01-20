@@ -808,6 +808,21 @@ public final class BeanUtils {
 		pw.close();
 		return out.getBuffer().toString();
 	}
+	/**
+	 * recursive assemble exception message
+	 * @param throwable
+	 * @return {@link Throwable#getMessage()}, recursively
+	 */
+	public static String getMessageRecursive(Throwable throwable) {
+		String rval = throwable.getMessage();
+		Throwable cause = throwable.getCause();
+		while (cause != null) {
+			rval += " caused by " + cause.getMessage();
+			cause = cause.getCause();
+		}
+		
+		return rval;
+	}
 
 
 	public static void sendSMTP(String smtpHost, int smtpPort,String from, String to,String subject, String content)

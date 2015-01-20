@@ -5,6 +5,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.resource.NativeLib;
 
@@ -35,18 +36,23 @@ public class LibraryLoaderThread extends Thread {
 		for (NativeLib librarySet :NativeLib.values( )) {
 			try {
 				if (lg.isTraceEnabled()) {
-					lg.trace("loading " + librarySet);
+					lg.trace("loading " + librarySet + " " + librarySet.autoload);
 				}
-				librarySet.load( ); //blocks until done
-				if (lg.isTraceEnabled()) {
-					lg.trace("completed " + librarySet);
+				if (librarySet.autoload) {
+					librarySet.load( ); //blocks until done
+					if (lg.isTraceEnabled()) {
+						lg.trace("completed " + librarySet);
+					}
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				if (sb == null) {
 					sb = new StringBuilder("Unable to load runtime libraries for ");
 					sb.append(newline);
 				}
 				sb.append(librarySet);
+				sb.append(":  ");
+				sb.append(BeanUtils.getMessageRecursive(e));
 				sb.append(newline);
 			} 
 		}

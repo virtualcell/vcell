@@ -16,15 +16,34 @@ public enum NativeLib {
 	VTK("vtk"),
 	NATIVE_SOLVERS("NativeSolvers"),
 	SBML("sbmlj"),
-	COPASI("vcellCopasiOptDriver");
+	COPASI("vcellCopasiOptDriver"),
+	/**
+	 * SBML testing, not supported all platforms
+	 */
+	COPASI_JAVA("CopasiJava", false);
 	
 	private final String libName;
+	/**
+	 * indicate whether these libraries should be loaded automatically at startup
+	 */
+	public final boolean autoload; 
 	private boolean loaded = false;
 	private static final Logger lg = Logger.getLogger(NativeLib.class);
 
 	private NativeLib(String libName) {
 		this.libName = libName;
+		this.autoload = true;
 	}
+	
+
+	private NativeLib(String libName, boolean autoload) {
+		this.libName = libName;
+		this.autoload = autoload;
+	}
+
+
+
+
 
 	/**
 	 *  commence load process but don't wait for results
