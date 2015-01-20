@@ -4,11 +4,20 @@ import visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 
+
+from visDataContext import VisDataContext
+
 class visContextAbstract(object):
     """description of class"""
     def __init__(self):
         self._renderWindow = None
         assert isinstance(self._renderWindow,QtCore.QObject) or self._renderWindow == None
+        self._visDataContext = VisDataContext()
+
+    # No setter.  visDataContext is meant to be a singleton (per visContext).
+    # visDataContext lives in visContextAbstract because it is in no way VisIt dependent.
+    def getVisDataContext(self):
+        return self._visDataContext
 
     # abstract method
     def getRenderWindow(self,windowID):
