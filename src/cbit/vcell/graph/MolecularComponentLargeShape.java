@@ -138,7 +138,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 	}
 
 	private Color setComponentColor() {
-		if(owner == null || mcp == null) {
+		if(owner == null) {
 			return componentBad;
 		}
 		Color componentColor = componentBad;
@@ -146,7 +146,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			componentColor = componentGreen;
 		} else if(owner instanceof SpeciesContext) {
 			componentColor = componentGreen;
-		} else if(owner instanceof RbmObservable) {
+		} else if(mcp != null && owner instanceof RbmObservable) {
 			componentColor = componentHidden;
 			if(mcp.isbVisible()) {
 				componentColor = componentGreen;
@@ -158,7 +158,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		} else if(owner instanceof ReactionParticipant) {
 			
 		}
-		if(AbstractComponentShape.hasIssues(owner, mcp)) {
+		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			componentColor = componentBad;
 		}
 		return componentColor;
@@ -183,7 +183,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		} else {
 			g.setColor(Color.gray);
 		}
-		if(AbstractComponentShape.hasIssues(owner, mcp)) {
+		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			g2.setColor(Color.red);
 		}
 		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
