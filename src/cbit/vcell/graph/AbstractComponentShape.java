@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.util.List;
 
 import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
@@ -16,6 +17,8 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.SpeciesContext;
 
 public abstract class AbstractComponentShape {
+	private MolecularComponent mc;
+	private MolecularComponentPattern mcp;
 
 	class BondPair implements Comparable {
 		int id;
@@ -88,11 +91,11 @@ public abstract class AbstractComponentShape {
 		}
 		return hidden;
 	}
-	protected static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp) {
+	protected static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
 		if(issueManager == null) {
 			return false;
 		}
-		if(owner == null || mcp == null) {
+		if(owner == null) {
 			return false;
 		}
 		
@@ -104,7 +107,9 @@ public abstract class AbstractComponentShape {
 			
 			Object source = issue.getSource();
 			Object source2 = issue.getSource2();
-			if(source == owner && source2 == mcp) {
+			if(mcp != null && source == owner && source2 == mcp) {
+				return true;
+			} else if(mc != null & source == owner && source2 == mc) {
 				return true;
 			}
 		}

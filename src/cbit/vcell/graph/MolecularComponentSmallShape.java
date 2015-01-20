@@ -74,7 +74,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 		if(isHidden(owner, mcp)) {
 			componentColor = componentHidden;
 		}
-		if(hasIssues(owner, mcp)) {
+		if(hasIssues(owner, mcp, mc)) {
 			componentColor = componentBad;
 		}
 		return componentColor;
