@@ -54,6 +54,7 @@
     <Compile Include="thrift\TSerialization.py" />
     <Compile Include="thrift\TTornado.py" />
     <Compile Include="thrift\__init__.py" />
+    <Compile Include="visDataContext.py" />
     <Compile Include="visGuiQueryControls.py" />
     <Compile Include="timeSeriesAsynchClientTask.py" />
     <Compile Include="visContextVTK.py" />

@@ -16,6 +16,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +30,7 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -33,6 +38,7 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
+	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 	private static final String system_osname = System.getProperty("os.name");
 	private final static String system_osarch = System.getProperty("os.arch");
 	private final static boolean b64bit = system_osarch.endsWith("64");
@@ -86,6 +92,7 @@ public class ResourceUtil {
 	private static File userHome = null;
 	private static File vcellHome = null;
 	private static File localSimDir = null;
+	private static File localVisDataDir = null;
 	private static File localRootDir = null;
 	private static File logDir = null;
 
@@ -99,6 +106,7 @@ public class ResourceUtil {
 	private static boolean nativeLibrariesSetup = false; 
 	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
 		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+    private static final Logger lg = Logger.getLogger(ResourceUtil.class);
 		    
     /**
      * ensure class loaded so static initialization executes
@@ -183,9 +191,16 @@ public class ResourceUtil {
 				return;
 			}
 			else {
-				existing += FileUtils.PATHSEP + getSolversDirectory().getAbsolutePath(); 
 				env.put(LIBPATH,existing);
 			}
+		}
+		if (bWindows) {
+			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
+			//calls a cygwin compile "run_network" program. If run_network prints
+			//anything to standard error,The BNG script aborts
+			//The setting below prevents the cygwin "MS-DOS style path detected" warning from 
+			//being issued
+			env.put("CYGWIN","nodosfilewarning"); 
 		}
 	}
 	
@@ -393,6 +408,18 @@ public class ResourceUtil {
 
 		return localRootDir; 
 	}
+	
+	public static File getLocalVisDataDir(){
+		if(localVisDataDir == null)
+		{
+			localVisDataDir = new File(getVcellHome(), "visdata");
+			if (!localVisDataDir.exists()) {
+				localVisDataDir.mkdirs();
+			}
+		}
+
+		return localVisDataDir; 
+	}
 
 	public static File getLogDir()
 	{
@@ -491,6 +518,11 @@ public class ResourceUtil {
 		return downloadDirectory;
 	}
 	
+	/**
+	 * create Solvers Directory, if necessary
+	 * check last version of software which used directory, delete contents of directory if different
+	 * @return directory of locally run solvers
+	 */
 	public static File getSolversDirectory() 
 	{
 		if(solversDirectory == null)
@@ -499,9 +531,48 @@ public class ResourceUtil {
 			if (!solversDirectory.exists()) {
 				solversDirectory.mkdirs();
 			}
+			else {
+				if (!validManifest(solversDirectory)) {
+					try {
+						//delete existing files
+						DirectoryStream<Path> ds = Files.newDirectoryStream(solversDirectory.toPath());
+						for (Path entry : ds) {
+							entry.toFile().delete();
+						}
+						//write manifest
+						String versionString = VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString();
+						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),versionString.getBytes());
+					} catch (IOException e) {
+						lg.warn("Error cleaning solvers directory",e); 
+					}
+				}
+			}
 		}
 		return solversDirectory;
 	}	
+	
+	/**
+	 * see if a directory has a readable manifest file and if it matches current software version 
+	 * @param testDir
+	 * @return true if all conditions met
+	 */
+	private static boolean validManifest(File testDir) {
+		try {
+			File existingManifest = new File(testDir,MANIFEST_FILE_NAME);
+			if (existingManifest.canRead()) {
+				List<String> lines = Files.readAllLines(existingManifest.toPath(), StandardCharsets.UTF_8);
+				if (!lines.isEmpty()) {
+					String manifest = lines.get(0);
+					VCellSoftwareVersion sv = VCellSoftwareVersion.fromSystemProperty();
+					return sv.getSoftwareVersionString().equals(manifest);
+				}
+			}
+		} catch (IOException e) {
+			lg.warn("Error getting manifest", e);
+		}
+		return false;
+	}
+
 
 	public static File getVCellInstall()
 	{

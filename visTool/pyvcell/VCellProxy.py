@@ -32,6 +32,24 @@ class Iface:
     """
     pass
 
+  def getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
+    """
+    Parameters:
+     - simulationDataSetRef
+     - domainName
+     - timeIndex
+    """
+    pass
+
+  def getDataSetFileOfDomainAtTimePoint(self, simulationDataSetRef, domainName, timePoint):
+    """
+    Parameters:
+     - simulationDataSetRef
+     - domainName
+     - timePoint
+    """
+    pass
+
   def getSimsFromOpenModels(self):
     pass
 
@@ -39,6 +57,20 @@ class Iface:
     """
     Parameters:
      - modelRef
+    """
+    pass
+
+  def getEndTimeIndex(self, simulationDataSetRef):
+    """
+    Parameters:
+     - simulationDataSetRef
+    """
+    pass
+
+  def getTimePoints(self, simulationDataSetRef):
+    """
+    Parameters:
+     - simulationDataSetRef
     """
     pass
 
@@ -132,6 +164,80 @@ class Client(Iface):
       raise result.exportException
     raise TApplicationException(TApplicationException.MISSING_RESULT, "exportAllRequest failed: unknown result");
 
+  def getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
+    """
+    Parameters:
+     - simulationDataSetRef
+     - domainName
+     - timeIndex
+    """
+    self.send_getDataSetFileOfDomainAtTimeIndex(simulationDataSetRef, domainName, timeIndex)
+    return self.recv_getDataSetFileOfDomainAtTimeIndex()
+
+  def send_getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
+    self._oprot.writeMessageBegin('getDataSetFileOfDomainAtTimeIndex', TMessageType.CALL, self._seqid)
+    args = getDataSetFileOfDomainAtTimeIndex_args()
+    args.simulationDataSetRef = simulationDataSetRef
+    args.domainName = domainName
+    args.timeIndex = timeIndex
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getDataSetFileOfDomainAtTimeIndex(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getDataSetFileOfDomainAtTimeIndex_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.dataAccessException is not None:
+      raise result.dataAccessException
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDataSetFileOfDomainAtTimeIndex failed: unknown result");
+
+  def getDataSetFileOfDomainAtTimePoint(self, simulationDataSetRef, domainName, timePoint):
+    """
+    Parameters:
+     - simulationDataSetRef
+     - domainName
+     - timePoint
+    """
+    self.send_getDataSetFileOfDomainAtTimePoint(simulationDataSetRef, domainName, timePoint)
+    return self.recv_getDataSetFileOfDomainAtTimePoint()
+
+  def send_getDataSetFileOfDomainAtTimePoint(self, simulationDataSetRef, domainName, timePoint):
+    self._oprot.writeMessageBegin('getDataSetFileOfDomainAtTimePoint', TMessageType.CALL, self._seqid)
+    args = getDataSetFileOfDomainAtTimePoint_args()
+    args.simulationDataSetRef = simulationDataSetRef
+    args.domainName = domainName
+    args.timePoint = timePoint
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getDataSetFileOfDomainAtTimePoint(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getDataSetFileOfDomainAtTimePoint_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.dataAccessException is not None:
+      raise result.dataAccessException
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDataSetFileOfDomainAtTimePoint failed: unknown result");
+
   def getSimsFromOpenModels(self):
     self.send_getSimsFromOpenModels()
     return self.recv_getSimsFromOpenModels()
@@ -192,6 +298,72 @@ class Client(Iface):
     if result.dataAccessException is not None:
       raise result.dataAccessException
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getSimsFromModel failed: unknown result");
+
+  def getEndTimeIndex(self, simulationDataSetRef):
+    """
+    Parameters:
+     - simulationDataSetRef
+    """
+    self.send_getEndTimeIndex(simulationDataSetRef)
+    return self.recv_getEndTimeIndex()
+
+  def send_getEndTimeIndex(self, simulationDataSetRef):
+    self._oprot.writeMessageBegin('getEndTimeIndex', TMessageType.CALL, self._seqid)
+    args = getEndTimeIndex_args()
+    args.simulationDataSetRef = simulationDataSetRef
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getEndTimeIndex(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getEndTimeIndex_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.dataAccessException is not None:
+      raise result.dataAccessException
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getEndTimeIndex failed: unknown result");
+
+  def getTimePoints(self, simulationDataSetRef):
+    """
+    Parameters:
+     - simulationDataSetRef
+    """
+    self.send_getTimePoints(simulationDataSetRef)
+    return self.recv_getTimePoints()
+
+  def send_getTimePoints(self, simulationDataSetRef):
+    self._oprot.writeMessageBegin('getTimePoints', TMessageType.CALL, self._seqid)
+    args = getTimePoints_args()
+    args.simulationDataSetRef = simulationDataSetRef
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_getTimePoints(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = getTimePoints_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.dataAccessException is not None:
+      raise result.dataAccessException
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getTimePoints failed: unknown result");
 
   def getVariableList(self, simulationDataSetRef):
     """
@@ -317,8 +489,12 @@ class Processor(Iface, TProcessor):
     self._processMap = {}
     self._processMap["exportRequest"] = Processor.process_exportRequest
     self._processMap["exportAllRequest"] = Processor.process_exportAllRequest
+    self._processMap["getDataSetFileOfDomainAtTimeIndex"] = Processor.process_getDataSetFileOfDomainAtTimeIndex
+    self._processMap["getDataSetFileOfDomainAtTimePoint"] = Processor.process_getDataSetFileOfDomainAtTimePoint
     self._processMap["getSimsFromOpenModels"] = Processor.process_getSimsFromOpenModels
     self._processMap["getSimsFromModel"] = Processor.process_getSimsFromModel
+    self._processMap["getEndTimeIndex"] = Processor.process_getEndTimeIndex
+    self._processMap["getTimePoints"] = Processor.process_getTimePoints
     self._processMap["getVariableList"] = Processor.process_getVariableList
     self._processMap["getBioModels"] = Processor.process_getBioModels
     self._processMap["getMathModels"] = Processor.process_getMathModels
@@ -367,6 +543,34 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_getDataSetFileOfDomainAtTimeIndex(self, seqid, iprot, oprot):
+    args = getDataSetFileOfDomainAtTimeIndex_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getDataSetFileOfDomainAtTimeIndex_result()
+    try:
+      result.success = self._handler.getDataSetFileOfDomainAtTimeIndex(args.simulationDataSetRef, args.domainName, args.timeIndex)
+    except DataAccessException, dataAccessException:
+      result.dataAccessException = dataAccessException
+    oprot.writeMessageBegin("getDataSetFileOfDomainAtTimeIndex", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getDataSetFileOfDomainAtTimePoint(self, seqid, iprot, oprot):
+    args = getDataSetFileOfDomainAtTimePoint_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getDataSetFileOfDomainAtTimePoint_result()
+    try:
+      result.success = self._handler.getDataSetFileOfDomainAtTimePoint(args.simulationDataSetRef, args.domainName, args.timePoint)
+    except DataAccessException, dataAccessException:
+      result.dataAccessException = dataAccessException
+    oprot.writeMessageBegin("getDataSetFileOfDomainAtTimePoint", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
   def process_getSimsFromOpenModels(self, seqid, iprot, oprot):
     args = getSimsFromOpenModels_args()
     args.read(iprot)
@@ -391,6 +595,34 @@ class Processor(Iface, TProcessor):
     except DataAccessException, dataAccessException:
       result.dataAccessException = dataAccessException
     oprot.writeMessageBegin("getSimsFromModel", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getEndTimeIndex(self, seqid, iprot, oprot):
+    args = getEndTimeIndex_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getEndTimeIndex_result()
+    try:
+      result.success = self._handler.getEndTimeIndex(args.simulationDataSetRef)
+    except DataAccessException, dataAccessException:
+      result.dataAccessException = dataAccessException
+    oprot.writeMessageBegin("getEndTimeIndex", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_getTimePoints(self, seqid, iprot, oprot):
+    args = getTimePoints_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = getTimePoints_result()
+    try:
+      result.success = self._handler.getTimePoints(args.simulationDataSetRef)
+    except DataAccessException, dataAccessException:
+      result.dataAccessException = dataAccessException
+    oprot.writeMessageBegin("getTimePoints", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -742,6 +974,346 @@ class exportAllRequest_result:
   def __ne__(self, other):
     return not (self == other)
 
+class getDataSetFileOfDomainAtTimeIndex_args:
+  """
+  Attributes:
+   - simulationDataSetRef
+   - domainName
+   - timeIndex
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'simulationDataSetRef', (SimulationDataSetRef, SimulationDataSetRef.thrift_spec), None, ), # 1
+    (2, TType.STRING, 'domainName', None, None, ), # 2
+    (3, TType.I32, 'timeIndex', None, None, ), # 3
+  )
+
+  def __init__(self, simulationDataSetRef=None, domainName=None, timeIndex=None,):
+    self.simulationDataSetRef = simulationDataSetRef
+    self.domainName = domainName
+    self.timeIndex = timeIndex
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.simulationDataSetRef = SimulationDataSetRef()
+          self.simulationDataSetRef.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.domainName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.I32:
+          self.timeIndex = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDataSetFileOfDomainAtTimeIndex_args')
+    if self.simulationDataSetRef is not None:
+      oprot.writeFieldBegin('simulationDataSetRef', TType.STRUCT, 1)
+      self.simulationDataSetRef.write(oprot)
+      oprot.writeFieldEnd()
+    if self.domainName is not None:
+      oprot.writeFieldBegin('domainName', TType.STRING, 2)
+      oprot.writeString(self.domainName)
+      oprot.writeFieldEnd()
+    if self.timeIndex is not None:
+      oprot.writeFieldBegin('timeIndex', TType.I32, 3)
+      oprot.writeI32(self.timeIndex)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.simulationDataSetRef)
+    value = (value * 31) ^ hash(self.domainName)
+    value = (value * 31) ^ hash(self.timeIndex)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getDataSetFileOfDomainAtTimeIndex_result:
+  """
+  Attributes:
+   - success
+   - dataAccessException
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'dataAccessException', (DataAccessException, DataAccessException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, dataAccessException=None,):
+    self.success = success
+    self.dataAccessException = dataAccessException
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.dataAccessException = DataAccessException()
+          self.dataAccessException.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDataSetFileOfDomainAtTimeIndex_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    if self.dataAccessException is not None:
+      oprot.writeFieldBegin('dataAccessException', TType.STRUCT, 1)
+      self.dataAccessException.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.dataAccessException)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getDataSetFileOfDomainAtTimePoint_args:
+  """
+  Attributes:
+   - simulationDataSetRef
+   - domainName
+   - timePoint
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'simulationDataSetRef', (SimulationDataSetRef, SimulationDataSetRef.thrift_spec), None, ), # 1
+    (2, TType.STRING, 'domainName', None, None, ), # 2
+    (3, TType.DOUBLE, 'timePoint', None, None, ), # 3
+  )
+
+  def __init__(self, simulationDataSetRef=None, domainName=None, timePoint=None,):
+    self.simulationDataSetRef = simulationDataSetRef
+    self.domainName = domainName
+    self.timePoint = timePoint
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.simulationDataSetRef = SimulationDataSetRef()
+          self.simulationDataSetRef.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.domainName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.DOUBLE:
+          self.timePoint = iprot.readDouble();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDataSetFileOfDomainAtTimePoint_args')
+    if self.simulationDataSetRef is not None:
+      oprot.writeFieldBegin('simulationDataSetRef', TType.STRUCT, 1)
+      self.simulationDataSetRef.write(oprot)
+      oprot.writeFieldEnd()
+    if self.domainName is not None:
+      oprot.writeFieldBegin('domainName', TType.STRING, 2)
+      oprot.writeString(self.domainName)
+      oprot.writeFieldEnd()
+    if self.timePoint is not None:
+      oprot.writeFieldBegin('timePoint', TType.DOUBLE, 3)
+      oprot.writeDouble(self.timePoint)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.simulationDataSetRef)
+    value = (value * 31) ^ hash(self.domainName)
+    value = (value * 31) ^ hash(self.timePoint)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getDataSetFileOfDomainAtTimePoint_result:
+  """
+  Attributes:
+   - success
+   - dataAccessException
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'dataAccessException', (DataAccessException, DataAccessException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, dataAccessException=None,):
+    self.success = success
+    self.dataAccessException = dataAccessException
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.dataAccessException = DataAccessException()
+          self.dataAccessException.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getDataSetFileOfDomainAtTimePoint_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    if self.dataAccessException is not None:
+      oprot.writeFieldBegin('dataAccessException', TType.STRUCT, 1)
+      self.dataAccessException.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.dataAccessException)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class getSimsFromOpenModels_args:
 
   thrift_spec = (
@@ -1028,6 +1600,302 @@ class getSimsFromModel_result:
   def __ne__(self, other):
     return not (self == other)
 
+class getEndTimeIndex_args:
+  """
+  Attributes:
+   - simulationDataSetRef
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'simulationDataSetRef', (SimulationDataSetRef, SimulationDataSetRef.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, simulationDataSetRef=None,):
+    self.simulationDataSetRef = simulationDataSetRef
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.simulationDataSetRef = SimulationDataSetRef()
+          self.simulationDataSetRef.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getEndTimeIndex_args')
+    if self.simulationDataSetRef is not None:
+      oprot.writeFieldBegin('simulationDataSetRef', TType.STRUCT, 1)
+      self.simulationDataSetRef.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.simulationDataSetRef)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getEndTimeIndex_result:
+  """
+  Attributes:
+   - success
+   - dataAccessException
+  """
+
+  thrift_spec = (
+    (0, TType.I32, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'dataAccessException', (DataAccessException, DataAccessException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, dataAccessException=None,):
+    self.success = success
+    self.dataAccessException = dataAccessException
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.I32:
+          self.success = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.dataAccessException = DataAccessException()
+          self.dataAccessException.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getEndTimeIndex_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.I32, 0)
+      oprot.writeI32(self.success)
+      oprot.writeFieldEnd()
+    if self.dataAccessException is not None:
+      oprot.writeFieldBegin('dataAccessException', TType.STRUCT, 1)
+      self.dataAccessException.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.dataAccessException)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getTimePoints_args:
+  """
+  Attributes:
+   - simulationDataSetRef
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'simulationDataSetRef', (SimulationDataSetRef, SimulationDataSetRef.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, simulationDataSetRef=None,):
+    self.simulationDataSetRef = simulationDataSetRef
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.simulationDataSetRef = SimulationDataSetRef()
+          self.simulationDataSetRef.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getTimePoints_args')
+    if self.simulationDataSetRef is not None:
+      oprot.writeFieldBegin('simulationDataSetRef', TType.STRUCT, 1)
+      self.simulationDataSetRef.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.simulationDataSetRef)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class getTimePoints_result:
+  """
+  Attributes:
+   - success
+   - dataAccessException
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.DOUBLE,None), None, ), # 0
+    (1, TType.STRUCT, 'dataAccessException', (DataAccessException, DataAccessException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, dataAccessException=None,):
+    self.success = success
+    self.dataAccessException = dataAccessException
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype31, _size28) = iprot.readListBegin()
+          for _i32 in xrange(_size28):
+            _elem33 = iprot.readDouble();
+            self.success.append(_elem33)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.dataAccessException = DataAccessException()
+          self.dataAccessException.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('getTimePoints_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.DOUBLE, len(self.success))
+      for iter34 in self.success:
+        oprot.writeDouble(iter34)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.dataAccessException is not None:
+      oprot.writeFieldBegin('dataAccessException', TType.STRUCT, 1)
+      self.dataAccessException.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.dataAccessException)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class getVariableList_args:
   """
   Attributes:
@@ -1122,11 +1990,11 @@ class getVariableList_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = VariableInfo()
-            _elem33.read(iprot)
-            self.success.append(_elem33)
+          (_etype38, _size35) = iprot.readListBegin()
+          for _i39 in xrange(_size35):
+            _elem40 = VariableInfo()
+            _elem40.read(iprot)
+            self.success.append(_elem40)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1149,8 +2017,8 @@ class getVariableList_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter34 in self.success:
-        iter34.write(oprot)
+      for iter41 in self.success:
+        iter41.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dataAccessException is not None:
@@ -1255,11 +2123,11 @@ class getBioModels_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype38, _size35) = iprot.readListBegin()
-          for _i39 in xrange(_size35):
-            _elem40 = ModelRef()
-            _elem40.read(iprot)
-            self.success.append(_elem40)
+          (_etype45, _size42) = iprot.readListBegin()
+          for _i46 in xrange(_size42):
+            _elem47 = ModelRef()
+            _elem47.read(iprot)
+            self.success.append(_elem47)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1282,8 +2150,8 @@ class getBioModels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter41 in self.success:
-        iter41.write(oprot)
+      for iter48 in self.success:
+        iter48.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dataAccessException is not None:
@@ -1388,11 +2256,11 @@ class getMathModels_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = ModelRef()
-            _elem47.read(iprot)
-            self.success.append(_elem47)
+          (_etype52, _size49) = iprot.readListBegin()
+          for _i53 in xrange(_size49):
+            _elem54 = ModelRef()
+            _elem54.read(iprot)
+            self.success.append(_elem54)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1415,8 +2283,8 @@ class getMathModels_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter48 in self.success:
-        iter48.write(oprot)
+      for iter55 in self.success:
+        iter55.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dataAccessException is not None:

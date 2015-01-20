@@ -234,7 +234,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         actionExit.setStatusTip("Exit viewer")
         actionExit.triggered.connect(self._exitApplication)
         self._variableListWidget.clicked.connect(self._onSelectedVariableChanged)
-        self._timeSlider.valueChanged.connect(self._onTimeSliderChanged)
+        self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
 
         self._sliceControl.getEnableCheckbox().setChecked(self._vis.getOperatorEnabled())
         self._sliceControl.getSliceSlider().setValue(self._vis.getOperatorPercent())
@@ -333,41 +333,115 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
+    #def _onSimulationSelected(self, dialog):
+    #    sim = dialog.getSelectedSimulation()
+    #    domain = dialog.getSelectedDomain()
+    #    dialog.close()
+    #    print(sim)
+    #    exportBasePath="D:"+os.sep+"export"
+    #    folderStr = exportBasePath+os.sep+str(sim.simId)
+    #    if (not (os.path.exists(folderStr))):
+    #        try:
+    #            print ('calling exportAllRequests(sim)')
+    #            self._vis.getVCellProxy().open()
+    #            url = self._vis.getVCellProxy().getClient().exportAllRequest(sim)
+    #            print("returned from issuing exportAllRequests(sim)")
+    #            print("URL="+url)
+    #            print("making folder: "+ folderStr)
+    #            os.mkdir(folderStr)
+    #            print("folder created.  Now attempting to \"download\" zip document from: "+ url)
+    #            response = urllib2.urlopen(url)
+    #            zipDocument = zipfile.ZipFile(StringIO.StringIO(response.read()))
+    #            print("done with requests.get.  Now extracting all to the subdirectory")
+    #            zipDocument.extractall(folderStr)
+    #        finally:
+    #            self._vis.getVCellProxy().close()
+    #    else:
+    #        print("Skipped export because sim data folder found: "+folderStr)
+
+    #    print("Extracted .vtu files should exist.")
+    #    print("Looking for file pattern: "+folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
+    #    fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*"+domain+"*.vtu")
+    #    print("fileList=")
+    #    print(fileList)
+    #    if len(fileList)>0:
+    #        self._vis.open(fileList)
+    #    print("Returned from calling self._vis.open(fileList)")
+    #    varNames = self._vis.getVariableNames()
+    #    assert isinstance(self._variableListWidget,QtGui.QListWidget)
+    #    self._variableListWidget.clear()
+    #    self._variableListWidget.addItems(varNames)
+    #    if visQt.isPyside():
+    #        self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
+    #    elif visQt.isPyQt4:
+    #        self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
+
+    #    times = self._vis.getTimes()
+    #    if times == None or len(times)==0:
+    #        self._timeSlider.setMinimum(0)
+    #        self._timeSlider.setMaximum(0)
+    #        self._timeLabel.setText("0.0")
+    #    else:
+    #        self._timeSlider.setMinimum(0)
+    #        self._timeSlider.setMaximum(len(times)-1)
+    #        self._timeLabel.setText("0.0")
+
+
+    def _openCurrentDataSetAtTimeIndex(self, index):
+        sim = self._vis.getVisDataContext().getCurrentDataSet()
+        domain = self._vis.getVisDataContext().getCurrentDomain()
+        print(sim)
+        try:
+            self._vis.getVCellProxy().open()
+            fileName = self._vis.getVCellProxy().getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,index)
+        except Exception as exc:
+            print(exc.message)
+        finally:
+            self._vis.getVCellProxy().close()
+        self._vis.openForUpdatedState(fileName)
+
+    def _onTimeSliderChanged(self, newIndex):
+        self._openCurrentDataSetAtTimeIndex(newIndex)
+        self._vis.getVisDataContext().setCurrentTimeIndex(newIndex)
+        self._openCurrentDataSetAtTimeIndex(self, newIndex)
+
+
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
         domain = dialog.getSelectedDomain()
         dialog.close()
         print(sim)
-        exportBasePath="D:"+os.sep+"export"
-        folderStr = exportBasePath+os.sep+str(sim.simId)
-        if (not (os.path.exists(folderStr))):
-            try:
-                print ('calling exportAllRequests(sim)')
-                self._vis.getVCellProxy().open()
-                url = self._vis.getVCellProxy().getClient().exportAllRequest(sim)
-                print("returned from issuing exportAllRequests(sim)")
-                print("URL="+url)
-                print("making folder: "+ folderStr)
-                os.mkdir(folderStr)
-                print("folder created.  Now attempting to \"download\" zip document from: "+ url)
-                response = urllib2.urlopen(url)
-                zipDocument = zipfile.ZipFile(StringIO.StringIO(response.read()))
-                print("done with requests.get.  Now extracting all to the subdirectory")
-                zipDocument.extractall(folderStr)
-            finally:
-                self._vis.getVCellProxy().close()
-        else:
-            print("Skipped export because sim data folder found: "+folderStr)
+        try:
+            self._vis.getVCellProxy().open()
+            fileName = self._vis.getVCellProxy().getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,0)
+        except Exception as exc:
+            print(exc.message)
+        finally:
+            self._vis.getVCellProxy().close()
 
-        print("Extracted .vtu files should exist.")
-        print("Looking for file pattern: "+folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
-        fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*"+domain+"*.vtu")
-        print("fileList=")
-        print(fileList)
-        if len(fileList)>0:
-            self._vis.open(fileList)
+        print(fileName)
+
+        print('fileName is:')
+        print(fileName)
+        self._vis.open(fileName)
         print("Returned from calling self._vis.open(fileList)")
+        self._vis.getVisDataContext().setCurrentDataSet(sim)
+        self._vis.getVisDataContext().setCurrentDomain(domain)
         varNames = self._vis.getVariableNames()
+        print('List of variable names visContext is is:')
+        print(varNames)
+        try:
+            self._vis.getVCellProxy().open()
+            vcProxyVarInfos = self._vis.getVCellProxy().getClient().getVariableList(dialog.getSelectedSimulation())
+        except Exception as exc:
+            print(exc.message)
+        finally:
+            self._vis.getVCellProxy().close()
+        print("List of variable names from VCellProxy is:")
+        print([varInfo.variableName for varInfo in vcProxyVarInfos])
+        print("\nThe list of variable names from the MDServer is:")
+        print(self._vis.getMDVariableNames())
+
         assert isinstance(self._variableListWidget,QtGui.QListWidget)
         self._variableListWidget.clear()
         self._variableListWidget.addItems(varNames)
@@ -385,6 +459,9 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._timeSlider.setMinimum(0)
             self._timeSlider.setMaximum(len(times)-1)
             self._timeLabel.setText("0.0")
+
+
+
 
 
     def _getStatusBar(self):
@@ -416,7 +493,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         newIndex = self._timeSlider.sliderPosition()
         self._vis.setTimeIndex(newIndex)
         dir(newIndex)
- #       print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
+        print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
         times = self._vis.getTimes()
         if (times != None and len(times)>0):
             self._timeLabel.setText(str(times[newIndex]))
