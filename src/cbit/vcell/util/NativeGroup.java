@@ -175,6 +175,10 @@ class NativeGroup implements Callable<Boolean> {
 				}
 			}
 		}
+		if (libsPresentMap.size() <= 0) {
+			throw new IllegalArgumentException("no files matching " +namePattern + "*" + NativeLoader.systemLibRegex +
+					" in directory " + dirPath);
+		}
 	}
 	
 	/**
@@ -217,6 +221,10 @@ class NativeGroup implements Callable<Boolean> {
 		String fullpath = dirPath + NativeLoader.FILESEP + lib;
 		try {
 			System.load(fullpath);
+			//String stub = lib.substring(0,lib.lastIndexOf('.'));
+			//System.loadLibrary(stub);
+			
+			
 			if (lg.isTraceEnabled()) {
 				lg.trace("loaded "  + fullpath);
 			}
