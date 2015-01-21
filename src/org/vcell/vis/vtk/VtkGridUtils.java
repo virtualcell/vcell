@@ -54,6 +54,8 @@ import cbit.vcell.resource.NativeLib;
 
 public class VtkGridUtils {
 	
+	private static final String VTKVAR_DOMAINSEPARATOR = "__DOMAINSEPARATOR__";
+
 	// Load VTK library and print which library was not properly loaded
 	static {
 		try {
@@ -148,7 +150,7 @@ public class VtkGridUtils {
 		    vtkDoubleArray cellScalars1 = new vtkDoubleArray();
 		    cellScalars1.SetNumberOfComponents(1);
 		    cellScalars1.SetNumberOfTuples(numCells);
-		    cellScalars1.SetName(varName);
+		    cellScalars1.SetName(varName.replace("::", VTKVAR_DOMAINSEPARATOR));
 //		    System.out.println("saving var "+varName);
 		    cellScalars1.SetJavaArray(data);
 			cellData.AddArray(cellScalars1);
