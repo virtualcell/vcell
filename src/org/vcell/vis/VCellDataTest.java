@@ -11,6 +11,7 @@ import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vtk.SimpleVTKViewer;
 import org.vcell.vis.vtk.VtkGridUtils;
 
+import cbit.vcell.resource.ResourceUtil;
 import vtk.vtkUnstructuredGrid;
 
 public class VCellDataTest {
@@ -20,14 +21,17 @@ public class VCellDataTest {
 	 */
 	public static void main(String[] args) {
 		try {
-			String simKey = "85856608";
+			ResourceUtil.setNativeLibraryDirectory();
+
+			String simKey = "1661241954";
+			String pathPrefix = "C:\\Users\\schaff\\.vcell\\simdata\\user\\";
 			
-			File meshFile = new File(".\\SimData\\SimID_"+simKey+"_0_.mesh");
-			File meshMetricsFile = new File(".\\SimData\\SimID_"+simKey+"_0_.meshmetrics");
-			File subdomainFile = new File(".\\SimData\\SimID_"+simKey+"_0_.subdomains");
-			File logFile = new File(".\\SimData\\SimID_"+simKey+"_0_.log");
-			File zipFile = new File(".\\SimData\\SimID_"+simKey+"_0_00.zip");
-			File postprocessingFile = new File(".\\SimData\\SimID_"+simKey+"_0_.hdf5");
+			File meshFile = new File(pathPrefix + "SimID_"+simKey+"_0_.mesh");
+			File meshMetricsFile = new File(pathPrefix + "SimID_"+simKey+"_0_.meshmetrics");
+			File subdomainFile = new File(pathPrefix + "SimID_"+simKey+"_0_.subdomains");
+			File logFile = new File(pathPrefix + "SimID_"+simKey+"_0_.log");
+			File zipFile = new File(pathPrefix + "SimID_"+simKey+"_0_00.zip");
+			File postprocessingFile = new File(pathPrefix + "SimID_"+simKey+"_0_.hdf5");
 			
 			VCellSimFiles vcellFiles = new VCellSimFiles(simKey,0,meshFile,meshMetricsFile,subdomainFile,logFile,postprocessingFile);
 			vcellFiles.addDataFileEntry(zipFile,new File("SimID_"+simKey+"_0_0000.sim"),0.0);

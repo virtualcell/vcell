@@ -67,6 +67,14 @@ public boolean equals(Object object) {
 			modeID == geometrySpecs.getModeID()
 		) {
 			SpatialSelection[] otherSelections = geometrySpecs.getSelections();
+			if (serializedSelections == null && otherSelections == null) {
+				System.err.println("HACK >>> JCS <<<< ");
+				return true;
+			}
+			if (serializedSelections == null || otherSelections == null) {
+				System.err.println("HACK >>> JCS <<<< ");
+				return false;
+			}
 			if (serializedSelections.length == otherSelections.length) {
 				SpatialSelection[] selections = getSelections();
 				for (int i = 0; i < selections.length; i++){

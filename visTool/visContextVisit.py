@@ -176,7 +176,7 @@ class visContextVisit(visContextAbstract):
         if not (var.startswith('vcRegion')):
             domainStr = str(self._visDataContext.getCurrentDomain())
             if len(domainStr)>0:
-                var=domainStr+'_colon__colon_'+var
+                var=domainStr+'__DOMAINSEPARATOR__'+var
         self._variable = var
         print("in visContextVisit.setVariable("+str(var)+"): begin")
         #SetActiveWindow(self.windowID)
