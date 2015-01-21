@@ -1353,7 +1353,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
-	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
+		printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
     printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());    
     OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
@@ -1807,7 +1807,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 	printWriter.println();
 }
 
-	private void assignPhases(CompartmentSubDomain[] subDomains, int startingIndex, int[] phases, int[] numAssigned) 
+	private void assignPhases(CompartmentSubDomain[] subDomains, int startingIndex, int[] phases, int[] numAssigned) throws SolverException 
 	{
 		if (phases[startingIndex] == -1) 
 		{
@@ -1819,7 +1819,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		}
 		for (int j = subDomains.length - 1; j >= 0 ; j --) 
 		{
-			if (startingIndex == j || phases[j] != -1) 
+			if (startingIndex == j) 
 			{
 				continue;
 			}
@@ -1827,10 +1827,19 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			MembraneSubDomain mem = getSimulationTask().getSimulation().getMathDescription().getMembraneSubDomain(subDomains[startingIndex], subDomains[j]);
 			if (mem != null) 
 			{
-				numAssigned[0] ++;
-				// membrane between i and j, different phase
-				phases[j] = phases[startingIndex] == 0 ? 1 : 0;
-				assignPhases(subDomains, j, phases, numAssigned);
+				int newPhase = phases[startingIndex] == 0 ? 1 : 0;
+				if (phases[j] == -1)
+				{
+					numAssigned[0] ++;
+					// membrane between i and j, different phase
+					phases[j] = newPhase;
+					assignPhases(subDomains, j, phases, numAssigned);
+				}
+				else if (phases[j] != newPhase)
+				{
+					throw new SolverException("Geometry is invalid for " + getSimulationTask().getSimulation().getSolverTaskDescription().getSolverDescription().getDisplayLabel() 
+							+ ": domains are not properly nested (membrane branching). \n\n(domain " + subDomains[j].getName() + " was assigned to phase " + phases[j] + ", is again being assigned to phase " +  newPhase + ".)");
+				}
 			}
 		}
 	}
