@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
@@ -33,6 +35,8 @@ import cbit.vcell.model.SpeciesContext;
 @SuppressWarnings("serial")
 public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 	
+	Object obj = null;
+	
 	public RbmSpeciesContextTreeCellRenderer() {
 		super();
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
@@ -46,12 +50,13 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
             boolean expanded,
             boolean leaf,
             int row,
-            boolean hasFocus) {	
+            boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 		setBorder(null);
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode)value;
 			Object userObject = node.getUserObject();
+			obj = userObject;
 			String text = null;
 			Icon icon = null;
 			String toolTip = null;
@@ -101,6 +106,28 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 			setToolTipText(toolTip == null ? text : toolTip);
 		}
 		return this;
+	}
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		int x = 4;
+		int y = 16;
+		if(!(obj instanceof MolecularComponentPattern)) {
+			return;
+		}
+		MolecularComponentPattern mcp = (MolecularComponentPattern)obj;
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		if(mcp.getBondType() == BondType.Specified) {
+			Color bondColor = RbmTreeCellRenderer.bondHtmlColors[mcp.getBondId()];
+			g2.setColor(bondColor);
+			g2.drawLine(x, y, x, y+2);		// 2 lines, L-shaped
+			g2.drawLine(x+1, y, x+1, y+2);
+			g2.drawLine(x, y+2, x+7, y+2);
+			g2.drawLine(x, y+3, x+7, y+3);
+		}
+		g2.setColor(colorOld);
 	}
 
 }

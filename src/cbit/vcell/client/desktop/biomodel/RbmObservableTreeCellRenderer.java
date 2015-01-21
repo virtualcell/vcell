@@ -1,6 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 import javax.swing.JTree;
@@ -8,7 +12,9 @@ import javax.swing.border.EmptyBorder;
 
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.gui.VCellIcons;
 
@@ -22,6 +28,8 @@ import cbit.vcell.model.RbmObservable;
 @SuppressWarnings("serial")
 public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 
+	Object obj = null;
+	
 	public RbmObservableTreeCellRenderer() {
 		super();
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
@@ -41,6 +49,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 		if (value instanceof BioModelNode) {
 			BioModelNode node = (BioModelNode)value;
 			Object userObject = node.getUserObject();
+			obj = userObject;
 			String text = null;
 			Icon icon = null;
 			String toolTip = null;
@@ -118,5 +127,38 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 		return this;
 	}
 	
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		int x = 4;
+		int y = 16;
+		
+		if(!(obj instanceof MolecularComponentPattern)) {
+			return;
+		}
+		MolecularComponentPattern mcp = (MolecularComponentPattern)obj;
+		
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		if(mcp.getBondType() == BondType.Specified) {
+			Color bondColor = RbmTreeCellRenderer.bondHtmlColors[mcp.getBondId()];
+			
+//			g2.setColor(bondColor);
+//			int x = 7;						// oblique line
+//			int y = 14;
+//			g2.drawLine(x+1, y, x+1+3, y+3);
+//			g2.drawLine(x, y, x+3, y+3);
+//			g2.drawLine(x, y+1, x+3, y+1+3);
+			
+			g2.setColor(bondColor);
+			g2.drawLine(x, y, x, y+2);		// 2 lines, L-shaped
+			g2.drawLine(x+1, y, x+1, y+2);
+			g2.drawLine(x, y+2, x+7, y+2);
+			g2.drawLine(x, y+3, x+7, y+3);
 
+		}
+		g2.setColor(colorOld);
+	}
+	
 }
