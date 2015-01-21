@@ -299,66 +299,69 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable, 
  * @throws IOException 
  */
 public void write(String[] parameterNames) throws Exception {
-	Variable originalVars[] = null;
-	Simulation simulation = simTask.getSimulation();
-	MathDescription mathDesc = simulation.getMathDescription();
-	if (bChomboSolver)
-	{
-		writeJMSParamters();	
-		writeSimulationParamters();	
-		writeModelDescription();
-		writeChomboSpec();
-		writeVariables();
-		writePostProcessingBlock();
-		writeCompartments();
-		writeMembranes();
-	}
-	else
-	{
-		if (simTask.getSimulation().isSerialParameterScan()) {
-			originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-			Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
-			MathOverrides mathOverrides = simulation.getMathOverrides();
-			
-			String[] scanParameters = mathOverrides.getOverridenConstantNames();
-			for (int i = 0; i < scanParameters.length; i++){
-				String scanParameter = scanParameters[i];
-				Variable mathVariable = mathDesc.getVariable(scanParameter);
-				//
-				// replace constant values with "Parameter"
-				//
-				if (mathVariable instanceof Constant){
-					Constant origConstant = (Constant)mathVariable;
-					for (int j = 0; j < allVars.length; j++){
-						if (allVars[j].equals(origConstant)){
-							allVars[j] = new ParameterVariable(origConstant.getName());
-							break;
-						}
-					}
-				}
-			}
-			mathDesc.setAllVariables(allVars);
-		}
-		
-		writeJMSParamters();
-		writeSimulationParamters();
-		writeModelDescription();
-		writeMeshFile();
-		writeVariables();
-		if (mathDesc.isSpatialHybrid()) {
-			writeSmoldyn();
-		}
-		writeParameters(parameterNames);
-		writeSerialParameterScans();
-		writeFieldData();
-		writePostProcessingBlock();
-		writeCompartments();
-		writeMembranes();
-		
-		if (originalVars != null) {
-			mathDesc.setAllVariables(originalVars);
-		}
-	}
+	MovingBoundaryFileWriter.test(simTask, resampledGeometry);
+	return;
+	
+//	Variable originalVars[] = null;
+//	Simulation simulation = simTask.getSimulation();
+//	MathDescription mathDesc = simulation.getMathDescription();
+//	if (bChomboSolver)
+//	{
+//		writeJMSParamters();	
+//		writeSimulationParamters();	
+//		writeModelDescription();
+//		writeChomboSpec();
+//		writeVariables();
+//		writePostProcessingBlock();
+//		writeCompartments();
+//		writeMembranes();
+//	}
+//	else
+//	{
+//		if (simTask.getSimulation().isSerialParameterScan()) {
+//			originalVars = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+//			Variable allVars[] = (Variable[])BeanUtils.getArray(mathDesc.getVariables(),Variable.class);
+//			MathOverrides mathOverrides = simulation.getMathOverrides();
+//			
+//			String[] scanParameters = mathOverrides.getOverridenConstantNames();
+//			for (int i = 0; i < scanParameters.length; i++){
+//				String scanParameter = scanParameters[i];
+//				Variable mathVariable = mathDesc.getVariable(scanParameter);
+//				//
+//				// replace constant values with "Parameter"
+//				//
+//				if (mathVariable instanceof Constant){
+//					Constant origConstant = (Constant)mathVariable;
+//					for (int j = 0; j < allVars.length; j++){
+//						if (allVars[j].equals(origConstant)){
+//							allVars[j] = new ParameterVariable(origConstant.getName());
+//							break;
+//						}
+//					}
+//				}
+//			}
+//			mathDesc.setAllVariables(allVars);
+//		}
+//		
+//		writeJMSParamters();
+//		writeSimulationParamters();
+//		writeModelDescription();
+//		writeMeshFile();
+//		writeVariables();
+//		if (mathDesc.isSpatialHybrid()) {
+//			writeSmoldyn();
+//		}
+//		writeParameters(parameterNames);
+//		writeSerialParameterScans();
+//		writeFieldData();
+//		writePostProcessingBlock();
+//		writeCompartments();
+//		writeMembranes();
+//		
+//		if (originalVars != null) {
+//			mathDesc.setAllVariables(originalVars);
+//		}
+//	}
 }
 
 private void writeSmoldyn() throws Exception {
