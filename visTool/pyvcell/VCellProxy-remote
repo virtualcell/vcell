@@ -24,18 +24,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] function [arg1 [arg2...]]')
   print('')
   print('Functions:')
-  print('  FilePath exportRequest(ExportRequestSpec exportRequestSpec)')
-  print('  FilePath exportAllRequest(SimulationDataSetRef simulationDataSetRef)')
   print('  FilePath getDataSetFileOfDomainAtTimeIndex(SimulationDataSetRef simulationDataSetRef, DomainName domainName, TimeIndex timeIndex)')
-  print('  FilePath getDataSetFileOfDomainAtTimePoint(SimulationDataSetRef simulationDataSetRef, DomainName domainName, TimePoint timePoint)')
   print('  SimulationDataSetRefList getSimsFromOpenModels()')
-  print('  SimulationDataSetRefList getSimsFromModel(ModelRef modelRef)')
-  print('  TimeIndex getEndTimeIndex(SimulationDataSetRef simulationDataSetRef)')
   print('  TimePoints getTimePoints(SimulationDataSetRef simulationDataSetRef)')
   print('  VariableList getVariableList(SimulationDataSetRef simulationDataSetRef)')
-  print('  ModelRefList getBioModels()')
-  print('  ModelRefList getMathModels()')
-  print('  User getUser()')
   print('')
   sys.exit(0)
 
@@ -92,47 +84,17 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = VCellProxy.Client(protocol)
 transport.open()
 
-if cmd == 'exportRequest':
-  if len(args) != 1:
-    print('exportRequest requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.exportRequest(eval(args[0]),))
-
-elif cmd == 'exportAllRequest':
-  if len(args) != 1:
-    print('exportAllRequest requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.exportAllRequest(eval(args[0]),))
-
-elif cmd == 'getDataSetFileOfDomainAtTimeIndex':
+if cmd == 'getDataSetFileOfDomainAtTimeIndex':
   if len(args) != 3:
     print('getDataSetFileOfDomainAtTimeIndex requires 3 args')
     sys.exit(1)
   pp.pprint(client.getDataSetFileOfDomainAtTimeIndex(eval(args[0]),eval(args[1]),eval(args[2]),))
-
-elif cmd == 'getDataSetFileOfDomainAtTimePoint':
-  if len(args) != 3:
-    print('getDataSetFileOfDomainAtTimePoint requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.getDataSetFileOfDomainAtTimePoint(eval(args[0]),eval(args[1]),eval(args[2]),))
 
 elif cmd == 'getSimsFromOpenModels':
   if len(args) != 0:
     print('getSimsFromOpenModels requires 0 args')
     sys.exit(1)
   pp.pprint(client.getSimsFromOpenModels())
-
-elif cmd == 'getSimsFromModel':
-  if len(args) != 1:
-    print('getSimsFromModel requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.getSimsFromModel(eval(args[0]),))
-
-elif cmd == 'getEndTimeIndex':
-  if len(args) != 1:
-    print('getEndTimeIndex requires 1 args')
-    sys.exit(1)
-  pp.pprint(client.getEndTimeIndex(eval(args[0]),))
 
 elif cmd == 'getTimePoints':
   if len(args) != 1:
@@ -145,24 +107,6 @@ elif cmd == 'getVariableList':
     print('getVariableList requires 1 args')
     sys.exit(1)
   pp.pprint(client.getVariableList(eval(args[0]),))
-
-elif cmd == 'getBioModels':
-  if len(args) != 0:
-    print('getBioModels requires 0 args')
-    sys.exit(1)
-  pp.pprint(client.getBioModels())
-
-elif cmd == 'getMathModels':
-  if len(args) != 0:
-    print('getMathModels requires 0 args')
-    sys.exit(1)
-  pp.pprint(client.getMathModels())
-
-elif cmd == 'getUser':
-  if len(args) != 0:
-    print('getUser requires 0 args')
-    sys.exit(1)
-  pp.pprint(client.getUser())
 
 else:
   print('Unrecognized method %s' % cmd)

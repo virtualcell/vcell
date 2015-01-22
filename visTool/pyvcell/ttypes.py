@@ -16,29 +16,18 @@ except:
   fastbinary = None
 
 
-class ExportType:
-  VTU = 0
+class DomainType:
+  VOLUME = 0
+  MEMBRANE = 1
 
   _VALUES_TO_NAMES = {
-    0: "VTU",
+    0: "VOLUME",
+    1: "MEMBRANE",
   }
 
   _NAMES_TO_VALUES = {
-    "VTU": 0,
-  }
-
-class ModelType:
-  BIOMODEL = 0
-  MATHMODEL = 1
-
-  _VALUES_TO_NAMES = {
-    0: "BIOMODEL",
-    1: "MATHMODEL",
-  }
-
-  _NAMES_TO_VALUES = {
-    "BIOMODEL": 0,
-    "MATHMODEL": 1,
+    "VOLUME": 0,
+    "MEMBRANE": 1,
   }
 
 
@@ -55,7 +44,7 @@ class VariableInfo:
     None, # 0
     (1, TType.STRING, 'variableName', None, None, ), # 1
     (2, TType.STRING, 'domainName', None, None, ), # 2
-    (3, TType.STRING, 'variableDomainType', None, None, ), # 3
+    (3, TType.I32, 'variableDomainType', None, None, ), # 3
     (4, TType.STRING, 'unitsLabel', None, None, ), # 4
   )
 
@@ -85,8 +74,8 @@ class VariableInfo:
         else:
           iprot.skip(ftype)
       elif fid == 3:
-        if ftype == TType.STRING:
-          self.variableDomainType = iprot.readString();
+        if ftype == TType.I32:
+          self.variableDomainType = iprot.readI32();
         else:
           iprot.skip(ftype)
       elif fid == 4:
@@ -113,8 +102,8 @@ class VariableInfo:
       oprot.writeString(self.domainName)
       oprot.writeFieldEnd()
     if self.variableDomainType is not None:
-      oprot.writeFieldBegin('variableDomainType', TType.STRING, 3)
-      oprot.writeString(self.variableDomainType)
+      oprot.writeFieldBegin('variableDomainType', TType.I32, 3)
+      oprot.writeI32(self.variableDomainType)
       oprot.writeFieldEnd()
     if self.unitsLabel is not None:
       oprot.writeFieldBegin('unitsLabel', TType.STRING, 4)
@@ -126,6 +115,12 @@ class VariableInfo:
   def validate(self):
     if self.variableName is None:
       raise TProtocol.TProtocolException(message='Required field variableName is unset!')
+    if self.domainName is None:
+      raise TProtocol.TProtocolException(message='Required field domainName is unset!')
+    if self.variableDomainType is None:
+      raise TProtocol.TProtocolException(message='Required field variableDomainType is unset!')
+    if self.unitsLabel is None:
+      raise TProtocol.TProtocolException(message='Required field unitsLabel is unset!')
     return
 
 
@@ -148,92 +143,11 @@ class VariableInfo:
   def __ne__(self, other):
     return not (self == other)
 
-class User:
-  """
-  Attributes:
-   - userKey
-   - userName
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'userKey', None, None, ), # 1
-    (2, TType.STRING, 'userName', None, None, ), # 2
-  )
-
-  def __init__(self, userKey=None, userName=None,):
-    self.userKey = userKey
-    self.userName = userName
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.userKey = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.userName = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('User')
-    if self.userKey is not None:
-      oprot.writeFieldBegin('userKey', TType.STRING, 1)
-      oprot.writeString(self.userKey)
-      oprot.writeFieldEnd()
-    if self.userName is not None:
-      oprot.writeFieldBegin('userName', TType.STRING, 2)
-      oprot.writeString(self.userName)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.userKey is None:
-      raise TProtocol.TProtocolException(message='Required field userKey is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.userKey)
-    value = (value * 31) ^ hash(self.userName)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class SimulationDataSetRef:
   """
   Attributes:
    - simId
    - simName
-   - variableList
    - modelId
   """
 
@@ -241,14 +155,13 @@ class SimulationDataSetRef:
     None, # 0
     (1, TType.STRING, 'simId', None, None, ), # 1
     (2, TType.STRING, 'simName', None, None, ), # 2
-    (3, TType.LIST, 'variableList', (TType.STRUCT,(VariableInfo, VariableInfo.thrift_spec)), None, ), # 3
+    None, # 3
     (4, TType.STRING, 'modelId', None, None, ), # 4
   )
 
-  def __init__(self, simId=None, simName=None, variableList=None, modelId=None,):
+  def __init__(self, simId=None, simName=None, modelId=None,):
     self.simId = simId
     self.simName = simName
-    self.variableList = variableList
     self.modelId = modelId
 
   def read(self, iprot):
@@ -268,17 +181,6 @@ class SimulationDataSetRef:
       elif fid == 2:
         if ftype == TType.STRING:
           self.simName = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.variableList = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = VariableInfo()
-            _elem5.read(iprot)
-            self.variableList.append(_elem5)
-          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
@@ -304,13 +206,6 @@ class SimulationDataSetRef:
       oprot.writeFieldBegin('simName', TType.STRING, 2)
       oprot.writeString(self.simName)
       oprot.writeFieldEnd()
-    if self.variableList is not None:
-      oprot.writeFieldBegin('variableList', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRUCT, len(self.variableList))
-      for iter6 in self.variableList:
-        iter6.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
     if self.modelId is not None:
       oprot.writeFieldBegin('modelId', TType.STRING, 4)
       oprot.writeString(self.modelId)
@@ -321,111 +216,8 @@ class SimulationDataSetRef:
   def validate(self):
     if self.simId is None:
       raise TProtocol.TProtocolException(message='Required field simId is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.simId)
-    value = (value * 31) ^ hash(self.simName)
-    value = (value * 31) ^ hash(self.variableList)
-    value = (value * 31) ^ hash(self.modelId)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ModelRef:
-  """
-  Attributes:
-   - modelId
-   - modelName
-   - user
-   - modelType
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'modelId', None, None, ), # 1
-    (2, TType.STRING, 'modelName', None, None, ), # 2
-    (3, TType.STRUCT, 'user', (User, User.thrift_spec), None, ), # 3
-    (4, TType.I32, 'modelType', None, None, ), # 4
-  )
-
-  def __init__(self, modelId=None, modelName=None, user=None, modelType=None,):
-    self.modelId = modelId
-    self.modelName = modelName
-    self.user = user
-    self.modelType = modelType
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.modelId = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.modelName = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.user = User()
-          self.user.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I32:
-          self.modelType = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ModelRef')
-    if self.modelId is not None:
-      oprot.writeFieldBegin('modelId', TType.STRING, 1)
-      oprot.writeString(self.modelId)
-      oprot.writeFieldEnd()
-    if self.modelName is not None:
-      oprot.writeFieldBegin('modelName', TType.STRING, 2)
-      oprot.writeString(self.modelName)
-      oprot.writeFieldEnd()
-    if self.user is not None:
-      oprot.writeFieldBegin('user', TType.STRUCT, 3)
-      self.user.write(oprot)
-      oprot.writeFieldEnd()
-    if self.modelType is not None:
-      oprot.writeFieldBegin('modelType', TType.I32, 4)
-      oprot.writeI32(self.modelType)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
+    if self.simName is None:
+      raise TProtocol.TProtocolException(message='Required field simName is unset!')
     if self.modelId is None:
       raise TProtocol.TProtocolException(message='Required field modelId is unset!')
     return
@@ -433,214 +225,9 @@ class ModelRef:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.simId)
+    value = (value * 31) ^ hash(self.simName)
     value = (value * 31) ^ hash(self.modelId)
-    value = (value * 31) ^ hash(self.modelName)
-    value = (value * 31) ^ hash(self.user)
-    value = (value * 31) ^ hash(self.modelType)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ExportRequestSpec:
-  """
-  Attributes:
-   - exportType
-   - SimID
-   - variables
-   - startTime
-   - endTime
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I32, 'exportType', None, None, ), # 1
-    (2, TType.STRING, 'SimID', None, None, ), # 2
-    (3, TType.LIST, 'variables', (TType.STRUCT,(VariableInfo, VariableInfo.thrift_spec)), None, ), # 3
-    (4, TType.I32, 'startTime', None, None, ), # 4
-    (5, TType.I32, 'endTime', None, None, ), # 5
-  )
-
-  def __init__(self, exportType=None, SimID=None, variables=None, startTime=None, endTime=None,):
-    self.exportType = exportType
-    self.SimID = SimID
-    self.variables = variables
-    self.startTime = startTime
-    self.endTime = endTime
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I32:
-          self.exportType = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.SimID = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.variables = []
-          (_etype10, _size7) = iprot.readListBegin()
-          for _i11 in xrange(_size7):
-            _elem12 = VariableInfo()
-            _elem12.read(iprot)
-            self.variables.append(_elem12)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I32:
-          self.startTime = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
-        if ftype == TType.I32:
-          self.endTime = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ExportRequestSpec')
-    if self.exportType is not None:
-      oprot.writeFieldBegin('exportType', TType.I32, 1)
-      oprot.writeI32(self.exportType)
-      oprot.writeFieldEnd()
-    if self.SimID is not None:
-      oprot.writeFieldBegin('SimID', TType.STRING, 2)
-      oprot.writeString(self.SimID)
-      oprot.writeFieldEnd()
-    if self.variables is not None:
-      oprot.writeFieldBegin('variables', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRUCT, len(self.variables))
-      for iter13 in self.variables:
-        iter13.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.startTime is not None:
-      oprot.writeFieldBegin('startTime', TType.I32, 4)
-      oprot.writeI32(self.startTime)
-      oprot.writeFieldEnd()
-    if self.endTime is not None:
-      oprot.writeFieldBegin('endTime', TType.I32, 5)
-      oprot.writeI32(self.endTime)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.exportType is None:
-      raise TProtocol.TProtocolException(message='Required field exportType is unset!')
-    if self.SimID is None:
-      raise TProtocol.TProtocolException(message='Required field SimID is unset!')
-    if self.variables is None:
-      raise TProtocol.TProtocolException(message='Required field variables is unset!')
-    if self.startTime is None:
-      raise TProtocol.TProtocolException(message='Required field startTime is unset!')
-    if self.endTime is None:
-      raise TProtocol.TProtocolException(message='Required field endTime is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.exportType)
-    value = (value * 31) ^ hash(self.SimID)
-    value = (value * 31) ^ hash(self.variables)
-    value = (value * 31) ^ hash(self.startTime)
-    value = (value * 31) ^ hash(self.endTime)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class ExportException(TException):
-  """
-  Attributes:
-   - message
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'message', None, None, ), # 1
-  )
-
-  def __init__(self, message=None,):
-    self.message = message
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.message = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('ExportException')
-    if self.message is not None:
-      oprot.writeFieldBegin('message', TType.STRING, 1)
-      oprot.writeString(self.message)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __str__(self):
-    return repr(self)
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.message)
     return value
 
   def __repr__(self):
@@ -700,142 +287,8 @@ class DataAccessException(TException):
     oprot.writeStructEnd()
 
   def validate(self):
-    return
-
-
-  def __str__(self):
-    return repr(self)
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.message)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class DatabaseFileException(TException):
-  """
-  Attributes:
-   - message
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'message', None, None, ), # 1
-  )
-
-  def __init__(self, message=None,):
-    self.message = message
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.message = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('DatabaseFileException')
-    if self.message is not None:
-      oprot.writeFieldBegin('message', TType.STRING, 1)
-      oprot.writeString(self.message)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __str__(self):
-    return repr(self)
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.message)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class PlotException(TException):
-  """
-  Attributes:
-   - message
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'message', None, None, ), # 1
-  )
-
-  def __init__(self, message=None,):
-    self.message = message
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.message = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('PlotException')
-    if self.message is not None:
-      oprot.writeFieldBegin('message', TType.STRING, 1)
-      oprot.writeString(self.message)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
+    if self.message is None:
+      raise TProtocol.TProtocolException(message='Required field message is unset!')
     return
 
 

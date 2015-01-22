@@ -333,60 +333,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
-    #def _onSimulationSelected(self, dialog):
-    #    sim = dialog.getSelectedSimulation()
-    #    domain = dialog.getSelectedDomain()
-    #    dialog.close()
-    #    print(sim)
-    #    exportBasePath="D:"+os.sep+"export"
-    #    folderStr = exportBasePath+os.sep+str(sim.simId)
-    #    if (not (os.path.exists(folderStr))):
-    #        try:
-    #            print ('calling exportAllRequests(sim)')
-    #            self._vis.getVCellProxy().open()
-    #            url = self._vis.getVCellProxy().getClient().exportAllRequest(sim)
-    #            print("returned from issuing exportAllRequests(sim)")
-    #            print("URL="+url)
-    #            print("making folder: "+ folderStr)
-    #            os.mkdir(folderStr)
-    #            print("folder created.  Now attempting to \"download\" zip document from: "+ url)
-    #            response = urllib2.urlopen(url)
-    #            zipDocument = zipfile.ZipFile(StringIO.StringIO(response.read()))
-    #            print("done with requests.get.  Now extracting all to the subdirectory")
-    #            zipDocument.extractall(folderStr)
-    #        finally:
-    #            self._vis.getVCellProxy().close()
-    #    else:
-    #        print("Skipped export because sim data folder found: "+folderStr)
-
-    #    print("Extracted .vtu files should exist.")
-    #    print("Looking for file pattern: "+folderStr+os.sep+"SimID_"+str(sim.simId)+"*.vtu")
-    #    fileList = glob.glob(folderStr+os.sep+"SimID_"+str(sim.simId)+"*"+domain+"*.vtu")
-    #    print("fileList=")
-    #    print(fileList)
-    #    if len(fileList)>0:
-    #        self._vis.open(fileList)
-    #    print("Returned from calling self._vis.open(fileList)")
-    #    varNames = self._vis.getVariableNames()
-    #    assert isinstance(self._variableListWidget,QtGui.QListWidget)
-    #    self._variableListWidget.clear()
-    #    self._variableListWidget.addItems(varNames)
-    #    if visQt.isPyside():
-    #        self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
-    #    elif visQt.isPyQt4:
-    #        self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
-
-    #    times = self._vis.getTimes()
-    #    if times == None or len(times)==0:
-    #        self._timeSlider.setMinimum(0)
-    #        self._timeSlider.setMaximum(0)
-    #        self._timeLabel.setText("0.0")
-    #    else:
-    #        self._timeSlider.setMinimum(0)
-    #        self._timeSlider.setMaximum(len(times)-1)
-    #        self._timeLabel.setText("0.0")
-
-
+ 
     def _openCurrentDataSetAtTimeIndex(self, index):
         sim = self._vis.getVisDataContext().getCurrentDataSet()
         domain = self._vis.getVisDataContext().getCurrentDomain()
