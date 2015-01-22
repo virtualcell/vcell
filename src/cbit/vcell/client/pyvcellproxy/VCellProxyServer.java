@@ -2,7 +2,6 @@ package cbit.vcell.client.pyvcellproxy;
 
 
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TServer.Args;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
@@ -21,12 +20,6 @@ public static void startSimpleVCellProxyServer(VCellProxy.Processor<VCellProxyHa
 		e.printStackTrace();
 	}
 	
-}
-
-
-
-public static void main(String[] args) {
-	startSimpleVCellProxyServer(new VCellProxy.Processor<VCellProxyHandler>(new VCellProxyHandler()));
 }
 
 }

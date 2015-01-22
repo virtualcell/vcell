@@ -17,20 +17,3 @@ simList = client.getSimsFromSelectedModel()
 #print(simList.__len__)
 print('\n')
 print(simList)
-
-
-
-
-
-
-  # spec=ExportRequestSpec()
-  # spec.exportType = ExportType.VTU
-  # spec.variables = ['C_cyt','Ran_cyt','RanC_cyt','RanC_nuc']
-  # spec.SimID='Sim1'
-  # spec.startTime=0
-  # spec.endTime=x
-
-  # print(client.exportRequest(spec))
-  # transport.close()
-
-
