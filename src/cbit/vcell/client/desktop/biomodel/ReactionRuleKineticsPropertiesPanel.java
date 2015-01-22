@@ -12,10 +12,13 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,11 +34,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -55,8 +59,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -68,87 +72,162 @@ import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.model.gui.ParameterTableModel;
 
 
 @SuppressWarnings("serial")
 
-public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
-	protected SelectionManager selectionManager = null;
-	protected IssueManager issueManager = null;
-
+public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel {
+	
 	private BioModel bioModel = null;
 	private ReactionRule reactionRule = null;
 	private JLabel titleLabel = null;
 
-	ReactionRuleKineticsPropertiesPanel kpp = null;
-	ReactionRuleEditorPropertiesPanel epp = null;
+	private ReactionRulePropertiesTableModel tableModel = null;
+	private ScrollTable table = null;
+	private JTextField nameTextField = null;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
-	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener
+	private class BioModelNodeEditableTree extends JTree {
+		@Override
+		public boolean isPathEditable(TreePath path) {
+			Object object = path.getLastPathComponent();
+			return object instanceof BioModelNode;
+		}
+	}
+	private class InternalEventHandler implements PropertyChangeListener, ActionListener, FocusListener, MouseListener
 	{
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == reactionRule) {
 				if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REACTANT_WARNING)) {
-					Object warning = evt.getNewValue();
+
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_WARNING)) {
-					Object warning = evt.getNewValue();
+
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
-					updateTitleLabel();
+					changeName();
 				}
 			}
 		}
-
+		@Override
 		public void actionPerformed(ActionEvent e) {
-
 		}
-
+		@Override
 		public void mouseClicked(MouseEvent e) {			
 		}
-
+		@Override
 		public void mousePressed(MouseEvent e) {
 		}
+		@Override
 		public void mouseReleased(MouseEvent e) {
 		}
+		@Override
 		public void mouseEntered(MouseEvent e) {
 		}
-
+		@Override
 		public void mouseExited(MouseEvent e) {
 		}
-
-		public void valueChanged(TreeSelectionEvent e) {
+		@Override
+		public void focusGained(FocusEvent e) {
+		}
+		@Override
+		public void focusLost(FocusEvent e) {
+			if (e.getSource() == nameTextField) {
+				changeName();
+			}			
 		}
 	}
 	
-
-
-	
-	public ReactionRulePropertiesPanel() {
+	public ReactionRuleKineticsPropertiesPanel() {
 		super();
-		
-		kpp = new ReactionRuleKineticsPropertiesPanel();
-		epp = new ReactionRuleEditorPropertiesPanel();
-
-		setTabPlacement(TOP);
-		addTab("Kinetics", kpp);
-		addTab("Editor", epp);
+		initialize();
 	}
 	
+	private void initialize() {
+		try {
+
+			setName("KineticsTypeTemplatePanel");
+			setLayout(new java.awt.GridBagLayout());
+			
+			nameTextField = new JTextField();
+			nameTextField.setEditable(false);
+			nameTextField.addFocusListener(eventHandler);
+			nameTextField.addActionListener(eventHandler);
+
+			
+			int gridy = 0;
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			add(new JLabel("Reaction Name"), gbc);
+			
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			gbc.weightx = 1.0;
+			gbc.gridwidth = 2;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			add(nameTextField, gbc);
+		
+			gridy ++;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.fill = java.awt.GridBagConstraints.BOTH;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			gbc.gridwidth = 3;
+			add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
+			
+			setBackground(Color.white);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	private ScrollTable getScrollPaneTable() {
+		if (table == null) {
+			try {
+				table = new ScrollTable();
+				table.setModel(getReactionRulePropertiesTableModel());
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return table;
+	}
+	private ReactionRulePropertiesTableModel getReactionRulePropertiesTableModel() {
+		if (tableModel == null) {
+			try {
+				tableModel = new ReactionRulePropertiesTableModel(getScrollPaneTable(), true);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return tableModel;
+	}
+
+
+	
 	private void handleException(java.lang.Throwable exception) {
+
+		/* Uncomment the following lines to print uncaught exceptions to stdout */
 		 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 		 exception.printStackTrace(System.out);
 	}
 
 	public void setBioModel(BioModel newValue) {
-		kpp.setBioModel(newValue);
-		epp.setBioModel(newValue);
 		if (bioModel == newValue) {
 			return;
 		}
 		bioModel = newValue;
 	}	
 	
-//	@Override
+	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		if (selectedObjects == null || selectedObjects.length != 1) {
 			setReactionRule(null);
@@ -159,9 +238,27 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 		}
 	}
 
-	private void setReactionRule(ReactionRule newValue) {
-		kpp.setReactionRule(reactionRule);
-		epp.setReactionRule(reactionRule);
+	private void changeName() {
+		if (reactionRule == null) {
+			return;
+		}
+		String newName = nameTextField.getText();
+		if (newName == null || newName.length() == 0) {
+			nameTextField.setText(reactionRule.getName());
+			return;
+		}
+		if (newName.equals(reactionRule.getName())) {
+			return;
+		}
+		try {
+			reactionRule.setName(newName);
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace();
+			DialogUtils.showErrorDialog(this, e1.getMessage());
+		}
+	}
+	
+	public void setReactionRule(ReactionRule newValue) {
 		if (reactionRule == newValue) {
 			return;
 		}
@@ -169,36 +266,39 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(eventHandler);
 		}
+		
 		reactionRule = newValue;
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(eventHandler);
 		}
+		tableModel.setReactionRule(reactionRule);
 		refreshInterface();
 	}
-	
-	public void setSelectionManager(SelectionManager selectionManager) {
-		this.selectionManager = selectionManager;
-		if (selectionManager != null) {
-			kpp.setSelectionManager(selectionManager);
-			epp.setSelectionManager(selectionManager);
-		}
-	}
-
-	public void stateChanged(ChangeEvent e) {
-
-	}
-
 
 	protected void refreshInterface() {
 		if (reactionRule == null){	// sanity check
+			nameTextField.setEditable(false);
+			nameTextField.setText(null);
 			return;
 		}
-		updateTitleLabel();
+//		ArrayList<ReactionRuleObjectProperty> propertyList = new ArrayList<ReactionRuleObjectProperty>();
+//
+//		if(!(reactionRule instanceof SBEntity)) {
+//			tableModel.setData(propertyList);
+//			return;
+//		}
+//		SBEntity sbEntity = (SBEntity) reactionRule;
+//		if (!(sbEntity instanceof Entity)){
+//			tableModel.setData(propertyList);
+//			return;
+//		}
+//		Entity entity = (Entity) sbEntity;
+//		tableModel.setData(propertyList);
+		
+		nameTextField.setEditable(true);
+		nameTextField.setText(reactionRule.getName());
 	}
 	
-	private void updateTitleLabel() {
-		if (reactionRule != null) {
-			titleLabel.setText("Properties for Reaction Rule: " + reactionRule.getName());
-		}
-	}
+
+	
 }

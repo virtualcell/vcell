@@ -9,6 +9,7 @@ import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
@@ -66,9 +67,30 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
-				text = toHtml2(mcp, true);
+				text = toHtml(mcp, true);
 				toolTip = toHtmlWithTip(mcp, true);
-				icon = VCellIcons.rbmComponentErrorIcon;
+				icon = VCellIcons.rbmComponentGrayIcon;
+				if(mcp.getMolecularComponent().getComponentStateDefinitions().size() > 0) {
+					icon = VCellIcons.rbmComponentGrayStateIcon;
+				}
+				if(mcp.isbVisible()) {
+					icon = VCellIcons.rbmComponentGreenIcon;
+					if(mcp.getMolecularComponent().getComponentStateDefinitions().size() > 0) {
+						icon = VCellIcons.rbmComponentGreenStateIcon;
+					}
+				}
+				ComponentStatePattern csp = mcp.getComponentStatePattern();
+				if(csp != null && !csp.isAny()) {
+					icon = VCellIcons.rbmComponentGreenIcon;
+					if(mcp.getMolecularComponent().getComponentStateDefinitions().size() > 0) {
+						icon = VCellIcons.rbmComponentGreenStateIcon;
+					}
+				}
+				BioModelNode parent = (BioModelNode) ((BioModelNode) value).getParent().getParent().getParent();
+				if(parent == null) {
+					icon = VCellIcons.rbmComponentErrorIcon;
+					return this;
+				}
 			} else if (userObject instanceof StateLocal) {
 				StateLocal sl = (StateLocal) userObject;
 				text = toHtml(sl, true);

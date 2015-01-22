@@ -39,7 +39,7 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 	private JTree ownerTree;
 	private BioModel bioModel;
 	private ReactionRuleParticipantType participantType;
-	private boolean bShowDetails = false;
+	private final boolean bShowDetails = true;
 	
 	public ReactionRulePropertiesTreeModel(JTree tree, ReactionRuleParticipantType participantType) {
 		super(new BioModelNode("Reaction Rule",true),true);
@@ -114,11 +114,11 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 //			BioModelNode ns = new BioModelNode(sl, false);
 //			node.add(ns);
 //		}
-		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
-			BondLocal bl = new BondLocal(molecularComponentPattern);
-			BioModelNode nb = new BioModelNode(bl, false);
-			node.add(nb);
-		}
+//		if(!molecularComponentPattern.getBondType().equals(BondType.None) || bShowDetails) {	// we save space by not showing the Bond.None
+//			BondLocal bl = new BondLocal(molecularComponentPattern);
+//			BioModelNode nb = new BioModelNode(bl, false);
+//			node.add(nb);
+//		}
 		return node;
 	}
 
@@ -293,8 +293,4 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 		this.bioModel = bioModel;
 	}
 	
-	public final void setShowDetails(boolean bShowDetails) {
-		this.bShowDetails = bShowDetails;
-		populateTree();
-	}
 }
