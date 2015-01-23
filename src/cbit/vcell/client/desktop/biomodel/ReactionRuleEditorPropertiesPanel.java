@@ -63,6 +63,7 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesTypeLargeShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
@@ -84,7 +85,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private ReactionRulePropertiesTreeModel reactantTreeModel = null;
 	private ReactionRulePropertiesTreeModel productTreeModel = null;
 	
-	List<SpeciesTypeLargeShape> speciesTypeShapeList = new ArrayList<SpeciesTypeLargeShape>();
+	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
+	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
 	private JPanel productPanel;
 	private JPanel reactantPanel;
@@ -122,7 +124,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_WARNING)) {
 					Object warning = evt.getNewValue();
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
-//					updateTitleLabel();
+					updateInterface();
 				}
 			}
 		}
@@ -194,7 +196,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
-					for(LargeShape stls : speciesTypeShapeList) {
+					for(SpeciesPatternLargeShape stls : reactantPatternShapeList) {
+						stls.paintSelf(g);
+					}
+					for(SpeciesPatternLargeShape stls : productPatternShapeList) {
 						stls.paintSelf(g);
 					}
 				}
@@ -523,54 +528,55 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		productTreeModel.setReactionRule(reactionRule);
 		reactantTreeModel.setReactionRule(reactionRule);
-		refreshInterface();
-
-		if(reactionRule != null) {
-			speciesTypeShapeList.clear();
-			Graphics panelContext = splitPaneHorizontal.getTopComponent().getGraphics();
-			ReactantPattern rp = reactionRule.getReactantPattern(0);
-			SpeciesPattern sp = rp.getSpeciesPattern();
-			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-			MolecularType mt = mtp.getMolecularType();
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20, mt, panelContext, mt);
-			speciesTypeShapeList.add(stls);
-//			for(int i = 0; i<bioModel.getModel().getRbmModelContainer().getMolecularTypeList().size(); i++) {
-//				MolecularType mt = bioModel.getModel().getRbmModelContainer().getMolecularTypeList().get(i);
-//				SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20+55*i, mt);
-//				speciesTypeShapeList.add(stls);
-//			}
-			splitPaneHorizontal.getTopComponent().repaint();
-			
-		}
-		
+		updateInterface();
 	}
 
-	protected void refreshInterface() {
+	protected void updateInterface() {
 		if (reactionRule == null){	// sanity check
 			return;
 		}
-//		ArrayList<ReactionRuleObjectProperty> propertyList = new ArrayList<ReactionRuleObjectProperty>();
-//
-//		if(!(reactionRule instanceof SBEntity)) {
-//			tableModel.setData(propertyList);
-//			return;
-//		}
-//		SBEntity sbEntity = (SBEntity) reactionRule;
-//		if (!(sbEntity instanceof Entity)){
-//			tableModel.setData(propertyList);
-//			return;
-//		}
-//		Entity entity = (Entity) sbEntity;
-//		tableModel.setData(propertyList);
-//		updateTitleLabel();
+		updateShape();
 	}
-	
-//	private void updateTitleLabel() {
-//		if (reactionRule != null) {
-//			titleLabel.setText("Properties for Reaction Rule: " + reactionRule.getName());
-//		}
-//	}
-
+	private void updateShape() {
+		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+		reactantPatternShapeList.clear();
+		int xOffset = 20;
+		if(rpList != null && rpList.size() > 0) {
+			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
+			for(int i = 0; i<rpList.size(); i++) {
+				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
+				// TODO: count the number of bonds for this sp and allow enough vertical space for them
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, sp, gc, reactionRule);
+				if(i < rpList.size()-1) {
+					sps.addEndText("+");
+				} else {
+					if(reactionRule.isReversible()) {
+						sps.addEndText("<->");
+					} else {
+						sps.addEndText("->");
+					}
+				}
+				xOffset = sps.getX() + sps.getWidth() + 35;
+				reactantPatternShapeList.add(sps);
+			}
+		}
+		xOffset += 15;	// space for the <-> sign
+		List<ProductPattern> ppList = reactionRule.getProductPatterns();
+		productPatternShapeList.clear();
+		if(ppList != null && ppList.size() > 0) {
+			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
+			for(int i = 0; i<ppList.size(); i++) {
+				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, sp, gc, reactionRule);
+				if(i < ppList.size()-1) {
+					sps.addEndText("+");
+				}
+				xOffset = sps.getX() + sps.getWidth() + 35;
+				productPatternShapeList.add(sps);
+			}
+		}
+		splitPaneHorizontal.getTopComponent().repaint();
+	}
 	
 	private void showPopupMenu(MouseEvent e){ 
 		if (!e.isPopupTrigger()) {
@@ -747,6 +753,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 							ComponentStatePattern csp = new ComponentStatePattern(csd);
 							mcp.setComponentStatePattern(csp);
 						}
+						treeModel.populateTree();
 					}
 				});
 			}

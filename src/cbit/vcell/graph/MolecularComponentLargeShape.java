@@ -18,6 +18,7 @@ import org.vcell.util.Issue;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentLargeShape extends AbstractComponentShape {
@@ -155,8 +156,15 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 			if(csp != null && !csp.isAny()) {
 				componentColor = componentGreen;
 			}
-		} else if(owner instanceof ReactionParticipant) {
-			
+		} else if(owner instanceof ReactionRule) {
+			componentColor = componentHidden;
+			if(mcp.isbVisible()) {
+				componentColor = componentGreen;
+			}
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			if(csp != null && !csp.isAny()) {
+				componentColor = componentGreen;
+			}
 		}
 		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			componentColor = componentBad;
