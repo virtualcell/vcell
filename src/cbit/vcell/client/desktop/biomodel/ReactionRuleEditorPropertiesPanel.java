@@ -556,7 +556,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						sps.addEndText("->");
 					}
 				}
-				xOffset = sps.getX() + sps.getWidth() + 35;
+				xOffset = sps.getRightEnd() + 35;
 				reactantPatternShapeList.add(sps);
 			}
 		}
@@ -571,7 +571,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
-				xOffset = sps.getX() + sps.getWidth() + 35;
+				xOffset = sps.getRightEnd() + 35;
 				productPatternShapeList.add(sps);
 			}
 		}
