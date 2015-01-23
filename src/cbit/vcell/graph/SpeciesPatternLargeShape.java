@@ -33,7 +33,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	
 	private Displayable owner;
 	private SpeciesPattern sp;
-	
+	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
 	
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
@@ -120,7 +120,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	public int getY(){
 		return yPos;
 	}
-	
+	public int getWidth(){		// get the total width of the species pattern
+		int xRightmostSpeciesType = 0;
+		int widthRightmostSpeciesType = 0;
+		
+		for(SpeciesTypeLargeShape stls : speciesShapes) {
+			int xCurrentSpeciesType = stls.getX();
+			if(xRightmostSpeciesType < xCurrentSpeciesType) {
+				xRightmostSpeciesType = xCurrentSpeciesType;
+				widthRightmostSpeciesType = stls.getWidth();
+			}
+		}
+		return widthRightmostSpeciesType;
+	}
+
+	public void addEndText(final String string) {
+		this.endText = string;
+	}
+
 	public void paintSelf(Graphics g) {
 		final int offset = 14;			// initial lenth of vertical bar
 		final int separ = 6;			// y distance between 2 adjacent bars
@@ -230,5 +247,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
+		
+		
+		if(!endText.isEmpty()) {
+			g.drawString(endText, xPos + getWidth() + 15, yPos + 20);
+		}
 	}
+
+	
 }
