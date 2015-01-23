@@ -124,7 +124,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	public int getY(){
 		return yPos;
 	}
-	public int getWidth(){		// get the total width of the species pattern
+	public int getRightEnd(){		// get the x of the right end of the species pattern
 		int xRightmostSpeciesType = 0;
 		int widthRightmostSpeciesType = 0;
 		
@@ -135,7 +135,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 				widthRightmostSpeciesType = stls.getWidth();
 			}
 		}
-		return widthRightmostSpeciesType;
+		return xRightmostSpeciesType + widthRightmostSpeciesType;
 	}
 
 	public void addEndText(final String string) {
@@ -254,7 +254,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		
 		
 		if(!endText.isEmpty()) {
-			g.drawString(endText, xPos + getWidth() + 15, yPos + 20);
+			g.drawString(endText, getRightEnd() + 15, yPos + 20);
 		}
 	}
 
