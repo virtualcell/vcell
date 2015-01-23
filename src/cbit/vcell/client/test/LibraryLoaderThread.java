@@ -54,6 +54,10 @@ public class LibraryLoaderThread extends Thread {
 				sb.append(":  ");
 				sb.append(BeanUtils.getMessageRecursive(e));
 				sb.append(newline);
+				if (isGui){
+					BeanUtils.sendErrorReport(e, sb.toString());
+				
+				}
 			} 
 		}
 		if (sb != null) {
@@ -61,7 +65,8 @@ public class LibraryLoaderThread extends Thread {
 			if (lg.isEnabledFor(Level.WARN)) {
 				lg.warn("scheduling display of " + sb.toString());
 			}
-			SwingUtilities.invokeLater(new Reporter(sb.toString()));
+			// Suppress modal dialog warning for now
+			// SwingUtilities.invokeLater(new Reporter(sb.toString()));
 			}
 			else {
 				if (lg.isTraceEnabled()) {
