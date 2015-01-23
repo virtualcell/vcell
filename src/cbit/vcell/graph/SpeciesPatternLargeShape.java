@@ -79,7 +79,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 						break;
 					}
 					MolecularTypePattern mtpTo = b.molecularTypePattern;
-					SpeciesTypeLargeShape stlsTo = getShape(mtpTo); 
+					SpeciesTypeLargeShape stlsTo = getShape(mtpTo);
+					if(stlsTo == null) {
+						System.out.println("Null 'to' species type for bond of " + b.molecularTypePattern);
+						break;
+					}
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
 					MolecularComponentLargeShape mclsTo = stlsTo.getShape(mcpTo);
 					
