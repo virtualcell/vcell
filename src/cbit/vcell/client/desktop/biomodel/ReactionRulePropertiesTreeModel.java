@@ -91,6 +91,8 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 		nodeStructureChanged(rootNode);
 //		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
 		GuiUtils.treeExpandAllRows(ownerTree);
+
+		reactionRule.firePropertyChange("name", "aaa", "bbb");
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
