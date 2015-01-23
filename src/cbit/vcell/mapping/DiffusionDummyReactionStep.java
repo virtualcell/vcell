@@ -10,30 +10,20 @@
 
 package cbit.vcell.mapping;
 
-import cbit.vcell.model.GeneralKinetics;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
-public class DiffusionReactionStep extends SimpleReaction {
+public class DiffusionDummyReactionStep extends DummyReactionStep {
 /**
  * DiffusionReactionStep constructor comment.
  * @param structure cbit.vcell.model.Structure
  * @throws ExpressionException 
  */
-public DiffusionReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
-	super(model, structure,name);
-	try {
-		setKinetics(new GeneralKinetics(this));
-	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
-	addReactionParticipant(new Reactant(null,this,speciesContext,1));
+public DiffusionDummyReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
+	super(name, model, structure, speciesContext);
 }
 }

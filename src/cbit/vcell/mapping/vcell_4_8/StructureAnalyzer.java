@@ -14,9 +14,12 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.mapping.DiffusionReactionStep;
-import cbit.vcell.mapping.EventReactionStep;
+import cbit.vcell.mapping.DiffusionDummyReactionStep;
+import cbit.vcell.mapping.DummyReactionStep;
+import cbit.vcell.mapping.EventDummyReactionStep;
+import cbit.vcell.mapping.HybridDummyReactionStep;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ParticleDummyReactionStep;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextMapping;
@@ -563,7 +566,7 @@ private void refreshTotalMatrices() throws Exception {
 			totalSchemeMatrix.set_elem(i,j,stoichiometry);
 			
 			if (stoichiometry != 0){
-				if (!(reactionSteps[j] instanceof DiffusionReactionStep) && !(reactionSteps[j] instanceof EventReactionStep) &&
+				if (!(reactionSteps[j] instanceof DummyReactionStep) &&
 					!reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
 					ReactionParticipant[] rps1 = reactionSteps[j].getReactionParticipants();
 					ReactionParticipant rp0 = null;
@@ -713,16 +716,27 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		}
 	}
 	//
-	// add DiffusionReactionStep for each diffusing species and EventReactionStep for each speciesContext that has 
-	// event assignment(s) [that is a target variable in event assignment(s)] to eliminate those species from conserved moieties
+	// eliminate speciesContexts from conserved moieties by adding dummy reactions under special conditions (prevents unintentional variable elimination in math generation):   
+	//
+	// 1) DiffusionDummyReactionStep for each diffusing species 
+	// 2) EventDummyReactionStep for each speciesContext that is a target of an event assignment(s)
+	// 3) HybridDummyReactionStep if participates in a hybrid reaction (mass exchange between discrete and continuous requires all variables present).
+	// 4) ParticleDummyReactionStep if this speciesContext can be a particle (even if it doesn't diffuse or react).
 	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
 		if (scm.isPDERequired()){
-			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			rsList.addElement(new DiffusionDummyReactionStep("DiffusionDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 		if (scm.hasEventAssignment()){
-			rsList.addElement(new EventReactionStep("EventReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			rsList.addElement(new EventDummyReactionStep("EventDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}
+		if (scm.hasHybridReaction()){
+			rsList.addElement(new HybridDummyReactionStep("HybridDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}
+		SimulationContext simContext = mathMapping_4_8.getSimulationContext();
+		if (simContext.isStoch() && simContext.getGeometry().getDimension()>0 && !simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isForceContinuous()){
+			rsList.addElement(new ParticleDummyReactionStep("ParticleDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 	}
 	if (rsList.size()>0){

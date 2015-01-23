@@ -989,6 +989,12 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
 		scm.setHasEventAssignment(false);
+		scm.setHasHybridReaction(false);
+		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+				scm.setHasHybridReaction(true);
+			}
+		}
 		// We still want the stochastic constant species context to be a fixed function, but still stochvolumnVar.
 		// we don't eliminate variables for stochastic
 		scm.setDependencyExpression(null);

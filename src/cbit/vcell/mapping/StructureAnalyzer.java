@@ -19,17 +19,13 @@ import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -566,7 +562,7 @@ private void refreshTotalMatrices() throws Exception {
 			totalSchemeMatrix.set_elem(i,j,stoichiometry);
 			
 			if (stoichiometry != 0){
-				if (!(reactionStep instanceof DiffusionReactionStep) && !(reactionStep instanceof EventReactionStep) &&
+				if (!(reactionStep instanceof DummyReactionStep) &&
 					!reactionSpecs[j].isFast() && !reactionSpecs[j].isExcluded()){
 					ReactionParticipant[] rps1 = reactionStep.getReactionParticipants();
 					ReactionParticipant rp0 = null;
@@ -625,7 +621,8 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 //System.out.println("StructureAnalyzer.refreshSpeciesContextMappings()");
 
 	//GeometryContext geoContext = mathMapping.getSimulationContext().getGeometryContext();
-	Model model = mathMapping.getSimulationContext().getReactionContext().getModel();
+	SimulationContext simContext = mathMapping.getSimulationContext();
+	Model model = simContext.getReactionContext().getModel();
 	//
 	// note, the order of species is specified such that the first species have priority
 	//       when the null space is solved for dependent variables.  So the order of priority
@@ -644,7 +641,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		for (int j=0;j<speciesContexts.length;j++){
 			SpeciesContext sc = speciesContexts[j];
 			SpeciesContextMapping scm = mathMapping.getSpeciesContextMapping(sc);
-			SpeciesContextSpec scs = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
+			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 			if (scm.isFastParticipant() && !scs.isConstant()){
 				scmList.addElement(scm);
 			}
@@ -658,7 +655,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		for (int j=0;j<speciesContexts.length;j++){
 			SpeciesContext sc = speciesContexts[j];
 			SpeciesContextMapping scm = mathMapping.getSpeciesContextMapping(sc);
-			SpeciesContextSpec scs = mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(sc);
+			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
 			if (!scm.isFastParticipant() && !scs.isConstant()){
 				scmList.addElement(scm);
 			}
@@ -680,7 +677,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	// get all reactionSteps associated with these structures
 	//
 	Vector<ReactionStep> rsList = new Vector<ReactionStep>();
-	ReactionSpec allReactionSpecs[] = mathMapping.getSimulationContext().getReactionContext().getReactionSpecs();
+	ReactionSpec allReactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i=0;i<allReactionSpecs.length;i++){
 		if (allReactionSpecs[i].isExcluded()){
 			continue;
@@ -693,18 +690,28 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		}
 	}
 	//
-	// add DiffusionReactionStep for each diffusing species and EventReactionStep for each speciesContext that has 
-	// event assignment(s) [that is a target variable in event assignment(s)] to eliminate those species from conserved moieties
+	// eliminate speciesContexts from conserved moieties by adding dummy reactions under special conditions (prevents unintentional variable elimination in math generation):   
+	//
+	// 1) DiffusionDummyReactionStep for each diffusing species 
+	// 2) EventDummyReactionStep for each speciesContext that is a target of an event assignment(s)
+	// 3) HybridDummyReactionStep if participates in a hybrid reaction (mass exchange between discrete and continuous requires all variables present).
+	// 4) ParticleDummyReactionStep if this speciesContext can be a particle (even if it doesn't diffuse or react).
 	//
 	// include RegionVariables ... (they diffuse/move also ... just instantaneously).
 	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
-		if (scm.isPDERequired() || mathMapping.getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isWellMixed()){
-			rsList.addElement(new DiffusionReactionStep("DiffusionReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		if (scm.isPDERequired() || simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isWellMixed()){
+			rsList.addElement(new DiffusionDummyReactionStep("DiffusionDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 		if (scm.hasEventAssignment()){
-			rsList.addElement(new EventReactionStep("EventReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			rsList.addElement(new EventDummyReactionStep("EventDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}
+		if (scm.hasHybridReaction()){
+			rsList.addElement(new HybridDummyReactionStep("HybridDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}
+		if (simContext.isStoch() && simContext.getGeometry().getDimension()>0 && !simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isForceContinuous()){
+			rsList.addElement(new ParticleDummyReactionStep("ParticleDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
 		}
 	}
 	if (rsList.size()>0){
