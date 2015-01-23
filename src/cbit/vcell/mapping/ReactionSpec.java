@@ -28,6 +28,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -738,5 +739,32 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 	public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		getNameScope().getExternalEntries(entryMap);		
+	}
+
+
+	public boolean hasHybrid(SimulationContext simContext, SpeciesContext speciesContext) {
+		//
+		// see if this speciesContext is involved in this reaction
+		//
+		if (!simContext.isStoch()){
+			return false;
+		}
+		
+		boolean bHasForcedContinuous = false;
+		boolean bHasStochastic = false;
+		boolean bContainsSpeciesContext = false;
+		for (ReactionParticipant rp : getReactionStep().getReactionParticipants()){
+			if (rp.getSpeciesContext() == speciesContext){
+				bContainsSpeciesContext = true;
+			}
+			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(rp.getSpeciesContext());
+			if (scs.isForceContinuous()){
+				bHasForcedContinuous = true;
+			}else{
+				bHasStochastic = true;
+			}
+		}
+		
+		return bContainsSpeciesContext && bHasForcedContinuous && bHasStochastic;
 	}
 }

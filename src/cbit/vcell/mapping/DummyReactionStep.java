@@ -18,8 +18,8 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 
-public class EventReactionStep extends SimpleReaction {
-	public EventReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
+public class DummyReactionStep extends SimpleReaction {
+	public DummyReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
 		super(model, structure,name);
 		try {
 			setKinetics(new GeneralKinetics(this));

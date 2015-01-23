@@ -2696,6 +2696,12 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		scm.setPDERequired(simContext.isPDERequired(scs.getSpeciesContext()));
 		scm.setHasEventAssignment(simContext.hasEventAssignment(scs.getSpeciesContext()));
+		scm.setHasHybridReaction(false);
+		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+				scm.setHasHybridReaction(true);
+			}
+		}
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){

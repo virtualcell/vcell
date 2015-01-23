@@ -1129,6 +1129,12 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(getSimulationContext().isPDERequired(scs.getSpeciesContext()));
 		scm.setHasEventAssignment(getSimulationContext().hasEventAssignment(scs.getSpeciesContext()));
+		scm.setHasHybridReaction(false);
+		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+				scm.setHasHybridReaction(true);
+			}
+		}
 //		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 //		scm.setAdvecting(isAdvectionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){

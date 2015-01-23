@@ -1110,6 +1110,12 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
 		scm.setHasEventAssignment(false);		
+		scm.setHasHybridReaction(false);
+		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+				scm.setHasHybridReaction(true);
+			}
+		}
 		/*if (scs.isConstant()){
 			Expression initCount = null;
 			if(getSimulationContext().isUsingConcentration()) {
