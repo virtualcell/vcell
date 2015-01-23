@@ -20,6 +20,7 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import ucar.units.RationalNumber;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -978,7 +979,13 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
-		scm.setHasEventAssignment(false);		
+		scm.setHasEventAssignment(false);
+		scm.setHasHybridReaction(false);
+		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+				scm.setHasHybridReaction(true);
+			}
+		}
 		/*if (scs.isConstant()){
 			Expression initCount = null;
 			if(getSimulationContext().isUsingConcentration()) {

@@ -27,6 +27,7 @@ public class SpeciesContextMapping {
 	private boolean bFastParticipant    = false;
 	private boolean bPDERequired	    = false;
 	private boolean bHasEventAssignment = false;
+	private boolean bHasHybridReaction = false;
 //	private boolean bAdvecting        = false;
 //	private boolean bDiffusing        = false;
 
@@ -104,6 +105,10 @@ public boolean hasEventAssignment() {
 	return this.bHasEventAssignment;
 }
 
+public boolean hasHybridReaction() {
+	return this.bHasHybridReaction;
+}
+
 /*
 public boolean isDiffusing() {
 	return this.bDiffusing;
@@ -138,6 +143,10 @@ public void setPDERequired(boolean pdeRequired) {
 
 public void setHasEventAssignment(boolean hasEventAssignment) {
 	this.bHasEventAssignment = hasEventAssignment;
+}
+
+public void setHasHybridReaction(boolean hasHybridReaction) {
+	this.bHasHybridReaction = hasHybridReaction;
 }
 
 /*
