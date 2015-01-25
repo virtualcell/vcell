@@ -12,7 +12,6 @@ import cbit.vcell.resource.NativeLib;
 /**
  * Start and monitor Monitor library loading in thread, show error message when done
  * if exception
- * @author gweatherby
  */
 public class LibraryLoaderThread extends Thread {
 	private final boolean isGui;
