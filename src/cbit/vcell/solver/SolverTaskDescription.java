@@ -23,6 +23,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 
 /**
  * Insert the class' description here.
@@ -969,6 +970,9 @@ public void setSolverDescription(SolverDescription solverDescription) throws jav
 	SolverDescription oldValue = fieldSolverDescription;
 	fireVetoableChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 	fieldSolverDescription = solverDescription;
+	if (numProcessors > 1 &&  !fieldSolverDescription.supports(SolverFeature.Feature_Parallel)) {
+		numProcessors = 1;
+	}
 	firePropertyChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 }
 
@@ -1131,10 +1135,18 @@ public final void setSundialsSolverOptions(SundialsSolverOptions sundialsSolverO
 	/**
 	 * set num of processors; < 1 treated as 1
 	 * @param numProcessors
+	 * @throws IllegalArgumentException if > 1 and solver does not support parallel
 	 */
 	public void setNumProcessors(int numProcessors) {
 		numProcessors = Math.max(numProcessors, 1); //must be >= 1
-		this.numProcessors = numProcessors;
+		if (numProcessors == 1 || fieldSolverDescription.supports(SolverFeature.Feature_Parallel) ) {
+			this.numProcessors = numProcessors;
+		}
+		else { //problem here
+			this.numProcessors = 1;
+			throw new IllegalArgumentException(fieldSolverDescription.getDisplayLabel() + " only supports 1 processor, "
+					+ numProcessors + " passed");
+		}
 	}
 
 //double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
