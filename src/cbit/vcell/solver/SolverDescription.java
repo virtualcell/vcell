@@ -119,7 +119,7 @@ public enum SolverDescription {
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step), Experimental","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, 
-			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_ServerOnly},
+			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_ServerOnly, SolverFeature.Feature_Parallel},
 	      SolverExecutable.VCellChombo, LicensedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285", 
 	      VCellCodeVersion.CURRENT.compare(5,4) < 0), 
 	      
@@ -152,6 +152,7 @@ public enum SolverDescription {
 		Feature_DirichletAtMembraneBoundary("Dirichlet (Value) Boundary Condition at Membrane"),
 		Feature_Rulebased("Rule based"),
 		Feature_ServerOnly("Server only execution"),
+		Feature_Parallel("Parallel execution"),
 		;
 
 		private final String name;
