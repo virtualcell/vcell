@@ -167,6 +167,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			MolecularComponent molecularComponent = molecularType.createMolecularComponent();
 			molecularType.addMolecularComponent(molecularComponent);
 			bioModel.getModel().getRbmModelContainer().adjustSpeciesContextPatterns(molecularType, molecularComponent);
+			bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, molecularComponent);
+			bioModel.getModel().getRbmModelContainer().adjustRulesPatterns(molecularType, molecularComponent);
 			molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, molecularComponent));
 		} else if (selectedUserObject instanceof MolecularComponent){
 			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;

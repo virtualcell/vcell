@@ -1594,6 +1594,98 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}
 			}
 		}
+		public void adjustObservablesPatterns(MolecularType mt, MolecularComponent mc) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName());
+			Model model = Model.this;
+			RbmModelContainer rbmmc = model.getRbmModelContainer();
+			List<RbmObservable> ol = rbmmc.getObservableList();
+			if(ol == null || ol.isEmpty()) {
+				return;
+			}
+			for(RbmObservable o : ol) {
+				List<SpeciesPattern> spList = o.getSpeciesPatternList();
+				for(SpeciesPattern sp : spList) {
+			
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						Boolean found = false;
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() == mc) {
+								found = true;
+								break;
+							}
+						}
+						if(!found) {
+							MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+							mcp.setBondType(BondType.Possible);
+							mtp.getComponentPatternList().add(mcp);
+							o.firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, o, o);
+						}
+					}
+				}
+			}
+		}
+		public void adjustRulesPatterns(MolecularType mt, MolecularComponent mc) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName());
+			Model model = Model.this;
+			RbmModelContainer rbmmc = model.getRbmModelContainer();
+			
+			List<ReactionRule> rlList = rbmmc.getReactionRuleList();
+			if(rlList == null || rlList.isEmpty()) {
+				return;
+			}
+			
+			
+			for(ReactionRule rl : rlList) {
+				List<ReactantPattern> rpList = rl.getReactantPatterns();
+				for(ReactantPattern rp : rpList) {
+					SpeciesPattern sp = rp.getSpeciesPattern();
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						Boolean found = false;
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() == mc) {
+								found = true;
+								break;
+							}
+						}
+						if(!found) {
+							MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+							mcp.setBondType(BondType.Possible);
+							mtp.getComponentPatternList().add(mcp);
+							rl.firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, rl, rl);
+						}
+					}
+				}
+				
+				List<ProductPattern> ppList = rl.getProductPatterns();
+				for(ProductPattern pp : ppList) {
+					SpeciesPattern sp = pp.getSpeciesPattern();
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						Boolean found = false;
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() == mc) {
+								found = true;
+								break;
+							}
+						}
+						if(!found) {
+							MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+							mcp.setBondType(BondType.Possible);
+							mtp.getComponentPatternList().add(mcp);
+							rl.firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, rl, rl);
+						}
+					}
+				}
+			}
+		}
 	}
 		
 	public Model(Version argVersion) {
