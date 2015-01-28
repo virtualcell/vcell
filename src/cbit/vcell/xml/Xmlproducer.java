@@ -3632,9 +3632,14 @@ private Element getXML(MolecularComponentPattern param) {
 	e.setAttribute(XMLTags.RbmMolecularComponentTag, mangle(param.getMolecularComponent().getName()));
 	ComponentStatePattern cs = param.getComponentStatePattern();
 	if(cs != null) {
-		e.setAttribute(XMLTags.RbmMolecularComponentStatePatternTag, mangle(cs.getComponentStateDefinition().getName()));
 		if(cs.isAny()) {
 			e.setAttribute(XMLTags.RbmMolecularTypeAnyTag, String.valueOf(cs.isAny()));
+		} else {
+			if(cs.getComponentStateDefinition() != null) {
+				e.setAttribute(XMLTags.RbmMolecularComponentStatePatternTag, mangle(cs.getComponentStateDefinition().getName()));
+			} else {
+				System.err.println("Component State Definition is missing!");
+			}
 		}
 	}
 	Bond b = param.getBond();
