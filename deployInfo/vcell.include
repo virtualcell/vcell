@@ -21,7 +21,7 @@ common_propertyfile=${common_siteCfgDir}/vcell64.properties
 
 common_siteTmpDir=${common_siteRootDir}/tmp
 
-common_siteLibDir=${common_siteRootDir}/sitelibs/${HOSTNAME}/${common_site}
+common_siteLibDir=${buildsupport}/sitelibs/${HOSTNAME}/${common_site}
 LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
 #these are necessary to pick up the JVM shared libraries for VTK
