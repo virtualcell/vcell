@@ -201,7 +201,12 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 					}
 				}
 			}
-			
+			for(MolecularComponent mc : mt.getComponentList()) {
+				MolecularComponentPattern mcp = getMolecularComponentPattern(mc);
+				if(mcp == null) {
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component Pattern missing for the Molecular Component '" + mc.toString(), Issue.SEVERITY_ERROR));
+				}
+			}
 		}			
 	}
 

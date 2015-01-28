@@ -297,8 +297,8 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 		addPropertyChangeListener(this);
 //		addVetoableChangeListener(this);
 		
-		reactionRule.removePropertyChangeListener(this);
-		reactionRule.addPropertyChangeListener(this);
+//		reactionRule.removePropertyChangeListener(this);
+//		reactionRule.addPropertyChangeListener(this);
 		
 //		for(ReactantPattern p : reactionRule.getReactantPatterns()) {
 //			p.removePropertyChangeListener(this);
