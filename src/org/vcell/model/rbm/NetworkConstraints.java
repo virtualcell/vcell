@@ -14,7 +14,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable 
 	public static final String PROPERTY_NAME_MAX_ITERATION = "maxIteration";
 	public static final String PROPERTY_NAME_MOLECULES_PER_SPECIES = "maxMoleculesPerSpecies";
 	
-	private int maxIteration = 10;
+	private int maxIteration = 20;
 	private int maxMoleculesPerSpecies = 10;
 	private Map<MolecularType, Integer> maxStoichiometryMap = new HashMap<MolecularType, Integer>();
 	
