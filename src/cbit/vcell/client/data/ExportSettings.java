@@ -14,13 +14,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import org.vcell.util.BeanUtils;
 
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.export.gui.ASCIISettingsPanel;
 import cbit.vcell.export.gui.ASCIISettingsPanelListener;
 import cbit.vcell.export.gui.MediaSettingsPanel;
@@ -553,6 +550,7 @@ public void JButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
  */
 public static void main(java.lang.String[] args) {
 	try {
+		@SuppressWarnings("unused")
 		ExportSettings aExportSettings;
 		aExportSettings = new ExportSettings();
 	} catch (Throwable exception) {
@@ -660,7 +658,8 @@ public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelec
 public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars) {
 	JDialog dialogToShow = null;
 	setClosedOK(false);
-	switch (getSelectedFormat()) {
+	final int format = getSelectedFormat();
+	switch (format) {
 		case FORMAT_CSV:
 			dialogToShow = getJDialogASCIISettings(reference);
 			break;
@@ -676,25 +675,36 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 			dialogToShow = getJDialogRasterSettings(reference);
 			break;
 		case FORMAT_UCD:
-			int result = PopupGenerator.showComponentOKCancelDialog(new JDialog(), new JTextField("Continue UCD Export?"), "UCD Export");
-			if(result == JOptionPane.OK_OPTION){
-				return true;
-			}
-			return false;
 		case FORMAT_VTK_UNSTRUCT:
 		case FORMAT_VTK_IMAGE:
-			int result2 = PopupGenerator.showComponentOKCancelDialog(new JDialog(), new JTextField("Continue VTK Export?"), "VTK Export");
-			if(result2 == JOptionPane.OK_OPTION){
-				return true;
+			//ensure consistent with requiresFollowOnDialog
+			if (requiresFollowOnDialog(format)) {
+				throw new RuntimeException("Follow on dialog required");
 			}
-			return false;
+			
+			return true;
 
 //			dialogToShow = getJDialogRasterSettings();
 //			break;
 	}
 	dialogToShow.pack();
 	BeanUtils.centerOnComponent(dialogToShow, reference);
-	dialogToShow.show();  // modal; blocks until OK'd or closed
+	dialogToShow.setVisible(true);  // modal; blocks until OK'd or closed
 	return isClosedOK();
+}
+
+/**
+ * @param format should be FORMAT constant from {@link ExportConstants} 
+ * @return true if selecting requires an options Dialog 
+ */
+public static boolean requiresFollowOnDialog(int format) {
+	switch (format) {
+	case FORMAT_UCD:
+	case FORMAT_VTK_UNSTRUCT:
+	case FORMAT_VTK_IMAGE:
+		return false;
+	default:	
+		return true;
+	}
 }
 }
