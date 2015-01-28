@@ -1,7 +1,6 @@
 package org.vcell.chombo.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,29 +29,39 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	{
 		public void actionPerformed(ActionEvent e) 
 		{
-			if (e.getSource() == chomboOutputCheckBox || e.getSource() == vcellOutputCheckBox) 
-			{
-				setChomboOutputOptions();
-			} 
+			if (!suppressEvents) {
+				if (e.getSource() == chomboOutputCheckBox || e.getSource() == vcellOutputCheckBox) 
+				{
+					setChomboOutputOptions();
+				} 
+			}
 		}
 
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() == solverTaskDescription)
+			if (!suppressEvents && evt.getSource() == solverTaskDescription)
 			{
-				updateDisplay();
+				setDisplayForSolverTaskDescription();
 			}
 		}
 	}
-	
+
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SolverTaskDescription solverTaskDescription;	
 	private ChomboSolverSpec chomboSolverSpec;
-	
+
 	private JCheckBox vcellOutputCheckBox;
 	private JCheckBox chomboOutputCheckBox;
 	private JFormattedTextField numProcessors = new JFormattedTextField(new DecimalFormat("##"));
-	
+	/**
+	 * the user's last selection for {@link #chomboOutputCheckBox} when {@link #numProcessors} == 1
+	 */
+	private boolean lastUserChomboOutput;
+	/**
+	 * used along with {@link EventSuppressor} to prevent programmatic setting of values executing propertyChange event methods
+	 */
+	private boolean suppressEvents = false;
+
 	private class FileOptions extends JPanel {
 		FileOptions( ) {
 			setLayout(new GridBagLayout());
@@ -82,34 +91,83 @@ public class ChomboOutputOptionsPanel extends JPanel {
 			chomboOutputCheckBox.addActionListener(ivjEventHandler);
 		}
 	}
-	
-	private  class ProcessorOptions extends JPanel {
+
+	/**
+	 * panel  with {@link ChomboOutputOptionsPanel#numProcessors} in it
+	 */
+	private  class ProcessorOptions extends JPanel implements PropertyChangeListener {
 		public ProcessorOptions() {
 			super(new FlowLayout(FlowLayout.LEFT));
 			add(new JLabel("Num Processors:"));
 			add(numProcessors);
 			numProcessors.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 			numProcessors.setColumns(2);
-			numProcessors.addPropertyChangeListener("value",new PropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent arg0) {
+			numProcessors.addPropertyChangeListener("value",this);
+		}
+		
+		/**
+		 * update {@link ChomboOutputOptionsPanel#solverTaskDescription} when user input 
+		 * number processors change
+		 */
+		@Override
+		public void propertyChange(PropertyChangeEvent arg0) {
+			if (!suppressEvents) {
+				try(EventSuppressor es = new EventSuppressor()) {
 					Object o = numProcessors.getValue();
-					if (o != null) {
-						Number n = (Number) o;
-						solverTaskDescription.setNumProcessors(n.intValue());
+					if (o != null && o instanceof Number) {
+						Number nobj = (Number) o;
+						final int n = nobj.intValue();
+						solverTaskDescription.setNumProcessors(n);
+						setNumProcessorsField(n > 1);
 					}
-					setNumProcessorsField();
+					else {
+						//don't expect this to happen, but just fallback to last set int if it does
+						numProcessors.setValue(Integer.toString(solverTaskDescription.getNumProcessors()));
+					}
 				}
-			});
+			}
 		}
 	}
-	
+
+	/**
+	 *  used in try-with-resources block to set {@link ChomboOutputOptionsPanel#suppressEvents} to true.<br>
+	 *  Reentrant safe; only last call to {@link AutoCloseable#close()} resets suppressEvents to false
+	 */
+	private class EventSuppressor implements AutoCloseable {
+		final boolean resetOnClose;
+
+		/**
+		 * determine if events already suppressed; only resetOnClose if they're not
+		 */
+		public EventSuppressor() {
+			if (suppressEvents) {
+				resetOnClose = false;
+			}
+			else {
+				suppressEvents = true;
+				resetOnClose = true;
+			}
+		}
+
+		@Override
+		public void close() {
+			if (resetOnClose) {
+				suppressEvents = false;
+			}
+		}
+	}
+
 	/**
 	 * force chombo output if parallel 
 	 */
 	private void enableGuiElements( ) {
 		final boolean isParallel = solverTaskDescription.isParallel();
 		chomboOutputCheckBox.setEnabled(!isParallel);
+		boolean cState = lastUserChomboOutput;
+		if (isParallel) {
+			cState = true;
+		}
+		chomboOutputCheckBox.setSelected(cState);
 	}
 
 	public ChomboOutputOptionsPanel() {
@@ -122,30 +180,42 @@ public class ChomboOutputOptionsPanel extends JPanel {
 		chomboSolverSpec.setSaveVCellOutput(vcellOutputCheckBox.isSelected());
 		chomboSolverSpec.setSaveChomboOutput(chomboOutputCheckBox.isSelected());
 	}
-	
+
 	/**
 	 * if {@link #ENABLE_PARALLEL} is true, set num processors field from current solverTaskDescription 
 	 * if {@link #ENABLE_PARALLEL} is false, set solverTaskDescription processors to 1 
+	 * @param recordChomboSelectedValue if true, record current state of  {@link #chomboOutputCheckBox} for resetting later
 	 */
-	private void setNumProcessorsField( ) {
+	private void setNumProcessorsField(boolean recordChomboSelectedValue ) {
 		if (!ENABLE_PARALLEL) {
 			solverTaskDescription.setNumProcessors(1);
 		}
 		numProcessors.setValue(new Long(solverTaskDescription.getNumProcessors()));
+		if (recordChomboSelectedValue) {
+			lastUserChomboOutput = chomboOutputCheckBox.isSelected();
+		}
 		enableGuiElements();
 	}
 
-	private void updateDisplay() {
-		if (!solverTaskDescription.getSolverDescription().isChomboSolver()) {
-			chomboSolverSpec = null;
-			setVisible(false);
-			return;
-		}
-		chomboSolverSpec = solverTaskDescription.getChomboSolverSpec();
-		setVisible(true);
-		vcellOutputCheckBox.setSelected(chomboSolverSpec.isSaveVCellOutput());
-		chomboOutputCheckBox.setSelected(chomboSolverSpec.isSaveChomboOutput());
-		setNumProcessorsField();
+	/**
+	 * setup display for particular {@link #solverTaskDescription}
+	 */
+	private void setDisplayForSolverTaskDescription() {
+		try (EventSuppressor es = new EventSuppressor()) {
+			if (!solverTaskDescription.getSolverDescription().isChomboSolver()) {
+				chomboSolverSpec = null;
+				setVisible(false);
+				return;
+			}
+			chomboSolverSpec = solverTaskDescription.getChomboSolverSpec();
+			setVisible(true);
+			vcellOutputCheckBox.setSelected(chomboSolverSpec.isSaveVCellOutput());
+
+			final boolean saveChomboFormatFiles = chomboSolverSpec.isSaveChomboOutput();
+			lastUserChomboOutput = saveChomboFormatFiles; 
+			chomboOutputCheckBox.setSelected(saveChomboFormatFiles);
+			setNumProcessorsField(false);
+		} 
 	}
 
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
@@ -159,11 +229,13 @@ public class ChomboOutputOptionsPanel extends JPanel {
 			oldValue.removePropertyChangeListener(ivjEventHandler);
 		}
 		this.solverTaskDescription = newValue;
+
+		setDisplayForSolverTaskDescription();		
+
 		if (solverTaskDescription != null)
 		{
 			solverTaskDescription.addPropertyChangeListener(ivjEventHandler);
 		}
-		updateDisplay();		
 	}
-	
+
 }
