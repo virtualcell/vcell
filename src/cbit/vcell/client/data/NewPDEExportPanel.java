@@ -16,7 +16,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -41,14 +40,11 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
-import org.bouncycastle.jcajce.provider.symmetric.DES;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.UserCancelException;
@@ -66,7 +62,6 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -76,13 +71,13 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
-import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
@@ -101,6 +96,7 @@ import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JRadioButton bothVarRadioButton;
 	private JLabel defineExportDataLabel;
@@ -109,7 +105,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JRadioButton volVarRadioButton;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private JButton ivjJButtonExport = null;
-	private JComboBox ivjJComboBox1 = null;
+	private JComboBox<String> ivjJComboBox1 = null;
 	private JLabel ivjJLabelFormat = null;
 	private JPanel ivjJPanelExport = null;
 	private ExportSettings ivjExportSettings1 = null;
@@ -120,8 +116,8 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JTextField ivjJTextField1 = null;
 	private JTextField ivjJTextField2 = null;
 	private PDEDataContext fieldPdeDataContext = null;
-	private JList ivjJListSelections = null;
-	private JList ivjJListVariables = null;
+	private JList<Object> ivjJListSelections = null;
+	private JList<?> ivjJListVariables = null;
 	private JRadioButton ivjJRadioButtonSelection = null;
 	private JRadioButton ivjJRadioButtonSlice = null;
 	private JScrollPane ivjJScrollPane2 = null;
@@ -160,6 +156,10 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private static final String EXPORT_UCD = "UCD (*.ucd)";
 	private static final String EXPORT_VTK_IMAGE = "VTK Image (*.vtk)";
 	private static final String EXPORT_VTK_UNSTRUCT = "VTK Unstructured (*.vtu)";
+	/**
+	 * base text of Export Button ... dynamically updated depending on selection
+	 */
+	private static final String BTN_EXPORT_TEXT = "Start Export";
 
 
 
@@ -830,6 +830,7 @@ private void connEtoM7() {
  * connPtoP1SetTarget:  (DefaultListModel1.this <--> JList1.model)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
+@SuppressWarnings("unchecked")
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
@@ -847,6 +848,7 @@ private void connPtoP1SetTarget() {
  * connPtoP2SetTarget:  (DefaultListModelCivilized2.this <--> JListSelections.model)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
+@SuppressWarnings("unchecked")
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
@@ -1041,6 +1043,7 @@ private ExportSettings getExportSettings1() {
  * @return cbit.vcell.export.server.ExportSpecs
  */
 private ExportSpecs getExportSpecs() {
+	@SuppressWarnings("deprecation")
 	Object[] variableSelections = getJListVariables().getSelectedValues();
 	String[] variableNames = new String[variableSelections.length];
 	for (int i = 0; i < variableSelections.length; i++){
@@ -1054,7 +1057,7 @@ private ExportSpecs getExportSpecs() {
 	} else if (getJRadioButtonFull().isSelected()) {
 		geoMode = ExportConstants.GEOMETRY_FULL;
 	}
-	Object[] selectionsArr = getJListSelections().getSelectedValues();
+	Object[] selectionsArr = getJListSelections().getSelectedValuesList().toArray();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
@@ -1207,7 +1210,7 @@ private javax.swing.JButton getJButtonExport() {
 		try {
 			ivjJButtonExport = new javax.swing.JButton();
 			ivjJButtonExport.setName("JButtonExport");
-			ivjJButtonExport.setText("Start Export");
+			ivjJButtonExport.setText(BTN_EXPORT_TEXT);
 			ivjJButtonExport.setEnabled(false);
 			// user code begin {1}
 			// user code end
@@ -1244,10 +1247,10 @@ private javax.swing.JButton getJButtonExport() {
  * @return javax.swing.JComboBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getJComboBox1() {
+private javax.swing.JComboBox<String> getJComboBox1() {
 	if (ivjJComboBox1 == null) {
 		try {
-			ivjJComboBox1 = new javax.swing.JComboBox();
+			ivjJComboBox1 = new javax.swing.JComboBox<String>();
 			ivjJComboBox1.setName("JComboBox1");
 			// user code begin {1}
 			// user code end
@@ -1404,16 +1407,16 @@ private javax.swing.JLabel getJLabelTime() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getJListSelections() {
+private javax.swing.JList<Object> getJListSelections() {
 	if (ivjJListSelections == null) {
 		try {
-			ivjJListSelections = new javax.swing.JList();
+			ivjJListSelections = new javax.swing.JList<Object>();
 			ivjJListSelections.setName("JListSelections");
 			ivjJListSelections.setBounds(0, 0, 160, 120);
 			ivjJListSelections.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 			ivjJListSelections.setCellRenderer(new DefaultListCellRenderer(){
 				@Override
-				public Component getListCellRendererComponent(JList list,
+				public Component getListCellRendererComponent(JList<?> list,
 						Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
 					// TODO Auto-generated method stub
@@ -1447,10 +1450,10 @@ private javax.swing.JList getJListSelections() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getJListVariables() {
+private javax.swing.JList<?> getJListVariables() {
 	if (ivjJListVariables == null) {
 		try {
-			ivjJListVariables = new javax.swing.JList();
+			ivjJListVariables = new javax.swing.JList<Object>();
 			ivjJListVariables.setName("JListVariables");
 			ivjJListVariables.setBounds(0, 0, 160, 120);
 			// user code begin {1}
@@ -2389,6 +2392,7 @@ private void startExport() {
 		return;
 	}
 	DisplayPreferences[] displayPreferences = null;
+	@SuppressWarnings("deprecation")
 	Object[] variableSelections = getJListVariables().getSelectedValues();
 	boolean selectionHasVolumeVariables = false;
 	boolean selectionHasMembraneVariables = false;
@@ -2582,18 +2586,14 @@ private static void copyFile(File sourceFile, File destFile) throws IOException 
     if(!destFile.exists()) {
         destFile.createNewFile();
     }
-    FileChannel source = null;
-    FileChannel destination = null;
-    try {
-        source = new FileInputStream(sourceFile).getChannel();
-        destination = new FileOutputStream(destFile).getChannel();
+	try (FileInputStream fis = new FileInputStream(sourceFile);
+        FileOutputStream fos = new FileOutputStream(destFile) ) {
+        FileChannel source = fis.getChannel();
+		FileChannel destination = fos.getChannel();
         // to avoid infinite loops, should be:
         long count = 0;
         long size = source.size();              
         while((count += destination.transferFrom(source, count, size-count))<size);
-    }finally {
-        if(source != null) {try{source.close();}catch(Exception e){}}
-        if(destination != null) {try{destination.close();}catch(Exception e){}}
     }
 }
 /**
@@ -2690,9 +2690,14 @@ private void updateExportFormat(int exportFormat) {
 			getJRadioButtonFull().setEnabled(true);			
 			break;
 		}
-
-
 	};
+	if (ExportSettings.requiresFollowOnDialog(exportFormat)) {
+		getJButtonExport().setText(BTN_EXPORT_TEXT + " ...");
+	}
+	else {
+		getJButtonExport().setText(BTN_EXPORT_TEXT);
+	}
+	
 }
 
 
