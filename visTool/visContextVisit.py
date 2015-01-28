@@ -113,7 +113,33 @@ class visContextVisit(visContextAbstract):
         print("new database name is \"" + self._databaseName + "\"")
         self._updateDisplay()
 
-    def open(self,filename):
+    def open(self,filenames):
+        if len(filenames) == 1:
+            filename = str(filenames[0])
+            if (not filename.startswith("localhost:")):
+                filename = "localhost:"+filename;
+            print("database name is "+filename)
+            self._databaseName = filename
+            visit.OpenDatabase(filename)
+        else:
+            count = 0
+            for fname in filenames:
+                print("filename("+str(count)+") = "+str(fname))
+                count = count+1
+            filename = filenames[0]
+            if ("_000000.vtu" in filename):
+                filename = filename.replace("_000000.vtu","_*.vtu")
+            if (not filename.startswith("localhost:")):
+                filename = "localhost:"+filename;
+            filename = filename + " database"
+        self._databaseName = filename
+        retcode = visit.OpenDatabase(self._databaseName)
+        
+        print("new database name is \"" + self._databaseName + "\"")
+        self._variable = None
+        self._updateDisplay()
+
+    def openOne(self,filename):
         #if len(filenames) == 1:
         #    filename = str(filenames[0])
         #    if (not filename.startswith("localhost:")):
