@@ -370,7 +370,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         print('fileName is:')
         print(fileName)
-        self._vis.open(fileName)
+        self._vis.openOne(fileName)
         print("Returned from calling self._vis.open(fileList)")
         self._vis.getVisDataContext().setCurrentDataSet(sim)
         self._vis.getVisDataContext().setCurrentDomain(domain)
