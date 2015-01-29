@@ -115,7 +115,9 @@ public class MolecularTypeLargeShape implements LargeShape {
 		int numComponents = mt.getComponentList().size();	// components
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
-			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+//			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
@@ -130,7 +132,9 @@ public class MolecularTypeLargeShape implements LargeShape {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
 			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
 
-			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+//			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 			componentShapes.add(0, mlcls);
