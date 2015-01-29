@@ -15,6 +15,7 @@ import java.rmi.RemoteException;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
@@ -68,7 +69,13 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdata
 /**
  * This method was created in VisualAge.
  * @return CartesianMesh
+ * @throws  
  */
+
+public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws RemoteException, DataAccessException;
+
+
+
 CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.

@@ -18,6 +18,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
@@ -369,6 +370,23 @@ public void close() {
 	//} catch (NoSuchObjectException e) {
 	//	e.printStackTrace();
 	//}
+}
+
+
+
+@Override
+public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time)	throws DataAccessException, RemoteException {
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ", time=" + time + ")");
+	checkClosed();
+	try {
+		return dataServerProxy.getVtuMeshFiles(vcdataID, time);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
 }
 
 }

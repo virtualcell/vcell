@@ -17,6 +17,7 @@ import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.server.DataSetControllerProvider;
@@ -364,5 +365,20 @@ private void handleRemoteException(RemoteException remoteException) {
 	System.out.println("\n\n.... Handling RemoteException ...\n");
 	remoteException.printStackTrace(System.out);
 	System.out.println("\n\n");
+}
+
+
+public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcDataIdentifier, double time) throws DataAccessException {
+	try {
+		return getDataSetController().getVtuMeshFiles(vcDataIdentifier, time);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getVtuMeshFiles(vcDataIdentifier,time);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
 }
 }

@@ -6,8 +6,8 @@ try:
     import visQt 
     import visit.pyside_support
     import visit.writescript
-#    QtGui = visQt.QtGui
-#    QtCore = visQt.QtCore
+    QtGui = visQt.QtGui
+    QtCore = visQt.QtCore
     print("visit imported without an exception")
 except ImportError as ex:
     print("visit import : exception happened "+str(ex))
@@ -23,10 +23,8 @@ import timeSeriesAsynchClientTask
 from lineoutAsynchClientTask import LineoutAsynchClientTask
 from timeSeriesAsynchClientTask import TimeSeriesAsynchClientTask
 
-from visContextAbstract import *
-
 import vcellProxy
-from vcellProxy import *
+import visContextAbstract
 
 
 class PlotWindow(QtGui.QWidget):
@@ -53,13 +51,13 @@ class SuppressWindow(QtCore.QObject):
         #all others return false since we won't be handling those events
         return False
    
-class visContextVisit(visContextAbstract):
+class visContextVisit(visContextAbstract.visContextAbstract):
 
 #    import fakeVisit as visit
 
 
     def __init__(self):
-        visContextAbstract.__init__(self)
+        visContextAbstract.visContextAbstract.__init__(self)
         self._plotWindow = PlotWindow(1)
         self._asynchClientTaskManager = asynchClientTaskManager.AsynchClientTaskManager(self._plotWindow)
         self._databaseName = None
@@ -81,7 +79,7 @@ class visContextVisit(visContextAbstract):
 
         self._pickMode = 0     # 0 = pickMode off   1 = pickMode on
 
-        self._vcellProxy = VCellProxyHandler()
+#        self._vcellProxy = VCellProxyHandler()
 
         #visit.SuppressMessages(2)
         #visit.SuppressQueryOutputOn()
@@ -97,8 +95,8 @@ class visContextVisit(visContextAbstract):
         self._infoWindowDockWidget.setWidget(visit.pyside_support.GetOtherWindow("Information")) 
         self.setPickMode(1)
 
-    def getVCellProxy(self):
-        return self._vcellProxy
+ #   def getVCellProxy(self):
+ #       return self._vcellProxy
 
     def getRenderWindow(self, parent):
         return self._plotWindow
@@ -107,62 +105,22 @@ class visContextVisit(visContextAbstract):
     def getBareRenderWindow(self):
         return self._plotWindow.getRenderWindow()
 
-    def openForUpdatedState(self, filename):
-        self._databaseName = filename
-        retcode = visit.OpenDatabase(self._databaseName)
-        print("new database name is \"" + self._databaseName + "\"")
-        self._updateDisplay()
+    def openOne(self, filename, vtuVariableName, bSameDomain):
+        assert(isinstance(filename,basestring))
+        assert(isinstance(vtuVariableName,basestring))
+        assert(isinstance(bSameDomain,bool))
+        print "\n\nvisContextVisit: openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+")"
+        bSameDomain = False
+        assert(isinstance(bSameDomain,bool))
+        if (self._databaseName != filename):
+            self._databaseName = filename;
+            if (bSameDomain):
+                retcode = visit.ReplaceDatabase(self._databaseName)
+            else:
+                retcode = visit.OpenDatabase(self._databaseName)   
 
-    def open(self,filenames):
-        if len(filenames) == 1:
-            filename = str(filenames[0])
-            if (not filename.startswith("localhost:")):
-                filename = "localhost:"+filename;
-            print("database name is "+filename)
-            self._databaseName = filename
-            visit.OpenDatabase(filename)
-        else:
-            count = 0
-            for fname in filenames:
-                print("filename("+str(count)+") = "+str(fname))
-                count = count+1
-            filename = filenames[0]
-            if ("_000000.vtu" in filename):
-                filename = filename.replace("_000000.vtu","_*.vtu")
-            if (not filename.startswith("localhost:")):
-                filename = "localhost:"+filename;
-            filename = filename + " database"
-        self._databaseName = filename
-        retcode = visit.OpenDatabase(self._databaseName)
-        
+        self._variable = vtuVariableName 
         print("new database name is \"" + self._databaseName + "\"")
-        self._variable = None
-        self._updateDisplay()
-
-    def openOne(self,filename):
-        #if len(filenames) == 1:
-        #    filename = str(filenames[0])
-        #    if (not filename.startswith("localhost:")):
-        #        filename = "localhost:"+filename;
-        #    print("database name is "+filename)
-        #    self._databaseName = filename
-        #    visit.OpenDatabase(filename)
-        #else:
-        #    count = 0
-        #    for fname in filenames:
-        #        print("filename("+str(count)+") = "+str(fname))
-        #        count = count+1
-        #    filename = filenames[0]
-        #    if ("_000000.vtu" in filename):
-        #        filename = filename.replace("_000000.vtu","_*.vtu")
-        #    if (not filename.startswith("localhost:")):
-        #        filename = "localhost:"+filename;
-        #    filename = filename + " database"
-        self._databaseName = filename
-        retcode = visit.OpenDatabase(self._databaseName)
-        
-        print("new database name is \"" + self._databaseName + "\"")
-        self._variable = None
         self._updateDisplay()
         
     def getMDVariableNames(self):
@@ -175,39 +133,18 @@ class visContextVisit(visContextAbstract):
         varList = removeDupes(initialVarList)
         return varList
         
-    def getVariableNames(self):
-        #initialVarList = list()
-        #md = self._getMetaData()
-        #for i in xrange(md.GetNumScalars()):
-        #    print md.GetScalars(i).name
-        #    initialVarList.append(md.GetScalars(i).name)
-        ## remove duplicates
-        #varList = removeDupes(initialVarList)
-        try:
-            self._vcellProxy.open()
-            varInfosList = self._vcellProxy.getClient().getVariableList(self._visDataContext.getCurrentDataSet())
-        except Exception as exc:
-            print(exc.message)
-        finally:
-            self._vcellProxy.close()
-
-        varList = [varInfo.variableName for varInfo in varInfosList]
-        print("visContextVisit - getVariableNames.  Var list is:")
-        print varList
-        return varList
-
-    def setVariable(self,var):
-        if var != None:
-            var = str(var)
-        if not (var.startswith('vcRegion')):
-            domainStr = str(self._visDataContext.getCurrentDomain())
-            if len(domainStr)>0:
-                var=domainStr+'__DOMAINSEPARATOR__'+var
-        self._variable = var
-        print("in visContextVisit.setVariable("+str(var)+"): begin")
-        #SetActiveWindow(self.windowID)
-        self._updateDisplay()
-        print("in visContextVisit.addVariable(): end")
+    #def setVariable(self,var):
+    #    if var != None:
+    #        var = str(var)
+    #    #if not (var.startswith('vcRegion')):
+    #    #    domainStr = str(self._visDataContext.getCurrentDomain())
+    #    #    if len(domainStr)>0:
+    #    #        var=domainStr+'__DOMAINSEPARATOR__'+var
+    #    self._variable = var
+    #    print("in visContextVisit.setVariable("+str(var)+"): begin")
+    #    #SetActiveWindow(self.windowID)
+    #    self._updateDisplay()
+    #    print("in visContextVisit.addVariable(): end")
 
 
     def getVariable(self):
@@ -335,50 +272,50 @@ class visContextVisit(visContextAbstract):
     def quit(self):
         visit.Close()
 
-    def setTimeIndex(self, index):
+    #def setTimeIndex(self, index):
 
-        #nStates = visit.TimeSliderGetNStates()      
-        print(index)
-        #visit.SetTimeSliderState(index)
-        self._visDataContext.setCurrentTimeIndex(index)
-        print("Setting time index.")
-        try:
-           self._vcellProxy.open()
-           self._visDataContext.setCurrentDataSetTimePoints(self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet()))
-        finally:
-            self._vcellProxy.close()
-        self._visDataContext.setCurrentTimePoint(self._visDataContext.getCurrentDataSetTimePoints()[index])
-        visit.DrawPlots()
+    #    #nStates = visit.TimeSliderGetNStates()      
+    #    print(index)
+    #    #visit.SetTimeSliderState(index)
+    #    self._visDataContext.setCurrentTimeIndex(index)
+    #    print("Setting time index.")
+    #    try:
+    #       self._vcellProxy.open()
+    #       self._visDataContext.setCurrentDataSetTimePoints(self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet()))
+    #    finally:
+    #        self._vcellProxy.close()
+    #    self._visDataContext.setCurrentTimePoint(self._visDataContext.getCurrentDataSetTimePoints()[index])
+    #    visit.DrawPlots()
 
 
-    def getNumberOfTimePoints(self):
-        numberOfStates = self.getVCellProxy().getClient().getEndTimeIndex() + 1
-        print("VCell Proxy says number of time points available is: "+str(numberOfStates))
-        #numberOfStates = visit.GetMetaData(self._databaseName).numStates
-        assert (isinstance(numberOfStates, int))
-        return numberOfStates
+    #def getNumberOfTimePoints(self):
+    #    numberOfStates = self.getVCellProxy().getClient().getEndTimeIndex() + 1
+    #    print("VCell Proxy says number of time points available is: "+str(numberOfStates))
+    #    #numberOfStates = visit.GetMetaData(self._databaseName).numStates
+    #    assert (isinstance(numberOfStates, int))
+    #    return numberOfStates
     
     
     def clearPicks(self):
         if (self.getVariable() is not None):
             visit.ClearPickPoints()
 
-    def getTimes(self):
-        if (self._databaseName == None):
-            return []
-        #md = visit.GetMetaData(self._databaseName)
-        #if (md != None):
-        #    times = md.times
-        try:
-            self._vcellProxy.open()
-            times = self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet())
-        finally:
-            self._vcellProxy.close()
-        if (times !=None):
-            #assert (isinstance(times, tuple))
-            return times
-        else:
-            return []
+    #def getTimes(self):
+    #    if (self._databaseName == None):
+    #        return []
+    #    #md = visit.GetMetaData(self._databaseName)
+    #    #if (md != None):
+    #    #    times = md.times
+    #    try:
+    #        self._vcellProxy.open()
+    #        times = self._vcellProxy.getClient().getTimePoints(self._visDataContext.getCurrentDataSet())
+    #    finally:
+    #        self._vcellProxy.close()
+    #    if (times !=None):
+    #        #assert (isinstance(times, tuple))
+    #        return times
+    #    else:
+    #        return []
 
     def _getSliceAttributes(self):
         sliceAttributes = visit.SliceAttributes()
@@ -446,18 +383,18 @@ class visContextVisit(visContextAbstract):
             print("visContextVisit: Problem creating lineoutAsynchClientTask or adding it to the asynchClientTaskManager")
         return lineoutAsynchClientTask
 
-    def doTimeSeries(self, point, dataReadyCallback = None, onErrorCallback = None):
-        _timeSeriesAsynchClientTask = None
-        assert isinstance(point, tuple)
-        print("visContextVisit.doTimeSeries: passed assertion")
-        try:
-            _timeSeriesAsynchClientTask = TimeSeriesAsynchClientTask(point, dataReadyCallback, onErrorCallback)
-            print("visContextVisit.doTimeSeries: created task")
-            self._asynchClientTaskManager.addTask(_timeSeriesAsynchClientTask)
-            print("visContextVisit.doTimeSeries: created added task to task list")
-        except:
-            print("visContextVisit: Problem creating timeSeriesAsynchClientTask or adding it to the asynchClientTaskManager")
-        return _timeSeriesAsynchClientTask
+    #def doTimeSeries(self, point, dataReadyCallback = None, onErrorCallback = None):
+    #    _timeSeriesAsynchClientTask = None
+    #    assert isinstance(point, tuple)
+    #    print("visContextVisit.doTimeSeries: passed assertion")
+    #    try:
+    #        _timeSeriesAsynchClientTask = TimeSeriesAsynchClientTask(point, dataReadyCallback, onErrorCallback)
+    #        print("visContextVisit.doTimeSeries: created task")
+    #        self._asynchClientTaskManager.addTask(_timeSeriesAsynchClientTask)
+    #        print("visContextVisit.doTimeSeries: created added task to task list")
+    #    except:
+    #        print("visContextVisit: Problem creating timeSeriesAsynchClientTask or adding it to the asynchClientTaskManager")
+    #    return _timeSeriesAsynchClientTask
 
     def setActiveWindow(self, windowIndex): 
         assert isinstance(windowIndex, int)
