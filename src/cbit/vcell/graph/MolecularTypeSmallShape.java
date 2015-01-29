@@ -66,7 +66,9 @@ public class MolecularTypeSmallShape {
 		int numComponents = mt.getComponentList().size();
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
-			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+//			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mcp, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
@@ -79,7 +81,9 @@ public class MolecularTypeSmallShape {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
 			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
 			// now that we know the dimensions of the molecular type shape we create the component shapes
-			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+//			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+			MolecularComponent mc = mt.getComponentList().get(i);
+			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, graphicsContext, owner);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
