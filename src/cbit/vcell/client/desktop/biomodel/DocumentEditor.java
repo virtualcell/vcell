@@ -642,7 +642,7 @@ private void construcutPopupMenu() {
 			} else if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
-					|| folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE
+					|| folderClass == DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE
 					|| folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE
 				) {

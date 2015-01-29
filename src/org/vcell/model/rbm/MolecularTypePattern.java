@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
@@ -19,7 +20,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 
-public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource {
+public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource, Displayable {
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
 	
 	private MolecularType molecularType;
@@ -183,12 +184,12 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			IssueSource owner = issueContext.getContextObject(ownerContextType);
 			RbmModelContainer c = ((Model)m).getRbmModelContainer();
 			if(!c.getMolecularTypeList().contains(mt)) {
-				issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Type '" + mt.getName() + "' missing from the SpeciesTypes table.", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularType.typeName + " '" + mt.getName() + "' missing from the " + mt.getDisplayType() + " table.", Issue.SEVERITY_ERROR));
 			}
 			for(MolecularComponentPattern mcp : getComponentPatternList()) {
 				MolecularComponent mc = mcp.getMolecularComponent();
 				if(!mt.getComponentList().contains(mc)) {
-					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component '" + mc.toString() + "' missing from the SpeciesType definition.", Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
 				}
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
 				if(csp != null && !csp.isAny()) {
@@ -197,7 +198,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the ComponentStatePattern.", Issue.SEVERITY_ERROR));
 					}
 					if(!mc.getComponentStateDefinitions().contains(cs)) {
-						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the SpeciesType definition.", Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
 					}
 				}
 			}
@@ -210,9 +211,19 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		}			
 	}
 
-//	public String getId() {
-//		System.err.println("MolecularTypePattern id generated badly");
-//		return "MolecularTypePattern_" + hashCode();
-//	}
-	
+	private static final String typeName = "Molecular Type Pattern";
+	@Override
+	public String getDisplayName() {
+		MolecularType mt = getMolecularType();
+		if(mt == null) {
+			return "";
+		}
+		return mt.getDisplayName();
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
+	}
+
+
 }

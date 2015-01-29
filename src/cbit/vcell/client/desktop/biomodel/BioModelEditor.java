@@ -105,7 +105,7 @@ public class BioModelEditor extends DocumentEditor {
 	private ReactionRulePropertiesPanel reactionRuleEditorPropertiesPanel = null;
 	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
-	private MolecularTypePropertiesPanel speciesTypePropertiesPanel = null;
+	private MolecularTypePropertiesPanel molecularTypePropertiesPanel = null;
 	private ObservablePropertiesPanel observablePropertiesPanel = null;
 
 	private StructurePropertiesPanel structurePropertiesPanel = null;
@@ -160,7 +160,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				case SPECIES_NODE:
 					newObject = model.createSpeciesContext(model.getStructure(0));
 					break;
-				case SPECIES_TYPES_NODE:
+				case MOLECULAR_TYPES_NODE:
 					if(model.getRbmModelContainer() != null) {
 						MolecularType mt = model.getRbmModelContainer().createMolecularType();
 						model.getRbmModelContainer().addMolecularType(mt);
@@ -492,11 +492,11 @@ private SpeciesPropertiesPanel getSpeciesPropertiesPanel() {
 	}
 	return speciesPropertiesPanel;
 }
-private MolecularTypePropertiesPanel getSpeciesTypePropertiesPanel() {
-	if (speciesTypePropertiesPanel == null) {
-		speciesTypePropertiesPanel = new MolecularTypePropertiesPanel();
+private MolecularTypePropertiesPanel getMolecularTypePropertiesPanel() {
+	if (molecularTypePropertiesPanel == null) {
+		molecularTypePropertiesPanel = new MolecularTypePropertiesPanel();
 	}
-	return speciesTypePropertiesPanel;
+	return molecularTypePropertiesPanel;
 }
 private ObservablePropertiesPanel getObservablePropertiesPanel() {
 	if (observablePropertiesPanel == null) {
@@ -604,7 +604,7 @@ private void initialize() {
 		getApplicationPropertiesPanel().setSelectionManager(selectionManager);
 		getStructurePropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesPropertiesPanel().setSelectionManager(selectionManager);
-		getSpeciesTypePropertiesPanel().setSelectionManager(selectionManager);
+		getMolecularTypePropertiesPanel().setSelectionManager(selectionManager);
 		getObservablePropertiesPanel().setSelectionManager(selectionManager);
 		getParameterPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionParticipantPropertiesPanel().setSelectionManager(selectionManager);
@@ -635,7 +635,7 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof SpeciesContext) {
 			bottomComponent = getSpeciesPropertiesPanel();
 		} else if (singleSelection instanceof MolecularType) {
-			bottomComponent = getSpeciesTypePropertiesPanel();
+			bottomComponent = getMolecularTypePropertiesPanel();
 		} else if (singleSelection instanceof RbmObservable) {
 			bottomComponent = getObservablePropertiesPanel();
 		} else if (singleSelection instanceof Structure) {
@@ -692,8 +692,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 				bottomComponent = getStructurePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
 				bottomComponent = getSpeciesPropertiesPanel();
-			} else if (folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE) {
-				bottomComponent = getSpeciesTypePropertiesPanel();
+			} else if (folderClass == DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE) {
+				bottomComponent = getMolecularTypePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE) {
 				bottomComponent = getObservablePropertiesPanel();
 			} else if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
@@ -784,7 +784,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = bioModelEditorModelPanel;
 		} else if (folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE
-				|| folderClass == DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE
+				|| folderClass == DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.REACTION_DIAGRAM_NODE
@@ -859,7 +859,7 @@ public void setBioModel(BioModel bioModel) {
 	getReactionRulePropertiesPanel().setBioModel(bioModel); 
 	getReactionPropertiesPanel().setBioModel(bioModel); 
 	getSpeciesPropertiesPanel().setBioModel(bioModel);
-	getSpeciesTypePropertiesPanel().setBioModel(bioModel);
+	getMolecularTypePropertiesPanel().setBioModel(bioModel);
 	getObservablePropertiesPanel().setBioModel(bioModel);
 	bioPaxObjectPropertiesPanel.setBioModel(bioModel);
 }

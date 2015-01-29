@@ -481,7 +481,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		}
 		kineticLaw.gatherIssues(issueContext, issueList);
 		if(molecularTypeMappings == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, "Molecular Type Mapping is null", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.SEVERITY_WARNING));
 		}
 
 

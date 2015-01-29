@@ -76,7 +76,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.REACTIONS_NODE, true),			
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.STRUCTURES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_NODE, true),
-			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE, true),
+			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE, true),
 			new DocumentEditorTreeFolderNode(DocumentEditorTreeFolderClass.OBSERVABLES_NODE, true),
 		};	
 //	private BioModelNode structureDiagramNode = new BioModelNode(modelChildFolderNodes[0], false); 
@@ -84,7 +84,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 	private BioModelNode reactionsNode = new BioModelNode(modelChildFolderNodes[1], false); 
 	private BioModelNode structuresNode = new BioModelNode(modelChildFolderNodes[2], false); 
 	private BioModelNode speciesNode = new BioModelNode(modelChildFolderNodes[3], false); 
-	private BioModelNode speciesTypeNode = new BioModelNode(modelChildFolderNodes[4], false); 
+	private BioModelNode molecularTypeNode = new BioModelNode(modelChildFolderNodes[4], false); 
 	private BioModelNode observablesNode = new BioModelNode(modelChildFolderNodes[5], false); 
 	private BioModelNode modelChildNodes[] = new BioModelNode[] {
 //			structureDiagramNode,
@@ -92,7 +92,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			reactionsNode,
 			structuresNode,
 			speciesNode,
-			speciesTypeNode,
+			molecularTypeNode,
 			observablesNode,
 	};
 	

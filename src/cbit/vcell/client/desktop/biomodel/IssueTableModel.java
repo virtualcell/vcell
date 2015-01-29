@@ -245,8 +245,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (source instanceof RbmModelContainer) {
 				IssueCategory ic = issue.getCategory();
 				switch(ic) {
-				case RbmSpeciesTypesTableBad:
-					description = "Model / Species Types";
+				case RbmMolecularTypesTableBad:
+					description = "Model / " + MolecularType.typeName + "s";
 					break;
 				case RbmReactionRulesTableBad:
 					description = "Model / Reactions";

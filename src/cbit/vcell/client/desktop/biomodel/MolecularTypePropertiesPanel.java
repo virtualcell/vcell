@@ -71,7 +71,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
@@ -83,7 +83,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == molecularType) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
-					titleLabel.setText("Properties for Species Type: " + molecularType.getName());
+					titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 				}
 			}
 		}
@@ -143,7 +143,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JLabel titleLabel = null;
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-	List<SpeciesTypeLargeShape> speciesTypeShapeList = new ArrayList<SpeciesTypeLargeShape>();
+	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
 	private JMenuItem addMenuItem;
@@ -285,7 +285,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
 //				g.drawString("This is my custom Panel!", 10, 20);
-				for(LargeShape stls : speciesTypeShapeList) {
+				for(LargeShape stls : molecularTypeShapeList) {
 					stls.paintSelf(g);
 				}
 			}
@@ -401,16 +401,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularType = newValue;
 		molecularTypeTreeModel.setMolecularType(molecularType);
 		if (molecularType != null) {
-			titleLabel.setText("Properties for Species Type: " + molecularType.getDisplayName());
-			speciesTypeShapeList.clear();
+			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
+			molecularTypeShapeList.clear();
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20, molecularType, panelContext, molecularType);
-			speciesTypeShapeList.add(stls);
-//			for(int i = 0; i<bioModel.getModel().getRbmModelContainer().getMolecularTypeList().size(); i++) {
-//				MolecularType mt = bioModel.getModel().getRbmModelContainer().getMolecularTypeList().get(i);
-//				SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(20, 20+55*i, mt);
-//				speciesTypeShapeList.add(stls);
-//			}
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(20, 20, molecularType, panelContext, molecularType);
+			molecularTypeShapeList.add(stls);
 			splitPane.getRightComponent().repaint();
 		}
 	}

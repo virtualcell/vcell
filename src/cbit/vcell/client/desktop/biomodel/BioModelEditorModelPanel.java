@@ -88,8 +88,8 @@ import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
-import cbit.vcell.graph.SpeciesTypeSmallShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.BioModelEntityObject;
@@ -124,7 +124,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reaction_table("Reactions"),
 		structure_table("Structures"),
 		species_table("Species"),
-		species_definitions_table("Species Types"),
+		species_definitions_table(MolecularType.typeName + "s"),
 		observables_table("Observables");
 		
 		private String name = null;
@@ -169,12 +169,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private EditorScrollTable structuresTable = null;
 	private EditorScrollTable reactionsTable = null;
 	private EditorScrollTable speciesTable = null;
-	private EditorScrollTable speciesTypeTable = null;
+	private EditorScrollTable molecularTypeTable = null;
 	private EditorScrollTable observablesTable = null;
 	private BioModelEditorStructureTableModel structureTableModel = null;
 	private BioModelEditorReactionTableModel reactionTableModel = null;
 	private BioModelEditorSpeciesTableModel speciesTableModel = null;
-	private MolecularTypeTableModel speciesTypeTableModel = null;
+	private MolecularTypeTableModel molecularTypeTableModel = null;
 	private ObservableTableModel observableTableModel = null;
 	private BioModel bioModel;
 	private JTextField textFieldSearch = null;
@@ -384,7 +384,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionTableModel.setSearchText(null);
 		structureTableModel.setSearchText(null);
 		speciesTableModel.setSearchText(null);
-		speciesTypeTableModel.setSearchText(null);
+		molecularTypeTableModel.setSearchText(null);
 		observableTableModel.setSearchText(null);
 		
 		int selectedIndex = tabbedPane.getSelectedIndex();
@@ -396,7 +396,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		} else if (selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species);
 		} else if (selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
-			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_TYPES_NODE, ActiveViewID.species_definitions);
+			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE, ActiveViewID.species_definitions);
 		} else if (selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
 			activeView = new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables);
 		} else if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
@@ -417,7 +417,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		setTableSelections(selectedObjects, structuresTable, structureTableModel);
 		setTableSelections(selectedObjects, reactionsTable, reactionTableModel);
 		setTableSelections(selectedObjects, speciesTable, speciesTableModel);
-		setTableSelections(selectedObjects, speciesTypeTable, speciesTypeTableModel);
+		setTableSelections(selectedObjects, molecularTypeTable, molecularTypeTableModel);
 		setTableSelections(selectedObjects, observablesTable, observableTableModel);
 		refreshButtons();
 	}
@@ -454,17 +454,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable = new EditorScrollTable();
 
 		speciesTable = new EditorScrollTable();
-		speciesTypeTable = new EditorScrollTable();
+		molecularTypeTable = new EditorScrollTable();
 		observablesTable = new EditorScrollTable();
 		structureTableModel = new BioModelEditorStructureTableModel(structuresTable);
 		reactionTableModel = new BioModelEditorReactionTableModel(reactionsTable);
 		speciesTableModel = new BioModelEditorSpeciesTableModel(speciesTable);
-		speciesTypeTableModel = new MolecularTypeTableModel(speciesTypeTable);
+		molecularTypeTableModel = new MolecularTypeTableModel(molecularTypeTable);
 		observableTableModel = new ObservableTableModel(observablesTable);
 		structuresTable.setModel(structureTableModel);
 		reactionsTable.setModel(reactionTableModel);
 		speciesTable.setModel(speciesTableModel);
-		speciesTypeTable.setModel(speciesTypeTableModel);
+		molecularTypeTable.setModel(molecularTypeTableModel);
 		observablesTable.setModel(observableTableModel);
 		
 		reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
@@ -543,7 +543,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		modelPanelTabs[ModelPanelTabID.reaction_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.reaction_table, reactionsTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.structure_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.structure_table, structuresTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.species_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_table, speciesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
-		modelPanelTabs[ModelPanelTabID.species_definitions_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_definitions_table, speciesTypeTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
+		modelPanelTabs[ModelPanelTabID.species_definitions_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.species_definitions_table, molecularTypeTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		modelPanelTabs[ModelPanelTabID.observables_table.ordinal()] = new ModelPanelTab(ModelPanelTabID.observables_table, observablesTable.getEnclosingScrollPane(), VCellIcons.tableIcon);
 		tabbedPane.addChangeListener(eventHandler);
 		tabbedPane.addMouseListener(eventHandler);
@@ -570,7 +570,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		structuresTable.getSelectionModel().addListSelectionListener(eventHandler);
 		reactionsTable.getSelectionModel().addListSelectionListener(eventHandler);
 		speciesTable.getSelectionModel().addListSelectionListener(eventHandler);
-		speciesTypeTable.getSelectionModel().addListSelectionListener(eventHandler);
+		molecularTypeTable.getSelectionModel().addListSelectionListener(eventHandler);
 		observablesTable.getSelectionModel().addListSelectionListener(eventHandler);
 		
 		DefaultScrollTableCellRenderer tableRenderer = new DefaultScrollTableCellRenderer(){
@@ -782,10 +782,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		};
 		
 		//
-		// this renderer only paints the molecular type small shape in the MolecularType Table (species type)
+		// this renderer only paints the molecular type small shape in the MolecularType Table
 		//
 		DefaultScrollTableCellRenderer rbmMolecularTypeShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
-			SpeciesTypeSmallShape stls = null;
+			MolecularTypeSmallShape stls = null;
 			
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, 
@@ -793,15 +793,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof VCellSortTableModel<?>) {
 					Object selectedObject = null;
-					if (table.getModel() == speciesTypeTableModel) {
-						selectedObject = speciesTypeTableModel.getValueAt(row);
+					if (table.getModel() == molecularTypeTableModel) {
+						selectedObject = molecularTypeTableModel.getValueAt(row);
 					}
 					if (selectedObject != null) {
 						if(selectedObject instanceof MolecularType) {
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new SpeciesTypeSmallShape(4, 3, mt, cellContext, mt);
+								stls = new MolecularTypeSmallShape(4, 3, mt, cellContext, mt);
 							}
 						}
 					} else {
@@ -911,8 +911,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
 		
 		// all "depictions" have their own renderer
-		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
-		speciesTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
+		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
 		observablesTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
@@ -921,8 +921,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.addKeyListener(eventHandler);
 		speciesTable.addMouseListener(eventHandler);
 		speciesTable.addKeyListener(eventHandler);
-		speciesTypeTable.addMouseListener(eventHandler);
-		speciesTypeTable.addKeyListener(eventHandler);
+		molecularTypeTable.addMouseListener(eventHandler);
+		molecularTypeTable.addKeyListener(eventHandler);
 		observablesTable.addMouseListener(eventHandler);
 		observablesTable.addKeyListener(eventHandler);
 		structuresTable.addKeyListener(eventHandler);
@@ -958,7 +958,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		Object newObject = null;
 		if (currentSelectedTable == speciesTable) {
 			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
-		} else if (currentSelectedTable == speciesTypeTable) {
+		} else if (currentSelectedTable == molecularTypeTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
 				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
 				bioModel.getModel().getRbmModelContainer().addMolecularType(mt);
@@ -1064,11 +1064,11 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 						}
 					}
-				} else if (currentSelectedTable == speciesTypeTable) {
+				} else if (currentSelectedTable == molecularTypeTable) {
 					// TODO: delete stuff
 					for (int r : rows) {
-						if (r < speciesTypeTableModel.getRowCount()) {
-							MolecularType mt = speciesTypeTableModel.getValueAt(r);
+						if (r < molecularTypeTableModel.getRowCount()) {
+							MolecularType mt = molecularTypeTableModel.getValueAt(r);
 							if (mt != null) {
 								deleteList.add(mt);
 							}
@@ -1111,7 +1111,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				if (object instanceof SpeciesContext) {
 					deleteListText.append("Species\t'" + ((SpeciesContext)object).getName() + "'\n");
 				} else if (object instanceof MolecularType) {
-					deleteListText.append("Species type\t'" + ((MolecularType)object).getName() + "'\n");
+					deleteListText.append(((MolecularType)object).getDisplayType() + "\t'" + ((MolecularType)object).getDisplayName() + "'\n");
 				} else if (object instanceof RbmObservable) {
 					deleteListText.append("Observable\t'" + ((RbmObservable)object).getName() + "'\n");
 				} else if (object instanceof ReactionStep) {
@@ -1153,7 +1153,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					} else if(object instanceof MolecularType) {
 						MolecularType mt = (MolecularType)object;
 						if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(mt)) {
-							throw new RuntimeException("Species type '" + mt + "' cannot be deleted because it's already being used.");
+							throw new RuntimeException(mt.getDisplayType() + " '" + mt + "' cannot be deleted because it's already being used.");
 						}
 						bioModel.getModel().getRbmModelContainer().removeMolecularType(mt);
 					} else if(object instanceof RbmObservable) {
@@ -1184,7 +1184,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionTableModel.setBioModel(bioModel);
 		structureTableModel.setBioModel(bioModel);
 		speciesTableModel.setBioModel(bioModel);
-		speciesTypeTableModel.setBioModel(bioModel);
+		molecularTypeTableModel.setBioModel(bioModel);
 		observableTableModel.setBioModel(bioModel);
 	}
 	
@@ -1204,8 +1204,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			currentSelectedTable = speciesTable;
 			currentSelectedTableModel = speciesTableModel;
 		} else if (selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
-			currentSelectedTable = speciesTypeTable;
-			currentSelectedTableModel = speciesTypeTableModel;
+			currentSelectedTable = molecularTypeTable;
+			currentSelectedTableModel = molecularTypeTableModel;
 		} else if (selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
 			currentSelectedTable = observablesTable;
 			currentSelectedTableModel = observableTableModel;
@@ -1305,7 +1305,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		case SPECIES_NODE:
 			selectTab(ModelPanelTabID.species_table);
 			break;
-		case SPECIES_TYPES_NODE:
+		case MOLECULAR_TYPES_NODE:
 			selectTab(ModelPanelTabID.species_definitions_table);
 			break;
 		case OBSERVABLES_NODE:
@@ -1325,7 +1325,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		super.setIssueManager(issueManager);
 		reactionTableModel.setIssueManager(issueManager);
 		speciesTableModel.setIssueManager(issueManager);
-		speciesTypeTableModel.setIssueManager(issueManager);
+		molecularTypeTableModel.setIssueManager(issueManager);
 		observableTableModel.setIssueManager(issueManager);
 		structureTableModel.setIssueManager(issueManager);
 		AbstractComponentShape.setIssueManager(issueManager);

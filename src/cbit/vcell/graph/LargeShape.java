@@ -18,8 +18,6 @@ public interface LargeShape {
 
 	public abstract int getHeight();
 
-//	public abstract MolecularType getSpeciesType();
-//
 	public abstract void paintSelf(Graphics g);
 
 }

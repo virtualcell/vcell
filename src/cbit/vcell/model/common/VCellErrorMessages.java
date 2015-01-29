@@ -10,6 +10,8 @@
 
 package cbit.vcell.model.common;
 
+import org.vcell.model.rbm.MolecularType;
+
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
@@ -82,11 +84,11 @@ public class VCellErrorMessages {
 	public static final String RightClickComponentForState = "<br><font color=blue>Right click on the Component above to edit a State.</font>";
 	public static final String RightClickComponentToEdit = "<br><font color=blue>Right click on this Component to edit it.</font>";
 	public static final String ClickShowAllComponents = "<br><font color=blue>Check the 'Show all components' box above to see all possible Components.</font>";
-	public static final String RightClickToAddMolecules = "<br><font color=blue>Right click on this Pattern to add more Species Types.</font>";
+	public static final String RightClickToAddMolecules = "<br><font color=blue>Right click on this Pattern to add more " + MolecularType.typeName + "s.</font>";
 
 	public static final String TripleClickOrRightClick = "<br><font color=blue>Triple click to edit an element, Right click for more options.</font>";
 
-	public static final String SpecifySpeciesTypes = "Specify Species Type";
+	public static final String SpecifyMolecularTypes = "Specify " + MolecularType.typeName;
 
 	
 	// ========== BioModel end =======================//

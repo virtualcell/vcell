@@ -127,7 +127,7 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    				labelText = folder.getName() + " (" + bioModel.getModel().getNumSpeciesContexts() + ")";
 	    			}
 	    			break;
-	    		case SPECIES_TYPES_NODE:
+	    		case MOLECULAR_TYPES_NODE:
 	    			icon = VCellIcons.tableIcon;
 	    			if (bioModel == null) {
 	    				labelText = folder.getName() + "(00000)";

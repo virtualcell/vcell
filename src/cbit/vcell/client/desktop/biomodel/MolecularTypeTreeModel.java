@@ -23,7 +23,7 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 	private JTree ownerTree;
 	
 	public MolecularTypeTreeModel(JTree tree) {
-		super(new BioModelNode("Molecular Type",true),true);
+		super(new BioModelNode(MolecularType.typeName, true), true);
 		rootNode = (BioModelNode)root;
 		ownerTree = tree;
 	}

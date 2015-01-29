@@ -107,7 +107,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		
 		Workflow_missingInput,
 		
-		RbmSpeciesTypesTableBad,
+		RbmMolecularTypesTableBad,
 		RbmReactionRulesTableBad,
 		RbmObservablesTableBad,
 		RbmNetworkConstraintsBad,

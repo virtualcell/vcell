@@ -954,9 +954,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				return;
 			}
 			if(molecularTypeList == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.RbmSpeciesTypesTableBad, "Molecular Type List is null", Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmMolecularTypesTableBad, MolecularType.typeName + " List is null", Issue.SEVERITY_ERROR));
 			} else if (!this.isEmpty() && molecularTypeList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.RbmSpeciesTypesTableBad, "Molecular Type List is empty", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.RbmMolecularTypesTableBad, MolecularType.typeName + " List is empty", Issue.SEVERITY_WARNING));
 			}else {
 				for (MolecularType entity : molecularTypeList) {
 					entity.gatherIssues(issueContext, issueList);
@@ -1152,7 +1152,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		
 		public void addMolecularType(MolecularType molecularType) throws ModelException {
 			if (getMolecularType(molecularType.getName()) != null) {
-				throw new ModelException("Molecular type '" + molecularType.getName() + "' already exists!");
+				throw new ModelException(molecularType.getDisplayType() + " '" + molecularType.getDisplayName() + "' already exists!");
 			}
 			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
 			newValue.add(molecularType);
@@ -1389,7 +1389,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					for (MolecularType molecularType : molecularTypeList) {
 						if (molecularType != evt.getSource()) {
 							if (molecularType.getName().equals(newName)) {
-								throw new ModelPropertyVetoException("Molecular Type '" + newName + "' already exists!", evt);
+								throw new ModelPropertyVetoException(MolecularType.typeName + " '" + newName + "' already exists!", evt);
 							}
 						}
 					}
@@ -1405,7 +1405,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 					for (MolecularType molecularType : molecularTypeList) {
 						if (molecularType != evt.getSource()) {
 							if (molecularType.getName().equals(newName)) {
-								throw new ModelPropertyVetoException("'" + newName + "' is already used for a molecular Type!", evt);
+								throw new ModelPropertyVetoException("'" + newName + "' is already used for a " + MolecularType.typeName + "!", evt);
 							}
 						}
 					}

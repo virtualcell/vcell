@@ -52,7 +52,7 @@ public class RbmTreeCellEditor extends DefaultTreeCellEditor {
 
 	public static class MolecularComponentPatternCellEditor extends AbstractCellEditor implements TreeCellEditor {
 		public static final int other = 0;
-		public static final int speciesTypes = 1;
+		public static final int molecularTypes = 1;
 		public static final int species = 2;
 		public static final int observable = 3;
 		public static final int reaction = 4;

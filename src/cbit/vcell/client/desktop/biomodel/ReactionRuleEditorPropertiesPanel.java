@@ -64,7 +64,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRulePartic
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -615,7 +615,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					if (selectedObject instanceof ReactionRule) {
 						popupMenu.add(getAddReactantMenuItem());
 					} else if (selectedObject instanceof ReactionRuleParticipantLocal) {
-						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
+						getAddMenu().setText(VCellErrorMessages.SpecifyMolecularTypes);
 						getAddMenu().removeAll();
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
@@ -667,7 +667,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					if (selectedObject instanceof ReactionRule) {
 						popupMenu.add(getAddProductMenuItem());
 					} else 					if (selectedObject instanceof ReactionRuleParticipantLocal) {
-						getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
+						getAddMenu().setText(VCellErrorMessages.SpecifyMolecularTypes);
 						getAddMenu().removeAll();
 //						List<MolecularTypePattern> missingMoleculesInProducts = reactionRule.getMissingMoleculesInProducts();
 //						if (missingMoleculesInProducts.size() > 0) {
