@@ -71,8 +71,8 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		STRUCTURES_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES),
 //		STRUCTURE_DIAGRAM_NODE("Structure Diagram"),
 		SPECIES_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SPECIES),
-		SPECIES_TYPES_NODE("Species Types"),
-		OBSERVABLES_NODE("Observables"),
+		MOLECULAR_TYPES_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MOLECULAR_TYPE),
+		OBSERVABLES_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_OBSERVABLES),
 		
 		PATHWAY_DIAGRAM_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYDIAGRAM),
 		PATHWAY_OBJECTS_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS),

@@ -209,7 +209,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		case name: {
 			MolecularType mt = getModel().getRbmModelContainer().getMolecularType(inputValue);
 			if (mt != null && mt != selectedMolecularType) {
-				errMsg = "Molecular type '" + inputValue + "' already exists!";
+				errMsg = mt.getDisplayType() + " '" + inputValue + "' already exists!";
 				errMsg += VCellErrorMessages.PressEscToUndo;
 				errMsg = "<html>" + errMsg + "</html>";
 				return errMsg;
@@ -223,14 +223,14 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					MolecularType mt = RbmUtils.parseMolecularType(inputValue);
 					MolecularType mt1 = getModel().getRbmModelContainer().getMolecularType(mt.getName());
 					if (mt1 != null && getRowIndex(mt1) != row) {	// molecular type with this name exists already on another row
-						errMsg = "Species type '" + mt.getName() + "' already exists!";
+						errMsg = mt.getDisplayType() + " '" + mt.getDisplayName() + "' already exists!";
 						errMsg += VCellErrorMessages.PressEscToUndo;
 						errMsg = "<html>" + errMsg + "</html>";
 						return errMsg;
 					}
 //					if(!selectedMolecularType.getName().equals(mt.getName())) {	// attempt to rename, must fail if molecular type is in use
 //						if(!getModel().getRbmModelContainer().isDeleteAllowed(selectedMolecularType)) {
-//							errMsg = "Species type '" + mt + "' cannot be deleted because it's already being used.";
+//							errMsg = MolecularType.type + " '" + mt + "' cannot be deleted because it's already being used.";
 //						}
 //					}
 					// need to check if any Component we try to delete is not already in use elsewhere

@@ -287,12 +287,12 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	}
 	
 	public static final String toHtml(MolecularType mt, boolean bShowWords) {
-		String text = (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b>";
+		String text = (bShowWords ? MolecularType.typeName : "") + " <b>" + mt.getName() + "</b>";
 		String htmlText = "<html>" + text + "</html>";
 		return htmlText;
 	}
 	public static final String toHtmlWithTip(MolecularType mt, boolean bShowWords) {
-		String text = (bShowWords ? "Species Type" : "") + " <b>" + mt.getName() + "</b>";
+		String text = (bShowWords ? MolecularType.typeName : "") + " <b>" + mt.getName() + "</b>";
 		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
@@ -325,10 +325,10 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	
 	public static final String toHtml(MolecularTypePattern mtp, boolean bShowWords) {
 //		return "<html> " + (bShowWords ? "Molecule" : "") + " <b>" + mtp.getMolecularType().getName() + "<sub>" + mtp.getIndex() + "</sub></b></html>";
-		return "<html> " + (bShowWords ? "Species Type" : "") + " <b>" + mtp.getMolecularType().getName() + "</b></html>";
+		return "<html> " + (bShowWords ? MolecularType.typeName : "") + " <b>" + mtp.getMolecularType().getName() + "</b></html>";
 	}
 	public static final String toHtmlWithTip(MolecularTypePattern mtp, boolean bShowWords) {
-		String text = (bShowWords ? "Species Type" : "") + " <b>" + mtp.getMolecularType().getName() + "</b>";
+		String text = (bShowWords ? MolecularType.typeName : "") + " <b>" + mtp.getMolecularType().getName() + "</b>";
 		String htmlText = text + VCellErrorMessages.ClickShowAllComponents;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
@@ -429,7 +429,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return bondText;
 	}
 	public static final String toHtml(Bond bond) {	// TODO: must be made private eventually
-		String bondText = " Species Type <b>" + bond.molecularTypePattern.getMolecularType().getName();
+		String bondText = " " + MolecularType.typeName + " <b>" + bond.molecularTypePattern.getMolecularType().getName();
 //		bondText += "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>";
 		bondText += "&nbsp;&nbsp;&nbsp;</b>Component <b>";
 		bondText +=	bond.molecularComponentPattern.getMolecularComponent().getName() + "</b>";

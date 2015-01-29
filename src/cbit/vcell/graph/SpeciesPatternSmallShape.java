@@ -29,7 +29,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	private int xPos = 0;
 	private int yPos = 0;
 	private int width = 0;
-	private List<SpeciesTypeSmallShape> speciesShapes = new ArrayList<SpeciesTypeSmallShape>();
+	private List<MolecularTypeSmallShape> speciesShapes = new ArrayList<MolecularTypeSmallShape>();
 	private boolean isSelected = false;
 	
 	final Graphics graphicsContext;
@@ -51,24 +51,24 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			SpeciesTypeSmallShape stls = new SpeciesTypeSmallShape(xPattern, yPos, graphicsContext, owner);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, graphicsContext, owner);
 			speciesShapes.add(stls);
 			return;
 		}
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			SpeciesTypeSmallShape stls = new SpeciesTypeSmallShape(xPattern, yPos, mtp, graphicsContext, owner);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, graphicsContext, owner);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
 		this.width = xPattern-xPos;
 		
 		// bonds - we have to deal with them here because they may be cross-molecular type patterns
-		// WARNING: we assume that the order of the Species Type Large Shapes in speciesShapes 
+		// WARNING: we assume that the order of the MolecularTypeLargeShapes in speciesShapes 
 		// is the same as the order of the Molecular Type Patterns in the SpeciesPattern sp
 		for(int i=0; i<numPatterns; i++) {
-			SpeciesTypeSmallShape stssFrom = speciesShapes.get(i);
+			MolecularTypeSmallShape stssFrom = speciesShapes.get(i);
 			MolecularTypePattern mtpFrom = stssFrom.getMolecularTypePattern();
 			int numComponents = mtpFrom.getComponentPatternList().size();
 			for(int j=0; j<numComponents; j++) {
@@ -81,7 +81,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 						break;
 					}
 					MolecularTypePattern mtpTo = b.molecularTypePattern;
-					SpeciesTypeSmallShape stssTo = getShape(mtpTo); 
+					MolecularTypeSmallShape stssTo = getShape(mtpTo); 
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
 					if(stssTo == null) {
 						System.out.println("Null 'to' shape for " + mcpFrom.getMolecularComponent().getDisplayName());
@@ -100,8 +100,8 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 		}
 	}
 	
-	private SpeciesTypeSmallShape getShape(MolecularTypePattern mtpThat) {
-		for(SpeciesTypeSmallShape stls : speciesShapes) {
+	private MolecularTypeSmallShape getShape(MolecularTypePattern mtpThat) {
+		for(MolecularTypeSmallShape stls : speciesShapes) {
 			MolecularTypePattern mtpThis = stls.getMolecularTypePattern();
 			if(mtpThis == mtpThat) {
 				return stls;
@@ -127,7 +127,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	public void paintSelf(Graphics g) {
 		final int offset = 2;			// initial lenth of vertical bar
 
-		for(SpeciesTypeSmallShape stls : speciesShapes) {
+		for(MolecularTypeSmallShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
 

@@ -110,7 +110,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
@@ -933,7 +933,7 @@ private void updateShape() {
 			final Object userObject = selectedNode.getUserObject();
 			if (userObject instanceof SpeciesContext) {
 				final SpeciesContext sc = (SpeciesContext)userObject;
-				getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
+				getAddMenu().setText(VCellErrorMessages.SpecifyMolecularTypes);
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());

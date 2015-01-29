@@ -334,12 +334,12 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 						for(MolecularComponent mcThis : mtThis.getComponentList()) {
 							// we check that each component is present in the molecular type pattern (as component pattern)
 							if(mtpThis.getMolecularComponentPattern(mcThis) == null) {		// not found
-								errMsg = "All components in the Species Type definition must be present. Missing: " + mcThis.getName();
+								errMsg = "All components in the " + mtThis.getDisplayType() + " definition must be present. Missing: " + mcThis.getName();
 								errMsg += VCellErrorMessages.PressEscToUndo;
 								errMsg = "<html>" + errMsg + "</html>";
 								return errMsg;
 							} else if(mtpThis.getMolecularComponentPattern(mcThis).isImplied()) {
-								errMsg = "All components in the Species Type definition must be present. Missing: " + mcThis.getName();
+								errMsg = "All components in the " + mtThis.getDisplayType() + " definition must be present. Missing: " + mcThis.getName();
 								errMsg += VCellErrorMessages.PressEscToUndo;
 								errMsg = "<html>" + errMsg + "</html>";
 								return errMsg;
@@ -361,7 +361,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 									}
 								}
 								if(found == false) {	// we should have found a matching state for the molecular component pattern
-									errMsg = "Component " + mcThis.getName() + " of molecule " + mtThis.getName() + " must be in one of the following states: ";
+									errMsg = "Component " + mcThis.getDisplayName() + " of " + mtThis.getDisplayType() + " " + mtThis.getDisplayName() + " must be in one of the following states: ";
 									for(int i=0; i<mcThis.getComponentStateDefinitions().size(); i++) {
 										ComponentStateDefinition csThis = mcThis.getComponentStateDefinitions().get(i);
 										errMsg += csThis.getName();
