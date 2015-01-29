@@ -69,6 +69,7 @@ import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.gui.sorttable.SortPreference;
 
 import cbit.gui.ModelProcessEquation;
 import cbit.gui.TextFieldAutoCompletion;
@@ -932,6 +933,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		BioModel oldValue = bioModel;
 		bioModel = newValue;		
 		firePropertyChange(PROPERTY_NAME_BIO_MODEL, oldValue, newValue);
+		
+		SortPreference sp = new SortPreference(true, BioModelEditorReactionTableModel.COLUMN_NAME);
+		reactionTableModel.setSortPreference(sp);
 	}
 	
 	public Model getModel() {
