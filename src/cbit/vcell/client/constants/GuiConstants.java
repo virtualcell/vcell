@@ -16,6 +16,8 @@ import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
+import org.vcell.model.rbm.MolecularType;
+
 public class GuiConstants {
 	
 	public final static String PARAMETER_ESTIMATION_TAB_PARAMETERS = "Parameters";
@@ -33,6 +35,8 @@ public class GuiConstants {
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM = "Reaction Diagram";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES = "Structures";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_SPECIES = "Species";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_MOLECULAR_TYPE = MolecularType.typeName + "s";
+	public final static String DOCUMENT_EDITOR_FOLDERNAME_OBSERVABLES = "Observables";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYDIAGRAM = "Pathway Diagram";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_PATHWAYOBJECTS = "Pathway Objects";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOPAXSUMMARY = "BioPAX Summary";

@@ -37,7 +37,7 @@ public class ASTMolecularComponentPattern extends SimpleNode {
 	public void bind(RBMSymbolTable symbolTable) throws RBMBindingException {
 		MolecularType molecularType = symbolTable.getMolecularType(name);
 		if (molecularType == null) {
-			throw new RBMBindingException("cannot resolve molecular type '" + name + "'");
+			throw new RBMBindingException("cannot resolve " + MolecularType.typeName + " '" + name + "'");
 		}
 	}
 

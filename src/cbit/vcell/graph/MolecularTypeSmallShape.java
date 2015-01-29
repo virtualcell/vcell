@@ -23,7 +23,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
-public class SpeciesTypeSmallShape {
+public class MolecularTypeSmallShape {
 	
 	private static final int baseWidth = 11;
 	private static final int baseHeight = 9;
@@ -44,7 +44,7 @@ public class SpeciesTypeSmallShape {
 	
 	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public SpeciesTypeSmallShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.mt = null;
 		this.mtp = null;
@@ -56,7 +56,7 @@ public class SpeciesTypeSmallShape {
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
 		// no species pattern - this is a plain species context
 	}
-	public SpeciesTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.mt = mtp.getMolecularType();
 		this.mtp = mtp;
@@ -78,14 +78,14 @@ public class SpeciesTypeSmallShape {
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
 			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
-			// now that we know the dimensions of the species type shape we create the component shapes
+			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, graphicsContext, owner);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
 		}
 	}
-	public SpeciesTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.mt = mt;
 		this.mtp = null;
@@ -95,7 +95,7 @@ public class SpeciesTypeSmallShape {
 		int numComponents = mt.getComponentList().size();
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
-			MolecularComponent mc = getSpeciesType().getComponentList().get(i);
+			MolecularComponent mc = getMolecularType().getComponentList().get(i);
 			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, graphicsContext, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
@@ -107,7 +107,7 @@ public class SpeciesTypeSmallShape {
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
 			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
-			// now that we know the dimensions of the species type shape we create the component shapes
+			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, graphicsContext, owner);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
@@ -133,7 +133,7 @@ public class SpeciesTypeSmallShape {
 	public int getHeight(){
 		return height;
 	}
-	public MolecularType getSpeciesType() {
+	public MolecularType getMolecularType() {
 		return mt;
 	}
 	public MolecularTypePattern getMolecularTypePattern() {

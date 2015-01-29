@@ -115,7 +115,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 				for (MolecularComponent mc : componentList) {
 					if (mc != evt.getSource()) {
 						if (mc.getName().equals(newName)) {
-							throw new PropertyVetoException("Molecular Component '" + newName + "' already exists in Molecular Type '" + getName() + "'!", evt);
+							throw new PropertyVetoException("Molecular Component '" + newName + "' already exists in " + getDisplayType() + " '" + getDisplayName() + "'!", evt);
 						}
 					}
 				}
@@ -151,14 +151,14 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if(name == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Type is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is null", Issue.SEVERITY_ERROR));
 		} else if(name.equals("")) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Type is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is empty", Issue.SEVERITY_WARNING));
 		}
 		if(componentList == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type '" + name + "' Component List is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + "' Component List is null", Issue.SEVERITY_ERROR));
 		} else if(componentList.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type '" + name + "' Component List is empty", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + "' Component List is empty", Issue.SEVERITY_INFO));
 		} else {
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
@@ -166,7 +166,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		}
 	}
 	
-	private static final String typeName = "Species Type";
+	public static final String typeName = "Molecule";
 	@Override
 	public final String getDisplayName() {
 		return getName();

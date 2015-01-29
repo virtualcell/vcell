@@ -69,7 +69,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLoca
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.common.VCellErrorMessages;
 
@@ -505,7 +505,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			if (selectedObject instanceof RbmObservable) {
 				popupMenu.add(getAddSpeciesPatternMenuItem());
 			} else if(selectedObject instanceof SpeciesPatternLocal) {
-				getAddMenu().setText(VCellErrorMessages.SpecifySpeciesTypes);
+				getAddMenu().setText(VCellErrorMessages.SpecifyMolecularTypes);
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());

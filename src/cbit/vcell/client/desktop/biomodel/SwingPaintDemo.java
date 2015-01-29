@@ -15,7 +15,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.LargeShape;
-import cbit.vcell.graph.SpeciesTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 
 
 public class SwingPaintDemo {
@@ -57,7 +57,7 @@ class MyPanel extends JPanel {
 	MolecularType mt = new MolecularType("egfr");
 	Graphics panelContext = getGraphics();
 	Displayable d = new MyDisplayable();
-	LargeShape speciesTypeShape = new SpeciesTypeLargeShape(50, 50, mt, panelContext, d);
+	LargeShape molecularTypeShape = new MolecularTypeLargeShape(50, 50, mt, panelContext, d);
 
 	public MyPanel() {
 		setBorder(BorderFactory.createLineBorder(Color.black));
@@ -76,18 +76,18 @@ class MyPanel extends JPanel {
 	
 	private void moveSquare(int x, int y) {
 		// current square state, stored as final variables to avoid repeat invocations of the same methods.
-		final int CURR_X = speciesTypeShape.getX();
-		final int CURR_Y = speciesTypeShape.getY();
-		final int CURR_W = speciesTypeShape.getWidth();
-		final int CURR_H = speciesTypeShape.getHeight();
+		final int CURR_X = molecularTypeShape.getX();
+		final int CURR_Y = molecularTypeShape.getY();
+		final int CURR_W = molecularTypeShape.getWidth();
+		final int CURR_H = molecularTypeShape.getHeight();
 		final int OFFSET = 1;
 		
 		if ((CURR_X!=x) || (CURR_Y!=y)) {
 			repaint(CURR_X,CURR_Y,CURR_W+OFFSET,CURR_H+OFFSET);	// repaint background over the old square location.
-			speciesTypeShape.setX(x);			// Update coordinates.
-			speciesTypeShape.setY(y);
-			repaint(speciesTypeShape.getX(), speciesTypeShape.getY(), 		// repaint the square at the new location.
-					speciesTypeShape.getWidth()+OFFSET, speciesTypeShape.getHeight() + OFFSET);
+			molecularTypeShape.setX(x);			// Update coordinates.
+			molecularTypeShape.setY(y);
+			repaint(molecularTypeShape.getX(), molecularTypeShape.getY(), 		// repaint the square at the new location.
+					molecularTypeShape.getWidth()+OFFSET, molecularTypeShape.getHeight() + OFFSET);
 			} 
 		}
 
@@ -98,7 +98,7 @@ class MyPanel extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		g.drawString("This is my custom Panel!", 10, 20);
-		speciesTypeShape.paintSelf(g);
+		molecularTypeShape.paintSelf(g);
 	}
 }
 

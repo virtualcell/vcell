@@ -27,7 +27,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	private static final int separationWidth = 10;		// width between 2 molecular type patterns
 	private int xPos = 0;
 	private int yPos = 0;
-	private List<SpeciesTypeLargeShape> speciesShapes = new ArrayList<SpeciesTypeLargeShape>();
+	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
 
 	final Graphics graphicsContext;
 	
@@ -49,7 +49,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, owner);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -57,16 +57,16 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			SpeciesTypeLargeShape stls = new SpeciesTypeLargeShape(xPattern, yPos, mtp, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, mtp, graphicsContext, owner);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
 		
 		// bonds - we have to deal with them here because they may be cross-molecular type patterns
-		// WARNING: we assume that the order of the Species Type Large Shapes in speciesShapes 
+		// WARNING: we assume that the order of the MolecularTypeLargeShapes in speciesShapes 
 		// is the same as the order of the Molecular Type Patterns in the SpeciesPattern sp
 		for(int i=0; i<numPatterns; i++) {
-			SpeciesTypeLargeShape stlsFrom = speciesShapes.get(i);
+			MolecularTypeLargeShape stlsFrom = speciesShapes.get(i);
 			MolecularTypePattern mtpFrom = stlsFrom.getMolecularTypePattern();
 			int numComponents = mtpFrom.getComponentPatternList().size();
 			for(int j=0; j<numComponents; j++) {
@@ -79,9 +79,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 						break;
 					}
 					MolecularTypePattern mtpTo = b.molecularTypePattern;
-					SpeciesTypeLargeShape stlsTo = getShape(mtpTo);
+					MolecularTypeLargeShape stlsTo = getShape(mtpTo);
 					if(stlsTo == null) {
-						System.out.println("Null 'to' species type for bond of " + b.molecularTypePattern);
+						System.out.println("Null 'to' molecular type for bond of " + b.molecularTypePattern);
 						break;
 					}
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
@@ -104,8 +104,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		Collections.sort(bondPairs);
 	}
 	
-	private SpeciesTypeLargeShape getShape(MolecularTypePattern mtpThat) {
-		for(SpeciesTypeLargeShape stls : speciesShapes) {
+	private MolecularTypeLargeShape getShape(MolecularTypePattern mtpThat) {
+		for(MolecularTypeLargeShape stls : speciesShapes) {
 			MolecularTypePattern mtpThis = stls.getMolecularTypePattern();
 			if(mtpThis == mtpThat) {
 				return stls;
@@ -125,17 +125,17 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		return yPos;
 	}
 	public int getRightEnd(){		// get the x of the right end of the species pattern
-		int xRightmostSpeciesType = 0;
-		int widthRightmostSpeciesType = 0;
+		int xRightmostMolecularType = 0;
+		int widthRightmostMolecularType = 0;
 		
-		for(SpeciesTypeLargeShape stls : speciesShapes) {
-			int xCurrentSpeciesType = stls.getX();
-			if(xRightmostSpeciesType < xCurrentSpeciesType) {
-				xRightmostSpeciesType = xCurrentSpeciesType;
-				widthRightmostSpeciesType = stls.getWidth();
+		for(MolecularTypeLargeShape stls : speciesShapes) {
+			int xCurrentMolecularType = stls.getX();
+			if(xRightmostMolecularType < xCurrentMolecularType) {
+				xRightmostMolecularType = xCurrentMolecularType;
+				widthRightmostMolecularType = stls.getWidth();
 			}
 		}
-		return xRightmostSpeciesType + widthRightmostSpeciesType;
+		return xRightmostMolecularType + widthRightmostMolecularType;
 	}
 
 	public void addEndText(final String string) {
@@ -150,7 +150,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		final int xTwoLetterOffset = 13;
 		final int yLetterOffset = 11;
 
-		for(SpeciesTypeLargeShape stls : speciesShapes) {
+		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
 		for(int i=0; i<bondSingles.size(); i++) {

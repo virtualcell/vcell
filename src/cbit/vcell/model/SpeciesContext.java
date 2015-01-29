@@ -351,10 +351,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 						checkMolecularTypeConsistency(issueContext, issueList, mtThat, mtpThis);	// this should never fire issues!!!
 						
 						if(!mtThat.compareEqual(mtpThis.getMolecularType())) {
-							String msg = "Molecular types " + mtThat.getName() + " and " + mtpThis.getMolecularType().getName() + " do not compare equal.";
+							String msg = MolecularType.typeName + "s " + mtThat.getName() + " and " + mtpThis.getMolecularType().getName() + " do not compare equal.";
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 						} else {
-							String msg = "All components in the Species Type definition must be present. Missing:";
+							String msg = "All components in the " + mtThat.getDisplayType() + " definition must be present. Missing:";
 							boolean isInvalid = false;
 							for(int i=0; i< mtpThis.getComponentPatternList().size(); i++) {
 								MolecularComponentPattern mcp = mtpThis.getComponentPatternList().get(i);
@@ -440,13 +440,13 @@ private void checkMolecularTypeConsistency(IssueContext issueContext, List<Issue
 		}
 	}
 	// if any component still present in hashThat it means that it's missing in the species pattern of this species context
-	// any component still present in hashThis it means that it has been deleted in the species types definition and is now invalid
+	// any component still present in hashThis it means that it has been deleted in the molecular types definition and is now invalid
 	for (String key : hashThat.keySet()) {
-		String msg = "All components in the Species Type definition must be present. Missing: " + key + ".";
+		String msg = "All components in the " + mtThat.getDisplayType() + " definition must be present. Missing: " + key + ".";
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 	}
 	for (String key : hashThis.keySet()) {
-		String msg = "Component " + key + " is no longer defined in Species Type and must be removed.";
+		String msg = "Component " + key + " is no longer defined for the " + mtThat.getDisplayType() + " and must be removed.";
 		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 	}
 }
