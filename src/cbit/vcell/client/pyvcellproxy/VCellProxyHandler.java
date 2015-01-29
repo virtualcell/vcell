@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.thrift.TException;
@@ -13,6 +15,9 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
+import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuFileContainer.VtuMesh;
+import org.vcell.vis.io.VtuFileContainer.VtuVarInfo;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.biomodel.BioModel;
@@ -30,7 +35,9 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -40,6 +47,7 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 
 	private final VCellClient vcellClient;
 	private final File localVisDataDir;
+	private final HashMap<SimulationDataSetRef, List<VariableInfo>> varInfoHash = new HashMap<SimulationDataSetRef, List<VariableInfo>>();
 	
 	public VCellProxyHandler(VCellClient vcellClient) {
 		this.vcellClient = vcellClient;
@@ -87,114 +95,46 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 
 
 	@Override
-	public List<VariableInfo> getVariableList(
-			SimulationDataSetRef simulationDataSetRef)
-			throws cbit.vcell.client.pyvcellproxy.DataAccessException,
-			TException {
+	public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSetRef)
+			throws cbit.vcell.client.pyvcellproxy.DataAccessException {
 
-		User user = vcellClient.getClientServerManager().getUser();
-		KeyValue simKeyValue = new KeyValue(simulationDataSetRef.simId);
-		VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
-		
-		DataIdentifier[] dataIdentifiers = null;
-		try {
-			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
-			if (vcSimulationDataIdentifier != null)  {
-				dataIdentifiers = vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true).getDataIdentifiers();
+		if (varInfoHash.containsKey(simulationDataSetRef)){
+			ArrayList<VariableInfo> varInfoList = new ArrayList<VariableInfo>();
+			for (VariableInfo varInfo : varInfoHash.get(simulationDataSetRef)){
+				varInfoList.add(varInfo);
 			}
-		} catch (org.vcell.util.DataAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return varInfoList;
+		}else{
+			VtuFileContainer vtuFileContainer = getVtuFileContainer(simulationDataSetRef, 0);
+			ArrayList<VariableInfo> varInfoList = new ArrayList<VariableInfo>();
+			for (VtuVarInfo vtuVarInfo : vtuFileContainer.getVtuVarInfos()){
+				DomainType variableDomainType = null;
+				switch (vtuVarInfo.variableDomain){
+					case VARIABLEDOMAIN_MEMBRANE:{
+						variableDomainType = DomainType.MEMBRANE;
+						break;
+					}
+					case VARIABLEDOMAIN_VOLUME:{
+						variableDomainType = DomainType.VOLUME;
+						break;
+					}
+					default:{
+						break;
+					}
+				}
+				String unitsLabel = "<unknown unit>";
+				varInfoList.add(new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel));
+				varInfoHash.put(simulationDataSetRef,varInfoList);
+			}
+			return varInfoList;
 		}
-		
-		ArrayList<VariableInfo> variableInfos = new ArrayList<VariableInfo>();
-		for (int ii=0; ii<dataIdentifiers.length; ii++){
-			VariableInfo varInfo = new VariableInfo();
-			varInfo.setVariableName(dataIdentifiers[ii].getDisplayName());
-			if (dataIdentifiers[ii].getDomain()!=null){
-				varInfo.setDomainName(dataIdentifiers[ii].getDomain().getName());
-			} else {
-				varInfo.setDomainName("None");
-			}
-			
-			DomainType domainType = null;
-			
-			switch (dataIdentifiers[ii].getVariableType().getVariableDomain()){
-			case VARIABLEDOMAIN_MEMBRANE:{
-				domainType = DomainType.MEMBRANE;
-				break;
-			}
-			case VARIABLEDOMAIN_VOLUME:{
-				domainType = DomainType.VOLUME;
-				break;
-			}
-			default:{
-				break;
-			}
-			}
-			varInfo.setVariableDomainType(domainType);
-			varInfo.setUnitsLabel(dataIdentifiers[ii].getVariableType().getDefaultUnits());
-			variableInfos.add(varInfo);
-			
-		}
-		return variableInfos;
 	}
 
 
-	/**
-	 * Exports all simulation results to a zip file ... no caching of results here.
-	 * 
-	 * @param simulationDataSetRef
-	 * @return zip file containing all results
-	 * @throws org.vcell.util.DataAccessException 
-	 * @throws TException
-	 * 
-	 * Deprecated - implements
-	 */
-	@Deprecated
-	private File exportAllRequest_internal(SimulationDataSetRef simulationDataSetRef) throws org.vcell.util.DataAccessException {
-
-		User user = vcellClient.getClientServerManager().getUser();		
-		KeyValue simKeyValue = new KeyValue(simulationDataSetRef.getSimId());
-		VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
-		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
-		double dataTimes[] = null;
-				
-		DataIdentifier[] dataIdentifiers =  vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true).getDataIdentifiers();
-		ArrayList<String> vars = new ArrayList<String>();
-		for (int ii=0; ii<dataIdentifiers.length; ii++){
-			vars.add(dataIdentifiers[ii].getDisplayName());
-		}
-		VariableSpecs variableSpecs = new VariableSpecs(vars.toArray(new String[0]), ExportConstants.VARIABLE_MULTI);
-		try {
-			dataTimes = vcellClient.getClientServerManager().getDataSetController().getDataSetTimes(vcSimulationDataIdentifier);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		TimeSpecs timeSpecs = new TimeSpecs(0, dataTimes.length-1 , dataTimes, ExportConstants.TIME_RANGE);
-		GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportConstants.GEOMETRY_FULL);
-		FormatSpecificSpecs formatSpecificSpecs = null;
-		
-		ExportSpecs exportSpecs = new ExportSpecs(vcSimulationDataIdentifier, ExportConstants.FORMAT_VTK_UNSTRUCT, variableSpecs, timeSpecs, geometrySpecs, formatSpecificSpecs, simulationDataSetRef.simName, null);
 	
-		try {
-			OutputContext outputContext = null;
-			ExportEvent event = vcellClient.getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
-			System.out.println("Export location = "+event.getLocation());
-			String[] urlSplit = event.getLocation().split("/");
-			File exportFile = new File(new File(PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirProperty)), urlSplit[urlSplit.length - 1]);
-			System.out.println("ExportedPath = "+exportFile);
-			return exportFile;
-			// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
-		} catch (org.vcell.util.DataAccessException | RemoteException exc) {
-			exc.printStackTrace();
-			throw new RuntimeException(exc.getMessage());
-		} 
-	}
-
-	@Override
-	public String getDataSetFileOfDomainAtTimeIndex(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex) throws DataAccessException {
+	private File getMeshFileLocation(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex){
+		
+		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
 		
 		//
 		// create the dataset directory if necessary
@@ -208,22 +148,28 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 		// compose the specific mesh filename
 		//
 		String timeIndexStr = String.format("%06d" , timeIndex);
-		File vtuDataFile = new File(vtuSimDataFolder, "SimID_"+simulationDataSetRef.getSimId()+"_0_"+simulationDataSetRef.getSimId()+"_0_"+domainName+"_"+timeIndexStr+".vtu");
+		File vtuDataFile = new File(vtuSimDataFolder, vcSimulationDataIdentifier.getID()+"_"+domainName+"_"+timeIndexStr+".vtu");
+		return vtuDataFile;
+	}
+
+	@Override
+	public String getDataSetFileOfDomainAtTimeIndex(SimulationDataSetRef simulationDataSetRef, String domainName, int timeIndex) throws DataAccessException {
+		
+		File vtuDataFile = getMeshFileLocation(simulationDataSetRef, domainName, timeIndex);
+
 		System.out.println("looking for file: "+vtuDataFile);
 		
 		//
-		// if requested mesh file is not found, do full export and unzip into the dataset directory
+		// if requested mesh file is not found, get files for this timepoint
 		//
 		if (!vtuDataFile.exists()){
 			try {
 				//WAY OVERKILL FOR NOW:
 				System.out.println("Didn't find data. Exporting....");
-				File exportedZipFile = exportAllRequest_internal(simulationDataSetRef);
-				
-				System.out.println("exportedZipFile = "+exportedZipFile);
-				File copiedZipFile = new File(vtuSimDataFolder, simulationDataSetRef.getSimId()+".zip");
-				FileUtils.copyFile(exportedZipFile, copiedZipFile);
-				info.aduna.io.ZipUtil.extract(copiedZipFile, vtuSimDataFolder);
+				VtuFileContainer vtuFileContainer = getVtuFileContainer(simulationDataSetRef, timeIndex);
+				for (VtuFileContainer.VtuMesh mesh : vtuFileContainer.getVtuMeshes()){
+					FileUtils.writeByteArrayToFile(mesh.vtuMeshContents, getMeshFileLocation(simulationDataSetRef, mesh.domainName, timeIndex));
+				}
 				
 				if (!vtuDataFile.exists()){
 					System.out.println("after export, couldn't find requested mesh file "+vtuDataFile);
@@ -231,7 +177,7 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 				}
 				System.out.println("vtuData file exists, " + vtuDataFile);
 
-			}catch (IOException | org.vcell.util.DataAccessException e){
+			}catch (IOException e){
 				e.printStackTrace();
 				System.out.println("failed to export entire dataset: "+e.getMessage());
 				throw new DataAccessException("failed to export entire dataset: "+e.getMessage());
@@ -245,6 +191,20 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 			throw new DataAccessException("failed to retrieve cannonical file path for "+vtuDataFile);
 		}
 	}
+
+	private VtuFileContainer getVtuFileContainer(SimulationDataSetRef simulationDataSetRef, int timeIndex) throws DataAccessException {
+		try {
+			VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
+			PDEDataManager pdeDataManager = (PDEDataManager)vcellClient.getRequestManager().getDataManager(null, vcSimulationDataIdentifier, true);
+			List<Double> times = getTimePoints(simulationDataSetRef);
+			double time = times.get(timeIndex);
+			VtuFileContainer vtuFileContainer = pdeDataManager.getVtuMeshFiles(time);
+			return vtuFileContainer;
+		}catch (org.vcell.util.DataAccessException e){
+			e.printStackTrace();
+			throw new DataAccessException("failed to get data for simulation "+simulationDataSetRef+" at time index "+timeIndex+": "+e.getMessage());
+		}
+	}
 	
 	private VCSimulationDataIdentifier getVCSimulationDataIdentifier(SimulationDataSetRef simulationDataSetRef){
 		User user = vcellClient.getClientServerManager().getUser();		
@@ -256,7 +216,7 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 	}
 
 	@Override
-	public List<Double> getTimePoints(SimulationDataSetRef simulationDataSetRef) throws DataAccessException, TException {
+	public List<Double> getTimePoints(SimulationDataSetRef simulationDataSetRef) throws DataAccessException {
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = getVCSimulationDataIdentifier(simulationDataSetRef);
 
 		ArrayList<Double> timesList = new ArrayList<Double>();

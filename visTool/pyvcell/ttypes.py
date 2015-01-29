@@ -34,7 +34,8 @@ class DomainType:
 class VariableInfo:
   """
   Attributes:
-   - variableName
+   - variableVtuName
+   - variableDisplayName
    - domainName
    - variableDomainType
    - unitsLabel
@@ -42,14 +43,16 @@ class VariableInfo:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'variableName', None, None, ), # 1
-    (2, TType.STRING, 'domainName', None, None, ), # 2
-    (3, TType.I32, 'variableDomainType', None, None, ), # 3
-    (4, TType.STRING, 'unitsLabel', None, None, ), # 4
+    (1, TType.STRING, 'variableVtuName', None, None, ), # 1
+    (2, TType.STRING, 'variableDisplayName', None, None, ), # 2
+    (3, TType.STRING, 'domainName', None, None, ), # 3
+    (4, TType.I32, 'variableDomainType', None, None, ), # 4
+    (5, TType.STRING, 'unitsLabel', None, None, ), # 5
   )
 
-  def __init__(self, variableName=None, domainName=None, variableDomainType=None, unitsLabel=None,):
-    self.variableName = variableName
+  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None,):
+    self.variableVtuName = variableVtuName
+    self.variableDisplayName = variableDisplayName
     self.domainName = domainName
     self.variableDomainType = variableDomainType
     self.unitsLabel = unitsLabel
@@ -65,20 +68,25 @@ class VariableInfo:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.variableName = iprot.readString();
+          self.variableVtuName = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.domainName = iprot.readString();
+          self.variableDisplayName = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 3:
+        if ftype == TType.STRING:
+          self.domainName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
         if ftype == TType.I32:
           self.variableDomainType = iprot.readI32();
         else:
           iprot.skip(ftype)
-      elif fid == 4:
+      elif fid == 5:
         if ftype == TType.STRING:
           self.unitsLabel = iprot.readString();
         else:
@@ -93,28 +101,34 @@ class VariableInfo:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('VariableInfo')
-    if self.variableName is not None:
-      oprot.writeFieldBegin('variableName', TType.STRING, 1)
-      oprot.writeString(self.variableName)
+    if self.variableVtuName is not None:
+      oprot.writeFieldBegin('variableVtuName', TType.STRING, 1)
+      oprot.writeString(self.variableVtuName)
+      oprot.writeFieldEnd()
+    if self.variableDisplayName is not None:
+      oprot.writeFieldBegin('variableDisplayName', TType.STRING, 2)
+      oprot.writeString(self.variableDisplayName)
       oprot.writeFieldEnd()
     if self.domainName is not None:
-      oprot.writeFieldBegin('domainName', TType.STRING, 2)
+      oprot.writeFieldBegin('domainName', TType.STRING, 3)
       oprot.writeString(self.domainName)
       oprot.writeFieldEnd()
     if self.variableDomainType is not None:
-      oprot.writeFieldBegin('variableDomainType', TType.I32, 3)
+      oprot.writeFieldBegin('variableDomainType', TType.I32, 4)
       oprot.writeI32(self.variableDomainType)
       oprot.writeFieldEnd()
     if self.unitsLabel is not None:
-      oprot.writeFieldBegin('unitsLabel', TType.STRING, 4)
+      oprot.writeFieldBegin('unitsLabel', TType.STRING, 5)
       oprot.writeString(self.unitsLabel)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.variableName is None:
-      raise TProtocol.TProtocolException(message='Required field variableName is unset!')
+    if self.variableVtuName is None:
+      raise TProtocol.TProtocolException(message='Required field variableVtuName is unset!')
+    if self.variableDisplayName is None:
+      raise TProtocol.TProtocolException(message='Required field variableDisplayName is unset!')
     if self.domainName is None:
       raise TProtocol.TProtocolException(message='Required field domainName is unset!')
     if self.variableDomainType is None:
@@ -126,7 +140,8 @@ class VariableInfo:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.variableName)
+    value = (value * 31) ^ hash(self.variableVtuName)
+    value = (value * 31) ^ hash(self.variableDisplayName)
     value = (value * 31) ^ hash(self.domainName)
     value = (value * 31) ^ hash(self.variableDomainType)
     value = (value * 31) ^ hash(self.unitsLabel)

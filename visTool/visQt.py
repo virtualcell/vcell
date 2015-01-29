@@ -40,6 +40,7 @@ def initPyQt4():
         import PyQt4.QtGui as QtGui
         import PyQt4.uic as uic
         QtCore = PyQt4.QtCore
+#        QtCore = PyQt4.QtCore.pyqtSignal
         QtGui = PyQt4.QtGui
         uic = PyQt4.uic
         qtbinding = "PyQt4"

@@ -1,4 +1,5 @@
-from pyvcell.ttypes import *
+import pyvcell
+import pyvcell.ttypes
 
 class VisDataContext(object):
     def __init__(self):
@@ -8,7 +9,7 @@ class VisDataContext(object):
         self._currentTimeIndex = None
         self._currentTimePoint = None
         self._currentVariable = None
-        self._currentDomain = None
+        self._variableInfos = None
 
 
     def getCurrentDataSet(self):
@@ -36,13 +37,21 @@ class VisDataContext(object):
         self._currentTimePoint = timePoint
 
     def getCurrentVariable(self):
-        return _currentVariable
+        assert(isinstance(self._currentVariable,pyvcell.ttypes.VariableInfo))
+        return self._currentVariable
 
     def setCurrentVariable(self, variable):
         self._currentVariable = variable
 
-    def getCurrentDomain(self):
-        return self._currentDomain
+    def getVariableInfos(self):
+        return self._variableInfos
 
-    def setCurrentDomain(self, domain):
-        self._currentDomain = domain
+    def setVariableInfos(self, variableInfos):
+        self._variableInfos = variableInfos
+
+    def getVtuVariableFromDisplayName(self, varDisplayName):
+        for varInfo in self._variableInfos:
+            assert(isinstance(varInfo,pyvcell.ttypes.VariableInfo));
+            if varInfo.variableDisplayName == varDisplayName:
+                return varInfo
+        return None

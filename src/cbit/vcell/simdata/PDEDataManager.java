@@ -14,6 +14,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.plot.PlotData;
 import cbit.vcell.math.Function;
@@ -167,6 +168,10 @@ public NewClientPDEDataContext getPDEDataContext() {
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
+public VtuFileContainer getVtuMeshFiles(double time) throws DataAccessException {
+	return getVCDataManager().getVtuMeshFiles(getVcDataIdentifier(), time);
+}
+
 public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException {
 	return getVCDataManager().getSimDataBlock(getOutputContext(),getVcDataIdentifier(), varName, time);
 }
