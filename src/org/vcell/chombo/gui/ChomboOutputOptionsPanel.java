@@ -29,12 +29,10 @@ public class ChomboOutputOptionsPanel extends JPanel {
 	{
 		public void actionPerformed(ActionEvent e) 
 		{
-			if (!suppressEvents) {
-				if (e.getSource() == chomboOutputCheckBox || e.getSource() == vcellOutputCheckBox) 
-				{
-					setChomboOutputOptions();
-				} 
-			}
+			if (e.getSource() == chomboOutputCheckBox || e.getSource() == vcellOutputCheckBox) 
+			{
+				setChomboOutputOptions();
+			} 
 		}
 
 		@Override
