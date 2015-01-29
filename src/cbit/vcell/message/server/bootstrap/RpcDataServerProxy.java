@@ -13,6 +13,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -237,6 +238,13 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 		log.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+
+
+@Override
+public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time)	throws DataAccessException {
+	return (VtuFileContainer)rpc("getVtuMeshFiles", new Object[]{userLoginInfo.getUser(), vcdataID, new Double(time)});
 }
 
 }

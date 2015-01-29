@@ -17,10 +17,11 @@ typedef string FilePath
 typedef list<TimePoint> TimePoints
 
 struct VariableInfo{
-   1: required string variableName;
-   2: required DomainName domainName;
-   3: required DomainType variableDomainType;
-   4: required string unitsLabel;
+   1: required string variableVtuName;
+   2: required string variableDisplayName;
+   3: required DomainName domainName;
+   4: required DomainType variableDomainType;
+   5: required string unitsLabel;
 }
 
 typedef list<VariableInfo> VariableList

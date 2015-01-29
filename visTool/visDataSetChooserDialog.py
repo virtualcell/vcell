@@ -4,6 +4,8 @@ import visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 import visContextAbstract
+import vcellProxy
+import pyvcell
 
 class DataSetChooserDialog(QtGui.QDialog):
     
@@ -14,7 +16,7 @@ class DataSetChooserDialog(QtGui.QDialog):
         self.setWindowTitle("Choose result set")
         self._dataSetComboBox = None
         self._selectedSim = None
-        self._domainSelected = None
+#        self._domainSelected = None
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def initUI(self, vis):
@@ -32,12 +34,12 @@ class DataSetChooserDialog(QtGui.QDialog):
         gridLayout.setObjectName("gridLayout")
 
         self._dataSetComboBox = QtGui.QComboBox(self)
-        self._domainChoiceComboBox = QtGui.QComboBox(self)
-        self._dataSetComboBox.activated.connect(self._changeSimulationSelectionAction)
+#        self._domainChoiceComboBox = QtGui.QComboBox(self)
+#        self._dataSetComboBox.activated.connect(self._changeSimulationSelectionAction)
 
 
         gridLayout.addWidget(self._dataSetComboBox,0,0,) 
-        gridLayout.addWidget(self._domainChoiceComboBox,1,0) 
+ #       gridLayout.addWidget(self._domainChoiceComboBox,1,0) 
         openButton = QtGui.QPushButton("Open",self)
         cancelButton = QtGui.QPushButton("Cancel",self)
         buttonLayout = QtGui.QHBoxLayout()
@@ -50,15 +52,16 @@ class DataSetChooserDialog(QtGui.QDialog):
 
         # Get available simulation dataset of open models from the VCell client
         simList = None
+        vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
-            print("calling self._vis.getVCellProxy().getSimsFromOpenModels()")
-            self._vis.getVCellProxy().open()
-            simList = self._vis.getVCellProxy().getClient().getSimsFromOpenModels()
+            print("calling vcellProxy2.getSimsFromOpenModels()")
+            vcellProxy2.open()
+            simList = vcellProxy2.getClient().getSimsFromOpenModels()
         except:
             simList = None
             print("Exception looking for open model datasets")
         finally:
-            self._vis.getVCellProxy().close()
+            vcellProxy2.close()
 
         if (simList==None or len(simList)==0):
             raise Exception("No simulations found")
@@ -67,26 +70,29 @@ class DataSetChooserDialog(QtGui.QDialog):
         # populate the QComboBox if we found datasets
         for sim in simList:
             self._dataSetComboBox.addItem(sim.simName,sim)
-            self._changeSimulationSelectionAction()
+            #self._changeSimulationSelectionAction()
 
 
-    def _changeSimulationSelectionAction(self):
-        print('starting _changeSimulationSelectionAction')
-        currentIndex = self._dataSetComboBox.currentIndex()
-        currentSimSelection = self._dataSetComboBox.itemData(currentIndex)
-        try:
-            self._vis.getVCellProxy().open()
-            varList = self._vis.getVCellProxy().getClient().getVariableList(self._dataSetComboBox.itemData(currentIndex))
-            domainList = list(set([varList[i].domainName for i in range(len(varList)-1)]))
-            self._domainChoiceComboBox.clear()
-            for domain in domainList:
-                if (domain != "None"):
-                    self._domainChoiceComboBox.addItem(domain, domain)
-        except Exception as exc:
-            print("Exception occurred getting domains")
-            print(str(exc))
-        finally:
-            self._vis.getVCellProxy().close()
+    #def _changeSimulationSelectionAction(self):
+    #    print('starting _changeSimulationSelectionAction')
+    #    currentIndex = self._dataSetComboBox.currentIndex()
+    #    currentSimSelection = self._dataSetComboBox.itemData(currentIndex)
+    #    vcellProxy2 = vcellProxy.VCellProxyHandler()
+    #    try:
+    #        vcellProxy2.open()
+    #        simulationDataSetRef = self._dataSetComboBox.itemData(currentIndex)
+    #        assert isinstance(simulationDataSetRef, pyvcell.ttypes.SimulationDataSetRef)
+    #        varList = vcellProxy2.getClient().getVariableList(simulationDataSetRef)
+    #        domainList = list(set([varList[i].domainName for i in range(len(varList)-1)]))
+    #        self._domainChoiceComboBox.clear()
+    #        for domain in domainList:
+    #            if (domain != "None"):
+    #                self._domainChoiceComboBox.addItem(domain, domain)
+    #    except Exception as exc:
+    #        print("Exception occurred getting domains")
+    #        print(str(exc))
+    #    finally:
+    #        vcellProxy2.close()
 
 
     def _openButtonPressedAction(self):
@@ -94,18 +100,18 @@ class DataSetChooserDialog(QtGui.QDialog):
         if (currentIndex == None):
             return(None)
         self._selectedSim = self._dataSetComboBox.itemData(currentIndex)
-        currentIndex = self._domainChoiceComboBox.currentIndex()
-        if (currentIndex == None):
-            return(None)
-        self._selectedDomain = self._domainChoiceComboBox.itemData(currentIndex)
+        #currentIndex = self._domainChoiceComboBox.currentIndex()
+        #if (currentIndex == None):
+        #    return(None)
+        #self._selectedDomain = self._domainChoiceComboBox.itemData(currentIndex)
 
         self.simulationSelected.emit(self)
 
     def _cancelButtonPressedAction(self):
         self.close()
 
-    def getSelectedDomain(self):
-        return self._selectedDomain
+    #def getSelectedDomain(self):
+    #    return self._selectedDomain
 
     def getSelectedSimulation(self):
         return self._selectedSim

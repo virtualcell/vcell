@@ -1,39 +1,22 @@
 import sys
-sys.path.append('./')
-from pyvcell import VCellProxy
-from pyvcell.ttypes import *
-from thrift import Thrift
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
-
+#sys.path.append('./')
+import thrift
+import thrift.transport
+import thrift.transport.TSocket
+import thrift.protocol
+import pyvcell
+import pyvcell.VCellProxy
 
 
 
 class VCellProxyHandler(object):
 
     def __init__(self):
-        self._transport = TSocket.TSocket('localhost',	9090)
-        self._transport = TTransport.TBufferedTransport(self._transport)
-        protocol = TBinaryProtocol.TBinaryProtocol(self._transport)
-        self._client = VCellProxy.Client(protocol)
+        self._transport = thrift.transport.TSocket.TSocket('localhost',	9090)
+        self._transport = thrift.transport.TTransport.TBufferedTransport(self._transport)
+        protocol = thrift.protocol.TBinaryProtocol.TBinaryProtocol(self._transport)
+        self._client = pyvcell.VCellProxy.Client(protocol)
      
-    def __enter__(self):
-        self.open()
-        
-    def __exit__(self, type, value, traceback):
-        self.close()  
-        
-    def clientRequest(self, expression):
-        try:
-            self._vis.getVCellProxy().open()
-            result = self._vis.getVCellProxy().getClient().eval(expression)
-        except Exception as exc:
-            print(exc.message)
-        finally:
-            self._vis.getVCellProxy().close()
-        return result
-
     def getClient(self):
         return(self._client)
 

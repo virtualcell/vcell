@@ -11,7 +11,9 @@ import visContextAbstract
 import visGuiSliceControls
 import visGuiQueryControls
 import visDataSetChooserDialog
-from visDataSetChooserDialog import DataSetChooserDialog
+import vcellProxy
+import pyvcell
+import visDataContext
 
 
 # adapted from visitusers.org PySide_Recipes page.
@@ -70,6 +72,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         super(VCellPysideApp,self).__init__()
         self._vis = vis
         assert isinstance(self._vis,visContextAbstract.visContextAbstract)
+        self._visDataContext = visDataContext.VisDataContext()
         self.resourcedir = ""
         self._selectedVariable = None
         self.__parse_command_line()
@@ -324,7 +327,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
     def _showOpenSimFromVCellOpenModels(self):
         try:
-            dialog = DataSetChooserDialog(self)
+            dialog = visDataSetChooserDialog.DataSetChooserDialog(self)
             dialog.simulationSelected.connect(self._onSimulationSelected)
             dialog.initUI(self._vis)
         except Exception as simFindException:
@@ -333,71 +336,74 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
- 
-    def _openCurrentDataSetAtTimeIndex(self, index):
-        sim = self._vis.getVisDataContext().getCurrentDataSet()
-        domain = self._vis.getVisDataContext().getCurrentDomain()
+    def _onTimeSliderChanged(self, newIndex):
+        self._visDataContext.setCurrentTimeIndex(newIndex)
+        sim = self._visDataContext.getCurrentDataSet()
+        domain = self._visDataContext.getCurrentVariable().domainName
         print(sim)
+        vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
-            self._vis.getVCellProxy().open()
-            fileName = self._vis.getVCellProxy().getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,index)
+            vcellProxy2.open()
+            fileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,self._visDataContext.getCurrentTimeIndex())
         except Exception as exc:
             print(exc.message)
         finally:
-            self._vis.getVCellProxy().close()
-        self._vis.openForUpdatedState(fileName)
-
-    def _onTimeSliderChanged(self, newIndex):
-        self._openCurrentDataSetAtTimeIndex(newIndex)
-        self._vis.getVisDataContext().setCurrentTimeIndex(newIndex)
-        self._openCurrentDataSetAtTimeIndex(self, newIndex)
+            vcellProxy2.close()
+        self._vis.openOne(fileName,self._visDataContext.getCurrentVariable().variableVtuName,)
 
 
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
-        domain = dialog.getSelectedDomain()
+#        domain = dialog.getSelectedDomain()
         dialog.close()
         print(sim)
+
+        vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
-            self._vis.getVCellProxy().open()
-            fileName = self._vis.getVCellProxy().getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,0)
+            vcellProxy2.open()
+            variables = vcellProxy2.getClient().getVariableList(sim)
+            all(isinstance(n,pyvcell.ttypes.VariableInfo) for n in variables)
+            if (len(variables)<=1):
+                print "no variables, ignoring dataset"
+                return
+
+            currVar = variables[0]
+            assert isinstance(currVar,pyvcell.ttypes.VariableInfo)
+
+            dataFileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,currVar.domainName,0)
+            self._visDataContext.setVariableInfos(variables);
+            self._visDataContext.setCurrentVariable(currVar);
+            self._visDataContext.setCurrentDataSet(sim);
+            self._visDataContext.setCurrentDataSetTimePoints(vcellProxy2.getClient().getTimePoints(sim))
+            self._visDataContext.setCurrentTimeIndex(0)
+
+            self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,False)
+ 
         except Exception as exc:
             print(exc.message)
+            return
         finally:
-            self._vis.getVCellProxy().close()
+            vcellProxy2.close()
 
-        print(fileName)
-
-        print('fileName is:')
-        print(fileName)
-        self._vis.openOne(fileName)
-        print("Returned from calling self._vis.open(fileList)")
-        self._vis.getVisDataContext().setCurrentDataSet(sim)
-        self._vis.getVisDataContext().setCurrentDomain(domain)
-        varNames = self._vis.getVariableNames()
-        print('List of variable names visContext is is:')
-        print(varNames)
-        try:
-            self._vis.getVCellProxy().open()
-            vcProxyVarInfos = self._vis.getVCellProxy().getClient().getVariableList(dialog.getSelectedSimulation())
-        except Exception as exc:
-            print(exc.message)
-        finally:
-            self._vis.getVCellProxy().close()
         print("List of variable names from VCellProxy is:")
-        print([varInfo.variableName for varInfo in vcProxyVarInfos])
+        varDisplayNames = [varInfo.variableDisplayName for varInfo in variables];
+        print("var display names: "+str(varDisplayNames))
+        varVtuNames = [varInfo.variableVtuName for varInfo in variables];
+        print("var mesh names: "+str(varVtuNames))
         print("\nThe list of variable names from the MDServer is:")
-        print(self._vis.getMDVariableNames())
+        #print(self._vis.getMDVariableNames())
 
         assert isinstance(self._variableListWidget,QtGui.QListWidget)
         self._variableListWidget.clear()
-        self._variableListWidget.addItems(varNames)
+        
+
+        self._variableListWidget.addItems(varDisplayNames)
         if visQt.isPyside():
             self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
         elif visQt.isPyQt4:
             self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
 
-        times = self._vis.getTimes()
+        times = self._visDataContext.getCurrentDataSetTimePoints()
         if times == None or len(times)==0:
             self._timeSlider.setMinimum(0)
             self._timeSlider.setMaximum(0)
@@ -406,10 +412,6 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._timeSlider.setMinimum(0)
             self._timeSlider.setMaximum(len(times)-1)
             self._timeLabel.setText("0.0")
-
-
-
-
 
     def _getStatusBar(self):
         return self._statusBar
@@ -420,7 +422,21 @@ class VCellPysideApp(QtGui.QMainWindow):
             firstItem = currentText[0]
             assert isinstance(firstItem,QtGui.QListWidgetItem)
             print "selected variable is ",firstItem.text()
-            self._vis.setVariable(firstItem.text())
+
+            oldVariable = self._visDataContext.getCurrentVariable()
+            newVariable = self._visDataContext.getVtuVariableFromDisplayName(firstItem.text())
+            self._visDataContext.setCurrentVariable(newVariable)
+            vcellProxy2 = vcellProxy.VCellProxyHandler()
+            try:
+                vcellProxy2.open()
+                sim = self._visDataContext.getCurrentDataSet()
+                timeIndex = self._visDataContext.getCurrentTimeIndex()
+                bSameDomain = (oldVariable.domainName == newVariable.domainName)
+                newFilename = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,newVariable.domainName,timeIndex)
+                self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain)
+            finally:
+                vcellProxy2.close()
+
         print('_onSelectedVariableChanged()')
 
     def _onPointerModePushButton(self):
@@ -438,12 +454,24 @@ class VCellPysideApp(QtGui.QMainWindow):
     def _onTimeSliderChanged(self):
         print('_onTimeSliderChanged()')
         newIndex = self._timeSlider.sliderPosition()
-        self._vis.setTimeIndex(newIndex)
-        dir(newIndex)
-        print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
-        times = self._vis.getTimes()
-        if (times != None and len(times)>0):
-            self._timeLabel.setText(str(times[newIndex]))
+        vcellProxy2 = vcellProxy.VCellProxyHandler()
+        try:
+            vcellProxy2.open();
+            self._visDataContext.setCurrentTimeIndex(newIndex)
+            dataFileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(
+                self._visDataContext.getCurrentDataSet(),
+                self._visDataContext.getCurrentVariable().domainName,
+                self._visDataContext.getCurrentTimeIndex())
+        finally:
+            vcellProxy2.close()
+            
+        self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True)
+
+        #dir(newIndex)
+        #print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
+        #times = self._vis.getTimes()
+        #if (times != None and len(times)>0):
+        #    self._timeLabel.setText(str(times[newIndex]))
 
     def _onSliceSliderChanged(self):
         print('_onSliceSliderChanged()')

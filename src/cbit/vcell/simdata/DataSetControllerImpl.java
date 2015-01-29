@@ -68,6 +68,9 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
+import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
+import org.vcell.vis.mapping.ChomboVtkFileWriter;
 
 import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;
@@ -4395,6 +4398,49 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 			log.exception(e);
 			VCMongoMessage.sendTrace(methodName + "  <<EXIT-Exception>>");
 			throw new DataAccessException(e.getMessage());
+		}
+	}
+
+
+	public VtuFileContainer getVtuMeshFiles(ChomboFiles chomboFiles, VCDataIdentifier vcdataID, double time) throws DataAccessException {
+		try {
+			double[] times = getDataSetTimes(vcdataID);
+			int timeIndex = -1;
+			for (int i=0;i<times.length;i++){
+				if (times[i] == time){
+					timeIndex = i;
+				}
+			}
+			if (timeIndex<0){
+				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
+			}
+			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
+			VtuFileContainer vtuFiles = chomboVTKFileWriter.getVtuMeshFiles(chomboFiles, time, timeIndex);
+			return vtuFiles;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTU files: "+e.getMessage(),e);
+		}
+	}
+	
+	public VtuFileContainer getVtuMeshFiles(VCellSimFiles vcellSimFiles, VCDataIdentifier vcdataID, double time) throws DataAccessException {
+		try {
+			double[] times = getDataSetTimes(vcdataID);
+			int timeIndex = -1;
+			for (int i=0;i<times.length;i++){
+				if (times[i] == time){
+					timeIndex = i;
+				}
+			}
+			if (timeIndex<0){
+				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
+			}
+			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
+			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getVtuMeshFiles(vcellSimFiles, time);
+			return vtuFiles;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTU files: "+e.getMessage(),e);
 		}
 	}
 }

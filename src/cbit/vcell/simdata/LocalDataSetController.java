@@ -16,6 +16,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -204,4 +205,11 @@ public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws Data
 public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
 	return dataServerImpl.getDataSetTimeSeries(user, vcdataID, variableNames);
 }
+
+
+@Override
+public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws DataAccessException {
+	return dataServerImpl.getVtuMeshFiles(user, vcdataID, time);
+}
+
 }

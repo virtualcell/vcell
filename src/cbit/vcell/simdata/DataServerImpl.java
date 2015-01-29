@@ -16,8 +16,10 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
+import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -351,6 +353,23 @@ public VCellSimFiles getVCellSimFiles(User user2, VCDataIdentifier vcdataID) thr
 	checkReadAccess(user, vcdataID);
 	try {
 		return dataSetControllerImpl.getVCellSimFiles(vcdataID);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+public VtuFileContainer getVtuMeshFiles(User user2, VCDataIdentifier vcdataID, double time) throws DataAccessException {
+	checkReadAccess(user, vcdataID);
+	try {
+		if (isChombo(user2, vcdataID)){
+			ChomboFiles chomboFiles = getChomboFiles(user2, vcdataID);
+			return dataSetControllerImpl.getVtuMeshFiles(chomboFiles, vcdataID, time);
+		}else{
+			VCellSimFiles vcellFiles = getVCellSimFiles(user2, vcdataID);
+			return dataSetControllerImpl.getVtuMeshFiles(vcellFiles, vcdataID, time);
+		}
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

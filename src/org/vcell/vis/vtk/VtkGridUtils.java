@@ -54,7 +54,7 @@ import cbit.vcell.resource.NativeLib;
 
 public class VtkGridUtils {
 	
-	private static final String VTKVAR_DOMAINSEPARATOR = "__DOMAINSEPARATOR__";
+	public static final String VTKVAR_DOMAINSEPARATOR = "__DOMAINSEPARATOR__";
 
 	// Load VTK library and print which library was not properly loaded
 	static {
@@ -443,5 +443,5 @@ public class VtkGridUtils {
 		
 		return vtkgrid;
 	}
-
+	
 }
