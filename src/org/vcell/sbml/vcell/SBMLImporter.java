@@ -445,7 +445,7 @@ protected void addEvents() {
 				}
 				
 				//delay 
-				BioEvent vcEvent = new BioEvent(eventName, triggerExpr, null, null, simContext);
+				BioEvent vcEvent = new BioEvent(eventName, new BioEvent.TriggerGeneral(triggerExpr), null, null, simContext);
 				if (event.isSetDelay()) {
 					Expression durationExpr = null;
 					durationExpr = getExpressionFromFormula(event.getDelay().getMath());
