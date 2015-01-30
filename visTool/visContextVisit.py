@@ -26,6 +26,8 @@ from timeSeriesAsynchClientTask import TimeSeriesAsynchClientTask
 import vcellProxy
 import visContextAbstract
 
+from asynchClientTask import *
+
 
 class PlotWindow(QtGui.QWidget):
  
@@ -105,11 +107,11 @@ class visContextVisit(visContextAbstract.visContextAbstract):
     def getBareRenderWindow(self):
         return self._plotWindow.getRenderWindow()
 
-    def openOne(self, filename, vtuVariableName, bSameDomain):
+    def _openOne(self, filename, vtuVariableName, bSameDomain):
         assert(isinstance(filename,basestring))
         assert(isinstance(vtuVariableName,basestring))
         assert(isinstance(bSameDomain,bool))
-        print "\n\nvisContextVisit: openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+")"
+        print "\n\nvisContextVisit._openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+") ... INTERNAL METHOD CALLED FROM ASYNCH TASK"
         bSameDomain = False
         assert(isinstance(bSameDomain,bool))
         if (self._databaseName != filename):
@@ -381,7 +383,18 @@ class visContextVisit(visContextAbstract.visContextAbstract):
             self._asynchClientTaskManager.addTask(_lineoutAsynchClientTask)
         except:
             print("visContextVisit: Problem creating lineoutAsynchClientTask or adding it to the asynchClientTaskManager")
-        return lineoutAsynchClientTask
+
+    def openOne(self, filename, vtuVariableName, bSameDomain):
+        assert(isinstance(filename,basestring))
+        assert(isinstance(vtuVariableName,basestring))
+        assert(isinstance(bSameDomain,bool))
+        print "\n\nvisContextVisit: openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+") ... PREPARING ASYNCH TASK"
+        try:
+            _openOneAsynchClientTask = OpenOneAsynchClientTask(self,filename,vtuVariableName,bSameDomain, None, None)
+            self._asynchClientTaskManager.addTask(_openOneAsynchClientTask)
+        except:
+            print("\n\nvisContextVisit: openOne() failed to create or dispatch task")
+
 
     #def doTimeSeries(self, point, dataReadyCallback = None, onErrorCallback = None):
     #    _timeSeriesAsynchClientTask = None
@@ -528,3 +541,81 @@ def removeDupes(seq):
             checked.append(e)
     return checked
     
+
+
+##########################################################
+# Asynch Task for Opening Database and changing variable
+##########################################################
+from asynchClientTask import AsynchClientTask
+
+class OpenOneAsynchClientTask(AsynchClientTask):
+
+    INTERNALSTATE_DATABASE_CONFIRM = "Database Confirm"
+    INTERNALSTATE_PLOT_UPDATE_REQUEST = "Plot Update Request"
+    INTERNALSTATE_PLOT_CONFIRM = "Plot Confirm"
+
+    def __init__(self, vis, filename, vtuVariableName, bSameDomain, dataReadyCallback = None,  onErrorCallback = None):
+        super(OpenOneAsynchClientTask, self).__init__("OpenOne", True, dataReadyCallback, onErrorCallback)
+        assert(isinstance(vis,visContextVisit))
+        assert(isinstance(filename,basestring))
+        assert(isinstance(vtuVariableName,basestring))
+        assert(isinstance(bSameDomain,bool))
+        print "\n\nvisContextVisit.OpenOneAsynchClientTask.__init__("+filename+","+vtuVariableName+","+str(bSameDomain)+")"
+        self._bSameDomain = bSameDomain
+        self._filename = filename
+        self._vtuVariableName = vtuVariableName
+        self._state = AsynchClientTask.STATE_INITIAL
+        self._vis = vis
+        print("openOne initial state = "+str(self.getTaskState()))
+
+        self._stateFunctions = {
+            AsynchClientTask.STATE_EXCEPTION:               self.foundError, 
+            AsynchClientTask.STATE_INITIAL:                 self.doOpenDatabase, 
+            self.INTERNALSTATE_DATABASE_CONFIRM:            self.confirmDatabase,
+            self.INTERNALSTATE_PLOT_UPDATE_REQUEST:         self.requestPlot,
+            self.INTERNALSTATE_PLOT_CONFIRM:                self.confirmPlot,
+            AsynchClientTask.STATE_DONE:                    self.done}
+
+    def checkState(self):
+        print("lineout checking state. =="+str(self._state))
+        try:
+            self._stateFunctions[self.getTaskState()]()
+        except: 
+            print("EXCEPTION CHECKING OPENONE'S STATE.  Prior state was: "+str(self._state))
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
+
+    def doOpenDatabase(self):
+        print("visContextVisit.OpenOneAsynchClientTask.doOpenDatabase()")
+        assert(self._state == AsynchClientTask.STATE_INITIAL)
+        assert(isinstance(self._vis,visContextVisit))
+        if (self._vis._databaseName != self._filename):
+            self._vis._databaseName = self._filename;
+            if (self._bSameDomain):
+                retcode = visit.ReplaceDatabase(self._vis._databaseName)
+            else:
+                retcode = visit.OpenDatabase(self._vis._databaseName)   
+        print("new database name is \"" + self._vis._databaseName + "\"")
+        self._state = self.INTERNALSTATE_DATABASE_CONFIRM
+
+
+    def confirmDatabase(self):
+        print("visContextVisit.OpenOneAsynchClientTask.confirmDatabase()")
+        self._state = self.INTERNALSTATE_PLOT_UPDATE_REQUEST
+
+    def requestPlot(self):
+        print("visContextVisit.OpenOneAsynchClientTask.requestPlot()")
+        self._vis._variable = self._vtuVariableName 
+        self._vis._updateDisplay()
+        self._state = self.INTERNALSTATE_PLOT_CONFIRM
+
+    def confirmPlot(self):
+        print("visContextVisit.OpenOneAsynchClientTask.confirmPlot()")
+        self._state = AsynchClientTask.STATE_DONE
+ 
+    def done(self):
+        print("visContextVisit.OpenOneAsynchClientTask.done()")
+        pass # Someone should call getLineoutData if they haven't already and let me be forgotton memory anytime now
+
+    def foundError(self):
+        print("visContextVisit.OpenOneAsynchClientTask.foundError()")
+        self._onExceptionEncountered("OpenOneAsychClientTask error encountered")

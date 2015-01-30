@@ -6,7 +6,7 @@ class AsynchClientTaskManager(object):
     def __init__(self, parent):
         self._asynchClientTaskList=[]
         self._timer = QtCore.QTimer(parent)
-        self._timer.setInterval(750)
+        self._timer.setInterval(100)
         self._timer.connect(QtCore.SIGNAL("timeout()"),self.checkTasks)
         self._timer.start()                    
 
@@ -18,7 +18,7 @@ class AsynchClientTaskManager(object):
                 
                 # DELETE task when it is completely done.  We may want to make this a togglable feature. 
                 task.checkState()
-                if task.getTaskState() in [-1,4]:
+                if task.getTaskState() in [AsynchClientTask.STATE_EXCEPTION, AsynchClientTask.STATE_DONE]:
                     #print("about to delete finished or bolluxed task")
                     self.deleteTask(task)
                     #print("Done task deleted.")
@@ -26,6 +26,7 @@ class AsynchClientTaskManager(object):
 
             except:
                 raise Exception("Problem checking state of a "+str(task.__class__.__name__))
+
             if (task is not None) and (task.isBlocking() and not task.isFinished()):
                 print("waiting for other tasks to finish")
                 break
