@@ -3642,7 +3642,7 @@ private Element getXML(MolecularComponentPattern param) {
 			if(cs.getComponentStateDefinition() != null) {
 				e.setAttribute(XMLTags.RbmMolecularComponentStatePatternTag, mangle(cs.getComponentStateDefinition().getName()));
 			} else {
-				System.err.println("Component State Definition is missing!");
+				System.err.println(ComponentStateDefinition.typeName + " is missing!");
 			}
 		}
 	}

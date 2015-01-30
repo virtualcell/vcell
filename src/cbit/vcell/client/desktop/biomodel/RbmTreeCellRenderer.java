@@ -299,24 +299,24 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	}
 	public static String toHtml(MolecularComponent mc, boolean bShowWords) {
 //		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
-		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "</b>";
+		String text = (bShowWords ? MolecularComponent.typeName : "") + " <b>" + mc.getName() + "</b>";
 		String htmlText = "<html>" + text + "</html>";
 		return htmlText;
 	}
 	public static String toHtmlWithTip(MolecularComponent mc, boolean bShowWords) {
 //		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b>";
-		String text = (bShowWords ? "Component" : "") + " <b>" + mc.getName() + "</b>";
+		String text = (bShowWords ? MolecularComponent.typeName : "") + " <b>" + mc.getName() + "</b>";
 		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
 	}
 	public static String toHtml(ComponentStateDefinition cs) {
-		String text = "State <b>" + cs.getName() + "</b>";
+		String text = ComponentStateDefinition.typeName + " <b>" + cs.getName() + "</b>";
 		String htmlText = "<html>" + text + "</html>";
 		return htmlText;
 	}
 	public static String toHtmlWithTip(ComponentStateDefinition cs) {
-		String text = "State <b>" + cs.getName() + "</b>";
+		String text = ComponentStateDefinition.typeName + " <b>" + cs.getName() + "</b>";
 		String htmlText = text + VCellErrorMessages.TripleClickOrRightClick;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
@@ -334,7 +334,7 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		return htmlText;
 	}
 	public static final String toHtml(MolecularComponentPattern mcp, boolean bShowWords) {
-		String text = (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
+		String text = (bShowWords ? MolecularComponent.typeName : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
 		MolecularComponent mc = mcp.getMolecularComponent();
 		return "<html> " + text + "</html>";
 	}
@@ -348,7 +348,17 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 //		return "<html> " + text + "</html>";
 //	}
 	public static final String toHtmlWithTip(MolecularComponentPattern mcp, boolean bShowWords) {
-		String text = (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
+		String text = (bShowWords ? MolecularComponent.typeName : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
+		MolecularComponent mc = mcp.getMolecularComponent();
+		
+//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+//			StateLocal sl = new StateLocal(mcp);
+//			text += "&#160;&#160;&#160;" + toHtmlWork(sl, bShowWords);
+//		}
+//		
+//		BondLocal bl = new BondLocal(mcp);
+//		text += "&#160;&#160;&#160;" + toHtmlWorkShort(bl);
+		
 		String htmlText = text + VCellErrorMessages.RightClickComponentToEdit;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
@@ -384,19 +394,19 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		if (mcp != null /*&& !mcp.isImplied()*/) {
 			if (csp == null) {
 				if(bShowWords) {
-					stateText = "State(-): <b>None</b>";
+					stateText = ComponentStateDefinition.typeName + "(-): <b>None</b>";
 				} else {
 					stateText = "<b>None</b>";
 				}
 			} else if(csp.isAny()) {
 				if(bShowWords) {
-					stateText = "State(~): <b>Any</b>";
+					stateText = ComponentStateDefinition.typeName + "(~): <b>Any</b>";
 				} else {
 					stateText = "<b>Any</b>";
 				}
 			} else {
 				if(bShowWords) {
-					stateText = "State(~): <b>" + csp.getComponentStateDefinition().getName() + "</b>";
+					stateText = ComponentStateDefinition.typeName + "(~): <b>" + csp.getComponentStateDefinition().getName() + "</b>";
 				} else {
 					stateText = "~ <b>" + csp.getComponentStateDefinition().getName() + "</b>";
 				}
@@ -428,11 +438,40 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		}
 		return bondText;
 	}
+	private static final String toHtmlWorkShort(BondLocal bl) {
+		MolecularComponentPattern mcp = bl.getMolecularComponentPattern();
+		BondType defaultType = BondType.Possible;
+		String bondText = "";
+		String colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
+		String colorTextEnd = "</font>";
+		bondText = colorTextStart + "<b>" + "(unbound)" + "</b>" + colorTextEnd;
+
+		if (mcp != null) {
+			BondType bondType = mcp.getBondType();
+			if (bondType == BondType.Specified) {
+				Bond bond = mcp.getBond();
+				if (bond == null) {
+					colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
+					colorTextEnd = "</font>";
+					bondText = colorTextStart + "<b>" + "(unbound)" + "</b>" + colorTextEnd;
+				} else {
+					int id = mcp.getBondId();
+					colorTextStart = "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
+					colorTextEnd = "</font>";
+					
+					bondText = colorTextStart + "<b>" + "bond<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b>" + colorTextEnd;		// <sub>&nbsp;</sub>
+				}
+			} else {
+				bondText =  "<b>" + "(bound)" + "</b>";
+			}
+		}
+		return bondText;
+	}
 	public static final String toHtml(Bond bond) {	// TODO: must be made private eventually
 		String bondText = " " + MolecularType.typeName + " <b>" + bond.molecularTypePattern.getMolecularType().getName();
 //		bondText += "<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b> Component <b>";
-		bondText += "&nbsp;&nbsp;&nbsp;</b>Component <b>";
-		bondText +=	bond.molecularComponentPattern.getMolecularComponent().getName() + "</b>";
+		bondText += "&nbsp;&nbsp;&nbsp;</b>" + MolecularComponent.typeName + " <b>";
+		bondText +=	bond.molecularComponentPattern.getMolecularComponent().getDisplayName() + "</b>";
 		//  ... + "<sub>" + bond.molecularComponentPattern.getMolecularComponent().getIndex() + "</sub>)"
 		return bondText;
 	}

@@ -35,9 +35,9 @@ public class ParticleComponentStateDefinition implements Serializable, Matchable
 //	@Override
 //	public void gatherIssues(List<Issue> issueList) {
 //		if(name == null) {
-//			issueList.add(new Issue(this, IssueCategory.Identifiers, "Name of Molecular Component State is null", Issue.SEVERITY_ERROR));
+//			issueList.add(new Issue(this, IssueCategory.Identifiers, "Name of State is null", Issue.SEVERITY_ERROR));
 //		} else if(name.equals("")) {
-//			issueList.add(new Issue(this, IssueCategory.Identifiers, "Name of Molecular Component State is empty", Issue.SEVERITY_WARNING));
+//			issueList.add(new Issue(this, IssueCategory.Identifiers, "Name of State is empty", Issue.SEVERITY_WARNING));
 //		}
 //	}
 
