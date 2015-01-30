@@ -8,7 +8,7 @@ import cbit.vcell.math.VariableType.VariableDomain;
 
 public class VtuFileContainer implements Serializable {
 	
-	public static class VtuVarInfo {
+	public static class VtuVarInfo implements Serializable {
 		public final String name;
 		public final String displayName;
 		public final String domainName;
