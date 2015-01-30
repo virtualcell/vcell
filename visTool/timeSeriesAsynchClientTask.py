@@ -4,16 +4,22 @@ from asynchClientTask import *
 class TimeSeriesAsynchClientTask(AsynchClientTask):
 
     def __init__(self, point, dataReadyCallback, onErrorCallback):
-        super(TimeSeriesAsynchClientTask, self).__init__("TimeSeries",1, dataReadyCallback, onErrorCallback)
+        super(TimeSeriesAsynchClientTask, self).__init__("TimeSeries", True, dataReadyCallback, onErrorCallback)
         assert isinstance(point, tuple)
         assert len(point) in [2,3]
         #assert isinstance(point,(int,float,long))
         self._point = point
         print("timeSeries init, point = "+str(self._point))
         self._timeSeriesData = None
-        self._state = 0
+        self._state = AsynchClientTask.STATE_0_NO_REQUEST_YET
         print("timeseries initial state = "+str(self.getTaskState()))
-        self.stateTransitions = {-1: self.foundError, 0 : self.doTimeSeries, 1: self.isDataReady, 2: self.doCleanup, 3: self.isCleanupDone, 4: self.cleanupIsDone}
+        self.stateTransitions = {
+            AsynchClientTask.STATE_5_EXCEPTION:         self.foundError, 
+            AsynchClientTask.STATE_0_NO_REQUEST_YET:    self.doTimeSeries, 
+            AsynchClientTask.STATE_1_REQUEST_INITIATED: self.isDataReady, 
+            AsynchClientTask.STATE_2_DATA_ALREADY:      self.doCleanup,
+            AsynchClientTask.STATE_3_CLEANUP_REQUESTED: self.isCleanupDone, 
+            AsynchClientTask.STATE_4_CLEANUP_DONE:      self.cleanupIsDone}
 
     def checkState(self):
         try:
@@ -21,10 +27,10 @@ class TimeSeriesAsynchClientTask(AsynchClientTask):
 
             self.stateTransitions[self.getTaskState()]()
         except: 
-            self._state = -1
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
 
     def doTimeSeries(self):
-        self._state = 1
+        self._state = AsynchClientTask.STATE_1_REQUEST_INITIATED
         try:
             print("doTimeSeries")
             if (2 in visit.GetGlobalAttributes().GetWindows()):
@@ -39,7 +45,7 @@ class TimeSeriesAsynchClientTask(AsynchClientTask):
             visit.ZonePick(self._point)
             print("fired off NodePick")
         except:
-            self._state = -1
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
         finally:
             visit.SetActiveWindow(1)
 
@@ -58,11 +64,11 @@ class TimeSeriesAsynchClientTask(AsynchClientTask):
                         print("The data from the time series is:\n")
                         print(str(self._timeSeriesData))
                         print("\n")
-                        self._state = 2
+                        self._state = AsynchClientTask.STATE_2_DATA_ALREADY
                         self._onDataIsReady(self._timeSeriesData)
                         return True
                     else:
-                        self._state = -1
+                        self._state = AsynchClientTask.STATE_5_EXCEPTION
                         return False
                 else:
                     return false
@@ -70,42 +76,42 @@ class TimeSeriesAsynchClientTask(AsynchClientTask):
                 print("timeSeries: Window 2 doesn't currently exist (yet)")
                 return False
         except:
-            self._state = -1
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
             return None
 
     def getTimeSeriesData(self):
-        assert self._state > 1
+        assert self._state in [AsynchClientTask.STATE_2, AsynchClientTask.STATE_3_CLEANUP_REQUESTED, AsynchClientTask.STATE_4_CLEANUP_DONE]
         return self._timeSeriesData
 
     def doCleanup(self):
         try:
-            assert self._state>0 and self._state<3
-            self._state = 2
+            assert self._state in [AsynchClientTask.STATE_1_REQUEST_INITIATED, AsynchClientTask.STATE_2_DATA_ALREADY]
+            self._state = AsynchClientTask.STATE_2_DATA_ALREADY
             visit.SetActiveWindow(2)
             assert visit.GetNumPlots()!=0 
             visit.DeleteAllPlots()
             visit.SetActiveWindow(1)
-            self._state = 3
+            self._state = AsynchClientTask.STATE_3_CLEANUP_REQUESTED
         except:
-            self._state = -1
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
         finally:
             visit.SetActiveWindow(1)
 
 
     def isCleanupDone(self):
         print("timeSeries isCleanupDone state = " + str(self._state))
-        assert self._state == 3
+        assert self._state == AsynchClientTask.STATE_3_CLEANUP_REQUESTED
         try:
             visit.SetActiveWindow(2)
             if visit.GetNumPlots()==0:
-                self._state = 4
+                self._state = AsynchClientTask.STATE_4_CLEANUP_DONE
                 visit.SetActiveWindow(1)
                 return True
             else:
                 SetActiveWindow(1)
                 return False
         except:
-            self._state = -1
+            self._state = AsynchClientTask.STATE_5_EXCEPTION
             return None
  
     def cleanupIsDone(self):
