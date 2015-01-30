@@ -15,6 +15,7 @@ import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -185,6 +186,11 @@ public class DisplayTimeSeries extends Task {
 			
 			@Override
 			public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException, RemoteException {
+				throw new RuntimeException("not yet implemented");
+			}
+
+			@Override
+			public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws RemoteException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 		};
