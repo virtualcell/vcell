@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -138,14 +140,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			model.getRbmModelContainer().addParameter(p.getName(), exp);
 		}
 		
-		HashMap<Integer, String>  speciesMap = new HashMap(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
+		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
 		System.out.println("\n\nSpecies : \n");
+//		Map<String, Species> sMap = new HashMap<String, Species>();
+//		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
-			System.out.println(i+1 + ":\t\t"+ s.toString());
+//			System.out.println(i+1 + ":\t\t"+ s.toString());
 			SpeciesContext species = model.getSpeciesContextByPattern(s.getName());
 			if(species != null) {
-				System.out.println("   ...already exists.");
+//				System.out.println("   ...already exists.");
 				speciesMap.put(s.getNetworkFileIndex(), species.getName());		// existing name
 				continue;
 			}
@@ -163,6 +167,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			speciesContext.setName(speciesName);
 			model.addSpecies(speciesContext.getSpecies());
 			model.addSpeciesContext(speciesContext);
+//			sMap.put(speciesName, speciesContext.getSpecies());
+//			scMap.put(speciesName, speciesContext);
+			
 			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(speciesContext);
 			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
 			param.setExpression(s.getConcentration());
@@ -175,8 +182,16 @@ public class NetworkTransformer implements SimContextTransformer {
 				entityMappings.add(em);
 			}
 		}
+//		Species[] sa = new Species[sMap.size()];
+//		sMap.values().toArray(sa); 
+//		model.setSpecies(sa);
+//		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+//		scMap.values().toArray(sca); 
+//		model.setSpeciesContexts(sca);
+
 		
 		System.out.println("\n\nReactions : \n");
+		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
 			BNGReaction r = outputSpec.getBNGReactions()[i];
 //			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
@@ -184,7 +199,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			String reactionName = null;
 			while (true) {
 				reactionName = "r" + count;	
-				if (model.getReactionStep(reactionName) == null && model.getRbmModelContainer().getReactionRule(reactionName) == null) {
+				if (model.getReactionStep(reactionName) == null && model.getRbmModelContainer().getReactionRule(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {
 					break;
 				}	
 				count++;
@@ -222,13 +237,21 @@ public class NetworkTransformer implements SimContextTransformer {
 			sr.setKinetics(k);
 			KineticsParameter kforward = k.getForwardRateParameter();
 			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
-			model.addReactionStep(sr);
+			
+			
+//			model.addReactionStep(sr);
+			reactionStepMap.put(reactionName, sr);
 		}
+		
+		ReactionStep[] reactionSteps = new ReactionStep[reactionStepMap.size()];
+		reactionStepMap.values().toArray(reactionSteps); 
+		model.setReactionSteps(reactionSteps);
+		
 		
 		System.out.println("\n\nObservables : \n");
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
 			ObservableGroup o = outputSpec.getObservableGroups()[i];
-			System.out.println(i+1 + ":\t\t" + o.toString());
+//			System.out.println(i+1 + ":\t\t" + o.toString());
 			
 			if(model.getRbmModelContainer().getParameter(o.getObservableGroupName()) != null) {
 				System.out.println("   ...already exists.");
