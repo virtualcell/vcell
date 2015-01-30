@@ -7,39 +7,56 @@ import java.awt.GridBagLayout;
 import javax.swing.JRadioButton;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.TextFieldAutoCompletion;
+import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.simulation.ParameterScanPanel;
+import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventTrigger;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
+import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.TextEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -49,15 +66,15 @@ public class TriggerTemplatePanel extends JPanel {
 	private JTextField textFieldOneVarVal;
 //	private JTextField textFieldMultiTimes;
 	private ParameterScanPanel multiTimesPanel;
-	private JComboBox<String> varComboBox = null;
-	private JComboBox<String> mathOpComboBox = null;
+	private JComboBox<SymbolTableEntry> varComboBox = null;
+	private JComboBox<BioEvent.TriggerComparison> mathOpComboBox = null;
 	private ButtonGroup buttonGroup = new ButtonGroup();
 	private JRadioButton rdbtnGeneral;
 	private JRadioButton rdbtnOneVar;
 	private JRadioButton rdbtnSingleTime;
 	private JRadioButton rdbtnMultiTimes;
-	private JLabel generalLabel;
 	private JPanel varValuePanel;
+	private TextFieldAutoCompletion textFieldGeneral;
 	
 	private ItemListener rdbtnLItemListener =
 			new ItemListener() {
@@ -66,12 +83,12 @@ public class TriggerTemplatePanel extends JPanel {
 					if(e.getStateChange() == ItemEvent.DESELECTED){
 						return;
 					}
-					generalLabel.setEnabled(false);
+					textFieldGeneral.setEnabled(false);
 					BeanUtils.enableComponents(varValuePanel, false);
 					textFieldSingleTime.setEnabled(false);
 					BeanUtils.enableComponents(multiTimesPanel, false);
 					if(e.getSource() == rdbtnGeneral && rdbtnGeneral.isSelected()){
-						generalLabel.setEnabled(true);
+						textFieldGeneral.setEnabled(true);
 					}if(e.getSource() == rdbtnOneVar && rdbtnOneVar.isSelected()){
 						BeanUtils.enableComponents(varValuePanel, true);
 					}else if(e.getSource() == rdbtnSingleTime && rdbtnSingleTime.isSelected()){
@@ -127,13 +144,20 @@ public class TriggerTemplatePanel extends JPanel {
 		gbc_rdbtnGeneral.gridy = 3;
 		add(rdbtnGeneral, gbc_rdbtnGeneral);
 		
-		generalLabel = new JLabel("Arbitrary 'trigger' and 'delay' expressions");
-		GridBagConstraints gbc_generalLabel = new GridBagConstraints();
-		gbc_generalLabel.anchor = GridBagConstraints.WEST;
-		gbc_generalLabel.insets = new Insets(4, 4, 5, 4);
-		gbc_generalLabel.gridx = 1;
-		gbc_generalLabel.gridy = 3;
-		add(generalLabel, gbc_generalLabel);
+		textFieldGeneral = new TextFieldAutoCompletion();
+//		textFieldGeneral.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				textFieldGeneral.getInputVerifier().verify(textFieldGeneral);
+//			}
+//		});
+		GridBagConstraints gbc_textFieldGeneral = new GridBagConstraints();
+		gbc_textFieldGeneral.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldGeneral.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldGeneral.gridx = 1;
+		gbc_textFieldGeneral.gridy = 3;
+		add(textFieldGeneral, gbc_textFieldGeneral);
+		textFieldGeneral.setColumns(10);
 		
 		rdbtnOneVar = new JRadioButton("on variable value");
 		GridBagConstraints gbc_rdbtnOneVar = new GridBagConstraints();
@@ -157,19 +181,24 @@ public class TriggerTemplatePanel extends JPanel {
 		gbl_varValuePanel.rowWeights = new double[]{0.0};
 		varValuePanel.setLayout(gbl_varValuePanel);
 		
-		varComboBox = new JComboBox<String>();
+		varComboBox = new JComboBox<SymbolTableEntry>();
+		final ListCellRenderer origListCellRenderer = varComboBox.getRenderer();
+		varComboBox.setRenderer(new  ListCellRenderer<SymbolTableEntry>() {
+			@Override
+			public Component getListCellRendererComponent(JList<? extends SymbolTableEntry> list, SymbolTableEntry value, int index,boolean isSelected, boolean cellHasFocus) {
+				return origListCellRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+			}
+		});
 		GridBagConstraints gbc_varComboBox = new GridBagConstraints();
-		gbc_varComboBox.weightx = 1.0;
 		gbc_varComboBox.insets = new Insets(4, 4, 5, 5);
 		gbc_varComboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_varComboBox.gridx = 0;
 		gbc_varComboBox.gridy = 0;
 		varValuePanel.add(varComboBox, gbc_varComboBox);
 		
-		mathOpComboBox = new JComboBox<String>();
+		mathOpComboBox = new JComboBox<BioEvent.TriggerComparison>();
 		GridBagConstraints gbc_mathOpComboBox = new GridBagConstraints();
 		gbc_mathOpComboBox.insets = new Insets(4, 4, 4, 4);
-		gbc_mathOpComboBox.weightx = 1.0;
 		gbc_mathOpComboBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_mathOpComboBox.gridx = 1;
 		gbc_mathOpComboBox.gridy = 0;
@@ -196,7 +225,7 @@ public class TriggerTemplatePanel extends JPanel {
 		textFieldSingleTime = new JTextField();
 		textFieldSingleTime.setText("0.0");
 		GridBagConstraints gbc_textFieldSingleTime = new GridBagConstraints();
-		gbc_textFieldSingleTime.insets = new Insets(4, 4, 4, 4);
+		gbc_textFieldSingleTime.insets = new Insets(4, 4, 5, 4);
 		gbc_textFieldSingleTime.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldSingleTime.gridx = 1;
 		gbc_textFieldSingleTime.gridy = 5;
@@ -245,24 +274,23 @@ public class TriggerTemplatePanel extends JPanel {
 		rdbtnOneVar.addItemListener(rdbtnLItemListener);
 		rdbtnSingleTime.addItemListener(rdbtnLItemListener);
 		rdbtnMultiTimes.addItemListener(rdbtnLItemListener);
+		
+
 	}
 
 	public String getEventPreferredName(){
 		return txtEventName.getText();
 	}
-//	private SimulationContext simulationContext;
-	public void init(SimulationContext simulationContext,String preferredEventName){
-//		this.simulationContext = simulationContext;
+	public void init(SimulationContext simulationContext,String preferredEventName,AutoCompleteSymbolFilter autoCompleteSymbolFilter,BioEvent existingBioEvent){
 		if(preferredEventName != null && preferredEventName.length() > 0){
 			txtEventName.setText(preferredEventName);
 		}
 		if(simulationContext != null){
 			mathOpComboBox.removeAllItems();
-//			mathOpComboBox.addItem("==");
-			mathOpComboBox.addItem(">");
-			mathOpComboBox.addItem("<");
-			mathOpComboBox.addItem(">=");
-			mathOpComboBox.addItem("<=");
+			mathOpComboBox.addItem(BioEvent.TriggerComparison.greaterThan);
+			mathOpComboBox.addItem(BioEvent.TriggerComparison.lessThan);
+			mathOpComboBox.addItem(BioEvent.TriggerComparison.greaterThanOrEqual);
+			mathOpComboBox.addItem(BioEvent.TriggerComparison.lessThanOrEqual);
 			
 			varComboBox.removeAllItems();
 			SymbolTableEntry[] triggerExprSymbols = ModelOptimizationSpec.calculateTimeDependentModelObjects(simulationContext);
@@ -274,60 +302,94 @@ public class TriggerTemplatePanel extends JPanel {
 			});
 			for(SymbolTableEntry ste:triggerExprSymbols){
 				if(!(ste instanceof ReservedSymbol)){
-					varComboBox.addItem(ste.getName());
+					varComboBox.addItem(ste);
 				}
 			}
-//			EventPanel.populateVariableComboBoxModel((DefaultComboBoxModel<String>)varComboBox.getModel(), simulationContext,false);
+//			setVerifier(simulationContext);
+			
+			Map<String, SymbolTableEntry> entryMap = new HashMap<String, SymbolTableEntry>();
+			simulationContext.getEntries(entryMap);
+			textFieldGeneral.setAutoCompleteSymbolFilter(autoCompleteSymbolFilter);
+			textFieldGeneral.setAutoCompletionWords(entryMap.keySet());
+			
+			if(existingBioEvent != null){//Edit Trigger mode
+				txtEventName.setEnabled(false);//don't edit event name, only trigger parameters
+				if(existingBioEvent.getTrigger() instanceof BioEvent.TriggerGeneral){
+					textFieldGeneral.setText(((BioEvent.TriggerGeneral)existingBioEvent.getTrigger()).getGeneratedExpression().infix());
+					rdbtnGeneral.setSelected(true);
+				}else if(existingBioEvent.getTrigger() instanceof BioEvent.TriggerOnVarValue){
+					varComboBox.setSelectedItem(((BioEvent.TriggerOnVarValue)existingBioEvent.getTrigger()).getSymbolTableEntry());
+					mathOpComboBox.setSelectedItem(((BioEvent.TriggerOnVarValue)existingBioEvent.getTrigger()).getComparison());
+					textFieldOneVarVal.setText(((BioEvent.TriggerOnVarValue)existingBioEvent.getTrigger()).getValue().getExpression().infix());
+					rdbtnOneVar.setSelected(true);
+				}else if(existingBioEvent.getTrigger() instanceof BioEvent.TriggerAtSingleTime){
+					textFieldSingleTime.setText(((BioEvent.TriggerAtSingleTime)existingBioEvent.getTrigger()).getTimeValue().getExpression().infix());
+					rdbtnSingleTime.setSelected(true);
+				}else if(existingBioEvent.getTrigger() instanceof BioEvent.TriggerAtMultipleTimes){
+					if(((BioEvent.TriggerAtMultipleTimes)existingBioEvent.getTrigger()).getConstantArraySpec().getNumValues() == 1){
+						textFieldSingleTime.setText(((BioEvent.TriggerAtMultipleTimes)existingBioEvent.getTrigger()).getConstantArraySpec().getConstants()[0].getExpression().infix());
+					}else /*if(((BioEvent.TriggerAtMultipleTimes)existingBioEvent.getTrigger()).getConstantArraySpec().getNumValues() > 1)*/{
+						multiTimesPanel.setConstantArraySpec(ConstantArraySpec.clone(((BioEvent.TriggerAtMultipleTimes)existingBioEvent.getTrigger()).getConstantArraySpec()));
+					}
+					rdbtnMultiTimes.setSelected(true);
+				}
+				
+			}
+
 		}
 	}
-	public String getTriggerExpr() throws Exception{
-		String expr = null;
+//	private void setVerifier(final SimulationContext simulationContext){
+//		textFieldGeneral.setInputVerifier(new InputVerifier() {
+//			@Override
+//			public boolean verify(JComponent input) {
+//				boolean bValid = true;
+//				if (textFieldGeneral.isEnabled()) {
+//					String text = textFieldGeneral.getText();
+//					String errorText = null;
+//					if (text == null || text.trim().length() == 0) {
+//						bValid = false;
+//						errorText = "Trigger expression cannot be empty";
+//					}else{
+//						Expression expr = null;
+//						try{
+//							expr = EventPanel.bindTriggerExpression(textFieldGeneral.getText(),simulationContext);
+//						}catch(Exception e){
+//							bValid = false;
+//							errorText = e.getMessage();
+//						}
+//					}
+//					if (bValid) {
+//						textFieldGeneral.setBorder(UIManager.getBorder("TextField.border"));
+////						getBtnPlotTrigger().setEnabled(true);
+//						textFieldGeneral.setToolTipText(null);
+//					} else {
+//						textFieldGeneral.setBorder(GuiConstants.ProblematicTextFieldBorder);
+////						getBtnPlotTrigger().setEnabled(false);
+//						textFieldGeneral.setToolTipText(errorText);
+////						SwingUtilities.invokeLater(new Runnable() { 
+////						    public void run() { 
+////						    	getTriggerTextField().requestFocus();
+////						    }
+////						});
+//					}
+//				}
+//				return bValid;
+//			}
+//		});
+//
+//	}
+	public BioEventTrigger createBioEventTrigger() throws Exception{
+		BioEventTrigger bioEventTrigger = null;
 		if(rdbtnGeneral.isSelected()){
-			expr = "0.0";
+			bioEventTrigger = new BioEvent.TriggerGeneral(new Expression(textFieldGeneral.getText()));
 		}else if(rdbtnOneVar.isSelected()){
-			expr = varComboBox.getSelectedItem().toString() + mathOpComboBox.getSelectedItem().toString() + textFieldOneVarVal.getText();
-		}else if(rdbtnSingleTime.isSelected()){
-			expr = ReservedVariable.TIME.getName()+">="+textFieldSingleTime.getText();
+			bioEventTrigger = new BioEvent.TriggerOnVarValue((SymbolTableEntry)varComboBox.getSelectedItem(), (BioEvent.TriggerComparison)mathOpComboBox.getSelectedItem(), new Constant("varVal", new Expression(textFieldOneVarVal.getText())));
+		}else if(rdbtnSingleTime.isSelected()){			
+			bioEventTrigger = new BioEvent.TriggerAtSingleTime(ReservedVariable.TIME,new Constant("singleTimeVal", new Expression(textFieldSingleTime.getText())));
 		}else if(rdbtnMultiTimes.isSelected()){
 			multiTimesPanel.applyValues();
-			Constant[] constantArray = multiTimesPanel.getConstantArraySpec().getConstants();
-			// calc epsilon
-			final Exception[] failFlag = new Exception[1];
-			Arrays.sort(constantArray,new Comparator<Constant>() {
-				@Override
-				public int compare(Constant o1, Constant o2) {
-					// TODO Auto-generated method stub
-					try{
-						return (int)Math.signum(o1.getConstantValue()-o2.getConstantValue());
-					}catch(Exception e){
-						if(failFlag[0] == null){
-							failFlag[0] = e;
-						}
-						return 0;
-					}
-				}
-			});
-			if(failFlag[0] != null){
-				throw failFlag[0];
-			}
-			double epsilon = Double.MAX_VALUE;
-			Constant prevNum = constantArray[0];
-			for(Constant sortNum:constantArray){
-				if(sortNum != prevNum){
-					if((sortNum.getConstantValue()-prevNum.getConstantValue())<epsilon){
-						epsilon = sortNum.getConstantValue()-prevNum.getConstantValue();
-					}
-				}
-			}
-			epsilon/= 2.0;
-			
-			StringBuffer sb = new StringBuffer();
-			for(Constant sortNum:constantArray){
-				String subExpr = "(("+ReservedVariable.TIME.getName()+">="+sortNum.getExpression().infix()+") && ("+ReservedVariable.TIME.getName()+"<("+sortNum.getExpression().infix()+"+"+epsilon+")))";
-				sb.append((sb.length()!=0?" || ":"")+subExpr);
-			}
-			expr = sb.toString();
+			bioEventTrigger = new BioEvent.TriggerAtMultipleTimes(ReservedVariable.TIME, multiTimesPanel.getConstantArraySpec());
 		}
-		return (expr==null || expr.length()==0?null:expr);
+		return bioEventTrigger;
 	}
 }

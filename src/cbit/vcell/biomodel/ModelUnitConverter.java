@@ -79,7 +79,7 @@ public class ModelUnitConverter {
 					ScopedSymbolTable newSymbolTable = event.getNameScope().getScopedSymbolTable();
 	
 					// trigger expression
-					Expression triggerExpr = event.getTriggerExpression();
+					Expression triggerExpr = event.getTrigger().getGeneratedExpression();
 					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, null, null, triggerExpr);
 					
 					// delay expression

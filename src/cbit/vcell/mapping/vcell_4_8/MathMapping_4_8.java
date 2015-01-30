@@ -2642,7 +2642,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	if (bioevents != null && bioevents.length > 0) {
 		for (BioEvent be : bioevents) {
 			// transform the bioEvent trigger/delay to math Event
-			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTriggerExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
+			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTrigger().getGeneratedExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
 			Delay mathDelay = null;
 			if (be.getDelay() != null) {
 				boolean bUseValsFromTriggerTime = be.getDelay().useValuesFromTriggerTime();

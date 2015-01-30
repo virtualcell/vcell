@@ -24,6 +24,7 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
@@ -69,11 +70,16 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			if (searchText == null || searchText.length() == 0) {
 				bioEventList.add(bioEvent);
 			} else {
-				String lowerCaseSearchText = searchText.toLowerCase();	
-				if (bioEvent.getName().toLowerCase().contains(lowerCaseSearchText)
-					|| bioEvent.getTriggerExpression() != null && bioEvent.getTriggerExpression().infix().toLowerCase().contains(lowerCaseSearchText)
-					|| bioEvent.getDelay() != null && bioEvent.getDelay().getDurationExpression().infix().toLowerCase().contains(lowerCaseSearchText)) {					
-					bioEventList.add(bioEvent);
+				String lowerCaseSearchText = searchText.toLowerCase();
+				try{
+					if (bioEvent.getName().toLowerCase().contains(lowerCaseSearchText)
+						|| bioEvent.getTrigger() != null && bioEvent.getTrigger().getGeneratedExpression().infix().toLowerCase().contains(lowerCaseSearchText)
+						|| bioEvent.getDelay() != null && bioEvent.getDelay().getDurationExpression().infix().toLowerCase().contains(lowerCaseSearchText)) {					
+						bioEventList.add(bioEvent);
+					}
+				}catch(ExpressionException e){
+					e.printStackTrace();
+					throw new RuntimeException(this.getClass().getSimpleName()+".computeData() error: "+e.getMessage(),e);
 				}
 			}
 		}
