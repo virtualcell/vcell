@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -12,7 +13,9 @@ import org.vcell.util.Matchable;
 
 
 @SuppressWarnings("serial")
-public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource {
+public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource,
+	Displayable
+{
 	public static final String PROPERTY_NAME_COMPONENT_STATE = "componentStatePattern";
 	public static final String PROPERTY_NAME_BOND_TYPE = "bondType";
 	public static final String PROPERTY_NAME_BOND_ID = "bondId";
@@ -160,15 +163,30 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if(molecularComponent == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Component of Molecular Component Pattern  '" + toString() + "' is null", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, MolecularComponent.typeName + " of " + typeName + "  '" + toString() + "' is null", Issue.SEVERITY_INFO));
 		} else {
 			//molecularComponent.gatherIssues(issueContext, issueList);	// we call this somewhere else already
 		}
 		if(componentStatePattern == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Component State of Molecular Component Pattern  '" + toString() + "' is null", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "State of " + typeName + "  '" + toString() + "' is null", Issue.SEVERITY_INFO));
 		} else {
 			//componentStatePattern.gatherIssues(issueContext, issueList);		// we call this somewhere else already
 		}
+	}
+
+	public static final String typeName = "Site Pattern";
+	@Override
+	public String getDisplayName() {
+		String name = toString();
+		if(name == null) {
+			return "";
+		} else {
+			return name;
+		}
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
 	}
 	
 }

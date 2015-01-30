@@ -39,7 +39,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		int count=0;
 		String name = null;
 		while (true) {
-			name = "component" + count;	
+			name = MolecularComponent.typeName + count;	
 			if (getMolecularComponent(name) == null) {
 				break;
 			}	
@@ -115,7 +115,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 				for (MolecularComponent mc : componentList) {
 					if (mc != evt.getSource()) {
 						if (mc.getName().equals(newName)) {
-							throw new PropertyVetoException("Molecular Component '" + newName + "' already exists in " + getDisplayType() + " '" + getDisplayName() + "'!", evt);
+							throw new PropertyVetoException(MolecularComponent.typeName + " '" + newName + "' already exists in " + getDisplayType() + " '" + getDisplayName() + "'!", evt);
 						}
 					}
 				}
@@ -156,9 +156,9 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is empty", Issue.SEVERITY_WARNING));
 		}
 		if(componentList == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + "' Component List is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is null", Issue.SEVERITY_ERROR));
 		} else if(componentList.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + "' Component List is empty", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is empty", Issue.SEVERITY_INFO));
 		} else {
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
