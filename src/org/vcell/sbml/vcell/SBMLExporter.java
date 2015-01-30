@@ -1050,7 +1050,14 @@ protected void addEvents() {
 			// create trigger
 			Trigger trigger = sbmlEvent.createTrigger();
 			// if trigger expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
-			Expression triggerExpr = vcEvent.getTriggerExpression();
+			Expression triggerExpr = null;
+			triggerExpr = null;
+			try {
+				triggerExpr = vcEvent.getTrigger().getGeneratedExpression();
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException("SBMLExporter.addEvents() error: "+e.getMessage(), e);
+			}
 			ASTNode math = getFormulaFromExpression(triggerExpr);
 			trigger.setMath(math);
 			

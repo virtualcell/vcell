@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.jdom.Attribute;
+import org.jdom.Content;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -115,6 +116,9 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.TriggerAtMultipleTimes;
+import cbit.vcell.mapping.BioEvent.TriggerGeneral;
+import cbit.vcell.mapping.BioEvent.TriggerOnVarValue;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -122,6 +126,7 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.MicroscopeMeasurement;
+import cbit.vcell.mapping.BioEvent.BioEventTrigger;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
@@ -3062,11 +3067,64 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 
 		String name = unMangle(bEventElement.getAttributeValue(XMLTags.NameAttrTag));
 		Element element = bEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-		Expression triggerExp = unMangleExpression(element.getText());
+		BioEventTrigger bioEventTrigger = null;
+		try{
+			Element triggerParamsElement = element.getChild(XMLTags.TriggerParameters,vcNamespace);
+			if(triggerParamsElement == null){//Old trigger style (before approx. 2015-01-23)
+				//convert old trigger style to new style (always use TriggerGeneral)
+				bioEventTrigger = new BioEvent.TriggerGeneral(unMangleExpression(element.getText()));
+			}else{//New trigger style
+				if(triggerParamsElement.getAttribute(XMLTags.TriggerClassAttrTag).getValue().equals(BioEvent.TriggerGeneral.class.getSimpleName())){
+					bioEventTrigger = new BioEvent.TriggerGeneral(unMangleExpression(triggerParamsElement.getText()));
+				}else if(triggerParamsElement.getAttribute(XMLTags.TriggerClassAttrTag).getValue().equals(BioEvent.TriggerOnVarValue.class.getSimpleName())){
+					bioEventTrigger = new BioEvent.TriggerOnVarValue(
+						simContext.getEntry(triggerParamsElement.getAttribute(XMLTags.TriggerParamTimeSymbolAttrTag).getValue()),
+						BioEvent.TriggerComparison.valueOf(triggerParamsElement.getAttribute(XMLTags.TriggerParamCompareAttrTag).getValue()),
+						new Constant(triggerParamsElement.getAttribute(XMLTags.TriggerParamValueNameAttrTag).getValue(),
+							new Expression(triggerParamsElement.getAttribute(XMLTags.TriggerParamValueAttrTag).getValue())));
+				}else if(triggerParamsElement.getAttribute(XMLTags.TriggerClassAttrTag).getValue().equals(BioEvent.TriggerAtSingleTime.class.getSimpleName())){
+					bioEventTrigger = new BioEvent.TriggerAtSingleTime(
+						simContext.getEntry(triggerParamsElement.getAttribute(XMLTags.TriggerParamTimeSymbolAttrTag).getValue()),
+						new Constant(triggerParamsElement.getAttribute(XMLTags.TriggerParamValueNameAttrTag).getValue(),
+							new Expression(triggerParamsElement.getAttribute(XMLTags.TriggerParamValueAttrTag).getValue())));
+				}else if(triggerParamsElement.getAttribute(XMLTags.TriggerClassAttrTag).getValue().equals(BioEvent.TriggerAtMultipleTimes.class.getSimpleName())){
+					if(Integer.parseInt(triggerParamsElement.getAttribute(XMLTags.TriggerParamSpecTypeAttrTag).getValue()) == ConstantArraySpec.TYPE_LIST){
+						List<Element> listValues = triggerParamsElement.getChildren(XMLTags.TriggerParamSpecListTag);
+						ArrayList<String> values = new ArrayList<>();
+						for (Element listVal:listValues) {
+							values.add(listVal.getAttributeValue(XMLTags.TriggerParamValueAttrTag));
+						}
+						bioEventTrigger = new BioEvent.TriggerAtMultipleTimes(
+							simContext.getEntry(triggerParamsElement.getAttribute(XMLTags.TriggerParamTimeSymbolAttrTag).getValue()),
+							ConstantArraySpec.createListSpec(
+									triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecNameAttrTag),values.toArray(new String[0])));			
+					}else if(Integer.parseInt(triggerParamsElement.getAttribute(XMLTags.TriggerParamSpecTypeAttrTag).getValue()) == ConstantArraySpec.TYPE_INTERVAL){
+						bioEventTrigger = new BioEvent.TriggerAtMultipleTimes(
+								simContext.getEntry(triggerParamsElement.getAttribute(XMLTags.TriggerParamTimeSymbolAttrTag).getValue()),
+								ConstantArraySpec.createIntervalSpec(
+									triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecNameAttrTag),
+									Double.valueOf(triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecMinAttrTag)),
+									Double.valueOf(triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecMaxAttrTag)),
+									Integer.valueOf(triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecNumValsAttrTag)),
+									Boolean.valueOf(triggerParamsElement.getAttributeValue(XMLTags.TriggerParamSpecIsLogAttrTag)))
+								);
+					}else{
+						throw new Exception("Unexpected BioEvent Trigger ConstantArraySpec type: "+triggerParamsElement.getAttribute(XMLTags.TriggerParamSpecTypeAttrTag).getValue());
+					}
+				}else{
+					throw new Exception("Unexpected BioEvent Trigger type: "+triggerParamsElement.getAttribute(XMLTags.TriggerClassAttrTag).getValue());
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new XmlParseException(this.getClass().getSimpleName()+".getBioEvents(...) error reading trigger: "+e.getMessage(), e);
+		}
+		
+		
 		
 		element = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
 		BioEvent.Delay delay = null;
-		BioEvent newBioEvent = new BioEvent(name, triggerExp, delay, null, simContext);
+		BioEvent newBioEvent = new BioEvent(name, bioEventTrigger, delay, null, simContext);
 		if (element != null) {
 			boolean useValuesFromTriggerTime = Boolean.valueOf(element.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
 			Expression durationExp = unMangleExpression((element.getText()));
