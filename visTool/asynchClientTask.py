@@ -1,11 +1,18 @@
+
+
+
 class AsynchClientTask(object):
 
-    def __init__(self, taskName, taskType, callbackOnSuccess = None, callbackOnError = None):
+    STATE_INITIAL = "initial"
+    STATE_DONE = "done"
+    STATE_EXCEPTION = "exception"
+
+    def __init__(self, taskName, bBlocking, callbackOnSuccess = None, callbackOnError = None):
         assert isinstance(taskName, str)
-        assert isinstance(taskType, int) and (taskType in [1,2,3])
+        assert isinstance(bBlocking, bool)
         self._taskName = taskName
-        self._taskType = taskType
-        self._state = 0  # 0 = No request yet. 1 = request initiated 2 = data ready, 3 = cleanup requested, 4 = cleanup done, -1 = exception encountered 
+        self._bBlocking = bBlocking
+        self._state = AsynchClientTask.STATE_INITIAL
         self._callbackOnSuccess = callbackOnSuccess
         self._callbackOnError = callbackOnError
         self._bSucceededOrFailedAlready = False
@@ -23,10 +30,7 @@ class AsynchClientTask(object):
         pass
 
     def isBlocking(self):
-        if self.getTaskType() in [1,3]:
-            return True
-        else:
-            return False
+        return self._bBlocking
 
     def isDataReady(self):
         pass
@@ -51,7 +55,7 @@ class AsynchClientTask(object):
                 self._callbackOnError()
 
     def isFinished(self):
-        if self.getTaskState()==4:
+        if self.getTaskState()==AsynchClientTask.STATE_DONE:
             return True
         else:
             return False
