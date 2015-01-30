@@ -577,7 +577,7 @@ class OpenOneAsynchClientTask(AsynchClientTask):
             AsynchClientTask.STATE_DONE:                    self.done}
 
     def checkState(self):
-        print("lineout checking state. =="+str(self._state))
+        print("checking state. =="+str(self._state))
         try:
             self._stateFunctions[self.getTaskState()]()
         except: 

@@ -107,7 +107,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         tabWidget.addTab(sliceTab, "");
         volumeTab = QtGui.QWidget();
         volumeTab.setObjectName("volumeTab")
-        tabWidget.addTab(volumeTab, "");
+        #tabWidget.addTab(volumeTab, "");
 
         renderWindow = self._vis.getRenderWindow(sliceTab)
         renderWindow.setObjectName("renderWindow")
@@ -208,17 +208,19 @@ class VCellPysideApp(QtGui.QMainWindow):
         actionExit = QtGui.QAction(self);
         actionExit.setObjectName("actionExit")
         menuBar.addAction(menuFile.menuAction())
-        menuFile.addAction(actionOpen)
+        
+        #menuFile.addAction(actionOpen)
         menuFile.addAction(actionOpenSimFromOpenVCellModels)
         menuFile.addSeparator()
         menuFile.addAction(actionExit)
 
         self.setWindowTitle("VCell VisIt viewer")
-        actionOpen.setText("Open")
+        #actionOpen.setText("Open")
         actionOpenSimFromOpenVCellModels.setText("Load Sim from open VCell Models")
         actionExit.setText("Exit")
-        tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Slice")
-        tabWidget.setTabText(tabWidget.indexOf(volumeTab),"Volume")
+        #tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Slice")
+        tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Plot")
+        #tabWidget.setTabText(tabWidget.indexOf(volumeTab),"Volume")
         variableGroup.setTitle("Variables")
         timeGroup.setTitle("Time")
         menuFile.setTitle("File")
@@ -336,20 +338,6 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
-    def _onTimeSliderChanged(self, newIndex):
-        self._visDataContext.setCurrentTimeIndex(newIndex)
-        sim = self._visDataContext.getCurrentDataSet()
-        domain = self._visDataContext.getCurrentVariable().domainName
-        print(sim)
-        vcellProxy2 = vcellProxy.VCellProxyHandler()
-        try:
-            vcellProxy2.open()
-            fileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,domain,self._visDataContext.getCurrentTimeIndex())
-        except Exception as exc:
-            print(exc.message)
-        finally:
-            vcellProxy2.close()
-        self._vis.openOne(fileName,self._visDataContext.getCurrentVariable().variableVtuName,)
 
 
     def _onSimulationSelected(self, dialog):
@@ -458,6 +446,11 @@ class VCellPysideApp(QtGui.QMainWindow):
         try:
             vcellProxy2.open();
             self._visDataContext.setCurrentTimeIndex(newIndex)
+            self._visDataContext.setCurrentTimePoint(self._visDataContext.getCurrentDataSetTimePoints()[newIndex])
+            sim = self._visDataContext.getCurrentDataSet()
+            print("New current Time Point should be: "+str(self._visDataContext.getCurrentDataSetTimePoints()[newIndex]))
+            print("new current Time Point is: "+str(self._visDataContext.getCurrentTimePoint()))
+            self._timeLabel.setText(str(self._visDataContext.getCurrentTimePoint()))
             dataFileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(
                 self._visDataContext.getCurrentDataSet(),
                 self._visDataContext.getCurrentVariable().domainName,
