@@ -117,6 +117,14 @@ public class NativeLoader {
 			break;
 		case MAC:
 			systemLibRegex = MAC_REGEX; 
+			final String DFLP = "DYLD_FALLBACK_LIBRARY_PATH";
+			String dflp = System.getenv(DFLP);
+			if (dflp == null) {
+				lg.warn(DFLP + " not set");
+			}
+			else if (lg.isInfoEnabled()) {
+				lg.info(DFLP + " set to " + dflp);
+			}
 			break;
 		default:
 			throw new IllegalStateException("unknown os type " + osType);
