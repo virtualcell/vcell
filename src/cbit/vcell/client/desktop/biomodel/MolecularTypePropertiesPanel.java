@@ -201,11 +201,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				// detailed verifications will be done there, to see if they are being used in reactions, species, observables
 				if(!mc.getComponentStateDefinitions().isEmpty()) {
 					String[] options = {"OK"};
-					String errMsg = "Component '<b>" + mc.getDisplayName() + "</b>' cannot be deleted because it contains explicit States.";
+					String errMsg = mc.getDisplayType() + " '<b>" + mc.getDisplayName() + "</b>' cannot be deleted because it contains explicit States.";
 					errMsg += "<br>Please delete each individual State first.";
 					errMsg += "<br><br>Detailed usage information will be provided at that time to help you decide.";
 					errMsg = "<html>" + errMsg + "</html>";
-					JOptionPane.showOptionDialog(this.getParent().getParent(), errMsg, "Delete Molecular Component", JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
+					JOptionPane.showOptionDialog(this.getParent().getParent(), errMsg, "Delete " + mc.getDisplayType(), JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
 					return;
 				}
 				// we find and display component usage information to help the user decide
@@ -217,7 +217,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					errMsg = "<html>" + errMsg + "</html>";
 
 			        int dialogButton = JOptionPane.YES_NO_OPTION;
-			        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete Molecular Component", dialogButton);
+			        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete " + mc.getDisplayType(), dialogButton);
 					if (returnCode == JOptionPane.YES_OPTION) {
 						// keep this code in sync with MolecularTypeTableModel.setValueAt
 						if(bioModel.getModel().getRbmModelContainer().delete(mt, mc) == true) {
@@ -236,7 +236,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			ComponentStateDefinition csd = (ComponentStateDefinition) selectedUserObject;
 			Object userObject = parentNode.getUserObject();
 			if (!(userObject instanceof MolecularComponent)) {
-				System.out.println("Unexpected parent in tree hierarchy for component state definition " + csd.getDisplayName() + "!");
+				System.out.println("Unexpected parent in tree hierarchy for " + ComponentStateDefinition.typeName + " " + csd.getDisplayName() + "!");
 				return;
 			}
 			MolecularComponent mc = (MolecularComponent) userObject;
@@ -244,7 +244,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			BioModelNode grandParentNode = (BioModelNode) grandParent;
 			userObject = grandParentNode.getUserObject();
 			if (!(userObject instanceof MolecularType)) {
-				System.out.println("Unexpected parent in tree hierarchy for molecular component " + mc.getDisplayName() + "!");
+				System.out.println("Unexpected parent in tree hierarchy for " + mc.getDisplayType() + " " + mc.getDisplayName() + "!");
 				return;
 			}
 			MolecularType mt = (MolecularType) userObject;
@@ -256,7 +256,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				errMsg = "<html>" + errMsg + "</html>";
 
 		        int dialogButton = JOptionPane.YES_NO_OPTION;
-		        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete Component State", dialogButton);
+		        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete " + ComponentStateDefinition.typeName, dialogButton);
 				if (returnCode == JOptionPane.YES_OPTION) {
 					// keep this code in sync with MolecularTypeTableModel.setValueAt
 					if(bioModel.getModel().getRbmModelContainer().delete(mt, mc, csd) == true) {
@@ -463,11 +463,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			BioModelNode selectedNode = (BioModelNode) obj;
 			Object userObject = selectedNode.getUserObject();
 			if (userObject instanceof MolecularType) {
-				getAddMenuItem().setText("Add Molecular Component");
+				getAddMenuItem().setText("Add " + MolecularComponent.typeName);
 				bAdd = true;
 				bDelete = false;
 			} else if (userObject instanceof MolecularComponent) {
-				getAddMenuItem().setText("Add Component State");
+				getAddMenuItem().setText("Add " + ComponentStateDefinition.typeName);
 				bAdd = true;
 				bDelete = true;
 			} else if (userObject instanceof ComponentStateDefinition) {

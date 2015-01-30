@@ -162,12 +162,12 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if(componentPatternList == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, typeName + " '" + getDisplayName() + "' " + MolecularComponentPattern.typeName + " List is null", Issue.SEVERITY_ERROR));
 		} else if(componentPatternList.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is empty", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, typeName + " '" + getDisplayName() + "' " + MolecularComponentPattern.typeName + " List is empty", Issue.SEVERITY_INFO));
 		} else {
 //			if(!isFullyDefined()) {
-//				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern '" + toString() + "' Component Pattern List is not fully defined", Issue.SEVERITY_WARNING));
+//				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, typeName + " '" + toString() + "' " + MolecularComponentPattern.typeName + " List is not fully defined", Issue.SEVERITY_WARNING));
 //			}
 			for (MolecularComponentPattern entity : componentPatternList) {
 				entity.gatherIssues(issueContext, issueList);
@@ -189,13 +189,13 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			for(MolecularComponentPattern mcp : getComponentPatternList()) {
 				MolecularComponent mc = mcp.getMolecularComponent();
 				if(!mt.getComponentList().contains(mc)) {
-					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponent.typeName + " '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
 				}
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
 				if(csp != null && !csp.isAny()) {
 					ComponentStateDefinition cs = csp.getComponentStateDefinition();
 					if(cs == null) {
-						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the ComponentStatePattern.", Issue.SEVERITY_ERROR));
+						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the " + ComponentStatePattern.typeName + ".", Issue.SEVERITY_ERROR));
 					}
 					if(!mc.getComponentStateDefinitions().contains(cs)) {
 						issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "State '" + mc.toString() + "' missing from the " + mt.getDisplayType() + " definition.", Issue.SEVERITY_ERROR));
@@ -205,13 +205,13 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			for(MolecularComponent mc : mt.getComponentList()) {
 				MolecularComponentPattern mcp = getMolecularComponentPattern(mc);
 				if(mcp == null) {
-					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, "Molecular Component Pattern missing for the Molecular Component '" + mc.toString(), Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(owner, issueContext, IssueCategory.Identifiers, MolecularComponentPattern.typeName + " missing for the " + mc.getDisplayType() + " '" + mc.getDisplayName(), Issue.SEVERITY_ERROR));
 				}
 			}
 		}			
 	}
 
-	private static final String typeName = "Molecular Type Pattern";
+	public static final String typeName = "Molecular Type Pattern";
 	@Override
 	public String getDisplayName() {
 		MolecularType mt = getMolecularType();

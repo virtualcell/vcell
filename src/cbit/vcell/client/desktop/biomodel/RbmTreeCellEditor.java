@@ -273,13 +273,13 @@ static String toHtml(MolecularComponent mc, int owner) {
 	switch (owner) {
 	case MolecularComponentPatternCellEditor.species:
 	case MolecularComponentPatternCellEditor.observable:
-		text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		text = "<html> " + MolecularComponent.typeName + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
 		break;
 	case MolecularComponentPatternCellEditor.reaction:
-		text = "<html> " + "" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		text = "<html> " + "" + " <b>" + mc.getDisplayName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
 		break;
 	default:
-		text = "<html> " + "Component" + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
+		text = "<html> " + MolecularComponent.typeName + " <b>" + mc.getName() + "<sub>" + mc.getIndex() + "</sub></b></html>";
 		break;
 	}
 	return text;

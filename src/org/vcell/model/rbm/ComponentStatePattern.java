@@ -3,11 +3,12 @@ package org.vcell.model.rbm;
 import java.util.List;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
-public class ComponentStatePattern extends RbmElementAbstract implements Matchable {
+public class ComponentStatePattern extends RbmElementAbstract implements Matchable, Displayable {
 	
 	private final ComponentStateDefinition componentStateDefinition;
 	private final boolean bAny;
@@ -61,8 +62,16 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	public ComponentStateDefinition getComponentStateDefinition() {
 		return componentStateDefinition;
 	}
-
-//	public void setComponentStateDefinition(ComponentStateDefinition componentStateDefinition) {
-//		this.componentStateDefinition = componentStateDefinition;
-//	}
+	
+	
+	public static final String typeName = "State Pattern";
+	@Override
+	public String getDisplayName() {
+			return "";
+	}
+	@Override
+	public String getDisplayType() {
+		return typeName;
+	}
 }
+

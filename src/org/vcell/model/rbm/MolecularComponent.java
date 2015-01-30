@@ -103,7 +103,7 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 				for (ComponentStateDefinition cs : componentStateDefinitions) {
 					if (cs != evt.getSource()) {
 						if (cs.getName().equals(newName)) {
-							throw new PropertyVetoException("Component State '" + newName + "' already exists in Molecular Component '" + getName() + "'!", evt);
+							throw new PropertyVetoException("State '" + newName + "' already exists in " + typeName + " '" + getDisplayName() + "'!", evt);
 						}
 					}
 				}
@@ -149,7 +149,7 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 	}
 	
 	public String dependenciesToHtml(Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
-		String errMsg = "Component '<b>" + getDisplayName() + "'</b> is already being used by:<br>";
+		String errMsg = typeName + " '<b>" + getDisplayName() + "'</b> is already being used by:<br>";
 		final int MaxListSize = 7;
 		int count = 0;
 		for(String key : usedHere.keySet()) {
@@ -172,20 +172,20 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if(name == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Component is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + typeName + " is null", Issue.SEVERITY_ERROR));
 		} else if(name.equals("")) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of Molecular Component is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + typeName + " is empty", Issue.SEVERITY_WARNING));
 		} else if(componentStateDefinitions == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Component '" + name + "' State List is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, typeName + " '" + getDisplayName() + "' State List is null", Issue.SEVERITY_ERROR));
 		} else if(componentStateDefinitions.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Molecular Component '" + name + "' State List is empty", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, typeName + " '" + getDisplayName() + "' State List is empty", Issue.SEVERITY_INFO));
 		} else {
 			for (ComponentStateDefinition entity : componentStateDefinitions) {
 				entity.gatherIssues(issueContext, issueList);
 			}
 		}
 	}
-	private static final String typeName = "Component";
+	public static final String typeName = "Site";
 	@Override
 	public final String getDisplayName() {
 		return getName();

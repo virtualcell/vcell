@@ -79,15 +79,15 @@ public class ComponentStateDefinition extends RbmElementAbstract implements Matc
 	@Override
 	public void gatherIssues(IssueContext issueContet, List<Issue> issueList) {
 		if(name == null) {
-			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, "Name of Molecular Component State is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, "Name of " + typeName + " is null", Issue.SEVERITY_ERROR));
 		} else if(name.equals("")) {
-			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, "Name of Molecular Component State is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, "Name of " + typeName + " is empty", Issue.SEVERITY_WARNING));
 //		} else {
 //			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, name, Issue.SEVERITY_WARNING));
 		}
 	}
 	
-	private static final String typeName = "State";
+	public static final String typeName = "State";
 	@Override
 	public final String getDisplayName() {
 		return getName();
