@@ -7,7 +7,7 @@ import org.vcell.vis.core.Vect3D;
 public class ChomboMesh {
 
 	private int dimension;
-	private final ChomboBoundaries chomboBoundaries = new ChomboBoundaries();;
+	private final ChomboBoundaries chomboBoundaries = new ChomboBoundaries();
 	private double time;
 	private Vect3D origin;
 	private Vect3D extent;
