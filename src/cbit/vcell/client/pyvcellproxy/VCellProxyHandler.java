@@ -84,6 +84,8 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 						simulationDataSetReference.setSimName(simInfo.getName());
 						simulationDataSetReference.setSimId(simInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().toString());
 						simulationDataSetReference.setModelId(modelDocument.getVersion().getVersionKey().toString());
+						simulationDataSetReference.setUsername(simInfo.getVersion().getOwner().getName());
+						simulationDataSetReference.setUserkey(simInfo.getVersion().getOwner().getID().toString());
 						simulationDataSetRefs.add(simulationDataSetReference);
 					}
 				}
@@ -207,7 +209,7 @@ public class VCellProxyHandler implements VCellProxy.Iface{
 	}
 	
 	private VCSimulationDataIdentifier getVCSimulationDataIdentifier(SimulationDataSetRef simulationDataSetRef){
-		User user = vcellClient.getClientServerManager().getUser();		
+		User user = new User(simulationDataSetRef.getUsername(),new KeyValue(simulationDataSetRef.getUserkey()));
 		KeyValue simKeyValue = new KeyValue(simulationDataSetRef.getSimId());
 		VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKeyValue, user);
 		VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);

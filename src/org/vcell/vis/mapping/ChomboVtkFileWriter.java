@@ -8,6 +8,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.vis.chombo.ChomboDataset;
 import org.vcell.vis.chombo.ChomboDataset.ChomboDomain;
 import org.vcell.vis.chombo.ChomboMeshData;
+import org.vcell.vis.chombo.VCellSolution;
 import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VtuFileContainer;
@@ -30,7 +31,7 @@ public class ChomboVtkFileWriter {
 		VtkGridUtils vtkGridUtils = new VtkGridUtils();
 		VtuFileContainer vtuFileContainer = new VtuFileContainer();
 		HashMap<String, VisMesh> domainMeshMap = new HashMap<String, VisMesh>();
-		ChomboDataset chomboDataset = ChomboFileReader.readDataset(chomboFiles,timeIndex);
+		ChomboDataset chomboDataset = ChomboFileReader.readDataset(chomboFiles,chomboFiles.getTimeIndices().get(timeIndex));
 		for (ChomboDomain chomboDomain : chomboDataset.getDomains()){
 			ChomboMeshData chomboMeshData = chomboDomain.getChomboMeshData();
 			ChomboMeshMapping chomboMeshMapping = new ChomboMeshMapping();
@@ -65,7 +66,7 @@ public class ChomboVtkFileWriter {
 			{
 				vtkgrid = vtkGridUtils.constructVCellVtkGrid(visMesh, chomboMeshData);
 				tempMeshFile = File.createTempFile("TempMesh", ".vtu");
-				String membraneDomainName = domainName+"_VCellVariableSolution";
+				String membraneDomainName = domainName+"_Membrane";
 				try {
 					vtkGridUtils.write(vtkgrid, tempMeshFile.getPath());
 					vtkgrid.Delete();
@@ -75,10 +76,11 @@ public class ChomboVtkFileWriter {
 					tempMeshFile.delete();
 				}
 				
-				for (String varName : chomboMeshData.getAllNames()){
+				for (VCellSolution vcellSolution : chomboMeshData.getVCellSolutions()){
+					String varName = vcellSolution.getName();
 					String displayName = varName;
 					if (!displayName.contains("::")){
-						displayName = visDomain.getName()+"::"+displayName;
+						displayName = membraneDomainName+"::"+displayName;
 					}
 					vtuFileContainer.addVtuVarInfo(new VtuVarInfo(varName.replace("::", VtkGridUtils.VTKVAR_DOMAINSEPARATOR), displayName, membraneDomainName, VariableDomain.VARIABLEDOMAIN_MEMBRANE));
 				}

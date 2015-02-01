@@ -164,20 +164,25 @@ class SimulationDataSetRef:
    - simId
    - simName
    - modelId
+   - username
+   - userkey
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'simId', None, None, ), # 1
     (2, TType.STRING, 'simName', None, None, ), # 2
-    None, # 3
-    (4, TType.STRING, 'modelId', None, None, ), # 4
+    (3, TType.STRING, 'modelId', None, None, ), # 3
+    (4, TType.STRING, 'username', None, None, ), # 4
+    (5, TType.STRING, 'userkey', None, None, ), # 5
   )
 
-  def __init__(self, simId=None, simName=None, modelId=None,):
+  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None,):
     self.simId = simId
     self.simName = simName
     self.modelId = modelId
+    self.username = username
+    self.userkey = userkey
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -198,9 +203,19 @@ class SimulationDataSetRef:
           self.simName = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 4:
+      elif fid == 3:
         if ftype == TType.STRING:
           self.modelId = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.username = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.userkey = iprot.readString();
         else:
           iprot.skip(ftype)
       else:
@@ -222,8 +237,16 @@ class SimulationDataSetRef:
       oprot.writeString(self.simName)
       oprot.writeFieldEnd()
     if self.modelId is not None:
-      oprot.writeFieldBegin('modelId', TType.STRING, 4)
+      oprot.writeFieldBegin('modelId', TType.STRING, 3)
       oprot.writeString(self.modelId)
+      oprot.writeFieldEnd()
+    if self.username is not None:
+      oprot.writeFieldBegin('username', TType.STRING, 4)
+      oprot.writeString(self.username)
+      oprot.writeFieldEnd()
+    if self.userkey is not None:
+      oprot.writeFieldBegin('userkey', TType.STRING, 5)
+      oprot.writeString(self.userkey)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -235,6 +258,10 @@ class SimulationDataSetRef:
       raise TProtocol.TProtocolException(message='Required field simName is unset!')
     if self.modelId is None:
       raise TProtocol.TProtocolException(message='Required field modelId is unset!')
+    if self.username is None:
+      raise TProtocol.TProtocolException(message='Required field username is unset!')
+    if self.userkey is None:
+      raise TProtocol.TProtocolException(message='Required field userkey is unset!')
     return
 
 
@@ -243,6 +270,8 @@ class SimulationDataSetRef:
     value = (value * 31) ^ hash(self.simId)
     value = (value * 31) ^ hash(self.simName)
     value = (value * 31) ^ hash(self.modelId)
+    value = (value * 31) ^ hash(self.username)
+    value = (value * 31) ^ hash(self.userkey)
     return value
 
   def __repr__(self):

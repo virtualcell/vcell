@@ -29,7 +29,9 @@ typedef list<VariableInfo> VariableList
 struct SimulationDataSetRef {
    1: required string simId;
    2: required string simName;
-   4: required string modelId;
+   3: required string modelId;
+   4: required string username;
+   5: required string userkey;
 }
 
 typedef list<SimulationDataSetRef> SimulationDataSetRefList
