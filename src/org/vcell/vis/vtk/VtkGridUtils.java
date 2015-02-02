@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.vis.chombo.ChomboMeshData;
-import org.vcell.vis.chombo.VCellSolution;
+import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
@@ -407,7 +407,7 @@ public class VtkGridUtils {
 		
 		int numCells = vtkgrid.GetCells().GetNumberOfCells();
 		vtkCellData cellData = vtkgrid.GetCellData();
-		for (VCellSolution vcsol : chomboMeshData.getVCellSolutions())
+		for (ChomboMembraneVarData vcsol : chomboMeshData.getMembraneVarData())
 		{
 			double[] data = vcsol.getData();
 			if (visMesh.getDimension() == 3)
@@ -423,11 +423,11 @@ public class VtkGridUtils {
 				data = tridata;
 			}
 			
-	    vtkDoubleArray cellScalars1 = new vtkDoubleArray();
-	    cellScalars1.SetNumberOfComponents(1);
-	    cellScalars1.SetNumberOfTuples(numCells);
-	    cellScalars1.SetName(vcsol.getName());
-	    cellScalars1.SetJavaArray(data);
+		    vtkDoubleArray cellScalars1 = new vtkDoubleArray();
+		    cellScalars1.SetNumberOfComponents(1);
+		    cellScalars1.SetNumberOfTuples(numCells);
+		    cellScalars1.SetName(vcsol.getName());
+		    cellScalars1.SetJavaArray(data);
 			cellData.AddArray(cellScalars1);
 		}
 		
@@ -436,8 +436,8 @@ public class VtkGridUtils {
 		timeValue.SetNumberOfComponents(1);
 		timeValue.SetNumberOfTuples(1);
 		timeValue.SetName("TIME");
-    float time = (float)chomboMeshData.getTime();
-    float timeArray[] = new float[] { time };
+	    float time = (float)chomboMeshData.getTime();
+	    float timeArray[] = new float[] { time };
 		timeValue.SetJavaArray(timeArray);
 		fieldData.AddArray(timeValue);
 		

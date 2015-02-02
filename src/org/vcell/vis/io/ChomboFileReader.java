@@ -1,7 +1,6 @@
 package org.vcell.vis.io;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,9 +20,9 @@ import org.vcell.vis.chombo.ChomboBox;
 import org.vcell.vis.chombo.ChomboDataset;
 import org.vcell.vis.chombo.ChomboLevel;
 import org.vcell.vis.chombo.ChomboLevelData;
+import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
-import org.vcell.vis.chombo.VCellSolution;
 import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
 
@@ -33,10 +32,9 @@ public class ChomboFileReader {
 	private static final String MESH_ATTR_ORIGIN = "origin";
 	private static final String MESH_ATTR_EXTENT = "extent";
 	
-	public static ChomboMeshData readMesh(String meshFileName, String vol0FileName) throws Exception{
+	private static ChomboMeshData readMesh(String meshFileName, String vol0FileName) throws Exception{
 		
 		ChomboMesh chomboMesh = new ChomboMesh();
-		ChomboMeshData chomboMeshData = new ChomboMeshData(chomboMesh);
 		
 		if(H5.H5open() < 0){
 			throw new Exception("H5.H5open() failed");
@@ -136,6 +134,10 @@ public class ChomboFileReader {
 			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)vol0File.getRootNode();
 			Group rootGroup = (Group)rootNode.getUserObject();
 			
+			Group level0Group = Hdf5Reader.getChildGroup(rootGroup, "level_0");
+			double time = Hdf5Reader.getDoubleAttribute(level0Group, "time");
+			ChomboMeshData chomboMeshData = new ChomboMeshData(chomboMesh, time);
+
 			int numComponents = Hdf5Reader.getIntAttribute(rootGroup, "num_components");
 			int numLevels = Hdf5Reader.getIntAttribute(rootGroup, "num_levels");
 			int fractionComponentIndex = -1;
@@ -146,8 +148,6 @@ public class ChomboFileReader {
 					fractionComponentIndex = i;
 				}
 			}
-			Group level0Group = Hdf5Reader.getChildGroup(rootGroup, "level_0");
-			double time = Hdf5Reader.getDoubleAttribute(level0Group, "time");
 			for (int i=0;i<numLevels;i++){
 				Group levelGroup = Hdf5Reader.getChildGroup(rootGroup, "level_"+i);
 				int refinement = 2;
@@ -177,7 +177,6 @@ public class ChomboFileReader {
 					chomboLevel.addBox(chomboBox);
 				}
 				chomboMesh.addLevel(chomboLevel);
-				chomboMesh.setTime(time);
 				//
 				// read the variables
 				//
@@ -187,18 +186,17 @@ public class ChomboFileReader {
 				chomboMeshData.addLevelData(chomboLevelData);
 			}
 			
-			readVCellData(chomboMeshData, rootGroup);
+			readMembraneVarData(chomboMeshData, rootGroup);
+
+			return chomboMeshData;
 		}finally{
 			vol0File.close();
 		}
-		return chomboMeshData;
-
 	}
 	
 	public static ChomboDataset readDataset(ChomboFiles chomboFiles, int timeIndex) throws Exception{
 		String meshFilename = chomboFiles.getMeshFile().getPath();
 		Set<String> domains = chomboFiles.getDomains();
-		ArrayList<ChomboDataset> chomboDatasets = new ArrayList<ChomboDataset>();
 		ChomboDataset chomboDataset = new ChomboDataset();
 		int domainOrdinal = 0;
 		for (String domain : domains){
@@ -221,7 +219,11 @@ public class ChomboFileReader {
 		}
 	}
 	
-	private static void readVCellData(ChomboMeshData chomboMeshData, Group rootGroup)
+	//
+	// Membrane data are stored as a UCHC (or vcell) extension to the normal Chombo Data.
+	// ChomboMembraneVarData was formally called VCellSolution by Fei.
+	//
+	private static void readMembraneVarData(ChomboMeshData chomboMeshData, Group rootGroup)
 	{
 			// I added solution and extrapolated_volumes group to hold all the solutions from vcell 
 		String[] groups = new String[]{"solution", "extrapolated_volumes"};
@@ -239,8 +241,8 @@ public class ChomboFileReader {
 						{
 							Dataset dataset = (Dataset)c;
 							String name = dataset.getName();
-							VCellSolution vcellSolution = new VCellSolution(name, (double[]) dataset.read());
-							chomboMeshData.addVCellSolution(vcellSolution);
+							ChomboMembraneVarData vcellSolution = new ChomboMembraneVarData(name, (double[]) dataset.read());
+							chomboMeshData.addMembraneVarData(vcellSolution);
 						}
 					}
 				}

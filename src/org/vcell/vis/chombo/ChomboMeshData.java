@@ -18,14 +18,16 @@ public class ChomboMeshData {
 	private ArrayList<ChomboLevelData> chomboLevelDatas = new ArrayList<ChomboLevelData>();
 	private ArrayList<String> componentNamesList = new ArrayList<String>();
 	private ArrayList<String> builtinNamesList = new ArrayList<String>();
-	private List<VCellSolution> vcellSolutionList = new ArrayList<VCellSolution>();
+	private List<ChomboMembraneVarData> membraneDataList = new ArrayList<ChomboMembraneVarData>();
+	private final double time;
 	
-	public ChomboMeshData(ChomboMesh chomboMesh){
+	public ChomboMeshData(ChomboMesh chomboMesh, double time){
 		this.chomboMesh = chomboMesh;
 		this.builtinNamesList.add(BUILTIN_VAR_BOXLEVEL);
 		this.builtinNamesList.add(BUILTIN_VAR_BOX);
 		this.builtinNamesList.add(BUILTIN_VAR_BOXNUMBER);
 		this.builtinNamesList.add(BUILTIN_VAR_BOXINDEX);
+		this.time = time;
 	}
 	
 	public ChomboMesh getMesh(){
@@ -69,7 +71,7 @@ public class ChomboMeshData {
 	}
 
 	public double getTime() {
-		return chomboMesh.getTime();
+		return this.time;
 	}
 
 	public double[] getPolygonData(String var, List<VisPolygon> polygons) {
@@ -168,12 +170,12 @@ public class ChomboMeshData {
 		return cellData;
 	}
 
-	public void addVCellSolution(VCellSolution vcellSolution){
-		vcellSolutionList.add(vcellSolution);
+	public void addMembraneVarData(ChomboMembraneVarData membraneVarData){
+		membraneDataList.add(membraneVarData);
 	}
 		
-	public List<VCellSolution> getVCellSolutions()
+	public List<ChomboMembraneVarData> getMembraneVarData()
 	{
-		return vcellSolutionList;
+		return membraneDataList;
 	}
 }

@@ -1,11 +1,11 @@
 package org.vcell.vis.chombo;
 
-public class VCellSolution {
+public class ChomboMembraneVarData {
 	
 	private final String name;
 	private final double[] data;
 
-	public VCellSolution(String name, double[] data){
+	public ChomboMembraneVarData(String name, double[] data){
 		this.name = name;
 		this.data = data;
 	}

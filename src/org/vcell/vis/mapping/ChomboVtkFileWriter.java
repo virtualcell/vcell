@@ -8,7 +8,7 @@ import org.vcell.util.FileUtils;
 import org.vcell.vis.chombo.ChomboDataset;
 import org.vcell.vis.chombo.ChomboDataset.ChomboDomain;
 import org.vcell.vis.chombo.ChomboMeshData;
-import org.vcell.vis.chombo.VCellSolution;
+import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VtuFileContainer;
@@ -62,7 +62,7 @@ public class ChomboVtkFileWriter {
 				vtuFileContainer.addVtuVarInfo(new VtuVarInfo(varName.replace("::", VtkGridUtils.VTKVAR_DOMAINSEPARATOR), displayName, visDomain.getName(), VariableDomain.VARIABLEDOMAIN_VOLUME));
 			}
 			
-			if (chomboMeshData.getVCellSolutions().size() > 0)
+			if (chomboMeshData.getMembraneVarData().size() > 0)
 			{
 				vtkgrid = vtkGridUtils.constructVCellVtkGrid(visMesh, chomboMeshData);
 				tempMeshFile = File.createTempFile("TempMesh", ".vtu");
@@ -76,8 +76,8 @@ public class ChomboVtkFileWriter {
 					tempMeshFile.delete();
 				}
 				
-				for (VCellSolution vcellSolution : chomboMeshData.getVCellSolutions()){
-					String varName = vcellSolution.getName();
+				for (ChomboMembraneVarData memVarData : chomboMeshData.getMembraneVarData()){
+					String varName = memVarData.getName();
 					String displayName = varName;
 					if (!displayName.contains("::")){
 						displayName = membraneDomainName+"::"+displayName;
@@ -116,7 +116,7 @@ public class ChomboVtkFileWriter {
 				vtkgrid.Delete(); // if needed for garbage collection
 				files.add(file);
 				
-				if (chomboMeshData.getVCellSolutions().size() > 0)
+				if (chomboMeshData.getMembraneVarData().size() > 0)
 				{
 					String filename = chomboFiles.getSimID() + "_" + chomboFiles.getJobIndex() + "_VCellVariableSolution_" + String.format("%06d",timeIndex);
 					File memfile = new File(destinationDirectory,filename+".vtu");

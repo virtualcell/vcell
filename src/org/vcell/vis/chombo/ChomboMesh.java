@@ -8,7 +8,7 @@ public class ChomboMesh {
 
 	private int dimension;
 	private final ChomboBoundaries chomboBoundaries = new ChomboBoundaries();
-	private double time;
+//	private double time;
 	private Vect3D origin;
 	private Vect3D extent;
 	private final ArrayList<ChomboLevel> chomboLevels = new ArrayList<ChomboLevel>();
@@ -44,9 +44,9 @@ public class ChomboMesh {
 		return extent;
 	}
 
-	public double getTime() {
-		return time;
-	}
+//	public double getTime() {
+//		return time;
+//	}
 
 	public ArrayList<ChomboLevel> getLevels() {
 		return chomboLevels;
@@ -96,8 +96,8 @@ public class ChomboMesh {
 		this.extent = extent;
 	}
 
-	public void setTime(double time) {
-		this.time = time;
-	}
+//	public void setTime(double time) {
+//		this.time = time;
+//	}
 
 }
