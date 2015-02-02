@@ -6,37 +6,26 @@ import java.util.ArrayList;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.vmicro.workflow.data.ModelType;
-import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy;
 import org.vcell.vmicro.workflow.task.ComputeMeasurementError;
-import org.vcell.vmicro.workflow.task.DisplayBioModel;
 import org.vcell.vmicro.workflow.task.DisplayDependentROIs;
-import org.vcell.vmicro.workflow.task.DisplayPlot;
 import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.DisplayTimeSeries;
-import org.vcell.vmicro.workflow.task.Generate2DExpModel;
 import org.vcell.vmicro.workflow.task.Generate2DOptContext;
 import org.vcell.vmicro.workflow.task.GenerateBleachROI;
 import org.vcell.vmicro.workflow.task.GenerateCellROIsFromRawTimeSeries;
 import org.vcell.vmicro.workflow.task.GenerateDependentImageROIs;
 import org.vcell.vmicro.workflow.task.GenerateNormalizedFrapData;
-import org.vcell.vmicro.workflow.task.GenerateReducedRefData;
+import org.vcell.vmicro.workflow.task.GenerateReducedROIData;
 import org.vcell.vmicro.workflow.task.GenerateRefSimOptModel;
 import org.vcell.vmicro.workflow.task.GenerateTrivial2DPsf;
-import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromHdf5Fluor;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromVFrap;
-import org.vcell.vmicro.workflow.task.KenworthyProcess;
-import org.vcell.vmicro.workflow.task.RunFakeSim;
 import org.vcell.vmicro.workflow.task.RunProfileLikelihoodGeneral;
-import org.vcell.vmicro.workflow.task.RunRefSimulation;
 import org.vcell.vmicro.workflow.task.RunRefSimulationFast;
 import org.vcell.vmicro.workflow.task.VFrapProcess;
-import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.MemoryRepository;
 import org.vcell.workflow.Repository;
 import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
-import org.vcell.workflow.WorkflowDataSource;
 import org.vcell.workflow.WorkflowParameter;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -123,10 +112,10 @@ public class WorkflowTest {
 		context.setParameterValue(cellThreshold,0.5);
 
 		WorkflowParameter<String> modelTypeOne = workflow.addParameter(String.class,"modelType");
-		context.setParameterValue(modelTypeOne, ModelType.DiffOne.toString());
+		context.setParameterValue(modelTypeOne, GenerateRefSimOptModel.ModelType.DiffOne.toString());
 
 		WorkflowParameter<String> modelTypeTwo = workflow.addParameter(String.class,"modelType2");
-		context.setParameterValue(modelTypeTwo, ModelType.DiffTwoWithPenalty.toString());
+		context.setParameterValue(modelTypeTwo, GenerateRefSimOptModel.ModelType.DiffTwoWithPenalty.toString());
 
 		WorkflowParameter<String> displayROITitle = workflow.addParameter(String.class,"displayROITitle");
 		context.setParameterValue(displayROITitle, "rois");
@@ -173,7 +162,7 @@ public class WorkflowTest {
 		workflow.connectParameter(displayROITitle, displayDependentROIs.title);
 		workflow.addTask(displayDependentROIs);
 				
-		GenerateReducedRefData generateReducedNormalizedData = new GenerateReducedRefData("generateReducedNormalizedData");
+		GenerateReducedROIData generateReducedNormalizedData = new GenerateReducedROIData("generateReducedNormalizedData");
 		workflow.connect2(generateNormalizedFrapData.normalizedFrapData, generateReducedNormalizedData.imageTimeSeries);
 		workflow.connect2(generateDependentROIs.imageDataROIs, generateReducedNormalizedData.imageDataROIs);		
 		workflow.addTask(generateReducedNormalizedData);

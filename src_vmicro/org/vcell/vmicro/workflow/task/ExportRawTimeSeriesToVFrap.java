@@ -13,7 +13,6 @@ import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;

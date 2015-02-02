@@ -3,10 +3,8 @@ package org.vcell.vmicro.workflow.task;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.vmicro.workflow.data.ModelType;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
-import org.vcell.workflow.Repository;
 import org.vcell.workflow.TaskContext;
 import org.vcell.workflow.Workflow;
 import org.vcell.workflow.WorkflowParameter;
@@ -47,7 +45,7 @@ public class VFrapProcess extends WorkflowTask {
 	private final GenerateNormalizedFrapData generateNormalizedFrapData = new GenerateNormalizedFrapData("v_generateNormalizedFrapData");
 	private final GenerateBleachROI generateROIs = new GenerateBleachROI("v_generateROIs");
 	private final GenerateDependentImageROIs generateDependentROIs = new GenerateDependentImageROIs("v_generateDependentImageROIs");
-	private final GenerateReducedRefData generateReducedNormalizedData = new GenerateReducedRefData("v_generateReducedNormalizedData");
+	private final GenerateReducedROIData generateReducedNormalizedData = new GenerateReducedROIData("v_generateReducedNormalizedData");
 	private final ComputeMeasurementError computeMeasurementError = new ComputeMeasurementError("v_computeMeasurementError");
 	private final GenerateTrivial2DPsf psf_2D = new GenerateTrivial2DPsf("v_generateTrivial2DPsf");
 
@@ -98,8 +96,8 @@ public class VFrapProcess extends WorkflowTask {
 		//
 		// set parameter values for sub-tasks.
 		//
-		context.setParameterValue(modelType1,ModelType.DiffOne.toString());
-		context.setParameterValue(modelType2WithPenalty, ModelType.DiffTwoWithPenalty.toString());
+		context.setParameterValue(modelType1,GenerateRefSimOptModel.ModelType.DiffOne.toString());
+		context.setParameterValue(modelType2WithPenalty, GenerateRefSimOptModel.ModelType.DiffTwoWithPenalty.toString());
 		//context.setParameterValue(modelType2WithoutPenalty, ModelType.DiffTwoWithoutPenalty.toString());
 	}
 

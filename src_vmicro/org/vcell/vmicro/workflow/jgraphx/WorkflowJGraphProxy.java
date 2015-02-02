@@ -7,7 +7,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Compare;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataObject;

@@ -5,8 +5,6 @@ uniformDisk2ModelName = "KenworthyUniformDisk2Param"
 uniformDisk2PanelTitle = "Uniform Disk Model - 2 parameters"
 uniformDisk3ModelName = "KenworthyUniformDisk3Param"
 uniformDisk3PanelTitle = "Uniform Disk Model - 3 parameters"
-uniformDisk4ModelName = "KenworthyUniformDisk4Param"
-uniformDisk4PanelTitle = "Uniform Disk Model - 4 parameters"
 
 importVFrap = ImportRawTimeSeriesFromVFrap()
 	importVFrap.vfrapFile = vfrapFile
@@ -42,7 +40,7 @@ fitBleachSpot = FitBleachSpot()
 
 
 generateUniformDiskModel2 = GenerateKenworthyOptModel()
-	generateUniformDiskModel2.bleachRadius = fitBleachSpot.bleachRadius
+	generateUniformDiskModel2.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
 	generateUniformDiskModel2.modelType = uniformDisk2ModelName
 
 generate2DOptContextUniformDisk2 = Generate2DOptContext()
@@ -57,7 +55,7 @@ displayInteractiveModel2 = DisplayInteractiveModel()
 
 
 generateUniformDiskModel3 = GenerateKenworthyOptModel()
-	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius
+	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
 	generateUniformDiskModel3.modelType = uniformDisk3ModelName	
 
 generate2DOptContextUniformDisk3 = Generate2DOptContext()
@@ -69,20 +67,4 @@ displayInteractiveModel3 = DisplayInteractiveModel()
 	displayInteractiveModel3.optContext = generate2DOptContextUniformDisk3.optContext
 	displayInteractiveModel3.rois = generateROIs.bleachedROI_2D_array
 	displayInteractiveModel3.title = uniformDisk3PanelTitle
-
-
-
-generateUniformDiskModel4 = GenerateKenworthyOptModel()
-	generateUniformDiskModel4.bleachRadius = fitBleachSpot.bleachRadius
-	generateUniformDiskModel4.modelType = uniformDisk4ModelName	
-
-generate2DOptContextUniformDisk4 = Generate2DOptContext()
-	generate2DOptContextUniformDisk4.optModel = generateUniformDiskModel4.optModel
-	generate2DOptContextUniformDisk4.normalizedMeasurementErrors = computeMeasurementError.normalizedMeasurementError
-	generate2DOptContextUniformDisk4.normExpData = generateReducedNormalizedData.reducedROIData
-
-displayInteractiveModel4 = DisplayInteractiveModel()
-	displayInteractiveModel4.optContext = generate2DOptContextUniformDisk4.optContext
-	displayInteractiveModel4.rois = generateROIs.bleachedROI_2D_array
-	displayInteractiveModel4.title = uniformDisk4PanelTitle
 

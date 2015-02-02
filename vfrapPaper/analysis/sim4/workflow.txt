@@ -1,6 +1,6 @@
 bleachThreshold = 0.80
 cellThreshold = 0.5
-vfrapFile = file("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim9\\workflow.txt.save")
+vfrapFile = file("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim4\\workflow.txt.save")
 uniformDisk2ModelName = "KenworthyUniformDisk2Param"
 uniformDisk2PanelTitle = "Uniform Disk Model - 2 parameters"
 uniformDisk3ModelName = "KenworthyUniformDisk3Param"
@@ -57,8 +57,8 @@ displayInteractiveModel2 = DisplayInteractiveModel()
 
 
 generateUniformDiskModel3 = GenerateKenworthyOptModel()
-	generateUni	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
-	geneateUniformDiskModel3.modelType = uniformDisk3ModelName	
+	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
+	generateUniformDiskModel3.modelType = uniformDisk3ModelName	
 
 generate2DOptContextUniformDisk3 = Generate2DOptContext()
 	generate2DOptContextUniformDisk3.optModel = generateUniformDiskModel3.optModel

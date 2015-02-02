@@ -4,7 +4,7 @@ extracellularName = "ec"
 deltaX = 0.3
 outputTimeStep = 0.3
 psfSigma = 0.01
-bleachRadius = 4.0
+bleachRadius = 1.5
 bleachRate = 500.0
 bleachDuration = 0.003
 postbleachDelay = 0.001
@@ -18,7 +18,7 @@ bNoise = true
 maxIntensity =  60000.0
 vfrapFile = file("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim3\\workflow.txt.save")
 
-generateExpModel = Generate2DExpModel()
+generateExpModel = Generate2DExpModel_GaussianBleach()
 	generateExpModel.bleachDuration = bleachDuration
 	generateExpModel.bleachMonitorRate = bleachMonitorRate
 	generateExpModel.bleachRadius = bleachRadius

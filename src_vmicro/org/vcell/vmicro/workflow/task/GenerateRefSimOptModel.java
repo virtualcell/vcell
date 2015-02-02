@@ -1,7 +1,6 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.workflow.data.ModelType;
 import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
@@ -14,6 +13,29 @@ import org.vcell.workflow.TaskContext;
 import cbit.vcell.math.RowColumnResultSet;
 
 public class GenerateRefSimOptModel extends Task {
+	
+	public enum ModelType {
+		DiffOne("Diffusion with One Diffusing Component"),
+		DiffTwoWithPenalty("Diffusion with Two Diffusing Components (with penalty)"),
+//		ReactDominant("Reaction Dominant Off Rate"),
+//		DiffAndBinding("Diffusion plus Binding"),
+		DiffTwoWithoutPenalty("Diffusion with Two Diffusing Components (without penalty)");
+		
+		public final String description;
+		
+		private ModelType(String desc){
+			this.description = desc;
+		}
+		
+		public static ModelType fromDescription(String desc){
+			for (ModelType id : values()){
+				if (id.description.equals(desc)){
+					return id;
+				}
+			}
+			return null;
+		}
+	}
 	
 	//
 	// inputs

@@ -39,7 +39,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
-public class Generate2DExpModel extends Task {
+public class Generate2DExpModel_GaussianBleach extends Task {
 	
 	//
 	// inputs
@@ -69,7 +69,7 @@ public class Generate2DExpModel extends Task {
 	public final DataOutput<Double> bleachBlackoutEndTime;
 	
 
-	public Generate2DExpModel(String id){
+	public Generate2DExpModel_GaussianBleach(String id){
 		super(id);
 		deltaX = new DataInput<Double>(Double.class,"deltaX", this);
 		bleachRadius = new DataInput<Double>(Double.class,"bleachRadius",this);
@@ -150,9 +150,12 @@ public class Generate2DExpModel extends Task {
 		// common bleaching rate for all species
 		//
 		
-		double bleachStart = 10*context.getData(outputTimeStep) - context.getData(bleachDuration) - context.getData(postbleachDelay);
-		double bleachEnd =  bleachStart + context.getData(bleachDuration);
-		Expression bleachRateExp = new Expression(context.getData(bleachMonitorRate)+" + ((pow(x,2)+pow(y,2)<pow("+context.getData(bleachRadius)+",2))&&(t>="+bleachStart+")&&(t<="+bleachEnd+"))*("+(context.getData(bleachRate)-context.getData(bleachMonitorRate))+")");		
+		double blStart = 10*context.getData(outputTimeStep) - context.getData(bleachDuration) - context.getData(postbleachDelay);
+		double blEnd =  blStart + context.getData(bleachDuration);
+		double blRadius2 = context.getData(bleachRadius) * context.getData(bleachRadius);
+		double blMonRate = context.getData(bleachMonitorRate);
+		double blRate = context.getData(bleachRate);
+		Expression bleachRateExp = new Expression(blMonRate+"*((t<"+blStart+")||(t>"+blEnd+")) + "+blRate+"*exp(-2*(x*x + y*y)/"+blRadius2+")*((t>="+blStart+")&&(t<="+blEnd+"))");		
 		
 		{
 		SimpleReaction immobileBWM = model.createSimpleReaction(cytosol);
@@ -228,8 +231,8 @@ public class Generate2DExpModel extends Task {
 		//
 		// simulation to use for data generation (output time steps as recorded by the microscope)
 		//
-		double bleachBlackoutBegin = bleachStart-context.getData(postbleachDelay);
-		double bleachBlackoutEnd = bleachEnd+context.getData(postbleachDelay);
+		double bleachBlackoutBegin = blStart-context.getData(postbleachDelay);
+		double bleachBlackoutEnd = blEnd+context.getData(postbleachDelay);
 
 //		ArrayList<Double> times = new ArrayList<Double>();
 //		double time = 0;
