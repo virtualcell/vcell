@@ -2,7 +2,6 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.vmicro.workflow.data.ModelType;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.TaskContext;
@@ -37,28 +36,23 @@ public class KenworthyProcess extends WorkflowTask {
 	private final GenerateBleachROI generateROIs = new GenerateBleachROI("k_generateROIs");
 //	private final GenerateDependentImageROIs generateDependentROIs = new GenerateDependentImageROIs("generateDependentImageROIs");
 	private final FitBleachSpot fitBleachSpot = new FitBleachSpot("k_fitBleachSpot");
-	private final GenerateReducedRefData generateReducedNormalizedData = new GenerateReducedRefData("k_generateReducedNormalizedData");
+	private final GenerateReducedROIData generateReducedNormalizedData = new GenerateReducedROIData("k_generateReducedNormalizedData");
 	private final ComputeMeasurementError computeMeasurementError = new ComputeMeasurementError("k_computeMeasurementError");
 
 	private final GenerateKenworthyOptModel generateUniformDiskModel2 = new GenerateKenworthyOptModel("k_generateUniformDiskModel2");
 	private final GenerateKenworthyOptModel generateUniformDiskModel3 = new GenerateKenworthyOptModel("k_generateUniformDiskModel3");
-	private final GenerateKenworthyOptModel generateUniformDiskModel4 = new GenerateKenworthyOptModel("k_generateUniformDiskModel4");
 	private final Generate2DOptContext generate2DOptContextUniformDisk2 = new Generate2DOptContext("k_generate2DOptContextUniformDisk2");
 	private final Generate2DOptContext generate2DOptContextUniformDisk3 = new Generate2DOptContext("k_generate2DOptContextUniformDisk3");
-	private final Generate2DOptContext generate2DOptContextUniformDisk4 = new Generate2DOptContext("k_generate2DOptContextUniformDisk4");
 	private final DisplayInteractiveModel displayInteractiveModel2 = new DisplayInteractiveModel("k_displayInteractiveModel2");
 	private final DisplayInteractiveModel displayInteractiveModel3 = new DisplayInteractiveModel("k_displayInteractiveModel3");
-	private final DisplayInteractiveModel displayInteractiveModel4 = new DisplayInteractiveModel("k_displayInteractiveModel4");
 	
 	//
 	// internal parameters
 	//
 	private WorkflowParameter<String> uniformDisk2ModelName;
 	private WorkflowParameter<String> uniformDisk3ModelName;
-	private WorkflowParameter<String> uniformDisk4ModelName;
 	private WorkflowParameter<String> uniformDisk2PanelTitle;
 	private WorkflowParameter<String> uniformDisk3PanelTitle;
-	private WorkflowParameter<String> uniformDisk4PanelTitle;
 	
 	public KenworthyProcess(String name) {
 		super(name);
@@ -87,22 +81,18 @@ public class KenworthyProcess extends WorkflowTask {
 		//
 		// set parameter values for sub-tasks.
 		//
-		context.setParameterValue(uniformDisk2ModelName, ModelType.KenworthyUniformDisk2Param.toString());
-		context.setParameterValue(uniformDisk3ModelName, ModelType.KenworthyUniformDisk3Param.toString());
-		context.setParameterValue(uniformDisk4ModelName, ModelType.KenworthyUniformDisk4Param.toString());
+		context.setParameterValue(uniformDisk2ModelName, GenerateKenworthyOptModel.ModelType.KenworthyUniformDisk2Param.toString());
+		context.setParameterValue(uniformDisk3ModelName, GenerateKenworthyOptModel.ModelType.KenworthyUniformDisk3Param.toString());
 		context.setParameterValue(uniformDisk2PanelTitle, "Uniform Disk Model - 2 parameters");
 		context.setParameterValue(uniformDisk3PanelTitle, "Uniform Disk Model - 3 parameters");
-		context.setParameterValue(uniformDisk4PanelTitle, "Uniform Disk Model - 4 parameters");
 	}
 
 	@Override
 	public void addWorkflowComponents(Workflow workflow){
 		uniformDisk2ModelName = workflow.addParameter(String.class,"uniformDisk2ModelName");
 		uniformDisk3ModelName = workflow.addParameter(String.class,"uniformDisk3ModelName");
-		uniformDisk4ModelName = workflow.addParameter(String.class,"uniformDisk4ModelName");
 		uniformDisk2PanelTitle = workflow.addParameter(String.class, "uniformDisk2PanelTitle");
 		uniformDisk3PanelTitle = workflow.addParameter(String.class, "uniformDisk3PanelTitle");
-		uniformDisk4PanelTitle = workflow.addParameter(String.class, "uniformDisk4PanelTitle");
 
 		//
 		// construct the dataflow graph
@@ -141,7 +131,7 @@ public class KenworthyProcess extends WorkflowTask {
 		workflow.connect2(generateROIs.bleachedROI_2D, fitBleachSpot.bleachROI);
 		workflow.addTask(fitBleachSpot);
 		
-		workflow.connect2(fitBleachSpot.bleachRadius, generateUniformDiskModel2.bleachRadius);
+		workflow.connect2(fitBleachSpot.bleachRadius_GaussianFit, generateUniformDiskModel2.bleachRadius);
 		workflow.connectParameter(uniformDisk2ModelName, generateUniformDiskModel2.modelType);		
 		workflow.addTask(generateUniformDiskModel2);
 		workflow.connect2(generateUniformDiskModel2.optModel, generate2DOptContextUniformDisk2.optModel);
@@ -153,7 +143,7 @@ public class KenworthyProcess extends WorkflowTask {
 		workflow.connectParameter(uniformDisk2PanelTitle, displayInteractiveModel2.title);
 		workflow.addTask(displayInteractiveModel2);
 
-		workflow.connect2(fitBleachSpot.bleachRadius, generateUniformDiskModel3.bleachRadius);
+		workflow.connect2(fitBleachSpot.bleachRadius_GaussianFit, generateUniformDiskModel3.bleachRadius);
 		workflow.connectParameter(uniformDisk3ModelName, generateUniformDiskModel3.modelType);		
 		workflow.addTask(generateUniformDiskModel3);
 		workflow.connect2(generateUniformDiskModel3.optModel, generate2DOptContextUniformDisk3.optModel);
@@ -165,16 +155,5 @@ public class KenworthyProcess extends WorkflowTask {
 		workflow.connectParameter(uniformDisk3PanelTitle, displayInteractiveModel3.title);
 		workflow.addTask(displayInteractiveModel3);
 
-		workflow.connect2(fitBleachSpot.bleachRadius, generateUniformDiskModel4.bleachRadius);
-		workflow.connectParameter(uniformDisk4ModelName, generateUniformDiskModel4.modelType);		
-		workflow.addTask(generateUniformDiskModel4);
-		workflow.connect2(generateUniformDiskModel4.optModel, generate2DOptContextUniformDisk4.optModel);
-		workflow.connect2(computeMeasurementError.normalizedMeasurementError, generate2DOptContextUniformDisk4.normalizedMeasurementErrors);
-		workflow.connect2(generateReducedNormalizedData.reducedROIData, generate2DOptContextUniformDisk4.normExpData);
-		workflow.addTask(generate2DOptContextUniformDisk4);
-		workflow.connect2(generate2DOptContextUniformDisk4.optContext, displayInteractiveModel4.optContext);
-		workflow.connect2(generateROIs.bleachedROI_2D_array, displayInteractiveModel4.rois);
-		workflow.connectParameter(uniformDisk4PanelTitle, displayInteractiveModel4.title);
-		workflow.addTask(displayInteractiveModel4);
 	}
 }
