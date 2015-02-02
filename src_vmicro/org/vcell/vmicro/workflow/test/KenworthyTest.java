@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.vmicro.workflow.task.Generate2DExpModel;
+import org.vcell.vmicro.workflow.task.Generate2DExpModel_UniformBleach;
 import org.vcell.vmicro.workflow.task.KenworthyProcess;
 import org.vcell.vmicro.workflow.task.RunFakeSim;
 import org.vcell.workflow.MemoryRepository;
@@ -107,7 +107,7 @@ Workflow workflow = getInteractiveModelWorkflow(repository, workingDirectory);
 			WorkflowParameter<Boolean> bNoise = workflow.addParameter(Boolean.class, 				"bNoise", 						repository, true); // no noise to start
 			WorkflowParameter<Double> maxIntensity = workflow.addParameter(Double.class,			"maxIntensity",					repository, 60000.0);
 
-			Generate2DExpModel generateExpModel = new Generate2DExpModel("generateExpModel");
+			Generate2DExpModel_UniformBleach generateExpModel = new Generate2DExpModel_UniformBleach("generateExpModel");
 			workflow.connectParameter(bleachDuration, generateExpModel.bleachDuration);
 			workflow.connectParameter(bleachMonitorRate, generateExpModel.bleachMonitorRate);
 			workflow.connectParameter(bleachRadius, generateExpModel.bleachRadius);

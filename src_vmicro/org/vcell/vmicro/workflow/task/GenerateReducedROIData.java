@@ -11,7 +11,7 @@ import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 
-public class GenerateReducedRefData extends Task {
+public class GenerateReducedROIData extends Task {
 	
 	//
 	// inputs
@@ -24,7 +24,7 @@ public class GenerateReducedRefData extends Task {
 	public final DataOutput<RowColumnResultSet> reducedROIData;
 	
 
-	public GenerateReducedRefData(String id){
+	public GenerateReducedROIData(String id){
 		super(id);
 		imageTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"imageTimeSeries", this);
 		imageDataROIs = new DataInput<ROI[]>(ROI[].class,"imageDataROIs", this);

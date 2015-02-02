@@ -50,7 +50,7 @@ fitBleachSpot = FitBleachSpot()
 
 
 generateUniformDiskModel2 = GenerateKenworthyOptModel()
-	generateUniformDiskModel2.bleachRadius = fitBleachSpot.bleachRadius
+	generateUniformDiskModel2.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
 	generateUniformDiskModel2.modelType = uniformDisk2ModelName
 
 generate2DOptContextUniformDisk2 = Generate2DOptContext()
@@ -65,8 +65,8 @@ displayInteractiveModel2 = DisplayInteractiveModel()
 
 
 generateUniformDiskModel3 = GenerateKenworthyOptModel()
-	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius
-	generateUniformDiskModel3.modelType = uniformDisk3ModelName	
+	generateUni	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
+	geneateUniformDiskModel3.modelType = uniformDisk3ModelName	
 
 generate2DOptContextUniformDisk3 = Generate2DOptContext()
 	generate2DOptContextUniformDisk3.optModel = generateUniformDiskModel3.optModel
@@ -77,20 +77,4 @@ displayInteractiveModel3 = DisplayInteractiveModel()
 	displayInteractiveModel3.optContext = generate2DOptContextUniformDisk3.optContext
 	displayInteractiveModel3.rois = generateROIs.bleachedROI_2D_array
 	displayInteractiveModel3.title = uniformDisk3PanelTitle
-
-
-
-generateUniformDiskModel4 = GenerateKenworthyOptModel()
-	generateUniformDiskModel4.bleachRadius = fitBleachSpot.bleachRadius
-	generateUniformDiskModel4.modelType = uniformDisk4ModelName	
-
-generate2DOptContextUniformDisk4 = Generate2DOptContext()
-	generate2DOptContextUniformDisk4.optModel = generateUniformDiskModel4.optModel
-	generate2DOptContextUniformDisk4.normalizedMeasurementErrors = computeMeasurementError.normalizedMeasurementError
-	generate2DOptContextUniformDisk4.normExpData = generateReducedNormalizedData.reducedROIData
-
-displayInteractiveModel4 = DisplayInteractiveModel()
-	displayInteractiveModel4.optContext = generate2DOptContextUniformDisk4.optContext
-	displayInteractiveModel4.rois = generateROIs.bleachedROI_2D_array
-	displayInteractiveModel4.title = uniformDisk4PanelTitle
 

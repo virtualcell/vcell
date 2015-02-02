@@ -31,7 +31,7 @@ import org.vcell.vmicro.workflow.task.Generate2DOptContext;
 import org.vcell.vmicro.workflow.task.Generate2DSimBioModel;
 import org.vcell.vmicro.workflow.task.GenerateDependentImageROIs;
 import org.vcell.vmicro.workflow.task.GenerateNormalizedFrapData;
-import org.vcell.vmicro.workflow.task.GenerateReducedRefData;
+import org.vcell.vmicro.workflow.task.GenerateReducedROIData;
 import org.vcell.vmicro.workflow.task.ImportImageROIsFrom2DVCell;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFrom2DVCellConcentrations;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromExperimentImage;
@@ -86,7 +86,7 @@ public class WorkflowEditorPanel extends BasicGraphEditor
 			Generate2DSimBioModel.class,
 			GenerateDependentImageROIs.class,
 			GenerateNormalizedFrapData.class,
-			GenerateReducedRefData.class,
+			GenerateReducedROIData.class,
 			NormalizeRawBleachData.class,
 			Generate2DOptContext.class,
 			RunRefSimulation.class,
