@@ -128,6 +128,7 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.DataValueSurfaceViewer;
+import cbit.vcell.geometry.gui.DataValueSurfaceViewer.SurfaceCollectionDataInfo;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
 import cbit.vcell.geometry.surface.Surface;
@@ -177,6 +178,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
+import static org.vcell.util.BeanUtils.notNull;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -184,7 +186,6 @@ import cbit.vcell.solvers.MembraneElement;
  */
 @SuppressWarnings("serial")
 public class PDEDataViewer extends DataViewer {
-	private boolean bCreatePostProcess = true;
 	public enum CurrentView {
 		SLICE_VIEW("Slice View"),
 		SURFACE_VIEW("Surface View");
@@ -201,10 +202,7 @@ public class PDEDataViewer extends DataViewer {
 	public static String StringKey_timeSeriesJobResults =  "timeSeriesJobResults";
 	public static String StringKey_timeSeriesJobException =  "timeSeriesJobException";
 	public static String StringKey_timeSeriesJobSpec =  "timeSeriesJobSpec";
-	private String libDir;
-	private String visitBinDir;
 	private JTabbedPane viewDataTabbedPane;
-//	public VisitProcess visitProcess;
 	
 	
 	public static class TimeSeriesDataJobListener implements DataJobListener {
@@ -1015,8 +1013,8 @@ private void roiAction(){
 		for(int i=0;i<timePoints.length;i+= 1){
 			timePointsD[i] = new Double(timePoints[i]);
 		}
-		final JComboBox jcb_time_begin = new JComboBox(timePointsD);
-		final JComboBox jcb_time_end = new JComboBox(timePointsD);
+		final JComboBox<Double> jcb_time_begin = new JComboBox<Double>(timePointsD);
+		final JComboBox<Double> jcb_time_end = new JComboBox<Double>(timePointsD);
 		jcb_time_end.setSelectedIndex(timePointsD.length-1);
 		timeJPanel.add(new JLabel("Begin Time:"));
 		timeJPanel.add(jcb_time_begin);
@@ -2650,7 +2648,8 @@ private void updateDataValueSurfaceViewer0() {
 
 	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
 	//SurfaceColors and DataValues
-	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
+	SurfaceCollectionDataInfo scdi = notNull(DataValueSurfaceViewer.class,getDataValueSurfaceViewer()).getSurfaceCollectionDataInfo();
+	SurfaceCollection surfaceCollection = notNull(SurfaceCollectionDataInfo.class,scdi).getSurfaceCollection();
 	DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
 	final int[][] surfaceColors = new int[surfaceCollection.getSurfaceCount()][];
 	final double[][] surfaceDataValues = new double[surfaceCollection.getSurfaceCount()][];
@@ -2844,7 +2843,6 @@ private void makeSurfaceMovie(final SurfaceCanvas surfaceCanvas,
 			VideoMediaSample sample;
 			int sampleDuration = 0;
 			int timeScale = smsp.getFramesPerSecond();
-			int bitsPerPixel = 32;
 			DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 			int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
 			DataInfoProvider dataInfoProvider = getPDEDataContextPanel1().getDataInfoProvider();
