@@ -13,6 +13,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
@@ -154,14 +155,54 @@ public class NetworkTransformer implements SimContextTransformer {
 				continue;
 			}
 			int count = 0;		// generate unique name for the species
+			
+			
+			
 			String speciesName = null;
-			while (true) {
-				speciesName = "s" + count;	
-				if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
-					break;
-				}	
-				count++;
+			String nameRoot = "s";
+			
+			if(s.getName() != null) {	// for seed species we generate a name from the species pattern
+				nameRoot = s.getName();
+				nameRoot = nameRoot.replaceAll("[!?~]+", "");
+				nameRoot = TokenMangler.fixTokenStrict(nameRoot);
+				while(true) {
+					if(nameRoot.endsWith("_")) {		// clean all the '_' at the end, if any
+						nameRoot = nameRoot.substring(0, nameRoot.length()-1);
+					} else {
+						break;
+					}
+				}
+				if(model.getSpecies(nameRoot) == null && model.getSpeciesContext(nameRoot) == null) {
+					speciesName = nameRoot;		// the name is good and unused
+				} else {
+					nameRoot += "_";
+					while (true) {
+						speciesName = nameRoot + count;	
+						if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
+							break;
+						}	
+						count++;
+					}
+				}
+			} else {			// for plain species it works as before
+				while (true) {
+					speciesName = nameRoot + count;	
+					if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
+						break;
+					}	
+					count++;
+				}
 			}
+			
+			
+//			String speciesName = null;
+//			while (true) {
+//				speciesName = "s" + count;	
+//				if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
+//					break;
+//				}	
+//				count++;
+//			}
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
 			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
 			speciesContext.setName(speciesName);
