@@ -2325,13 +2325,41 @@ public SpeciesContext createSpeciesContext(Structure structure) {
 public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern speciesPattern) {
 	int count=0;
 	String speciesName = null;
-	while (true) {
-		speciesName = "s" + count;	
-		if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
-			break;
-		}	
-		count++;
+	String nameRoot = "s";
+	
+	if(speciesPattern != null) {	// for seed species we generate a name from the species pattern
+		nameRoot = speciesPattern.toString();
+		nameRoot = nameRoot.replaceAll("[!?~]+", "");
+		nameRoot = TokenMangler.fixTokenStrict(nameRoot);
+		while(true) {
+			if(nameRoot.endsWith("_")) {		// clean all the '_' at the end, if any
+				nameRoot = nameRoot.substring(0, nameRoot.length()-1);
+			} else {
+				break;
+			}
+		}
+		if(getSpecies(nameRoot) == null && getSpeciesContext(nameRoot) == null) {
+			speciesName = nameRoot;		// the name is good and unused
+		} else {
+			nameRoot += "_";
+			while (true) {
+				speciesName = nameRoot + count;	
+				if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
+					break;
+				}	
+				count++;
+			}
+		}
+	} else {			// for plain species it works as before
+		while (true) {
+			speciesName = nameRoot + count;	
+			if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
+				break;
+			}	
+			count++;
+		}
 	}
+//	System.out.println(speciesName);
 	try {
 		SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, null), structure, speciesPattern);
 		speciesContext.setName(speciesName);
