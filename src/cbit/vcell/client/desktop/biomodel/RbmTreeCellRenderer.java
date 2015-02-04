@@ -18,6 +18,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
+import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -338,26 +339,16 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		MolecularComponent mc = mcp.getMolecularComponent();
 		return "<html> " + text + "</html>";
 	}
-//	public static final String toHtml2(MolecularComponentPattern mcp, boolean bShowWords) {
-//		String text = (bShowWords ? "Component" : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
-//		MolecularComponent mc = mcp.getMolecularComponent();
-//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
-//			StateLocal sl = new StateLocal(mcp);
-//			text += "&#160;&#160;&#160;" + toHtmlWork(sl, bShowWords);
-//		}
-//		return "<html> " + text + "</html>";
-//	}
 	public static final String toHtmlWithTip(MolecularComponentPattern mcp, boolean bShowWords) {
 		String text = (bShowWords ? MolecularComponent.typeName : "") + " <b>" + mcp.getMolecularComponent().getName() + "</b>";
 		MolecularComponent mc = mcp.getMolecularComponent();
 		
-//		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
-//			StateLocal sl = new StateLocal(mcp);
-//			text += "&#160;&#160;&#160;" + toHtmlWork(sl, bShowWords);
-//		}
-//		
-//		BondLocal bl = new BondLocal(mcp);
-//		text += "&#160;&#160;&#160;" + toHtmlWorkShort(bl);
+		if(mc.getComponentStateDefinitions().size() > 0) {	// we don't show the state if nothing to choose from
+			StateLocal sl = new StateLocal(mcp);
+			text += "&#160;&#160;&#160;" + toHtmlWorkShort(sl);
+		}
+		BondLocal bl = new BondLocal(mcp);
+		text += "&#160;&#160;&#160;" + toHtmlWorkShort(bl);
 		
 		String htmlText = text + VCellErrorMessages.RightClickComponentToEdit;
 		htmlText = "<html>" + htmlText + "</html>";
@@ -414,6 +405,23 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		}
 		return stateText;
 	}
+	private static final String toHtmlWorkShort(StateLocal sl) {
+		String stateText = "";
+		MolecularComponentPattern mcp = sl.getMolecularComponentPattern();
+		ComponentStatePattern csp = mcp.getComponentStatePattern();
+		if (mcp != null /*&& !mcp.isImplied()*/) {
+			if (mcp.getMolecularComponent().getComponentStateDefinitions().size() == 0) {
+				// stateText = ComponentStateDefinition.typeName + ": <b>n/a</b>"
+				;		// no states possible because none defined
+			} else if(csp != null && csp.isAny()) {
+				stateText = ComponentStateDefinition.typeName + ": <b>" + ComponentStatePattern.strAny + "</b>";
+//				stateText = ComponentStateDefinition.typeName + ": " + ComponentStatePattern.strAny;
+			} else if(csp != null && csp.getComponentStateDefinition() != null) {
+				stateText = ComponentStateDefinition.typeName + ": <b>" + csp.getComponentStateDefinition().getName() + "</b>";
+			}
+		}
+		return stateText;
+	}
 	private static final String toHtmlWork(BondLocal bl, boolean bSelected) {
 		MolecularComponentPattern mcp = bl.getMolecularComponentPattern();
 		BondType defaultType = BondType.Possible;
@@ -438,9 +446,8 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		}
 		return bondText;
 	}
-	private static final String toHtmlWorkShort(BondLocal bl) {
+	private static final String toHtmlWorkShort(BondLocal bl) {			// used for tooltips
 		MolecularComponentPattern mcp = bl.getMolecularComponentPattern();
-		BondType defaultType = BondType.Possible;
 		String bondText = "";
 		String colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
 		String colorTextEnd = "</font>";
@@ -453,16 +460,28 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 				if (bond == null) {
 					colorTextStart = "<font color=" + "\"rgb(" + red.getRed() + "," + red.getGreen() + "," + red.getBlue() + ")\">";
 					colorTextEnd = "</font>";
-					bondText = colorTextStart + "<b>" + "(unbound)" + "</b>" + colorTextEnd;
+					bondText = colorTextStart + "<b>" + "bond (missing)" + "</b>" + colorTextEnd;
 				} else {
 					int id = mcp.getBondId();
 					colorTextStart = "<font color=" + "\"rgb(" + bondHtmlColors[id].getRed() + "," + bondHtmlColors[id].getGreen() + "," + bondHtmlColors[id].getBlue() + ")\">";
 					colorTextEnd = "</font>";
-					
-					bondText = colorTextStart + "<b>" + "bond<sub>" + bond.molecularTypePattern.getIndex() + "</sub></b>" + colorTextEnd;		// <sub>&nbsp;</sub>
+					bondText = colorTextStart + "<b>" + "Bond<sub>" + id + "</sub></b>" + colorTextEnd;		// <sub>&nbsp;</sub>
 				}
-			} else {
-				bondText =  "<b>" + "(bound)" + "</b>";
+			} else if(bondType == BondType.None) {
+				bondText =  "Unbound";
+//				bondText =  "<b>" + "unbound" + "</b>";
+			} else if(bondType == BondType.Exists) {
+				Color c = AbstractComponentShape.plusSignGreen;
+				colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
+				colorTextEnd = "</font>";
+				bondText = colorTextStart + "<b>" + mcp.getBondType().symbol + "</b>" + colorTextEnd;	// green '+'
+				bondText = "Bond: '" + bondText + "'";
+			} else if(bondType == BondType.Possible) {
+				Color c = Color.gray;
+				colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
+				colorTextEnd = "</font>";
+				bondText = colorTextStart + "<b>" + mcp.getBondType().symbol + "</b>" + colorTextEnd;	// gray '?'
+				bondText = "Bond: '" + bondText + "'";
 			}
 		}
 		return bondText;
