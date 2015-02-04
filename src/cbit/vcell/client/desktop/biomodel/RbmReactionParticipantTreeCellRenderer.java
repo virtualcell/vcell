@@ -19,6 +19,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 
@@ -134,6 +135,10 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 			g2.drawLine(x+1, y, x+1, y+2);
 			g2.drawLine(x, y+2, x+7, y+2);
 			g2.drawLine(x, y+3, x+7, y+3);
+		} else if(mcp.getBondType().equals(BondType.Exists)) {
+			g2.setColor(AbstractComponentShape.plusSignGreen);			// draw a green '+' sign
+			g2.drawLine(x-3, y+2, x-1, y+2);		// horizontal
+			g2.drawLine(x-2, y+1, x-2, y+3);		// vertical
 		}
 		g2.setColor(colorOld);
 	}

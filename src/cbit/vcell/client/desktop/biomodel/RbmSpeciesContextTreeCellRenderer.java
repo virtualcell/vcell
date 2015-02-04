@@ -28,6 +28,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLoca
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellEditor.MolecularComponentPatternCellEditor;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -127,6 +128,7 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 			g2.drawLine(x, y+2, x+7, y+2);
 			g2.drawLine(x, y+3, x+7, y+3);
 		}
+		
 		g2.setColor(colorOld);
 	}
 
