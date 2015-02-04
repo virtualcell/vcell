@@ -53,14 +53,13 @@ public abstract class AbstractComponentShape {
 		Point from;
 	}
 
-	final static Color componentGreen = new Color(0xccffcc);
-	final static Color componentYellow = new Color(0xffdf00);
+	public final static Color componentGreen = new Color(0xccffcc);
+	public final static Color componentYellow = new Color(0xffdf00);
 //	final static Color componentYellow = new Color(0xffff99);
-	final static Color componentBad = new Color(0xffb2b2);
-	final static Color componentHidden = new Color(0xe7e7e7);
+	public final static Color componentBad = new Color(0xffb2b2);
+	public final static Color componentHidden = new Color(0xe7e7e7);
 //	final static Color componentHidden = new Color(0xffffff);
-
-	final static Color plusSignGreen = new Color(0x37874f);
+	public final static Color plusSignGreen = new Color(0x37874f);
 //	final static Color plusSignGreen = new Color(0x006b1f);
 	
 	// used to colorize components with issues
