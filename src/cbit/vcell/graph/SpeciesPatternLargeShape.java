@@ -25,7 +25,9 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape {
 
-	private static final int separationWidth = 10;		// width between 2 molecular type patterns
+	public static final int yLetterOffset = 11;			// y position of Bond id and/or State name
+	public static final int separationWidth = 10;		// width between 2 molecular type patterns
+	
 	private int xPos = 0;
 	private int yPos = 0;
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
@@ -89,14 +91,14 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
 					MolecularComponentLargeShape mclsTo = stlsTo.getShape(mcpTo);
 					
-					Point from = new Point(mclsFrom.getX()+mclsFrom.getWidth()/2, mclsFrom.getY()+mclsFrom.getHeight());
-					Point to = new Point(mclsTo.getX()+mclsTo.getWidth()/2, mclsTo.getY()+mclsFrom.getHeight());
+					Point from = new Point(mclsFrom.getX()+mclsFrom.baseWidth/2, mclsFrom.getY()+mclsFrom.getHeight());
+					Point to = new Point(mclsTo.getX()+mclsTo.baseWidth/2, mclsTo.getY()+mclsFrom.getHeight());
 					if(from.x < to.x) {		// the bonds with from.x > to.x are duplicates
 						BondPair bp = new BondPair(mcpFrom.getBondId(), from, to);
 						bondPairs.add(bp);
 					} 
 				} else {
-					Point from = new Point(mclsFrom.getX()+mclsFrom.getWidth()/2, mclsFrom.getY()+mclsFrom.getHeight());
+					Point from = new Point(mclsFrom.getX()+mclsFrom.baseWidth/2, mclsFrom.getY()+mclsFrom.getHeight());
 					String symbol = mcpFrom.getBondType().symbol;
 					BondSingle bs = new BondSingle(mcpFrom, from);
 					bondSingles.add(bs);
@@ -145,12 +147,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	}
 
 	public void paintSelf(Graphics g) {
-		final int offset = 14;			// initial lenth of vertical bar
+		final int offset = 16;			// initial height of vertical bar
 		final int separ = 6;			// y distance between 2 adjacent bars
 		
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
-		final int yLetterOffset = 11;
 
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
