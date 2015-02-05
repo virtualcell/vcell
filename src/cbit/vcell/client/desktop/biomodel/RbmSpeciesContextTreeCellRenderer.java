@@ -128,7 +128,6 @@ public class RbmSpeciesContextTreeCellRenderer extends RbmTreeCellRenderer {
 			g2.drawLine(x, y+2, x+7, y+2);
 			g2.drawLine(x, y+3, x+7, y+3);
 		}
-		
 		g2.setColor(colorOld);
 	}
 
