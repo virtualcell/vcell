@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -73,7 +74,8 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 			int numComponents = mtpFrom.getComponentPatternList().size();
 			for(int j=0; j<numComponents; j++) {
 				MolecularComponentSmallShape mcssFrom = stssFrom.getComponentShape(j);
-				MolecularComponentPattern mcpFrom = mtpFrom.getComponentPatternList().get(j);
+				MolecularComponent mcFrom = mtpFrom.getMolecularType().getComponentList().get(j);
+				MolecularComponentPattern mcpFrom = mtpFrom.getMolecularComponentPattern(mcFrom);
 				if(mcpFrom.getBondType().equals(BondType.Specified)) {
 					Bond b = mcpFrom.getBond();
 					if(b == null) {		// it's half of a bond at this time, we skip it for now
