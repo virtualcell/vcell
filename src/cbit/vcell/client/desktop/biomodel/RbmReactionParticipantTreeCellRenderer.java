@@ -137,8 +137,8 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 			g2.drawLine(x, y+3, x+7, y+3);
 		} else if(mcp.getBondType().equals(BondType.Exists)) {
 			g2.setColor(AbstractComponentShape.plusSignGreen);			// draw a green '+' sign
-			g2.drawLine(x-3, y+2, x-1, y+2);		// horizontal
-			g2.drawLine(x-2, y+1, x-2, y+3);		// vertical
+			g2.drawLine(x, y-1, x, y+4);		// vertical only
+			g2.drawLine(x-1, y-1, x-1, y+4);
 		}
 		g2.setColor(colorOld);
 	}
