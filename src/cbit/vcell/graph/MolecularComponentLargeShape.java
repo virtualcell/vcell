@@ -24,7 +24,7 @@ import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentLargeShape extends AbstractComponentShape {
 	
-	public static final int componentSeparation = 4;	// distance between components
+	public static final int componentSeparation = 6;	// distance between components
 	public static final int baseWidth = 16;
 	public static final int baseHeight = 17;
 	public static final int cornerArc = 17;
@@ -249,7 +249,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 				ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
 				String s = adjustForSize(csd.getDisplayName());
 				s = "~" + s;
-				g.drawString(s, xPos + baseWidth/2 +8, yPos + height + SpeciesPatternLargeShape.yLetterOffset);
+				g.drawString(s, xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset);
 			}
 		}
 		
