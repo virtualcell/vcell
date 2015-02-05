@@ -147,8 +147,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	}
 
 	public void paintSelf(Graphics g) {
-		final int offset = 16;			// initial height of vertical bar
-		final int separ = 6;			// y distance between 2 adjacent bars
+		final int offset = 18;			// initial height of vertical bar
+		final int separ = 5;			// y distance between 2 adjacent bars
 		
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
@@ -179,14 +179,19 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 				g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
 				
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+2, bs.from.x, bs.from.y+5);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+2, bs.from.x+1, bs.from.y+5);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+7, bs.from.x, bs.from.y+10);
+				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+8);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+7, bs.from.x+1, bs.from.y+10);
+				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+8);
+
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y+10, bs.from.x, bs.from.y+13);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y+10, bs.from.x+1, bs.from.y+13);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
 				g2.setColor(plusSignGreen);								// draw a green '+' sign
@@ -196,9 +201,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+offset-4);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+13);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+offset-4);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+13);
 			} else {
 				// for BondType.None we show nothing at all
 				// below commented out: small line ended in a red "x"
