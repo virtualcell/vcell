@@ -61,7 +61,7 @@ public class MolecularTypeLargeShape implements LargeShape {
 		this.name = "";
 
 		width = baseWidth+4;	// we write no name inside, we'll just draw a roundish green shape
-		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 	}
 	// this is only called for molecular type
 	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
@@ -88,13 +88,13 @@ public class MolecularTypeLargeShape implements LargeShape {
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 //		width += 6 * name.length();				// adjust for the length of the name of the molecular type
 		width += getStringWidth(name);				// adjust for the length of the name of the molecular type
-		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 
 		int fixedPart = xPos + width;
 		offsetFromRight = 10;
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
+			int y = yPos + height - MolecularComponentLargeShape.baseHeight;
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext, owner);
@@ -124,13 +124,13 @@ public class MolecularTypeLargeShape implements LargeShape {
 		name = adjustForSize();
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 		width += getStringWidth(name);				// adjust for the length of the name of the molecular type
-		height = baseHeight + MolecularComponentLargeShape.componentDiameter / 2;
+		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 		
 		int fixedPart = xPos + width;
 		offsetFromRight = 10;
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = yPos + height - MolecularComponentLargeShape.componentDiameter;
+			int y = yPos + height - MolecularComponentLargeShape.baseHeight;
 
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
