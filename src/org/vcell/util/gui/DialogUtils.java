@@ -22,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,7 +51,6 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ExceptionInterpreter;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.sorttable.JSortTable;
 
@@ -741,18 +739,38 @@ public static class ErrorContext {
 	/**
 	 * information for enhanced ErrorDialog 
 	 * @param modelInfo may not be null
-	 * @param userPreferences may not be null
+	 * @param userPreferences may be null, will use {@link UserPreferences#getLastUserPreferences()}
 	 */
-	public ErrorContext(String modelInfo,
-			UserPreferences userPreferences) {
-		this.modelInfo = modelInfo;
-		this.userPreferences = userPreferences;
-		if (modelInfo == null || userPreferences == null) {
+	public ErrorContext(String modelInfo, UserPreferences userPreferences) {
+		if (modelInfo == null) {
 			throw new IllegalArgumentException("null point passed to ErrorContextInformation");
 		}
+		this.modelInfo = modelInfo;
+		if (userPreferences != null) {
+			this.userPreferences = userPreferences;
+		}
+		else {
+			this.userPreferences = UserPreferences.getLastUserPreferences();
+		}
 	}
-	final public String modelInfo;
-	final public UserPreferences userPreferences;
+	/**
+	 * information for enhanced ErrorDialog 
+	 * @param modelInfo may not be null
+	 */
+	public ErrorContext(String modelInfo) {
+		this(modelInfo,null);
+	}
+	
+	/**
+	 * can this ErrorContext be used? 
+	 * @return true if it can
+	 */
+	public boolean canUse( ) {
+		return userPreferences != null;
+	}
+	
+	private final String modelInfo;
+	private final UserPreferences userPreferences;
 }
 
 
@@ -767,7 +785,7 @@ public static void showErrorDialog(final Component requester, final String messa
 		final ErrorContext errorContext) {
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
-			final boolean haveContext = errorContext != null;
+			final boolean haveContext = errorContext != null && errorContext.canUse();
 			String errMsg = message;
 			boolean sendErrorReport = false;
 			if (errMsg == null || errMsg.trim().length() == 0) {
@@ -780,10 +798,6 @@ public static void showErrorDialog(final Component requester, final String messa
 					|| exception instanceof NullPointerException
 					|| exception instanceof Error) {
 				sendErrorReport = true;
-			}
-			String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
-			if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
-				 sendErrorReport = false;	
 			}
 			
 			boolean initialCheckState = false;
