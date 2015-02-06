@@ -10,8 +10,6 @@
 
 package cbit.vcell.server;
 
-import ncsa.hdf.object.FileFormat;
-
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -55,9 +53,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 		KeyFactory keyFactory = new OracleKeyFactory();
 		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
 		LocalVCellServer vcServer = (LocalVCellServer)(new LocalVCellServerFactory(null,null,"<<local>>",null,connectionFactory, keyFactory, sessionLog)).getVCellServer();
-		VCellConnection vcc = vcServer.getVCellConnection(userLoginInfo);
-		linkHDFLib();
-		return vcc; 
+		return vcServer.getVCellConnection(userLoginInfo);
 	} catch (AuthenticationException exc) {
 		sessionLog.exception(exc);
 		throw exc;
@@ -73,20 +69,5 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
  */
 public void setConnectionFactory(cbit.sql.ConnectionFactory newConnectionFactory) {
 	connectionFactory = newConnectionFactory;
-}
-
-/**
- * trigger loading of HDF library when running local
- */
-private void linkHDFLib( ) {
-	try { //lifted from hdf5group website
-		Class<?> fileclass = Class.forName("ncsa.hdf.object.h5.H5File");
-		FileFormat fileformat = (FileFormat)fileclass.newInstance();
-		if (fileformat != null) {
-			FileFormat.addFileFormat(FileFormat.FILE_TYPE_HDF5, fileformat);
-		}
-	} catch(Throwable t) {
-		t.printStackTrace();
-	}
 }
 }

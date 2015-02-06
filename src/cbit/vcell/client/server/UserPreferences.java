@@ -85,13 +85,12 @@ public class UserPreferences {
 	public final static int GENERAL_LAST_PATH_USED = 0;
 	public final static int SEND_MODEL_INFO_IN_ERROR_REPORT = 1;
 	
+	private final static int NUM_GENERAL_PREFERENCES = 2;
 	
-	private static final String [] genDefaults = {
+	private static String [] genDefaults = {
 		".",		// default is current directory.
 		"true" //send model info to VCell Support
 	};
-	
-	private final static int NUM_GENERAL_PREFERENCES = genDefaults.length; 
 	
 	static {
 		assert(showWarningDefaults.length == NUM_WARNING_PREFERENCES);
@@ -101,18 +100,6 @@ public class UserPreferences {
 	// user choices
 	private Hashtable<String, Preference> warningHash = new Hashtable<String, Preference>();// keyed by "WARN"+number
 	private Hashtable<String, Preference> genericHash = new Hashtable<String, Preference>();// keyed by "GEN_PREF"+number
-	/**
-	 * store last created object
-	 */
-	private static UserPreferences lastPref = null;
-	
-	/**
-	 * make semi-Singleton class
-	 * @return last created preferences or null;
-	 */
-	public static UserPreferences getLastUserPreferences( ) {
-		return lastPref;
-	}
 
 /**
  * Insert the method's description here.
@@ -121,7 +108,6 @@ public class UserPreferences {
  */
 public UserPreferences(ClientServerManager clientServerManager) {
 	this.clientServerManager = clientServerManager;
-	lastPref = null;
 }
 
 
