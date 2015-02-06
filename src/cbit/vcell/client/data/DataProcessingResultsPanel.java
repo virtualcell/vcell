@@ -11,74 +11,34 @@
 package cbit.vcell.client.data;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.Range;
-import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VerboseDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.SourceDataInfo;
-import cbit.image.gui.ImagePaneModel;
-import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
-import cbit.vcell.client.ClientMDIManager;
-import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.field.gui.FieldDataGUIPanel;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.math.PostProcessingBlock;
 import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
-import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-import java.awt.Dimension;
 
 @SuppressWarnings("serial")
 public class DataProcessingResultsPanel extends JPanel/* implements PropertyChangeListener*/ {
@@ -243,8 +203,15 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 						plotName += ": region " + (i-1);
 					}
 					plotNames[columnCount] = plotName;
+					if (columnCount >= plotDatas.length) {
+						throw new RuntimeException("invalid columnCount " + columnCount + " >= " + plotDatas.length);
+					}
 					for (int j = 0; j < numTimes; j++) {
-						plotDatas[columnCount + 1][j] = dataProcessingOutputInfo.getVariableStatValues().get(varName)[j];//data.get(j, i);
+						double vars[] = dataProcessingOutputInfo.getVariableStatValues().get(varName);//data.get(j, i);
+						if (j >= vars.length) {
+							throw new RuntimeException("invalid index " + j + " on "  + varName + ", greater than " + vars.length);
+						}
+						plotDatas[columnCount + 1][j] = vars[j];
 					}
 					columnCount ++;
 				}
@@ -253,10 +220,15 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 			plotPane.setPlot2D(plot2D);
 		} catch (Exception e1) {
-			DialogUtils.showErrorDialog(this, e1.getMessage(), e1);
+			VCDataIdentifier id = dataProcessingOutputInfo.getVCDataIdentifier();
+			DialogUtils.ErrorContext ec = new DialogUtils.ErrorContext(VerboseDataIdentifier.parse(id));
+			DialogUtils.showErrorDialog(this, e1.getMessage(), e1, ec);
 			e1.printStackTrace();
 		}
 	}
+	
+	
+	
 //	public void propertyChange(PropertyChangeEvent evt) {
 //		if (evt.getSource() == pdeDataContext && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINTS)) {
 //			update();

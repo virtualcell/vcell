@@ -1095,5 +1095,19 @@ public final class BeanUtils {
 			}
 		}).start();
 	}
+	
+	/**
+	 * @param clzz
+	 * @return class name without package info
+	 * @throws NullPointerException if clzz null
+	 */
+	public static String leafName(Class<?> clzz) {
+		String cname = clzz.getName();
+		final int ldot = cname.lastIndexOf('.');
+		if (ldot != - 1) {
+			cname = cname.substring(ldot + 1);
+		}
+		return cname;
+	}
 
 }
