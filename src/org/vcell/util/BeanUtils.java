@@ -1129,6 +1129,20 @@ public final class BeanUtils {
 	}
 	
 	/**
+	 * @param clzz
+	 * @return class name without package info
+	 * @throws NullPointerException if clzz null
+	 */
+	public static String leafName(Class<?> clzz) {
+		String cname = clzz.getName();
+		final int ldot = cname.lastIndexOf('.');
+		if (ldot != - 1) {
+			cname = cname.substring(ldot + 1);
+		}
+		return cname;
+	}
+
+	/**
 	 * customize error message for null pointers
 	 * @param clzz type of obj
 	 * @param obj to check for null

@@ -421,12 +421,14 @@ public class DataSetControllerImpl implements SimDataConstants {
 /**
  * This method was created by a SmartGuide.
  */
-public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, File primaryDir, File secondDir) throws FileNotFoundException {
-	this.cacheTable0 = aCacheTable;
-	this.primaryRootDirectory = primaryDir;
-	this.secondaryRootDirectory = secondDir;
-	this.log = sessionLog;
-}
+	public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, File primaryDir, File secondDir) throws FileNotFoundException {
+		this.cacheTable0 = aCacheTable;
+		this.primaryRootDirectory = primaryDir;
+		this.secondaryRootDirectory = secondDir;
+		this.log = sessionLog;
+		
+
+	}
 
 
 /**
