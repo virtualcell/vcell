@@ -13,8 +13,10 @@ package org.vcell.util.document;
 import java.io.Serializable;
 
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.logging.NoLogging;
 
 @SuppressWarnings("serial")
+@NoLogging
 public class VCellSoftwareVersion implements Serializable {
 	
 	public static enum VCellSite {
@@ -95,6 +97,7 @@ public class VCellSoftwareVersion implements Serializable {
 
 
 	
+	@NoLogging
 	public static VCellSoftwareVersion fromString(String softwareVersion) {
 		return new VCellSoftwareVersion(softwareVersion);
 	}
@@ -118,6 +121,7 @@ public class VCellSoftwareVersion implements Serializable {
 		return "VCell "+getSite().name()+" version "+versionNumber+" build "+buildNumber;
 	}
 
+	@NoLogging
 	public static VCellSoftwareVersion fromSystemProperty() {
 		String systemProperty = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, null);
 		if (systemProperty == null){
