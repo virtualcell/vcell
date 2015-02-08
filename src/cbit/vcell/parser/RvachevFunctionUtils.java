@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class RvachevFunctionUtils {
 
-	public static Expression convertToRvachevFunction(Expression exp) {
+	public static Expression convertToRvachevFunction(Expression exp) throws ExpressionException {
 		 Expression newExp = new Expression((SimpleNode)exp.getRootNode());
 		 SimpleNode rootNode = newExp.getRootNode();
 		 rootNode = fixMultAdd(rootNode);
@@ -22,21 +22,30 @@ public class RvachevFunctionUtils {
 	}
 	
 	// change use of * and + to && and ||
-	private static SimpleNode fixMultAdd(SimpleNode rootNode) {
+	// all factors and addends must be all boolean or non-boolean, not mixed, because we should not change (x>0)*2 to x>0 && 2
+	private static SimpleNode fixMultAdd(SimpleNode rootNode) throws ExpressionException {
+		boolean bAllBoolean = true;
 		SimpleNode newRootNode = rootNode;	
 		if (rootNode instanceof ASTMultNode || rootNode instanceof ASTAddNode) {
 			boolean bHasBooleanChild = false;
 			for (int i = 0; i < rootNode.jjtGetNumChildren(); i ++) {
 				if (rootNode.jjtGetChild(i).isBoolean()) {
 					bHasBooleanChild = true;
-					break;
+				}
+				else
+				{
+					bAllBoolean = false;
 				}
 			}
-			if (bHasBooleanChild) {
+			if (bAllBoolean) {
 				newRootNode = rootNode instanceof ASTMultNode ? new ASTAndNode() : new ASTOrNode();
 				for (int i = 0; i < rootNode.jjtGetNumChildren(); i ++) {
 					newRootNode.jjtAddChild(rootNode.jjtGetChild(i));
 				}
+			}
+			else if (bHasBooleanChild)
+			{
+				throw new ExpressionException("converting to implicit function does not support mixed boolean and non-boolean expressions in addition or multiplication.\n\nExpression is: \n" + rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT));
 			}
 		}
 		SimpleNode node = (SimpleNode)newRootNode.copyTree();

@@ -238,6 +238,8 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SAVE_VCELL_OUTPUT,
 		SAVE_CHOMBO_OUTPUT,
 		SUBDOMAINS,
+		IF,
+		USER,
 		REFINEMENTS,
 		CHOMBO_SPEC_END,
 	}
@@ -1353,9 +1355,9 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	} else { 
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
-		printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
-    printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());    
-    OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
+	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
+	printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());
+	OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 		if (outputTimeSpec.isDefault()) {
 			DefaultOutputTimeSpec defaultOutputTimeSpec = (DefaultOutputTimeSpec)outputTimeSpec;
@@ -1365,7 +1367,7 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			printWriter.println(FVInputFileKeyword.TIME_STEP + " " + ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
 			printWriter.println(FVInputFileKeyword.KEEP_EVERY + " 1");
 		}
-    } else {
+  } else {
     	double defaultTimeStep = solverTaskDesc.getTimeStep().getDefaultTimeStep();
     	printWriter.println(FVInputFileKeyword.TIME_STEP + " " + defaultTimeStep);
     	int keepEvery = 1;
@@ -1380,12 +1382,12 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 			throw new RuntimeException("Output KeepEvery must be a positive integer. Try to change the output option.");
 		}
 		printWriter.println(FVInputFileKeyword.KEEP_EVERY + " " +  keepEvery);
-    }
-    ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
+  }
+  ErrorTolerance stopAtSpatiallyUniformErrorTolerance = solverTaskDesc.getStopAtSpatiallyUniformErrorTolerance();
 	if (stopAtSpatiallyUniformErrorTolerance != null) {
-    	printWriter.println(FVInputFileKeyword.CHECK_SPATIALLY_UNIFORM + " " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
-    			+ " " + stopAtSpatiallyUniformErrorTolerance.getRelativeErrorTolerance());
-    }
+  	printWriter.println(FVInputFileKeyword.CHECK_SPATIALLY_UNIFORM + " " + stopAtSpatiallyUniformErrorTolerance.getAbsoluteErrorTolerance() 
+  			+ " " + stopAtSpatiallyUniformErrorTolerance.getRelativeErrorTolerance());
+  }
 	printWriter.println(FVInputFileKeyword.SIMULATION_PARAM_END);	
 	printWriter.println();
 }
@@ -2046,12 +2048,14 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			}
 		} else {
 			printWriter.println(FVInputFileKeyword.SUBDOMAINS + " " + geometrySpec.getNumSubVolumes());
-			Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
+			Expression[] rvachevExps = convertAnalyticGeometryToRvachevFunction(geometrySpec);
 			for (int i = 0; i < subVolumes.length; i++) {
-				int phase = subDomainPhaseMap.get(subVolumes[i].getName());
-				printWriter.print(subVolumes[i].getName() + " " + phase + " ");
 				if (subVolumes[i] instanceof AnalyticSubVolume) {
-					printWriter.println(rvachevExps[i].infix() + ";");			
+					String name = subVolumes[i].getName();
+					int phase = subDomainPhaseMap.get(name);
+					printWriter.println(name + " " + phase + " ");
+					printWriter.println(FVInputFileKeyword.IF + " "  + rvachevExps[i].infix() + ";");			
+					printWriter.println(FVInputFileKeyword.USER + " "  + ((AnalyticSubVolume)subVolumes[i]).getExpression().infix() + ";");			
 				}
 			}
 		}
@@ -2088,16 +2092,23 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		if (numSubVolumes == 1) {
 			newExps[0] = new Expression(-1.0);			
 		} else {
-			for (int i = 0; i < numSubVolumes - 1; i ++) {		
+			for (int i = 0; i < numSubVolumes - 1; i ++) {
 				if (!(subVolumes[i] instanceof AnalyticSubVolume)) {
 					throw new RuntimeException("Subdomain " + i + " is not a analytic subdomain.");
 				}
 				AnalyticSubVolume subvolume = (AnalyticSubVolume)subVolumes[i];
-				newExps[i] = RvachevFunctionUtils.convertToRvachevFunction(subvolume.getExpression());
-				if (newExps[numSubVolumes - 1] == null) {
-					newExps[numSubVolumes - 1] = Expression.negate(newExps[i]);
-				} else {
-					newExps[numSubVolumes - 1] = Expression.max(newExps[numSubVolumes - 1], Expression.negate(newExps[i]));
+				try
+				{
+					newExps[i] = RvachevFunctionUtils.convertToRvachevFunction(subvolume.getExpression());
+					if (newExps[numSubVolumes - 1] == null) {
+						newExps[numSubVolumes - 1] = Expression.negate(newExps[i]);
+					} else {
+						newExps[numSubVolumes - 1] = Expression.max(newExps[numSubVolumes - 1], Expression.negate(newExps[i]));
+					}
+				}
+				catch (ExpressionException ex)
+				{
+					throw new ExpressionException("Domain " + subvolume.getName() + ": " + ex.getMessage());
 				}
 			}
 			for (int i = 1; i < numSubVolumes - 1; i ++) {
