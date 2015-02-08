@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.test;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +54,8 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	if (!ResourceUtil.isRunningInDebugger()) {
+	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
+	if (IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
@@ -152,5 +154,4 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
 }
