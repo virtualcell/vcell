@@ -12,7 +12,6 @@ package cbit.vcell.client.test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -30,11 +29,8 @@ import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.client.TranslationLogger;
 import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.pyvcellproxy.VCellProxy;
-import cbit.vcell.client.pyvcellproxy.VCellProxyHandler;
 import cbit.vcell.client.pyvcellproxy.VCellProxyServer;
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
@@ -57,11 +53,11 @@ public class VCellClientTest {
  * @param args an array of command-line arguments
  */
 public static void main(java.lang.String[] args) {
-	Logging.init();
 	if (!ResourceUtil.isRunningInDebugger()) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
+	Logging.init();
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));
@@ -144,17 +140,7 @@ public static void main(java.lang.String[] args) {
 		ResourceUtil.setNativeLibraryDirectory();
 		vcellClient = VCellClient.startClient(initialDocument, csInfo);
 
-		
-		// Just fork off a daemon thread
-
-		Thread vcellProxyThread = new Thread(new Runnable() {
-			public void run(){
-				VCellProxyServer.startSimpleVCellProxyServer(new VCellProxy.Processor<VCellProxyHandler>(new VCellProxyHandler(vcellClient)));	
-			 }
-		});
-		vcellProxyThread.setDaemon(true);
-		vcellProxyThread.setName("vcellProxyThread");
-		vcellProxyThread.start();
+		VCellProxyServer.startVCellVisitDataServerThread(vcellClient);
 
 		
 		//starting loading libraries
