@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.resource.ResourceUtil;
 
 @SuppressWarnings("unused")
@@ -35,10 +36,4 @@ public class ResourceUtilTest {
 	public void readLicense( ) throws BackingStoreException {
 		System.out.println(LicenseManager.getLicenseText(LibraryLicense.CYGWIN));
 	}
-	
-	@Test
-	public void runningDebug( ) {
-		System.out.println("Running debug is " + ResourceUtil.isRunningInDebugger());
-	}
-	
 }

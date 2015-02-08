@@ -105,9 +105,7 @@ public class ResourceUtil {
 
 	private static List<File>  librariesLoaded = new ArrayList<File>();
 	private static boolean nativeLibrariesSetup = false; 
-	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
-		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
-    private static final Logger lg = Logger.getLogger(ResourceUtil.class);
+	private static final Logger lg = Logger.getLogger(ResourceUtil.class);
 		    
     /**
      * ensure class loaded so static initialization executes
@@ -205,15 +203,6 @@ public class ResourceUtil {
 		}
 	}
 	
-	/**
-	 * is application running inside a debugger?
-	 * @return true if it is
-	 */
-	@NoLogging
-	public static boolean isRunningInDebugger( ) {
-		return IS_DEBUG;
-	}
-
 	/**
 	 * store and retrieve executable locations in user preferences
 	 * make separate class to isolate implementation and to have distinct preferences
