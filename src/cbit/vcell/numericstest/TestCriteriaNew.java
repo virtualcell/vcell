@@ -149,5 +149,6 @@ public cbit.vcell.solver.test.VariableComparisonSummary[] getVarComparisonSummar
 public int getScanCount() {
 	return 1;
 }
+public abstract String describe( );
 
 }

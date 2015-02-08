@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.logging.NoLogging;
 
 import cbit.vcell.util.NativeLoader;
 
@@ -208,6 +209,7 @@ public class ResourceUtil {
 	 * is application running inside a debugger?
 	 * @return true if it is
 	 */
+	@NoLogging
 	public static boolean isRunningInDebugger( ) {
 		return IS_DEBUG;
 	}
@@ -383,6 +385,7 @@ public class ResourceUtil {
 		ResourceUtil.lastUserLocalDir = lastUserLocalDir;
 	}
 
+	@NoLogging
 	public static File getUserHomeDir()
 	{
 		if(userHome == null)
@@ -421,6 +424,7 @@ public class ResourceUtil {
 		return localVisDataDir; 
 	}
 
+	@NoLogging
 	public static File getLogDir()
 	{
 		if(logDir == null)
@@ -491,6 +495,7 @@ public class ResourceUtil {
 		}
 	}
 
+	@NoLogging
 	public static File getVcellHome() 
 	{
 		if(vcellHome == null)
