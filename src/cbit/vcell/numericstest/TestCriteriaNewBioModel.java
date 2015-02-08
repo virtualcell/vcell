@@ -10,6 +10,7 @@
 
 package cbit.vcell.numericstest;
 import org.vcell.util.document.BioModelInfo;
+
 import cbit.vcell.solver.test.*;
 import cbit.vcell.solver.SimulationInfo;
 /**
@@ -72,5 +73,11 @@ public BioModelInfo getRegressionBioModelInfo() {
 	
 	return regrBioModelInfo;
 	
+}
+
+
+@Override
+public String describe() {
+	return regrBioModelInfo.getVersion().getName() + getSimInfo().getName();
 }
 }

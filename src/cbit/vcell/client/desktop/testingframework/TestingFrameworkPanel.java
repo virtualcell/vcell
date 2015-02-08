@@ -36,6 +36,7 @@ import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.SuiteTFRemoveCompiledSolvers;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.DatabaseEvent;
@@ -54,6 +55,7 @@ import cbit.vcell.numericstest.gui.NumericsTestCellRenderer;
  * Creation date: (7/22/2004 6:19:16 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class TestingFrameworkPanel extends javax.swing.JPanel {
 	private Integer slowLoadThreshold;
 	private String loadTestSQLCondition;
@@ -86,6 +88,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	public static final String LOAD_MODEL = "Load Model";
 	public static final String COMPARERREGR_USERDEFREF_TESTCRITERIA = "Compare With Regression (Choose RefSim)";
 	public static final String COMPARERREGR_INTERNALREF_TESTCRITERIA = "Compare With Regression";
+	public static final String REMOVE_COMPILED_SOLVERS = "Remove Compiled Solvers Test Criteria ..." ;
 
 	private class TSRefreshListener implements PropertyChangeListener {
 			private BioModelNode selectedNode = null;
@@ -577,6 +580,8 @@ private void actionsOnMouseClick(MouseEvent mouseEvent) {
 			getRemoveTSMenuItem().setEnabled(bMenuValid && !isLocked);
 			getEditAnnotationTestSuiteMenuItem().setEnabled(bMenuValid && !isLocked);
 			getLockTestSuiteMenuItem().setEnabled(bMenuValid && !isLocked);
+			getRemoveCompiledSolversJMenuItem().setEnabled(bMenuValid && !isLocked);
+		
 			
 			//Set enable based on conditions if not locked
 			if(bMenuValid && !isLocked){
@@ -2033,6 +2038,7 @@ private javax.swing.JPopupMenu getTestSuitePopupMenu() {
 			ivjTestSuitePopupMenu.add(getLoadMenuItem());
 			ivjTestSuitePopupMenu.add(getLockTestSuiteMenuItem());
 			ivjTestSuitePopupMenu.add(getRemoveDiffTestCriteriaJMenuItem());
+			ivjTestSuitePopupMenu.add(getRemoveCompiledSolversJMenuItem());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2056,6 +2062,21 @@ private JMenuItem getRemoveDiffTestCriteriaJMenuItem(){
 		}
 	}
 	return ivjRemoveDiffTestCriteriaJMenuItem;
+}
+/**
+ * remove compiled solvers
+ */
+private JMenuItem rcsJMenuItem;
+private JMenuItem getRemoveCompiledSolversJMenuItem(){
+	if(rcsJMenuItem == null){
+		try{
+			rcsJMenuItem = new javax.swing.JMenuItem(REMOVE_COMPILED_SOLVERS);
+			rcsJMenuItem.setName("RemoveCompiledSolversJMenuItem");
+		}catch(Throwable ivjExc){
+			handleException(ivjExc);;
+		}
+	}
+	return rcsJMenuItem; 
 }
 /**
  * Comment
@@ -2144,6 +2165,14 @@ private void initConnections() throws java.lang.Exception {
 	getQueryTCritCrossRefMenuItem1().addActionListener(ivjEventHandler);
 	getQueryTCritVarCrossRefMenuItem1().addActionListener(ivjEventHandler);
 	getTestCriteriaCopySimKeyMenuItem().addActionListener(ivjEventHandler);
+	
+	//it's 2015 ...
+	getRemoveCompiledSolversJMenuItem().addActionListener(new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			removeCompiledSolverTestCriteria();
+		}
+	});
 }
 /**
  * Initialize the class.
@@ -2399,5 +2428,16 @@ private void settestingFrameworkWindowManager1(TestingFrameworkWindowManager new
 	};
 	// user code begin {3}
 	// user code end
+}
+
+public void removeCompiledSolverTestCriteria( ) {
+	final Object selectedObj =getTreeSelection();
+	if (selectedObj instanceof TestSuiteInfoNew) {
+		TestSuiteInfoNew tsInfoOriginal = (TestSuiteInfoNew)selectedObj;
+		TestingFrameworkWindowManager tfwm = getTestingFrameworkWindowManager();
+		AsynchClientTask[] tasks = SuiteTFRemoveCompiledSolvers.createTasks(getTestingFrameworkWindowManager(),tsInfoOriginal);
+		ClientTaskDispatcher.dispatch(tfwm.getComponent(),new Hashtable<String,Object>(),tasks,false);
+	}
+
 }
 }

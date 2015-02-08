@@ -57,8 +57,14 @@ public TestCriteriaNewMathModel(
  * Creation date: (11/11/2004 1:42:27 PM)
  */
 public MathModelInfo getRegressionMathModelInfo() {
-	
 	return regrMathModelInfo;
-	
+}
+
+@Override
+public String describe() {
+	if (regrMathModelInfo != null) {
+		return regrMathModelInfo.toString() +  " " + getSimInfo().getName(); 
 	}
+	return "Math model sim (?) " + getSimInfo().getName(); 
+}
 }
