@@ -55,7 +55,7 @@ public class VCellClientTest {
  */
 public static void main(java.lang.String[] args) {
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
-	if (IS_DEBUG) {
+	if (!IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
