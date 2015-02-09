@@ -1,7 +1,6 @@
 package cbit.vcell.solvers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,7 +36,8 @@ public class ExecutableCommand {
 		this.joined = null;
 		this.dirty = true;
 		for (String filePath : input) {
-			 cmds.add(filePath.replace("C:","").replace("D:","").replace("\\","/"));
+			 //cmds.add(filePath.replace("C:","").replace("D:","").replace("\\","/"));
+			 cmds.add(filePath.replace("\\","/"));
 		}
 	}
 

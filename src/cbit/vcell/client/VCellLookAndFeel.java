@@ -15,16 +15,17 @@ import java.awt.Font;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 public class VCellLookAndFeel {
 	
 	public static Font defaultFont = null;
 	public static void setVCellLookAndFeel() {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 //		if (!ResourceUtil.bLinux) {
 			//changed to see if SystemLookAndFeel on Linux works better than the default CrossPlatformLookAndFeel (aka Metal)
 			try {
-				System.out.println("bMac = "+ResourceUtil.bMac+"     bWindows = "+ResourceUtil.bWindows+"      bLinux = "+ResourceUtil.bLinux);
+				System.out.println("Operating system:  " + osi.getOsType());
 				System.out.println("About to set the look and feel.  Before setting, we're using: "+UIManager.getLookAndFeel().getName());
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 			} catch (ClassNotFoundException e) {
@@ -37,13 +38,15 @@ public class VCellLookAndFeel {
 				e.printStackTrace();
 			}
 //		}
+		final boolean isMac = osi.isMac();
+			
 		if (defaultFont == null) {			
 			defaultFont = UIManager.getFont("Label.font");		
-			if (ResourceUtil.bMac) {
+			if (isMac) {
 				defaultFont = defaultFont.deriveFont(defaultFont.getSize2D() - 2);		
 			}
 		}
-		if (ResourceUtil.bMac) {
+		if (isMac) {
 	        UIManager.put("Button.font",defaultFont);
 	        UIManager.put("CheckBox.font",defaultFont);
 	        UIManager.put("CheckBoxMenuItem.font",defaultFont);

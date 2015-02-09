@@ -15,6 +15,8 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 
+import cbit.vcell.resource.OperatingSystemInfo;
+
 /**
  * class to load native libraries. Requires external class to set
  * {@link #setNativeLibraryDirectory(String)} and {@link #setOsType(OsType)}
@@ -30,15 +32,6 @@ public class NativeLoader {
 	 * and throwing exeption
 	 */
 	public static final int NUM_ATTEMPTS = 50;
-	
-	/**
-	 * specify supported operating systems (determines file name pattern of shared / dynamic libraries)
-	 */
-	public enum OsType {
-		LINUX,
-		WINDOWS,
-		MAC
-	}
 	
 	/**
 	 * regex for linux shared libraries
@@ -106,7 +99,7 @@ public class NativeLoader {
 	 * set os type
 	 * @param osType
 	 */
-	public static void setOsType(OsType osType) {
+	public static void setOsType(OperatingSystemInfo.OsType osType) {
 		switch (osType) {
 		case LINUX:
 			systemLibRegex = LINUX_REGEX;

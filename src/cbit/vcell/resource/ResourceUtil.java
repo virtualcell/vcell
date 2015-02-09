@@ -40,12 +40,6 @@ import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
-	private static final String system_osname = System.getProperty("os.name");
-	private final static String system_osarch = System.getProperty("os.arch");
-	private final static boolean b64bit = system_osarch.endsWith("64");
-	public final static boolean bWindows = system_osname.contains("Windows");
-	public final static boolean bMac = system_osname.contains("Mac");
-	public final static boolean bLinux = system_osname.contains("Linux");
 
 	public static enum JavaVersion  {FIVE,SIX,SEVEN};
 
@@ -53,40 +47,6 @@ public class ResourceUtil {
 	private static String lastUserLocalDir = null;
 
 
-	private final static String osname_prefix;
-	public final static String EXE_BIT_SUFFIX;
-	public final static String EXE_SUFFIX;
-	public final static String NATIVELIB_SUFFIX;
-	public final static String RES_PACKAGE; 
-	/**
-	 * name of native library directory (leaf only)
-	 */
-	public final static String NATIVE_LIB_DIR; 
-	static {
-		String BIT_SUFFIX = "";
-		if (b64bit) {
-			BIT_SUFFIX ="_x64";
-		}
-		if (bWindows) {
-			osname_prefix = "win";
-			EXE_SUFFIX = ".exe";
-			NativeLoader.setOsType(NativeLoader.OsType.WINDOWS);
-		} else if (bMac) {
-			osname_prefix = "mac";
-			EXE_SUFFIX = "";
-			NativeLoader.setOsType(NativeLoader.OsType.MAC);
-		} else if (bLinux) {
-			osname_prefix = "linux";
-			EXE_SUFFIX = "";
-			NativeLoader.setOsType(NativeLoader.OsType.LINUX);
-		} else {
-			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
-		}
-	    EXE_BIT_SUFFIX = BIT_SUFFIX + EXE_SUFFIX;
-		NATIVE_LIB_DIR =   osname_prefix + (b64bit ? "64" : "32");
-		RES_PACKAGE = "/cbit/vcell/resource/" + NATIVE_LIB_DIR; 
-		NATIVELIB_SUFFIX = BIT_SUFFIX;
-	}
 	//public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
 	//public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 
@@ -128,12 +88,13 @@ public class ResourceUtil {
 	 * @return executable file if it can be found
 	 * @throws FileNotFoundException if it can't
 	 * @throws BackingStoreException 
-	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException, BackingStoreException	{		String executableName = name;
+	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException, BackingStoreException	{
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		String executableName = name;
 		if (useBitSuffix) {
-			executableName += EXE_BIT_SUFFIX;
+			executableName += osi.getExeBitSuffix();
 		}
 		else {
-			executableName += EXE_SUFFIX;
+			executableName += osi.getExeSuffix(); 
 		}
 		if (ExeCache.isCached(executableName)) {
 			return ExeCache.get(executableName);
@@ -143,7 +104,7 @@ public class ResourceUtil {
 		if (!exes.isEmpty()) {
 			return ExeCache.store(executableName, exes.iterator().next());
 		}
-		//		// not in path, look in common places		//		if (bWindows){
+		//		// not in path, look in common places		//		if (osi.isWindows()){
 			//use set to eliminate duplicates
 			Set<String> searchDirs = new HashSet<String>( );
 			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
@@ -159,7 +120,7 @@ public class ResourceUtil {
 					}
 				}
 			}		}
-		if (bMac){
+		if (osi.isMac()){
 			File macVisApp = new File("/Applications/VisIt.app");
 			if (macVisApp.canRead() && (new File(macVisApp, "/Contents/Resources/bin/visit")).canExecute()) {
 				return macVisApp;
@@ -182,7 +143,7 @@ public class ResourceUtil {
 	 * @param envs
 	 */
 	public static void setEnvForOperatingSystem(Map<String,String> env) {
-		if (bLinux) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (osi.isLinux()) {
 			final String LIBPATH="LD_LIBRARY_PATH";
 			String existing = env.get(LIBPATH);
 			if (existing == null) {
@@ -193,7 +154,7 @@ public class ResourceUtil {
 				env.put(LIBPATH,existing);
 			}
 		}
-		if (bWindows) {
+		if (osi.isWindows()) {
 			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
 			//calls a cygwin compile "run_network" program. If run_network prints
 			//anything to standard error,The BNG script aborts
@@ -276,7 +237,7 @@ public class ResourceUtil {
 	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
 	 */
 	public static File loadSolverExecutable(String basename, LicensedLibrary ll) throws IOException {
-		if (!ll.isLicensed()) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (!ll.isLicensed()) {
 			throw new UnsupportedOperationException("Unable to run " + basename + " because " + ll.toString( ) + " software license not accepted.");
 		}
 		if (!ll.isInstalled()) {
@@ -284,8 +245,10 @@ public class ResourceUtil {
 		}
 		ll.makePresentIn(getSolversDirectory());
 		
-		String name = basename + EXE_BIT_SUFFIX;
-		String res = RES_PACKAGE + "/" + name;
+		//String name = basename + EXE_BIT_SUFFIX;
+		String name = basename + osi.getExeBitSuffix(); 
+		//String res = RES_PACKAGE + "/" + name;
+		String res = osi.getResourcePackage() + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
 		if (!exe.exists()) {
 			ResourceUtil.writeFileFromResource(res, exe);
@@ -294,18 +257,19 @@ public class ResourceUtil {
 		for (String libName : ll.bundledLibraryNames()) {
 			fromResourceLibraries.add(libName);
 		}
-		if (bWindows) {
-			if (b64bit){
+		if (osi.isWindows()) {
+			if (osi.is64bit()) {
 				fromResourceLibraries.add("glut64.dll");
 			}else{
 				fromResourceLibraries.add("glut32.dll");
 			}
 		}
-		else if (bLinux) {
+		else if (osi.isLinux()) {
 			fromResourceLibraries.add("libgfortran.so.3");
 		}
 		for (String dllName : fromResourceLibraries){
-			String RES_DLL = RES_PACKAGE + "/" + dllName;
+			//String RES_DLL = RES_PACKAGE + "/" + dllName;
+			String RES_DLL = osi.getResourcePackage() + dllName;
 			File file_dll = new java.io.File(getSolversDirectory(), dllName);
 			if (!librariesLoaded.contains(file_dll)) {
 				if (!file_dll.exists()) {
@@ -346,9 +310,9 @@ public class ResourceUtil {
 	 * @throws Error if load fails
 	 */
 	public static void setNativeLibraryDirectory( ) throws Error {
-		if (!nativeLibrariesSetup) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (!nativeLibrariesSetup) {
 			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
-			String nativeDir = iRoot + "/nativelibs/" + NATIVE_LIB_DIR;
+			String nativeDir = iRoot + "/nativelibs/" + osi.getNativeLibDirectory(); 
 			NativeLoader.setNativeLibraryDirectory(nativeDir);
 		}
 		nativeLibrariesSetup = true;
@@ -472,8 +436,8 @@ public class ResourceUtil {
 
 	}
 	public static void writeFileFromResource(String resname, File file) throws IOException {
-		writeResourceToFile(resname,file);
-		if (!bWindows) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		writeResourceToFile(resname,file);
+		if (osi.getOsType().isUnixLike()) {
 			System.out.println("Make " + file + " executable");
 			Process p = Runtime.getRuntime().exec("chmod 755 " + file);
 			try {

@@ -56,6 +56,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelsNetPanel;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -105,7 +106,8 @@ public class BiomodelsDB_TestSuite {
 			 * we're running on the right JVM. (Note we can run this on 64 bit machine, just have to install
 			 * a 32 bit JVM...)
 			 */
-			if (!ResourceUtil.NATIVE_LIB_DIR.equals("win32")) {
+			OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+			if (!osi.isWindows() || osi.is64bit()) {
 				System.err.println("run on 32 bit JVM");
 				System.exit(99);
 			}

@@ -75,35 +75,6 @@ public static void archiveByDateAndTime(String fileName, String arcDir) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 8:43:41 AM)
- * @return java.lang.String
- * @param keyword java.lang.String
- */
-public static String getEnvVariable(String keyword, org.vcell.util.SessionLog log) {
-	String value = null;
-	String[] command = null;
-	
-	if (ResourceUtil.bWindows) {
-		command = new String[]{"cmd.exe", "/c" , "echo %" + keyword + "%"};
-	} else {
-		command = new String[]{"echo", "$" + keyword};
-	}
-	
-	try {
-		Executable exe = new Executable(command);
-		exe.start();
-		value = exe.getStdoutString().trim();
-	} catch (Exception e) {
-		log.exception(e);
-	}
-	
-	return value;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (12/3/2003 9:32:25 AM)
