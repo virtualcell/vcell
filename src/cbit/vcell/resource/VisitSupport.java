@@ -7,8 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 
@@ -52,13 +50,15 @@ public class VisitSupport {
 
 	public static File getVisToolShellScript() throws URISyntaxException
 	{
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		String vcellvisitScript = null;
-		if (ResourceUtil.bWindows){
+		if (osi.isWindows()) {
 			vcellvisitScript = "vcellvisit.cmd";
 		}else{
 			vcellvisitScript = "vcellvisit.sh";
 		}
-		java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + vcellvisitScript);
+		//java.net.URL url = ResourceUtil.class.getResource(ResourceUtil.RES_PACKAGE + "/" + vcellvisitScript);
+		java.net.URL url = ResourceUtil.class.getResource(osi.getResourcePackage() + vcellvisitScript);
 		return new File(url.toURI());
 	}
 
@@ -121,7 +121,7 @@ public class VisitSupport {
 	public static void launchVisTool(ExecutableFinder executableFinder) throws IOException, ExecutableException, URISyntaxException, BackingStoreException
 	{
 		
-		if (ResourceUtil.bMac) {
+		if (OperatingSystemInfo.getInstance().isMac()) {
 			launchVisToolMac(executableFinder);
 			return;
 		}
