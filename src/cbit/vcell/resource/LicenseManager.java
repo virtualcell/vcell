@@ -105,8 +105,10 @@ public class LicenseManager {
 	 */
 	public static String getLicenseText(LibraryLicense license) {
 		try {
+			OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 			String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
-			urlS += license.category.name() + '/' + ResourceUtil.NATIVE_LIB_DIR + '/' + license.filename;
+			//urlS += license.category.name() + '/' + ResourceUtil.NATIVE_LIB_DIR + '/' + license.filename;
+			urlS += license.category.name() + '/' + osi.getNativeLibDirectory() + license.filename;
 			URL url = new URL(urlS);
 			try (InputStreamReader is = new InputStreamReader(url.openStream())) {
 				try (java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A")) {

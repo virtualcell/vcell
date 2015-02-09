@@ -107,23 +107,4 @@ public class CopasiOptimizationSolver {
 		return odeSolverResultSet;
 	}
 	
-	public static void main(String[] args) {
-		try{
-			String fileName = "";
-			if (ResourceUtil.bWindows) {
-				fileName = "D:\\COPASI\\copasiOptXml.txt";
-			} else	if (ResourceUtil.bMac) {
-				fileName = "/Users/fgao/opttest/opt.xml";
-			} else if (ResourceUtil.bLinux) {
-				fileName = "/home/CAM/eboyce/opttest/opt.xml";
-			}
-			String optXML = FileUtils.readFileToString(new File(fileName));
-			System.out.println(optXML);
-			CopasiOptSolverCallbacks coc = new CopasiOptSolverCallbacks();
-			solve(optXML, coc);
-		}catch(Throwable t)
-		{
-			t.printStackTrace(System.err);
-		}
-	}
 }

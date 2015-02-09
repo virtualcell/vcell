@@ -97,7 +97,7 @@ public class ChomboLevel {
 		final int absRefinementThisLevel = getAbsoluteRefinement();
 		
 		BoxMaxes bMaxes = level0.getBoxMaxes(); 
-		bMaxes.addToAllDimensions(1);
+		bMaxes.addToAllDimensions(2);
 		bMaxes.multiplyAllDimensionsBy(absRefinementThisLevel);
 
 		final int numZ = ( chomboMesh.getDimension() == 2 ) ? 1 : bMaxes.get(BoxMaxes.Z);

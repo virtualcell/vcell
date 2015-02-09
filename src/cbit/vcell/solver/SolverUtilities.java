@@ -101,9 +101,6 @@ public class SolverUtilities {
 	 */
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
 		if (solverDescription.getSolverExecutable() != null) {
-			if (!ResourceUtil.bWindows && !ResourceUtil.bMac && !ResourceUtil.bLinux) {
-				throw new RuntimeException("Native solvers are supported on Windows, Linux and Mac OS X.");
-			}
 			getExes(solverDescription);
 		}
 	}

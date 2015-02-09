@@ -13,12 +13,13 @@ import org.vcell.util.PropertyLoader;
  *
  */
 abstract class CygwinDLL implements LicensedLibrary {
+	private final OperatingSystemInfo operatingSystemInfo = OperatingSystemInfo.getInstance();
 	/**
 	 * @return true if not Windows. If Windows, return whether user has accepted license
 	 */
 	@Override
 	public boolean isLicensed() {
-		if (ResourceUtil.bWindows) {
+		if (operatingSystemInfo.isWindows()) {
 			return LicenseManager.isLicensed(LibraryLicense.CYGWIN);
 		}
 		return true;
@@ -38,7 +39,8 @@ abstract class CygwinDLL implements LicensedLibrary {
 	public URL downloadUrl() {
 		try {
 			String urlS = PropertyLoader.getProperty(PropertyLoader.vcellDownloadDir,"http://vcell.org/webstart/");
-			urlS += LibraryLicense.CYGWIN.category.name() + '/' + ResourceUtil.NATIVE_LIB_DIR + '/' + version(); 
+			//urlS += LibraryLicense.CYGWIN.category.name() + '/' + ResourceUtil.NATIVE_LIB_DIR + '/' + version(); 
+			urlS += LibraryLicense.CYGWIN.category.name() + '/' + operatingSystemInfo.getNativeLibDirectory() + version(); 
 			return new URL(urlS);
 		} catch (MalformedURLException mue) {
 			throw new RuntimeException("bad code", mue);
@@ -47,7 +49,7 @@ abstract class CygwinDLL implements LicensedLibrary {
 	
 	@Override
 	public boolean isInstalled() {
-		if (ResourceUtil.bWindows) {
+		if (operatingSystemInfo.isWindows()) {
 			return LicenseManager.isPresent(this);
 		}
 		return true;
@@ -55,7 +57,7 @@ abstract class CygwinDLL implements LicensedLibrary {
 
 	@Override
 	public void makePresentIn(File directory) {
-		if (ResourceUtil.bWindows) {
+		if (operatingSystemInfo.isWindows()) {
 			if (!isLicensed()) {
 				throw new IllegalStateException(getClass( ).getName() + ".makePresentIn called while not licensed");
 			}
