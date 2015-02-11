@@ -47,7 +47,7 @@ public VoltageClampStimulus(Electrode argElectrode, String argName, Expression a
 	
 	try {
 		parameterContext.setLocalParameters(localParameters);
-	} catch (PropertyVetoException e) {
+	} catch (PropertyVetoException | ExpressionBindingException e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}

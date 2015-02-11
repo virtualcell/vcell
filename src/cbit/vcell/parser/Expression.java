@@ -773,6 +773,48 @@ public static Expression function(FunctionType funcType, Expression... expressio
 	return function(funcType.getName(), expressions);
 }
 
+public static Expression or(Expression... expressions) {
+	Expression exp = new Expression();
+	ASTOrNode orNode = new ASTOrNode();
+
+	for (Expression expression1 : expressions) {
+		Node termNode = expression1.rootNode.copyTree();
+		orNode.jjtAddChild(termNode);
+	}
+   	
+	exp.rootNode = orNode;
+	return exp;
+}
+
+public static Expression and(Expression... expressions) {
+	Expression exp = new Expression();
+	ASTAndNode andNode = new ASTAndNode();
+
+	for (Expression expression1 : expressions) {
+		Node termNode = expression1.rootNode.copyTree();
+		andNode.jjtAddChild(termNode);
+	}
+   	
+	exp.rootNode = andNode;
+	return exp;
+}
+
+public static Expression not(Expression expression) {
+	Expression exp = new Expression();
+	ASTNotNode notNode = new ASTNotNode();
+	Node termNode = expression.rootNode.copyTree();
+	//
+	// get rid of double negative
+	//
+	if (termNode instanceof ASTNotNode){
+		exp.rootNode = (SimpleNode)termNode.jjtGetChild(0);
+	}else{	
+		notNode.jjtAddChild(termNode);
+		exp.rootNode = notNode;
+	}	
+	return exp;
+}
+
 public static Expression relational(String logicalOperation, Expression exp1, Expression exp2) {
 	Expression exp = new Expression();
 	ASTRelationalNode relNode = new ASTRelationalNode();

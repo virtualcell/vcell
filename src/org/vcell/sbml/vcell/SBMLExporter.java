@@ -83,8 +83,10 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -1051,9 +1053,8 @@ protected void addEvents() {
 			Trigger trigger = sbmlEvent.createTrigger();
 			// if trigger expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
 			Expression triggerExpr = null;
-			triggerExpr = null;
 			try {
-				triggerExpr = vcEvent.getTrigger().getGeneratedExpression();
+				triggerExpr = vcEvent.generateTriggerExpression();
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException("SBMLExporter.addEvents() error: "+e.getMessage(), e);
@@ -1062,10 +1063,11 @@ protected void addEvents() {
 			trigger.setMath(math);
 			
 			// create delay
-			if (vcEvent.getDelay() != null) {
+			LocalParameter delayParameter = vcEvent.getParameter(ParameterType.TriggerDelay);
+			if (delayParameter != null && delayParameter.getExpression()!=null && !delayParameter.getExpression().isZero()) {
 				Delay delay = sbmlEvent.createDelay();
 				// if delay expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
-				Expression delayExpr = vcEvent.getDelay().getDurationExpression();
+				Expression delayExpr = delayParameter.getExpression();
 				math = getFormulaFromExpression(delayExpr);
 				delay.setMath(math);
 			}

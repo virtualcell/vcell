@@ -1,7 +1,6 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.RateRule;
@@ -12,6 +11,7 @@ import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -37,11 +37,23 @@ public class ModelUnitConverter {
 		}
 		
 		for (ReactionStep reactionStep : newBioModel.getModel().getReactionSteps()) {
+			SymbolTable oldSymbolTable = oldBioModel.getModel().getReactionStep(reactionStep.getName());
+			SymbolTable newSymbolTable = reactionStep;
 			for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
-				convertVarsWithUnitFactors(oldBioModel.getModel().getReactionStep(reactionStep.getName()), reactionStep, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
-				convertVarsWithUnitFactors(oldBioModel.getModel().getReactionStep(reactionStep.getName()), reactionStep, p);
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+			}
+		}
+		for (ReactionRule reactionRule : newBioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
+			SymbolTable oldSymbolTable = oldBioModel.getModel().getRbmModelContainer().getReactionRule(reactionRule.getName()).getKineticLaw().getScopedSymbolTable();
+			SymbolTable newSymbolTable = reactionRule.getKineticLaw().getScopedSymbolTable();
+			for (Parameter p : reactionRule.getKineticLaw().getUnresolvedParameters()){
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
+			}
+			for (Parameter p : reactionRule.getKineticLaw().getKineticsParameters()){
+				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
 		}
 		for (SimulationContext simContext : newBioModel.getSimulationContexts()) {
@@ -68,37 +80,25 @@ public class ModelUnitConverter {
 					convertVarsWithUnitFactors(oldElectricalStimulus.getNameScope().getScopedSymbolTable(), newElectricalStimulus.getNameScope().getScopedSymbolTable(), p);
 				}
 			}
-			// convert events : trigger, delay, event assignments
-			VCUnitDefinition oldTimeUnit = oldModel.getUnitSystem().getTimeUnit();
-			VCUnitDefinition newTimeUnit = newModel.getUnitSystem().getTimeUnit();
-			BioEvent[] events = simContext.getBioEvents();
-			if (events != null) {
-				for (BioEvent event : events) {
-					BioEvent oldEvent = oldSimContext.getBioEvent(event.getName());
-					ScopedSymbolTable oldSymbolTable = oldEvent.getNameScope().getScopedSymbolTable();
-					ScopedSymbolTable newSymbolTable = event.getNameScope().getScopedSymbolTable();
-	
-					// trigger expression
-					Expression triggerExpr = event.getTrigger().getGeneratedExpression();
-					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, null, null, triggerExpr);
-					
-					// delay expression
-					Delay eventDelay = event.getDelay();
-					if (eventDelay != null) {
-						Expression delayExpr = event.getDelay().getDurationExpression();
-						convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTimeUnit, newTimeUnit, delayExpr);
-					}
-					// for each event assignment expression
-					for (int i=0;i<event.getEventAssignments().size();i++){
-						EventAssignment newEventAssignment = event.getEventAssignments().get(i);
-						EventAssignment oldEventAssignment = oldEvent.getEventAssignments().get(i);
-						VCUnitDefinition oldTargetUnit = oldEventAssignment.getTarget().getUnitDefinition();
-						VCUnitDefinition newTargetUnit = newEventAssignment.getTarget().getUnitDefinition();
-						Expression eventAssgnExpr = newEventAssignment.getAssignmentExpression();
-						convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, eventAssgnExpr);
-					}
-				}	// end for - events
-			}	// end if (events != null)
+			// convert events : trigger and delay parameters and event assignments
+			for (int i=0; simContext.getBioEvents()!=null && oldSimContext.getBioEvents()!=null && i<simContext.getBioEvents().length; i++){
+				BioEvent newBioEvent = simContext.getBioEvents()[i];
+				BioEvent oldBioEvent = oldSimContext.getBioEvent(newBioEvent.getName());
+				for (Parameter p : newBioEvent.getEventParameters()){
+					convertVarsWithUnitFactors(oldBioEvent.getNameScope().getScopedSymbolTable(), newBioEvent.getNameScope().getScopedSymbolTable(), p);
+				}
+				// for each event assignment expression
+				for (int e=0;e<newBioEvent.getEventAssignments().size();e++){
+					ScopedSymbolTable newSymbolTable = newBioEvent.getNameScope().getScopedSymbolTable();
+					ScopedSymbolTable oldSymbolTable = oldBioEvent.getNameScope().getScopedSymbolTable();
+					EventAssignment newEventAssignment = newBioEvent.getEventAssignments().get(e);
+					EventAssignment oldEventAssignment = oldBioEvent.getEventAssignments().get(e);
+					VCUnitDefinition oldTargetUnit = oldEventAssignment.getTarget().getUnitDefinition();
+					VCUnitDefinition newTargetUnit = newEventAssignment.getTarget().getUnitDefinition();
+					Expression eventAssgnExpr = newEventAssignment.getAssignmentExpression();
+					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, eventAssgnExpr);
+				}
+			}
 			
 			/**
 			 * @TODO: If rate rule variable unit is TBD, we still need to handle the rate expression unit.

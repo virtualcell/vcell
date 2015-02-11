@@ -19,11 +19,12 @@ import java.util.Set;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.ScopedExpression;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 
@@ -31,11 +32,10 @@ import cbit.vcell.parser.SymbolTable;
 public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideTableModel<BioEvent> implements PropertyChangeListener{
 
 	public final static int COLUMN_EVENT_NAME = 0;
-//	public final static int COLUMN_EVENT_TRIGGER_EXPR = 1;
-//	public final static int COLUMN_EVENT_DELAY_EXPR = 2;
-//	public final static int COLUMN_EVENT_ASSIGN_VARS_LIST = 3;
+	public final static int COLUMN_EVENT_TRIGGER_DESCRIPTION = 1;
+	public final static int COLUMN_EVENT_ACTIONS = 2;
 	
-	private static String[] columnNames = new String[] {"Name"/*, "Trigger", "Delay", "Event Assignment Vars"*/};
+	private static String[] columnNames = new String[] {"Event Name", "Trigger Condition", "Actions"};
 
 	public EventsSummaryTableModel(ScrollTable table) {
 		super(table, columnNames);
@@ -46,15 +46,12 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			case COLUMN_EVENT_NAME:{
 				return String.class;
 			}
-//			case COLUMN_EVENT_TRIGGER_EXPR:{
-//				return ScopedExpression.class;
-//			}
-//			case COLUMN_EVENT_DELAY_EXPR:{
-//				return ScopedExpression.class;
-//			}
-//			case COLUMN_EVENT_ASSIGN_VARS_LIST:{
-//				return String.class;
-//			}
+			case COLUMN_EVENT_TRIGGER_DESCRIPTION:{
+				return String.class;
+			}
+			case COLUMN_EVENT_ACTIONS:{
+				return String.class;
+			}
 			default:{
 				return Object.class;
 			}
@@ -72,9 +69,11 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();
 				try{
+					Expression delayExp = bioEvent.getParameter(ParameterType.TriggerDelay).getExpression();
+					Expression generatedTriggerExp = bioEvent.generateTriggerExpression();
 					if (bioEvent.getName().toLowerCase().contains(lowerCaseSearchText)
-						|| bioEvent.getTrigger() != null && bioEvent.getTrigger().getGeneratedExpression().infix().toLowerCase().contains(lowerCaseSearchText)
-						|| bioEvent.getDelay() != null && bioEvent.getDelay().getDurationExpression().infix().toLowerCase().contains(lowerCaseSearchText)) {					
+						|| generatedTriggerExp.infix().toLowerCase().contains(lowerCaseSearchText)
+						|| delayExp != null && delayExp.infix().toLowerCase().contains(lowerCaseSearchText)) {					
 						bioEventList.add(bioEvent);
 					}
 				}catch(ExpressionException e){
@@ -94,33 +93,25 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 					case COLUMN_EVENT_NAME: {
 						return event.getName();
 					} 
-//					case COLUMN_EVENT_TRIGGER_EXPR: {
-//						if (event.getTriggerExpression() == null) {
-//							return null; 
-//						} else {
-//							return new ScopedExpression(event.getTriggerExpression(), event.getNameScope());
-//						}
-//					}
-//					case COLUMN_EVENT_DELAY_EXPR: {
-//						Delay delay = event.getDelay();
-//						if (delay == null) {
-//							return "None"; 
-//						} else {
-//							return new ScopedExpression(delay.getDurationExpression(), event.getNameScope());
-//						}
-//					}
-//					case COLUMN_EVENT_ASSIGN_VARS_LIST: {
-//						ArrayList<EventAssignment> eas = event.getEventAssignments();
-//						if (eas.size() == 0) {
-//							return "None";
-//						} 
-//						String varNames = "";
-//						for (EventAssignment ea : eas) {
-//							varNames = varNames.concat(ea.getTarget().getName() + ", ");
-//						}
-//						varNames = varNames.substring(0, varNames.lastIndexOf(","));
-//						return varNames;
-//					} 
+					case COLUMN_EVENT_TRIGGER_DESCRIPTION: {
+						return event.getTriggerDescription();
+					}
+					case COLUMN_EVENT_ACTIONS: {
+						ArrayList<EventAssignment> eas = event.getEventAssignments();
+						if (eas.size() == 0) {
+							return "No actions defined";
+						} 
+						String varNames = "";
+						for (EventAssignment ea : eas) {
+							varNames = varNames.concat(ea.getTarget().getName() + ", ");
+						}
+						varNames = varNames.substring(0, varNames.lastIndexOf(","));
+						LocalParameter delayParam = event.getParameter(ParameterType.TriggerDelay);
+						if (delayParam.getExpression()!=null && !delayParam.getExpression().isZero()){
+							return delayParam.getExpression().infix()+" "+delayParam.getUnitDefinition().getSymbol()+" after trigger reset "+varNames;
+						}
+						return "on trigger reset "+varNames;
+					} 
 				}
 			}
 //			else {
@@ -170,7 +161,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			}
 			BioEvent bioEvent = getValueAt(row);
 			if (bioEvent == null) {
-				bioEvent = simulationContext.createBioEvent(null);
+				bioEvent = simulationContext.createBioEvent();
 			} else {
 				bioEvent = getValueAt(row);
 			}

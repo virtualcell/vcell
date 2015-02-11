@@ -10,10 +10,6 @@
 
 package cbit.vcell.xml;
 
-import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.TriggerAtMultipleTimes;
-import cbit.vcell.mapping.BioEvent.TriggerOnVarValue;
-
 /**
  * This class contains all the XML tags.
  */
@@ -505,19 +501,8 @@ public class XMLTags {
 	public final static String DelayTag = "Delay";
 	public final static String EventAssignmentTag = "EventAssignment";
 	public final static String EventAssignmentVariableAttrTag = "Variable";
-	public final static String TriggerClassAttrTag = "triggerClass";
-	public final static String TriggerParameters = "TriggerParameters";
-	public final static String TriggerParamTimeSymbolAttrTag = "timeSymbol";
-	public final static String TriggerParamCompareAttrTag = "compare";
-	public final static String TriggerParamValueAttrTag = "value";
-	public final static String TriggerParamSpecListTag = "list";
-	public final static String TriggerParamValueNameAttrTag = "name";
-	public final static String TriggerParamSpecNameAttrTag = "name";
-	public final static String TriggerParamSpecMinAttrTag = "minVal";
-	public final static String TriggerParamSpecMaxAttrTag = "maxVal";
-	public final static String TriggerParamSpecNumValsAttrTag = "numVals";
-	public final static String TriggerParamSpecIsLogAttrTag = "isLogInterval";
-	public final static String TriggerParamSpecTypeAttrTag = "specType";
+  	public static final String BioEventTriggerTypeAttrTag = "TriggerType";
+	
 	
 	// for rate rules
 	public final static String RateRulesTag = "RateRules";
@@ -689,5 +674,5 @@ public class XMLTags {
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";
-	
+
 }

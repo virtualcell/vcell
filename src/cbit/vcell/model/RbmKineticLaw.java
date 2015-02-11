@@ -139,7 +139,7 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 					parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.MassActionForwardRate.getDefaultName(), new Expression(0.0), RbmKineticLaw.ParameterType.MassActionForwardRate.getRole(), unit_TBD, RbmKineticLaw.ParameterType.MassActionForwardRate.getDescription()),
 					parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.MassActionReverseRate.getDefaultName(), new Expression(0.0), RbmKineticLaw.ParameterType.MassActionReverseRate.getRole(), unit_TBD, RbmKineticLaw.ParameterType.MassActionReverseRate.getDescription()),
 				});
-			} catch (PropertyVetoException e) {
+			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
@@ -151,7 +151,7 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 						parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.MichaelisMentenKcat.getDefaultName(), new Expression(0.0), RbmKineticLaw.ParameterType.MichaelisMentenKcat.getRole(), unit_TBD, RbmKineticLaw.ParameterType.MichaelisMentenKcat.getDescription()), 
 						parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.MichaelisMentenKm.getDefaultName(),   new Expression(0.0), RbmKineticLaw.ParameterType.MichaelisMentenKm.getRole(),   unit_TBD, RbmKineticLaw.ParameterType.MichaelisMentenKm.getDescription()),
 				});
-			} catch (PropertyVetoException e) {
+			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
@@ -163,7 +163,7 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 						parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.SaturableKs.getDefaultName(),   new Expression(0.0), RbmKineticLaw.ParameterType.SaturableKs.getRole(),   unit_TBD, RbmKineticLaw.ParameterType.SaturableKs.getDescription()),
 						parameterContext.new LocalParameter(RbmKineticLaw.ParameterType.SaturableVmax.getDefaultName(), new Expression(0.0), RbmKineticLaw.ParameterType.SaturableVmax.getRole(), unit_TBD, RbmKineticLaw.ParameterType.SaturableVmax.getDescription()), 								
 				});
-			} catch (PropertyVetoException e) {
+			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage(),e);
 			}
