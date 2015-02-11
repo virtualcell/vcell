@@ -126,6 +126,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGOutputFileParser.printBNGNetOutput(outputSpec);
 		
 		Model model = transformedSimulationContext.getModel();
+		
 		ReactionContext reactionContext = transformedSimulationContext.getReactionContext();
 		try {
 		System.out.println("Parameters : \n");
@@ -141,23 +142,31 @@ public class NetworkTransformer implements SimContextTransformer {
 			model.getRbmModelContainer().addParameter(p.getName(), exp);
 		}
 		
-		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
+		// ---------------------------------------------------------------------------------------------------------------------------
 		System.out.println("\n\nSpecies : \n");
-//		Map<String, Species> sMap = new HashMap<String, Species>();
-//		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
+		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
+		Map<String, Species> sMap = new HashMap<String, Species>();
+		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
+		Map<String, BNGSpecies> crossMap = new HashMap<String, BNGSpecies>();
+		
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
-//			System.out.println(i+1 + ":\t\t"+ s.toString());
-			SpeciesContext species = model.getSpeciesContextByPattern(s.getName());
-			if(species != null) {
-//				System.out.println("   ...already exists.");
-				speciesMap.put(s.getNetworkFileIndex(), species.getName());		// existing name
+			System.out.println(i+1 + ":\t\t"+ s.toString());
+			
+			if(s.getName().contains("R")) {
+				System.out.println("bng name: " + s.getName());
+			}
+			
+			SpeciesContext sc = model.getSpeciesContextByPattern(s.getName());
+			if(sc != null) {
+				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...already exists.");
+				speciesMap.put(s.getNetworkFileIndex(), sc.getName());		// existing name
+				sMap.put(sc.getName(), sc.getSpecies());
+				scMap.put(sc.getName(), sc);
+				crossMap.put(sc.getName(), s);
 				continue;
 			}
-			int count = 0;		// generate unique name for the species
-			
-			
-			
+			int count = 0;				// generate unique name for the species
 			String speciesName = null;
 			String nameRoot = "s";
 			
@@ -172,13 +181,13 @@ public class NetworkTransformer implements SimContextTransformer {
 						break;
 					}
 				}
-				if(model.getSpecies(nameRoot) == null && model.getSpeciesContext(nameRoot) == null) {
+				if(model.getSpecies(nameRoot) == null && model.getSpeciesContext(nameRoot) == null && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
 					speciesName = nameRoot;		// the name is good and unused
 				} else {
 					nameRoot += "_";
 					while (true) {
 						speciesName = nameRoot + count;	
-						if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
+						if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
 							break;
 						}	
 						count++;
@@ -187,30 +196,20 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else {			// for plain species it works as before
 				while (true) {
 					speciesName = nameRoot + count;	
-					if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
+					if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
 						break;
 					}	
 					count++;
 				}
 			}
-			
-			
-//			String speciesName = null;
-//			while (true) {
-//				speciesName = "s" + count;	
-//				if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null) {
-//					break;
-//				}	
-//				count++;
-//			}
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
 			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
 			speciesContext.setName(speciesName);
 			model.addSpecies(speciesContext.getSpecies());
 			model.addSpeciesContext(speciesContext);
-//			sMap.put(speciesName, speciesContext.getSpecies());
-//			scMap.put(speciesName, speciesContext);
-			
+			sMap.put(speciesName, speciesContext.getSpecies());
+			scMap.put(speciesName, speciesContext);
+			crossMap.put(speciesName, s);
 			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(speciesContext);
 			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
 			param.setExpression(s.getConcentration());
@@ -223,13 +222,61 @@ public class NetworkTransformer implements SimContextTransformer {
 				entityMappings.add(em);
 			}
 		}
+		
+//		System.out.println("------------------------ " + scMap.size() + " species contexts in the map.");
+//		System.out.println("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");
+//
+//		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+//		scMap.values().toArray(sca);
+//		for(SpeciesContext sc1 : model.getSpeciesContexts()) {
+//			boolean found = false;
+//			for(SpeciesContext sc2 : sca) {
+//				if(sc1 == sc2) {
+//					found = true;
+//					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
+//					break;
+//				}
+//			}
+//			if(found == false) {
+//				System.out.println("species context not found " + sc1.getName());
+//				scMap.put(sc1.getName(), sc1);
+//				sMap.put(sc1.getName(), sc1.getSpecies());
+//			}
+//		}
 //		Species[] sa = new Species[sMap.size()];
 //		sMap.values().toArray(sa); 
+//		for(Species s1 : model.getSpecies()) {
+//			boolean found = false;
+//			for(Species s2 : sa) {
+//				if(s1 == s2) {
+//					found = true;
+//					System.out.println("found species " + s1.getCommonName());
+//					break;
+//				}
+//			}
+//			if(found == false) {
+//				System.out.println("species not found " + s1.getCommonName());
+//				
+//			}
+//		}
+//
 //		model.setSpecies(sa);
-//		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
-//		scMap.values().toArray(sca); 
 //		model.setSpeciesContexts(sca);
-
+//		
+//		for(SpeciesContext sc : sca) {
+//			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
+//			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
+//			BNGSpecies s = crossMap.get(sc.getName());
+//			param.setExpression(s.getConcentration());
+//			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
+//			if (origSpeciesContext!=null){
+//				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,sc);
+//				entityMappings.add(em);
+//			}else{
+//				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(sc),sc);
+//				entityMappings.add(em);
+//			}
+//		}
 		
 		System.out.println("\n\nReactions : \n");
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
