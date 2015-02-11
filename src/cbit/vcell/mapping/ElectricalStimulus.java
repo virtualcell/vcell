@@ -31,6 +31,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -171,7 +172,7 @@ protected ElectricalStimulus(ElectricalStimulus otherStimulus, SimulationContext
 
 	try {
 		parameterContext.setLocalParameters(newParameters);
-	} catch (PropertyVetoException e) {
+	} catch (PropertyVetoException | ExpressionBindingException e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}
@@ -199,8 +200,9 @@ public void addUnresolvedParameter(String parameterName) {
  * Insert the method's description here.
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
+ * @throws ExpressionBindingException 
  */
-public LocalParameter addUserDefinedParameter(String parameterName, Expression expression, VCUnitDefinition unit) throws PropertyVetoException {
+public LocalParameter addUserDefinedParameter(String parameterName, Expression expression, VCUnitDefinition unit) throws PropertyVetoException, ExpressionBindingException {
 	return parameterContext.addLocalParameter(parameterName,expression,ROLE_UserDefined,unit,RoleDescs[ROLE_UserDefined]);
 }
 

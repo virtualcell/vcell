@@ -38,6 +38,8 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
@@ -2256,7 +2258,20 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			}
 		}
 	}
-
+	BioEvent[] bioevents = simContext.getBioEvents();
+	for (BioEvent be : bioevents) {
+		// transform the bioEvent trigger/delay to math Event
+		for (LocalParameter p : be.getEventParameters()){
+			if (p.getExpression()!=null){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(p.getExpression(),p.getUnitDefinition(),null),null));
+			}else if (be.getParameter(ParameterType.GeneralTriggerFunction) == p){
+				//
+				// use generated function here.
+				//
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(be.generateTriggerExpression(),p.getUnitDefinition(),null),null));
+			}
+		}
+	}
 	//
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
@@ -2734,17 +2749,20 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	}
 
 	// events - add events to math desc for event assignments that have parameters as target variables
-	BioEvent[] bioevents = simContext.getBioEvents();
 	if (bioevents != null && bioevents.length > 0) {
 		for (BioEvent be : bioevents) {
 			// transform the bioEvent trigger/delay to math Event
-			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTrigger().getGeneratedExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
+			LocalParameter genTriggerParam = be.getParameter(ParameterType.GeneralTriggerFunction);
+			Expression mathTriggerExpr = getIdentifierSubstitutions(new Expression(genTriggerParam,be.getNameScope()), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
+			
 			Delay mathDelay = null;
-			if (be.getDelay() != null) {
-				boolean bUseValsFromTriggerTime = be.getDelay().useValuesFromTriggerTime();
-				Expression mathDelayExpr = getIdentifierSubstitutions(be.getDelay().getDurationExpression(), timeUnit, null);
+			LocalParameter delayParam = be.getParameter(ParameterType.TriggerDelay);
+			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().compareEqual(new Expression(0.0))){
+				boolean bUseValsFromTriggerTime = be.getUseValuesFromTriggerTime();
+				Expression mathDelayExpr = getIdentifierSubstitutions(new Expression(delayParam, be.getNameScope()), timeUnit, null);
 				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
 			}
+			
 			// now deal with (bio)event Assignment translation to math EventAssignment 
 			ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
 			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>(); 

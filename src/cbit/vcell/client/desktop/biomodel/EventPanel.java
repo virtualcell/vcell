@@ -57,8 +57,9 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
 import cbit.vcell.model.Model;
@@ -136,10 +137,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 						if(evt.getOldValue() != null){
 							//Make sure uncommitted change is saved
 							BioEvent oldBioevent = ((BioEvent)evt.getOldValue());
-							Delay newDelay = createDelay(oldBioevent,getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
-							if(!Compare.isEqualOrNull(oldBioevent.getDelay(), newDelay)){
-								setNewDelay(oldBioevent, getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
-							}
+							setNewDelay(oldBioevent,getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
 						}
 					}catch(Exception e){
 						e.printStackTrace();
@@ -357,10 +355,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 //								System.out.println("-----I lost Focus "+bErrorDialog+" "+delayTextField.hashCode()+" autolist visible="+delayTextField.isPopupVisible()+" "+(getBioEvent()==null?null:getBioEvent().hashCode()));
 								if(!delayTextField.isPopupVisible()){
 									try{
-										Delay newDelay = createDelay(getBioEvent(),getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
-										if(!Compare.isEqualOrNull(getBioEvent().getDelay(), newDelay)){
-											setNewDelay(getBioEvent(), getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
-										}
+										setNewDelay(getBioEvent(),getDelayTextField().getText(),getSimulationContext(),getRdbtnTrigTime().isSelected());
 									}catch(Exception e){
 										e.printStackTrace();
 									}
@@ -902,14 +897,14 @@ public class EventPanel extends DocumentEditorSubPanel {
 //					e.printStackTrace();
 //					getLabelTriggerType().setText(getBioEvent().getTrigger().getClass().getSimpleName());
 //				}
-				getLabelTriggerType().setText(getBioEvent().getTrigger().getClass().getSimpleName());
-				Delay delay = fieldBioEvent.getDelay();
-				if (delay != null) {
-					if(delay.getDurationExpression() != null && delay.getDurationExpression().infix().trim().length() > 0){
-						getDelayTextField().setText(delay.getDurationExpression().infix());
+				getLabelTriggerType().setText(getBioEvent().getTriggerType().name());
+				LocalParameter delayParam = getBioEvent().getParameter(ParameterType.TriggerDelay);
+				if (delayParam != null) {
+					if (delayParam.getExpression() != null){
+						getDelayTextField().setText(delayParam.getExpression().infix());
 					}
 					enableTriggerRadioButtons(true);
-					if(delay.useValuesFromTriggerTime()){
+					if(getBioEvent().getUseValuesFromTriggerTime()){
 						getRdbtnTrigTime().setSelected(true);
 					}else{
 						getRdbtnDelayTime().setSelected(true);
@@ -941,13 +936,13 @@ public class EventPanel extends DocumentEditorSubPanel {
 			getRdbtnTrigTime().setEnabled(isEnabled);
 		}
 		
-		private static void setNewDelay(BioEvent bioEvent,String text,SimulationContext simulationContext,boolean bUseValuesFromTriggerTime) throws ExpressionException{
+		private static void setNewDelay(BioEvent bioEvent,String text,SimulationContext simulationContext,boolean bUseValuesFromTriggerTime) throws ExpressionException, PropertyVetoException{
 //			try {
 				if (bioEvent == null) {
 					return;
 				}
-				BioEvent.Delay newDelay = createDelay(bioEvent,text,simulationContext,bUseValuesFromTriggerTime);
-				bioEvent.setDelay(newDelay);
+				bioEvent.setParameterValue(ParameterType.TriggerDelay, new Expression(text));
+				bioEvent.setUseValuesFromTriggerTime(bUseValuesFromTriggerTime);
 				
 //			} catch (ExpressionException e1) {
 //				e1.printStackTrace(System.out);
@@ -970,18 +965,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			triggerExpr.bindExpression(simulationContext);
 			return triggerExpr;
 		}
-		
-		private static BioEvent.Delay createDelay(BioEvent bioEvent,String text,SimulationContext simulationContext,boolean bUseValuesFromTriggerTime) throws ExpressionException{
-			Delay delay = null;
-			if (bioEvent != null && simulationContext != null &&
-					text != null && text.trim().length() > 0) {
-				Expression durationExpression = new Expression(text);
-				durationExpression.bindExpression(simulationContext);
-				delay = bioEvent.new Delay(bUseValuesFromTriggerTime, durationExpression);
-			}
-			return delay;
-		}
-		
+				
 	@Override
 	public void setEnabled(boolean enabled) {		
 		if (!enabled) {
@@ -1010,7 +994,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 					try{
 						ElectricalStimulusPanel.graphTimeFunction(
 								EventPanel.this,
-								getBioEvent().getTrigger().getGeneratedExpression(),
+								getBioEvent().generateTriggerExpression(),
 //								bindTriggerExpression(getTriggerTextField().getText(), getSimulationContext()),
 								getSimulationContext(),
 								getSimulationContext().getModel().getTIME(),
@@ -1067,7 +1051,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 	}
 	private JButton getButtonEditTrigger() {
 		if (buttonEditTrigger == null) {
-			buttonEditTrigger = new JButton("Edit...");
+			buttonEditTrigger = new JButton("Edit Trigger...");
 			buttonEditTrigger.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
