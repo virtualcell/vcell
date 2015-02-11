@@ -75,7 +75,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.LibraryLicense;
 import cbit.vcell.resource.LicensedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
@@ -480,7 +479,8 @@ public void addAnalysisTask(AnalysisTask analysisTask) throws PropertyVetoExcept
 	}
 }
 
-public BioEvent createBioEvent(String preferredName) throws PropertyVetoException {
+public BioEvent createBioEvent() throws PropertyVetoException {
+	String preferredName = "event0";
 	String eventName = getFreeEventName(preferredName);
 	BioEvent bioEvent = new BioEvent(eventName, this);
 	return addBioEvent(bioEvent);
@@ -2184,20 +2184,16 @@ public BioEvent getEvent(String name) {
 }
 
 public String getFreeEventName(String preferredName) {
-	if(preferredName != null){
-		if(preferredName.length() > 0){
-			preferredName = TokenMangler.fixTokenStrict(preferredName);
-		}else{
-			preferredName = null;
-		}
+	String prefix = "event0";
+	if(preferredName != null && preferredName.length() > 0){
+		prefix = TokenMangler.fixTokenStrict(preferredName);
 	}
-	int count = 0;
+	String eventName = prefix;
 	while (true) {
-		String eventName = (preferredName != null?preferredName:"event") + (preferredName != null?(count>0?count:""):count);
 		if (getEvent(eventName) == null) {
 			return eventName;
 		}
-		count ++;
+		eventName = TokenMangler.getNextEnumeratedToken(eventName);
 	}
 }
 

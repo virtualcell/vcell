@@ -16,8 +16,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -26,10 +24,6 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.BioEvent.BioEventTrigger;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<BioEvent> {	
@@ -97,28 +91,24 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 	public static void createOrEditTrigger(Component owner,SimulationContext simulationContext,BioEvent existingBioEvent){
 		try {
 			TriggerTemplatePanel triggerTemplatePanel = new TriggerTemplatePanel();
-			triggerTemplatePanel.init(simulationContext,(existingBioEvent == null?simulationContext.getFreeEventName(null):existingBioEvent.getName()),EventPanel.getAutoCompleteFilter(),existingBioEvent);
-			BioEventTrigger bioEventTrigger = null;
+			
+			BioEvent bioEvent = existingBioEvent;
+			if (existingBioEvent==null){
+				bioEvent = simulationContext.createBioEvent();
+			}
+			
+			triggerTemplatePanel.init(simulationContext,EventPanel.getAutoCompleteFilter(),bioEvent);
 			while(true){
-				int result = DialogUtils.showComponentOKCancelDialog(owner, triggerTemplatePanel, "Enter event name and choose 1 suitable template");
-				if(result != JOptionPane.OK_OPTION){
-					return;
-				}
-				//precheck expression binding before making bioevent
 				try{
-					bioEventTrigger = triggerTemplatePanel.createBioEventTrigger();
-					bioEventTrigger.bindGeneratedExpression(simulationContext);
+					int result = DialogUtils.showComponentOKCancelDialog(owner, triggerTemplatePanel, "event trigger");
+					if(result != JOptionPane.OK_OPTION){
+						return;
+					}
+					triggerTemplatePanel.setTrigger(bioEvent);
 					break;
 				}catch(Exception e){
-					DialogUtils.showErrorDialog(owner,
-						"Error with trigger: "+(existingBioEvent==null || existingBioEvent.getTrigger()==null?"":existingBioEvent.getTrigger().getClass().getSimpleName())+"\n"+e.getMessage());
+					DialogUtils.showErrorDialog(owner,"Error editing event: \n"+e.getMessage());
 				}
-			}
-			if(existingBioEvent != null){
-				existingBioEvent.setTrigger(bioEventTrigger);
-			}else{
-				BioEvent newBioEvent = simulationContext.createBioEvent(triggerTemplatePanel.getEventPreferredName());
-				newBioEvent.setTrigger(bioEventTrigger);
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);

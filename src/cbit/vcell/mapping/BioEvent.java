@@ -17,57 +17,40 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collections;
+import java.util.List;
 
 import org.vcell.util.Compare;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
+import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.BioEvent.TriggerType;
+import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.Variable;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.units.UnitSystemProvider;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
 @SuppressWarnings("serial")
 public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
 	
 	private static final String PROPERTY_NAME_NAME = "name";
-
-	private final class BioEventParameterPolicy implements ParameterPolicy, Serializable {
-		public boolean isUserDefined(LocalParameter localParameter) {
-			return (localParameter.getRole() == ROLE_UserDefined);
-		}
-
-		public boolean isExpressionEditable(LocalParameter localParameter) {
-			return true;
-		}
-
-		public boolean isNameEditable(LocalParameter localParameter) {
-			return true;
-		}
-
-		public boolean isUnitEditable(LocalParameter localParameter) {
-			return isUserDefined(localParameter);
-		}
-	}
-
-	private final class BioEventUnitSystemProvider implements UnitSystemProvider, Serializable {
-		public VCUnitSystem getUnitSystem() {
-			return getSimulationContext().getModel().getUnitSystem();
-		}
-	}
 
 	public class BioEventNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -149,286 +132,184 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			assignmentExpression.bindExpression(BioEvent.this.parameterContext);
 		}	
 	}
-	
-	public class Delay implements Matchable, Serializable {
-		private boolean bUseValuesFromTriggerTime;
-		private Expression durationExpression = null;
-		
-		public Delay(boolean bUseValuesFromTriggerTime, Expression durationExpression) throws ExpressionBindingException {
-			this.bUseValuesFromTriggerTime = bUseValuesFromTriggerTime;
-			this.durationExpression = durationExpression;
-			durationExpression.bindExpression(BioEvent.this.parameterContext);
-		}
-		
-		public Delay(Delay argDelay) {
-			this.bUseValuesFromTriggerTime = argDelay.bUseValuesFromTriggerTime;
-			this.durationExpression = new Expression(argDelay.durationExpression);
-		}
-		
-		public boolean compareEqual(Matchable obj) {
-			if (obj == null) {
-				return false;
-			}
-			if (!(obj instanceof Delay)) {
-				return false;
-			}
-			Delay delay = (Delay)obj;
-			
-			if (bUseValuesFromTriggerTime != delay.bUseValuesFromTriggerTime) {
-				return false;
-			}
-			if (!Compare.isEqual(durationExpression, delay.durationExpression)) {
-				return false;
-			}
 
-			return true;
+	public static enum ParameterType {
+		GeneralTriggerFunction(0,"GeneralTriggerFunction","triggerFunction","fires on each rising edge"),
+		Observable(1,"Observable","observable","observable to watch"),
+		Threshold(2,"Threshold", "threshold","threshold for observable"),
+		SingleTriggerTime(4, "SingleTriggerTime", "triggerTime","time of trigger"),
+		RangeMinTime(5,"RangeMinTime", "minTime","time range min"),
+		RangeMaxTime(6,"RangeMaxTime", "maxTime","time range max"),
+		RangeNumTimes(7, "RangeNumTimes", "numTimes","num times in range"),
+		TriggerDelay(8, "TriggerDelay", "delay","trigger delay"),
+		TimeListItem(9, "TimeListItem", null,"time list entry"),
+		UserDefined(10, "UserDefined", null,"user defined");
+		
+		private final int role;
+		private final String roleXmlName;
+		private final String defaultName;
+		private final String description;
+		
+		private ParameterType(int role,String roleXmlName,String defaultName,String description){
+			this.role = role;
+			this.roleXmlName = roleXmlName;
+			this.defaultName = defaultName;
+			this.description = description;
 		}
-		public final boolean useValuesFromTriggerTime() {
-			return bUseValuesFromTriggerTime;
+		
+		public int getRole(){
+			return role;
 		}
-		public final Expression getDurationExpression() {
-			return durationExpression;
+	
+		public String getRoleXmlName(){
+			return roleXmlName;
 		}
-		public void rebind() throws ExpressionBindingException {
-			durationExpression.bindExpression(BioEvent.this.parameterContext);
+	
+		public String getDefaultName() {
+			return defaultName;
+		}
+	
+		public String getDescription() {
+			return description;
+		}
+		
+		public static ParameterType fromRole(int role){
+			for (ParameterType type : values()){
+				if (type.getRole()==role){
+					return type;
+				}
+			}
+			return null;
+		}
+
+		public static ParameterType fromRoleXmlName(String roleStr) {
+			for (ParameterType type : values()){
+				if (type.getRoleXmlName().equals(roleStr)){
+					return type;
+				}
+			}
+			return null;
 		}
 	}
-	ParameterPolicy parameterPolicy = new BioEventParameterPolicy();
-	public final static int ROLE_UserDefined = 0;
+
+	public static enum TriggerType {
+		GeneralTrigger("GeneralTrigger"),
+		SingleTriggerTime("SingleTriggerTime"),
+		ObservableAboveThreshold("ObservableAboveThreshold"),
+		ObservableBelowThreshold("ObservableBelowThreshold"),
+		LinearRangeTimes("LinearRangeTimes"),
+		LogRangeTimes("LogRangeTimes"),
+		ListOfTimes("ListOfTimes");
+		
+		private final String xmlName;
+		private TriggerType(String xmlName){
+			this.xmlName = xmlName;
+		}
+		
+		public String getXmlName(){
+			return this.xmlName;
+		}
+		
+		public static TriggerType fromXmlName(String xmlName){
+			for (TriggerType tt : values()){
+				if (tt.xmlName.equals(xmlName)){
+					return tt;
+				}
+			}
+			return null;
+		}
+	}
 	
+	private class ParameterContextSettings implements Serializable, ParameterPolicy, UnitSystemProvider, GlobalParameterContext {
+
+		@Override /* ParameterPolicy */
+		public boolean isUserDefined(LocalParameter localParameter) {
+			return (localParameter.getRole() == ParameterType.UserDefined.getRole());
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isExpressionEditable(LocalParameter localParameter) {
+			return (localParameter.getExpression()!=null);
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isNameEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isUnitEditable(LocalParameter localParameter) {
+			return isUserDefined(localParameter);
+		}
+		
+		@Override /* UnitSystemProvider */
+		public VCUnitSystem getUnitSystem() {
+			return getSimulationContext().getModel().getUnitSystem();
+		}
+		
+		@Override /* GlobalParameterContext */
+		public ScopedSymbolTable getSymbolTable() {
+			return getSimulationContext().getModel();
+		}
+		
+		@Override /* GlobalParameterContext */
+		public Parameter getParameter(String name) {
+			return getSimulationContext().getModel().getModelParameter(name);
+		}
+		
+		@Override /* GlobalParameterContext */
+		public Parameter addParameter(String name, Expression exp, VCUnitDefinition unit) throws PropertyVetoException {
+			Model model = getSimulationContext().getModel();
+			return model.addModelParameter(model.new ModelParameter(name, exp, Model.ROLE_UserDefined, unit));
+		}
+
+	};
+	
+	private final ParameterContextSettings parameterContextSettings = new ParameterContextSettings();
+	private TriggerType triggerType;
+	private boolean bUseValuesFromTriggerTime;
 	private BioEventNameScope nameScope = new BioEventNameScope();
-	private ParameterContext parameterContext = new ParameterContext(nameScope, parameterPolicy, new BioEventUnitSystemProvider());
+	private final ParameterContext parameterContext;
 	private String name;
-	private BioEventTrigger bioEventTrigger = null;
-	private Delay delay = null;
 	private ArrayList<EventAssignment> eventAssignmentList = new ArrayList<EventAssignment>();
 
 	protected SimulationContext simulationContext = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoPropertyChange;
 	
-	//Trigger Types Interface/Class Definitions
-	public enum TriggerComparison {greaterThan,lessThan,greaterThanOrEqual,lessThanOrEqual; 
-	public String getExprString(){
-		return (this==TriggerComparison.greaterThan?">":"")+
-		(this==TriggerComparison.lessThan?"<":"")+
-		(this==TriggerComparison.greaterThanOrEqual?">=":"")+
-		(this==TriggerComparison.lessThanOrEqual?"<=":"");
-		}
-	};
-	public interface BioEventTrigger extends Serializable,Matchable{
-		Expression getGeneratedExpression() throws ExpressionException;
-		void bindGeneratedExpression(SymbolTable symbolTable) throws ExpressionBindingException;
-	}
-	public static class TriggerGeneral implements BioEventTrigger{
-		private Expression generatedExpression;
-		public TriggerGeneral(Expression triggerExpression){
-			this.generatedExpression = triggerExpression;
-		}
-		@Override
-		public boolean compareEqual(Matchable obj) {
-			return 
-				obj != null &&
-				obj instanceof TriggerGeneral &&
-				((TriggerGeneral)obj).generatedExpression.equals(generatedExpression);
-		}
-		@Override
-		public void bindGeneratedExpression(SymbolTable symbolTable) throws ExpressionBindingException{
-			getGeneratedExpression().bindExpression(symbolTable);
-		}
-		@Override
-		public Expression getGeneratedExpression(){
-			return generatedExpression;
-		}
-	}
-	public static class TriggerOnVarValue implements BioEventTrigger{
-		private SymbolTableEntry symbolTableEntry;
-		private TriggerComparison comparison;
-		private Constant value;
-		private Expression generatedExpression;
-		public TriggerOnVarValue(SymbolTableEntry symbolTableEntry,TriggerComparison comparison, Constant value) {
-			this.symbolTableEntry = symbolTableEntry;
-			this.comparison = comparison;
-			this.value = value;
-		}
-		@Override
-		public Expression getGeneratedExpression() throws ExpressionException{
-			if(generatedExpression == null){
-				generatedExpression = new Expression(symbolTableEntry.getName()+comparison.getExprString()+value.getConstantValue());
-			}
-			return generatedExpression;
-		}
-		public SymbolTableEntry getSymbolTableEntry() {
-			return symbolTableEntry;
-		}
-		public TriggerComparison getComparison() {
-			return comparison;
-		}
-		public Constant getValue() {
-			return value;
-		}
-		@Override
-		public boolean compareEqual(Matchable obj) {
-			return 
-				obj != null &&
-				obj instanceof TriggerOnVarValue &&
-				((TriggerOnVarValue)obj).symbolTableEntry.equals(symbolTableEntry) &&
-				((TriggerOnVarValue)obj).comparison.equals(comparison) &&
-				((TriggerOnVarValue)obj).value.equals(value);
-		}
-		@Override
-		public void bindGeneratedExpression(SymbolTable symbolTable)throws ExpressionBindingException {
-			try{
-				getGeneratedExpression().bindExpression(symbolTable);
-			}catch(ExpressionException e){
-				throw new ExpressionBindingException(e.getMessage());
-			}
-		}
-	}
-	
-	public static class TriggerAtSingleTime implements BioEventTrigger{
-		private SymbolTableEntry timeSymbolTableEntry;
-		private Constant timeValue;
-		private Expression generatedExpression;
-		public TriggerAtSingleTime(SymbolTableEntry timeSymbolTableEntry,Constant timeValue) {
-			this.timeSymbolTableEntry = timeSymbolTableEntry;
-			this.timeValue = timeValue;
-		}
-		@Override
-		public Expression getGeneratedExpression() throws ExpressionException{
-			if(generatedExpression == null){
-				generatedExpression = new Expression(timeSymbolTableEntry.getName()+TriggerComparison.greaterThanOrEqual.getExprString()+timeValue.getConstantValue());
-			}
-			return generatedExpression;
-		}
-		public Constant getTimeValue() {
-			return timeValue;
-		}
-		public SymbolTableEntry getTimeSymbolTableEntry(){
-			return timeSymbolTableEntry;
-		}
-		@Override
-		public boolean compareEqual(Matchable obj) {
-			return 
-				obj != null &&
-				obj instanceof TriggerAtSingleTime &&
-				timeSymbolTableEntry.equals(((TriggerAtSingleTime)obj).timeSymbolTableEntry) &&
-				((TriggerAtSingleTime)obj).timeValue.equals(timeValue);
-		}
-		@Override
-		public void bindGeneratedExpression(SymbolTable symbolTable)throws ExpressionBindingException {
-			try{
-				getGeneratedExpression().bindExpression(symbolTable);
-			}catch(ExpressionException e){
-				throw new ExpressionBindingException(e.getMessage());
-			}
-		}
-
-	}
-	
-	public static class TriggerAtMultipleTimes implements BioEventTrigger{
-		private SymbolTableEntry timeSymbolTableEntry;
-		private ConstantArraySpec constantArraySpec;
-		private Expression generatedExpression;
-		public TriggerAtMultipleTimes(SymbolTableEntry timeSymbolTableEntry,ConstantArraySpec constantArraySpec){
-			this.timeSymbolTableEntry = timeSymbolTableEntry;
-			this.constantArraySpec = constantArraySpec;
-		}
-		public ConstantArraySpec getConstantArraySpec(){
-			return constantArraySpec;
-		}
-		public SymbolTableEntry getTimeSymbolTableEntry(){
-			return timeSymbolTableEntry;
-		}
-		private static Constant[] getSortedTimesCopy(Constant[] times) throws Exception{
-			final Exception[] failFlag = new Exception[1];
-			Constant[] constantArray = times.clone();
-			Arrays.sort(constantArray,new Comparator<Constant>() {
-				@Override
-				public int compare(Constant o1, Constant o2) {
-					try{
-						return (int)Math.signum(o1.getConstantValue()-o2.getConstantValue());
-					}catch(Exception e){
-						if(failFlag[0] == null){
-							failFlag[0] = e;
-						}
-						return 0;
-					}
-				}
-			});
-			if(failFlag[0] != null){
-				throw new Exception("Error sorting times"+failFlag[0].getClass().getSimpleName()+" "+failFlag[0].getMessage());
-			}
-			return constantArray;
-		}
-		@Override
-		public Expression getGeneratedExpression() throws ExpressionException{
-			if(generatedExpression == null){
-				double epsilon = Double.MAX_VALUE;
-				Constant[] times = null;
-				try{
-					times = getSortedTimesCopy(constantArraySpec.getConstants());
-				}catch(Exception e){
-					e.printStackTrace();
-					throw new ExpressionException(this.getClass().getSimpleName()+".getExpression() failed to sort times for epsilon calulation: "+e.getMessage());
-				}
-				Constant prevNum = times[0];
-				for(Constant sortNum:times){
-					if(sortNum != prevNum){
-						if((sortNum.getConstantValue()-prevNum.getConstantValue())<epsilon){
-							epsilon = sortNum.getConstantValue()-prevNum.getConstantValue();
-						}
-					}
-				}
-				epsilon/= 2.0;
-				
-				StringBuffer sb = new StringBuffer();
-				for(Constant sortNum:times){
-					String subExpr = "(("+timeSymbolTableEntry.getName()+">="+sortNum.getExpression().infix()+") && ("+timeSymbolTableEntry.getName()+"<("+sortNum.getExpression().infix()+"+"+epsilon+")))";
-					sb.append((sb.length()!=0?" || ":"")+subExpr);
-				}
-				generatedExpression = new Expression(sb.toString());
-			}
-			return generatedExpression;
-			
-		}
-		@Override
-		public boolean compareEqual(Matchable obj) {
-			return 
-				obj != null &&
-				obj instanceof TriggerAtMultipleTimes &&
-				timeSymbolTableEntry.equals(((TriggerAtSingleTime)obj).timeSymbolTableEntry) &&
-				((TriggerAtMultipleTimes)obj).constantArraySpec.equals(constantArraySpec);
-		}
-		@Override
-		public void bindGeneratedExpression(SymbolTable symbolTable)throws ExpressionBindingException {
-			try{
-				getGeneratedExpression().bindExpression(symbolTable);
-			}catch(ExpressionException e){
-				throw new ExpressionBindingException(e.getMessage());
-			}
-		}
-	}
 	
 	public BioEvent(String name, SimulationContext simContext){
-		this(name, new TriggerAtSingleTime(ReservedVariable.TIME,new Constant("singleTime",new Expression(0.0))), null, new ArrayList<EventAssignment>(), simContext);
+		this(name, TriggerType.SingleTriggerTime, true, new ArrayList<EventAssignment>(), simContext);
 	}
 	
-	public BioEvent(String name, BioEventTrigger bioEventTrigger, Delay delay, ArrayList<EventAssignment> eventAssignmentList, SimulationContext simContext) {
+	public BioEvent(String name, TriggerType triggerType, boolean bUseValuesFromTrigger, ArrayList<EventAssignment> eventAssignmentList, SimulationContext simContext) {
 		super();
 		this.name = name; 
-		this.bioEventTrigger = bioEventTrigger;
-		this.delay = delay;
+		this.bUseValuesFromTriggerTime = bUseValuesFromTrigger;
 		this.eventAssignmentList = eventAssignmentList;
 		simulationContext = simContext;
+		this.parameterContext = new ParameterContext(getNameScope(),parameterContextSettings, parameterContextSettings);
+		// propagate property change events from parameter context to Kinetic Law listeners.
+
+		setTriggerType(triggerType);
+		
+		parameterContext.addPropertyChangeListener(this);
+		
 	}
 
 	public BioEvent(BioEvent argBioEvent, SimulationContext argSimContext) {
 		this.simulationContext = argSimContext;
 		this.name = argBioEvent.getName();
-		this.bioEventTrigger = argBioEvent.getTrigger();
-		if (argBioEvent.getDelay() != null) {
-			this.delay = new Delay(argBioEvent.getDelay());
+		this.bUseValuesFromTriggerTime = argBioEvent.bUseValuesFromTriggerTime;
+		this.triggerType = argBioEvent.getTriggerType();
+		this.parameterContext = new ParameterContext(getNameScope(),parameterContextSettings, parameterContextSettings);
+		for (LocalParameter p : argBioEvent.parameterContext.getLocalParameters()){
+			try {
+				parameterContext.addLocalParameter(p.getName(), new Expression(p.getExpression()), p.getRole(), p.getUnitDefinition(), p.getDescription());
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException("failed to copy parameters for BioEvent "+getName(),e);
+			}
 		}
 		for (int i = 0; i < argBioEvent.getNumEventAssignments(); i++) {
 			EventAssignment oldEA = argBioEvent.getEventAssignments().get(i);
@@ -442,14 +323,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			this.eventAssignmentList.add(newEA);
 		}
 	}
-	public final BioEventTrigger getTrigger() {
-		return bioEventTrigger;
+
+	public final TriggerType getTriggerType() {
+		return this.triggerType;
 	}
 	
-	public final Delay getDelay() {
-		return delay;
-	}
-
 	public SimulationContext getSimulationContext() {
 		return simulationContext;
 	}
@@ -465,42 +343,6 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		firePropertyChange(PROPERTY_NAME_NAME, oldValue, newValue);
 	}
 
-	public void setTrigger(BioEventTrigger bioEventTrigger) {
-		BioEventTrigger oldValue = this.bioEventTrigger;
-		this.bioEventTrigger = bioEventTrigger;
-		firePropertyChange("trigger", oldValue, bioEventTrigger);
-	}
-	
-	public void setDelay(Delay newDelay) {
-		Delay oldValue = delay;
-		this.delay = newDelay;
-		firePropertyChange("delay", oldValue, newDelay);
-	}
-
-	public boolean compareEqual(Matchable obj) {
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof BioEvent)) {
-			return false;
-		}
-		
-		BioEvent event = (BioEvent) obj;		
-		if (!Compare.isEqual(getName(),event.getName())){
-			return false;
-		}
-		if (!Compare.isEqual(bioEventTrigger, event.bioEventTrigger)) {
-			return false;
-		}
-		if (!Compare.isEqualOrNull(delay, event.delay)) {
-			return false;
-		}
-		if (!Compare.isEqual(eventAssignmentList, event.eventAssignmentList)) {
-			return false;
-		}
-		return true;
-	}
-
 	public ArrayList<EventAssignment> getEventAssignments() {
 		return eventAssignmentList;
 	}
@@ -508,6 +350,254 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public int getNumEventAssignments() {
 		return eventAssignmentList.size();
 	}
+	
+	
+	public Expression getParameterValue(ParameterType parameterType) {
+		if(parameterContext.getLocalParameterFromRole(parameterType.getRole()) == null) {
+			return null;
+		}
+		return parameterContext.getLocalParameterFromRole(parameterType.getRole()).getExpression();
+	}
+
+	public LocalParameter getParameter(ParameterType parameterType) {
+		return parameterContext.getLocalParameterFromRole(parameterType.getRole());
+	}
+
+	public ParameterType getParameterType(LocalParameter parameter) {
+		if (!parameterContext.contains(parameter)){
+			throw new RuntimeException("parameter "+parameter.getName()+" not found in bioEvent "+getName());
+		}
+		return ParameterType.fromRole(parameter.getRole());
+	}
+
+	public void setParameterValue(ParameterType parameterType, Expression expression) throws ExpressionBindingException, PropertyVetoException {
+		parameterContext.getLocalParameterFromRole(parameterType.getRole()).setExpression(expression);
+	}
+	
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
+		// look for negative times ... etc.
+	}
+	
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof BioEvent){
+			BioEvent other = (BioEvent)obj;
+			if (!Compare.isEqual(getName(),other.getName())){
+				return false;
+			}
+			if (getTriggerType() != other.getTriggerType()){
+				return false;
+			}
+			if (!Compare.isEqual(parameterContext,  other.parameterContext)){
+				return false;
+			}
+			if (this.bUseValuesFromTriggerTime != other.bUseValuesFromTriggerTime){
+				return false;
+			}
+			if (!Compare.isEqual(eventAssignmentList, other.eventAssignmentList)) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public LocalParameter[] getEventParameters() {
+		return parameterContext.getLocalParameters();
+	}
+
+	public Parameter[] getProxyParameters() {
+		return parameterContext.getProxyParameters();
+	}
+
+	public Parameter[] getUnresolvedParameters() {
+		return parameterContext.getUnresolvedParameters();
+	}
+
+	public void renameParameter(String name, String newName) throws ExpressionException, PropertyVetoException {
+		parameterContext.renameLocalParameter(name, newName);
+	}
+
+	public void convertParameterType(Parameter param, boolean bConvertToGlobal) throws PropertyVetoException, ExpressionBindingException {
+		if ((param instanceof LocalParameter) && ((LocalParameter)param).getRole() != ParameterType.UserDefined.getRole()) {
+			throw new RuntimeException("Cannot convert pre-defined local parameter : \'" + param.getName() + "\' to global parameter.");
+		}
+
+		parameterContext.convertParameterType(param, bConvertToGlobal, parameterContextSettings);
+	}
+
+	public void setParameterValue(LocalParameter parm, Expression exp, boolean autocreateLocalParameter) throws PropertyVetoException, ExpressionException {
+		parameterContext.setParameterValue(parm, exp, autocreateLocalParameter);
+	}
+
+	public void resolveUndefinedUnits() {
+		parameterContext.resolveUndefinedUnits();
+	}
+
+	public void refreshDependencies() {
+		removePropertyChangeListener(this);
+		addPropertyChangeListener(this);
+
+		parameterContext.removePropertyChangeListener(this);
+		parameterContext.addPropertyChangeListener(this);
+		
+		parameterContext.refreshDependencies();
+	}
+
+	
+	
+	public Expression generateTriggerExpression() throws ExpressionException {
+
+		SymbolTableEntry timeSymbolTableEntry = getSimulationContext().getModel().getTIME();
+		Expression tExp = new Expression(timeSymbolTableEntry,getNameScope());
+
+		switch (triggerType){
+		case GeneralTrigger:{
+			return new Expression(getParameter(ParameterType.GeneralTriggerFunction),getNameScope());
+		}
+		case ListOfTimes:{
+			ArrayList<LocalParameter> timeParams = new ArrayList<LocalParameter>();
+			for (LocalParameter p : parameterContext.getLocalParameters()){
+				if (p.getRole() == ParameterType.TimeListItem.getRole()){
+					timeParams.add(p);
+				}
+			}
+			
+			if (timeParams.size()==0){
+				throw new RuntimeException("no times found for BioEvent "+getName());
+			}
+			
+			//
+			// only one time, very simple  (t >= t0)
+			//
+			if (timeParams.size()==1){
+				Expression timeParamExp = new Expression(timeParams.get(0), getNameScope());
+				return Expression.relational(">=", tExp, timeParamExp);
+			}
+			
+			//
+			// if more than one, flatten time expressions to get list of doubles for event triggers.
+			// these numbers are sorted to find the minimum distance between adjacent times.
+			// epsilon is 1/2 of this inter-trigger time interval (to insert a falling edge between events)
+			//
+			ArrayList<Double> timeValues = new ArrayList<Double>();
+			for (LocalParameter p : timeParams){
+				timeValues.add(MathUtilities.substituteModelParameters(p.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant());
+			}
+			Collections.sort(timeValues);
+			double epsilon = Double.MAX_VALUE;
+			for (int i=0; i<timeValues.size()-1; i++){
+				double absdiff = Math.abs(timeValues.get(i) - timeValues.get(i+1));
+				epsilon = Math.min(epsilon,  absdiff);
+			}
+			epsilon/= 2.0;
+			
+			//
+			// construct (((t >= t0) && (t <= t0+epsilon)) || ((t >= t1) && (t <= t1+epsilon)) || ((t >= t2) && (t <= t2+epsilon))) 
+			//
+			ArrayList<Expression> timeClauses = new ArrayList<Expression>();
+			for (LocalParameter timeParam : timeParams){
+				Expression timeParamExp = new Expression(timeParam, getNameScope());
+				Expression timeParamExpPlusEpsilon = Expression.add(timeParamExp, new Expression(epsilon));
+				timeClauses.add(
+						Expression.and(
+							Expression.relational(">=", tExp, timeParamExp), 
+							Expression.relational("<=", tExp, timeParamExpPlusEpsilon)));
+			}
+			if (timeClauses.size()==1){
+				return timeClauses.get(0);
+			}else{
+				// put all individual time clauses together
+				return Expression.or(timeClauses.toArray(new Expression[timeClauses.size()]));
+			}
+		}
+		case LinearRangeTimes:
+		case LogRangeTimes:{
+			//
+			// if more than one, flatten time expressions to get list of doubles for event triggers.
+			// these numbers are sorted to find the minimum distance between adjacent times.
+			// epsilon is 1/2 of this inter-trigger time interval (to insert a falling edge between events)
+			//
+			LocalParameter firstTimeParam = getParameter(ParameterType.RangeMinTime);
+			LocalParameter lastTimeParam = getParameter(ParameterType.RangeMaxTime);
+			LocalParameter numTimesParam = getParameter(ParameterType.RangeNumTimes);
+			double firstTime = MathUtilities.substituteModelParameters(firstTimeParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
+			double lastTime = MathUtilities.substituteModelParameters(lastTimeParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
+			double numTimes = MathUtilities.substituteModelParameters(numTimesParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
+			Expression first = new Expression(firstTimeParam,getNameScope());
+			Expression last = new Expression(lastTimeParam,getNameScope());
+			Expression num = new Expression(numTimesParam,getNameScope());
+			
+			
+			ArrayList<Expression> timeExps = new ArrayList<Expression>();
+			ArrayList<Double> timeValues = new ArrayList<Double>();
+
+			timeValues.add(firstTime);
+			timeExps.add(first);
+			if (getTriggerType() == TriggerType.LinearRangeTimes){
+				double delta = (lastTime-firstTime)/(numTimes - 1);
+				Expression deltaExp = Expression.div(Expression.add(last,Expression.negate(first)), Expression.add(num, new Expression(-1)));
+				for (int i=1;i<numTimes;i++){
+					timeValues.add(firstTime + delta * i);
+					Expression eventTime = Expression.add(first, Expression.mult(deltaExp, new Expression(i)));
+					timeExps.add(eventTime);
+				}
+			}else if (getTriggerType() == TriggerType.LogRangeTimes){
+				double ratio = lastTime/firstTime;
+				Expression ratioExp = Expression.div(last, first);
+				double n_minus_1 = numTimes - 1;
+				Expression n_minus_1_exp = Expression.add(num, new Expression(-1));
+				for (int i=1;i<numTimes;i++){
+					timeValues.add(firstTime * Math.pow(ratio, i/n_minus_1));
+					timeExps.add(Expression.mult(first, Expression.power(ratioExp, Expression.div(new Expression(i), n_minus_1_exp))));
+				}
+			}
+			
+			double epsilon = Double.MAX_VALUE;
+			for (int i=0; i<timeValues.size()-1; i++){
+				double absdiff = Math.abs(timeValues.get(i) - timeValues.get(i+1));
+				epsilon = Math.min(epsilon,  absdiff);
+			}
+			epsilon/= 2.0;
+			
+			//
+			// construct (((t >= t0) && (t <= t0+epsilon)) || ((t >= t1) && (t <= t1+epsilon)) || ((t >= t2) && (t <= t2+epsilon))) 
+			//
+			ArrayList<Expression> timeClauses = new ArrayList<Expression>();
+			for (Expression timeExp : timeExps){
+				Expression timeExpPlusEpsilon = Expression.add(timeExp, new Expression(epsilon));
+				timeClauses.add(
+						Expression.and(
+							Expression.relational(">=", tExp, timeExp), 
+							Expression.relational("<=", tExp, timeExpPlusEpsilon)));
+			}
+			if (timeClauses.size()==1){
+				return timeClauses.get(0);
+			}else{
+				// put all individual time clauses together
+				return Expression.or(timeClauses.toArray(new Expression[timeClauses.size()]));
+			}
+		}
+		case ObservableAboveThreshold:{
+			Expression highTrigger = Expression.relational(">=", new Expression(getParameter(ParameterType.Observable),getNameScope()), new Expression(getParameter(ParameterType.Threshold), getNameScope()));
+			return highTrigger;
+		}
+		case ObservableBelowThreshold:{
+			Expression lowTrigger = Expression.relational("<=", new Expression(getParameter(ParameterType.Observable),getNameScope()), new Expression(getParameter(ParameterType.Threshold), getNameScope()));
+			return lowTrigger;
+		}
+		case SingleTriggerTime:{
+			SymbolTableEntry time = getSimulationContext().getModel().getTIME();
+			return Expression.relational(">=", new Expression(time,getNameScope()), new Expression(getParameter(ParameterType.SingleTriggerTime), getNameScope()));
+		}
+		default:{
+			throw new RuntimeException("unexpected triggerType "+getTriggerType());
+		}
+		}
+	}
+	
+	
+
 	
 	/**
 	 * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -581,10 +671,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 
 	public void bind() throws ExpressionBindingException {
-		bioEventTrigger.bindGeneratedExpression(parameterContext);
-		if (delay != null) {
-			delay.rebind();
-		}
+		parameterContext.refreshDependencies();
 		for (EventAssignment eventAssignment : eventAssignmentList) {
 			eventAssignment.rebind();
 		}
@@ -594,7 +681,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		return name;
 	}
 
-	public NameScope getNameScope() {
+	public BioNameScope getNameScope() {
 		return nameScope;
 	}
 	
@@ -613,12 +700,259 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public void propertyChange(PropertyChangeEvent evt) {
 	}
 
-	public void refreshDependencies() {
-		try {
-			bind();
-		} catch (ExpressionBindingException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+	public boolean getUseValuesFromTriggerTime() {
+		return this.bUseValuesFromTriggerTime;
+	}
+
+	public void setTriggerType(TriggerType triggerType) {
+		if (triggerType == this.triggerType){
+			return;
+		}
+		
+		this.triggerType = triggerType;
+		
+		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+		VCUnitDefinition unit_TBD = modelUnitSystem.getInstance_TBD();
+		VCUnitDefinition unit_Dimensionless = modelUnitSystem.getInstance_DIMENSIONLESS();
+		VCUnitDefinition unit_modelTime = modelUnitSystem.getTimeUnit();
+
+		LocalParameter delayParam = parameterContext.new LocalParameter(
+				ParameterType.TriggerDelay.getDefaultName(), 
+				new Expression(0.0), 
+				ParameterType.TriggerDelay.getRole(), 
+				unit_modelTime, 
+				ParameterType.TriggerDelay.getDescription());
+		
+		LocalParameter generatedGeneralTriggerParam = parameterContext.new LocalParameter(
+				ParameterType.GeneralTriggerFunction.getDefaultName(), 
+				null, 
+				ParameterType.GeneralTriggerFunction.getRole(), 
+				unit_Dimensionless, 
+				ParameterType.GeneralTriggerFunction.getDescription());
+		
+		switch (triggerType){
+		case GeneralTrigger: {
+			try {
+				parameterContext.setLocalParameters(new LocalParameter[] {
+					delayParam,
+					parameterContext.new LocalParameter(
+							ParameterType.GeneralTriggerFunction.getDefaultName(), 
+							new Expression(0.0), 
+							ParameterType.GeneralTriggerFunction.getRole(), 
+							unit_Dimensionless, 
+							ParameterType.GeneralTriggerFunction.getDescription()),
+				});
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+			break;
+		}
+		case ObservableAboveThreshold:
+		case ObservableBelowThreshold: {
+			try {
+				parameterContext.setLocalParameters(new LocalParameter[] {
+						delayParam,
+						generatedGeneralTriggerParam,
+						parameterContext.new LocalParameter(
+								ParameterType.Observable.getDefaultName(), 
+								null, 
+								ParameterType.Observable.getRole(), 
+								unit_TBD, 
+								ParameterType.Observable.getDescription()), 
+						parameterContext.new LocalParameter(
+								ParameterType.Threshold.getDefaultName(), 
+								new Expression(1.0), 
+								ParameterType.Threshold.getRole(), 
+								unit_TBD, 
+								ParameterType.Threshold.getDescription()), 
+				});
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+			break;
+		}
+		case SingleTriggerTime: {
+			try {
+				parameterContext.setLocalParameters(new LocalParameter[] {
+						delayParam,
+						generatedGeneralTriggerParam,
+						parameterContext.new LocalParameter(
+								ParameterType.SingleTriggerTime.getDefaultName(), 
+								new Expression(1.0), 
+								ParameterType.SingleTriggerTime.getRole(), 
+								unit_modelTime, 
+								ParameterType.SingleTriggerTime.getDescription()), 
+				});
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+			break;
+		}
+		case LinearRangeTimes:
+		case LogRangeTimes: {
+			try {
+				parameterContext.setLocalParameters(new LocalParameter[] {
+						delayParam,
+						generatedGeneralTriggerParam,
+						parameterContext.new LocalParameter(
+								ParameterType.RangeMinTime.getDefaultName(), 
+								new Expression(1.0), 
+								ParameterType.RangeMinTime.getRole(), 
+								unit_modelTime, 
+								ParameterType.RangeMinTime.getDescription()), 
+						parameterContext.new LocalParameter(
+								ParameterType.RangeMaxTime.getDefaultName(), 
+								new Expression(10.0), 
+								ParameterType.RangeMaxTime.getRole(), 
+								unit_modelTime, 
+								ParameterType.RangeMaxTime.getDescription()), 
+						parameterContext.new LocalParameter(
+								ParameterType.RangeNumTimes.getDefaultName(), 
+								new Expression(9), 
+								ParameterType.RangeNumTimes.getRole(), 
+								unit_modelTime, 
+								ParameterType.RangeNumTimes.getDescription()), 
+				});
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+			break;
+		}
+		case ListOfTimes: {
+			try {
+				parameterContext.setLocalParameters(new LocalParameter[] {
+						delayParam,
+						generatedGeneralTriggerParam,
+						parameterContext.new LocalParameter(
+								ParameterType.TimeListItem.getDefaultName()+"0", 
+								new Expression(1.0), 
+								ParameterType.TimeListItem.getRole(), 
+								unit_modelTime, 
+								ParameterType.TimeListItem.getDescription()), 
+						parameterContext.new LocalParameter(
+								ParameterType.TimeListItem.getDefaultName()+"1", 
+								new Expression(2.0), 
+								ParameterType.TimeListItem.getRole(), 
+								unit_modelTime, 
+								ParameterType.TimeListItem.getDescription()), 
+						parameterContext.new LocalParameter(
+								ParameterType.TimeListItem.getDefaultName()+"2", 
+								new Expression(3.0), 
+								ParameterType.TimeListItem.getRole(), 
+								unit_modelTime, 
+								ParameterType.TimeListItem.getDescription()), 
+				});
+			} catch (PropertyVetoException | ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}
+			break;
+		}
+		default:{
+			throw new RuntimeException("unsupported rule-based kinetic law "+triggerType);
+		}
 		}
 	}
+
+	public void setTimeList(Expression[] listExps) throws ExpressionBindingException, PropertyVetoException {
+		if (triggerType != TriggerType.ListOfTimes){
+			throw new RuntimeException("list of times only available for "+TriggerType.ListOfTimes.name()+" trigger type");
+		}
+		//
+		// remove any existing TimeListItem parameters
+		//
+		ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();
+		for (LocalParameter p : getEventParameters()){
+			if (p.getRole() != ParameterType.TimeListItem.getRole()){
+				parameters.add(p);
+			}
+		}
+		//
+		// generate new TimeListItem parameters from function arguments
+		//
+		VCUnitDefinition timeUnit = getSimulationContext().getModel().getUnitSystem().getTimeUnit();
+		String name = "t0";
+		for (Expression exp : listExps){
+			String description = ParameterType.TimeListItem.description;
+			int role = ParameterType.TimeListItem.getRole();
+			parameters.add(parameterContext.new LocalParameter(name, exp, role, timeUnit, description));
+			name = TokenMangler.getNextEnumeratedToken(name);
+		}
+		setParameters(parameters.toArray(new LocalParameter[0]));
+	}
+
+	public void setUseValuesFromTriggerTime(boolean bUseValuesFromTriggerTime) {
+		this.bUseValuesFromTriggerTime = bUseValuesFromTriggerTime;
+	}
+
+	public LocalParameter createNewParameter(String paramName, ParameterType parameterType, Expression exp, VCUnitDefinition unit) {
+		return parameterContext.new LocalParameter(paramName, exp, parameterType.role, unit, parameterType.description);
+	}
+
+	public void setParameters(LocalParameter[] parameters) throws PropertyVetoException, ExpressionBindingException {
+		parameterContext.setLocalParameters(parameters);
+	}
+
+	public String getTriggerDescription() {
+		switch (triggerType){
+		case GeneralTrigger:{
+			return "on condition: "+getParameter(ParameterType.GeneralTriggerFunction).getExpression().infix();
+		}
+		case LinearRangeTimes:
+		case LogRangeTimes:{
+			Expression numTimesExp = getParameter(ParameterType.RangeNumTimes).getExpression();
+			String numTimes = numTimesExp.infix();
+			if (numTimesExp.isNumeric()){
+				double numTimesDouble;
+				try {
+					numTimesDouble = numTimesExp.evaluateConstant();
+					if (numTimesDouble == Math.floor(numTimesDouble)){
+						numTimes = Integer.toString((int)Math.floor(numTimesDouble));
+					}
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+				}
+			}
+			String minTime = getParameter(ParameterType.RangeMinTime).getExpression().infix();
+			String maxTime = getParameter(ParameterType.RangeMaxTime).getExpression().infix();
+			String timeUnit = getParameter(ParameterType.RangeMinTime).getUnitDefinition().getSymbol();
+			if (triggerType == TriggerType.LinearRangeTimes){
+				return "at "+numTimes+" times from "+minTime+" to "+maxTime+" "+timeUnit+" (linear scale)";
+			}else{
+				return "at "+numTimes+" times from "+minTime+" to "+maxTime+" "+timeUnit+" (log scale)";
+			}
+		}
+		case ListOfTimes:{
+			StringBuffer sb = new StringBuffer();
+			for (LocalParameter p : getEventParameters()){
+				if (p.getRole() == ParameterType.TimeListItem.getRole()){
+					if (sb.length()==0){
+						sb.append(p.getExpression().infix());
+					}else{
+						sb.append(", "+p.getExpression().infix());
+					}
+				}
+			}
+			return "at times: ["+sb.toString()+"]";
+		}
+		case ObservableAboveThreshold:{
+			return "when "+getParameter(ParameterType.Observable).getExpression().infix()+" is above "+getParameter(ParameterType.Threshold).getExpression().infix();
+		}
+		case ObservableBelowThreshold:{
+			return "when "+getParameter(ParameterType.Observable).getExpression().infix()+" is below "+getParameter(ParameterType.Threshold).getExpression().infix();
+		}
+		case SingleTriggerTime:{
+			LocalParameter triggerTimeParam = getParameter(ParameterType.SingleTriggerTime);
+			return "at time of "+triggerTimeParam.getExpression().infix()+" "+triggerTimeParam.getUnitDefinition().getSymbol();
+		}
+		default:{
+			return "not yet implemented";
+		}
+		}
+	}
+
 }

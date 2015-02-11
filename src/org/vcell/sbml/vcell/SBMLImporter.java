@@ -132,8 +132,9 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
@@ -445,7 +446,11 @@ protected void addEvents() {
 				}
 				
 				//delay 
-				BioEvent vcEvent = new BioEvent(eventName, new BioEvent.TriggerGeneral(triggerExpr), null, null, simContext);
+				boolean bUseValuesFromTriggerTime = true;
+				if (event.isSetUseValuesFromTriggerTime()){
+					bUseValuesFromTriggerTime = event.getUseValuesFromTriggerTime();
+				}
+				BioEvent vcEvent = new BioEvent(eventName, TriggerType.GeneralTrigger, bUseValuesFromTriggerTime, new ArrayList<EventAssignment>(), simContext);
 				if (event.isSetDelay()) {
 					Expression durationExpr = null;
 					durationExpr = getExpressionFromFormula(event.getDelay().getMath());
@@ -466,8 +471,9 @@ protected void addEvents() {
 					if (durationExpr != null && !durationExpr.isZero()) {
 						bUseValsFromTriggerTime = false;
 					}
-					Delay vcDelay = vcEvent.new Delay(bUseValsFromTriggerTime, durationExpr);
-					vcEvent.setDelay(vcDelay);
+					
+					vcEvent.setParameterValue(ParameterType.TriggerDelay, durationExpr);
+					vcEvent.setUseValuesFromTriggerTime(bUseValsFromTriggerTime);
 				}
 				
 				// event assignments

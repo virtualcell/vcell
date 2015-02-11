@@ -50,7 +50,7 @@ public class CurrentDensityClampStimulus extends ElectricalStimulus {
 
 		try {
 			parameterContext.setLocalParameters(localParameters);
-		} catch (PropertyVetoException e) {
+		} catch (PropertyVetoException | ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}

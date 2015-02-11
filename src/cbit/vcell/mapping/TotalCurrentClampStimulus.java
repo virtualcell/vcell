@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
+
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.*;
@@ -47,7 +48,7 @@ public class TotalCurrentClampStimulus extends ElectricalStimulus {
 		
 		try {
 			parameterContext.setLocalParameters(localParameters);
-		} catch (PropertyVetoException e) {
+		} catch (PropertyVetoException | ExpressionBindingException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}

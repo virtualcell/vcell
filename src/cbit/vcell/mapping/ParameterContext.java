@@ -19,6 +19,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.ModelException;
@@ -719,7 +720,7 @@ private void removeParameter(ParameterContext.LocalParameter parameter) {
 			LocalParameter newParameters[] = (LocalParameter[])BeanUtils.removeElement(fieldParameters,parameter);
 			try {
 				setLocalParameters(newParameters);
-			} catch (PropertyVetoException e) {
+			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e.getMessage());
 			}
@@ -835,10 +836,16 @@ final void cleanupParameters() throws ExpressionException, PropertyVetoException
  * Sets the parameters property (cbit.vcell.model.Parameter[]) value.
  * @param parameters The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
+ * @throws ExpressionBindingException 
  * @see #getParameters
  */
-public void setLocalParameters(LocalParameter[] parameters) throws java.beans.PropertyVetoException {
+public void setLocalParameters(LocalParameter[] parameters) throws java.beans.PropertyVetoException, ExpressionBindingException {
 	LocalParameter[] oldValue = fieldParameters;
+	for (LocalParameter p : parameters){
+		if (p.getExpression()!=null){
+			p.getExpression().bindExpression(this);
+		}
+	}
 	fireVetoableChange("localParameters", oldValue, parameters);
 	fieldParameters = parameters;
 	firePropertyChange("localParameters", oldValue, parameters);
@@ -865,7 +872,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
 
-public LocalParameter addLocalParameter(String name, Expression exp, int role, VCUnitDefinition unit, String description) throws PropertyVetoException {
+public LocalParameter addLocalParameter(String name, Expression exp, int role, VCUnitDefinition unit, String description) throws PropertyVetoException, ExpressionBindingException {
 	if (getLocalParameterFromName(name)!=null){
 		throw new RuntimeException("local parameter '"+name+"' already exists");
 	}
@@ -1003,6 +1010,15 @@ public void setParameterValue(LocalParameter parm, Expression exp, boolean autoc
 			throw new RuntimeException(e.getMessage());
 		}
 	}
+}
+
+public boolean contains(LocalParameter parameter) {
+	for (LocalParameter p : fieldParameters){
+		if (p == parameter){
+			return true;
+		}
+	}
+	return false;
 }
 
 

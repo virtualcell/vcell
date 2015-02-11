@@ -101,10 +101,6 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.TriggerAtMultipleTimes;
-import cbit.vcell.mapping.BioEvent.TriggerAtSingleTime;
-import cbit.vcell.mapping.BioEvent.TriggerGeneral;
-import cbit.vcell.mapping.BioEvent.TriggerOnVarValue;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
@@ -239,7 +235,6 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
@@ -4491,62 +4486,37 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 		Element eventElement = new Element(XMLTags.BioEventTag);
 		eventElement.setAttribute(XMLTags.NameAttrTag, mangle(bioEvents[i].getName()));
 
-		Element element = new Element(XMLTags.TriggerTag);
-		Element triggerParamElement = new Element(XMLTags.TriggerParameters);
-		triggerParamElement.setAttribute(XMLTags.TriggerClassAttrTag, bioEvents[i].getTrigger().getClass().getSimpleName());
-		try{
-			if(bioEvents[i].getTrigger() instanceof TriggerGeneral){
-				triggerParamElement.setText(mangleExpression(bioEvents[i].getTrigger().getGeneratedExpression()));
-			}else if(bioEvents[i].getTrigger() instanceof TriggerOnVarValue){
-				triggerParamElement.setAttribute(XMLTags.TriggerParamTimeSymbolAttrTag, ((TriggerOnVarValue)bioEvents[i].getTrigger()).getSymbolTableEntry().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamCompareAttrTag, ((TriggerOnVarValue)bioEvents[i].getTrigger()).getComparison().toString());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamValueNameAttrTag, ((TriggerOnVarValue)bioEvents[i].getTrigger()).getValue().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamValueAttrTag, ((TriggerOnVarValue)bioEvents[i].getTrigger()).getValue().getExpression().infix());
-			}else if(bioEvents[i].getTrigger() instanceof TriggerAtSingleTime){
-				triggerParamElement.setAttribute(XMLTags.TriggerParamTimeSymbolAttrTag, ((TriggerAtSingleTime)bioEvents[i].getTrigger()).getTimeSymbolTableEntry().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamValueNameAttrTag, ((TriggerAtSingleTime)bioEvents[i].getTrigger()).getTimeValue().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamValueAttrTag, ((TriggerAtSingleTime)bioEvents[i].getTrigger()).getTimeValue().getExpression().infix());
-			}else if(bioEvents[i].getTrigger() instanceof TriggerAtMultipleTimes){
-				triggerParamElement.setAttribute(XMLTags.TriggerParamTimeSymbolAttrTag, ((TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getTimeSymbolTableEntry().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamSpecNameAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getName());
-				triggerParamElement.setAttribute(XMLTags.TriggerParamSpecTypeAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getType()+"");
-				if(((TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getType() == ConstantArraySpec.TYPE_INTERVAL){
-					triggerParamElement.setAttribute(XMLTags.TriggerParamSpecMinAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getMinValue()+"");
-					triggerParamElement.setAttribute(XMLTags.TriggerParamSpecMaxAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getMaxValue()+"");
-					triggerParamElement.setAttribute(XMLTags.TriggerParamSpecNumValsAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getNumValues()+"");
-					triggerParamElement.setAttribute(XMLTags.TriggerParamSpecIsLogAttrTag, ((BioEvent.TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().isLogInterval()+"");
-				}else if(((TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getType() == ConstantArraySpec.TYPE_LIST){
-					Constant[] listOfConstants = ((TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getConstants();
-					for (int j = 0; j < listOfConstants.length; j++) {
-						Element listElement = new Element(XMLTags.TriggerParamSpecListTag);
-						listElement.setAttribute(XMLTags.TriggerParamValueAttrTag, listOfConstants[j].getExpression().infix());
-						triggerParamElement.addContent(listElement);
-					}
-				}else{
-					throw new Exception("Unexpected BioEvent Trigger ConstantArraySpec type: "+(bioEvents[i].getTrigger()==null?null:((TriggerAtMultipleTimes)bioEvents[i].getTrigger()).getConstantArraySpec().getType()));
-				}
-			}else{
-				throw new Exception("Unexpected BioEvent Trigger type: "+(bioEvents[i].getTrigger()==null?null:bioEvents[i].getTrigger().getClass().getName()));
-			}
-		}catch(Exception e){
-			throw new XmlParseException("Trigger xml error: "+e.getMessage(),e);
-		}
-		element.addContent(triggerParamElement);
-		eventElement.addContent(element);
 
-		BioEvent.Delay delay = bioEvents[i].getDelay();
-		if (delay != null) {
-			element = new Element(XMLTags.DelayTag);
-			element.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, delay.useValuesFromTriggerTime() + "");
-			element.addContent(mangleExpression(delay.getDurationExpression()));
-			eventElement.addContent(element);
+		String triggerType = bioEvents[i].getTriggerType().getXmlName();
+		
+		//Add atributes
+		eventElement.setAttribute(XMLTags.BioEventTriggerTypeAttrTag, triggerType);
+		eventElement.setAttribute(XMLTags.UseValuesFromTriggerTimeAttrTag, Boolean.toString(bioEvents[i].getUseValuesFromTriggerTime()));
+		
+		//Add BioEvent Parameters
+		LocalParameter parameters[] = bioEvents[i].getEventParameters();
+		for (LocalParameter parm : parameters){
+			if (parm.getExpression()!=null){
+				Element tempparameter = new Element(XMLTags.ParameterTag);
+				//Get parameter attributes
+				tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
+				tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, bioEvents[i].getParameterType(parm).getRoleXmlName());
+				VCUnitDefinition unit = parm.getUnitDefinition();
+				if (unit != null) {
+					tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
+				}
+				tempparameter.addContent( mangleExpression(parm.getExpression()) );
+				//Add the parameter to the general kinetics object
+				eventElement.addContent(tempparameter);
+			}
 		}
+
 		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
 		for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-			element = new Element(XMLTags.EventAssignmentTag);
-			element.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
-			element.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
-			eventElement.addContent(element);
+			Element eventAssignmentElement = new Element(XMLTags.EventAssignmentTag);
+			eventAssignmentElement.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+			eventAssignmentElement.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
+			eventElement.addContent(eventAssignmentElement);
 		}
 		bioEventsElement.addContent(eventElement);
 	}

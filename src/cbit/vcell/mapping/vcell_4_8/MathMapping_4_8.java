@@ -34,6 +34,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
+import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
@@ -2642,11 +2643,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 	if (bioevents != null && bioevents.length > 0) {
 		for (BioEvent be : bioevents) {
 			// transform the bioEvent trigger/delay to math Event
-			Expression mathTriggerExpr = getIdentifierSubstitutions(be.getTrigger().getGeneratedExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
+			Expression mathTriggerExpr = getIdentifierSubstitutions(be.generateTriggerExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
 			Delay mathDelay = null;
-			if (be.getDelay() != null) {
-				boolean bUseValsFromTriggerTime = be.getDelay().useValuesFromTriggerTime();
-				Expression mathDelayExpr = getIdentifierSubstitutions(be.getDelay().getDurationExpression(), timeUnit, null);
+			if (be.getParameter(ParameterType.TriggerDelay) != null) {
+				boolean bUseValsFromTriggerTime = be.getUseValuesFromTriggerTime();
+				Expression mathDelayExpr = getIdentifierSubstitutions(be.getParameter(ParameterType.TriggerDelay).getExpression(), timeUnit, null);
 				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
 			}
 			// now deal with (bio)event Assignment translation to math EventAssignment 
