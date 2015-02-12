@@ -1,9 +1,12 @@
 package org.vcell.vmicro.workflow.test;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy;
 import org.vcell.workflow.MemoryRepository;
 import org.vcell.workflow.Repository;
 import org.vcell.workflow.TaskContext;
@@ -35,13 +38,15 @@ public class WorkflowFileTest {
 
 			
 			
-//			WorkflowUtilities.displayWorkflowGraph(taskContext.getWorkflow());
-//			
-//			WorkflowUtilities.displayWorkflowTable(taskContext);
-//			
-//			ArrayList<Issue> issues = new ArrayList<Issue>();
-//			taskContext.getWorkflow().reportIssues(issues, Issue.SEVERITY_INFO, true);
-//
+			WorkflowUtilities.displayWorkflowGraph(taskContext.getWorkflow());
+			
+			WorkflowUtilities.displayWorkflowTable(taskContext);
+			
+			WorkflowUtilities.displayWorkflowGraphJGraphX(new WorkflowJGraphProxy(taskContext));
+
+			ArrayList<Issue> issues = new ArrayList<Issue>();
+			taskContext.getWorkflow().reportIssues(issues, Issue.SEVERITY_INFO, true);
+
 			
 			//
 			// execute the workflow

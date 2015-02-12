@@ -369,6 +369,11 @@ public class WorkflowJGraphProxy {
 		public WorkflowGraph createGraphJGraphX(){
 			graph = new WorkflowGraph();
 			graph.getModel().beginUpdate();
+			graph.setCellsEditable(false);
+			graph.setCellsCloneable(false);
+			graph.setCellsMovable(true);
+			graph.setCellsResizable(false);
+			graph.setDropEnabled(false);
 			Object parent = graph.getDefaultParent();
 			try {
 				//

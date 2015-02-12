@@ -8,26 +8,26 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import org.vcell.workflow.DataOutput;
+import org.vcell.workflow.Workflow;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 
-public class DataHolderShape extends AbstractWorkflowNodeShape {
+public class WorkflowShape extends AbstractWorkflowNodeShape {
 	
 	int radius = 8;
-	protected DataOutput<? extends Object> fieldDataOutput = null;
+	protected Workflow fieldWorkflow = null;
 
-	public DataHolderShape(DataOutput<? extends Object> dataOutput, GraphModel graphModel) {
+	public WorkflowShape(Workflow workflow, GraphModel graphModel) {
 		super(graphModel);
-		this.fieldDataOutput = dataOutput;
-		defaultBG = Color.red;
+		this.fieldWorkflow = workflow;
+		defaultBG = Color.blue;
 		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -40,12 +40,12 @@ public class DataHolderShape extends AbstractWorkflowNodeShape {
 	}
 
 	@Override
-	public DataOutput<? extends Object> getModelObject() {
-		return fieldDataOutput;
+	public Object getModelObject() {
+		return fieldWorkflow;
 	}
 
-	public DataOutput<? extends Object> getDataOutput() {
-		return fieldDataOutput;
+	public Workflow getWorkflow() {
+		return fieldWorkflow;
 	}
 
 	@Override
@@ -67,11 +67,7 @@ public class DataHolderShape extends AbstractWorkflowNodeShape {
 
 	@Override
 	public void refreshLabel() {
-		String label = "";
-		if (fieldDataOutput!=null){
-			label = fieldDataOutput.getName();
-		}
-		setLabel(label);
+		setLabel("workflow-params");
 	}
 
 }

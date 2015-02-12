@@ -8,26 +8,26 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import org.vcell.workflow.Task;
+import org.vcell.workflow.DataOutput;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 
-public class TaskShape extends AbstractWorkflowNodeShape {
+public class DataHolderShape extends AbstractWorkflowNodeShape {
 	
 	int radius = 8;
-	protected Task fieldTask = null;
+	protected DataOutput<? extends Object> fieldDataOutput = null;
 
-	public TaskShape(Task task, GraphModel graphModel) {
+	public DataHolderShape(DataOutput<? extends Object> dataOutput, GraphModel graphModel) {
 		super(graphModel);
-		this.fieldTask = task;
-		defaultBG = Color.green;
+		this.fieldDataOutput = dataOutput;
+		defaultBG = Color.red;
 		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -40,21 +40,21 @@ public class TaskShape extends AbstractWorkflowNodeShape {
 	}
 
 	@Override
-	public Object getModelObject() {
-		return fieldTask;
+	public DataOutput<? extends Object> getModelObject() {
+		return fieldDataOutput;
 	}
 
-	public Task getTask() {
-		return fieldTask;
+	public DataOutput<? extends Object> getDataOutput() {
+		return fieldDataOutput;
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		// draw elipse
 		g.setColor(backgroundColor);
-		g.fillRect(absPosX + 1, absPosY + 1 + getLabelPos().y, 2*radius - 1, 2*radius - 1);
+		g.fillOval(absPosX + 1, absPosY + 1 + getLabelPos().y, 2*radius - 1, 2*radius - 1);
 		g.setColor(forgroundColor);
-		g.drawRect(absPosX, absPosY + getLabelPos().y, 2*radius, 2*radius);
+		g.drawOval(absPosX, absPosY + getLabelPos().y, 2*radius, 2*radius);
 		// draw label
 		int textX = getLabelPos().x + absPosX;
 		int textY = getLabelPos().y + absPosY;
@@ -68,8 +68,8 @@ public class TaskShape extends AbstractWorkflowNodeShape {
 	@Override
 	public void refreshLabel() {
 		String label = "";
-		if (getTask()!=null){
-			label = fieldTask.getName();
+		if (fieldDataOutput!=null){
+			label = fieldDataOutput.getName();
 		}
 		setLabel(label);
 	}

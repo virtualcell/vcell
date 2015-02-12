@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.awt.Graphics2D;
 import java.awt.Point;

@@ -4,8 +4,8 @@ import javax.swing.JFrame;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.vmicro.workflow.gui.WorkflowModelPanel;
-import org.vcell.vmicro.workflow.gui.WorkflowObjectsPanel;
+import org.vcell.vmicro.workflow.graph.WorkflowModelPanel;
+import org.vcell.vmicro.workflow.graph.WorkflowObjectsPanel;
 import org.vcell.vmicro.workflow.jgraphx.WorkflowEditorPanel;
 import org.vcell.vmicro.workflow.jgraphx.WorkflowJGraphProxy;
 import org.vcell.workflow.TaskContext;
