@@ -197,10 +197,10 @@ public class WorkflowEditorPanel extends BasicGraphEditor
 			super(graph);
 
 			// Sets switches typically used in an editor
-//			setPageVisible(true);
-//			setGridVisible(true);
+			setPageVisible(true);
+			setGridVisible(true);
 			setToolTips(true);
-//			getConnectionHandler().setCreateTarget(true);
+			getConnectionHandler().setCreateTarget(true);
 
 			// Loads the defalt stylesheet from an external file
 //			mxCodec codec = new mxCodec();
