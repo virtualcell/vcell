@@ -1,4 +1,4 @@
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.io.File;
 

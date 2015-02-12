@@ -8,26 +8,26 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
-import cbit.gui.graph.ElipseShape;
+import org.vcell.workflow.DataInput;
+
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 
-public abstract class AbstractWorkflowNodeShape extends ElipseShape {
+public class DataInputShape extends AbstractWorkflowNodeShape {
 	
 	int radius = 8;
-	protected Color darkerBackground = null;
+	protected DataInput<? extends Object> fieldDataInput = null;
 
-	public AbstractWorkflowNodeShape(GraphModel graphModel) {
+	public DataInputShape(DataInput<? extends Object> dataInput, GraphModel graphModel) {
 		super(graphModel);
-		defaultBG = Color.green;
+		this.fieldDataInput = dataInput;
+		defaultBG = Color.gray;
 		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -40,17 +40,12 @@ public abstract class AbstractWorkflowNodeShape extends ElipseShape {
 	}
 
 	@Override
-	public Dimension getPreferedSizeSelf(Graphics2D g) {
-		FontMetrics fm = g.getFontMetrics();
-		setLabelSize(fm.stringWidth(getLabel()), fm.getMaxAscent() + fm.getMaxDescent());
-		getSpaceManager().setSizePreferred((radius*2), (radius*2));
-		return getSpaceManager().getSizePreferred();
+	public Object getModelObject() {
+		return fieldDataInput;
 	}
 
-	public void refreshLayoutSelf() {
-		int centerX = getSpaceManager().getSize().width/2;
-		labelPos.x = centerX - getLabelSize().width/2; 
-		labelPos.y = 0;		
+	public DataInput<? extends Object> getDataInput() {
+		return fieldDataInput;
 	}
 
 	@Override
@@ -64,10 +59,19 @@ public abstract class AbstractWorkflowNodeShape extends ElipseShape {
 		int textX = getLabelPos().x + absPosX;
 		int textY = getLabelPos().y + absPosY;
 		g.setColor(forgroundColor);
-		if (getLabel()!=null && getLabel().length()>0){
+		if (isSelected() && getLabel()!=null && getLabel().length()>0){
 			g.drawString(getLabel(),textX,textY);
 		}
 		return;
+	}
+
+	@Override
+	public void refreshLabel() {
+		String label = "";
+		if (fieldDataInput!=null){
+			label = "in:"+fieldDataInput.getName();
+		}
+		setLabel(label);
 	}
 
 }

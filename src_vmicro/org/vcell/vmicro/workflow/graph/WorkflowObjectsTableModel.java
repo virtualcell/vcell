@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.gui.AbstractWorkflowObjectsTableModel;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataObject;
 import org.vcell.workflow.DataOutput;

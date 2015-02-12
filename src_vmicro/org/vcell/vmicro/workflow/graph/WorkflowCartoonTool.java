@@ -1,4 +1,4 @@
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 /*
  * (C) Copyright University of Connecticut Health Center 2001.
