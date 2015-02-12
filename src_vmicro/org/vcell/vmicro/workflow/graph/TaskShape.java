@@ -8,26 +8,26 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.vmicro.workflow.gui;
+package org.vcell.vmicro.workflow.graph;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import org.vcell.workflow.DataInput;
+import org.vcell.workflow.Task;
 
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.visualstate.VisualState;
 import cbit.gui.graph.visualstate.imp.ImmutableVisualState;
 
-public class DataInputShape extends AbstractWorkflowNodeShape {
+public class TaskShape extends AbstractWorkflowNodeShape {
 	
-	int radius = 8;
-	protected DataInput<? extends Object> fieldDataInput = null;
+	protected Task fieldTask = null;
 
-	public DataInputShape(DataInput<? extends Object> dataInput, GraphModel graphModel) {
+	public TaskShape(Task task, GraphModel graphModel) {
 		super(graphModel);
-		this.fieldDataInput = dataInput;
-		defaultBG = Color.gray;
+		radius=20;
+		this.fieldTask = task;
+		defaultBG = Color.green;
 		defaultFGselect = Color.black;
 		backgroundColor = defaultBG;
 		darkerBackground = backgroundColor.darker().darker();
@@ -41,25 +41,25 @@ public class DataInputShape extends AbstractWorkflowNodeShape {
 
 	@Override
 	public Object getModelObject() {
-		return fieldDataInput;
+		return fieldTask;
 	}
 
-	public DataInput<? extends Object> getDataInput() {
-		return fieldDataInput;
+	public Task getTask() {
+		return fieldTask;
 	}
 
 	@Override
 	public void paintSelf(Graphics2D g, int absPosX, int absPosY ) {
 		// draw elipse
 		g.setColor(backgroundColor);
-		g.fillOval(absPosX + 1, absPosY + 1 + getLabelPos().y, 2*radius - 1, 2*radius - 1);
+		g.fillRect(absPosX + 1, absPosY + 1 + getLabelPos().y, 8*radius - 1, 2*radius - 1);
 		g.setColor(forgroundColor);
-		g.drawOval(absPosX, absPosY + getLabelPos().y, 2*radius, 2*radius);
+		g.drawRect(absPosX, absPosY + getLabelPos().y, 8*radius, 2*radius);
 		// draw label
 		int textX = getLabelPos().x + absPosX;
 		int textY = getLabelPos().y + absPosY;
 		g.setColor(forgroundColor);
-		if (isSelected() && getLabel()!=null && getLabel().length()>0){
+		if (getLabel()!=null && getLabel().length()>0){
 			g.drawString(getLabel(),textX,textY);
 		}
 		return;
@@ -68,8 +68,8 @@ public class DataInputShape extends AbstractWorkflowNodeShape {
 	@Override
 	public void refreshLabel() {
 		String label = "";
-		if (fieldDataInput!=null){
-			label = "in:"+fieldDataInput.getName();
+		if (getTask()!=null){
+			label = fieldTask.getName();
 		}
 		setLabel(label);
 	}
