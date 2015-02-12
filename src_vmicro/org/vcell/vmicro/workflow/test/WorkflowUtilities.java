@@ -1,6 +1,9 @@
 package org.vcell.vmicro.workflow.test;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
@@ -40,59 +43,102 @@ public class WorkflowUtilities {
 		}
 	};
 	
-	public static void displayWorkflowGraph(Workflow workflow){
-		JFrame frame = new javax.swing.JFrame();
-		WorkflowModelPanel aWorkflowModelPanel;
-		aWorkflowModelPanel = new WorkflowModelPanel();
-		frame.setContentPane(aWorkflowModelPanel);
-		frame.setSize(aWorkflowModelPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+	public static void displayWorkflowGraph(final Workflow workflow){
+		Runnable startGUI = new Runnable() {
+			
 			@Override
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		
-		aWorkflowModelPanel.setWorkflow(workflow);
-		frame.setTitle("workflow graph - old");
-		frame.setVisible(true);
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
+			public void run() {
+				JFrame frame = new javax.swing.JFrame();
+				WorkflowModelPanel aWorkflowModelPanel;
+				aWorkflowModelPanel = new WorkflowModelPanel();
+				frame.setContentPane(aWorkflowModelPanel);
+				frame.setSize(aWorkflowModelPanel.getSize());
+				frame.addWindowListener(new java.awt.event.WindowAdapter() {
+					@Override
+					public void windowClosing(java.awt.event.WindowEvent e) {
+						System.exit(0);
+					};
+				});
+				
+				aWorkflowModelPanel.setWorkflow(workflow);
+				frame.setTitle("workflow graph - old");
+				frame.setVisible(true);
+				java.awt.Insets insets = frame.getInsets();
+				frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+				frame.setVisible(true);
+			}
+		};
+		if (SwingUtilities.isEventDispatchThread()){
+			startGUI.run();
+		}else{
+			try {
+				SwingUtilities.invokeAndWait(startGUI);
+			} catch (InvocationTargetException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
-	public static void displayWorkflowTable(TaskContext taskContext){
-		JFrame frame = new javax.swing.JFrame();
-		WorkflowObjectsPanel aWorkflowObjectsPanel;
-		aWorkflowObjectsPanel = new WorkflowObjectsPanel();
-		frame.setContentPane(aWorkflowObjectsPanel);
-		frame.setSize(aWorkflowObjectsPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+	public static void displayWorkflowTable(final TaskContext taskContext){
+		Runnable startGUI = new Runnable() {
 			@Override
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
+			public void run(){
+				JFrame frame = new javax.swing.JFrame();
+				WorkflowObjectsPanel aWorkflowObjectsPanel;
+				aWorkflowObjectsPanel = new WorkflowObjectsPanel();
+				frame.setContentPane(aWorkflowObjectsPanel);
+				frame.setSize(aWorkflowObjectsPanel.getSize());
+				frame.addWindowListener(new java.awt.event.WindowAdapter() {
+					@Override
+					public void windowClosing(java.awt.event.WindowEvent e) {
+						System.exit(0);
+					};
+				});
+				
+				frame.setLocation(0,1000);
+				frame.setSize(1000,600);
+				frame.setVisible(true);
+				frame.setTitle("workflow table");
 		
-		frame.setLocation(0,1000);
-		frame.setSize(1000,600);
-		frame.setVisible(true);
-		frame.setTitle("workflow table");
-
-		aWorkflowObjectsPanel.setTaskContext(taskContext);
+				aWorkflowObjectsPanel.setTaskContext(taskContext);
+			}
+		};
+		if (SwingUtilities.isEventDispatchThread()){
+			startGUI.run();
+		}else{
+			try {
+				SwingUtilities.invokeAndWait(startGUI);
+			} catch (InvocationTargetException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	
-	public static void displayWorkflowGraphJGraphX(WorkflowJGraphProxy workflowJGraphProxy){
-		WorkflowEditorPanel aWorkflowEditorPanel;
-		aWorkflowEditorPanel = new WorkflowEditorPanel();
-		
-		aWorkflowEditorPanel.setWorkflowGraphProxy(workflowJGraphProxy);
-		JFrame frame = aWorkflowEditorPanel.createFrame(null);
-		frame.setLocation(0, 700);
-		frame.setSize(2300, 800);
-		frame.setVisible(true);
+	public static void displayWorkflowGraphJGraphX(final WorkflowJGraphProxy workflowJGraphProxy){
+		Runnable start = new Runnable(){
+			@Override
+			public void run(){
+				WorkflowEditorPanel aWorkflowEditorPanel;
+				aWorkflowEditorPanel = new WorkflowEditorPanel();
+				
+				aWorkflowEditorPanel.setWorkflowGraphProxy(workflowJGraphProxy);
+				JFrame frame = aWorkflowEditorPanel.createFrame(null);
+				frame.setLocation(0, 700);
+				frame.setSize(2300, 800);
+				frame.setVisible(true);
+			}
+		};
+		if (SwingUtilities.isEventDispatchThread()){
+			start.run();
+		}else{
+			try {
+				SwingUtilities.invokeAndWait(start);
+			} catch (InvocationTargetException | InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

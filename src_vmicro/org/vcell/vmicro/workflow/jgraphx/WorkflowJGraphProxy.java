@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
+import javax.swing.SwingUtilities;
+
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.workflow.DataInput;
@@ -163,8 +165,14 @@ public class WorkflowJGraphProxy {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (graph!=null){
 					if (evt.getPropertyName().equals(WorkflowObject.PROPERTYNAME_NAME)){
-						System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> repainting from propertyChangeEvent, cell = "+workflowObject.getClass().getSimpleName()+", thread = "+Thread.currentThread().getName());
-						graph.forceRepaint();
+						SwingUtilities.invokeLater(new Runnable() {
+							
+							@Override
+							public void run() {
+								System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> repainting from propertyChangeEvent, cell = "+workflowObject.getClass().getSimpleName()+", thread = "+Thread.currentThread().getName());
+								graph.forceRepaint();
+							}
+						});
 					}
 				}
 			}
