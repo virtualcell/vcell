@@ -2259,16 +2259,18 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 	BioEvent[] bioevents = simContext.getBioEvents();
-	for (BioEvent be : bioevents) {
-		// transform the bioEvent trigger/delay to math Event
-		for (LocalParameter p : be.getEventParameters()){
-			if (p.getExpression()!=null){
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(p.getExpression(),p.getUnitDefinition(),null),null));
-			}else if (be.getParameter(ParameterType.GeneralTriggerFunction) == p){
-				//
-				// use generated function here.
-				//
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(be.generateTriggerExpression(),p.getUnitDefinition(),null),null));
+	if(bioevents != null && bioevents.length > 0){
+		for (BioEvent be : bioevents) {
+			// transform the bioEvent trigger/delay to math Event
+			for (LocalParameter p : be.getEventParameters()){
+				if (p.getExpression()!=null){
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(p.getExpression(),p.getUnitDefinition(),null),null));
+				}else if (be.getParameter(ParameterType.GeneralTriggerFunction) == p){
+					//
+					// use generated function here.
+					//
+					varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(be.generateTriggerExpression(),p.getUnitDefinition(),null),null));
+				}
 			}
 		}
 	}
