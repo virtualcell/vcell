@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -26,6 +29,8 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
 import java.util.StringTokenizer;
+
+import org.vcell.util.Pair;
 
 public class RbmNetworkGenerator {
 	
@@ -44,6 +49,8 @@ public class RbmNetworkGenerator {
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
 
+	public static final String uniqueIdRoot = "unique_id_used_as_fake_parameter_";
+
 	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
 		SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
 		writeBngl(sc, writer, false);
@@ -52,6 +59,57 @@ public class RbmNetworkGenerator {
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
+		writer.println(BEGIN_MODEL);
+		writer.println();
+		
+		RbmNetworkGenerator.writeParameters(writer, rbmModelContainer, ignoreFunctions);
+		RbmNetworkGenerator.writeMolecularTypes(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer);
+		
+		writer.println(END_MODEL);	
+		writer.println();
+		
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer);
+		writer.println();
+	}
+	// modified bngl writer for special use restricted to network transform functionality
+	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap) {
+		String callerClassName = new Exception().getStackTrace()[1].getClassName();
+		String networkTransformerClassName = NetworkTransformer.class.getName();
+		if(!callerClassName.equals(networkTransformerClassName)) {
+			throw new UnsupportedOperationException("This method may only be called from within a " + networkTransformerClassName + " instance.");
+		}
+		Model model = simulationContext.getModel();
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
+		
+		// first we prepare the fake parameters we need to maintain the relationship between the species context and the seed species
+		List<String> fakeParameterList = new ArrayList<String>();
+		List<String> seedSpeciesList = new ArrayList<String>();
+		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+//		Long uuid = UUID.randomUUID().getMostSignificantBits();
+//		if(uuid<0) uuid = -uuid;
+//		String nameRoot = "p" + uuid;
+		for(int i=0; i<speciesContexts.length; i++) {
+			SpeciesContext sc = speciesContexts[i];
+			if(!sc.hasSpeciesPattern()) { continue; }
+			
+			SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
+			Expression initialConcentration = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
+			
+			String connectionKey = uniqueIdRoot + i;		// fake initial values for the seed species, we need to present them to bngl as parameters
+			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
+			speciesEquivalenceMap.put(connectionKey, p);
+			
+			String modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
+			modified += "\t\t" + connectionKey;
+			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
+			fakeParameterList.add(connectionKey + "\t\t1");
+		}
+		
+		// second we produce the bngl file
 		writer.println(BEGIN_MODEL);
 		writer.println();
 		
@@ -66,9 +124,48 @@ public class RbmNetworkGenerator {
 				writer.println(RbmUtils.toBnglStringIgnoreExpression(function));
 			}
 		}
+		for (String s : fakeParameterList) {
+			writer.println(s);			// the fake parameters used at initial values for the seed species
+		}
 		writer.println(END_PARAMETERS);
 		writer.println();
 		
+		RbmNetworkGenerator.writeMolecularTypes(writer, rbmModelContainer);
+
+		// write modified version of seed species while maintaining the connection between the species context and the real seed species
+		writer.println(BEGIN_SPECIES);
+		for (String s : seedSpeciesList) {
+			writer.println(s);
+		}
+		writer.println(END_SPECIES);
+		writer.println();
+		
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer);
+		
+		writer.println(END_MODEL);	
+		writer.println();
+		
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer);
+		writer.println();
+	}
+	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
+		writer.println(BEGIN_PARAMETERS);
+		List<Parameter> paramList = rbmModelContainer.getParameterList();
+		for (Parameter param : paramList) {
+			writer.println(RbmUtils.toBnglString(param,false));
+		}
+		if(ignoreFunctions) {	// we cheat and transform all functions into constant parameters
+			List<Parameter> functionList = rbmModelContainer.getFunctionList();
+			for (Parameter function : functionList) {
+				writer.println(RbmUtils.toBnglStringIgnoreExpression(function));
+			}
+		}
+		writer.println(END_PARAMETERS);
+		writer.println();
+	}
+	private static void writeMolecularTypes(PrintWriter writer, RbmModelContainer rbmModelContainer) {
 		writer.println(BEGIN_MOLECULE_TYPES);
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		for (MolecularType mt : molList) {
@@ -76,7 +173,8 @@ public class RbmNetworkGenerator {
 		}
 		writer.println(END_MOLECULE_TYPES);
 		writer.println();
-		
+	}
+	private static void writeSpecies(PrintWriter writer, Model model, SimulationContext simulationContext) {
 		writer.println(BEGIN_SPECIES);
 		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
 		for(SpeciesContext sc : speciesContexts) {
@@ -85,7 +183,8 @@ public class RbmNetworkGenerator {
 		}
 		writer.println(END_SPECIES);
 		writer.println();
-				
+	}
+	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer) {
 		writer.println(BEGIN_OBSERVABLES);
 		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
 		for (RbmObservable oo : observablesList) {
@@ -93,7 +192,8 @@ public class RbmNetworkGenerator {
 		}
 		writer.println(END_OBSERVABLES);
 		writer.println();
-
+	}
+	private static void writeFunctions(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
 		if(!ignoreFunctions) {
 			writer.println(BEGIN_FUNCTIONS);
 			List<Parameter> functionList = rbmModelContainer.getFunctionList();
@@ -103,7 +203,8 @@ public class RbmNetworkGenerator {
 			writer.println(END_FUNCTIONS);
 			writer.println();
 		}
-
+	}
+	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer) {
 		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
 		for (ReactionRule rr : reactionList) {
@@ -111,10 +212,9 @@ public class RbmNetworkGenerator {
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
-		
-		writer.println(END_MODEL);	
-		writer.println();
-		
+	}
+	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer) {
+		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
 		writer.print("generate_network({");
 		writer.print("max_iter=>" + constraints.getMaxIteration());
@@ -135,7 +235,6 @@ public class RbmNetworkGenerator {
 		}
 		writer.print(",overwrite=>1");
 		writer.println("})");
-		writer.println();
 	}
 	
 	private static class ReactionLine {

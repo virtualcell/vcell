@@ -3,17 +3,21 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.Stoichiometry;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
@@ -53,6 +57,8 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
  */
 public class NetworkTransformer implements SimContextTransformer {
 
+	Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new HashMap<String, Pair<SpeciesContext, Expression>>();
+	
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext) {
 		SimulationContext transformedSimContext;
@@ -104,10 +110,26 @@ public class NetworkTransformer implements SimContextTransformer {
 			return 0;
 		}
 	};
-		
+	private String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
+		StringWriter bnglStringWriter = new StringWriter();
+		PrintWriter pw = new PrintWriter(bnglStringWriter);
+		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap);
+		String bngl = bnglStringWriter.toString();
+		pw.close();
+		System.out.println(bngl);
+		return bngl;
+	}
+
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
 		
-		String input = RbmUtils.convertToBngl(simContext, true);
+		String input = convertToBngl(simContext, true);
+		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
+		    String key = entry.getKey();
+		    Pair<SpeciesContext, Expression> value = entry.getValue();
+		    SpeciesContext sc = value.one;
+		    Expression initial = value.two;
+			System.out.println("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+		}
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
@@ -137,35 +159,44 @@ public class NetworkTransformer implements SimContextTransformer {
 				System.out.println("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
+			String s = p.getName();
+			if(speciesEquivalenceMap.containsKey(s)) {
+				continue;	// we get rid of the fake parameters we use as keys
+			}
 			Expression exp = new Expression(p.getValue());
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
 			model.getRbmModelContainer().addParameter(p.getName(), exp);
 		}
 		
-		// ---------------------------------------------------------------------------------------------------------------------------
+		// ---- Species ------------------------------------------------------------------------------------------------------------
 		System.out.println("\n\nSpecies : \n");
 		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
 		Map<String, Species> sMap = new HashMap<String, Species>();
 		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
 		Map<String, BNGSpecies> crossMap = new HashMap<String, BNGSpecies>();
+		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
 			System.out.println(i+1 + ":\t\t"+ s.toString());
 			
-			if(s.getName().contains("R")) {
-				System.out.println("bng name: " + s.getName());
-			}
-			
-			SpeciesContext sc = model.getSpeciesContextByPattern(s.getName());
-			if(sc != null) {
-				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...already exists.");
+			String key = s.getConcentration().infix();
+			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
+			    Pair<SpeciesContext, Expression> value = speciesEquivalenceMap.get(key);
+			    SpeciesContext sc = value.one;
+			    Expression initial = value.two;
+				s.setConcentration(initial);		// replace the fake initial condition with the real one
+				
+				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
 				speciesMap.put(s.getNetworkFileIndex(), sc.getName());		// existing name
 				sMap.put(sc.getName(), sc.getSpecies());
 				scMap.put(sc.getName(), sc);
 				crossMap.put(sc.getName(), s);
+				noMapForThese.add(sc);
 				continue;
 			}
+			
+			// all these species are new!
 			int count = 0;				// generate unique name for the species
 			String speciesName = null;
 			String nameRoot = "s";
@@ -241,6 +272,7 @@ public class NetworkTransformer implements SimContextTransformer {
 //				System.out.println("species context not found " + sc1.getName());
 //				scMap.put(sc1.getName(), sc1);
 //				sMap.put(sc1.getName(), sc1.getSpecies());
+//				noMapForThese.add(sc1);
 //			}
 //		}
 //		Species[] sa = new Species[sMap.size()];
@@ -264,6 +296,9 @@ public class NetworkTransformer implements SimContextTransformer {
 //		model.setSpeciesContexts(sca);
 //		
 //		for(SpeciesContext sc : sca) {
+//			if(noMapForThese.contains(sc) {
+//				continue;
+//			}
 //			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
 //			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
 //			BNGSpecies s = crossMap.get(sc.getName());
