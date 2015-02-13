@@ -1148,17 +1148,6 @@ public class RbmUtils {
 		return str;
 	}
 	
-	public static String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
-		StringWriter bnglStringWriter = new StringWriter();
-		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl(simulationContext, pw, ignoreFunctions);
-		String bngl = bnglStringWriter.toString();
-		pw.close();
-		System.out.println(bngl);
-		return bngl;
-	}
-
-	
 	public static void removePropertyChangeListener(SpeciesPattern speciesPattern, PropertyChangeListener propertyChangeListener) {
 		if (speciesPattern != null) {
 			speciesPattern.removePropertyChangeListener(propertyChangeListener);

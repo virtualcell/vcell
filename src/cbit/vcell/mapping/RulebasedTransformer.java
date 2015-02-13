@@ -152,11 +152,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 					SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
 					ProductPattern productPattern = new ProductPattern(speciesPattern);
 					rr.addProduct(productPattern);
-
 				}
 			}
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
+		// TODO; for debug only, can be commented out once this code gets stable enough
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
 		RbmNetworkGenerator.writeBngl(transformedSimulationContext, pw, false);
