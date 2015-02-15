@@ -540,7 +540,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 						if (outputTime < timeStep) {
 							suggestedInterval = timeStep;
 							bValid = false;
-						} else {
+						} else if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)) {
 							double n = outputTime/timeStep;
 							int intn = (int)Math.round(n);
 							if (intn != n) {

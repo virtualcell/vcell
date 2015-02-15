@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -265,9 +266,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 										suggestedInterval = timeStep;
 										bValid = false;
 									} else {
-										double n = outputTime/timeStep;
-										int intn = (int)Math.round(n);
-										if (intn != n) {
+										if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)) {
+											double n = outputTime/timeStep;
+											int intn = (int)Math.round(n);
 											suggestedInterval = (intn * timeStep);
 											if (suggestedInterval != outputTime) {
 												bValid = false;
