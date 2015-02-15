@@ -13,6 +13,7 @@ package cbit.vcell.solver.ode.gui;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
@@ -97,7 +98,7 @@ public void correctUniformOutputTimeStep() {
 			if (outputTime < timeStep) {
 				suggestedInterval = timeStep;
 				bValid = false;
-			} else {
+			} else if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)){
 				double n = outputTime/timeStep;
 				int intn = (int)Math.round(n);
 				if (intn != n) {

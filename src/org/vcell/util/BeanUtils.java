@@ -72,6 +72,8 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 
+import com.ibm.icu.math.BigDecimal;
+
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.AmplistorUtils;
@@ -1154,6 +1156,20 @@ public final class BeanUtils {
 			return obj;
 		}
 		throw new NullPointerException("unexpected " + clzz.getName() + " null pointer");
+	}
+	
+	/**
+	 * see if numerator / divisor is integer using decimal (base 10) arithmetic instead of
+	 * floating point (base 2) 
+	 * @param numerator
+	 * @param divisor
+	 * @return true if decimal numerator / decimal divisor is integer 
+	 */
+	public static boolean isIntegerMultiple(double numerator, double divisor) {
+		BigDecimal n = BigDecimal.valueOf(numerator);
+		BigDecimal d = BigDecimal.valueOf(divisor);
+		BigDecimal remainder = n.remainder(d);
+		return remainder.compareTo(BigDecimal.ZERO) == 0;
 	}
 
 }
