@@ -90,7 +90,16 @@ public SimDataReader(boolean[] argWantsThisTime,double[] argTimes,String[] argZi
 	simDataFileNames = argSimDataFileNames;
 	this.isChombo = isChombo;
 
-	order(argVarNames,argVarIndexes);	
+	if (isChombo)
+	{
+		// no need to order for chombo dataset
+		varNames = argVarNames;
+		varIndexes = argVarIndexes;
+	}
+	else
+	{
+		order(argVarNames,argVarIndexes);
+	}
 }
 
 
@@ -175,10 +184,7 @@ private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exc
 					for(int l = 0;l < varIndexes[k].length; ++ l) {
 						int idx = varIndexes[k][l];					
 						double val =  sol[idx];					
-						int unSortedVarIndex = (int)sortedVarIndexes[k][l][INDEX_ORIGINAL_POSITION];
-						int reMappedVarNameIndex =  reMapper[k][unSortedVarIndex][0];
-						int reMappedVarIndexIndex = reMapper[k][unSortedVarIndex][1];
-						returnValues[reMappedVarNameIndex][reMappedVarIndexIndex] = val;
+						returnValues[k][l] = val;
 					}
 				}
 			} catch (Exception e) {
