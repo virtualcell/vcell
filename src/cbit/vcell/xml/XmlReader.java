@@ -3153,6 +3153,9 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			
 			Iterator<Element> paramElementIter = bEventElement.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
 			ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();
+			
+			boolean bHasGeneralTriggerParam = false;
+
 			while (paramElementIter.hasNext()){
 				Element paramElement = paramElementIter.next();
 
@@ -3161,7 +3164,9 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				Expression exp = unMangleExpression(paramElement.getText());
 				String roleStr = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
 				ParameterType parameterType = ParameterType.fromRoleXmlName(roleStr);
-				
+				if (parameterType == ParameterType.GeneralTriggerFunction){
+					bHasGeneralTriggerParam = true;
+				}
 				VCUnitDefinition unit = simContext.getModel().getUnitSystem().getInstance_TBD();
 				String unitSymbol = paramElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
 				if (unitSymbol != null) {
@@ -3169,6 +3174,13 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				}
 				
 				parameters.add(newBioEvent.createNewParameter(paramName, parameterType, exp, unit));
+			}
+			if (!bHasGeneralTriggerParam){
+				parameters.add(newBioEvent.createNewParameter(
+						ParameterType.GeneralTriggerFunction.getDefaultName(), 
+						ParameterType.GeneralTriggerFunction, 
+						null, // computed as needed
+						simContext.getModel().getUnitSystem().getInstance_DIMENSIONLESS()));
 			}
 			try {
 				newBioEvent.setParameters(parameters.toArray(new LocalParameter[0]));
