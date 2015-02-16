@@ -3065,7 +3065,7 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 		BioEvent newBioEvent = null;
 		String name = unMangle(bEventElement.getAttributeValue(XMLTags.NameAttrTag));
 		Element triggerElement = bEventElement.getChild(XMLTags.TriggerTag, vcNamespace);
-		if (triggerElement != null){
+		if (triggerElement != null && triggerElement.getText().length()>0){
 			//
 			// read legacy VCell 5.3 style trigger and delay elements
 			//
@@ -3094,6 +3094,53 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				throw new XmlParseException("failed to read trigger or delay expressions in bioEvent "+name+": "+e.getMessage(), e);
 			}
 			
+		} else if (triggerElement != null && triggerElement.getText().length()==0){
+			//
+			// read legacy first-pass VCell 5.4 style trigger and delay elements
+			//
+			// <Trigger>
+			//		<TriggerParameters triggerClass="TriggerGeneral">
+			//			(t > 500.0)
+			//      </TriggerParameters>
+			// </Trigger>
+			// <Delay UseValuesFromTriggerTime="true">3.0</Delay>     [optional]
+			// 
+			final String TriggerParametersTag = "TriggerParameters";
+			final String TriggerClassAttrTag = "triggerClass";
+			final String TriggerClassAttrValue_TriggerGeneral = "TriggerGeneral";
+			
+			Element triggerParametersElement = triggerElement.getChild(TriggerParametersTag, vcNamespace);
+			
+			Expression triggerExpression = null;
+			
+			String triggerClass = triggerParametersElement.getAttributeValue(TriggerClassAttrTag);
+			if (triggerClass.equals(TriggerClassAttrValue_TriggerGeneral)){
+				triggerExpression = unMangleExpression(triggerParametersElement.getText());
+			}else{
+				// not general trigger (just make it never happen, user will have to edit "t > -1")
+				triggerExpression = Expression.relational(">", new Expression(simContext.getModel().getTIME(), simContext.getModel().getNameScope()),new Expression(-1.0));
+			}
+			
+			// read <Delay>
+			Expression delayDurationExpression = null;
+			boolean useValuesFromTriggerTime = true;
+			Element delayElement = bEventElement.getChild(XMLTags.DelayTag, vcNamespace);
+			if (delayElement != null) {
+				useValuesFromTriggerTime = Boolean.valueOf(delayElement.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag)).booleanValue();
+				delayDurationExpression = unMangleExpression((delayElement.getText()));
+			}
+			
+			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, new ArrayList<cbit.vcell.mapping.BioEvent.EventAssignment>(), simContext);
+			try {
+				newBioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, triggerExpression);
+				if (delayDurationExpression != null){
+					newBioEvent.setParameterValue(ParameterType.TriggerDelay, delayDurationExpression);
+				}
+			} catch (ExpressionBindingException | PropertyVetoException e) {
+				e.printStackTrace();
+				throw new XmlParseException("failed to read trigger or delay expressions in bioEvent "+name+": "+e.getMessage(), e);
+			}
+				
 		}else{
 			//
 			// VCell 5.4 style bioevent parameters
