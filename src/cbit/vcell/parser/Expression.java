@@ -210,6 +210,9 @@ diffCount++;
  * @param obj java.lang.Object
  */
 public boolean equals(Object obj) {
+	if (obj == this){
+		return true;
+	}
 	if (obj instanceof Expression){
 		return compareEqual((Matchable)obj);
 	}else{

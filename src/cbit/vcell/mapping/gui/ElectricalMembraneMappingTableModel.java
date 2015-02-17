@@ -230,9 +230,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ownerTable, "error setting initial potential\n"+e.getMessage());
 			}
 			break;
 		}
@@ -251,9 +248,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ownerTable, "error setting capacitance\n"+e.getMessage());
 			}
 			break;
 		}

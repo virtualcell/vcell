@@ -9,7 +9,9 @@
  */
 
 package org.vcell.sbml.vcell;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -27,12 +29,16 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -41,163 +47,222 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class StructureSizeSolver {
 
-/**
- * Insert the method's description here.
- * Creation date: (5/17/2006 10:33:38 AM)
- * @return double[]
- * @param structName java.lang.String
- * @param structSize double
- */
-public static void updateAbsoluteStructureSizes(SimulationContext simContext, Structure struct, double structSize, VCUnitDefinition structSizeUnit) throws Exception {
-	StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
-	try {
-		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
-		StructureTopology structTopology = simContext.getModel().getStructureTopology();
-		for (int i = 0; i < structMappings.length; i++){
-			if (structMappings[i] instanceof MembraneMapping){
-				MembraneMapping membraneMapping = (MembraneMapping)structMappings[i];
+	private static class SolverParameter {
+		public final StructureMappingParameter parameter;
+		public final String name;
+		public final Double knownValue;
+		public Double solution;
 
-				Membrane membrane = membraneMapping.getMembrane();
-				String membraneSizeName = TokenMangler.mangleToSName(membrane.getName()+"_size");
-				ccImpl.addSimpleBound(new SimpleBounds(membraneSizeName,new RealInterval(0,100000),AbstractConstraint.PHYSICAL_LIMIT,"definition"));
+		private SolverParameter(StructureMappingParameter parameter, String name, Double knownValue) {
+			this.parameter = parameter;
+			this.name = name;
+			this.knownValue = knownValue;
+		}
 
-				Feature insideFeature = structTopology.getInsideFeature(membrane);
-				String volFractName = TokenMangler.mangleToSName(insideFeature.getName()+"_volFract");
-				String svRatioName = TokenMangler.mangleToSName(insideFeature.getName()+"_svRatio");
-				
+	}
+	
+	private static class SolverParameterCollection {
+		private ArrayList<SolverParameter> solverParameters = new ArrayList<SolverParameter>();
+		
+		public void add(SolverParameter solverParameter){
+			solverParameters.add(solverParameter);
+		}
 
-				cbit.vcell.mapping.StructureMapping.StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
-				double volFractValue = volFractParameter.getExpression().evaluateConstant();
-				ccImpl.addSimpleBound(new SimpleBounds(volFractName,new RealInterval(volFractValue,volFractValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
-
-				cbit.vcell.mapping.StructureMapping.StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
-				double svRatioValue = surfToVolParameter.getExpression().evaluateConstant();
-				ccImpl.addSimpleBound(new SimpleBounds(svRatioName,new RealInterval(svRatioValue,svRatioValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
-
-				//
-				// EC eclosing cyt, which contains er and golgi
-				// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size == 0"
-				//
-				Expression sumOfInsideVolumeExp = new Expression(0.0);
-				for (int j = 0; j < structMappings.length; j++){
-					if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), insideFeature)) {
-						Feature childFeatureOfInside = ((FeatureMapping)structMappings[j]).getFeature();
-						sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfInside.getName()+"_size")));
-					}
+		public SolverParameter get(String name){
+			for (SolverParameter solverParameter : solverParameters){
+				if (solverParameter.name.equals(name)){
+					return solverParameter;
 				}
-				Expression tempExpr = Expression.mult(sumOfInsideVolumeExp, new Expression(svRatioName));
-				tempExpr = Expression.add(tempExpr, new Expression("-"+membraneSizeName));
-				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(tempExpr.infix()+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
-
-				//
-				// EC eclosing cyt, which contains er and golgi
-				// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size) == 0
-				//
-				Feature outsideFeature = structTopology.getOutsideFeature(membrane);
-				Expression sumOfParentVolumeExp = new Expression(0.0);
-				for (int j = 0; j < structMappings.length; j++){
-					if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), outsideFeature)){
-						Feature childFeatureOfParent = ((FeatureMapping)structMappings[j]).getFeature();
-						sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
-					}
-				}
-				Expression exp = Expression.mult(sumOfParentVolumeExp,new Expression(volFractName));
-				exp = Expression.add(exp, Expression.negate(sumOfInsideVolumeExp));
-				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(exp.infix()+"==0.0"),AbstractConstraint.MODELING_ASSUMPTION,"volFract definition"));
-			}else if (structMappings[i] instanceof FeatureMapping){
-				FeatureMapping featureMapping = (FeatureMapping)structMappings[i];
-				String featureSizeName = TokenMangler.mangleToSName(featureMapping.getFeature().getName()+"_size");
-				ccImpl.addSimpleBound(new SimpleBounds(featureSizeName,new RealInterval(0,1000000),AbstractConstraint.PHYSICAL_LIMIT,"definition"));
 			}
+			return null;
+		}
+
+		public SolverParameter get(StructureMappingParameter param){
+			for (SolverParameter solverParameter : solverParameters){
+				if (solverParameter.parameter == param){
+					return solverParameter;
+				}
+			}
+			return null;
 		}
 		
-		ccImpl.addSimpleBound(new SimpleBounds(struct.getName()+"_size",new RealInterval(structSize,structSize),AbstractConstraint.OBSERVED_CONSTRAINT,"user input"));
-		ConstraintSolver constraintSolver = new ConstraintSolver(ccImpl);
+		public String getName(StructureMappingParameter param){
+			for (SolverParameter solverParameter : solverParameters){
+				if (solverParameter.parameter == param){
+					return solverParameter.name;
+				}
+			}
+			return null;
+		}
+		
+		public List<String> getNames(){
+			ArrayList<String> names = new ArrayList<String>();
+			for (SolverParameter solverParameter : solverParameters){
+				names.add(solverParameter.name);
+			}
+			return names;
+		}
 
-//try {
-	//javax.swing.JFrame frame = new javax.swing.JFrame();
-	//cbit.vcell.constraints.gui.ConstraintSolverPanel aConstraintSolverPanel;
-	//aConstraintSolverPanel = new cbit.vcell.constraints.gui.ConstraintSolverPanel();
-	//frame.setContentPane(aConstraintSolverPanel);
-	//frame.setSize(aConstraintSolverPanel.getSize());
-	//frame.addWindowListener(new java.awt.event.WindowAdapter() {
-		//public void windowClosing(java.awt.event.WindowEvent e) {
-			//System.exit(0);
-		//};
-	//});
-	//frame.show();
-	//java.awt.Insets insets = frame.getInsets();
-	//frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
+		public List<StructureMappingParameter> getStructureMappingParameters(){
+			ArrayList<StructureMappingParameter> structureMappingParameters = new ArrayList<StructureMappingParameter>();
+			for (SolverParameter solverParameter : solverParameters){
+				structureMappingParameters.add(solverParameter.parameter);
+			}
+			return structureMappingParameters;
+		}
+	}
 	
-	//aConstraintSolverPanel.setConstraintContainerImpl(ccImpl);
-	
-	//frame.setVisible(true);
-//} catch (Throwable exception) {
-	//System.err.println("Exception occurred in main() of javax.swing.JPanel");
-	//exception.printStackTrace(System.out);
-//}
-		constraintSolver.resetIntervals();
+	public static void updateAbsoluteStructureSizes(SimulationContext simContext, Structure struct, double structSize, VCUnitDefinition structSizeUnit) throws Exception {
+		StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
+		try {
+			StructureTopology structTopology = simContext.getModel().getStructureTopology();
 
-		int numTimesNarrowed = 0;
-		RealInterval[] lastSolution = null;
-		boolean bChanged = true;
-		while (constraintSolver.narrow() && bChanged && numTimesNarrowed<125){
-			numTimesNarrowed++;
-			bChanged = false;
+			SolverParameterCollection solverParameters = new SolverParameterCollection();
+			ArrayList<String> unknownVars = new ArrayList<String>();
 			
-			RealInterval[] thisSolution = constraintSolver.getIntervals();
-			if (lastSolution!=null){
-				for (int i = 0; i < thisSolution.length; i++){
-					if (!thisSolution[i].equals(lastSolution[i])){
-						bChanged = true;
-					}
+			for (StructureMapping sm : structMappings){
+				if (sm.getStructure() instanceof Membrane){
+					MembraneMapping mm = (MembraneMapping)sm;
+					StructureMappingParameter svRatioParam = mm.getSurfaceToVolumeParameter();
+					StructureMappingParameter volFractParam = mm.getVolumeFractionParameter();
+					StructureMappingParameter sizeParam = mm.getSizeParameter();
+					solverParameters.add(new SolverParameter(svRatioParam, TokenMangler.mangleToSName("sv_"+mm.getMembrane().getName()), svRatioParam.getExpression().evaluateConstant()));
+					solverParameters.add(new SolverParameter(volFractParam, TokenMangler.mangleToSName("vf_"+mm.getMembrane().getName()), volFractParam.getExpression().evaluateConstant()));
 				}
-			}else{
-				bChanged = true;
+				StructureMappingParameter sizeParam = sm.getSizeParameter();
+				Double priorKnownValue = null;
+				String varName = TokenMangler.mangleToSName("size_"+sm.getStructure().getName());
+				if (sizeParam.getExpression()!=null){
+					priorKnownValue = sizeParam.getExpression().evaluateConstant();
+				}else if (sm.getStructure() == struct){
+					priorKnownValue = structSize;
+				}else{
+					unknownVars.add(varName);
+				}
+				solverParameters.add(new SolverParameter(sizeParam, varName, priorKnownValue));
 			}
-			lastSolution = thisSolution;
-		}
-		System.out.println("num of times narrowed = "+numTimesNarrowed);
-		
-		if (numTimesNarrowed>0){
-			String[] symbols = constraintSolver.getSymbols();
-			net.sourceforge.interval.ia_math.RealInterval[] solution = constraintSolver.getIntervals();
-			for (int i = 0; i < symbols.length; i++){
-				System.out.println("solution["+i+"] \""+symbols[i]+"\" = "+solution[i]);
-				for (int j = 0; j < structMappings.length; j++){
-					if (symbols[i].equals(TokenMangler.mangleToSName(structMappings[j].getStructure().getName()+"_size"))){
-						if (!Double.isInfinite(solution[i].lo()) && !Double.isInfinite(solution[i].hi())) {
-							structMappings[j].getSizeParameter().setExpression(new Expression((solution[i].lo()+solution[i].hi())/2));
+
+			ArrayList<Expression> expressions = new ArrayList<Expression>();
+			for (int i = 0; i < structMappings.length; i++){
+				if (structMappings[i] instanceof MembraneMapping){
+					MembraneMapping membraneMapping = (MembraneMapping)structMappings[i];
+
+					Feature insideFeature = structTopology.getInsideFeature(membraneMapping.getMembrane());
+					Feature outsideFeature = structTopology.getOutsideFeature(membraneMapping.getMembrane());
+					
+					StructureMappingParameter sizeParameter = membraneMapping.getSizeParameter();
+					StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
+					StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
+					
+					//
+					// EC eclosing cyt, which contains er and golgi
+					// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size"  ... implicit equation, exp == 0 is implied
+					//
+					Expression sumOfInsideVolumeExp = new Expression(0.0);
+					for (int j = 0; j < structMappings.length; j++){
+						if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), insideFeature)) {
+							FeatureMapping childFeatureMappingOfInside = ((FeatureMapping)structMappings[j]);
+							sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(solverParameters.getName(childFeatureMappingOfInside.getSizeParameter())));
 						}
 					}
+					Expression tempExpr = Expression.mult(sumOfInsideVolumeExp, new Expression(solverParameters.getName(surfToVolParameter)));
+					tempExpr = Expression.add(tempExpr, new Expression("-"+solverParameters.getName(sizeParameter)));
+					expressions.add(tempExpr);
+
+					//
+					// EC eclosing cyt, which contains er and golgi
+					// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size)  ... implicit equation, exp == 0 is implied
+					//
+					Expression sumOfParentVolumeExp = new Expression(0.0);
+					for (int j = 0; j < structMappings.length; j++){
+						if (structMappings[j] instanceof FeatureMapping && structTopology.enclosedBy(structMappings[j].getStructure(), outsideFeature)){
+							FeatureMapping childFeatureMappingOfParent = ((FeatureMapping)structMappings[j]);
+							sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(TokenMangler.mangleToSName(solverParameters.getName(childFeatureMappingOfParent.getSizeParameter()))));
+						}
+					}
+					Expression exp = Expression.mult(sumOfParentVolumeExp,new Expression(solverParameters.getName(volFractParameter)));
+					exp = Expression.add(exp, Expression.negate(sumOfInsideVolumeExp));
+					expressions.add(exp);
 				}
 			}
-		}else{
-			//DialogUtils.showErrorDialog("cannot solve for size");
-			throw new Exception("cannot solve for size");
+
+			if (expressions.size()!=unknownVars.size()){
+				throw new RuntimeException("number of unknowns is "+unknownVars.size()+", number of equations is "+expressions.size());
+			}
+			if (unknownVars.size()==0 && expressions.size()==0){
+				StructureMappingParameter sizeParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
+				sizeParam.setExpression(new Expression(structSize));
+				return;
+			}
+			RationalExp[][] rowColData = new RationalExp[unknownVars.size()][unknownVars.size()+1];
+			for (int row=0; row<unknownVars.size(); row++){
+				//
+				// verify that there is no "constant" term (without an unknown)
+				//
+				//System.out.println("equation("+row+"): "+expressions.get(row).infix());
+				Expression constantTerm = new Expression(expressions.get(row));
+				for (String var : unknownVars){
+					constantTerm.substituteInPlace(new Expression(var), new Expression(0.0));
+				}
+				constantTerm = constantTerm.flatten();
+				
+				//
+				// we can use the derivative to find the coefficients (just verify that the coefficient doesn't contain an unknown).
+				//
+				for (int col=0; col<unknownVars.size(); col++){
+					Expression equation = new Expression(expressions.get(row));
+					String colVariable = unknownVars.get(col);
+					Expression deriv = equation.differentiate(colVariable).flatten();
+					String[] symbols = deriv.getSymbols();
+					if (symbols!=null){
+						for (String symbol : symbols){
+							if (unknownVars.contains(symbol)){
+								throw new RuntimeException("equation is not linear in the unknowns");
+							}
+						}
+					}
+					rowColData[row][col] = RationalExpUtils.getRationalExp(deriv);
+				}
+				rowColData[row][unknownVars.size()] = RationalExpUtils.getRationalExp(constantTerm).minus();
+			}
+			RationalExpMatrix rationalExpMatrix = new RationalExpMatrix(rowColData);
+			//rationalExpMatrix.show();
+			RationalExp[] solutions = rationalExpMatrix.solveLinearExpressions();
+			double[] solutionValues = new double[solutions.length];
+			for (int i=0; i<unknownVars.size(); i++){
+				Expression vcSolution = new Expression(solutions[i].infixString());
+				String[] symbols = vcSolution.getSymbols();
+				if (symbols!=null){
+					for (String symbol : symbols){
+						SolverParameter p = solverParameters.get(symbol);
+						if (p.knownValue==null){
+							throw new RuntimeException("solution for var "+unknownVars.get(i)+" is a function of unknown var "+p.name);
+						}
+						vcSolution.substituteInPlace(new Expression(symbol), new Expression(p.knownValue.doubleValue()));
+					}
+				}
+				double value = vcSolution.flatten().evaluateConstant();
+				//System.out.println(unknownVars.get(i)+" = "+value+" = "+solutions[i].infixString());
+				solutionValues[i] = value;
+			}
+			for (int i=0; i<unknownVars.size(); i++){
+				SolverParameter p = solverParameters.get(unknownVars.get(i));
+				p.parameter.setExpression(new Expression(solutionValues[i]));
+			}
+			//
+			// set the one known value (if not set already by the gui).
+			//
+			StructureMappingParameter sizeParam = simContext.getGeometryContext().getStructureMapping(struct).getSizeParameter();
+			sizeParam.setExpression(new Expression(structSize));
+			
+			System.out.println("done");
+		}catch (ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new Exception(e.getMessage());
 		}
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new Exception(e.getMessage());
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new Exception(e.getMessage());
 	}
 
-	//try {
-		//for (int i = 0; i < structMappings.length; i++){
-			//structMappings[i].getSizeParameter().setExpression(new Expression(1.0));
-		//}
-	//} catch (java.beans.PropertyVetoException e) {
-		//e.printStackTrace(System.out);
-		//throw new RuntimeException("Error setting Structure size " + e.getMessage());
-	//} catch (cbit.vcell.parser.ExpressionException e) {
-		//e.printStackTrace(System.out);
-		//throw new RuntimeException("Error setting Structure size " + e.getMessage());
-	//}
-}
-
-
+	
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2006 10:33:38 AM)
@@ -219,9 +284,6 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 				myStructMappings[0].getUnitSizeParameter().setExpression(new Expression(1.0));
 				return;
 			}catch (ExpressionException e){
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
-			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
 			}
@@ -471,9 +533,6 @@ public static void updateRelativeStructureSizes(SimulationContext simContext) th
 		e.printStackTrace(System.out);
 		//DialogUtils.showErrorDialog("structure sizes must all be specified");
 		throw new Exception("structure sizes must all be specified");
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-		throw new Exception(e.getMessage());
 	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new Exception(e.getMessage());

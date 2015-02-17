@@ -41,7 +41,6 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Parameter;
@@ -628,9 +627,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}
 				break;
 			}			
@@ -675,9 +671,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 						StructureSizeSolver.updateUnitStructureSizes(getGeometryContext().getSimulationContext(), structureMapping.getGeometryClass());
 					}
 				}catch (ExpressionException e){
-					e.printStackTrace(System.out);
-					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
-				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());
 				}				

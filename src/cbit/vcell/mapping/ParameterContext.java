@@ -19,15 +19,11 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmKineticLaw;
-import cbit.vcell.model.RbmKineticLaw.ParameterType;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -109,13 +105,12 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			return fieldUnitDefinition;
 		}
 		
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
 				expression.bindExpression(ParameterContext.this);
 			}
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
@@ -201,7 +196,7 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			return false;
 		}
 
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws ExpressionBindingException {
 			throw new RuntimeException("expression is not editable");
 		}
 

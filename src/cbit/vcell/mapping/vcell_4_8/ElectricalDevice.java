@@ -142,7 +142,7 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression expression) {
 			expression = new Expression(expression);
 //			try {
 //				expression.bindExpression(ElectricalDevice.this);
@@ -151,7 +151,6 @@ abstract class ElectricalDevice implements ScopedSymbolTable {
 //				throw new PropertyVetoException(e.getMessage(),null);
 //			}
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}

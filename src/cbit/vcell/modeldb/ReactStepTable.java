@@ -164,13 +164,9 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 //		System.out.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
 //	}
 //}
-		try {
-			KineticsParameter chargeValenceParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
-			if (chargeValenceParameter!=null){
-				chargeValenceParameter.setExpression(new cbit.vcell.parser.Expression(valenceValue));
-			}
-		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
+		KineticsParameter chargeValenceParameter = kinetics.getChargeValenceParameter();
+		if (chargeValenceParameter!=null){
+			chargeValenceParameter.setExpression(new cbit.vcell.parser.Expression(valenceValue));
 		}
 	}catch (Exception e){
 		log.exception(e);
@@ -533,7 +529,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 		buffer.append("'"+TokenMangler.getSQLEscapedString(reactionStep.getName())+"',");
 	}
 	try {
-		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence);
+		KineticsParameter chargeValenceParameter = reactionStep.getKinetics().getChargeValenceParameter();
 		int valence = 1;
 		if (chargeValenceParameter!=null){
 			valence = (int)chargeValenceParameter.getExpression().evaluateConstant();

@@ -1306,8 +1306,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a featureMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
 		}	
 	}else{
 		try {
@@ -1327,8 +1325,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the VolumePerUnitArea Expression " + volPerUnitArea + " to a featureMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
 		}	
 	}
 
@@ -1341,8 +1337,6 @@ private FeatureMapping getFeatureMapping(Element param, SimulationContext simula
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + volPerUnitVol + " to a featureMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
 		}	
 	}
 
@@ -1599,14 +1593,9 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 	try {
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
-			try {
-				KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getChargeValenceParameter();
-				if (chargeValenceParameter!=null){
-					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
-				}
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new XmlParseException("A propertyVetoException was fired when setting the valence to the flux reaction " + name, e);
+			KineticsParameter chargeValenceParameter = fluxreaction.getKinetics().getChargeValenceParameter();
+			if (chargeValenceParameter!=null){
+				chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 			}
 		}
 	} catch (NumberFormatException e) {
@@ -3530,9 +3519,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
 		}
 	}
 	
@@ -3545,9 +3531,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
 		}
 	}
 	
@@ -3560,9 +3543,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitArea Expression " + ratio + " to a membraneMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
 		}
 	}
 	
@@ -3575,9 +3555,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the AreaPerUnitVolume Expression " + ratio + " to a membraneMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
 		}
 	}
 
@@ -3590,9 +3567,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a membraneMapping!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace(System.out);
-			throw new XmlParseException(e);
 		}
 	}else{
 		try {
@@ -3610,9 +3584,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 	} catch (ExpressionException e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException(e);
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException(e);
 	}
 	
 	//set flag calculate voltage
@@ -3625,9 +3596,6 @@ private MembraneMapping getMembraneMapping(Element param, SimulationContext simu
 		Expression initialExpr = unMangleExpression(initialVoltString);
 		memmap.getInitialVoltageParameter().setExpression(initialExpr);
 	} catch (ExpressionException e) {
-		e.printStackTrace(System.out);
-		throw new XmlParseException(e);
-	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace(System.out);
 		throw new XmlParseException(e);
 	}
@@ -5099,14 +5067,9 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 	try {
 		valenceString = unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
-			try {
-				KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getChargeValenceParameter();
-				if (chargeValenceParameter!=null){
-					chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
-				}
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new XmlParseException("A propertyVetoException was fired when setting the valence to the flux reaction " + name, e);
+			KineticsParameter chargeValenceParameter = simplereaction.getKinetics().getChargeValenceParameter();
+			if (chargeValenceParameter!=null){
+				chargeValenceParameter.setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
 			}
 		}
 	} catch (NumberFormatException e) {
@@ -6040,9 +6003,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!", e);
-		} catch (java.beans.PropertyVetoException e) {
-			e.printStackTrace();
-			throw new XmlParseException(e);
 		}
 		//diffusion (if there is no diffusion information skip it)
 		Element xmlDiffusionElement = scsElement.getChild(XMLTags.DiffusionTag, vcNamespace);
@@ -6054,9 +6014,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new XmlParseException("An ExpressionException was fired when setting the diffusionExpression " + temp + " to a SpeciesContextSpec!", e);
-			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace();
-				throw new XmlParseException(e);
 			}
 		}
 		
@@ -6097,9 +6054,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new XmlParseException("An ExpressionException was fired when Setting the boundary Expression: " + unMangle(temp), e);
-			} catch (java.beans.PropertyVetoException e) {
-				e.printStackTrace();
-				throw new XmlParseException(e);
 			}
 		}
 		
@@ -6130,9 +6084,6 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
 						dummyVel = false;
 					}
 				}
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-				throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName(), e);
 			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new XmlParseException("Error setting Velocity parameter for '" + specspec.getSpeciesContext().getName(), e);

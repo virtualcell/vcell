@@ -354,12 +354,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				//
-				// don't handle exception here, InitialConditionsPanel needs it.
-				//
-				throw new RuntimeException(e.getMessage());
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				//
@@ -377,12 +371,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					scSpec.getDiffusionParameter().setExpression(new Expression(newExpressionString));
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				//
-				// don't handle exception here, InitialConditionsPanel needs it.
-				//
-				throw new RuntimeException(e.getMessage());
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				//

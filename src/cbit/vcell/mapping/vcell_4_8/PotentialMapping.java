@@ -551,12 +551,7 @@ private void determineLumpedEquations(Graph graph, double temperatureKelvin) thr
 		}
 		totalCurrents[cIndex[i]] = (new Expression(buffer.toString())).flatten();
 		totalCurrents[cIndex[i]].bindExpression(device.getNameScope().getParent().getScopedSymbolTable());
-		try {
-			device.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrent).setExpression(totalCurrents[cIndex[i]]);
-		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-			throw new MappingException("failed to set total current density: "+e.getMessage());
-		}
+		device.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrent).setExpression(totalCurrents[cIndex[i]]);
 	}
 	if (!bSilent){
 		for (int i = 0; i < totalCurrents.length; i++){
@@ -726,12 +721,7 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping_4
 				//
 				Expression currentSource = getTotalMembraneCurrent(simContext,membrane,mathMapping_4_8);
 				MembraneElectricalDevice device = new MembraneElectricalDevice(membraneMapping,mathMapping_4_8);
-				try {
-					device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent).setExpression(currentSource);
-				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException(e.getMessage());
-				}
+				device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent).setExpression(currentSource);
 				Edge edge = new Edge(insideNode,outsideNode,device);
 				graph.addEdge(edge);
 			}

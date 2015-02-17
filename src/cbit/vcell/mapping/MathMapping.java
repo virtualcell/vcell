@@ -39,7 +39,6 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.BioEvent.ParameterType;
-import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
@@ -163,8 +162,10 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM = "_init_uM";
 	public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX = "_init_";
 	
-	private SimulationContext simContext = null;
-	private SimContextTransformation transformation = null;
+	private final SimulationContext simContext;
+	private final SimContextTransformation transformation;
+
+
 	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
@@ -334,9 +335,8 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 			return MathMapping.this.getNameScope();
 		}
 
-		public void setExpression(Expression argExpression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression argExpression) {
 			Expression oldValue = fieldExpression;
-			super.fireVetoableChange("expression", oldValue, argExpression);
 			fieldExpression = argExpression;
 			super.firePropertyChange("expression", oldValue, argExpression);
 		}
@@ -452,6 +452,14 @@ protected MathMapping(SimulationContext simContext) {
 		this.simContext = simContext;
 	}
 	this.issueContext = new IssueContext(ContextType.SimContext,simContext,null).newChildContext(ContextType.MathMapping,this);
+}
+
+/**
+ * get the SimContextTransformation.
+ * @return SimContextTransformation: may be null if no transformation required.
+ */
+public final SimContextTransformation getTransformation() {
+	return transformation;
 }
 
 

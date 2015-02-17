@@ -1,7 +1,6 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,26 +10,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.model.rbm.RbmNetworkGenerator;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.pathway.Stoichiometry;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
-import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
@@ -42,15 +36,11 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableEntry;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Kinetics.KineticsParameter;
 
 /*
  * Flattening a Rule-based Model
@@ -122,6 +112,9 @@ public class NetworkTransformer implements SimContextTransformer {
 
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
 		
+		
+		long startTime = System.currentTimeMillis();
+		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
 		String input = convertToBngl(simContext, true);
 		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 		    String key = entry.getKey();
@@ -145,18 +138,22 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 		BNGOutputSpec outputSpec = null;
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
-		BNGOutputFileParser.printBNGNetOutput(outputSpec);
+//		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
+		long endTime = System.currentTimeMillis();
+		long elapsedTime = endTime - startTime;
+		System.out.println("     " + elapsedTime + " milliseconds");
+		
 		
 		Model model = transformedSimulationContext.getModel();
-		
 		ReactionContext reactionContext = transformedSimulationContext.getReactionContext();
 		try {
-		System.out.println("Parameters : \n");
+		startTime = System.currentTimeMillis();
+		System.out.println("\nParameters :");
 		for (int i = 0; i < outputSpec.getBNGParams().length; i++){
 			BNGParameter p = outputSpec.getBNGParams()[i];
-			System.out.println(i+1 + ":\t\t"+ p.toString());
+//			System.out.println(i+1 + ":\t\t"+ p.toString());
 			if(model.getRbmModelContainer().getParameter(p.getName()) != null) {
-				System.out.println("   ...already exists.");
+//				System.out.println("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
 			String s = p.getName();
@@ -167,9 +164,13 @@ public class NetworkTransformer implements SimContextTransformer {
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
 			model.getRbmModelContainer().addParameter(p.getName(), exp);
 		}
+		endTime = System.currentTimeMillis();
+		elapsedTime = endTime - startTime;
+		System.out.println("     " + elapsedTime + " milliseconds");
 		
 		// ---- Species ------------------------------------------------------------------------------------------------------------
-		System.out.println("\n\nSpecies : \n");
+		startTime = System.currentTimeMillis();
+		System.out.println("\nSpecies :");
 		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
 		Map<String, Species> sMap = new HashMap<String, Species>();
 		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
@@ -178,7 +179,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
-			System.out.println(i+1 + ":\t\t"+ s.toString());
+//			System.out.println(i+1 + ":\t\t"+ s.toString());
 			
 			String key = s.getConcentration().infix();
 			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
@@ -187,7 +188,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			    Expression initial = value.two;
 				s.setConcentration(initial);		// replace the fake initial condition with the real one
 				
-				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
+//				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
 				speciesMap.put(s.getNetworkFileIndex(), sc.getName());		// existing name
 				sMap.put(sc.getName(), sc.getSpecies());
 				scMap.put(sc.getName(), sc);
@@ -246,6 +247,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			param.setExpression(s.getConcentration());
 			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
 			if (origSpeciesContext!=null){
+				// TODO: execution never goes through here because we do a "continue" early in the for look
+				// when we find one of the original seed species
 				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,speciesContext);
 				entityMappings.add(em);
 			}else{
@@ -312,8 +315,12 @@ public class NetworkTransformer implements SimContextTransformer {
 //				entityMappings.add(em);
 //			}
 //		}
+		endTime = System.currentTimeMillis();
+		elapsedTime = endTime - startTime;
+		System.out.println("     " + elapsedTime + " milliseconds");
 		
-		System.out.println("\n\nReactions : \n");
+		startTime = System.currentTimeMillis();
+		System.out.println("\nReactions :");
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
 			BNGReaction r = outputSpec.getBNGReactions()[i];
@@ -360,18 +367,18 @@ public class NetworkTransformer implements SimContextTransformer {
 			sr.setKinetics(k);
 			KineticsParameter kforward = k.getForwardRateParameter();
 			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
-			
-			
 //			model.addReactionStep(sr);
 			reactionStepMap.put(reactionName, sr);
 		}
-		
 		ReactionStep[] reactionSteps = new ReactionStep[reactionStepMap.size()];
 		reactionStepMap.values().toArray(reactionSteps); 
 		model.setReactionSteps(reactionSteps);
-		
-		
-		System.out.println("\n\nObservables : \n");
+		endTime = System.currentTimeMillis();
+		elapsedTime = endTime - startTime;
+		System.out.println("     " + elapsedTime + " milliseconds");
+
+		startTime = System.currentTimeMillis();
+		System.out.println("\nObservables :");
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
 			ObservableGroup o = outputSpec.getObservableGroups()[i];
 //			System.out.println(i+1 + ":\t\t" + o.toString());
@@ -397,7 +404,10 @@ public class NetworkTransformer implements SimContextTransformer {
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
 			entityMappings.add(em);
 		}
-		
+		endTime = System.currentTimeMillis();
+		elapsedTime = endTime - startTime;
+		System.out.println("     " + elapsedTime + " milliseconds");
+
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace(System.out);
 			throw new RuntimeException(ex.getMessage());
