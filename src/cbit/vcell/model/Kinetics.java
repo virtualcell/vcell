@@ -412,17 +412,16 @@ java.io.Serializable, IssueSource
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
 		
-		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression expression) {
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
-			super.firePropertyChange("expression", oldValue, expression);
+			super.firePropertyChange(PROPERTYNAME_EXPRESSION, oldValue, expression);
 		}
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = fieldParameterName;
-			super.fireVetoableChange("name", oldValue, name);
+			super.fireVetoableChange(PROPERTYNAME_NAME, oldValue, name);
 			fieldParameterName = name;
-			super.firePropertyChange("name", oldValue, name);
+			super.firePropertyChange(PROPERTYNAME_NAME, oldValue, name);
 		}
 
 		public boolean isDescriptionEditable() {

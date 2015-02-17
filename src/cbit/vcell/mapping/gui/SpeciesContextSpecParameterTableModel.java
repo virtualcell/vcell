@@ -383,9 +383,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						scsParm.setExpression(newExp);
 					}
 				}
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				PopupGenerator.showErrorDialog(ownerTable, e.getMessage());
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				PopupGenerator.showErrorDialog(ownerTable, "expression error\n"+e.getMessage());

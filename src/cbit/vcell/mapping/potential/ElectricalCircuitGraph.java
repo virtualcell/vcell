@@ -20,7 +20,6 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ElectricalTopology;
-import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -99,12 +98,7 @@ public class ElectricalCircuitGraph {
 					//
 					Expression currentSource = getTotalMembraneCurrent(simContext,membrane,mathMapping);
 					MembraneElectricalDevice device = new MembraneElectricalDevice(membraneMapping,mathMapping);
-					try {
-						device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent).setExpression(currentSource);
-					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);
-						throw new RuntimeException(e.getMessage());
-					}
+					device.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent).setExpression(currentSource);
 					Edge edge = new Edge(insideNode,outsideNode,device);
 					graph.addEdge(edge);
 				}

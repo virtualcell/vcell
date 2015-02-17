@@ -25,6 +25,8 @@ import cbit.vcell.parser.NameScope;
 @SuppressWarnings("serial")
 public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable
 {
+	public static final String PROPERTYNAME_NAME = "name";
+	public static final String PROPERTYNAME_EXPRESSION = "expression";
 	//private NameScope nameScope = null;
 	//private java.lang.String fieldName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -47,8 +49,11 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
-public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(listener);
+public synchronized void addVetoableChangeListener(String propertyName, java.beans.VetoableChangeListener listener) {
+	if (!propertyName.equals(PROPERTYNAME_NAME)){
+		throw new RuntimeException("only "+PROPERTYNAME_NAME+" property is vetoable for parameter");
+	}
+	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 /**
  * This method was created in VisualAge.

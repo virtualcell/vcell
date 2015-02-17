@@ -183,7 +183,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 			return fieldUnitDefinition;
 		}
 		
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
 				// Need to bind this expression, but changing the binding from SpeciesContextSpec.this to a symbolTable created on the fly.
@@ -204,7 +204,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 				});
 			}
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			try {
 				SpeciesContextSpec.this.cleanupParameters();
@@ -563,15 +562,17 @@ public void initializeForSpatial() {
 		} catch (ExpressionBindingException e1) {
 			e1.printStackTrace();
 			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage());
-		} catch (PropertyVetoException e1) {
-			e1.printStackTrace();
-			throw new RuntimeException("Error while initializing diffusion rate, " + e1.getMessage());
 		}
 	}
 }
 
 public VCUnitDefinition computeFluxUnit() {
-	return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
+	VCUnitDefinition fluxUnit = simulationContext.getModel().getUnitSystem().getFluxReactionUnit();
+//	VCUnitDefinition origWay = speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
+//	if (!fluxUnit.compareEqual(origWay)){
+//		System.err.println("didn't match");
+//	}
+	return fluxUnit;
 }
 
 
@@ -1214,7 +1215,7 @@ private boolean isReferenced(Parameter parm) throws ModelException, ExpressionEx
 /**
  * This method was created in VisualAge.
  */
-private final void cleanupParameters() throws ModelException, ExpressionException, PropertyVetoException {
+private final void cleanupParameters() throws ModelException, ExpressionException {
 	//
 	// for each parameter, see if it is used, if not delete it
 	//

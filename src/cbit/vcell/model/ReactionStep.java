@@ -30,7 +30,6 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -533,8 +532,6 @@ public void propertyChange(PropertyChangeEvent evt) {
 				if (chargeValence.getConstantValue()==0){
 					chargeValence.setExpression(new Expression(1.0));
 				}
-			}catch (PropertyVetoException e){
-				e.printStackTrace(System.out);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 			}
