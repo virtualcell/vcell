@@ -168,13 +168,12 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return fieldUnitDefinition;
 		}
 		
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
 				expression.bindExpression(ReactionSpec.this);
 			}
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}

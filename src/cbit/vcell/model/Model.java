@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,15 +40,15 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
-import org.vcell.util.Pair;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Displayable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.document.Version;
@@ -758,7 +757,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	}
 
 
-	public void setExpression(Expression expression) throws ModelPropertyVetoException, ExpressionBindingException {
+	public void setExpression(Expression expression) throws ExpressionBindingException {
 		throw new RuntimeException("cannot change the value of a reserved symbol");
 	}
 
@@ -897,9 +896,8 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(Expression expression) throws PropertyVetoException { 
+		public void setExpression(Expression expression) { 
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
@@ -2992,9 +2990,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			} catch (ExpressionBindingException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
-			} catch (PropertyVetoException e2) {
-				e2.printStackTrace(System.out);
-				throw new RuntimeException(e2.getMessage());
 			}
 		}
 	}
@@ -3066,7 +3061,7 @@ public void refreshDependencies() {
 	for (int i=0;i<fieldModelParameters.length;i++){
 		fieldModelParameters[i].removeVetoableChangeListener(this);
 		fieldModelParameters[i].removePropertyChangeListener(this);
-		fieldModelParameters[i].addVetoableChangeListener(this);
+		fieldModelParameters[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
 		fieldModelParameters[i].addPropertyChangeListener(this);
 		try {
 			fieldModelParameters[i].getExpression().bindExpression(this);
@@ -3329,7 +3324,7 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 	if (newValue != null) {
 		for (int i=0;i<newValue.length;i++){
 			newValue[i].addPropertyChangeListener(this);
-			newValue[i].addVetoableChangeListener(this);
+			newValue[i].addVetoableChangeListener(Parameter.PROPERTYNAME_NAME, this);
 		}
 	}
 }

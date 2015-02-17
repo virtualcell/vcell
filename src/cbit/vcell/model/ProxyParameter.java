@@ -137,7 +137,7 @@ public abstract class ProxyParameter extends Parameter implements SymbolProxy {
 		}
 	}
 	
-	public final void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+	public final void setExpression(Expression expression) throws ExpressionBindingException {
 		if (target instanceof EditableSymbolTableEntry){
 			expression.bindExpression(target.getNameScope().getScopedSymbolTable());
 			((EditableSymbolTableEntry)target).setExpression(expression);

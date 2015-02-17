@@ -563,9 +563,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting surfaceToVol expression: " + e.getMessage());
 					}
 				}
 				String volPerUnitVol = rset.getString(structureMappingTable.volPerUnitVolExp.toString());
@@ -575,9 +572,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting surfaceToVol expression: " + e.getMessage());
 					}
 				}
 			} else if (sm instanceof MembraneMapping) {
@@ -589,9 +583,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting surfaceToVol expression: " + e.getMessage());
 					}
 				}
 				String volFractString = rset.getString(structureMappingTable.volFractExp.toString());
@@ -601,9 +592,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in volFract expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting volFract expression: " + e.getMessage());
 					}
 				}
 				boolean bCalculateVoltage = rset.getBoolean(structureMappingTable.bCalculateVoltage.toString());
@@ -617,9 +605,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					}catch (ExpressionBindingException e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException("error setting membrane specific capacitance: "+e.getMessage());
-					}catch (PropertyVetoException e){
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting membrane specific capacitance: "+e.getMessage());
 					}
 				}
 				String initialVoltageString = rset.getString(structureMappingTable.initialVoltage.toString());
@@ -629,9 +614,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					}catch (ExpressionException e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException("database parse error in initial membrane voltage: "+e.getMessage());
-					}catch (PropertyVetoException e){
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting initial membrane voltage: "+e.getMessage());
 					}
 				}
 				String areaPerUnitArea = rset.getString(structureMappingTable.areaPerUnitAreaExp.toString());
@@ -641,9 +623,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting surfaceToVol expression: " + e.getMessage());
 					}
 				}
 				String areaPerUnitVol = rset.getString(structureMappingTable.areaPerUnitVolExp.toString());
@@ -653,9 +632,6 @@ private void assignStructureMappingsSQL(QueryHashtable dbc, Connection con,KeyVa
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
-					} catch (PropertyVetoException e) {
-						e.printStackTrace(System.out);
-						throw new DataAccessException("error setting surfaceToVol expression: " + e.getMessage());
 					}
 				}
 			} else {

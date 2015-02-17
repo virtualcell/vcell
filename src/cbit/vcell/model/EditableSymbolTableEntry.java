@@ -27,7 +27,7 @@ public interface EditableSymbolTableEntry extends SymbolTableEntry {
 
 	public void setName(String name) throws PropertyVetoException;
 
-	public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException;
+	public void setExpression(Expression expression) throws ExpressionBindingException;
 
 	public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException;
 	

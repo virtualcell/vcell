@@ -11,11 +11,11 @@
 package cbit.vcell.units;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 import org.vcell.util.Matchable;
 
 import cbit.vcell.matrix.RationalNumber;
-
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
@@ -26,6 +26,14 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	private InternalUnitDefinition fieldUnitDefinition = null;
 	private VCUnitSystem fieldVCUnitSystem = null;
 	private UnitSymbol fieldUnitSymbol = null;
+	
+	//
+	// each unit should be a singleton within the unit system it came from
+	// because they are singletons, it is ok for each unit to cache it's own derived units locally (for divide, mult, power).
+	//
+	private transient HashMap<VCUnitDefinition, VCUnitDefinition> divideByMap = null;
+	private transient HashMap<VCUnitDefinition, VCUnitDefinition> multiplyByMap = null;
+	private transient HashMap<ucar.units.RationalNumber, VCUnitDefinition> powerMap = null;
 	
 	VCUnitDefinition(InternalUnitDefinition unitDefinition, VCUnitSystem vcUnitSystem, UnitSymbol unitsymbol) {
 		super();
@@ -52,10 +60,22 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	}
 
 	public VCUnitDefinition divideBy(VCUnitDefinition childUnit) {
+		VCUnitDefinition ratioUnit = null;
+		if (divideByMap != null){
+			ratioUnit = divideByMap.get(childUnit);
+			if (ratioUnit != null){
+				return ratioUnit;
+			}
+		}else{
+			divideByMap = new HashMap<VCUnitDefinition, VCUnitDefinition>();
+		}
+
 		double newNumericScale = fieldUnitSymbol.getNumericScale()/childUnit.fieldUnitSymbol.getNumericScale();
 		RationalExp thisNonnumericUnit = getSymbolRationalExpWithoutNumericScale(this.fieldUnitSymbol);
 		RationalExp otherNonnumericUnit = getSymbolRationalExpWithoutNumericScale(childUnit.fieldUnitSymbol);
-		return getUnit(newNumericScale, thisNonnumericUnit.div(otherNonnumericUnit));
+		ratioUnit = getUnit(newNumericScale, thisNonnumericUnit.div(otherNonnumericUnit));
+		divideByMap.put(childUnit,ratioUnit);
+		return ratioUnit;
 	}
 
 	public boolean isTBD() {
@@ -85,6 +105,16 @@ public class VCUnitDefinition implements Matchable, Serializable{
 	}
 
 	public VCUnitDefinition raiseTo(ucar.units.RationalNumber rationalNumber) {
+		VCUnitDefinition powerUnit = null;
+		if (powerMap != null){
+			powerUnit = powerMap.get(rationalNumber);
+			if (powerUnit != null){
+				return powerUnit;
+			}
+		}else{
+			powerMap = new HashMap<ucar.units.RationalNumber, VCUnitDefinition>();
+		}
+		
 		RationalExp origRationalExpWithoutNumericScale = getSymbolRationalExpWithoutNumericScale(fieldUnitSymbol);
 		RationalExp rationalExpWithoutNumericScale = origRationalExpWithoutNumericScale;
 		//
@@ -102,15 +132,29 @@ public class VCUnitDefinition implements Matchable, Serializable{
 				rationalExpWithoutNumericScale = rationalExpWithoutNumericScale.mult(origRationalExpWithoutNumericScale);
 			}
 			double newNumericScale = Math.pow(fieldUnitSymbol.getNumericScale(),rationalNumber.doubleValue());
-			return getUnit(newNumericScale, rationalExpWithoutNumericScale);
+			powerUnit = getUnit(newNumericScale, rationalExpWithoutNumericScale);
+			powerMap.put(rationalNumber, powerUnit);
+			return powerUnit;
 		}else{
 			throw new RuntimeException("raiseTo( non-integer ) not yet supported");
 		}
 	}
 
 	public VCUnitDefinition multiplyBy(VCUnitDefinition unit) {
+		VCUnitDefinition productUnit = null;
+		if (multiplyByMap != null){
+			productUnit = multiplyByMap.get(unit);
+			if (productUnit != null){
+				return productUnit;
+			}
+		}else{
+			multiplyByMap = new HashMap<VCUnitDefinition, VCUnitDefinition>();
+		}
+
 		double newNumericScale = fieldUnitSymbol.getNumericScale() * unit.fieldUnitSymbol.getNumericScale();
-		return getUnit(newNumericScale, getSymbolRationalExpWithoutNumericScale(this.fieldUnitSymbol).mult(getSymbolRationalExpWithoutNumericScale(unit.fieldUnitSymbol)));
+		productUnit = getUnit(newNumericScale, getSymbolRationalExpWithoutNumericScale(this.fieldUnitSymbol).mult(getSymbolRationalExpWithoutNumericScale(unit.fieldUnitSymbol)));
+		multiplyByMap.put(unit, productUnit);
+		return productUnit;
 	}
 
 	public boolean compareEqual(Matchable matchable) {

@@ -205,7 +205,10 @@ public boolean hasFilter(String filterName){
 public static enum FilterType {Species,Flux};
 public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifiers,FilterType filterType) throws Exception{
 	if(simulationOwner instanceof SimulationContext){
-		MathMapping mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+		MathMapping mathMapping = ((SimulationContext)simulationOwner).getMostRecentlyCreatedMathMapping();
+		if (mathMapping==null){
+			mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+		}
 		MathDescription mathDescription = mathMapping.getMathDescription();
 		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 		ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
@@ -248,7 +251,10 @@ public HashMap<ColumnDescription, FilterCategoryType> getFilterCategories(Column
 		return filterCategoryMap;
 	}
 		if(simulationOwner instanceof SimulationContext){
-			MathMapping mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+			MathMapping mathMapping = ((SimulationContext)simulationOwner).getMostRecentlyCreatedMathMapping();
+			if (mathMapping==null){
+				mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+			}
 			MathDescription mathDescription = mathMapping.getMathDescription();
 			MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 //			Enumeration<Variable> variableEnum = mathDescription.getVariables();

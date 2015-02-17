@@ -278,9 +278,8 @@ public class MathMapping_4_8 implements ScopedSymbolTable, UnitFactorProvider, I
 			return MathMapping_4_8.this.getNameScope();
 		}
 
-		public void setExpression(Expression argExpression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression argExpression) {
 			Expression oldValue = fieldExpression;
-			super.fireVetoableChange("expression", oldValue, argExpression);
 			fieldExpression = argExpression;
 			super.firePropertyChange("expression", oldValue, argExpression);
 		}

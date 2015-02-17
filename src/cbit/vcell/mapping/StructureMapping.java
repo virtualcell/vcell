@@ -216,13 +216,12 @@ public abstract class StructureMapping implements Matchable, ScopedSymbolTable, 
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(Expression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
 				expression.bindExpression(StructureMapping.this);
 			}
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}

@@ -19,6 +19,7 @@ import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
@@ -51,67 +52,49 @@ public class SBPAXHMMRevLawBuilder implements KineticLawBuilder {
 	public void addKinetics(KineticContext context) {
 		try {
 			ReactionStep reaction = context.getReaction();
-			HMM_REVKinetics kinetics = new HMM_REVKinetics(reaction);
+			HMM_REVKinetics kinetics = new HMM_REVKinetics((SimpleReaction)reaction);
 			NameScope modelScope = reaction.getModel().getNameScope();
 			ModelParameter kMichaelisFwd = context.getParameter(SBOList.MICHAELIS_CONST_FORW);
 			if(kMichaelisFwd != null) {
-				try { 
-					KineticsParameter kmfParameter = kinetics.getKmFwdParameter();
-					kmfParameter.setExpression(new Expression(kMichaelisFwd, modelScope)); 
-					kmfParameter.setUnitDefinition(kMichaelisFwd.getUnitDefinition());
-				} 
-				catch (PropertyVetoException e) { e.printStackTrace(); }					
+				KineticsParameter kmfParameter = kinetics.getKmFwdParameter();
+				kmfParameter.setExpression(new Expression(kMichaelisFwd, modelScope)); 
+				kmfParameter.setUnitDefinition(kMichaelisFwd.getUnitDefinition());
 			}
 			ModelParameter kcatf = context.getParameter(SBOList.CATALYTIC_RATE_CONST_FORW);
 			if(kcatf != null && context.getCatalysts().size() == 1) {
-				try { 
-					KineticsParameter vmaxfParameter = kinetics.getVmaxFwdParameter();
-					Catalyst catalyst = context.getCatalysts().iterator().next();
-					vmaxfParameter.setExpression(Expression.mult(new Expression(kcatf, modelScope),
-							new Expression(catalyst.getSpeciesContext(), modelScope))); 
-					//					vmaxParameter.setUnitDefinition(vMax.getUnitDefinition());
-				} 
-				catch (PropertyVetoException e) { e.printStackTrace(); }									
+				KineticsParameter vmaxfParameter = kinetics.getVmaxFwdParameter();
+				Catalyst catalyst = context.getCatalysts().iterator().next();
+				vmaxfParameter.setExpression(Expression.mult(new Expression(kcatf, modelScope),
+						new Expression(catalyst.getSpeciesContext(), modelScope))); 
+				//					vmaxParameter.setUnitDefinition(vMax.getUnitDefinition());
 			} else {
 				ModelParameter vMaxf = context.getParameter(SBOList.MAXIMAL_VELOCITY_FORW);
 				if(vMaxf != null) {
-					try { 
-						KineticsParameter vmaxfParameter = kinetics.getVmaxFwdParameter();
-						vmaxfParameter.setExpression(new Expression(vMaxf, modelScope)); 
-						vmaxfParameter.setUnitDefinition(vMaxf.getUnitDefinition());
-					} 
-					catch (PropertyVetoException e) { e.printStackTrace(); }					
+					KineticsParameter vmaxfParameter = kinetics.getVmaxFwdParameter();
+					vmaxfParameter.setExpression(new Expression(vMaxf, modelScope)); 
+					vmaxfParameter.setUnitDefinition(vMaxf.getUnitDefinition());
 				}
 			}
 
 			ModelParameter kMichaelisRev = context.getParameter(SBOList.MICHAELIS_CONST_REV);
 			if(kMichaelisRev != null) {
-				try { 
-					KineticsParameter kmrParameter = kinetics.getKmRevParameter();
-					kmrParameter.setExpression(new Expression(kMichaelisRev, modelScope)); 
-					kmrParameter.setUnitDefinition(kMichaelisRev.getUnitDefinition());
-				} 
-				catch (PropertyVetoException e) { e.printStackTrace(); }					
+				KineticsParameter kmrParameter = kinetics.getKmRevParameter();
+				kmrParameter.setExpression(new Expression(kMichaelisRev, modelScope)); 
+				kmrParameter.setUnitDefinition(kMichaelisRev.getUnitDefinition());
 			}
 			ModelParameter kcatr = context.getParameter(SBOList.CATALYTIC_RATE_CONST_FORW);
 			if(kcatr != null && context.getCatalysts().size() == 1) {
-				try { 
-					KineticsParameter vmaxrParameter = kinetics.getVmaxRevParameter();
-					Catalyst catalyst = context.getCatalysts().iterator().next();
-					vmaxrParameter.setExpression(Expression.mult(new Expression(kcatr, modelScope),
-							new Expression(catalyst.getSpeciesContext(), modelScope))); 
-					//					vmaxParameter.setUnitDefinition(vMax.getUnitDefinition());
-				} 
-				catch (PropertyVetoException e) { e.printStackTrace(); }									
+				KineticsParameter vmaxrParameter = kinetics.getVmaxRevParameter();
+				Catalyst catalyst = context.getCatalysts().iterator().next();
+				vmaxrParameter.setExpression(Expression.mult(new Expression(kcatr, modelScope),
+						new Expression(catalyst.getSpeciesContext(), modelScope))); 
+				//					vmaxParameter.setUnitDefinition(vMax.getUnitDefinition());
 			} else {
 				ModelParameter vMaxr = context.getParameter(SBOList.MAXIMAL_VELOCITY_REV);
 				if(vMaxr != null) {
-					try { 
-						KineticsParameter vmaxrParameter = kinetics.getVmaxRevParameter();
-						vmaxrParameter.setExpression(new Expression(vMaxr, modelScope)); 
-						vmaxrParameter.setUnitDefinition(vMaxr.getUnitDefinition());
-					} 
-					catch (PropertyVetoException e) { e.printStackTrace(); }					
+					KineticsParameter vmaxrParameter = kinetics.getVmaxRevParameter();
+					vmaxrParameter.setExpression(new Expression(vMaxr, modelScope)); 
+					vmaxrParameter.setUnitDefinition(vMaxr.getUnitDefinition());
 				}
 			}
 		} catch (ExpressionException e) {

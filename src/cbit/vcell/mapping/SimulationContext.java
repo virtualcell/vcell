@@ -94,7 +94,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 
-	
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
@@ -243,9 +242,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(Expression expression) throws java.beans.PropertyVetoException {
+		public void setExpression(Expression expression) {
 			Expression oldValue = fieldParameterExpression;
-			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
@@ -286,6 +284,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	
 	// rate rules
 	private RateRule[] fieldRateRules = null;
+	private transient MathMapping mostRecentlyCreatedMathMapping;
 	public static final String FLUOR_DATA_NAME = "fluor";
 
 
@@ -2232,19 +2231,19 @@ public LicensedLibrary getRequiredLibrary( ) {
 }
 
 public MathMapping createNewMathMapping() {
-	MathMapping mathMapping = null;
+	mostRecentlyCreatedMathMapping = null;
 	if (isStoch() && !isRuleBased()){
 		if (getGeometry().getDimension()==0){
-			mathMapping = new StochMathMapping(this);
+			mostRecentlyCreatedMathMapping = new StochMathMapping(this);
 		}else{
-			mathMapping = new ParticleMathMapping(this);
+			mostRecentlyCreatedMathMapping = new ParticleMathMapping(this);
 		}
 	}else if (isRuleBased()){
-		mathMapping = new RulebasedMathMapping(this);
+		mostRecentlyCreatedMathMapping = new RulebasedMathMapping(this);
 	}else {
-		mathMapping = new MathMapping(this);
+		mostRecentlyCreatedMathMapping = new MathMapping(this);
 	}
-	return mathMapping;
+	return mostRecentlyCreatedMathMapping;
 }
 
 public boolean isSameTypeAs(SimulationContext simulationContext) {
@@ -2364,6 +2363,10 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 		}
 	}
 	return null;
+}
+
+public MathMapping getMostRecentlyCreatedMathMapping(){
+	return this.mostRecentlyCreatedMathMapping;
 }
 
 @Override

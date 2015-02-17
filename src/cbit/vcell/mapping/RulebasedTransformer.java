@@ -11,21 +11,17 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.math.ParticleObservable.ObservableType;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelProcessDynamics;
-import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
-import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.RbmKineticLaw.ParameterType;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmObservable;
@@ -35,10 +31,8 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 
 public class RulebasedTransformer implements SimContextTransformer {
 
@@ -131,7 +125,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				fR.setExpression(forwardRateExp);
 				LocalParameter rR = kineticLaw.getParameter(ParameterType.MassActionReverseRate);
 				rR.setExpression(reverseRateExp);
-			} catch (ExpressionBindingException | PropertyVetoException e) {
+			} catch (ExpressionBindingException e) {
 				e.printStackTrace();
 				throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage());
 			}
