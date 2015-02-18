@@ -38,43 +38,42 @@ import cbit.vcell.solver.SolverTaskDescription;
 @SuppressWarnings("serial")
 public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 
+	// TODO: all that's being set here is used in NFsimSimulationOptions
+	// also synchronize with NetworkConstraints
+	
 	private SolverTaskDescription solverTaskDescription = null;	
+
+	private JCheckBox observableComputationCheckBox;
+	private JTextField observableComputationTextField;
+	private JButton observableComputationHelpButton = null;
+
+	private JCheckBox moleculeDistanceCheckBox;
+	private JTextField moleculeDistanceTextField;
+	private JButton moleculeDistanceHelpButton = null;
+
+	private JCheckBox aggregateBookkeepingCheckBox;
+	private JTextField aggregateBookkeepingTextField;
+	private JButton aggregateBookkeepingHelpButton = null;
+
+	private JCheckBox maxMoleculesPerTypeCheckBox;
+	private JTextField maxMoleculesPerTypeTextField;
+	private JButton maxMoleculesPerTypeHelpButton = null;
+
+	private JCheckBox equilibrateTimeCheckBox;
+	private JTextField equilibrateTimeTextField;
+	private JButton equilibrateTimeHelpButton = null;
 
 	private JCheckBox randomSeedCheckBox;
 	private JTextField randomSeedTextField;
 	private JButton randomSeedHelpButton = null;
 
-	private JCheckBox aCheckBox;
-	private JTextField aTextField;
-	private JButton aHelpButton = null;
-
-	private JCheckBox bCheckBox;
-	private JTextField bTextField;
-	private JButton bHelpButton = null;
-
-	private JCheckBox cCheckBox;
-	private JTextField cTextField;
-	private JButton cHelpButton = null;
-
-	private JCheckBox dCheckBox;
-	private JTextField dTextField;
-	private JButton dHelpButton = null;
-
-	private JCheckBox eCheckBox;
-	private JTextField eTextField;
-	private JButton eHelpButton = null;
-
-	private JCheckBox fCheckBox;
-	private JTextField fTextField;
-	private JButton fHelpButton = null;
+	private JCheckBox preventIntraBondsCheckBox;
+	private JTextField preventIntraBondsTextField;
+	private JButton preventIntraBondsHelpButton = null;
 
 	private JCheckBox gCheckBox;
 	private JTextField gTextField;
 	private JButton gHelpButton = null;
-
-	private JCheckBox hCheckBox;
-	private JTextField hTextField;
-	private JButton hHelpButton = null;
 
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
@@ -82,12 +81,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-//			if (source == randomSeedHelpButton) {
-//				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Random Seed", "<html>rand_seed <i>boolean</i> " +
-//						"<br>Seed for random number generator. If this line is not entered, the current " +
-//						"time is used as a seed, producing different sequences for each run.</html>");
-//			} else 
-			if (source == aHelpButton) {
+			if (source == observableComputationHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "On-the-fly computations of observables", 
 						"<html>-notf <i>boolean</i> " +
 						"<br> By default, observables are calculated on-the-fly, updating all observables at each simulation step. "
@@ -96,7 +90,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "step is greater than the number of molecules in the system. This may or may not be true for your simulation, "
 						+ "so you should try turning on or off this option to see which is more efficient."
 						+ "</html>");
-			} else if (source == bHelpButton) {
+			} else if (source == moleculeDistanceHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
 						"<html>-utl <i>int</i> " +
 						"<br> The universal traversal limit (UTL) sets the distance neighboring molecules have to be to the site of the reaction "
@@ -110,7 +104,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "to a single hub molecule. "
 						+ "<br><br> NFSim option –utl [integer] Default: the size of the largest reactant pattern in the rule-set."
 						+ "</html>");
-			} else if (source == cHelpButton) {
+			} else if (source == aggregateBookkeepingHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
 						"<html>-cb <i>boolean</i> "
 						+ "<br> NFsim by default tracks individual molecule agents, not complete molecular complexes. This is useful and makes "
@@ -122,7 +116,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "the bookkeeping system with a cost that depends on the size of the molecular complexes that can form."
 						+ "<br><br> NFSim option –cb Default: off"
 						+ "</html>");
-			} else if (source == dHelpButton) {
+			} else if (source == maxMoleculesPerTypeHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
 						"<html>-gml <i>int</i> "
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
@@ -130,27 +124,32 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
 						+ "<br><br> NFSim option: –gml [limit] Default: 100,000"
 						+ "</html>");
-			} else if (source == eHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Test", 
-						"<html>test <i>int</i> "
-						+ "<br> Test"
+			} else if (source == equilibrateTimeHelpButton) {
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
+						"<html>-eq <i>time</i> "
+						+ "<br>Equilibrate the system for a set time before the simulation begins for the amount of time given. This operates "
+						+ "exactly like a normal simulation, except that the simulation time is set to zero immediately after the equilibration "
+						+ "phase and no output during equilibration is generated."
 						+ "</html>");
-			} else if (source == fHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Test", 
-						"<html>test <i>int</i> "
-						+ "<br> Test"
+			} else 	if (source == randomSeedHelpButton) {
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Random Seed", 
+						"<html>rand_seed <i>boolean</i> "
+						+ "<br>Provide a seed to NFsim’s random number generator so exact trajectories can be reproduced. If this line is not "
+						+ "entered, the current time is used as a seed, producing different sequences for each run."
+						+ "</html>");
+			} else if (source == preventIntraBondsHelpButton) {
+				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
+						"<html>-bscb <i>int</i> "
+						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
+						+ "but requires complex bookkeeping to be turned on."
 						+ "</html>");
 			} else if (source == gHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Test", 
 						"<html>test <i>int</i> "
 						+ "<br> Test"
 						+ "</html>");
-			} else if (source == hHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Test", 
-						"<html>test <i>int</i> "
-						+ "<br> Test"
-						+ "</html>");
-				
+
+// ----------------------------------------------------------------------------------------------------------
 			} else if (source == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
 				if(!randomSeedCheckBox.isSelected())
@@ -187,46 +186,46 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
-//		randomSeedCheckBox = new JCheckBox("-seed  Random Seed.");
-//		randomSeedTextField = new JTextField();
-//		randomSeedHelpButton.setFont(font);
-//		randomSeedHelpButton.setBorder(border);
+		observableComputationCheckBox = new JCheckBox("Turn off on-the-fly computations of observables.");
+		observableComputationTextField = new JTextField();
+		observableComputationHelpButton = new JButton(" ? ");
+		observableComputationHelpButton.setFont(font);
+		observableComputationHelpButton.setBorder(border);
 		
-		aCheckBox = new JCheckBox("Turn off on-the-fly computations of observables.");
-		aTextField = new JTextField();
-		aHelpButton = new JButton(" ? ");
-		aHelpButton.setFont(font);
-		aHelpButton.setBorder(border);
+		moleculeDistanceCheckBox = new JCheckBox("Distance of neighboring molecules from the site of the reaction.");
+		moleculeDistanceTextField = new JTextField();
+		moleculeDistanceHelpButton = new JButton(" ? ");
+		moleculeDistanceHelpButton.setFont(font);
+		moleculeDistanceHelpButton.setBorder(border);
 		
-		bCheckBox = new JCheckBox("Distance of neighboring molecules from the site of the reaction.");
-		bTextField = new JTextField();
-		bHelpButton = new JButton(" ? ");
-		bHelpButton.setFont(font);
-		bHelpButton.setBorder(border);
+		aggregateBookkeepingCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
+		aggregateBookkeepingTextField = new JTextField();
+		aggregateBookkeepingHelpButton = new JButton(" ? ");
+		aggregateBookkeepingHelpButton.setFont(font);
+		aggregateBookkeepingHelpButton.setBorder(border);
 		
-		cCheckBox = new JCheckBox("Turn on aggregate bookkeeping.");
-		cTextField = new JTextField();
-		cHelpButton = new JButton(" ? ");
-		cHelpButton.setFont(font);
-		cHelpButton.setBorder(border);
+		maxMoleculesPerTypeCheckBox = new JCheckBox("Maximal number of molecules per Molecular Type.");
+		maxMoleculesPerTypeTextField = new JTextField();
+		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
+		maxMoleculesPerTypeHelpButton.setFont(font);
+		maxMoleculesPerTypeHelpButton.setBorder(border);
 		
-		dCheckBox = new JCheckBox("Maximal number of molecules per Molecular Type.");
-		dTextField = new JTextField();
-		dHelpButton = new JButton(" ? ");
-		dHelpButton.setFont(font);
-		dHelpButton.setBorder(border);
+		equilibrateTimeCheckBox = new JCheckBox("Equilibrate for a set time.");
+		equilibrateTimeTextField = new JTextField();
+		equilibrateTimeHelpButton = new JButton(" ? ");
+		equilibrateTimeHelpButton.setFont(font);
+		equilibrateTimeHelpButton.setBorder(border);
 		
-		eCheckBox = new JCheckBox("Test.");
-		eTextField = new JTextField();
-		eHelpButton = new JButton(" ? ");
-		eHelpButton.setFont(font);
-		eHelpButton.setBorder(border);
+		randomSeedCheckBox = new JCheckBox("Random Seed.");
+		randomSeedTextField = new JTextField();
+		randomSeedHelpButton.setFont(font);
+		randomSeedHelpButton.setBorder(border);
 		
-		fCheckBox = new JCheckBox("Test.");
-		fTextField = new JTextField();
-		fHelpButton = new JButton(" ? ");
-		fHelpButton.setFont(font);
-		fHelpButton.setBorder(border);
+		preventIntraBondsCheckBox = new JCheckBox("Prevent intra-molecular bonds from forming.");
+		preventIntraBondsTextField = new JTextField();
+		preventIntraBondsHelpButton = new JButton(" ? ");
+		preventIntraBondsHelpButton.setFont(font);
+		preventIntraBondsHelpButton.setBorder(border);
 		
 		gCheckBox = new JCheckBox("Test.");
 		gTextField = new JTextField();
@@ -234,49 +233,22 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gHelpButton.setFont(font);
 		gHelpButton.setBorder(border);
 		
-		hCheckBox = new JCheckBox("Test.");
-		hTextField = new JTextField();
-		hHelpButton = new JButton(" ? ");
-		hHelpButton.setFont(font);
-		hHelpButton.setBorder(border);
-	
 		getContentPanel().setLayout(new GridBagLayout());		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(randomSeedCheckBox, gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		gbc.insets = new Insets(0, 0, 0, 4);
-//		getContentPanel().add(randomSeedHelpButton, gbc);
-//		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(randomSeedTextField, gbc);
 		
 		// ----------------------------------------------------------------		
-//		gridy++;
-//		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(aCheckBox, gbc);
+		getContentPanel().add(observableComputationCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(aHelpButton, gbc);
+		getContentPanel().add(observableComputationHelpButton, gbc);
 				
 //		gbc = new GridBagConstraints();
 //		gbc.gridx = 2;
@@ -292,14 +264,14 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(bCheckBox, gbc);
+		getContentPanel().add(moleculeDistanceCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(bHelpButton, gbc);
+		getContentPanel().add(moleculeDistanceHelpButton, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -307,7 +279,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(bTextField, gbc);
+		getContentPanel().add(moleculeDistanceTextField, gbc);
 
 		// ----------------------------------------------------------------		
 		gridy++;
@@ -315,14 +287,14 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(cCheckBox, gbc);
+		getContentPanel().add(aggregateBookkeepingCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(cHelpButton, gbc);
+		getContentPanel().add(aggregateBookkeepingHelpButton, gbc);
 				
 //		gbc = new GridBagConstraints();
 //		gbc.gridx = 2;
@@ -338,14 +310,14 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(dCheckBox, gbc);
+		getContentPanel().add(maxMoleculesPerTypeCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(dHelpButton, gbc);
+		getContentPanel().add(maxMoleculesPerTypeHelpButton, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -353,7 +325,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(dTextField, gbc);
+		getContentPanel().add(maxMoleculesPerTypeTextField, gbc);
 		
 		// ----------------------------------------------------------------		
 		gridy++;
@@ -361,14 +333,14 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(eCheckBox, gbc);
+		getContentPanel().add(equilibrateTimeCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(eHelpButton, gbc);
+		getContentPanel().add(equilibrateTimeHelpButton, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -376,30 +348,55 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(eTextField, gbc);
+		getContentPanel().add(equilibrateTimeTextField, gbc);
 
-		// ----------------------------------------------------------------		
+		// ----------------------------------------------------------------
+		
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(fCheckBox, gbc);
+		getContentPanel().add(randomSeedCheckBox, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(fHelpButton, gbc);
-				
+		getContentPanel().add(randomSeedHelpButton, gbc);
+		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.weightx = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(fTextField, gbc);
+		getContentPanel().add(randomSeedTextField, gbc);
+
+		// --------------------------------------------------------------------------
+		
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		getContentPanel().add(preventIntraBondsCheckBox, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 0, 4);
+		getContentPanel().add(preventIntraBondsHelpButton, gbc);
+				
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		getContentPanel().add(fTextField, gbc);
 
 		// ----------------------------------------------------------------		
 		gridy++;
@@ -424,60 +421,35 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		getContentPanel().add(gTextField, gbc);
 
-		// ----------------------------------------------------------------		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(hCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(hHelpButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(hTextField, gbc);
 	}
 	
 	private void initConnections() {
-//		randomSeedCheckBox.addActionListener(ivjEventHandler);
-		aCheckBox.addActionListener(ivjEventHandler);
-		bCheckBox.addActionListener(ivjEventHandler);
-		cCheckBox.addActionListener(ivjEventHandler);
-		dCheckBox.addActionListener(ivjEventHandler);
-		eCheckBox.addActionListener(ivjEventHandler);
-		fCheckBox.addActionListener(ivjEventHandler);
+		observableComputationCheckBox.addActionListener(ivjEventHandler);
+		moleculeDistanceCheckBox.addActionListener(ivjEventHandler);
+		aggregateBookkeepingCheckBox.addActionListener(ivjEventHandler);
+		maxMoleculesPerTypeCheckBox.addActionListener(ivjEventHandler);
+		equilibrateTimeCheckBox.addActionListener(ivjEventHandler);
+		randomSeedCheckBox.addActionListener(ivjEventHandler);
+		preventIntraBondsCheckBox.addActionListener(ivjEventHandler);
 		gCheckBox.addActionListener(ivjEventHandler);
-		hCheckBox.addActionListener(ivjEventHandler);
 
-//		randomSeedTextField.addFocusListener(ivjEventHandler);
-		aTextField.addFocusListener(ivjEventHandler);
-		bTextField.addFocusListener(ivjEventHandler);
-		cTextField.addFocusListener(ivjEventHandler);
-		dTextField.addFocusListener(ivjEventHandler);
-		eTextField.addFocusListener(ivjEventHandler);
-		fTextField.addFocusListener(ivjEventHandler);
+		observableComputationTextField.addFocusListener(ivjEventHandler);
+		moleculeDistanceTextField.addFocusListener(ivjEventHandler);
+		aggregateBookkeepingTextField.addFocusListener(ivjEventHandler);
+		maxMoleculesPerTypeTextField.addFocusListener(ivjEventHandler);
+		equilibrateTimeTextField.addFocusListener(ivjEventHandler);
+		randomSeedTextField.addFocusListener(ivjEventHandler);
+		preventIntraBondsTextField.addFocusListener(ivjEventHandler);
 		gTextField.addFocusListener(ivjEventHandler);
-		hTextField.addFocusListener(ivjEventHandler);
 
-//		randomSeedHelpButton.addActionListener(ivjEventHandler);
-		aHelpButton.addActionListener(ivjEventHandler);
-		bHelpButton.addActionListener(ivjEventHandler);
-		cHelpButton.addActionListener(ivjEventHandler);
-		dHelpButton.addActionListener(ivjEventHandler);
-		eHelpButton.addActionListener(ivjEventHandler);
-		fHelpButton.addActionListener(ivjEventHandler);
+		observableComputationHelpButton.addActionListener(ivjEventHandler);
+		moleculeDistanceHelpButton.addActionListener(ivjEventHandler);
+		aggregateBookkeepingHelpButton.addActionListener(ivjEventHandler);
+		maxMoleculesPerTypeHelpButton.addActionListener(ivjEventHandler);
+		equilibrateTimeHelpButton.addActionListener(ivjEventHandler);
+		randomSeedHelpButton.addActionListener(ivjEventHandler);
+		preventIntraBondsHelpButton.addActionListener(ivjEventHandler);
 		gHelpButton.addActionListener(ivjEventHandler);
-		hHelpButton.addActionListener(ivjEventHandler);
 	}
 	
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
@@ -506,72 +478,81 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 			
 		setVisible(true);
-		NFsimSimulationOptions smoldynSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();
-		Integer randomSeed = smoldynSimulationOptions.getRandomSeed();
-//		if (randomSeed == null) {
-//			randomSeedTextField.setEditable(false);
-//			randomSeedCheckBox.setSelected(false);
-//		} else {			
-//			randomSeedTextField.setEditable(true);
-//			randomSeedCheckBox.setSelected(true);
-//			randomSeedTextField.setText(randomSeed.toString());
-//		}
 		
 		boolean notf = false;
 		if (notf == false) {
-			aCheckBox.setSelected(false);
+			observableComputationCheckBox.setSelected(false);
 		} else {			
-			aCheckBox.setSelected(true);
+			observableComputationCheckBox.setSelected(true);
 		}
 		Integer utl = 5;
 		if (utl == null) {
-			bTextField.setEditable(false);
-			bCheckBox.setSelected(false);
+			moleculeDistanceTextField.setEditable(false);
+			moleculeDistanceCheckBox.setSelected(false);
 		} else {			
-			bTextField.setEditable(true);
-			bCheckBox.setSelected(true);
-			bTextField.setText(""+utl);
+			moleculeDistanceTextField.setEditable(true);
+			moleculeDistanceCheckBox.setSelected(true);
+			moleculeDistanceTextField.setText(""+utl);
 		}
 		boolean cb = false;
 		if (cb == false) {
-			cCheckBox.setSelected(false);
+			aggregateBookkeepingCheckBox.setSelected(false);
 		} else {			
-			cCheckBox.setSelected(true);
+			aggregateBookkeepingCheckBox.setSelected(true);
 		}
 		Integer gml = 100000;
 		if (gml == null) {
-			dTextField.setEditable(false);
-			dCheckBox.setSelected(false);
+			maxMoleculesPerTypeTextField.setEditable(false);
+			maxMoleculesPerTypeCheckBox.setSelected(false);
 		} else {			
-			dTextField.setEditable(true);
-			dCheckBox.setSelected(true);
-			dTextField.setText(""+gml);
+			maxMoleculesPerTypeTextField.setEditable(true);
+			maxMoleculesPerTypeCheckBox.setSelected(true);
+			maxMoleculesPerTypeTextField.setText(""+gml);
 		}
-//		boolean x = false;
-//		if (x == false) {
-//			randomSeedTextField.setEditable(false);
-//			randomSeedCheckBox.setSelected(false);
-//		} else {			
-//			randomSeedTextField.setEditable(true);
-//			randomSeedCheckBox.setSelected(true);
-//			randomSeedTextField.setText(randomSeed.toString());
-//		}
+		
+		
+		Integer eq = 100;
+		if (eq == null) {
+			equilibrateTimeTextField.setEditable(false);
+			equilibrateTimeCheckBox.setSelected(false);
+		} else {			
+			equilibrateTimeTextField.setEditable(true);
+			equilibrateTimeCheckBox.setSelected(true);
+			equilibrateTimeTextField.setText(""+eq);
+		}
+		
+		NFsimSimulationOptions smoldynSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();
+		Integer randomSeed = smoldynSimulationOptions.getRandomSeed();
+		if (randomSeed == null) {
+			randomSeedTextField.setEditable(false);
+			randomSeedCheckBox.setSelected(false);
+		} else {			
+			randomSeedTextField.setEditable(true);
+			randomSeedCheckBox.setSelected(true);
+			randomSeedTextField.setText(randomSeed.toString());
+		}
+
+		boolean bscb = false;
+		if (bscb == false) {
+			preventIntraBondsCheckBox.setSelected(false);
+		} else {			
+			preventIntraBondsCheckBox.setSelected(true);
+		}
 	}
 	
 	private void setNewRandomSeed(){
 		if(!isVisible()){
 			return;
 		}
-		
-//		Integer randomSeed = null;
-//		if (randomSeedCheckBox.isSelected()) {
-//			try {
-//				randomSeed = new Integer(randomSeedTextField.getText());
-//			} catch (NumberFormatException ex) {
-//				DialogUtils.showErrorDialog(this, "Wrong number format for random seed: " + ex.getMessage());
-//				return;
-//			}
-//		}
-//		solverTaskDescription.getSmoldynSimulationOptions().setRandomSeed(randomSeed);		
+		Integer randomSeed = null;
+		if (randomSeedCheckBox.isSelected()) {
+			try {
+				randomSeed = new Integer(randomSeedTextField.getText());
+			} catch (NumberFormatException ex) {
+				DialogUtils.showErrorDialog(this, "Wrong number format for random seed: " + ex.getMessage());
+				return;
+			}
+		}
+		solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(randomSeed);		
 	}
 }
