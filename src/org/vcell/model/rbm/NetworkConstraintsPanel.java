@@ -13,12 +13,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.mapping.SimulationContext;
+
 public class NetworkConstraintsPanel extends JPanel {
 
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
 	private NetworkConstraints networkConstraints;
 	private EventHandler eventHandler = new EventHandler();
+	private SimulationContext fieldSimulationContext;
+	private IssueManager fieldIssueManager;
+	private SelectionManager fieldSelectionManager;
 	
 	private class EventHandler implements FocusListener, ActionListener {
 
@@ -136,5 +143,17 @@ public class NetworkConstraintsPanel extends JPanel {
 		}
 		maxIterationTextField.setText(text1);
 		maxMolTextField.setText(text2);
+	}
+
+	public void setSimulationContext(SimulationContext simulationContext) {
+		fieldSimulationContext = simulationContext;
+	}
+
+	public void setSelectionManager(SelectionManager selectionManager) {
+		fieldSelectionManager = selectionManager;
+	}
+
+	public void setIssueManager(IssueManager issueManager) {
+		fieldIssueManager = issueManager;
 	}
 }
