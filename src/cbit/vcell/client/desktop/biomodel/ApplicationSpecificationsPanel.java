@@ -26,6 +26,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.vcell.model.rbm.NetworkConstraintsPanel;
+
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -38,11 +40,13 @@ import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	private InitialConditionsPanel initialConditionsPanel;
 	private ReactionSpecsPanel reactionSpecsPanel;	
+	private NetworkConstraintsPanel networkConstraintsPanel;	
 	private JTextField textField_1;
 		
 	private enum SettingsPanelTabID {
 		species_settings("Species"),
-		reaction_settings("Reactions");
+		reaction_settings("Reactions"),
+		network_settings("Network");
 		
 		String title = null;
 		SettingsPanelTabID(String name) {
@@ -71,10 +75,12 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		super.initialize();	
 		initialConditionsPanel = new InitialConditionsPanel();
 		reactionSpecsPanel = new ReactionSpecsPanel();
+		networkConstraintsPanel = new NetworkConstraintsPanel();
 		
 		SettingsPanelTab settingsPanelTabs[] = new SettingsPanelTab[SettingsPanelTabID.values().length]; 
 		settingsPanelTabs[SettingsPanelTabID.species_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.species_settings, initialConditionsPanel, null);
 		settingsPanelTabs[SettingsPanelTabID.reaction_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.reaction_settings, reactionSpecsPanel, null);
+		settingsPanelTabs[SettingsPanelTabID.network_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
 		
 		for (SettingsPanelTab tab : settingsPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -128,7 +134,8 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 				searchTable();
 			}
 		});
-
+		
+		networkConstraintsPanel.setVisible(false);
 	}
 	
 	private void searchTable() {		
@@ -136,6 +143,8 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			initialConditionsPanel.setSearchText(textField_1.getText());
 		}else if(tabbedPane.getSelectedIndex() == SettingsPanelTabID.reaction_settings.ordinal()){
 			reactionSpecsPanel.setSearchText(textField_1.getText());
+		}else if(tabbedPane.getSelectedIndex() == SettingsPanelTabID.network_settings.ordinal()){
+//			networkConstraintsPanel.setSearchText(textField_1.getText());
 		}
 	}
 
@@ -144,11 +153,20 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		super.setSimulationContext(newValue);
 		initialConditionsPanel.setSimulationContext(simulationContext);
 		reactionSpecsPanel.setSimulationContext(simulationContext);		
+		networkConstraintsPanel.setSimulationContext(simulationContext);
+		if(simulationContext.isRuleBased()) {
+			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
+			networkConstraintsPanel.setVisible(true);
+		} else {
+			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
+			networkConstraintsPanel.setVisible(false);
+		}
 	}
 
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
+		networkConstraintsPanel.setSelectionManager(selectionManager);
 		reactionSpecsPanel.setSelectionManager(selectionManager);
 		initialConditionsPanel.setSelectionManager(selectionManager);
 	}
@@ -156,6 +174,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	@Override
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
+		networkConstraintsPanel.setIssueManager(issueManager);
 		reactionSpecsPanel.setIssueManager(issueManager);
 		initialConditionsPanel.setIssueManager(issueManager);
 	}
@@ -169,6 +188,8 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 					tabbedPane.setSelectedIndex(SettingsPanelTabID.species_settings.ordinal());
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.reaction_setting)) {
 					tabbedPane.setSelectedIndex(SettingsPanelTabID.reaction_settings.ordinal());
+				} else if (activeView.getActiveViewID().equals(ActiveViewID.network_setting)) {
+					tabbedPane.setSelectedIndex(SettingsPanelTabID.network_settings.ordinal());
 				}
 			}
 		}
@@ -182,6 +203,8 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			activeViewID = ActiveViewID.species_settings;
 		} else if (selectedComponent == reactionSpecsPanel) {
 			activeViewID = ActiveViewID.reaction_setting;
+		} else if (selectedComponent == networkConstraintsPanel) {
+			activeViewID = ActiveViewID.network_setting;
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, activeViewID);
 	}

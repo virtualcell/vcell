@@ -48,6 +48,7 @@ public class SelectionManager {
 		
 		species_settings,
 		reaction_setting,
+		network_setting,
 		
 		events,
 		electrical,
