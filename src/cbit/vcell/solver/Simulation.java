@@ -471,6 +471,9 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getMathDescription().getPostProcessingBlock().getNumDataGenerators() > 0) {
 		requiredFeatures.add(SolverFeature.Feature_PostProcessingBlock);
 	}
+	if (getMathDescription().isRuleBased()){
+		requiredFeatures.add(SolverFeature.Feature_Rulebased);
+	}
 	return requiredFeatures;
 }
 /**
