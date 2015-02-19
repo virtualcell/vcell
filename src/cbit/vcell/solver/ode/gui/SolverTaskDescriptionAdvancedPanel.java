@@ -98,6 +98,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SolverTaskDescriptionAdvancedPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
 				connPtoP1SetTarget();
+				managePanels();
 			}
 			if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP7SetSource();
@@ -199,7 +200,14 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
-
+private void managePanels() {
+	if(this.getSolverTaskDescription().getSimulation().getMathDescription().isRuleBased()) {
+		if(sensitivityAnalysisCollapsiblePanel != null) sensitivityAnalysisCollapsiblePanel.setVisible(false);
+		if(nfsimSimulationOptionsPanel != null) nfsimSimulationOptionsPanel.expand(true);
+	} else {
+		if(sensitivityAnalysisCollapsiblePanel != null) sensitivityAnalysisCollapsiblePanel.setVisible(true);
+	}
+}
 
 /**
  * connPtoP2SetSource:  (TornOffSolverTaskDescription.timeBounds <--> TimeBoundsPanel.timeBounds)
