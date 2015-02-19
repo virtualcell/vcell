@@ -1,4 +1,8 @@
 import PySide.QtCore as QtCore
+import PySide.QtGui as QtGui
+from PySide.QtGui import QApplication
+import exceptions
+
 from asynchClientTask import AsynchClientTask
 
 class AsynchClientTaskManager(object):
@@ -6,12 +10,16 @@ class AsynchClientTaskManager(object):
     def __init__(self, parent):
         self._asynchClientTaskList=[]
         self._timer = QtCore.QTimer(parent)
-        self._timer.setInterval(100)
+        self._timer.setInterval(10)
         self._timer.connect(QtCore.SIGNAL("timeout()"),self.checkTasks)
         self._timer.start()                    
 
     def checkTasks(self):
-        #print("Checking Tasks.  There are "+str(len(self._asynchClientTaskList))+" tasks in the list now")
+        if (len(self._asynchClientTaskList) > 0):
+            print("Checking Tasks.  There are "+str(len(self._asynchClientTaskList))+" tasks in the list now")
+            QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        else:
+            QApplication.restoreOverrideCursor()
         for task in self._asynchClientTaskList:
             try:
                 print("Checking state of task: "+task.getTaskName()) 
@@ -49,4 +57,3 @@ class AsynchClientTaskManager(object):
             self._asynchClientTaskList.remove(asynchClientTask)
         except:
             raise Exception("Problem removing a AsynchClientTask from asynchClientTaskList")
-
