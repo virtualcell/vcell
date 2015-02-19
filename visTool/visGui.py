@@ -14,6 +14,8 @@ import visDataSetChooserDialog
 import vcellProxy
 import pyvcell
 import visDataContext
+import visClipOperatorContext
+
 
 
 # adapted from visitusers.org PySide_Recipes page.
@@ -460,11 +462,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             
         self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True)
 
-        #dir(newIndex)
-        #print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
-        #times = self._vis.getTimes()
-        #if (times != None and len(times)>0):
-        #    self._timeLabel.setText(str(times[newIndex]))
+
 
     def _onSliceSliderChanged(self):
         print('_onSliceSliderChanged()')
