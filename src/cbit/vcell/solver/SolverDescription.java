@@ -199,7 +199,7 @@ public enum SolverDescription {
 	/*
 	 * rule-based solvers
 	 */
-	public static final Collection<SolverFeature> RulebasedFeatureSet = new SolverFeatureSet ( 
+	public static final Collection<SolverFeature> RulebasedFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isRuleBased(); }},
 		NFSim,100);
@@ -209,19 +209,19 @@ public enum SolverDescription {
 	 */
 	public static final Collection<SolverFeature> NonSpatialStochasticFeatureSet = new SolverFeatureSet ( 
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isNonSpatialStoch(); }},
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		StochGibson,100);
 	
 	public static final Collection<SolverFeature> OdeFeatureSet =  new SolverFeatureSet(
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
-			return !desc.isSpatial() && !desc.hasFastSystems() && !desc.isNonSpatialStoch(); }},
+			return !desc.isSpatial() && !desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
 		
 	public static final Collection<SolverFeature> OdeFastSystemFeatureSet =  new SolverFeatureSet(
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
-			return !desc.isSpatial() && desc.hasFastSystems() && !desc.isNonSpatialStoch(); }},
+			return !desc.isSpatial() && desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
 	
 	//this one is not like the others
