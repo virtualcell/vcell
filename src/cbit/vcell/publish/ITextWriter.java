@@ -1632,9 +1632,9 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		writeStructure(model, model.getStructure(i), structTable);
 	}
 	
-	if (structTable != null) {
-		structSection.add(structTable);
-	}
+//	if (structTable != null) {
+//		structSection.add(structTable);
+//	}
 	//write reactions
 	writeReactions(physioChapter, model);
 }
