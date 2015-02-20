@@ -32,6 +32,7 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
@@ -156,10 +157,18 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		networkConstraintsPanel.setSimulationContext(simulationContext);
 		if(simulationContext.isRuleBased()) {
 			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			networkConstraintsPanel.setVisible(true);
-		} else {
+			tabbedPane.removeTabAt(2);
+		} else {	// this panel only for flattened rule based applications
 			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			networkConstraintsPanel.setVisible(false);
+			SettingsPanelTab tab = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			 if(simulationContext.getModel().getRbmModelContainer().isEmpty()) {
+				 // TODO: here is should be initialized to false if rbm model container is empty...
+				 // but we should monitor the container and enable the panel as soon as a molecular type is created
+				 tabbedPane.setEnabledAt(2, true);
+			 } else {
+				 tabbedPane.setEnabledAt(2, true);
+			 }
 		}
 	}
 
