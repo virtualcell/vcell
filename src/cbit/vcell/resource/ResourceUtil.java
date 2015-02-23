@@ -414,12 +414,8 @@ public class ResourceUtil {
 			throw new RuntimeException("ResourceUtil::writeFileFromResource() : Can't get resource for " + resname);
 		}
 
-		BufferedInputStream bis = null;
-		BufferedOutputStream bos = null;
-
-		try {
-			bis = new BufferedInputStream(url.openConnection().getInputStream());
-			bos = new BufferedOutputStream(new FileOutputStream(file));
+		try (BufferedInputStream bis = new BufferedInputStream(url.openConnection().getInputStream());  
+			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));) {
 			byte byteArray[] = new byte[10000];
 			while (true) {
 				int numRead = bis.read(byteArray, 0, byteArray.length);
@@ -429,12 +425,9 @@ public class ResourceUtil {
 
 				bos.write(byteArray, 0, numRead);
 			}
-		} finally {
-			if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-			if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
-		}			
-
+		} 
 	}
+	
 	public static void writeFileFromResource(String resname, File file) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		writeResourceToFile(resname,file);
 		if (osi.getOsType().isUnixLike()) {
