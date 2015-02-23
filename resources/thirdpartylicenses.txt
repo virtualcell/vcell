@@ -588,6 +588,7 @@ The Jama, GIFUtils and RPI-graphdrawing packages in /Vcell/vcellClientThirdParty
 
  # # #
  NFsim (C) 2012 Emonet lab at Yale University, Faeder lab at the University of Pittsburgh
+ Citation: Sneddon MW, Faeder JR and Emonet T. Efficient modeling, simulation and coarse-graining of biological complexity with NFsim. Nature Methods (2011) 8(2):177-83.
  
                      GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
