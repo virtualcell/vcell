@@ -40,6 +40,7 @@ import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.Hex;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.simdata.SimulationData;
@@ -64,6 +65,16 @@ public class AmplistorUtils {
 		public AmplistorCredential(String userName, String password) {
 			this.userName = userName;
 			this.password = password;
+		}
+	}
+	
+	public static boolean bFileExists(URL ampliURLFilePath,AmplistorCredential amplistorCredential) throws Exception{
+		try{
+			CheckOPHelper checkOPHelper = ampliCheckOP(ampliURLFilePath, amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE, null);
+			checkOPHelper.httpURLConnection.disconnect();
+			return true;
+		}catch(FileNotFoundException fnfe){
+			return false;
 		}
 	}
 	

@@ -31,6 +31,7 @@ public class AmplistorUtilsTest {
 	
 	public static void main(String[] args) throws Exception{
 		new AmplistorUtilsTest().test();
+		System.out.println("\nAll Tests Passed");
 	}
 	
 	@Test
@@ -105,6 +106,14 @@ public class AmplistorUtilsTest {
 		}
 
 		String file0url = dirNameURL+"/"+fileNames.get(0);
+		
+		//
+		//check bFileExists returns true
+		//
+		if(!AmplistorUtils.bFileExists(new URL(file0url), amplistorCredential)){
+			throw new Exception("Expected "+file0url+" 'bFileExist' to be true");
+		}
+		
 		//
 		//set metadata on first file (this is done during upload using lastmodified of file but do it again to demonstrate)
 		//
@@ -160,6 +169,14 @@ public class AmplistorUtilsTest {
 		//
 		AmplistorUtils.deleteFilesOperation(new String[] {tmpFiles[0].getName()}, dirNameURL, amplistorCredential);
 		
+		
+		//
+		//check bFileExists returns false
+		//
+		if(AmplistorUtils.bFileExists(new URL(dirNameURL+"/"+tmpFiles[0].getName()), amplistorCredential)){
+			throw new Exception("Expected "+dirNameURL+"/"+tmpFiles[0].getName()+" 'bFileExist' to be false");
+		}
+
 		//
 		//try to remove bogus filename (should fail)
 		//
