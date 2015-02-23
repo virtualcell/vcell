@@ -442,7 +442,8 @@ public class XMLTags {
     public static final String ParamRoleTotalCurrentDensityTag = "current density";
 	public static final String ParamRoleReactionRateTag = "reaction rate";
 	public static final String ParamRoleInwardCurrentTag = "inward current density";
-	public static final Object ParamRoleChargeValence = "charge";
+	public static final Object ParamRoleChargeValence1 = "charge";
+	public static final Object ParamRoleChargeValence2 = "net charge valence";
 //	public static final String ParamRoleForwardRateTag = "forward rate constant";
 //	public static final String ParamRoleReverseRateTag = "reverse rate constant";
 //	public static final String ParamRoleKmTag = "Km (1/2 max)";

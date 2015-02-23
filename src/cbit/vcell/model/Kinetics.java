@@ -146,7 +146,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	 * provide appropriate warning message to user
 	 */
 	private static final String UnsupportedFutureRoleTags[] = {
-//		"ChargeValence" ... now it is supported (by translating to ReactionStep.getChargeValence())
+//		"ChargeValence" ... now it is supported (by translating to ReactionStep.getChargeValence())   //.getChargeCarrierValence????
 	};
 	
 
@@ -156,7 +156,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	// in VCell 5.2 and earlier, this is stored in ReactionStep.ChargeCarrierValence
 	//
 	// 
-	private static final String ChargeValenceRoleName_FROM_DATABASE = "ChargeValence";
+	private static final String ChargeValenceRoleName1_FROM_DATABASE = "ChargeValence";
+	private static final String ChargeValenceRoleName2_FROM_DATABASE = "net charge valence";
 	
 	
 	private static final String DefaultNames[] = {
@@ -1064,7 +1065,7 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 					throw new DataAccessException("Model was saved in newer version of virtual cell.");
 				}
 			}
-			if (firstTokenOfLine.equals(ChargeValenceRoleName_FROM_DATABASE)){
+			if (firstTokenOfLine.equals(ChargeValenceRoleName1_FROM_DATABASE)){
 				//
 				// forward compatability with VCell 5.3 and later (which has explicit valence parameter).
 				//

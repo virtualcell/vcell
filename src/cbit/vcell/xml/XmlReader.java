@@ -1487,7 +1487,7 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 			List<Element> list = param.getChild(XMLTags.KineticsTag, vcNamespace).getChildren(XMLTags.ParameterTag, vcNamespace);
 			for (Element xmlParam : list){
 				String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
-				if (role.equals(XMLTags.ParamRoleChargeValence)) {
+				if ((role.equals(XMLTags.ParamRoleChargeValence1)) || (role.equals(XMLTags.ParamRoleChargeValence2))) {
 					Expression paramExp = unMangleExpression(xmlParam.getText());
 					if (!paramExp.isNumeric()) {
 						throw new XmlParseException("Cannot import model : charge valence for reaction '" + fluxreaction.getName() + "' must be numeric; found '" + paramExp.infix() + "'.");
@@ -2360,7 +2360,7 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				throw new XmlParseException("error reordering parameters according to dependencies: ", e);
 			}
 			Kinetics.KineticsParameter tempParam = null;
-			if (!role.equals(XMLTags.ParamRoleUserDefinedTag) && !role.equals(XMLTags.ParamRoleChargeValence)) {
+			if (!role.equals(XMLTags.ParamRoleUserDefinedTag) && !(role.equals(XMLTags.ParamRoleChargeValence1)) && !role.equals(XMLTags.ParamRoleChargeValence2)) {
 				tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.getParamRoleFromDesc(role));
 			}else{
 				continue;
@@ -2374,13 +2374,13 @@ private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash 
 				}
 			}
 					
-			if (tempParam == null) {
+			if ((tempParam == null && !((role.equals(XMLTags.ParamRoleChargeValence1)) || role.equals(XMLTags.ParamRoleChargeValence2)))) {
 				throw new XmlParseException("parameter with role '"+role+"' not found in kinetics type '"+type+"'");
 			} 
 			//
 			// custom name for "special" parameter
 			//
-			if (!tempParam.getName().equals(paramName)) {
+			if (!((role.equals(XMLTags.ParamRoleChargeValence1)) || role.equals(XMLTags.ParamRoleChargeValence2)) && !tempParam.getName().equals(paramName)) {
 				Kinetics.KineticsParameter multNameParam = newKinetics.getKineticsParameter(paramName);
 				int n = 0;
 				while (multNameParam != null) {
@@ -4232,7 +4232,7 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 		List<Element> list = param.getChild(XMLTags.KineticsTag, vcNamespace).getChildren(XMLTags.ParameterTag, vcNamespace);
 		for (Element xmlParam : list){
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
-			if (role.equals(XMLTags.ParamRoleChargeValence)) {
+			if ((role.equals(XMLTags.ParamRoleChargeValence1)) || (role.equals(XMLTags.ParamRoleChargeValence2))) {
 				Expression paramExp = unMangleExpression(xmlParam.getText());
 				if (!paramExp.isNumeric()) {
 					throw new XmlParseException("Cannot import model : charge valence for reaction '" + simplereaction.getName() + "' must be numeric; found '" + paramExp.infix() + "'.");
