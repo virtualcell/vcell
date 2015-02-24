@@ -78,6 +78,9 @@ public BioModelInfo getRegressionBioModelInfo() {
 
 @Override
 public String describe() {
-	return regrBioModelInfo.getVersion().getName() + getSimInfo().getName();
+	if (regrBioModelInfo != null) {
+		return regrBioModelInfo.getVersion().getName() + getSimInfo().getName();
+	}
+	return "no model" + getSimInfo().getName();
 }
 }
