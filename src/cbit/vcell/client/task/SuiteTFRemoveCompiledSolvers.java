@@ -18,6 +18,13 @@ import edu.uchc.connjur.wb.LineStringBuilder;
  * @author gweatherby
  */
 public class SuiteTFRemoveCompiledSolvers  {
+	
+	private static final String compiledStatusMessageStubs[] =
+		{
+			"Compiled solvers no longer supported",
+			"Semi-Implicit Finite Volume Compiled",
+			"Failed to compile your simulation"
+		};
 
 	/**
 	 * create required tasks
@@ -59,8 +66,11 @@ public class SuiteTFRemoveCompiledSolvers  {
 			for (TestCaseNew tcn : ts.getTestCases()) {
 				for ( TestCriteriaNew tcc : tcn.getTestCriterias()) {
 					if (tcc.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_SIMFAILED)) {
-						if (tcc.getReportStatusMessage().contains("Compiled solvers no longer supported")) {
-							compiledSolverTests.add(tcc);
+						String statusMessage = tcc.getReportStatusMessage();
+						for (String stub : compiledStatusMessageStubs) {
+							if (statusMessage.contains(stub)) {
+								compiledSolverTests.add(tcc);
+							}
 						}
 					}
 				}
