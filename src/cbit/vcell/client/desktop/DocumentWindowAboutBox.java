@@ -34,6 +34,7 @@ public class DocumentWindowAboutBox extends JPanel {
 	private static final String COPASI_WEB_URL = "http://www.copasi.org";
 	private static final String SMOLDYN_WEB_URL = "http://www.smoldyn.org";
 	private static final String BIONETGEN_WEB_URL = "http://bionetgen.org";
+	private static final String NFSIM_WEB_URL = "http://emonet.biology.yale.edu/nfsim/";
 	private static final String ACKNOWLEGE_PUB__WEB_URL = "http://vcell.org/vcell_models/how_submit_publication.html";
 	private static final String VCELL_WEB_URL = "http://www.vcell.org";
 	private JLabel appName = null;
@@ -135,7 +136,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2014 UConn Health");
+				copyright.setText("(c) Copyright 1998-2014 UCHC");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -213,6 +214,23 @@ public class DocumentWindowAboutBox extends JPanel {
 		return bioNetGenText;
 	}
 	
+	private JLabel getNFsimAttribution() {
+		JLabel bioNetGenText = new JLabel();
+			try {
+				
+				bioNetGenText.setName("NFsim");
+				bioNetGenText.setText("<html>Featuring network free stochastic simulation powered by <font color=blue><u>NFsim</u></font></html>");
+				bioNetGenText.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, NFSIM_WEB_URL, "Failed to open NFsim webpage ("+NFSIM_WEB_URL+")", false);
+					}
+				});
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		
+		return bioNetGenText;
+	}	
 	private JLabel getAcknowledgePubAttribution() {
 		JLabel ackPubJlabel = new JLabel();
 			try {
@@ -249,6 +267,23 @@ public class DocumentWindowAboutBox extends JPanel {
 		exception.printStackTrace(System.out);
 	}
 
+	/**
+	 * common constraints for elements
+	 * @param topOffset top offset for {@link Insets}
+	 * @param gridy {@link GridBagConstraints#gridy} value
+	 * @return new object
+	 */
+	private GridBagConstraints attributionConstraints(int topOffset, int gridy) {
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(topOffset,4,0,4);
+			gbc.anchor = GridBagConstraints.LINE_START;
+			return gbc;
+	}
+	
 	private void initialize() {
 		try {
 			setLayout(new GridBagLayout());
@@ -262,94 +297,34 @@ public class DocumentWindowAboutBox extends JPanel {
 			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
 			add(getIconLabel(), gbc);
 			
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
-			gbc.insets = new Insets(2,4,0,4);
+			gbc = attributionConstraints(2,gridy);
 			add(getAppName(), gbc);
 	
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(0,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(0,++gridy);
 			add(getVersion(), gbc);
 
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(0,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(0,++gridy);
 			add(getBuildNumber(), gbc);
 			
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(0,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(0,++gridy);
 			add(getCopyright(), gbc);
 
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(10,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(10,++gridy);
 			add(getCOPASIAttribution(), gbc);
 			
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(10,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(10,++gridy);
 			add(getSmoldynAttribution(), gbc);
 			
-
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(10,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(10,++gridy);
 			add(getBioNetGenAttribution(), gbc);
 			
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(10,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(10,++gridy);
+			add(getNFsimAttribution(),gbc);
+			
+			gbc = attributionConstraints(10,++gridy);
 			add(getAcknowledgePubAttribution(), gbc);
 
-			gridy ++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 1;
-			gbc.gridy = gridy;
-			gbc.weightx = 1.0;
-			gbc.insets = new Insets(10,4,0,4);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
+			gbc = attributionConstraints(10,++gridy);
 			add(new JLabel("<html>Virtual Cell is Supported by NIH Grant P41 GM103313 from the National Institute for General Medical Sciences.</html>"), gbc);
 
 		} catch (Throwable throwable) {
