@@ -78,7 +78,7 @@ public static Solver createSolver(SessionLog sessionLog, File directory, Simulat
 	} else if (solverDescription.equals(SolverDescription.CombinedSundials)) {
 		solver = new CombinedSundialsSolver(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
-		throw new UnsupportedOperationException("Compiled solvers no longer supported");
+		throw new UnsupportedOperationException("Compiled solvers no longer supported (recommended replacements 'Fully-Implicit' or 'Semi-Implicit' solvers) ");
 	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
 		solver = new FVSolverStandalone(simTask, directory, sessionLog, bMessaging);
 	} else if (solverDescription.equals(SolverDescription.SundialsPDE)) {
