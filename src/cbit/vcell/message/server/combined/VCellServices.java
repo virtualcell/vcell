@@ -63,6 +63,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
@@ -151,7 +152,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
+		OperatingSystemInfo.getInstance();
 		Logging.init();
+	
 		if (args.length != 3 && args.length != 6) {
 			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
 			System.exit(1);
