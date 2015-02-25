@@ -223,7 +223,7 @@ public class DialogUtils {
 					}
 				}
 				dialog.setResizable(true);
-				dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 				try {
 					DialogUtils.showModalJDialogOnTop(dialog,requester);
 					if (checkBox!=null){
@@ -699,7 +699,7 @@ private static String showDialog(final Component requester, String title, final 
 	JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
 	final JDialog dialog = pane.createDialog(requester, title);
 	dialog.setResizable(true);
-	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	try {
 		DialogUtils.showModalJDialogOnTop(dialog, requester);
 		Object selectedValue = pane.getValue();
@@ -721,7 +721,7 @@ private static String showOptionsDialog(final Component requester,Component show
 		dialog.setTitle(dialogTitle);
 	}
 	dialog.setResizable(true);
-	dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	if (okEnabler != null) {
 		okEnabler.setJOptionPane(pane);
 	}
