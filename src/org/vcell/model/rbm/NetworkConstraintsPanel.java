@@ -1,5 +1,6 @@
 package org.vcell.model.rbm;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,35 +10,64 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Pair;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
+import cbit.vcell.bionetgen.BNGMolecule;
+import cbit.vcell.bionetgen.BNGOutputFileParser;
+import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.bionetgen.BNGParameter;
+import cbit.vcell.bionetgen.BNGReaction;
+import cbit.vcell.bionetgen.BNGReactionRule;
+import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
+import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.SimContextTransformer;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.server.bionetgen.BNGOutput;
+import cbit.vcell.server.bionetgen.BNGUtils;
 
-public class NetworkConstraintsPanel extends JPanel {
+// we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
+// can choose absolute layout and place everything exactly as we see fit
+public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback {
 
+	String generatedSpecies = "";
+	String generatedReactions = "";
+	
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
 	private NetworkConstraints networkConstraints;
@@ -181,9 +211,6 @@ public class NetworkConstraintsPanel extends JPanel {
 		molecularTypeTable = new EditorScrollTable();
 //		molecularTypeTableModel = new ApplicationMolecularTypeTableModel(molecularTypeTable);
 		
-		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
-		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
 		maxIterationTextField.addActionListener(eventHandler);
 		maxMolTextField.addActionListener(eventHandler);
 		
@@ -214,7 +241,6 @@ public class NetworkConstraintsPanel extends JPanel {
 		
 		leftPanel.setBorder(titleLeft);
 		rightPanel.setBorder(titleRight);
-		netGenConsoleScrollPane.setBorder(loweredBevelBorder);
 
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -307,6 +333,7 @@ public class NetworkConstraintsPanel extends JPanel {
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(maxMolTextField, gbc);
 
+		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
 		bottom.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -316,11 +343,18 @@ public class NetworkConstraintsPanel extends JPanel {
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.insets = new Insets(20, 4, 4, 10);
 		bottom.add(molecularTypeTable, gbc);
-
 		
 		// ------------------------------------------- Populating the right group box ------------
 		top = new JPanel();
 		bottom = new JPanel();
+		
+		// we use a scroll pane whose viewing area is the JTextArea - to provide the vertical scroll bar
+		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
+		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		TitledBorder titleConsole = BorderFactory.createTitledBorder(loweredBevelBorder, " BioNetGen Console ");
+		titleConsole.setTitleJustification(TitledBorder.LEFT);
+		titleConsole.setTitlePosition(TitledBorder.ABOVE_TOP);
+		netGenConsoleScrollPane.setBorder(titleConsole);
 		
 		rightPanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
@@ -404,11 +438,10 @@ public class NetworkConstraintsPanel extends JPanel {
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHEAST;
-		gbc.insets = new Insets(20, 4, 4, 10);
+		gbc.insets = new Insets(32, 4, 4, 10);			// 20 is aligned with the title
 		bottom.add(getCancelNetGenButton(), gbc);
 
 		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
-//		netGenConsoleText.setBorder(loweredBevelBorder);
 		netGenConsoleText.setEditable(false);
 	}
 	
@@ -494,7 +527,19 @@ public class NetworkConstraintsPanel extends JPanel {
 	}
 	
 	private void refreshMath() {
-		ClientTaskDispatcher.dispatch(NetworkConstraintsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, fieldSimulationContext), false);
+
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			public void run() {
+				NetworkTransformer transformer = new NetworkTransformer();
+				transformer.registerCallBackForBioNetGenUpdates(NetworkConstraintsPanel.this);
+				BNGOutputSpec outputSpec = transformer.generateNetwork(fieldSimulationContext);
+			}
+		});	
+		
+		
+//		ClientTaskDispatcher.dispatch(NetworkConstraintsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, fieldSimulationContext), false);
 	}
 	private void viewNetwork() {
 		try {
@@ -513,12 +558,77 @@ public class NetworkConstraintsPanel extends JPanel {
 	}
 	private void cancelNetGen() {
 		System.out.println("cancelNetGen button pressed");
+		try {
+			BNGUtils.stopBNG();
+		} catch (Exception e) {
+			System.out.println("Exception stopping BioNetGen: " + e.getMessage());
+			e.printStackTrace();
+		}
+		System.out.println("BioNetGen Canceled.");		// correct is "canceled", not "cancelled" !
 	}
 	private void viewGeneratedSpecies() {
 		System.out.println("viewGeneratedSpecies button pressed");
+		JPanel pnl = new JPanel(new GridBagLayout());
+		JTextArea ta = new JTextArea();
+		JScrollPane sp = new JScrollPane(ta);
+		sp.setPreferredSize(new Dimension(850,600));
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.insets = new Insets(20, 4, 4, 10);
+		pnl.add(sp, gbc);
+
+		ta.setText(generatedSpecies);
+		ta.setEditable(false);
+		JOptionPane.showMessageDialog(this, pnl);
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
+		JPanel pnl = new JPanel(new GridBagLayout());
+		JTextArea ta = new JTextArea();
+		JScrollPane sp = new JScrollPane(ta);
+		sp.setPreferredSize(new Dimension(850,600));
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		gbc.insets = new Insets(20, 4, 4, 10);
+		pnl.add(sp, gbc);
+
+		ta.setText(generatedReactions);
+		ta.setEditable(false);
+		JOptionPane.showMessageDialog(this, pnl);
+	}
+
+	@Override
+	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
+		generatedSpecies = getGeneratedSpecies(outputSpec);
+		generatedReactions = getGeneratedReactions(outputSpec);
+	}
+	public String getGeneratedSpecies(BNGOutputSpec outputSpec) {
+		String s = "";
+		BNGSpecies[] species = outputSpec.getBNGSpecies();
+		for (int i = 0; i < species.length; i++){
+			s += species[i].toString() + "\n";
+		}
+		System.out.println(s);
+		return s;
+	}
+	public String getGeneratedReactions(BNGOutputSpec outputSpec) {
+		String s = "";
+		BNGReaction[] reactions = outputSpec.getBNGReactions();
+		for (int i = 0; i < reactions.length; i++){
+			s += reactions[i].writeReaction() + "\n";
+		}	
+//		System.out.println(s);
+		return s;
 	}
 
 

@@ -47,7 +47,12 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class NetworkTransformer implements SimContextTransformer {
 
+	List<BioNetGenUpdaterCallback> callbacks = new ArrayList<BioNetGenUpdaterCallback>();
 	Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new HashMap<String, Pair<SpeciesContext, Expression>>();
+	
+	public void registerCallBackForBioNetGenUpdates(BioNetGenUpdaterCallback bnglCallBack) {
+		callbacks.add(bnglCallBack);
+	}
 	
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext) {
@@ -109,12 +114,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		System.out.println(bngl);
 		return bngl;
 	}
-
-	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
-		
-		
-		long startTime = System.currentTimeMillis();
-		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
+	public BNGOutputSpec generateNetwork(SimulationContext simContext) {
+		BNGOutputSpec outputSpec;
 		String input = convertToBngl(simContext, true);
 		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 		    String key = entry.getKey();
@@ -135,14 +136,22 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(ex.getMessage());
 		}
 		String bngNetString = bngOutput.getNetFileContent();
-		
-		BNGOutputSpec outputSpec = null;
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
+		for (BioNetGenUpdaterCallback callback : callbacks) {
+			callback.updateBioNetGenOutput(outputSpec);
+		}
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
+		return outputSpec;
+	}
+
+	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
+
+		long startTime = System.currentTimeMillis();
+		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
+		BNGOutputSpec outputSpec = generateNetwork(simContext);
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
-		
 		
 		Model model = transformedSimulationContext.getModel();
 		ReactionContext reactionContext = transformedSimulationContext.getReactionContext();
@@ -423,5 +432,4 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		System.out.println("Done transforming");
 	}
-
 }
