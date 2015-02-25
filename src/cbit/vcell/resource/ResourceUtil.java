@@ -16,6 +16,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -236,14 +239,8 @@ public class ResourceUtil {
 	 * @return executable
 	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
 	 */
-	public static File loadSolverExecutable(String basename, LicensedLibrary ll) throws IOException {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (!ll.isLicensed()) {
-			throw new UnsupportedOperationException("Unable to run " + basename + " because " + ll.toString( ) + " software license not accepted.");
-		}
-		if (!ll.isInstalled()) {
-			LicenseManager.install(ll);
-		}
-		ll.makePresentIn(getSolversDirectory());
+	public static File loadSolverExecutable(String basename, VersionedLibrary vl) throws IOException {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		vl.makePresentIn(getSolversDirectory());
 		
 		//String name = basename + EXE_BIT_SUFFIX;
 		String name = basename + osi.getExeBitSuffix(); 
@@ -254,7 +251,7 @@ public class ResourceUtil {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
 		ArrayList<String> fromResourceLibraries = new ArrayList<String>();
-		for (String libName : ll.bundledLibraryNames()) {
+		for (String libName : vl.bundledLibraryNames()) {
 			fromResourceLibraries.add(libName);
 		}
 		if (osi.isWindows()) {
@@ -279,13 +276,6 @@ public class ResourceUtil {
 			}
 		}
 		return exe;
-	}
-	
-	static {
-		if (LibraryLicense.size != 1) {
-			//if a new license is added, we need to update the routine below
-			throw new Error("Update ResourceUtil.loadLicensedLibraries");
-		}
 	}
 	
 	public static JavaVersion getJavaVersion() {
@@ -439,6 +429,32 @@ public class ResourceUtil {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	/**
+	 * convert embedded resource (e.g. file) to String
+	 * @param resname
+	 * @return String or error
+	 */
+	public static String resourceToString(String resname) {
+		InputStream is = ResourceUtil.class.getResourceAsStream(resname);
+		if (is != null) {
+			try (Reader r = new InputStreamReader(is,"UTF-8")) {
+				StringBuilder sb = new StringBuilder();
+				final int BSIZE = 1024;
+				char buffer[] = new char[BSIZE];
+				int bytes = r.read(buffer,0,buffer.length);
+				while (bytes > 0) { 
+					sb.append(buffer,0,bytes);
+					bytes = r.read(buffer,0,buffer.length);
+				}
+				return sb.toString();
+			} catch (IOException e) {
+				lg.warn("Can't extract " + resname, e);
+				e.printStackTrace();
+			}
+		}
+		return "not found";
 	}
 
 	@NoLogging

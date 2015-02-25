@@ -75,7 +75,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.LicensedLibrary;
+import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -2214,15 +2214,15 @@ public SimContextTransformer createNewTransformer(){
 
 /**
  * duplicate logic in {@link #createNewTransformer()} ... if {@link NetworkTransformer} 
- * going to be needed, return {@link LicensedLibrary#CYGWIN_DLL_BIONETGEN}
+ * going to be needed, return {@link VersionedLibrary#CYGWIN_DLL_BIONETGEN}
  */
 @Override
-public LicensedLibrary getRequiredLibrary( ) {
+public VersionedLibrary getRequiredLibrary( ) {
 	if (!isRuleBased( )) {
 		try { //4 gets and size -- can any return null? Wrap for safety
 			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
 			if (listSize > 0) {
-				return LicensedLibrary.CYGWIN_DLL_BIONETGEN;
+				return VersionedLibrary.CYGWIN_DLL_BIONETGEN;
 			}
 		}
 		catch (NullPointerException npe) { }
