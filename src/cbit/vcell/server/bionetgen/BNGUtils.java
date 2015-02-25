@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.server.bionetgen;
-import java.awt.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,10 +20,9 @@ import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
 
-import cbit.vcell.resource.LicenseManager;
-import cbit.vcell.resource.LicensedLibrary;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.resource.VersionedLibrary;
 
 /**
  * Insert the type's description here.
@@ -136,7 +134,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
 		ArrayList<String> filecontents = new ArrayList<String>();
 	
 		for (int i = 0; i < files.length; i ++) {
-			if(files[i].getName().equals(LicensedLibrary.CYGWIN_DLL_BIONETGEN.libraryName())
+			if(files[i].getName().equals(VersionedLibrary.CYGWIN_DLL_BIONETGEN.libraryName())
 					|| files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
 				continue;
 			}
@@ -172,13 +170,6 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
 	return bngOutput;
 }
 
-public static synchronized void initializeLicensedLibrary(Component parent) throws Exception {
-	if (!LicensedLibrary.CYGWIN_DLL_BIONETGEN.isLicensed()) {
-		LicenseManager.promptForLicense(parent, LicensedLibrary.CYGWIN_DLL_BIONETGEN,true); 
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (9/19/2006 11:36:49 AM)
@@ -195,7 +186,7 @@ private static synchronized void initialize() throws IOException {
 	
 	file_exe_bng = new java.io.File(bngHome, EXE_BNG);
 	file_exe_run_network = new java.io.File(bngHome, EXE_RUN_NETWORK);
-	LicensedLibrary.CYGWIN_DLL_BIONETGEN.makePresentIn(bngHome);
+	VersionedLibrary.CYGWIN_DLL_BIONETGEN.makePresentIn(bngHome);
 		
 	if (bFirstTime) {
 		ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);

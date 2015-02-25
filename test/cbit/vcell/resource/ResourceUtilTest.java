@@ -27,13 +27,4 @@ public class ResourceUtilTest {
 	public void clearStored( ) throws BackingStoreException {
 		ResourceUtil.ExeCache.forgetExecutableLocations( );
 	}
-	
-	@Test
-	public void clearLicense( ) throws BackingStoreException {
-		LicenseManager.clearLicense(LibraryLicense.CYGWIN);
-	}
-	//@Test
-	public void readLicense( ) throws BackingStoreException {
-		System.out.println(LicenseManager.getLicenseText(LibraryLicense.CYGWIN));
-	}
 }

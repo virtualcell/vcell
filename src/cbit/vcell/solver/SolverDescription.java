@@ -22,7 +22,7 @@ import java.util.Set;
 
 import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.math.SolverSelector;
-import cbit.vcell.resource.LicensedLibrary;
+import cbit.vcell.resource.VersionedLibrary;
 
 
 /**
@@ -120,13 +120,13 @@ public enum SolverDescription {
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, 
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_ServerOnly, SolverFeature.Feature_Parallel},
-	      SolverExecutable.VCellChombo, LicensedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285", 
+	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285", 
 	      VCellCodeVersion.CURRENT.compare(5,4) < 0), 
 	      
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.DEFAULT, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
-	      SolverExecutable.NFSIM, LicensedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
+	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
       ;
 
 	public enum SolverFeature {
@@ -290,7 +290,7 @@ public enum SolverDescription {
 	/**
 	 * will not be null, may be placeholder
 	 */
-	public final LicensedLibrary licensedLibrary;
+	public final VersionedLibrary versionedLibrary;
 	public final String kisao;
 	public final boolean deprecated;
 	
@@ -299,7 +299,7 @@ public enum SolverDescription {
 			String displayLabel, String databaseName,
 			String fullDescription, int timeOrder, SupportedTimeSpec sts,
 			SolverFeature[] fset,
-			SolverExecutable se, LicensedLibrary licensedLibrary, String kisao, boolean deprecated) {
+			SolverExecutable se, VersionedLibrary versionedLibrary, String kisao, boolean deprecated) {
 
 		variableTimeStep = (ts == TimeStep.VARIABLE);
 		errorTolerance = ( et == ErrorTol.YES);
@@ -312,7 +312,7 @@ public enum SolverDescription {
 		supportedTimeSpec = sts;
 		this.supportedFeatures = new HashSet<SolverFeature>(Arrays.asList(fset));
 		solverExecutable = se;
-		this.licensedLibrary = licensedLibrary != null ? licensedLibrary : LicensedLibrary.NONE;
+		this.versionedLibrary = versionedLibrary != null ? versionedLibrary : VersionedLibrary.NONE;
 		this.kisao = kisao;
 		this.deprecated = deprecated;
 	}

@@ -16,7 +16,7 @@ import org.vcell.util.IssueContext;
 
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.resource.LicensedLibrary;
+import cbit.vcell.resource.VersionedLibrary;
 /**
  * Insert the type's description here.
  * Creation date: (6/4/2004 1:56:12 AM)
@@ -41,6 +41,6 @@ public interface SimulationOwner extends GeometryOwner {
 	 * return any license libraries required for execution 
 	 * @return required library, if any, or null
 	 */
-	public LicensedLibrary getRequiredLibrary();
+	public VersionedLibrary getRequiredLibrary();
 }
 

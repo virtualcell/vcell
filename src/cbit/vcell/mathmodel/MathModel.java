@@ -34,7 +34,7 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.resource.LicensedLibrary;
+import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -767,7 +767,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 
 
-	public LicensedLibrary getRequiredLibrary() {
+	public VersionedLibrary getRequiredLibrary() {
 		return null;
 	}
 }

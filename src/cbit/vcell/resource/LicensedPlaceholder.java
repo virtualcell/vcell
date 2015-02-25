@@ -1,7 +1,6 @@
 package cbit.vcell.resource;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -11,24 +10,8 @@ import java.util.Collections;
  * @author gweatherby
  *
  */
-class LicensedPlaceholder implements LicensedLibrary {
+class LicensedPlaceholder implements VersionedLibrary {
 	
-	/**
-	 * @return true always
-	 */
-	@Override
-	public boolean isLicensed() {
-		return true; 
-	}
-
-	/**
-	 * @throws UnsupportedOperationException
-	 */
-	@Override
-	public LibraryLicense licensedRequired() {
-		throw new UnsupportedOperationException();
-	}
-
 	/**
 	 * @throws UnsupportedOperationException
 	 */
@@ -46,27 +29,11 @@ class LicensedPlaceholder implements LicensedLibrary {
 	}
 
 	/**
-	 * @throws UnsupportedOperationException
-	 */
-	@Override
-	public URL downloadUrl() {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
 	 * @return empty list
 	 */
 	@Override
 	public Collection<String> bundledLibraryNames() {
 		return Collections.emptyList(); 
-	}
-
-	/**
-	 * @return true 
-	 */
-	@Override
-	public boolean isInstalled() {
-		return true;
 	}
 
 	/**

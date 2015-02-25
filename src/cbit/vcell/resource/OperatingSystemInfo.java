@@ -117,18 +117,30 @@ public class OperatingSystemInfo {
 		return osType;
 	}
 
+	/**
+	 * specific OS query (use {@link #getOsType()} for more general usage
+	 * @return true if Windows
+	 */
 	public boolean isWindows() {
 		return osType == OsType.WINDOWS; 
 	}
 
+	/**
+	 * specific OS query (use {@link #getOsType()} for more general usage
+	 * @return true if Mac 
+	 */
 	public boolean isMac() {
 		return osType == OsType.MAC; 
 	}
 
+	/**
+	 * specific OS query (use {@link #getOsType()} for more general usage
+	 * @return true if Linux 
+	 */
 	public boolean isLinux() {
 		return osType == OsType.LINUX; 
 	}
-
+	
 	public boolean is64bit() {
 		return b64bit;
 	}

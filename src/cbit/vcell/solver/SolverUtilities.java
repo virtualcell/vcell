@@ -85,7 +85,7 @@ public class SolverUtilities {
 			File files[] = new File[nameInfos.length];
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = ResourceUtil.loadSolverExecutable(ni.exeName, sd.licensedLibrary);
+				File exe = ResourceUtil.loadSolverExecutable(ni.exeName, sd.versionedLibrary);
 				System.getProperties().put(ni.propertyName,exe.getAbsolutePath());
 				files[i] = exe; 
 			}
