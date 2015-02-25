@@ -69,12 +69,16 @@ public class AmplistorUtils {
 	}
 	
 	public static boolean bFileExists(URL ampliURLFilePath,AmplistorCredential amplistorCredential) throws Exception{
+		CheckOPHelper checkOPHelper = null;
 		try{
-			CheckOPHelper checkOPHelper = ampliCheckOP(ampliURLFilePath, amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE, null);
-			checkOPHelper.httpURLConnection.disconnect();
+			checkOPHelper = ampliCheckOP(ampliURLFilePath, amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE, null);
 			return true;
 		}catch(FileNotFoundException fnfe){
 			return false;
+		}finally{
+			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){
+				checkOPHelper.httpURLConnection.disconnect();
+			}
 		}
 	}
 	

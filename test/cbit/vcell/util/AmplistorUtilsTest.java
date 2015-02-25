@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.junit.Test;
 import org.vcell.util.AuthenticationException;
@@ -30,19 +31,36 @@ public class AmplistorUtilsTest {
 	public static final String AMPLI_REST_TEST_PASSWORD_KEY = 	"AMPLI_REST_TEST_PASSWORD_KEY";//e.g. eclipse debug config. -DAMPLI_REST_TEST_PASSWORD_KEY=thePassword
 	
 	public static void main(String[] args) throws Exception{
+
 		new AmplistorUtilsTest().test();
 		System.out.println("\nAll Tests Passed");
 	}
 	
+	public static AmplistorCredential getAmplistorCredential(){
+		Scanner scanner = null;
+		String password = null;
+		try{
+			if(System.getProperty(AMPLI_REST_TEST_PASSWORD_KEY) == null){
+				scanner = new Scanner(System.in);
+				System.out.println("Enter 'camadmin' password for Amplistor (then press enter):");
+				password = scanner.nextLine();
+			}else{
+				password = System.getProperty(AMPLI_REST_TEST_PASSWORD_KEY);
+			}
+		}finally{
+			if(scanner != null){scanner.close();}
+		}
+		return new AmplistorCredential(System.getProperty(AMPLI_REST_TEST_USER_KEY,"camadmin"), password);
+
+	}
 	@Test
 	public void test() throws Exception{
 		
 		//
 		//Create amplistor full access credential
 		//
+		AmplistorCredential amplistorCredential = getAmplistorCredential();
 		//must set this property in eclipse debug configuration
-		AmplistorCredential amplistorCredential =
-			new AmplistorCredential(System.getProperty(AMPLI_REST_TEST_USER_KEY),System.getProperty(AMPLI_REST_TEST_PASSWORD_KEY));
 		if(amplistorCredential.userName == null || amplistorCredential.password == null){
 			throw new Exception("Amplistor full access credential required for test");
 		}
