@@ -149,43 +149,42 @@ public class TestMissingSimData {
 	}
 	
 	private static void /* Hashtable<KeyValue, Exception>*/ checkDataExists(Connection con,boolean bExistOnly) throws SQLException{
-		Scanner scanner = null;
-		String password = null;
-		try{
-			scanner = new Scanner(System.in);
-			System.out.println("Enter 'camadmin' password:");
-			password = scanner.nextLine();
-		}finally{
-			if(scanner != null){scanner.close();}
-		}
-		AmplistorCredential amplistorCredential = new AmplistorCredential("camadmin", password);
+		AmplistorCredential amplistorCredential = AmplistorUtilsTest.getAmplistorCredential();
 		
 		Statement queryStatement = con.createStatement();
 		Statement updateStatement = con.createStatement();
 		
 //		Hashtable<KeyValue, Exception> errorHash = new Hashtable<>();
-		String sql = "select * from missingdata order by userid";
+		String sql = "select missingdata.*,parentsimref from missingdata,vc_simulation wherevc_simulation.id = missingdata.simjobsimref order by userid";
 		ResultSet rset = queryStatement.executeQuery(sql);
 		while(rset.next()){
 			if(!rset.getString("dataexists").equals("tbd")){
 				continue;
 			}
 			KeyValue simJobSimRef = null;
+			KeyValue parentsimref = null;
 			User user = null;
 			try{
 				simJobSimRef = new KeyValue(rset.getString("simjobsimref"));
+				parentsimref = (rset.getString("parentsimref")==null?null:new KeyValue(rset.getString("parentsimref")));
 				user = new User(rset.getString("userid"),new KeyValue(rset.getString("userinfoid")));
 				int jobIndex =  rset.getInt("jobindex");
 				File primaryDataDir = new File("\\\\cfs02\\ifs\\raid\\vcell\\users\\"+user.getName());
 				if(bExistOnly){
 					String updatestr = null;
-					File filePathName = new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(simJobSimRef, 0, false));
-					if(filePathName.exists()){
-						updatestr = "fileNew";
+					File filePathNamePrime = new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(simJobSimRef, 0, false));
+					if(filePathNamePrime.exists()){
+						updatestr = "fileNewPrime";
 					}else if(new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(simJobSimRef, 0, true)).exists()){
-						updatestr = "fileOld";
-					}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+filePathName.getName()), amplistorCredential)){
-						updatestr = "ampli";
+						updatestr = "fileOldPrime";
+					}else if(parentsimref != null && new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(parentsimref, 0, false)).exists()){
+						updatestr = "fileNewParent";
+					}else if(parentsimref != null && new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)).exists()){
+						updatestr = "fileOldParent";
+					}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+filePathNamePrime.getName()), amplistorCredential)){
+						updatestr = "ampliPrime";
+					}else if(parentsimref != null && AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)), amplistorCredential)){
+						updatestr = "ampliParent";
 					}else{
 						updatestr = "false";
 					}
@@ -227,7 +226,10 @@ public class TestMissingSimData {
 					String updatestr = "update missingdata set dataexists='error - "+TokenMangler.fixTokenStrict(errString)+"' where simjobsimref="+simJobSimRef.toString();
 					updateStatement.executeUpdate(updatestr);
 					con.commit();
-					System.out.println(BeanUtils.forceStringSize("user= "+(user==null?"unavailable":user.getName()), 20, " ", false)+" simref= "+BeanUtils.forceStringSize(simJobSimRef.toString(), 14, " ", false)+" failed= "+e.getMessage());
+					System.out.println(BeanUtils.forceStringSize("user= "+(user==null?"unavailable":user.getName()), 20, " ", false)+
+							" simref= "+BeanUtils.forceStringSize(simJobSimRef.toString(), 14, " ", false)+
+							" parentsimref= "+BeanUtils.forceStringSize((parentsimref==null?"NULL":parentsimref.toString()), 14, " ", false)+
+							" failed= "+e.getMessage());
 //					errorHash.put(simJobSimRef,e);
 				}
 			}
