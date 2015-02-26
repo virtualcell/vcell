@@ -155,7 +155,7 @@ public class TestMissingSimData {
 		Statement updateStatement = con.createStatement();
 		
 //		Hashtable<KeyValue, Exception> errorHash = new Hashtable<>();
-		String sql = "select missingdata.*,parentsimref from missingdata,vc_simulation wherevc_simulation.id = missingdata.simjobsimref order by userid";
+		String sql = "select missingdata.*,parentsimref from missingdata,vc_simulation where vc_simulation.id = missingdata.simjobsimref order by userid";
 		ResultSet rset = queryStatement.executeQuery(sql);
 		while(rset.next()){
 			if(!rset.getString("dataexists").equals("tbd")){
@@ -182,9 +182,13 @@ public class TestMissingSimData {
 					}else if(parentsimref != null && new File(primaryDataDir,SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)).exists()){
 						updatestr = "fileOldParent";
 					}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+filePathNamePrime.getName()), amplistorCredential)){
-						updatestr = "ampliPrime";
+						updatestr = "ampliNewPrime";
+					}else if(AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(simJobSimRef, 0, true)), amplistorCredential)){
+						updatestr = "ampliOldPrime";
+					}else if(parentsimref != null && AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(parentsimref, 0, false)), amplistorCredential)){
+						updatestr = "ampliNewParent";
 					}else if(parentsimref != null && AmplistorUtils.bFileExists(new URL(AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+user.getName()+"/"+SimulationData.createCanonicalSimLogFileName(parentsimref, 0, true)), amplistorCredential)){
-						updatestr = "ampliParent";
+						updatestr = "ampliOldParent";
 					}else{
 						updatestr = "false";
 					}
