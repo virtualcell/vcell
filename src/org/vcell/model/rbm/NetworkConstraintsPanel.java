@@ -12,6 +12,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import javax.swing.border.TitledBorder;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -45,7 +47,10 @@ import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.DisplayBNGOutput;
+import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
@@ -65,8 +70,7 @@ import cbit.vcell.server.bionetgen.BNGUtils;
 // can choose absolute layout and place everything exactly as we see fit
 public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback {
 
-	String generatedSpecies = "";
-	String generatedReactions = "";
+	BNGOutputSpec outputSpec = null;
 	
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
@@ -88,7 +92,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
 	private JButton viewNetworkButton;
-	private JButton cancelNetGenButton;
 	
 	private final static String consoleTextExample = "Iteration   0:     4 species      0 rxns\n" +
 													"Iteration   1:     8 species      4 rxns\n" +
@@ -118,8 +121,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				refreshMath();
 			} else if(e.getSource() == getViewNetworkButton()) {
 				viewNetwork();
-			} else if(e.getSource() == getCancelNetGenButton()) {
-				cancelNetGen();
 			}
 		}
 
@@ -134,10 +135,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}
 		
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()!=null){
+			if(evt.getSource() instanceof Model && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				refreshInterface();
-			} else if(evt.getSource() instanceof Model && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
-				refreshInterface();
+//			} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()!=null){
+//				refreshInterface();
 			}
 		}
 	}
@@ -179,7 +180,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	private JButton getRefreshMathButton() {
 		if (refreshMathButton == null) {
-			refreshMathButton = new javax.swing.JButton(" Refresh Math ");
+			refreshMathButton = new javax.swing.JButton(" Run BioNetGen ");
 			refreshMathButton.setName("RefreshMathButton");
 		}
 		return refreshMathButton;
@@ -191,14 +192,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}
 		return viewNetworkButton;
 	}
-	private JButton getCancelNetGenButton() {
-		if (cancelNetGenButton == null) {
-			cancelNetGenButton = new javax.swing.JButton("Cancel NetGen");
-			cancelNetGenButton.setName("CancelNetGenButton");
-		}
-		return cancelNetGenButton;
-	}
-
 
 	private void initialize() {
 		netGenConsoleText = new JTextArea();
@@ -218,7 +211,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		getViewGeneratedReactionsButton().addActionListener(eventHandler);
 		getRefreshMathButton().addActionListener(eventHandler);
 		getViewNetworkButton().addActionListener(eventHandler);
-		getCancelNetGenButton().addActionListener(eventHandler);
 		
 		netGenConsoleText.addFocusListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
@@ -432,15 +424,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(20, 4, 4, 10);
 		bottom.add(netGenConsoleScrollPane, gbc);
 		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-//		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.NORTHEAST;
-		gbc.insets = new Insets(32, 4, 4, 10);			// 20 is aligned with the title
-		bottom.add(getCancelNetGenButton(), gbc);
-
 		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
 		netGenConsoleText.setEditable(false);
 	}
@@ -478,6 +461,12 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		fieldIssueManager = issueManager;
 	}
 	
+	@Override
+	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
+		this.outputSpec = outputSpec;
+		refreshInterface();
+	}
+
 	private void refreshInterface() {
 		String text1 = null;
 		String text2 = null;
@@ -488,12 +477,11 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		maxIterationTextField.setText(text1);
 		maxMolTextField.setText(text2);
 		
-		MathMapping mm = fieldSimulationContext.getMostRecentlyCreatedMathMapping();
 		String text3 = null;
 		String text4 = null;
 		String text5 = null;
 		String text6 = null;
-		if(mm != null) {
+		if(outputSpec != null) {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
 			int numReactions = fieldSimulationContext.getModel().getNumReactions();
 			numReactions += fieldSimulationContext.getModel().getRbmModelContainer().getReactionRuleList().size();
@@ -502,8 +490,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				text4 = "N/A (rule based model needed)";
 				text6 = "N/A (rule based model needed)";
 			} else {
-				text4 = mm.getSimulationContext().getModel().getNumSpeciesContexts() + "";
-				text6 = mm.getSimulationContext().getModel().getNumReactions() + "";
+				text4 = outputSpec.getBNGSpecies().length + "";
+				text6 = outputSpec.getBNGReactions().length + "";
 			}
 		} else {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
@@ -514,8 +502,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				text4 = "N/A (rule based model needed)";
 				text6 = "N/A (rule based model needed)";
 			} else {
-				text4 = "unavailable (no math mapping)";
-				text6 = "unavailable (no math mapping)";
+				text4 = "unavailable (no network)";
+				text6 = "unavailable (no network)";
 			}
 		}
 		seedSpeciesLabel.setText("Seed Species: " + text3);
@@ -527,19 +515,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	
 	private void refreshMath() {
-
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			public void run() {
-				NetworkTransformer transformer = new NetworkTransformer();
-				transformer.registerCallBackForBioNetGenUpdates(NetworkConstraintsPanel.this);
-				BNGOutputSpec outputSpec = transformer.generateNetwork(fieldSimulationContext);
-			}
-		});	
-		
-		
-//		ClientTaskDispatcher.dispatch(NetworkConstraintsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, fieldSimulationContext), false);
+		NetworkTransformer transformer = new NetworkTransformer();
+		transformer.registerCallBackForBioNetGenUpdates(NetworkConstraintsPanel.this);
+		transformer.runBioNetGen(this, fieldSimulationContext);
 	}
 	private void viewNetwork() {
 		try {
@@ -555,16 +533,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			System.err.println("Exception occurred viewing Network");
 			exception.printStackTrace(System.out);
 		}
-	}
-	private void cancelNetGen() {
-		System.out.println("cancelNetGen button pressed");
-		try {
-			BNGUtils.stopBNG();
-		} catch (Exception e) {
-			System.out.println("Exception stopping BioNetGen: " + e.getMessage());
-			e.printStackTrace();
-		}
-		System.out.println("BioNetGen Canceled.");		// correct is "canceled", not "cancelled" !
 	}
 	private void viewGeneratedSpecies() {
 		System.out.println("viewGeneratedSpecies button pressed");
@@ -582,7 +550,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(20, 4, 4, 10);
 		pnl.add(sp, gbc);
 
-		ta.setText(generatedSpecies);
+		ta.setText(getGeneratedSpecies());
 		ta.setEditable(false);
 		JOptionPane.showMessageDialog(this, pnl);
 	}
@@ -602,34 +570,32 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(20, 4, 4, 10);
 		pnl.add(sp, gbc);
 
-		ta.setText(generatedReactions);
+		ta.setText(getGeneratedReactions());
 		ta.setEditable(false);
 		JOptionPane.showMessageDialog(this, pnl);
 	}
 
-	@Override
-	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
-		generatedSpecies = getGeneratedSpecies(outputSpec);
-		generatedReactions = getGeneratedReactions(outputSpec);
-	}
-	public String getGeneratedSpecies(BNGOutputSpec outputSpec) {
+	public String getGeneratedSpecies() {
 		String s = "";
+		if(outputSpec == null) {
+			return s;
+		}
 		BNGSpecies[] species = outputSpec.getBNGSpecies();
 		for (int i = 0; i < species.length; i++){
-			s += species[i].toString() + "\n";
+			s += species[i].toStringShort() + "\n";
 		}
-		System.out.println(s);
 		return s;
 	}
-	public String getGeneratedReactions(BNGOutputSpec outputSpec) {
+	public String getGeneratedReactions() {		// this may get VERY lengthy
 		String s = "";
+		if(outputSpec == null) {
+			return s;
+		}
 		BNGReaction[] reactions = outputSpec.getBNGReactions();
 		for (int i = 0; i < reactions.length; i++){
-			s += reactions[i].writeReaction() + "\n";
+			s += i+1 + "\t" + reactions[i].toStringShort() + "\n";
 		}	
-//		System.out.println(s);
 		return s;
 	}
-
 
 }

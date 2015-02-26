@@ -423,6 +423,10 @@ public static BNGSpecies getSpecies(int speciesIndx, Vector speciesVector) {
  */
 public static void printBNGNetOutput(BNGOutputSpec bngOutputSpec) {
 	System.out.println("BNGOutputSpec : ");
+	if(bngOutputSpec == null) {
+		System.out.println("...bngOutputSpec is null");
+		return;
+	}
 	BNGParameter[] params = bngOutputSpec.getBNGParams();
 	BNGMolecule[] moleculeTypes = bngOutputSpec.getBNGMolecules();
 	BNGSpecies[] species = bngOutputSpec.getBNGSpecies();
