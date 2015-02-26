@@ -150,4 +150,29 @@ public String writeReaction() {
 
 	return reactionStr;
 }
+
+
+public String toStringShort() {
+	// almost like writeReaction() above except there's no expression
+	String reactionStr = "";
+	int numReactants = getReactants().length;
+	int numPdts = getProducts().length;
+	
+	for (int i = 0; i < numReactants; i++){
+		if (i == 0) {
+			reactionStr = getReactants()[i].getName();
+			continue;
+		}
+		reactionStr = reactionStr + " + " + getReactants()[i].getName();
+	}
+	reactionStr = reactionStr + " -> ";
+	for (int i = 0; i < numPdts; i++){
+		if (i == 0) {
+			reactionStr = reactionStr + getProducts()[i].getName();
+			continue;
+		}
+		reactionStr = reactionStr + " + " + getProducts()[i].getName();
+	}
+	return reactionStr;
+}
 }
