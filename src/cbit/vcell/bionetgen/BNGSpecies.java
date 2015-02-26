@@ -135,4 +135,7 @@ public void setName(java.lang.String newName) {
 public String toString() {
 	return new String(getNetworkFileIndex() + ";\t" + getName() + ";\t" + getConcentration().infix());
 }
+public String toStringShort() {
+	return new String(getNetworkFileIndex() + "\t" + getName());
+}
 }
