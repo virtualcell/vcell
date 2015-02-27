@@ -41,8 +41,8 @@ public class BNGUtils {
 	private final static String suffix_input = ".bngl";
 
 	private static File workingDir = null;
-	private static org.vcell.util.Executable executable = null;
-	private static boolean bFirstTime = true;
+	private org.vcell.util.Executable executable = null;
+	private final BNGInput bngInput;
 
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
@@ -61,8 +61,9 @@ public class BNGUtils {
 /**
  * BNGUtils constructor comment.
  */
-public BNGUtils() {
+public BNGUtils(BNGInput bngInput) {
 	super();
+	this.bngInput = bngInput;
 }
 
 
@@ -88,7 +89,7 @@ public BNGUtils() {
  * Insert the method's description here.
  * Creation date: (6/23/2005 3:57:30 PM)
  */
-public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
+public BNGOutput executeBNG() throws BNGException {
 	if (executable != null) {
 		throw new BNGException("You can only run BNG one at a time!");
 	}
@@ -116,7 +117,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
 		}	
 			
 		PrintWriter inputFile = new PrintWriter(fos);
-		inputFile.print(bngRules.getInputString());
+		inputFile.print(bngInput.getInputString());
 		inputFile.close();
 		
 		// run BNG
@@ -190,25 +191,19 @@ private static synchronized void initialize() throws IOException {
 	file_exe_run_network = new java.io.File(bngHome, EXE_RUN_NETWORK);
 	VersionedLibrary.CYGWIN_DLL_BIONETGEN.makePresentIn(bngHome);
 		
-	if (bFirstTime) {
+	if (!file_exe_bng.exists()) {
 		ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
+	}
+	if (!file_exe_run_network.exists()) {	
 		ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
-		bFirstTime = false;		
-	} else {			
-		if (!file_exe_bng.exists()) {
-			ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
-		}
-		if (!file_exe_run_network.exists()) {	
-			ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
-		}
-	}	
+	}
 }
 
 /**
  * Insert the method's description here.
  * Creation date: (6/23/2005 3:57:30 PM)
  */
-public static void stopBNG() throws Exception {
+public void stopBNG() throws Exception {
 	if (executable != null) {
 		executable.stop();
 	}

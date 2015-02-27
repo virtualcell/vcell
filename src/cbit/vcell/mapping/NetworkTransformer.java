@@ -1,21 +1,17 @@
 package cbit.vcell.mapping;
 
-import java.awt.Component;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
-import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.bionetgen.BNGOutputFileParser;
@@ -24,12 +20,6 @@ import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.CreateBNGOutputSpec;
-import cbit.vcell.client.task.DisplayBNGOutput;
-import cbit.vcell.client.task.ReturnBNGOutput;
-import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -57,19 +47,8 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class NetworkTransformer implements SimContextTransformer {
 
-	private transient List<BioNetGenUpdaterCallback> callbacks = null;
 	private Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new HashMap<String, Pair<SpeciesContext, Expression>>();
-	
-	public void registerCallBackForBioNetGenUpdates(BioNetGenUpdaterCallback bnglCallBack) {
-		getCallbacks().add(bnglCallBack);
-	}
-	private List<BioNetGenUpdaterCallback> getCallbacks() {
-		if(callbacks == null) {
-			callbacks = new ArrayList<BioNetGenUpdaterCallback>(); 
-		}
-		return callbacks;
-	}
-	
+		
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext) {
 		SimulationContext transformedSimContext;
@@ -122,44 +101,23 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 	};
 	
-	public void runBioNetGen(Component requester, SimulationContext simContext) {
-		String input = convertToBngl(simContext, true);
-		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
-		    String key = entry.getKey();
-		    Pair<SpeciesContext, Expression> value = entry.getValue();
-		    SpeciesContext sc = value.one;
-		    Expression initial = value.two;
-			System.out.println("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
-		}
-		BNGInput bngInput = new BNGInput(input);
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		hash.put("bngInput", bngInput);
-		hash.put("bngCallbacks", getCallbacks());
-
-		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
-		tasksArray[0] = new RunBioNetGen();
-		tasksArray[1] = new CreateBNGOutputSpec();
-		tasksArray[2] = new ReturnBNGOutput();
-		ClientTaskDispatcher.dispatch(requester, hash, tasksArray, false, true, new ProgressDialogListener() {
-			
-			public void cancelButton_actionPerformed(EventObject newEvent) {
-				try {
-					BNGUtils.stopBNG();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	private String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
+	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
 		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		System.out.println(bngl);
+//		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
+//	    String key = entry.getKey();
+//	    Pair<SpeciesContext, Expression> value = entry.getValue();
+//	    SpeciesContext sc = value.one;
+//	    Expression initial = value.two;
+//		System.out.println("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+//	}
 		return bngl;
 	}
+	
 	private BNGOutputSpec generateNetwork(SimulationContext simContext) {
 		BNGOutputSpec outputSpec;
 		String input = convertToBngl(simContext, true);
@@ -173,7 +131,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
-			bngOutput = BNGUtils.executeBNG(bngInput);
+			final BNGUtils bngService = new BNGUtils(bngInput);
+			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {
 			ex.printStackTrace(System.out);
 			throw ex; //rethrow without losing context

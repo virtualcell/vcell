@@ -10,11 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Hashtable;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -25,45 +22,32 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Pair;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.bionetgen.BNGMolecule;
-import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
-import cbit.vcell.bionetgen.BNGReactionRule;
 import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.bionetgen.ObservableGroup;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.DisplayBNGOutput;
+import cbit.vcell.client.task.CreateBNGOutputSpec;
+import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
-import cbit.vcell.mapping.SimContextTransformer;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
 import cbit.vcell.solvers.ApplicationMessage;
 
@@ -119,7 +103,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			} else if(e.getSource() == getViewGeneratedReactionsButton()) {
 				viewGeneratedReactions();
 			} else if(e.getSource() == getRefreshMathButton()) {
-				refreshMath();
+				runBioNetGen();
 			} else if(e.getSource() == getViewNetworkButton()) {
 				viewNetwork();
 			}
@@ -536,11 +520,29 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		netGenConsoleText.setText(consoleTextExample);
 	}
 	
-	private void refreshMath() {
+	private void runBioNetGen() {
 		NetworkTransformer transformer = new NetworkTransformer();
-		transformer.registerCallBackForBioNetGenUpdates(NetworkConstraintsPanel.this);
-		transformer.runBioNetGen(this, fieldSimulationContext);
+		String input = transformer.convertToBngl(fieldSimulationContext, true);
+		BNGInput bngInput = new BNGInput(input);
+		final BNGUtils bngService = new BNGUtils(bngInput);
+		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+
+		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
+		tasksArray[0] = new RunBioNetGen(bngService);
+		tasksArray[1] = new CreateBNGOutputSpec();
+		tasksArray[2] = new ReturnBNGOutput(this);
+		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
+			
+			public void cancelButton_actionPerformed(EventObject newEvent) {
+				try {
+					bngService.stopBNG();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
+
 	private void viewNetwork() {
 		try {
 			ReactionCartoonEditorPanel reactionCartoonEditorPanel;
