@@ -88,7 +88,6 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjJLabelHelp11 = null;
 	private javax.swing.JLabel ivjJLabelStart122111 = null;
 	private javax.swing.JLabel ivjJLabelStart1221111 = null;
-	private javax.swing.JButton ivjStopBNGButton = null;
 	private BNGDataPlotPanel ivjbngDataPlotPanel = null;
 	private javax.swing.JLabel ivjOutputLabel = null;
 	private MultiPurposeTextPanel ivjBNGLInputPanel = null;
@@ -112,8 +111,6 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 				connEtoC10(e);
 			if (e.getSource() == BNGOutputPanel.this.getJButtonManual11()) 
 				connEtoC12();
-			if (e.getSource() == BNGOutputPanel.this.getStopBNGButton()) 
-				connEtoC11(e);
 			if (e.getSource() == BNGOutputPanel.this.getOpenFileButton()) 
 				connEtoM4(e);
 		};
@@ -291,27 +288,6 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC11:  (StopBNGButton.action.actionPerformed(java.awt.event.ActionEvent) --> BNGOutputPanel.stopBNGButton_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.stopBNGButton_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC12:  (JButtonManual11.action. --> BNGOutputPanel.bngHelpFAQ()V)
@@ -1972,7 +1948,6 @@ private javax.swing.JPanel getRulesEditorButtonsPanel1() {
 			getRulesEditorButtonsPanel1().add(getOpenFileButton(), getOpenFileButton().getName());
 			getRulesEditorButtonsPanel1().add(getRunBNGButton(), getRunBNGButton().getName());
 			getRulesEditorButtonsPanel1().add(getSaveFileButton());
-//			getRulesEditorButtonsPanel1().add(getStopBNGButton(), getStopBNGButton().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2040,29 +2015,6 @@ public String getSelectedOutputFileName() {
 
 
 /**
- * Return the StopBNGButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getStopBNGButton() {
-	if (ivjStopBNGButton == null) {
-		try {
-			ivjStopBNGButton = new javax.swing.JButton();
-			ivjStopBNGButton.setName("StopBNGButton");
-			ivjStopBNGButton.setText("Stop BioNetGen");
-			ivjStopBNGButton.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStopBNGButton;
-}
-
-/**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
  */
@@ -2091,7 +2043,6 @@ private void initConnections() throws java.lang.Exception {
 	getJButtonManual().addActionListener(ivjEventHandler);
 	getJButtonManual1().addActionListener(ivjEventHandler);
 	getJButtonManual11().addActionListener(ivjEventHandler);
-	getStopBNGButton().addActionListener(ivjEventHandler);
 	getOpenFileButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -2154,11 +2105,9 @@ public void refreshButton(boolean bRunning) {
 	if (bRunning) {
 		getOpenFileButton().setEnabled(false);
 		getRunBNGButton().setEnabled(false);
-		getStopBNGButton().setEnabled(true);
 	} else {
 		getOpenFileButton().setEnabled(true);
 		getRunBNGButton().setEnabled(true);
-		getStopBNGButton().setEnabled(false);		
 	}
 }
 
@@ -2348,17 +2297,6 @@ private void setTextArea(javax.swing.event.ListSelectionEvent listSelectionEvent
 		String fileContentStr = getbngOutput1().getBNGFileContent(listSelectionIndex);
 		getOutputTextArea().setText(fileContentStr);
 	}
-}
-
-
-/**
- * Comment
- */
-public void stopBNGButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-	// execute BNG thro' BNGWindowManager
-	getBngWindowManager().stopBioNetGen();	
-
-	refreshButton(false);	
 }
 
 

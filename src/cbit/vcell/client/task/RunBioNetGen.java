@@ -12,7 +12,6 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
-import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
 /**
@@ -21,9 +20,10 @@ import cbit.vcell.server.bionetgen.BNGUtils;
  * @author: Anuradha Lakshminarayana
  */
 public class RunBioNetGen extends AsynchClientTask {
-	
-	public RunBioNetGen() {
+	private final BNGUtils bngService;
+	public RunBioNetGen(BNGUtils bngService) {
 		super("Running BioNetGen ...", TASKTYPE_NONSWING_BLOCKING);
+		this.bngService = bngService;
 	}
 
 /**
@@ -33,11 +33,10 @@ public class RunBioNetGen extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
-	BNGInput bngInput = (BNGInput)hashTable.get("bngInput");
-	BNGOutput bngOutput = BNGUtils.executeBNG(bngInput);
+	BNGOutput bngOutput = bngService.executeBNG();
 	if (bngOutput != null) {
 		hashTable.put("bngOutput", bngOutput);
-	}	
+	}
 }
 
 }

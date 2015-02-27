@@ -215,12 +215,12 @@ public void runBioNetGen(BNGInput bngInput) {
 
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	hash.put("bngInput", bngInput);
 	hash.put(BNG_OUTPUT_PANEL, getBngOutputPanel());
+	final BNGUtils bngService = new BNGUtils(bngInput);
 
 	// Create the AsynchClientTasks : in this case, running the BioNetGen (non-swing) and then displaying the output (swing) tasks.
 	AsynchClientTask[] tasksArray = new AsynchClientTask[2];
-	tasksArray[0] = new RunBioNetGen();
+	tasksArray[0] = new RunBioNetGen(bngService);
 	tasksArray[1] = new DisplayBNGOutput();
 
 	// Dispatch the tasks using the ClientTaskDispatcher.
@@ -228,7 +228,7 @@ public void runBioNetGen(BNGInput bngInput) {
 		
 		public void cancelButton_actionPerformed(EventObject newEvent) {
 			try {
-				BNGUtils.stopBNG();
+				bngService.stopBNG();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -295,20 +295,6 @@ public void saveOutput(String bngOutputStr) {
 private void setBngOutputPanel(BNGOutputPanel newBngOutputPanel) {
 	fieldBngOutputPanel = newBngOutputPanel;
 }
-
-
-/**
- * Gets the bngOutputPanel property (cbit.vcell.client.bionetgen.BNGOutputPanel) value.
- * @return The bngOutputPanel property value.
- */
-public void stopBioNetGen() {
-	try {
-		cbit.vcell.server.bionetgen.BNGUtils.stopBNG();
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * prompt user for filename, then write String to it
