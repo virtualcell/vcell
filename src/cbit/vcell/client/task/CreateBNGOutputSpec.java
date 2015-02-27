@@ -16,7 +16,7 @@ import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 
 public class CreateBNGOutputSpec extends AsynchClientTask {
 	

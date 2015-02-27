@@ -30,7 +30,7 @@ import cbit.vcell.solvers.BioNetGenExecutable;
  * Creation date: (9/13/2006 9:26:26 AM)
  * @author: Fei Gao
  */
-public class BNGUtils {
+public class BNGExecutorService {
 	private final static String EXE_SUFFIX; 
 	private final static String EXE_BNG; 
 	private final static String RES_EXE_BNG; 
@@ -46,7 +46,7 @@ public class BNGUtils {
 
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
-	private static Logger lg = Logger.getLogger(BNGUtils.class);
+	private static Logger lg = Logger.getLogger(BNGExecutorService.class);
 	static {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		EXE_SUFFIX = osi.isWindows() ? ".exe" : "";
@@ -61,7 +61,7 @@ public class BNGUtils {
 /**
  * BNGUtils constructor comment.
  */
-public BNGUtils(BNGInput bngInput) {
+public BNGExecutorService(BNGInput bngInput) {
 	super();
 	this.bngInput = bngInput;
 }
