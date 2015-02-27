@@ -39,7 +39,7 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.units.VCUnitDefinition;
 
 /*
@@ -131,7 +131,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
-			final BNGUtils bngService = new BNGUtils(bngInput);
+			final BNGExecutorService bngService = new BNGExecutorService(bngInput);
 			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {
 			ex.printStackTrace(System.out);

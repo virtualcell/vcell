@@ -32,7 +32,7 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 
 import com.ibm.icu.util.StringTokenizer;
 

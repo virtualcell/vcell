@@ -46,7 +46,7 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 
@@ -216,7 +216,7 @@ public void runBioNetGen(BNGInput bngInput) {
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put(BNG_OUTPUT_PANEL, getBngOutputPanel());
-	final BNGUtils bngService = new BNGUtils(bngInput);
+	final BNGExecutorService bngService = new BNGExecutorService(bngInput);
 
 	// Create the AsynchClientTasks : in this case, running the BioNetGen (non-swing) and then displaying the output (swing) tasks.
 	AsynchClientTask[] tasksArray = new AsynchClientTask[2];

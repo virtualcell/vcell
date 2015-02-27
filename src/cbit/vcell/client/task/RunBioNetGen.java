@@ -13,15 +13,15 @@ package cbit.vcell.client.task;
 import java.util.Hashtable;
 
 import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 /**
  * Insert the type's description here.
  * Creation date: (7/14/2006 5:11:43 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class RunBioNetGen extends AsynchClientTask {
-	private final BNGUtils bngService;
-	public RunBioNetGen(BNGUtils bngService) {
+	private final BNGExecutorService bngService;
+	public RunBioNetGen(BNGExecutorService bngService) {
 		super("Running BioNetGen ...", TASKTYPE_NONSWING_BLOCKING);
 		this.bngService = bngService;
 	}

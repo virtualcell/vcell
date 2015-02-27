@@ -48,7 +48,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.solvers.ApplicationMessage;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
@@ -524,7 +524,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		NetworkTransformer transformer = new NetworkTransformer();
 		String input = transformer.convertToBngl(fieldSimulationContext, true);
 		BNGInput bngInput = new BNGInput(input);
-		final BNGUtils bngService = new BNGUtils(bngInput);
+		final BNGExecutorService bngService = new BNGExecutorService(bngInput);
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
