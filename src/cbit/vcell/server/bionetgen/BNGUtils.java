@@ -23,6 +23,7 @@ import org.vcell.util.FileUtils;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VersionedLibrary;
+import cbit.vcell.solvers.BioNetGenExecutable;
 
 /**
  * Insert the type's description here.
@@ -120,7 +121,8 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws BNGException {
 		
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
-		executable = new org.vcell.util.Executable(cmd);
+//		executable = new org.vcell.util.Executable(cmd);
+		executable = new BioNetGenExecutable(cmd);
 		executable.setWorkingDir(workingDir);
 		executable.start();
 		
