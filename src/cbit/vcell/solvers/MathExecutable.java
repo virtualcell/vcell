@@ -12,9 +12,9 @@ package cbit.vcell.solvers;
 
 
 public class MathExecutable extends org.vcell.util.Executable {
-	private int currentStringPosition = 0;
+	protected int currentStringPosition = 0;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private java.lang.String fieldApplicationMessage = new String();
+	protected java.lang.String fieldApplicationMessage = new String();
 
 
 public MathExecutable(String[] command) {	
@@ -37,7 +37,7 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * Insert the method's description here.
  * Creation date: (6/27/01 12:13:37 PM)
  */
-private void checkForNewApplicationMessages(String str) {
+protected void checkForNewApplicationMessages(String str) {
 	//   "[[[msg]]]"
 	String START_TOKEN = "[[[";
 	String END_TOKEN = "]]]";
