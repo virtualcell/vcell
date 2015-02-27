@@ -28,7 +28,7 @@ import cbit.vcell.resource.ResourceUtil;
 public class Executable implements IExecutable {
 	private String[] command = null;
 	private Process process = null;
-	private String outputString = "";
+	protected String outputString = "";
 	private String errorString = "";
 	private Integer exitValue = null;
 	private ExecutableStatus status = null;

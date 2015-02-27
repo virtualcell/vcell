@@ -65,6 +65,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGUtils;
+import cbit.vcell.solvers.ApplicationMessage;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -134,15 +135,36 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			}
 		}
 		
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if(evt.getSource() instanceof Model && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+		public void propertyChange(java.beans.PropertyChangeEvent event) {
+			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				refreshInterface();
 //			} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()!=null){
 //				refreshInterface();
+//			} else if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
+			} else if (event.getPropertyName().equals("applicationMessage")) {
+				String messageString = (String)event.getNewValue();
+				if (messageString==null || messageString.length()==0){
+					return;
+				}
+//				ApplicationMessage appMessage = getApplicationMessage(messageString);
+				ApplicationMessage appMessage = getApplicationMessage();
+				if (appMessage==null){
+					System.out.println("Application nexpected Message: '" + messageString + "'");
+					return;
+				} else {
+					switch (appMessage.getMessageType()) {
+						case ApplicationMessage.PROGRESS_MESSAGE:
+							System.out.println("Application Progress Message: '" + messageString + "'");
+						default:
+							System.out.println("Application Other Message: '" + messageString + "'");
+					}
+				}
 			}
 		}
 	}
-	
+	ApplicationMessage getApplicationMessage() {
+		return new ApplicationMessage(ApplicationMessage.PROGRESS_MESSAGE, 2, 1, "some progress error", "some progress message");
+	}
 	public NetworkConstraintsPanel() {
 		super();
 		initialize();
