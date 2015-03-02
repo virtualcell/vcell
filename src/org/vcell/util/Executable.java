@@ -328,6 +328,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 		}
 		if (numReadOut > 0) {
 			String newInput = new String(charArrayOut, 0, numReadOut);
+			setNewOutputString(newInput);
 			outString += newInput;
 		}
 		if (numReadErr > 0) {
@@ -385,6 +386,9 @@ private void setExitValue(java.lang.Integer newExitValue) {
  */
 protected void setOutputString(java.lang.String newOutputString) {
 	outputString = newOutputString;
+}
+protected void setNewOutputString(java.lang.String newOutputString) {
+	return;
 }
 
 

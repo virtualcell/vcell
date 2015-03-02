@@ -1,37 +1,33 @@
 package cbit.vcell.solvers;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+
 public class BioNetGenExecutable extends MathExecutable {
 
+	private transient List<BioNetGenUpdaterCallback> callbacks = null;
+	
 	public BioNetGenExecutable(String[] command) {
 		super(command);
 	}
-
-	@Override
-	protected void setOutputString(String newOutputString) {
-		if(outputString != null && newOutputString != null) {
-			if(newOutputString.length() > outputString.length()) {
-				String delta = newOutputString.substring(outputString.length());
-				System.out.println(delta);
-			}
-		}
-		super.setOutputString(newOutputString);
-		checkForNewApplicationMessages(getStdoutString());
+	
+	public void inheritCallbacks(List<BioNetGenUpdaterCallback> callbacks) {
+		this.callbacks = callbacks;
 	}
+	private List<BioNetGenUpdaterCallback> getCallbacks() {
+		if(callbacks == null) {
+			callbacks = new ArrayList<BioNetGenUpdaterCallback>();
+		}
+		return callbacks;
+	}
+	
 	@Override
-	protected void checkForNewApplicationMessages(String str) {
-		//   "Iteration msg rxns\n"
-		String START_TOKEN = "Iteration ";
-		String END_TOKEN = " rxns\n";
-		boolean bDone = false;
-		while (!bDone){
-			int nextMsgBegin = str.indexOf(START_TOKEN,currentStringPosition);
-			int nextMsgEnd = str.indexOf(END_TOKEN,currentStringPosition);
-			if (nextMsgBegin>=0 && nextMsgEnd > nextMsgBegin){
-				String msg = str.substring(nextMsgBegin+START_TOKEN.length(),nextMsgEnd);
-				setApplicationMessage(msg);
-				currentStringPosition = nextMsgEnd+END_TOKEN.length();
-			}else{
-				bDone = true;
+	protected void setNewOutputString(String newOutputString) {
+		if(newOutputString != null) {
+			for(BioNetGenUpdaterCallback callback : getCallbacks()) {
+				callback.setNewOutputString(newOutputString);
 			}
 		}
 	}
