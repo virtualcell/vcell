@@ -403,7 +403,7 @@ public class TestMissingSimData {
 			return;
 		}
 		VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simIDAndJobID.simID, simIDAndJobID.user);
-		UserLoginInfo userLoginInfo = new UserLoginInfo(simIDAndJobID.user.getName(), new DigestedPassword("cbittech"));
+		UserLoginInfo userLoginInfo = new UserLoginInfo(simIDAndJobID.user.getName(), new DigestedPassword("xoxoxox"));
 		//getVcellClient().getClientServerManager().getConnectionStatus()
 		VCellConnection vcellConnection = userConnections.get(simIDAndJobID.user);
 		try{
