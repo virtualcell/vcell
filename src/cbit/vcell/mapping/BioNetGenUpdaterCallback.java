@@ -4,4 +4,5 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 
 public interface BioNetGenUpdaterCallback {
 	void updateBioNetGenOutput(BNGOutputSpec outputSpec);
+	void setNewOutputString(String newOutputString);
 }

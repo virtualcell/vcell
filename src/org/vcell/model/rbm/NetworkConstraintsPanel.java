@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -56,6 +57,7 @@ import cbit.vcell.solvers.ApplicationMessage;
 public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback {
 
 	BNGOutputSpec outputSpec = null;
+	String outputString = new String("");
 	
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
@@ -77,19 +79,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
 	private JButton viewNetworkButton;
-	
-	private final static String consoleTextExample = "Iteration   0:     4 species      0 rxns\n" +
-													"Iteration   1:     8 species      4 rxns\n" +
-													"Iteration   2:    18 species     22 rxns\n" +
-													"Iteration   3:    39 species     80 rxns\n" +
-													"Iteration   4:    69 species    210 rxns\n" +
-													"Iteration   5:   103 species    433 rxns\n" +
-													"Iteration   6:   106 species    672 rxns\n" +
-													"Iteration   7:   106 species    672 rxns\n" +
-													"Iteration   8:   106 species    672 rxns\n" +
-													"Iteration   9:   106 species    672 rxns\n" +
-													"Iteration  10:   106 species    672 rxns\n" +
-													"Iteration  11:   106 species    691 rxns\n";
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
@@ -122,27 +111,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				refreshInterface();
-//			} else if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue()!=null){
-//				refreshInterface();
-//			} else if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
-			} else if (event.getPropertyName().equals("applicationMessage")) {
-				String messageString = (String)event.getNewValue();
-				if (messageString==null || messageString.length()==0){
-					return;
-				}
-//				ApplicationMessage appMessage = getApplicationMessage(messageString);
-				ApplicationMessage appMessage = getApplicationMessage();
-				if (appMessage==null){
-					System.out.println("Application nexpected Message: '" + messageString + "'");
-					return;
-				} else {
-					switch (appMessage.getMessageType()) {
-						case ApplicationMessage.PROGRESS_MESSAGE:
-							System.out.println("Application Progress Message: '" + messageString + "'");
-						default:
-							System.out.println("Application Other Message: '" + messageString + "'");
-					}
-				}
 			}
 		}
 	}
@@ -472,6 +440,37 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		this.outputSpec = outputSpec;
 		refreshInterface();
 	}
+	@Override
+	public void setNewOutputString(final String newOutputString) {
+		outputString += newOutputString;
+		if (!SwingUtilities.isEventDispatchThread()){
+			SwingUtilities.invokeLater(new Runnable(){
+	
+				@Override
+				public void run() {
+					appendToConsole(newOutputString);
+				}
+				
+			});
+		}else{
+			appendToConsole(newOutputString);
+		}
+		
+	}
+	private void appendToConsole(String string) {
+		
+		String split[];
+		split = string.split("\\n");
+		for(String s : split) {
+			if(s.startsWith("BioNetGen") || s.startsWith("CPU TIME: total") || s.startsWith("Cancelled"))  {
+				netGenConsoleText.append(s+"\n");
+			} else if (s.startsWith("Iteration")) {
+				String species = "species";
+				s = "\t" + s.substring(0, s.indexOf("species")+species.length());
+				netGenConsoleText.append(s+"\n");
+			}
+		}
+	}
 
 	private void refreshInterface() {
 		String text1 = null;
@@ -508,8 +507,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				text4 = "N/A (rule based model needed)";
 				text6 = "N/A (rule based model needed)";
 			} else {
-				text4 = "unavailable (no network)";
-				text6 = "unavailable (no network)";
+//				text4 = "unavailable (no network)";
+//				text6 = "unavailable (no network)";
+				text4 = "unavailable";
+				text6 = "unavailable";
 			}
 		}
 		seedSpeciesLabel.setText("Seed Species: " + text3);
@@ -517,14 +518,32 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		reactionRulesLabel.setText("Reaction Rules: " + text5);
 		generatedReactionsLabel.setText("Generated Reactions: " + text6);
 		
-		netGenConsoleText.setText(consoleTextExample);
+		if(fieldSimulationContext.getModel().getRbmModelContainer().isEmpty()) {
+			viewGeneratedSpeciesButton.setEnabled(false);
+			viewGeneratedReactionsButton.setEnabled(false);
+			refreshMathButton.setEnabled(false);
+			viewNetworkButton.setEnabled(false);
+			netGenConsoleText.setText("");
+		} else {
+			viewGeneratedSpeciesButton.setEnabled(true);
+			viewGeneratedReactionsButton.setEnabled(true);
+			refreshMathButton.setEnabled(true);
+			viewNetworkButton.setEnabled(true);
+//			netGenConsoleText.setText(outputString);
+		}
 	}
 	
 	private void runBioNetGen() {
 		NetworkTransformer transformer = new NetworkTransformer();
 		String input = transformer.convertToBngl(fieldSimulationContext, true);
 		BNGInput bngInput = new BNGInput(input);
+		outputSpec = null;
+		outputString = "";
+		refreshInterface();
+		netGenConsoleText.setText(outputString);
+		
 		final BNGExecutorService bngService = new BNGExecutorService(bngInput);
+		bngService.registerBngUpdaterCallback(this);
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
@@ -536,6 +555,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					bngService.stopBNG();
+					setNewOutputString("Cancelled");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
