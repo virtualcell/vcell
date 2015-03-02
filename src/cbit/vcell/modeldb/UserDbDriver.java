@@ -9,15 +9,17 @@
  */
 
 package cbit.vcell.modeldb;
-
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -36,6 +38,8 @@ import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 public class UserDbDriver /*extends DbDriver*/ {
 	public static final UserTable userTable = UserTable.table;
 	private SessionLog log = null;
+	private Random passwordGen = null; 
+	private static final Logger lg = Logger.getLogger(UserDbDriver.class);
 /**
  * LocalDBManager constructor comment.
  */
@@ -73,12 +77,14 @@ public User getUserFromUserid(Connection con, String userid) throws SQLException
 	return user;
 }
 /**
- * This method was created in VisualAge.
- * @return int
- * @param user java.lang.String
- * @param imageName java.lang.String
+ * @param con database connection
+ * @param userid
+ * @param digestedPassword 
+ * @param internal allow use of master password
+ * @return User object or null if userid incorrect or password invalid
+ * @throws SQLException
  */
-public User getUserFromUseridAndPassword(Connection con, String userid, UserLoginInfo.DigestedPassword digestedPassword) throws SQLException {
+public User getUserFromUseridAndPassword(Connection con, String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean internal) throws SQLException {
 	Statement stmt = null;
 	String sql;
 	ResultSet rset;
@@ -112,14 +118,26 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 			}
 			if(digestedPassword.equals(userDBDigestedPassword)){
 				bUserAuthenticated = true;
-			}else{
-				//lookup administrator password and match for any user
-				rset.close();
-				sql = "SELECT "+UserTable.table.digestPW +" FROM "+userTable.getTableName()+" WHERE "+UserTable.table.id +" = "+PropertyLoader.ADMINISTRATOR_ID;
-				ResultSet adminRset = stmt.executeQuery(sql);
-				if(adminRset.next()){
-					String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
-					bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+				if (lg.isInfoEnabled()) {
+					lg.info("userid " + userid + " logged in using own password");
+				}
+			}else  {
+				if (internal){
+					//lookup administrator password and match for any user
+					rset.close();
+					sql = "SELECT "+UserTable.table.digestPW +" FROM "+userTable.getTableName()+" WHERE "+UserTable.table.id +" = "+PropertyLoader.ADMINISTRATOR_ID;
+					ResultSet adminRset = stmt.executeQuery(sql);
+					if(adminRset.next()){
+						String adminDBDigestPassword = adminRset.getString(UserTable.table.digestPW.toString());
+						bUserAuthenticated = digestedPassword.equals(UserLoginInfo.DigestedPassword.createAlreadyDigested(adminDBDigestPassword));
+					}
+					if (lg.isInfoEnabled()) {
+						lg.info("userid " + userid + " master password check returns " + bUserAuthenticated); 
+					}
+				} else {
+					if (lg.isInfoEnabled()) {
+						lg.info("userid " + userid + " not running locally, master password not checked"); 
+					}
 				}
 			}
 			if(bUserAuthenticated){
@@ -148,7 +166,7 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 		throw new ObjectNotFoundException("User name "+userid+" not found.");
 	}
 	UserInfo userInfo = getUserInfo(con, user.getID());
-	String clearTextPassword = "VC"+System.currentTimeMillis()+"";
+	String clearTextPassword = randomPassword(); 
 	try {
 		//Reset User Password
 		updatePasswords(con,userInfo.id,clearTextPassword);
@@ -455,5 +473,18 @@ public ApiClient getApiClient(Connection con, String clientId) throws SQLExcepti
 	}
 	return apiClient;
 }
+
+/**
+ * @return pseudo-random password
+ */
+private String randomPassword( ) {
+	if (passwordGen != null) {
+		return "VC" + Math.abs(passwordGen.nextLong());
+	}
+	passwordGen = new SecureRandom(); 
+	return "VC" + passwordGen.nextLong();
+}
+
+
 
 }

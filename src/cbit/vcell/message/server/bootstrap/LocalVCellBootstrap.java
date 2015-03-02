@@ -13,6 +13,7 @@ package cbit.vcell.message.server.bootstrap;
 import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +32,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellServerID;
+import org.vcell.util.logging.Logging;
 
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -105,6 +107,13 @@ private LocalVCellBootstrap(String hostName, AdminDatabaseServer adminDbServer, 
  */
 public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws DataAccessException, AuthenticationException {
 	try {
+		try {
+			String ch = getClientHost();
+			System.out.println(ch);
+		} catch (ServerNotActiveException e) {
+			e.printStackTrace();
+		}
+		
 		VCellConnection vcConn = localVCellServer.getVCellConnection(userLoginInfo);
 		if (vcConn!=null){
 			sessionLog.print("LocalVCellBootstrap.getVCellConnection(" + userLoginInfo.getUserName() +") <<<<SUCCESS>>>>");
@@ -132,7 +141,7 @@ public VCellServer getVCellServer(User user, UserLoginInfo.DigestedPassword dige
 	//
 	// Authenticate User
 	//
-	boolean bAuthenticated = adminDbServer.getUser(user.getName(),digestedPassword).compareEqual(user);
+	boolean bAuthenticated = adminDbServer.getUser(user.getName(),digestedPassword, false).compareEqual(user);
 	if (!bAuthenticated){
 		sessionLog.print("LocalVCellBootstrap.getVCellServer(" + user +"), didn't authenticate");
 		throw new AuthenticationException("Authentication Failed for user " + user.getName());
@@ -159,6 +168,7 @@ public java.lang.String getVCellSoftwareVersion() {
  * @param args java.lang.String[]
  */
 public static void main(java.lang.String[] args) {
+	Logging.init();
 	String MESSAGING = "messaging";
 	if (args.length != 4) {
 		System.out.println("usage: cbit.vcell.server.LocalVCellBootstrap host port messaging [logdir|-] \n");

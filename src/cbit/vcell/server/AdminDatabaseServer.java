@@ -64,9 +64,10 @@ User getUser(String userid) throws DataAccessException;
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User
  * @param userid java.lang.String
+ * @param runningLocally TODO
  * @param password java.lang.String
  */
-User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword) throws DataAccessException;
+User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean runningLocally) throws DataAccessException;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.server.User

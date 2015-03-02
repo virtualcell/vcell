@@ -39,7 +39,7 @@ public LocalVCellServerFactory(String userid, UserLoginInfo.DigestedPassword dig
 		AdminDatabaseServer adminDbServer = new LocalAdminDbServer(conFactory,keyFactory,sessionLog);
 		User adminUser = null;
 		if (userid!=null && digestedPassword!=null){			
-			adminUser = adminDbServer.getUser(userid,digestedPassword);
+			adminUser = adminDbServer.getUser(userid,digestedPassword, false);
 			if (adminUser==null){
 				throw new PermissionException("failed to authenticate user userid "+userid);
 			}

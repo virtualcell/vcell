@@ -11,12 +11,17 @@
 package cbit.vcell.server;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CacheStatus;
@@ -55,8 +60,8 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private ClientTopicMessageCollector clientTopicMessageCollector = null;
 	private int rmiPort;
 
-	private long CLEANUP_INTERVAL = 600*1000;	//Wants to be a property?
-	
+	private long CLEANUP_INTERVAL = TimeUnit.MINUTES.toMillis(10);
+	private static Logger lg = Logger.getLogger(LocalVCellServer.class);
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
@@ -249,8 +254,26 @@ public VCellConnection getVCellConnection(UserLoginInfo userLoginInfo) throws Re
 	VCellConnection localConnection = null;
 	//Authenticate User
 	User user = null;
+	boolean runningLocal = false; 
+	try {
+		String h= getClientHost();
+		lg.info(h);
+		
+		try {
+			InetAddress ia = InetAddress.getByName(h);
+			runningLocal = ia.isSiteLocalAddress();
+			if (lg.isInfoEnabled()) {
+				lg.info(ia.getHostAddress() + " local check returns " + runningLocal);
+			}
+		} catch (UnknownHostException e) {
+			System.out.println("unknown client host " + h + e.getMessage());
+		}
+	} catch (ServerNotActiveException e1) {
+		runningLocal = true;
+		lg.info("Running local because ServerNotActive");
+	}
 	synchronized (adminDbServer) {
-		user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getDigestedPassword());
+		user = adminDbServer.getUser(userLoginInfo.getUserName(),userLoginInfo.getDigestedPassword(), runningLocal);
 	}
 	if (user == null){
 		throw new AuthenticationException(VCellErrorMessages.getErrorMessage(VCellErrorMessages.AUTHEN_FAIL_MESSAGE, userLoginInfo.getUserName()));
