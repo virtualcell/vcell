@@ -433,27 +433,27 @@ SimulationStatusPersistent getSimulationStatus(KeyValue simKey, boolean bEnableR
 
 
 /**
- * This method was created in VisualAge.
- * @return cbit.sql.Versionable
- * @param object cbit.sql.Versionable
- * @param name java.lang.String
- * @param bVersion boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.sql.SQLException The exception description.
- * @exception cbit.sql.RecordChangedException The exception description.
+ * @param userid username
+ * @param digestedPassword
+ * @param bEnableRetry try again if first attempt fails
+ * @param isLocal TODO
+ * @return User object
+ * @throws DataAccessException
+ * @throws java.sql.SQLException
+ * @throws ObjectNotFoundException
  */
-public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean bEnableRetry) 
+public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean bEnableRetry, boolean isLocal) 
 				throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return userDB.getUserFromUseridAndPassword(con, userid, digestedPassword);
+		return userDB.getUserFromUseridAndPassword(con, userid, digestedPassword, isLocal);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getUser(userid, digestedPassword, false);
+			return getUser(userid, digestedPassword, false, isLocal);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;

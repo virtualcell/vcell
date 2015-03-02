@@ -134,9 +134,9 @@ public User getUser(String userid) throws DataAccessException {
 /**
  * getUser method comment.
  */
-public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword) throws DataAccessException {
+public User getUser(String userid, UserLoginInfo.DigestedPassword digestedPassword, boolean runningLocally) throws DataAccessException {
 	try {
-		return adminDbTop.getUser(userid,digestedPassword,true);
+		return adminDbTop.getUser(userid,digestedPassword,true, runningLocally);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException("failure authenticating user "+userid);
