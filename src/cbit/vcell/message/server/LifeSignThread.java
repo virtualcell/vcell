@@ -10,6 +10,7 @@ private int interval;
 
 
 public LifeSignThread(SessionLog aSessionLog, int anInterval) {
+	super("LifeSignThread");
 	this.sessionLog = aSessionLog;
 	this.interval = anInterval;
 	this.setDaemon(true);
