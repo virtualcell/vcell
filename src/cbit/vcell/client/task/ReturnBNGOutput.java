@@ -28,7 +28,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	if (callback != null) {
 		callback.updateBioNetGenOutput(outputSpec);
 	}
-	BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
+//	BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 }
 
 }
