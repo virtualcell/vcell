@@ -1,5 +1,6 @@
 package org.vcell.model.rbm;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -28,6 +29,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.JTextPane;
 
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
@@ -77,7 +82,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private JButton viewGeneratedSpeciesButton;
 	private JButton viewGeneratedReactionsButton;
 	
-	private JTextArea netGenConsoleText;
+	private JTextPane netGenConsoleText;
 	private EditorScrollTable molecularTypeTable = null;
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
@@ -174,7 +179,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 
 	private void initialize() {
-		netGenConsoleText = new JTextArea();
+		netGenConsoleText = new JTextPane();
 		maxIterationTextField = new JTextField();
 		maxMolTextField = new JTextField();
 		seedSpeciesLabel = new JLabel();
@@ -465,20 +470,32 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
 		TaskCallbackStatus status = newCallbackMessage.getStatus();
 		String string = newCallbackMessage.getText();
-		
+		StyledDocument doc = netGenConsoleText.getStyledDocument();
+		try {
 		switch(status) {
 		case TaskStart:
-			netGenConsoleText.append(string + "\n");
+//			netGenConsoleText.append(string + "\n");
+			doc.insertString(doc.getLength(), string + "\n", null);
 			break;
 		case TaskEnd:
-			netGenConsoleText.append(string + "\n");
+//			netGenConsoleText.append(string + "\n");
+			doc.insertString(doc.getLength(), string + "\n", null);
 			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
 				String s = "Warning: Max Iterations number may be insufficient.";
-				netGenConsoleText.append(s + "\n");
+//				netGenConsoleText.append(s + "\n");
+				SimpleAttributeSet keyWord = new SimpleAttributeSet();
+				StyleConstants.setForeground(keyWord, Color.RED);
+				doc.insertString(doc.getLength(), s + "\n", keyWord);
 			}
 			break;
 		case TaskStopped:
-			netGenConsoleText.append("  " + string + "\n");
+//			netGenConsoleText.append("  " + string + "\n");
+			SimpleAttributeSet keyWord = new SimpleAttributeSet();
+			StyleConstants.setForeground(keyWord, Color.RED);
+//			StyleConstants.setBackground(keyWord, Color.YELLOW);
+			StyleConstants.setBold(keyWord, true);
+			doc.insertString(doc.getLength(), "  " + string + "\n", keyWord);
+			
 			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
 			currentIterationSpecies = 0;
 			break;
@@ -487,17 +504,22 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			split = string.split("\\n");
 			for(String s : split) {
 				if(s.startsWith("CPU TIME: total"))  {
-					netGenConsoleText.append("  " + s + "\n");
+//					netGenConsoleText.append("  " + s + "\n");
+					doc.insertString(doc.getLength(), "  " + s + "\n", null);
 				} else if (s.startsWith("Iteration")) {
 					String species = "species";
 					s = "    " + s.substring(0, s.indexOf("species") + species.length());
-					netGenConsoleText.append(s + "\n");
+//					netGenConsoleText.append(s + "\n");
+					doc.insertString(doc.getLength(), s + "\n", null);
 					checkMaxIterationConsistency(s);
 				}
 			}
 			break;
 		default:
 			break;
+		}
+		} catch(Exception e) {
+			System.out.println(e);
 		}
 	}
 	private void checkMaxIterationConsistency(String s) {
@@ -599,7 +621,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					bngService.stopBNG();
-					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, "...user cancelled.");
+//					String s = "<html><font color=\"red\">...user cancelled.</font></html>";
+//					String s = "\u001B31;1m...user cancelled.";
+					String s = "...user cancelled.";
+					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, s);
 					setNewCallbackMessage(tcm);
 				} catch (Exception e) {
 					e.printStackTrace();
