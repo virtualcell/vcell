@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.TaskCallbackMessage;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 
 public class BioNetGenExecutable extends MathExecutable {
 
@@ -27,7 +29,8 @@ public class BioNetGenExecutable extends MathExecutable {
 	protected void setNewOutputString(String newOutputString) {
 		if(newOutputString != null) {
 			for(BioNetGenUpdaterCallback callback : getCallbacks()) {
-				callback.setNewOutputString(newOutputString);
+				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Detail, newOutputString);
+				callback.setNewCallbackMessage(tcm);
 			}
 		}
 	}

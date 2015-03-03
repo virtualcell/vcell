@@ -45,7 +45,10 @@ public class BNGExecutorService {
 	private static File workingDir = null;
 	private BioNetGenExecutable executable = null;
 	private final BNGInput bngInput;
+	
 	private transient List<BioNetGenUpdaterCallback> callbacks = null;
+	private boolean stopped = false;
+	private long startTime = System.currentTimeMillis();
 
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
@@ -71,7 +74,7 @@ public BNGExecutorService(BNGInput bngInput) {
 public void registerBngUpdaterCallback(BioNetGenUpdaterCallback callbackOwner) {
 	getCallbacks().add(callbackOwner);
 }
-private List<BioNetGenUpdaterCallback> getCallbacks() {
+public List<BioNetGenUpdaterCallback> getCallbacks() {
 	if(callbacks == null) {
 		callbacks = new ArrayList<BioNetGenUpdaterCallback>();
 	}
@@ -106,6 +109,8 @@ public BNGOutput executeBNG() throws BNGException {
 	}
 
 	BNGOutput bngOutput = null;
+	startTime = System.currentTimeMillis();
+	
 	try {
 		// prepare executables and working directory;
 		
@@ -141,6 +146,7 @@ public BNGOutput executeBNG() throws BNGException {
 		
 		String stdoutString = executable.getStdoutString();
 		if (executable.getStatus() == org.vcell.util.ExecutableStatus.STOPPED && stdoutString.length() == 0) {
+			// TODO: this never gets executed, there is some stdout string even though the executable was stopped by the user
 			stdoutString = "Stopped by user. No output from BioNetGen.";	
 		}
 		
@@ -216,8 +222,18 @@ private static synchronized void initialize() throws IOException {
  * Creation date: (6/23/2005 3:57:30 PM)
  */
 public void stopBNG() throws Exception {
+	setToStopped();
 	if (executable != null) {
 		executable.stop();
 	}
+}
+private void setToStopped() {
+	this.stopped = true;
+}
+public boolean isStopped() {
+	return stopped;
+}
+public final long getStartTime() {
+	return startTime;
 }
 }
