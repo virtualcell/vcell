@@ -65,7 +65,7 @@ public class UserVerifier implements Verifier {
 			synchronized (adminDbTopLevel) {
 				User user = null;
 				try {
-					user = adminDbTopLevel.getUser(userid, digestedPassword,true);
+					user = adminDbTopLevel.getUser(userid, digestedPassword,true,false);
 				} catch (ObjectNotFoundException e) {
 					e.printStackTrace();
 				} catch (DataAccessException e) {
