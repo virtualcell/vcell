@@ -14,17 +14,25 @@ import java.util.Hashtable;
 
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.TaskCallbackMessage;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 
 public class CreateBNGOutputSpec extends AsynchClientTask {
+	private static final String message = "Creating BNG output spec ...";
 	
-	public CreateBNGOutputSpec() {
-		super("Creating BNG output spec ...", TASKTYPE_NONSWING_BLOCKING);
+	private final BNGExecutorService bngService;
+	public CreateBNGOutputSpec(BNGExecutorService bngService) {
+		super(message, TASKTYPE_NONSWING_BLOCKING);
+		this.bngService = bngService;
 	}
 
 public void run(Hashtable<String, Object> hashTable) throws Exception {
+	if(!bngService.isStopped()) {
+		broadcastRun();
+	}
 	BNGOutput bngOutput = (BNGOutput)hashTable.get("bngOutput");
 	String bngNetString = bngOutput.getNetFileContent();
 	BNGOutputSpec outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
@@ -32,6 +40,12 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	if (outputSpec != null) {
 		hashTable.put("outputSpec", outputSpec);
 	}	
+}
+private void broadcastRun() {
+	for(BioNetGenUpdaterCallback callback : bngService.getCallbacks()) {
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, message);
+		callback.setNewCallbackMessage(tcm);
+	}
 }
 
 }

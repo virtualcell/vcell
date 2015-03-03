@@ -12,6 +12,9 @@ package cbit.vcell.client.task;
 
 import java.util.Hashtable;
 
+import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.TaskCallbackMessage;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 /**
@@ -20,22 +23,25 @@ import cbit.vcell.server.bionetgen.BNGExecutorService;
  * @author: Anuradha Lakshminarayana
  */
 public class RunBioNetGen extends AsynchClientTask {
+	private static final String message = "Running BioNetGen ...";
+	
 	private final BNGExecutorService bngService;
 	public RunBioNetGen(BNGExecutorService bngService) {
-		super("Running BioNetGen ...", TASKTYPE_NONSWING_BLOCKING);
+		super(message, TASKTYPE_NONSWING_BLOCKING);
 		this.bngService = bngService;
 	}
 
-/**
- * Insert the method's description here.
- * Creation date: (7/14/2006 5:11:43 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
+	broadcastRun();
 	BNGOutput bngOutput = bngService.executeBNG();
 	if (bngOutput != null) {
 		hashTable.put("bngOutput", bngOutput);
+	}
+}
+private void broadcastRun() {
+	for(BioNetGenUpdaterCallback callback : bngService.getCallbacks()) {
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, message);
+		callback.setNewCallbackMessage(tcm);
 	}
 }
 

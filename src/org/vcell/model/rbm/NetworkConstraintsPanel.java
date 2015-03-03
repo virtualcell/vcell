@@ -12,6 +12,8 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.util.EventObject;
 import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,6 +48,8 @@ import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.TaskCallbackMessage;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.server.bionetgen.BNGInput;
@@ -57,7 +61,6 @@ import cbit.vcell.solvers.ApplicationMessage;
 public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback {
 
 	BNGOutputSpec outputSpec = null;
-	String outputString = new String("");
 	
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
@@ -79,6 +82,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
 	private JButton viewNetworkButton;
+	
+	private int currentIterationSpecies = 0;
+	private int previousIterationSpecies = 0;
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
@@ -441,37 +447,75 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		refreshInterface();
 	}
 	@Override
-	public void setNewOutputString(final String newOutputString) {
-		outputString += newOutputString;
+	public void setNewCallbackMessage(final TaskCallbackMessage newCallbackMessage) {
 		if (!SwingUtilities.isEventDispatchThread()){
 			SwingUtilities.invokeLater(new Runnable(){
 	
 				@Override
 				public void run() {
-					appendToConsole(newOutputString);
+					appendToConsole(newCallbackMessage);
 				}
 				
 			});
 		}else{
-			appendToConsole(newOutputString);
+			appendToConsole(newCallbackMessage);
 		}
 		
 	}
-	private void appendToConsole(String string) {
+	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
+		TaskCallbackStatus status = newCallbackMessage.getStatus();
+		String string = newCallbackMessage.getText();
 		
-		String split[];
-		split = string.split("\\n");
-		for(String s : split) {
-			if(s.startsWith("BioNetGen") || s.startsWith("CPU TIME: total") || s.startsWith("Cancelled"))  {
-				netGenConsoleText.append(s+"\n");
-			} else if (s.startsWith("Iteration")) {
-				String species = "species";
-				s = "\t" + s.substring(0, s.indexOf("species")+species.length());
-				netGenConsoleText.append(s+"\n");
+		switch(status) {
+		case TaskStart:
+			netGenConsoleText.append(string + "\n");
+			break;
+		case TaskEnd:
+			netGenConsoleText.append(string + "\n");
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+				String s = "Warning: Max Iterations number may be insufficient.";
+				netGenConsoleText.append(s + "\n");
+			}
+			break;
+		case TaskStopped:
+			netGenConsoleText.append("  " + string + "\n");
+			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
+			currentIterationSpecies = 0;
+			break;
+		case Detail:
+			String split[];
+			split = string.split("\\n");
+			for(String s : split) {
+				if(s.startsWith("CPU TIME: total"))  {
+					netGenConsoleText.append("  " + s + "\n");
+				} else if (s.startsWith("Iteration")) {
+					String species = "species";
+					s = "    " + s.substring(0, s.indexOf("species") + species.length());
+					netGenConsoleText.append(s + "\n");
+					checkMaxIterationConsistency(s);
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	private void checkMaxIterationConsistency(String s) {
+		Pattern pattern = Pattern.compile("\\w+");
+		Matcher matcher = pattern.matcher(s);
+		try {
+		for(int i=0; matcher.find(); i++) {
+			if(i==2) {
+				previousIterationSpecies = currentIterationSpecies;
+				currentIterationSpecies = Integer.parseInt(matcher.group());
 			}
 		}
-	}
+		} catch(NumberFormatException nfe) {
+			
+		}
 
+	}
+	
 	private void refreshInterface() {
 		String text1 = null;
 		String text2 = null;
@@ -529,33 +573,34 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			viewGeneratedReactionsButton.setEnabled(true);
 			refreshMathButton.setEnabled(true);
 			viewNetworkButton.setEnabled(true);
-//			netGenConsoleText.setText(outputString);
 		}
 	}
 	
 	private void runBioNetGen() {
+		currentIterationSpecies = 0;
+		previousIterationSpecies = 0;
+		outputSpec = null;
+		refreshInterface();
+		netGenConsoleText.setText("");
+
 		NetworkTransformer transformer = new NetworkTransformer();
 		String input = transformer.convertToBngl(fieldSimulationContext, true);
 		BNGInput bngInput = new BNGInput(input);
-		outputSpec = null;
-		outputString = "";
-		refreshInterface();
-		netGenConsoleText.setText(outputString);
-		
 		final BNGExecutorService bngService = new BNGExecutorService(bngInput);
 		bngService.registerBngUpdaterCallback(this);
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
 		tasksArray[0] = new RunBioNetGen(bngService);
-		tasksArray[1] = new CreateBNGOutputSpec();
-		tasksArray[2] = new ReturnBNGOutput(this);
+		tasksArray[1] = new CreateBNGOutputSpec(bngService);
+		tasksArray[2] = new ReturnBNGOutput(bngService);
 		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
 			
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					bngService.stopBNG();
-					setNewOutputString("Cancelled");
+					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, "...user cancelled.");
+					setNewCallbackMessage(tcm);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
