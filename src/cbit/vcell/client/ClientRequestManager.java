@@ -2649,19 +2649,19 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 		
 		File file = externalDocInfo.getFile();
-		String fileText;
-		String originalFileText;
-		try {
-			fileText = BeanUtils.readBytesFromFile(file, null);
-			originalFileText = new String(fileText);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			DialogUtils.showErrorDialog(requester.getComponent(), 
-					"<html>Error reading file "+file.getPath()+"</html>");
-			return;
-		}
-		
 		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+			String fileText;
+			String originalFileText;
+			try {
+				fileText = BeanUtils.readBytesFromFile(file, null);
+				originalFileText = new String(fileText);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				DialogUtils.showErrorDialog(requester.getComponent(), 
+						"<html>Error reading file "+file.getPath()+"</html>");
+				return;
+			}
+
 			Reader reader = externalDocInfo.getReader();
 			boolean bException = true;
 			while (bException){
