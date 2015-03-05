@@ -41,6 +41,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.client.desktop.biomodel.ConversionPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -591,8 +592,16 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			viewNetworkButton.setEnabled(false);
 			netGenConsoleText.setText("");
 		} else {
-			viewGeneratedSpeciesButton.setEnabled(true);
-			viewGeneratedReactionsButton.setEnabled(true);
+			if(outputSpec!= null && outputSpec.getBNGSpecies().length > 0) {
+				viewGeneratedSpeciesButton.setEnabled(true);
+			} else {
+				viewGeneratedSpeciesButton.setEnabled(false);
+			}
+			if(outputSpec!= null && outputSpec.getBNGReactions().length > 0) {
+				viewGeneratedReactionsButton.setEnabled(true);
+			} else {
+				viewGeneratedReactionsButton.setEnabled(false);
+			}
 			refreshMathButton.setEnabled(true);
 			viewNetworkButton.setEnabled(true);
 		}
@@ -670,23 +679,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
-		JPanel pnl = new JPanel(new GridBagLayout());
-		JTextArea ta = new JTextArea();
-		JScrollPane sp = new JScrollPane(ta);
-		sp.setPreferredSize(new Dimension(850,600));
-		
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(20, 4, 4, 10);
-		pnl.add(sp, gbc);
-
-		ta.setText(getGeneratedReactions());
-		ta.setEditable(false);
-		JOptionPane.showMessageDialog(this, pnl);
+		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel();
+		panel.setReactions(outputSpec.getBNGReactions());
+		panel.setPreferredSize(new Dimension(800,550));
+		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
 	}
 
 	public String getGeneratedSpecies() {
