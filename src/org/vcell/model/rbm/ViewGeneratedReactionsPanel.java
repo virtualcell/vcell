@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -76,7 +77,11 @@ private void initialize() {
 		table = new EditorScrollTable();
 		tableModel = new GeneratedReactionTableModel(table);
 		table.setModel(tableModel);
-		tableModel.setIssueManager(issueManager);
+		
+		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setMaxWidth(60);				// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();		
