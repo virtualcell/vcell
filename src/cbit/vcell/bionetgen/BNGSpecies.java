@@ -136,6 +136,6 @@ public String toString() {
 	return new String(getNetworkFileIndex() + ";\t" + getName() + ";\t" + getConcentration().infix());
 }
 public String toStringShort() {
-	return new String(getNetworkFileIndex() + "\t" + getName());
+	return new String(getName());
 }
 }
