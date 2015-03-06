@@ -5,9 +5,8 @@ import cbit.vcell.bionetgen.BNGReaction;
 public class GeneratedReactionTableRow {
 
 	private BNGReaction reactionObject;
-	private int index;
+	private String index;
 	private String expression;
-	private int depiction;
 	
 	public GeneratedReactionTableRow(BNGReaction reactionObject) {
 		this.reactionObject = reactionObject;
@@ -17,10 +16,10 @@ public class GeneratedReactionTableRow {
 		return reactionObject;
 	}
 
-	public int getIndex() {
+	public String getIndex() {
 		return index;
 	}
-	public void setIndex(int index) {
+	public void setIndex(String index) {
 		this.index = index;
 	}
 	public String getExpression() {
@@ -28,12 +27,6 @@ public class GeneratedReactionTableRow {
 	}
 	public void setExpression(String expression) {
 		this.expression = expression;
-	}
-	public int getDepiction() {
-		return depiction;
-	}
-	public void setDepiction(int depiction) {
-		this.depiction = depiction;
 	}
 }
 
