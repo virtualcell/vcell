@@ -73,6 +73,9 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	protected int getMaxRowsPerPage(){
 		return MAX_ROWS_PER_PAGE;
 	}
+	public void setMaxRowsPerPage(int newMax) {
+		this.MAX_ROWS_PER_PAGE = newMax;
+	}
 	
 	public int getColumnCount() {
 		return columns.length;

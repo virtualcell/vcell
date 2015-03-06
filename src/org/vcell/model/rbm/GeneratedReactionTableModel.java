@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
+import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
@@ -30,10 +31,9 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedReactionTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 3;
+	public static final int colCount = 2;
 	public static final int iColIndex = 0;
 	public static final int iColExpression = 1;
-	public static final int iColDepiction = 2;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -45,8 +45,8 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedReactionTableModel(EditorScrollTable table) {
-		super(table, new String[] {
-				"Index", "Expression", "Depiction"});
+		super(table, new String[] {"Index", "Expression"});
+		setMaxRowsPerPage(1000);
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
@@ -54,8 +54,6 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 			case iColIndex:{
 				return String.class;
 			}case iColExpression:{
-				return String.class;
-			}case iColDepiction:{
 				return String.class;
 			}
 		}
@@ -71,9 +69,6 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 			}
 			case iColExpression:{
 				return reactionTableRow.getExpression();
-			}
-			case iColDepiction:{
-				return null;
 			}
 			default:{
 				return null;
@@ -122,20 +117,30 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 		
 		for(int i = 0; i<reactions.length; i++) {
 			BNGReaction reaction = reactions[i];
-			GeneratedReactionTableRow newRow = createTableRow(reaction, i+1, reaction.toStringShort(), 5);
+			GeneratedReactionTableRow newRow = createTableRow(reaction, i+1, reaction.toStringShort());
 			allGeneratedReactionsList.add(newRow);
 		}
-		
-		setData(allGeneratedReactionsList);
+		// apply text search function for particular columns
+		ArrayList<GeneratedReactionTableRow> reactionObjectList = new ArrayList<GeneratedReactionTableRow>();
+		if (searchText == null || searchText.length() == 0) {
+			reactionObjectList.addAll(allGeneratedReactionsList);
+		} else {
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for (GeneratedReactionTableRow rs : allGeneratedReactionsList){
+				if (rs.getExpression().toLowerCase().contains(lowerCaseSearchText) ) {
+					reactionObjectList.add(rs);
+				}
+			}
+		}
+		setData(reactionObjectList);
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	
-	private GeneratedReactionTableRow createTableRow(BNGReaction reaction, int index, String interactionLabel, int depiction) {
+	private GeneratedReactionTableRow createTableRow(BNGReaction reaction, int index, String interactionLabel) {
 		GeneratedReactionTableRow row = new GeneratedReactionTableRow(reaction);
 		
-		row.setIndex(index);
+		row.setIndex(index+" ");
 		row.setExpression(interactionLabel);
-		row.setDepiction(depiction);
 		return row;
 	}
 	
@@ -158,7 +163,6 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 
 	@Override
 	public SymbolTable getSymbolTable(int row, int column) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }
