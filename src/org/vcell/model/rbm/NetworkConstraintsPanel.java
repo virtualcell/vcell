@@ -19,10 +19,8 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -39,9 +37,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.bionetgen.BNGReaction;
-import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.client.desktop.biomodel.ConversionPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -630,8 +625,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					bngService.stopBNG();
-//					String s = "<html><font color=\"red\">...user cancelled.</font></html>";
-//					String s = "\u001B31;1m...user cancelled.";
 					String s = "...user cancelled.";
 					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, s);
 					setNewCallbackMessage(tcm);
@@ -642,6 +635,20 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		});
 	}
 
+	private void viewGeneratedSpecies() {
+		System.out.println("viewGeneratedSpecies button pressed");
+		ViewGeneratedSpeciesPanel panel = new ViewGeneratedSpeciesPanel();
+		panel.setSpecies(outputSpec.getBNGSpecies());
+		panel.setPreferredSize(new Dimension(800,550));
+		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
+	}
+	private void viewGeneratedReactions() {
+		System.out.println("viewGeneratedReactions button pressed");
+		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel();
+		panel.setReactions(outputSpec.getBNGReactions());
+		panel.setPreferredSize(new Dimension(800,550));
+		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
+	}
 	private void viewNetwork() {
 		try {
 			ReactionCartoonEditorPanel reactionCartoonEditorPanel;
@@ -656,56 +663,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			System.err.println("Exception occurred viewing Network");
 			exception.printStackTrace(System.out);
 		}
-	}
-	private void viewGeneratedSpecies() {
-		System.out.println("viewGeneratedSpecies button pressed");
-		JPanel pnl = new JPanel(new GridBagLayout());
-		JTextArea ta = new JTextArea();
-		JScrollPane sp = new JScrollPane(ta);
-		sp.setPreferredSize(new Dimension(850,600));
-		
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(20, 4, 4, 10);
-		pnl.add(sp, gbc);
-
-		ta.setText(getGeneratedSpecies());
-		ta.setEditable(false);
-		JOptionPane.showMessageDialog(this, pnl);
-	}
-	private void viewGeneratedReactions() {
-		System.out.println("viewGeneratedReactions button pressed");
-		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel();
-		panel.setReactions(outputSpec.getBNGReactions());
-		panel.setPreferredSize(new Dimension(800,550));
-		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
-	}
-
-	public String getGeneratedSpecies() {
-		String s = "";
-		if(outputSpec == null) {
-			return s;
-		}
-		BNGSpecies[] species = outputSpec.getBNGSpecies();
-		for (int i = 0; i < species.length; i++){
-			s += species[i].toStringShort() + "\n";
-		}
-		return s;
-	}
-	public String getGeneratedReactions() {		// this may get VERY lengthy
-		String s = "";
-		if(outputSpec == null) {
-			return s;
-		}
-		BNGReaction[] reactions = outputSpec.getBNGReactions();
-		for (int i = 0; i < reactions.length; i++){
-			s += i+1 + "\t" + reactions[i].toStringShort() + "\n";
-		}	
-		return s;
 	}
 
 }
