@@ -19,18 +19,28 @@ import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.io.StringReader;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.model.bngl.ASTSpeciesPattern;
+import org.vcell.model.bngl.BNGLParser;
+import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
+import cbit.vcell.model.ReactionRule;
 
 @SuppressWarnings("serial")
 public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
@@ -40,7 +50,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
 	
-	private class EventHandler implements ActionListener, DocumentListener {
+	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 		}
 		public void insertUpdate(DocumentEvent e) {
@@ -51,6 +61,64 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 		}
 		public void changedUpdate(DocumentEvent e) {
 			searchTable();
+		}
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+//			int[] selectedRows = table.getSelectedRows();
+//			if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
+//				GeneratedReactionTableRow reactionTableRow = tableModel.getValueAt(selectedRows[0]);
+//				String inputString = reactionTableRow.getExpression();
+//				System.out.println(selectedRows[0] + ": " + inputString);
+////				ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputString, bioModel);
+//				
+//				Model model = new Model("MyTempModel");
+//				
+//				int arrowIndex = inputString.indexOf("<->");
+//				boolean bReversible = true;
+//				if (arrowIndex < 0) {
+//					arrowIndex = inputString.indexOf("->");
+//					bReversible = false;
+//				}
+//				
+//				String left = inputString.substring(0, arrowIndex).trim();
+//				String right = inputString.substring(arrowIndex + (bReversible ? 3 : 2)).trim();
+//				if (left.length() == 0 && right.length() == 0) {
+//					return;
+//				}
+//				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule("aaa", bReversible);
+//				
+//				String regex = "[^!]\\+";
+//				String[] patterns = left.split(regex);
+//				for (String sp : patterns) {
+//					try {
+//					BNGLParser parser = new BNGLParser(new StringReader(sp));
+//					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
+//					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
+//					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+//					System.out.println(speciesPattern.toString());
+//					reactionRule.addReactant(new ReactantPattern(speciesPattern));
+//					} catch(Throwable ex) {
+//						ex.printStackTrace();
+//						return;
+//					}
+//				}
+//				
+//				patterns = right.split(regex);
+//				for (String sp : patterns) {
+//					try {
+//					BNGLParser parser = new BNGLParser(new StringReader(sp));
+//					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
+//					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
+//					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+//					System.out.println(speciesPattern.toString());
+//					reactionRule.addProduct(new ProductPattern(speciesPattern));
+//					} catch(Throwable ex) {
+//						ex.printStackTrace();
+//						return;
+//					}
+//				}			
+//				System.out.println(" --- done.");
+//			}
 		}
 	}
 	
@@ -77,6 +145,7 @@ private void initialize() {
 		table = new EditorScrollTable();
 		tableModel = new GeneratedReactionTableModel(table);
 		table.setModel(tableModel);
+		table.getSelectionModel().addListSelectionListener(eventHandler);
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
