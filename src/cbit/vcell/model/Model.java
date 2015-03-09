@@ -1294,7 +1294,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return constantMap;
 		}
 		
-		private final void setMolecularTypeList(List<MolecularType> newValue) {
+		public final void setMolecularTypeList(List<MolecularType> newValue) {
 			List<MolecularType> oldValue = molecularTypeList;
 			if (oldValue != null) {
 				for (MolecularType mt : oldValue) {

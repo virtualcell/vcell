@@ -434,6 +434,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}
 		refreshInterface();
 	}
+	public SimulationContext getSimulationContext() {
+		return fieldSimulationContext;
+	}
 
 	public void setSelectionManager(SelectionManager selectionManager) {
 		fieldSelectionManager = selectionManager;
@@ -644,7 +647,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
-		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel();
+		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel(this);
 		panel.setReactions(outputSpec.getBNGReactions());
 		panel.setPreferredSize(new Dimension(800,550));
 		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
