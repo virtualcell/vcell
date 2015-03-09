@@ -462,7 +462,7 @@ public class SimulationStateMachine {
 
 	public synchronized void onStartRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session, SessionLog log) throws VCMessagingException, DataAccessException, SQLException {
 
-		if (!user.equals(vcSimID.getOwner())) {
+		if (!user.compareEqual(vcSimID.getOwner())) {
 			log.alert(user + " is not authorized to start simulation (key=" + simKey + ")");
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null, 
 					SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null), user.getName(), null, null);
