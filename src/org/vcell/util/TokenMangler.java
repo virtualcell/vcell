@@ -27,14 +27,14 @@ public class TokenMangler {
  * @return java.lang.String
  */
 public static String fixToken(String name) {
-	String string = name.trim();
-	if (string==null){ 
+	if (name==null){ 
 		return "";
 	}
+	String string = name.trim();
 	if (string.equals(".")){
 		return "";
 	}
-	StringBuffer newString = new StringBuffer(string);
+	StringBuilder newString = new StringBuilder(string);
 	if (Character.isJavaIdentifierStart(newString.charAt(0))==false){
 		newString.insert(0,'_');
 	}
@@ -98,7 +98,7 @@ public static String getChildSummaryElementEscapedString(String inputString) {
 	if(inputString == null || inputString.length() == 0){
 		return "";
 	}
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 
 	for (int i=0;i<inputString.length();i++){
 		char currChar = inputString.charAt(i);
@@ -129,14 +129,13 @@ public static String getChildSummaryElementRestoredString(String inputString) {
 
 
 /**
- * This method was created in VisualAge.
  * @return java.lang.String
  */
 public static String getEscapedString(String inputString) {
 	if (inputString == null){
 		throw new IllegalArgumentException("input string is null");
 	}
-	StringBuffer buffer = new StringBuffer(inputString.length()*2);
+	StringBuilder buffer = new StringBuilder(inputString.length()*2);
 
 	for (int i=0;i<inputString.length();i++){
 		char currChar = inputString.charAt(i);
@@ -174,14 +173,12 @@ public static String getEscapedString(String inputString) {
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (9/20/2006 9:06:41 AM)
- * @return java.lang.String
+ * replace instances of \ with \\
  * @param inputString java.lang.String
  */
 public static String getEscapedString_C(String inputString) {
 	// escape '\'
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	for (int i = 0;i < inputString.length(); i ++){
 		if (inputString.charAt(i) == '\\'){
 			sb.append(inputString.charAt(i));
@@ -202,7 +199,7 @@ public static String getEscapedTokenECLiPSe(String inputString) {
 	if (inputString == null){
 		throw new IllegalArgumentException("input string is null");
 	}
-	StringBuffer buffer = new StringBuffer(inputString.length()*2);
+	StringBuilder buffer = new StringBuilder(inputString.length()*2);
 
 	for (int i=0;i<inputString.length();i++){
 		char currChar = inputString.charAt(i);
@@ -227,7 +224,7 @@ public static String getEscapedTokenJSCL(String inputString) {
 	if (inputString == null){
 		throw new IllegalArgumentException("input string is null");
 	}
-	StringBuffer buffer = new StringBuffer(inputString.length()*2);
+	StringBuilder buffer = new StringBuilder(inputString.length()*2);
 
 	for (int i=0;i<inputString.length();i++){
 		char currChar = inputString.charAt(i);
@@ -323,7 +320,7 @@ public static String getNextRandomToken(String originalToken) {
 	//
 	int randomInt = (int)(Math.abs(Math.random()*Integer.MAX_VALUE));
 	String newToken = baseName+randomInt;
-	System.out.println("original = '"+originalToken+"', baseName = '"+baseName+"', newName="+newToken);
+	//System.out.println("original = '"+originalToken+"', baseName = '"+baseName+"', newName="+newToken);
 	return newToken;
 }
 
@@ -341,6 +338,13 @@ public static String getRestoredString(String inputString) {
 }
 
 
+/**
+ * 
+ * @param inputString; may not be null
+ * @param escapeSeq sequences to look for; may not be null
+ * @param escapedChar replacements for sequences; may not be null
+ * @return string with substitutions made 
+ */
 public static String getRestoredString(String inputString, String[] escapeSeq, char[] escapedChar) {
 
 	if (inputString == null){
@@ -368,23 +372,6 @@ public static String getRestoredString(String inputString, String[] escapeSeq, c
 	return inputString;
 }
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public static String getRestoredStringECLiPSe(String inputString) {
-	String[] escapeSeq =    {"ddoott"};
-	char[]   escapedChar =  {'.'   };
-
-	inputString = getRestoredString(inputString, escapeSeq, escapedChar);
-	
-	if (inputString.startsWith(ECLiPSe_PREFIX)){
-		return inputString.substring(ECLiPSe_PREFIX.length());
-	}else{
-		return inputString;
-	}
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -400,8 +387,9 @@ public static String getRestoredStringJSCL(String inputString) {
 
 
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
+ * strip {@link #MATLAB_PREFIX}	if present
+ * @param inputString
+ * @return inputString or string with prefix removed
  */
 public static String getRestoredTokenMatlab(String inputString) {
 
@@ -423,11 +411,12 @@ public static String getSQLEscapedString(String inputString) {
 
 
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
+ * @param maxLength maximum return length
+ * replace single quotes with &apos;
+ * @return String truncated if necessary 
  */
 public static String getSQLEscapedString(String inputString, int maxLength) {
-	StringBuffer buffer = new StringBuffer(inputString.length()*2);
+	StringBuilder buffer = new StringBuilder(inputString.length()*2);
 
 	for (int i=0;i<inputString.length();i++){
 		char currChar = inputString.charAt(i);
@@ -449,8 +438,7 @@ public static String getSQLEscapedString(String inputString, int maxLength) {
 
 
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
+ * replace single quotes with &apos;
  */
 public static String getSQLRestoredString(String inputString) {
 
@@ -481,7 +469,7 @@ public static String mangleToSName(String name) {
 	//remove extra spaces
 	String string = name.trim();
 	//
-	StringBuffer newString = new StringBuffer(string);
+	StringBuilder newString = new StringBuilder(string);
 	//Replace any character which is not a {letter, number, '_'} with an '_'.
 	for (int i=0;i<newString.length();i++){
 		if (!Character.isLetterOrDigit(newString.charAt(i)) && newString.charAt(i)!='_'){
@@ -541,7 +529,7 @@ public static String replaceSubString(String origString, String targetSubstring,
 		throw new IllegalArgumentException("targetSubstring is a substring of newSubstring");
 	}
 	
-	StringBuffer buffer = new StringBuffer(origString);
+	StringBuilder buffer = new StringBuilder(origString);
 	boolean bDone = false;
 	while (!bDone){
 		bDone = true;
@@ -567,6 +555,13 @@ public static void checkLoginID(String loginID) throws IllegalArgumentException 
 	}	
 }
 
+/**
+ * 
+ * @param source
+ * @param owner
+ * @param evt may not be null
+ * @throws PropertyVetoException
+ */
 public static void checkNameProperty(Object source, String owner, PropertyChangeEvent evt) throws PropertyVetoException {
 	if (evt.getSource() == source && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
 		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
@@ -578,9 +573,14 @@ public static void checkNameProperty(Object source, String owner, PropertyChange
 	}
 }
 
+/**
+ * add double quotes to ends of string if it contains a space
+ * @param pathname  (may not be null)
+ * @return original string or new double quote terminated one
+ */
 public static String getEscapedPathName(String pathname) {
 	String escapedPathName = pathname;
-	if (pathname.indexOf(" ") > 0) {
+	if (pathname.indexOf(' ') > 0) {
 		escapedPathName = "\"" + pathname + "\"";
 	}
 	return escapedPathName;
@@ -601,7 +601,7 @@ public static String mangleVCId(String name) {
 	if (name==null){ 
 		throw new IllegalArgumentException("TokenMangler.mangleVCId(), input string is null");
 	}
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 
 	for (int i = 0; i < name.length(); i ++){
 		char currChar = name.charAt(i);
