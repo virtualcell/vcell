@@ -82,8 +82,32 @@ public class BioModelEditorTreeCellRenderer extends DocumentEditorTreeCellRender
 	    		toolTipPrefix = "BioModel: ";
 	    	} else if (userObj instanceof SimulationContext) {		// --- root: application name
 	    		font = boldFont;
-	    		icon = VCellIcons.applicationIcon;
+//	    		icon = VCellIcons.applicationIcon;
+	    		SimulationContext simContext = (SimulationContext)userObj;
+				if(simContext.isRuleBased()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appRbmNonspIcon;
+			    		toolTipSuffix = "Rule Based / Non spatial";
+					}
+				} else if(simContext.isStoch()) {
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appStoNonspIcon;
+			    		toolTipSuffix = "Stochastic / Non spatial";
+					} else {
+						icon = VCellIcons.appStoSpatialIcon;
+			    		toolTipSuffix =  "Stochastic / Spatial";
+					}
+				} else {		// deterministic
+					if(simContext.getGeometry().getDimension() == 0) {
+						icon = VCellIcons.appDetNonspIcon;
+			    		toolTipSuffix =  "Deterministic / Non spatial";
+					} else {
+						icon = VCellIcons.appDetSpatialIcon;
+			    		toolTipSuffix =  "Deterministic / Spatial";
+					}
+				}
 	    		labelText = /*"Application: " + */((SimulationContext)userObj).getName();
+	    		toolTipPrefix = "Application: ";
 	    	} else if (userObj instanceof DocumentEditorTreeFolderNode) {		// --- 1st level folders
 	    		DocumentEditorTreeFolderNode folder = (DocumentEditorTreeFolderNode)userObj;
 	    		labelText = folder.getName();

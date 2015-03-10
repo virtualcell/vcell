@@ -54,9 +54,34 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 		if (value instanceof BioModelNode) {
 			Object userObject = ((BioModelNode) value).getUserObject();
 			if (userObject instanceof SimulationContext) {
-				renderer.setOpenIcon(VCellIcons.applicationIcon);
-				renderer.setClosedIcon(VCellIcons.applicationIcon);
-				renderer.setLeafIcon(VCellIcons.applicationIcon);
+				SimulationContext sc = (SimulationContext)userObject;
+				if(sc.isRuleBased()) {
+					if(sc.getGeometry().getDimension() == 0) {
+						renderer.setOpenIcon(VCellIcons.appRbmNonspIcon);
+						renderer.setClosedIcon(VCellIcons.appRbmNonspIcon);
+						renderer.setLeafIcon(VCellIcons.appRbmNonspIcon);
+					}
+				} else if(sc.isStoch()) {
+					if(sc.getGeometry().getDimension() == 0) {
+						renderer.setOpenIcon(VCellIcons.appStoNonspIcon);
+						renderer.setClosedIcon(VCellIcons.appStoNonspIcon);
+						renderer.setLeafIcon(VCellIcons.appStoNonspIcon);
+					} else {
+						renderer.setOpenIcon(VCellIcons.appStoSpatialIcon);
+						renderer.setClosedIcon(VCellIcons.appStoSpatialIcon);
+						renderer.setLeafIcon(VCellIcons.appStoSpatialIcon);
+					}
+				} else {		// deterministic
+					if(sc.getGeometry().getDimension() == 0) {
+						renderer.setOpenIcon(VCellIcons.appDetNonspIcon);
+						renderer.setClosedIcon(VCellIcons.appDetNonspIcon);
+						renderer.setLeafIcon(VCellIcons.appDetNonspIcon);
+					} else {
+						renderer.setOpenIcon(VCellIcons.appDetSpatialIcon);
+						renderer.setClosedIcon(VCellIcons.appDetSpatialIcon);
+						renderer.setLeafIcon(VCellIcons.appDetSpatialIcon);
+					}
+				}
 				component = super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
 				if (editingComponent instanceof JTextField) {
 					String text = null;
