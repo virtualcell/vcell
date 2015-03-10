@@ -113,7 +113,14 @@ public abstract class VCellIcons {
 
 	public final static Icon textNotesIcon = new ImageIcon(VCellIcons.class.getResource("/images/text_16x16.gif"));
 	public final static Icon mathTypeIcon = new ImageIcon(VCellIcons.class.getResource("/images/type.gif"));
-	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
+	
+//	public final static Icon applicationIcon = new ImageIcon(VCellIcons.class.getResource("/images/application3_16x16.gif"));
+	public final static Icon appDetSpatialIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_det_spatial_28x16.png"));
+	public final static Icon appDetNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_det_nonsp_28x16.png"));
+	public final static Icon appStoSpatialIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_sto_spatial_28x16.png"));
+	public final static Icon appStoNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_sto_nonsp_28x16.png"));
+	public final static Icon appRbmNonspIcon = new ImageIcon(VCellIcons.class.getResource("/images/app_rbm_nonsp_28x16.png"));
+	
 	public final static Icon documentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/document_icon.png"));
 	public final static Icon mathModelIcon = new ImageIcon(VCellIcons.class.getResource("/images/math_16x16.gif"));
 	
