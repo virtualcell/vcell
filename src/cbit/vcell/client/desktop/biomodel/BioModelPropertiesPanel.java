@@ -372,7 +372,23 @@ private void updateInterface() {
 			SimulationContext simContext = simulationContexts[i];
 			JLabel label = new JLabel(simContext.getName());
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			label.setIcon(VCellIcons.applicationIcon);
+			if(simContext.isRuleBased()) {
+				if(simContext.getGeometry().getDimension() == 0) {
+					label.setIcon(VCellIcons.appRbmNonspIcon);
+				}
+			} else if(simContext.isStoch()) {
+				if(simContext.getGeometry().getDimension() == 0) {
+					label.setIcon(VCellIcons.appStoNonspIcon);
+				} else {
+					label.setIcon(VCellIcons.appStoSpatialIcon);
+				}
+			} else {		// deterministic
+				if(simContext.getGeometry().getDimension() == 0) {
+					label.setIcon(VCellIcons.appDetNonspIcon);
+				} else {
+					label.setIcon(VCellIcons.appDetSpatialIcon);
+				}
+			}
 			
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
