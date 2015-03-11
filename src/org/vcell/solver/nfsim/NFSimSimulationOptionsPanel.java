@@ -18,12 +18,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
@@ -102,7 +100,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> In many cases, however you may have a very large pattern, but the maximal number of bonds you need to traverse to "
 						+ "make sure that pattern can always be matched is low. This will happen, for instance, when many molecules are connected "
 						+ "to a single hub molecule. "
-						+ "<br><br> NFSim option –utl [integer] Default: the size of the largest reactant pattern in the rule-set."
+						+ "<br><br> NFSim option ï¿½utl [integer] Default: the size of the largest reactant pattern in the rule-set."
 						+ "</html>");
 			} else if (source == aggregateBookkeepingHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
@@ -114,7 +112,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "system for molecular complexes that form by assigning each connected aggregate a unique id. Then, it becomes easy "
 						+ "to check if any two molecules are connected. The trade-off is that there is an overhead involved with maintaining "
 						+ "the bookkeeping system with a cost that depends on the size of the molecular complexes that can form."
-						+ "<br><br> NFSim option –cb Default: off"
+						+ "<br><br> NFSim option ï¿½cb Default: off"
 						+ "</html>");
 			} else if (source == maxMoleculesPerTypeHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
@@ -122,7 +120,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
-						+ "<br><br> NFSim option: –gml [limit] Default: 100,000"
+						+ "<br><br> NFSim option: ï¿½gml [limit] Default: 100,000"
 						+ "</html>");
 			} else if (source == equilibrateTimeHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
@@ -134,7 +132,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			} else 	if (source == randomSeedHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Random Seed", 
 						"<html>rand_seed <i>boolean</i> "
-						+ "<br>Provide a seed to NFsim’s random number generator so exact trajectories can be reproduced. If this line is not "
+						+ "<br>Provide a seed to NFsim's random number generator so exact trajectories can be reproduced. If this line is not "
 						+ "entered, the current time is used as a seed, producing different sequences for each run."
 						+ "</html>");
 			} else if (source == preventIntraBondsHelpButton) {
