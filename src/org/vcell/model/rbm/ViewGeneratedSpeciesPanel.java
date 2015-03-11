@@ -28,12 +28,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ParseException;
@@ -60,7 +62,7 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 	JPanel shapePanel = null;
 	private SpeciesPatternLargeShape spls;
 
-	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener {
+	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 		}
 		public void insertUpdate(DocumentEvent e) {
@@ -85,7 +87,8 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
 					model.getRbmModelContainer().setMolecularTypeList(mtList);
 				} else {
-					return;		// something is wrong, we just show nothing rather than crash
+					System.out.println("something is wrong, we just do nothing rather than crash");
+					return;
 				}
 				try {
 				SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, model);
@@ -104,6 +107,20 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 					e1.printStackTrace();
 					return;
 				}
+			}
+		}
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			if(table.getModel().getRowCount() == 0) {
+				System.out.println("table is empty");
+				spls = null;
+				shapePanel.repaint();
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {				
+						table.setRowSelectionInterval(0,0);
+					}
+				});
 			}
 		}
 	}
@@ -133,11 +150,12 @@ private void initialize() {
 		tableModel = new GeneratedSpeciesTableModel(table);
 		table.setModel(tableModel);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
+		table.getModel().addTableModelListener(eventHandler);
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
 		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setCellRenderer(rightRenderer);	// right align
-		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setMaxWidth(60);				// left column wide enough for 6-7 digits
+		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setMaxWidth(60);		// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();		
@@ -188,7 +206,7 @@ private void initialize() {
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
 		
-		// -------------------------------------------------------------------------------------------
+		// ------------------------------------------------- shapePanel ----------------
 		shapePanel = new JPanel() {
 			@Override
 			public void paintComponent(Graphics g) {
@@ -217,6 +235,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
 		add(shapePanel, gbc);
+		
 				
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -238,7 +257,7 @@ public void setSpecies(BNGSpecies[] newValue) {
 
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
-	
+
 }
 
 public GeneratedSpeciesTableModel getTableModel(){

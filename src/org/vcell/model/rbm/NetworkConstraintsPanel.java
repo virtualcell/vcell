@@ -643,7 +643,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		ViewGeneratedSpeciesPanel panel = new ViewGeneratedSpeciesPanel(this);
 		panel.setSpecies(outputSpec.getBNGSpecies());
 		panel.setPreferredSize(new Dimension(800,550));
-		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
+		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Species");
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
