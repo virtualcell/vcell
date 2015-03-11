@@ -18,7 +18,6 @@ import javax.management.ObjectName;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.PropertyLoader.Context;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.logging.Log4jSessionLog;
@@ -62,7 +61,7 @@ public class SolverPostprocessor  {
 		
 		try {
 			
-			PropertyLoader.loadProperties(Context.SERVER,true);
+			PropertyLoader.loadProperties( );
 			
 			KeyValue simKey = new KeyValue(args[0]);
 			String userName = args[1];
