@@ -43,6 +43,10 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	private ReactionSpecsPanel reactionSpecsPanel;	
 	private NetworkConstraintsPanel networkConstraintsPanel;	
 	private JTextField textField_1;
+	/**
+	 * keep handle to network tab to allow finding / removing / enabling
+	 */
+	private SettingsPanelTab networkTab; 
 		
 	private enum SettingsPanelTabID {
 		species_settings("Species"),
@@ -54,6 +58,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			this.title = name;
 		}
 	}
+	
 	
 	private class SettingsPanelTab {
 		SettingsPanelTabID id;
@@ -81,7 +86,8 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		SettingsPanelTab settingsPanelTabs[] = new SettingsPanelTab[SettingsPanelTabID.values().length]; 
 		settingsPanelTabs[SettingsPanelTabID.species_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.species_settings, initialConditionsPanel, null);
 		settingsPanelTabs[SettingsPanelTabID.reaction_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.reaction_settings, reactionSpecsPanel, null);
-		settingsPanelTabs[SettingsPanelTabID.network_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
+		networkTab = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
+		settingsPanelTabs[SettingsPanelTabID.network_settings.ordinal()] = networkTab; 
 		
 		for (SettingsPanelTab tab : settingsPanelTabs) {
 			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
@@ -155,19 +161,24 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		initialConditionsPanel.setSimulationContext(simulationContext);
 		reactionSpecsPanel.setSimulationContext(simulationContext);		
 		networkConstraintsPanel.setSimulationContext(simulationContext);
+		int indexOfNetworkTab = tabbedPane.indexOfComponent(networkTab.component);
 		if(simulationContext.isRuleBased()) {
 			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			tabbedPane.removeTabAt(2);
+			if (indexOfNetworkTab >= 0) {
+				tabbedPane.removeTabAt(indexOfNetworkTab);
+			}
 		} else {	// this panel only for flattened rule based applications
 			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			SettingsPanelTab tab = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+			if (indexOfNetworkTab == -1) {
+				tabbedPane.addTab(networkTab.id.title, networkTab.icon, networkTab.component);
+				indexOfNetworkTab = tabbedPane.indexOfComponent(networkTab.component);
+			}
 			 if(simulationContext.getModel().getRbmModelContainer().isEmpty()) {
 				 // TODO: here is should be initialized to false if rbm model container is empty...
 				 // but we should monitor the container and enable the panel as soon as a molecular type is created
-				 tabbedPane.setEnabledAt(2, true);
+				 tabbedPane.setEnabledAt(indexOfNetworkTab, true);
 			 } else {
-				 tabbedPane.setEnabledAt(2, true);
+				 tabbedPane.setEnabledAt(indexOfNetworkTab, true);
 			 }
 		}
 	}
