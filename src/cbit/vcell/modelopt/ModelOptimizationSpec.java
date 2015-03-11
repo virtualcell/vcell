@@ -397,7 +397,7 @@ private Parameter[] getModelParameters() {
 		// make sure ReactionSteps are "enabled"
 		//
 		ReactionSpec reactionSpec = getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[i]);
-		if (reactionSpec.isExcluded()){
+		if (reactionSpec == null || reactionSpec.isExcluded()){
 			continue;
 		}
 		Kinetics.KineticsParameter[] kineticsParameters = reactionSteps[i].getKinetics().getKineticsParameters();
