@@ -28,12 +28,15 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ASTSpeciesPattern;
@@ -64,7 +67,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
 	
-	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener {
+	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 		}
 		public void insertUpdate(DocumentEvent e) {
@@ -186,6 +189,21 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				
 			}
 		}
+		@Override
+		public void tableChanged(TableModelEvent e) {
+			if(table.getModel().getRowCount() == 0) {
+				System.out.println("table is empty");
+				reactantPatternShapeList.clear();
+				productPatternShapeList.clear();
+				shapePanel.repaint();
+			} else {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {				
+						table.setRowSelectionInterval(0,0);
+					}
+				});
+			}
+		}
 	}
 	
 public ViewGeneratedReactionsPanel(NetworkConstraintsPanel owner) {
@@ -213,6 +231,7 @@ private void initialize() {
 		tableModel = new GeneratedReactionTableModel(table);
 		table.setModel(tableModel);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
+		table.getModel().addTableModelListener(eventHandler);
 		
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
