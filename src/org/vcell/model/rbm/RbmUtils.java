@@ -65,6 +65,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
@@ -80,6 +81,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 
 import java.util.StringTokenizer;
 
@@ -222,7 +224,7 @@ public class RbmUtils {
 		     }
 		     return null;
 		}
-
+		
 		public Object visit(ASTKineticsParameter node, Object data) {
 			if (data instanceof ReactionRule) {
 				ReactionRule rr = (ReactionRule)data;
@@ -255,6 +257,64 @@ public class RbmUtils {
 			}
 			return null;
 		}
+
+//		public final static String bnglSubstanceUnitSymbol = "molecules";
+//		public final static double bnglModelVolume = 5;
+//		public final static String bnglModelVolumeUnitSymbol = "um3";
+//		public final static String bnglModelTimeUnitSymbol = "ms";
+//
+//		public Object visit(ASTKineticsParameter node, Object data) {
+//			if (data instanceof ReactionRule) {
+//				ReactionRule rr = (ReactionRule)data;
+//				
+//				int parameterIndex = 0;
+//				for (int i=0; i<node.jjtGetParent().jjtGetNumChildren(); i++){
+//					if (node.jjtGetParent().jjtGetChild(i) == node){
+//						break;
+//					}
+//					if (node.jjtGetParent().jjtGetChild(i) instanceof ASTKineticsParameter){
+//						parameterIndex++;
+//					}
+//				}
+//				ModelUnitSystem unitSystem = model.getUnitSystem();
+//				VCUnitDefinition bnglTimeUnit = unitSystem.getInstance(bnglModelTimeUnitSymbol);
+//				VCUnitDefinition modelTimeUnit = unitSystem.getTimeUnit();
+//				VCUnitDefinition bnglVolumeUnit = unitSystem.getInstance(bnglModelVolumeUnitSymbol);
+//				Expression bnglVolumeExp = new Expression(bnglModelVolume); // volume in bnglModelUnits
+//				Expression volumeConversionFactor = new Expression(bnglVolumeUnit.convertTo(1.0, model.getUnitSystem().getVolumeUnit()));
+//				Expression volume = 
+//				Expression timeConversionFactor = new Expression(bnglTimeUnit.convertTo(1.0, modelTimeUnit));
+//				
+//				// assume bnglSubstance unit is molecules
+//				// assume bngl volume unit is cm3
+//				
+//				VCUnitDefinition bnglToConcentration = unitSystem.getVolumeSubstanceUnit().divideBy(unitSystem.getInstance(bnglSubstanceUnitSymbol)).divideBy(bnglVolumeUnit);
+//				double stochasticToVolSubstanceScale = bnglToVolSubstance.getDimensionlessScale().doubleValue();
+//				
+//				if (parameterIndex == 0) {
+//					try {
+//						int numReactants = rr.getReactantPatterns().size();
+//						double reactantsFactor = Math.pow(stochasticToVolSubstanceScale / bnglModelVolume,numReactants);
+//						Expression correctedRate = (new Expression(node.getValue()).mult(new Expression(reactantsFactor))).flatten();
+//						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, correctedRate);
+//					} catch (PropertyVetoException | ExpressionException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
+//				} else {
+//					try {
+//						int numProducts = rr.getProductPatterns().size();
+//						double productsFactor = Math.pow(stochasticToVolSubstanceScale / bnglModelVolume,numProducts);
+//						Expression correctedRate = (new Expression(node.getValue()).mult(new Expression(productsFactor))).flatten();
+//						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, correctedRate);
+//					} catch (ExpressionException | PropertyVetoException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
+//				}
+//			}
+//			return null;
+//		}
 
 		public Object visit(ASTSpeciesPattern node, Object data) {
 			SpeciesPattern sp = new SpeciesPattern();
