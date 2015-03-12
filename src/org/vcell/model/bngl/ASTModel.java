@@ -2,6 +2,8 @@
 
 package org.vcell.model.bngl;
 
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
+
 public class ASTModel extends SimpleNode {
 	public ASTModel(int id) {
 		super(id);
@@ -90,5 +92,14 @@ public class ASTModel extends SimpleNode {
 	/** Accept the visitor. **/
 	public Object jjtAccept(BNGLParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
+	}
+
+	public boolean hasUnitSystem() {
+		return false;
+	}
+	public BngUnitSystem getUnitSystem() {
+		BngUnitSystem bngUnitSystem = new BngUnitSystem();
+		bngUnitSystem.setOrigin(BngUnitSystem.origin.PARSER);
+		return bngUnitSystem;
 	}
 }
