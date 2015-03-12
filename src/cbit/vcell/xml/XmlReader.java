@@ -46,6 +46,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
+import org.vcell.util.GenericUtils;
 import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -4437,17 +4438,26 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 	return r;	
 }
 private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newModel) {
-	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
-	for (Element element : children) {
-		SpeciesPattern s = getSpeciesPattern(element, newModel);
-		if(s != null) { r.addReactant(new ReactantPattern(s)); }
+	if (e != null ) {
+		List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+		for (Element element : children) {
+			SpeciesPattern s = getSpeciesPattern(element, newModel);
+			if(s != null) { r.addReactant(new ReactantPattern(s)); }
+	}
 	}
 }
+/**
+ * @param e may be null
+ * @param r
+ * @param newModel
+ */
 private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel) {
-	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
-	for (Element element : children) {
-		SpeciesPattern s = getSpeciesPattern(element, newModel);
-		if(s != null) { r.addProduct(new ProductPattern(s)); }
+	if (e != null) {
+		List<Element> children = GenericUtils.convert(e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace), Element.class);
+		for (Element element : children) {
+			SpeciesPattern s = getSpeciesPattern(element, newModel);
+			if(s != null) { r.addProduct(new ProductPattern(s)); }
+		}
 	}
 }
 private void getRbmNetworkConstraints(Element e, Model newModel) {
