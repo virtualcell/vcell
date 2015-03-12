@@ -60,6 +60,7 @@ import org.vcell.model.bngl.SimpleNode;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
@@ -96,12 +97,16 @@ public class RbmUtils {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
 		private Model model = null;
 		SimulationContext application = null;
+		private final BngUnitSystem bngUnitSystem;		// never null
 		
 		public BnglObjectConstructionVisitor() {
-			this(null, null, true);
+			this(null, null, new BngUnitSystem(), true);
 		}
-		
 		public BnglObjectConstructionVisitor(Model model, SimulationContext application, boolean stopOnError) {
+			this(model, application, new BngUnitSystem(), stopOnError);
+		}
+		public BnglObjectConstructionVisitor(Model model, SimulationContext application, BngUnitSystem bngUnitSystem, boolean stopOnError) {
+			this.bngUnitSystem = bngUnitSystem;
 			this.stopOnError = stopOnError;
 			this.model = model;
 			this.application = application;

@@ -68,6 +68,7 @@ import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebugger;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
+import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
@@ -124,6 +125,8 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.origin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -2624,6 +2627,34 @@ public void onVCellMessageEvent(final VCellMessageEvent event) {
 //}
 //}
 
+static public class BngUnitSystem {
+	public enum origin { DEFAULT, PARSER, USER };
+	
+	private origin o;
+	private boolean isConcentration;
+	private int volume;
+	private String substanceUnit;
+	private String timeUnit;
+
+	public BngUnitSystem() {
+		this.o = origin.DEFAULT;
+		this.isConcentration = true;
+		this.volume = 1;
+		this.substanceUnit = "uM";
+		this.timeUnit = "s";
+	}
+	public BngUnitSystem(BngUnitSystem us) {
+		this.o = us.o;
+		this.isConcentration = us.isConcentration;
+		this.volume = us.volume;
+		this.substanceUnit = new String(us.substanceUnit);
+		this.timeUnit = new String(us.timeUnit);
+	}
+	public void setOrigin(origin o) {
+		this.o = o;
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 9:37:46 PM)
@@ -2631,14 +2662,12 @@ public void onVCellMessageEvent(final VCellMessageEvent event) {
 private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
 
 	final String DOCUMENT_INFO = "documentInfo";
+	final String BNG_UNIT_SYSTEM = "bngUnitSystem";
 	/* asynchronous and not blocking any window */
 	bOpening = true;
-
 	Hashtable<String,Object> hashTable = new Hashtable<String, Object>();
 	
-	//
 	// may want to insert corrected VCDocumentInfo later if our import debugger corrects it (BNGL Debugger).
-	//
 	hashTable.put(DOCUMENT_INFO, documentInfo);
 	
 	
@@ -2650,6 +2679,10 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		
 		File file = externalDocInfo.getFile();
 		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
+			
+			BngUnitSystem bngUnitSystem = new BngUnitSystem();
+			bngUnitSystem.o = BngUnitSystem.origin.DEFAULT;
+			
 			String fileText;
 			String originalFileText;
 			try {
@@ -2675,12 +2708,18 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					RbmUtils.reactionRuleLabelIndex = 0;
 					RbmUtils.reactionRuleNames.clear();
 					ASTModel astModel = RbmUtils.importBnglFile(reader);
+					// TODO: if we imported a unit system from the bngl file, update bngUnitSystem at this point
+					// for now, hasUnitSystem() always returns false
+					if(astModel.hasUnitSystem()) {
+						bngUnitSystem = astModel.getUnitSystem();
+					}
+					
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing.");
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, false);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
 					} else {
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, true);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, true);
 					}
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					bException = false;
@@ -2690,15 +2729,15 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
 						throw new UserCancelException("Canceling Import");
 					}
-					//
+
 					// inserting <potentially> corrected DocumentInfo
-					//
 					fileText = panel.getText();
 					externalDocInfo = new ExternalDocInfo(panel.getText());
 					reader = externalDocInfo.getReader();
 					hashTable.put(DOCUMENT_INFO, externalDocInfo);
 				}
 			}
+			
 			if(!originalFileText.equals(fileText)) {		// file has been modified
 		        String message = "Importing <b>" + file.getName() + "</b> into vCell. <br>Overwrite the file on the disk?<br>";
 		        message = "<html>" + message + "</html>";
@@ -2718,6 +2757,17 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					return;
 				}
 			}
+			
+//			if(!(bngUnitSystem.o == BngUnitSystem.origin.PARSER)) {
+//				BNGLUnitsPanel panel = new BNGLUnitsPanel(bngUnitSystem);
+//				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Units Picker");
+//				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
+//					// do nothing
+//				} else {
+//					bngUnitSystem = panel.getUnits();
+//				}
+//			}
+			hashTable.put(BNG_UNIT_SYSTEM, bngUnitSystem);
 		}
 	} else {
 		taskName = "Loading document '" + documentInfo.getVersion().getName() + "' from database";
@@ -2758,12 +2808,14 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					RbmUtils.reactionRuleNames.clear();
 					Reader reader = externalDocInfo.getReader();
 					ASTModel astModel = RbmUtils.importBnglFile(reader);
+					
 					BnglObjectConstructionVisitor constructionVisitor = null;
+					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing.");
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, false);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
 					} else {
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, true);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, true);
 					}
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					
