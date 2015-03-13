@@ -1,74 +1,111 @@
 package org.vcell.model.bngl;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Rectangle;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Element;
-import javax.swing.text.Highlighter;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
-import org.vcell.model.rbm.RbmUtils;
-
-import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
-import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.VCML;
-import cbit.vcell.math.gui.MathDescEditor;
 
 public class BNGLUnitsPanel extends JPanel {
 	
-	private class EventListener implements ActionListener{
+	private static final String concentrationsWarning = "Great choice!";
+	private static final String moleculesWarning = "VCell will convert all rates to concentrations using the volume you provided.";
+	private static final String concentrations = "Concentrations";
+	private static final String molecules = "Molecules";
+	
+	private static final String[] volumeUnits = new String[] {"nm3 (nanometer)", "um3 (micrometer)", "mm3 (millimeter)"};
+	private static final String[] concentrationUnits = new String[] {"M (molar)", "mM (millimolar)", "uM (micromolar)", "nM (nanomolar)"};
+	private static final String[] timeUnits = new String[] {"sec (seconds)", "min (minutes)", "h (hours)"};
+
+	private BngUnitSystem unitSystem;
+	private JPanel lowerConPanel;
+	private JPanel lowerMolPanel;
+
+	ButtonGroup buttonGroup = new ButtonGroup();
+	JTextField volumeSize = new JTextField("1");
+	
+	JComboBox<String> concentrationUnitsCombo = new JComboBox<>(concentrationUnits);
+	JComboBox<String> mVolumeUnitsCombo = new JComboBox<>(volumeUnits);
+	JComboBox<String> cTimeUnitsCombo = new JComboBox<>(timeUnits);
+	JComboBox<String> mTimeUnitsCombo = new JComboBox<>(timeUnits);
+	
+	private EventHandler eventHandler = new EventHandler();
+	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener, KeyListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JRadioButton button = (JRadioButton) e.getSource();
-			if (button.getText().equals("Concentration")){
-				System.out.println("Concentration");
-				lowerConPanel.setVisible(true);
-				lowerMolPanel.setVisible(false);
-			}else{
-				System.out.println("Molecules");
-				lowerConPanel.setVisible(false);
-				lowerMolPanel.setVisible(true);
+			Object source = e.getSource();
+			if (source instanceof JRadioButton) {
+				JRadioButton button = (JRadioButton) e.getSource();
+				if (button.getText().equals(concentrations)){
+					System.out.println(concentrations);
+					lowerConPanel.setVisible(true);
+					lowerMolPanel.setVisible(false);
+				}else{
+					System.out.println(molecules);
+					lowerConPanel.setVisible(false);
+					lowerMolPanel.setVisible(true);
+				}
+			} else {
+				
+			}
+		}
+		@Override
+		public void focusGained(FocusEvent e) {
+		}
+		@Override
+		public void focusLost(FocusEvent e) {
+		}
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+		}
+		@Override
+		public void keyTyped(KeyEvent e) {
+		}
+		@Override
+		public void keyPressed(KeyEvent e) {
+		}
+		@Override
+		public void keyReleased(KeyEvent e) {
+			Object source = e.getSource();
+			if (source instanceof JTextField) {
+				JTextField jTextField = (JTextField)e.getSource();
+				try {
+				int x = Integer.parseInt(jTextField.getText());
+				} catch (NumberFormatException nfe) {
+				jTextField.setText("1");
+				}
 			}
 		}
 	}  
 	
-	BngUnitSystem us;
-	JPanel lowerConPanel;
-	JPanel lowerMolPanel;
 	
 	public BNGLUnitsPanel(BngUnitSystem us) {
 		super();
-		this.us = new BngUnitSystem(us);
-		this.us.setOrigin(BngUnitSystem.origin.USER);
+		this.unitSystem = new BngUnitSystem(us);
+		this.unitSystem.setOrigin(BngUnitSystem.origin.USER);
 		initialize();
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -80,45 +117,182 @@ public class BNGLUnitsPanel extends JPanel {
 	}
 	
 	private void initialize(){
-
-		JPanel upperPanel = new JPanel();
-		JRadioButton con = new JRadioButton("Concentration");
-		JRadioButton mol = new JRadioButton("Molecules");
-		ButtonGroup bG = new ButtonGroup();
-		bG.add(con);
-		bG.add(mol);
-		upperPanel.setSize(100,150);
-		upperPanel.setLayout( new FlowLayout());
-		upperPanel.add(con);
-		upperPanel.add(mol);
-		con.setSelected(true);
-
-		EventListener listener = new EventListener();
-		con.addActionListener(listener);
-		mol.addActionListener(listener);
 		
+		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+
+		TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose category of units ");
+		titleTop.setTitleJustification(TitledBorder.LEFT);
+		titleTop.setTitlePosition(TitledBorder.TOP);
+
+		TitledBorder titleConcentrations = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose units for concentrations ");
+		titleConcentrations.setTitleJustification(TitledBorder.LEFT);
+		titleConcentrations.setTitlePosition(TitledBorder.TOP);
+
+		TitledBorder titleMolecules = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose units for molecules ");
+		titleMolecules.setTitleJustification(TitledBorder.LEFT);
+		titleMolecules.setTitlePosition(TitledBorder.TOP);
+
+		JPanel top = new JPanel();
 		lowerConPanel = new JPanel();
-		lowerConPanel.setLayout(new FlowLayout());
-		lowerConPanel.add(new JLabel("Scale"));
-		JTextField tc = new JTextField("uM");
-		lowerConPanel.add(tc);
-		lowerConPanel.setPreferredSize(new Dimension(350,100));
-		lowerConPanel.setVisible(true);
-
 		lowerMolPanel = new JPanel();
-		lowerMolPanel.setLayout(new FlowLayout());
-		lowerMolPanel.add(new JLabel("Volume"));
-		JTextField tm = new JTextField("1");
-		lowerMolPanel.add(tm);
-		lowerMolPanel.add(new JLabel("molecules"));
-		lowerMolPanel.setPreferredSize(new Dimension(350,100));
-		lowerMolPanel.setVisible(false);
 
-		setLayout( new FlowLayout());
-		add(upperPanel);
-		add(lowerConPanel);
-		add(lowerMolPanel);
-		setPreferredSize(new Dimension(350,150));
+		top.setBorder(titleTop);
+		lowerConPanel.setBorder(titleConcentrations);
+		lowerMolPanel.setBorder(titleMolecules);
+// ----------------------------------------------------------------------- upper panel -------------------
+		JRadioButton con = new JRadioButton(concentrations);
+		JRadioButton mol = new JRadioButton(molecules);
+		buttonGroup.add(con);
+		buttonGroup.add(mol);
+		
+		top.setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		int gridy = 0;
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 10, 0, 0);
+		top.add(con, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 0, 0, 10);
+		top.add(mol, gbc);
+		
+		top.setSize(200,150);
+		con.setSelected(true);
+// --------------------------------------------------------------------- lower panels ------------------
+		lowerConPanel.setLayout(new GridBagLayout());
+		lowerConPanel.setPreferredSize(new Dimension(180,100));
+		lowerConPanel.setVisible(true);
+		
+		gridy = 0;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 6, 0, 0);
+		lowerConPanel.add(new JLabel("Scale:   "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 8, 0, 10);
+		lowerConPanel.add(concentrationUnitsCombo, gbc);
+
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 6, 4, 0);
+		lowerConPanel.add(new JLabel("Time:"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 8, 4, 10);
+		lowerConPanel.add(cTimeUnitsCombo, gbc);
+
+		lowerMolPanel.setLayout(new GridBagLayout());
+		lowerMolPanel.setPreferredSize(new Dimension(180,100));
+		lowerMolPanel.setVisible(false);
+		
+		gridy = 0;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(4, 6, 0, 0);
+		lowerMolPanel.add(new JLabel("Volume:"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 8, 0, 0);
+		lowerMolPanel.add(volumeSize, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4, 8, 0, 10);
+		lowerMolPanel.add(mVolumeUnitsCombo, gbc);
+		
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 6, 4, 0);
+		lowerMolPanel.add(new JLabel("Time:"), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = GridBagConstraints.REMAINDER; // this and next extends this cell all the way to the right!
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 8, 4, 10);
+		lowerMolPanel.add(mTimeUnitsCombo, gbc);
+// --------------------------------------------------------------------	all together ------------------------	
+		setLayout(new GridBagLayout());		
+		gbc = new GridBagConstraints();
+		
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(0, 0, 0, 4);
+		gbc.fill = GridBagConstraints.BOTH;
+		add(top, gbc);							// top panel
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(10, 0, 0, 4);
+		gbc.fill = GridBagConstraints.BOTH;
+		add(lowerConPanel, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.insets = new Insets(10, 0, 0, 4);
+		gbc.fill = GridBagConstraints.BOTH;
+		add(lowerMolPanel, gbc);
+		
+		Dimension size = new Dimension(190,150);
+		setPreferredSize(size);
+		setMaximumSize(size);
+		
+		con.addActionListener(eventHandler);
+		mol.addActionListener(eventHandler);
+		volumeSize.addKeyListener(eventHandler); 
 	}
 
 
@@ -135,9 +309,38 @@ public class BNGLUnitsPanel extends JPanel {
 		});
 	}
 
+public String getSelectedButtonText(ButtonGroup bg) {
+	for (Enumeration<AbstractButton> buttons = bg.getElements(); buttons.hasMoreElements(); ) {
+		AbstractButton button = buttons.nextElement();
+		if (button.isSelected()) {
+			return button.getText();
+		}
+	}
+	return null;
+}
+
 	public BngUnitSystem getUnits() {
-		return us;
+		if(getSelectedButtonText(buttonGroup) == null) {
+			return new BngUnitSystem();	// better to return a default than null 
+		}
+		BngUnitSystem.origin o = BngUnitSystem.origin.USER;
+		boolean isConcentration;
+		int volume;
+		String substanceUnit;
+		String timeUnit;
+		
+		if(getSelectedButtonText(buttonGroup).equals(concentrations)) {
+			isConcentration = true;
+			volume = 1;
+			substanceUnit = concentrationUnitsCombo.getSelectedItem().toString().substring(0,concentrationUnitsCombo.getSelectedItem().toString().indexOf(" "));
+			timeUnit = cTimeUnitsCombo.getSelectedItem().toString().substring(0, cTimeUnitsCombo.getSelectedItem().toString().indexOf(" "));
+		} else {		// molecules
+			isConcentration = false;
+			volume = Integer.parseInt(volumeSize.getText());	// we know for sure it's valid int
+			substanceUnit = mVolumeUnitsCombo.getSelectedItem().toString().substring(0,mVolumeUnitsCombo.getSelectedItem().toString().indexOf(" "));
+			timeUnit = mTimeUnitsCombo.getSelectedItem().toString().substring(0, mTimeUnitsCombo.getSelectedItem().toString().indexOf(" "));
+		}
+		return new BngUnitSystem(o, isConcentration, volume, substanceUnit, timeUnit);
 	}
 	
 }
-
