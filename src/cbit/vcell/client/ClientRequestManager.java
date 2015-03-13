@@ -2641,7 +2641,7 @@ static public class BngUnitSystem {
 		this.isConcentration = true;
 		this.volume = 1;
 		this.substanceUnit = "uM";
-		this.timeUnit = "s";
+		this.timeUnit = "sec";
 	}
 	public BngUnitSystem(BngUnitSystem us) {
 		this.o = us.o;
@@ -2649,6 +2649,13 @@ static public class BngUnitSystem {
 		this.volume = us.volume;
 		this.substanceUnit = new String(us.substanceUnit);
 		this.timeUnit = new String(us.timeUnit);
+	}
+	public BngUnitSystem(origin o, boolean isConcentration, int volume, String substanceUnit, String timeUnit) {
+		this.o = o;
+		this.isConcentration = isConcentration;
+		this.volume = volume;
+		this.substanceUnit = substanceUnit;
+		this.timeUnit = timeUnit;
 	}
 	public void setOrigin(origin o) {
 		this.o = o;
@@ -2758,15 +2765,15 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				}
 			}
 			
-//			if(!(bngUnitSystem.o == BngUnitSystem.origin.PARSER)) {
-//				BNGLUnitsPanel panel = new BNGLUnitsPanel(bngUnitSystem);
-//				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Units Picker");
-//				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
-//					// do nothing
-//				} else {
-//					bngUnitSystem = panel.getUnits();
-//				}
-//			}
+			if(!(bngUnitSystem.o == BngUnitSystem.origin.PARSER)) {
+				BNGLUnitsPanel panel = new BNGLUnitsPanel(bngUnitSystem);
+				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Units Picker", null, false);
+				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
+					return;		// TODO: or do nothing and continue with default values?
+				} else {
+					bngUnitSystem = panel.getUnits();
+				}
+			}
 			hashTable.put(BNG_UNIT_SYSTEM, bngUnitSystem);
 		}
 	} else {

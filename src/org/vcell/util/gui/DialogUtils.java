@@ -473,13 +473,17 @@ public static int showComponentOKCancelDialog(final Component requester,final Co
  * @param message java.lang.Object
  */
 public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
+	 return showComponentOKCancelDialog(requester,stayOnTopComponent,title,okEnabler, true);
+ }
+
+public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler, boolean isResizeable) {
 	Component newRequester = requester;
 	if (requester instanceof JTable) {
 		newRequester = BeanUtils.findTypeParentOfComponent(requester, Window.class);
 	}
 	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
 	JDialog d = inputDialog.createDialog(newRequester, title);
-	d.setResizable(true);
+	d.setResizable(isResizeable);
 	if (okEnabler != null) {
 		okEnabler.setJOptionPane(inputDialog);
 	}
