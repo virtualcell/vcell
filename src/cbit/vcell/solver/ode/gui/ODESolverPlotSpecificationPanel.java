@@ -1243,7 +1243,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	    		getComboBoxModelX_frm().addElement(timeColumnDescription.getName());
 	    	}
 	    	for(ColumnDescription columnDescription:xColumnDescriptions){
-	    		if(!columnDescription.getName().equals(timeColumnDescription.getName())){
+	    		if(!columnDescription.getName().equals((timeColumnDescription==null?null:timeColumnDescription.getName()))){
 	    			getComboBoxModelX_frm().addElement(columnDescription.getName());
 	    		}
 	    	}
