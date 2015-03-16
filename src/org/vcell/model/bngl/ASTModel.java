@@ -98,8 +98,7 @@ public class ASTModel extends SimpleNode {
 		return false;
 	}
 	public BngUnitSystem getUnitSystem() {
-		BngUnitSystem bngUnitSystem = new BngUnitSystem();
-		bngUnitSystem.setOrigin(BngUnitSystem.origin.PARSER);
+		BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitSystem.BngUnitOrigin.PARSER);
 		return bngUnitSystem;
 	}
 }

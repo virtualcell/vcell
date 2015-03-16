@@ -35,8 +35,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -61,15 +59,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
-import org.vcell.model.bngl.BNGLDebugger;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
-import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.BeanUtils;
@@ -117,7 +112,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
@@ -125,8 +119,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
-import cbit.vcell.client.ClientRequestManager.BngUnitSystem.origin;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -182,6 +175,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
@@ -787,7 +781,7 @@ VCDocument createDefaultDocument(VCDocumentType docType) {
 		switch (docType) {
 			case BIOMODEL_DOC: {
 				// blank			
-				return createDefaultBioModelDocument();
+				return createDefaultBioModelDocument(null);
 			}
 			case MATHMODEL_DOC: {			
 				return createDefaultMathModelDocument();
@@ -913,10 +907,18 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
 }
 
-private BioModel createDefaultBioModelDocument() throws Exception {
+private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) throws Exception {
 	BioModel bioModel = new BioModel(null);
 	bioModel.setName("BioModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
-	Model model = bioModel.getModel();
+
+	Model model;
+	if(bngUnitSystem == null) {
+		model = new Model("model");
+	} else {
+		model = new Model("model", bngUnitSystem.createModelUnitSystem());
+	}
+	bioModel.setModel(model);
+	
 	model.createFeature();
 	return bioModel;
 }
@@ -1705,7 +1707,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 			AsynchClientTask task1 = new AsynchClientTask("creating biomodel", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					BioModel bioModel = createDefaultBioModelDocument();
+					BioModel bioModel = createDefaultBioModelDocument(null);
 					hashTable.put("doc", bioModel);
 				}			
 			};
@@ -2628,37 +2630,141 @@ public void onVCellMessageEvent(final VCellMessageEvent event) {
 //}
 
 static public class BngUnitSystem {
-	public enum origin { DEFAULT, PARSER, USER };
 	
-	private origin o;
-	private boolean isConcentration;
-	private int volume;
-	private String substanceUnit;
-	private String timeUnit;
+	public enum TimeUnitSystem {
+		TimeUnitSymbol_s("s","s (seconds)"),
+		TimeUnitSymbol_ms("ms","ms (milliseconds)"),
+		TimeUnitSymbol_min("min","min (minutes)"),
+		TimeUnitSymbol_hr("hour","hr (hours)");
+		
+		public final String timeSymbol;
+		public final String description;
+		
+		private TimeUnitSystem(String timeUnitSymbol, String description){
+			this.timeSymbol = timeUnitSymbol;
+			this.description = description;
+		}	
+	};
+	
+	public enum VolumeUnitSystem {
+		VolumeUnit_um3("um3 (micron^3)","molecules","molecules","molecules","um3","um2","um"),
+		VolumeUnit_nl("nl (nanoliter)","molecules","molecules","molecules","nl","um2","um"),
+		VolumeUnit_pl("pl (picoliter)","molecules","molecules","molecules","pl","um2","um");
+		
+		public final String description;
+		public final String volumeSubstanceSymbol;
+		public final String membraneSubstanceSymbol;
+		public final String lumpedReactionSubstanceSymbol;
+		public final String volumeSymbol;
+		public final String areaSymbol;
+		public final String lengthSymbol;
 
-	public BngUnitSystem() {
-		this.o = origin.DEFAULT;
+		private VolumeUnitSystem(String volumeUnitDescription, String volumeSubstance, String membraneSubstance, String lumpedReactionSubstance, String volume, String area, String length){
+			this.description = volumeUnitDescription;
+			this.volumeSubstanceSymbol = volumeSubstance;
+			this.membraneSubstanceSymbol = membraneSubstance;
+			this.lumpedReactionSubstanceSymbol = lumpedReactionSubstance;
+			this.volumeSymbol = volume;
+			this.areaSymbol = area;
+			this.lengthSymbol = length;
+		}	
+	};
+	
+	public enum ConcUnitSystem {
+		ConcUnitSymbol_M("M (molar)","M.um3","molecules","molecules","um3","um2","um"),
+		ConcUnitSymbol_uM("uM (micromolar)","uM.um3","molecules","molecules","um3","um2","um"),
+		ConcUnitSymbol_nM("nM (nanomolar)","nM.um3","molecules","molecules","um3","um2","um");
+		
+		public final String description;
+		public final String volumeSubstanceSymbol;
+		public final String membraneSubstanceSymbol;
+		public final String lumpedReactionSubstanceSymbol;
+		public final String volumeSymbol;
+		public final String areaSymbol;
+		public final String lengthSymbol;
+		
+		private ConcUnitSystem(String concUnitDescription, String volumeSubstance, String membraneSubstance, String lumpedReactionSubstance, String volume, String area, String length){
+			this.description = concUnitDescription;
+			this.volumeSubstanceSymbol = volumeSubstance;
+			this.membraneSubstanceSymbol = membraneSubstance;
+			this.lumpedReactionSubstanceSymbol = lumpedReactionSubstance;
+			this.volumeSymbol = volume;
+			this.areaSymbol = area;
+			this.lengthSymbol = length;
+		}	
+	};
+	
+	public enum BngUnitOrigin { DEFAULT, PARSER, USER };
+	private final BngUnitOrigin o;
+	
+	private final boolean isConcentration;
+	private final Double volume;
+	private final VolumeUnitSystem volumeUnit;
+	private final ConcUnitSystem concUnit;
+	private final TimeUnitSystem timeUnit;
+
+	public BngUnitSystem(BngUnitOrigin bngUnitOrigin) {
+		this.o = bngUnitOrigin;
+		this.volume = 100.0;
 		this.isConcentration = true;
-		this.volume = 1;
-		this.substanceUnit = "uM";
-		this.timeUnit = "sec";
+		this.volumeUnit = null;
+		this.concUnit = ConcUnitSystem.ConcUnitSymbol_uM;
+		this.timeUnit = TimeUnitSystem.TimeUnitSymbol_s;
 	}
 	public BngUnitSystem(BngUnitSystem us) {
 		this.o = us.o;
-		this.isConcentration = us.isConcentration;
 		this.volume = us.volume;
-		this.substanceUnit = new String(us.substanceUnit);
-		this.timeUnit = new String(us.timeUnit);
+		this.isConcentration = us.isConcentration;
+		this.volumeUnit = us.volumeUnit;
+		this.concUnit = us.concUnit;
+		this.timeUnit = us.timeUnit;
 	}
-	public BngUnitSystem(origin o, boolean isConcentration, int volume, String substanceUnit, String timeUnit) {
+	private BngUnitSystem(BngUnitOrigin o, boolean isConcentration, Double volume, VolumeUnitSystem volumeUnitSymbol, ConcUnitSystem concUnitSymbol, TimeUnitSystem timeUnitSymbol){
 		this.o = o;
 		this.isConcentration = isConcentration;
 		this.volume = volume;
-		this.substanceUnit = substanceUnit;
-		this.timeUnit = timeUnit;
+		this.volumeUnit = volumeUnitSymbol;
+		this.concUnit = concUnitSymbol;
+		this.timeUnit = timeUnitSymbol;
 	}
-	public void setOrigin(origin o) {
-		this.o = o;
+
+	public static BngUnitSystem createAsConcentration(BngUnitOrigin o, ConcUnitSystem concUnitSymbol, TimeUnitSystem timeUnitSymbol){
+		return new BngUnitSystem(o, true, null, null, concUnitSymbol, timeUnitSymbol);
+	}
+	
+	public static BngUnitSystem createAsMolecules(BngUnitOrigin o, double volume, VolumeUnitSystem volumeUnitSymbol, TimeUnitSystem timeUnitSymbol){
+		return new BngUnitSystem(o, false, volume, volumeUnitSymbol, null, timeUnitSymbol);
+	}
+	
+	public BngUnitOrigin getOrigin(){
+		return this.o;
+	}
+	public Double getVolume(){
+		return this.volume;
+	}
+	public boolean isConcentration(){
+		return this.isConcentration;
+	}
+	public ModelUnitSystem createModelUnitSystem(){
+		if (isConcentration){
+			return ModelUnitSystem.createVCModelUnitSystem(
+					concUnit.volumeSubstanceSymbol,
+					concUnit.membraneSubstanceSymbol,
+					concUnit.lumpedReactionSubstanceSymbol,
+					concUnit.volumeSymbol, 
+					concUnit.areaSymbol,
+					concUnit.lengthSymbol, 
+					timeUnit.timeSymbol);
+		}else{
+			return ModelUnitSystem.createVCModelUnitSystem(
+					volumeUnit.volumeSubstanceSymbol,
+					volumeUnit.membraneSubstanceSymbol,
+					volumeUnit.lumpedReactionSubstanceSymbol,
+					volumeUnit.volumeSymbol, 
+					volumeUnit.areaSymbol,
+					volumeUnit.lengthSymbol, 
+					timeUnit.timeSymbol);
+		}
 	}
 }
 
@@ -2687,9 +2793,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 		File file = externalDocInfo.getFile();
 		if(file != null && !file.getName().isEmpty() && file.getName().endsWith("bngl")) {
 			
-			BngUnitSystem bngUnitSystem = new BngUnitSystem();
-			bngUnitSystem.o = BngUnitSystem.origin.DEFAULT;
-			
+			BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitOrigin.DEFAULT);
 			String fileText;
 			String originalFileText;
 			try {
@@ -2701,12 +2805,11 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						"<html>Error reading file "+file.getPath()+"</html>");
 				return;
 			}
-
 			Reader reader = externalDocInfo.getReader();
 			boolean bException = true;
 			while (bException){
 				try {
-					BioModel bioModel = createDefaultBioModelDocument();
+					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
 					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
@@ -2765,7 +2868,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				}
 			}
 			
-			if(!(bngUnitSystem.o == BngUnitSystem.origin.PARSER)) {
+			if(!(bngUnitSystem.getOrigin() == BngUnitOrigin.PARSER)) {
 				BNGLUnitsPanel panel = new BNGLUnitsPanel(bngUnitSystem);
 				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Units Picker", null, false);
 				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
@@ -2805,7 +2908,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 				if (!externalDocInfo.isXML()){ // not XML, look for BNGL etc.
-					BioModel bioModel = createDefaultBioModelDocument();
+					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
+					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
 					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
@@ -2817,7 +2921,6 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					ASTModel astModel = RbmUtils.importBnglFile(reader);
 					
 					BnglObjectConstructionVisitor constructionVisitor = null;
-					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing.");
 						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
