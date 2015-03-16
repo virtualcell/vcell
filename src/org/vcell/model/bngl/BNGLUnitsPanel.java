@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -28,6 +29,10 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.ConcUnitSystem;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.TimeUnitSystem;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.VolumeUnitSystem;
 
 public class BNGLUnitsPanel extends JPanel {
 	
@@ -36,21 +41,16 @@ public class BNGLUnitsPanel extends JPanel {
 	private static final String concentrations = "Concentrations";
 	private static final String molecules = "Molecules";
 	
-	private static final String[] volumeUnits = new String[] {"nm3 (nanometer)", "um3 (micrometer)", "mm3 (millimeter)"};
-	private static final String[] concentrationUnits = new String[] {"M (molar)", "mM (millimolar)", "uM (micromolar)", "nM (nanomolar)"};
-	private static final String[] timeUnits = new String[] {"sec (seconds)", "min (minutes)", "h (hours)"};
-
 	private BngUnitSystem unitSystem;
 	private JPanel lowerConPanel;
 	private JPanel lowerMolPanel;
 
 	ButtonGroup buttonGroup = new ButtonGroup();
-	JTextField volumeSize = new JTextField("1");
-	
-	JComboBox<String> concentrationUnitsCombo = new JComboBox<>(concentrationUnits);
-	JComboBox<String> mVolumeUnitsCombo = new JComboBox<>(volumeUnits);
-	JComboBox<String> cTimeUnitsCombo = new JComboBox<>(timeUnits);
-	JComboBox<String> mTimeUnitsCombo = new JComboBox<>(timeUnits);
+	JTextField volumeSize = new JTextField();
+	JComboBox<String> concentrationUnitsCombo = new JComboBox<String>();
+	JComboBox<String> mVolumeUnitsCombo = new JComboBox<String>();
+	JComboBox<String> cTimeUnitsCombo = new JComboBox<String>();
+	JComboBox<String> mTimeUnitsCombo = new JComboBox<String>();
 	
 	private EventHandler eventHandler = new EventHandler();
 	private class EventHandler implements ActionListener, FocusListener, PropertyChangeListener, KeyListener {
@@ -93,7 +93,7 @@ public class BNGLUnitsPanel extends JPanel {
 			if (source instanceof JTextField) {
 				JTextField jTextField = (JTextField)e.getSource();
 				try {
-				int x = Integer.parseInt(jTextField.getText());
+				double x = Double.parseDouble(jTextField.getText());
 				} catch (NumberFormatException nfe) {
 				jTextField.setText("1");
 				}
@@ -101,14 +101,24 @@ public class BNGLUnitsPanel extends JPanel {
 		}
 	}  
 	
-	
 	public BNGLUnitsPanel(BngUnitSystem us) {
 		super();
 		this.unitSystem = new BngUnitSystem(us);
-		this.unitSystem.setOrigin(BngUnitSystem.origin.USER);
+		
+		volumeSize.setText(unitSystem.getVolume()+"");
+		for(ConcUnitSystem s : ConcUnitSystem.values()) {
+			concentrationUnitsCombo.addItem(s.description);
+		}
+		for(VolumeUnitSystem s : VolumeUnitSystem.values()) {
+			mVolumeUnitsCombo.addItem(s.description);
+		}
+		for(TimeUnitSystem s : TimeUnitSystem.values()) {
+			cTimeUnitsCombo.addItem(s.description);
+			mTimeUnitsCombo.addItem(s.description);
+		}
 		initialize();
 
-		SwingUtilities.invokeLater(new Runnable() {
+		SwingUtilities.invokeLater(new Runnable() {		// unused for now
 			@Override
 			public void run() {		
 				doSomething();
@@ -119,8 +129,6 @@ public class BNGLUnitsPanel extends JPanel {
 	private void initialize(){
 		
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-
 		TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose category of units ");
 		titleTop.setTitleJustification(TitledBorder.LEFT);
 		titleTop.setTitlePosition(TitledBorder.TOP);
@@ -169,10 +177,10 @@ public class BNGLUnitsPanel extends JPanel {
 		top.add(mol, gbc);
 		
 		top.setSize(200,150);
-		con.setSelected(true);
+		con.setSelected(true);		// select the "Concentration" button
 // --------------------------------------------------------------------- lower panels ------------------
 		lowerConPanel.setLayout(new GridBagLayout());
-		lowerConPanel.setPreferredSize(new Dimension(180,100));
+		lowerConPanel.setPreferredSize(new Dimension(195,100));
 		lowerConPanel.setVisible(true);
 		
 		gridy = 0;
@@ -210,7 +218,7 @@ public class BNGLUnitsPanel extends JPanel {
 		lowerConPanel.add(cTimeUnitsCombo, gbc);
 
 		lowerMolPanel.setLayout(new GridBagLayout());
-		lowerMolPanel.setPreferredSize(new Dimension(180,100));
+		lowerMolPanel.setPreferredSize(new Dimension(195,100));
 		lowerMolPanel.setVisible(false);
 		
 		gridy = 0;
@@ -286,7 +294,7 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		add(lowerMolPanel, gbc);
 		
-		Dimension size = new Dimension(190,150);
+		Dimension size = new Dimension(195,150);
 		setPreferredSize(size);
 		setMaximumSize(size);
 		
@@ -297,11 +305,9 @@ public class BNGLUnitsPanel extends JPanel {
 
 
 	public void doSomething(){
-
 		updateSomething();
 	}
 	private void updateSomething(){
-
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 
@@ -321,26 +327,44 @@ public String getSelectedButtonText(ButtonGroup bg) {
 
 	public BngUnitSystem getUnits() {
 		if(getSelectedButtonText(buttonGroup) == null) {
-			return new BngUnitSystem();	// better to return a default than null 
+			return new BngUnitSystem(BngUnitOrigin.DEFAULT);	// better to return a default than null 
 		}
-		BngUnitSystem.origin o = BngUnitSystem.origin.USER;
-		boolean isConcentration;
-		int volume;
-		String substanceUnit;
-		String timeUnit;
 		
 		if(getSelectedButtonText(buttonGroup).equals(concentrations)) {
-			isConcentration = true;
-			volume = 1;
-			substanceUnit = concentrationUnitsCombo.getSelectedItem().toString().substring(0,concentrationUnitsCombo.getSelectedItem().toString().indexOf(" "));
-			timeUnit = cTimeUnitsCombo.getSelectedItem().toString().substring(0, cTimeUnitsCombo.getSelectedItem().toString().indexOf(" "));
+			ConcUnitSystem cus = ConcUnitSystem.values()[0];
+			for(ConcUnitSystem s : ConcUnitSystem.values()) {
+				if(s.description.equals(concentrationUnitsCombo.getSelectedItem().toString())) {
+					cus = s;
+					break;
+				}
+			}
+			TimeUnitSystem tus = TimeUnitSystem.values()[0];
+			for(TimeUnitSystem s : TimeUnitSystem.values()) {
+				if(s.description.equals(cTimeUnitsCombo.getSelectedItem().toString())) {
+					tus = s;
+					break;
+				}
+			}
+			return BngUnitSystem.createAsConcentration(BngUnitOrigin.USER, cus, tus);
+			
 		} else {		// molecules
-			isConcentration = false;
-			volume = Integer.parseInt(volumeSize.getText());	// we know for sure it's valid int
-			substanceUnit = mVolumeUnitsCombo.getSelectedItem().toString().substring(0,mVolumeUnitsCombo.getSelectedItem().toString().indexOf(" "));
-			timeUnit = mTimeUnitsCombo.getSelectedItem().toString().substring(0, mTimeUnitsCombo.getSelectedItem().toString().indexOf(" "));
+			double volume = Double.parseDouble(volumeSize.getText());	// we know for sure it's valid double
+			VolumeUnitSystem vus = VolumeUnitSystem.values()[0];
+			for(VolumeUnitSystem s : VolumeUnitSystem.values()) {
+				if(s.description.equals(mVolumeUnitsCombo.getSelectedItem().toString())) {
+					vus = s;
+					break;
+				}
+			}
+			TimeUnitSystem tus = TimeUnitSystem.values()[0];
+			for(TimeUnitSystem s : TimeUnitSystem.values()) {
+				if(s.description.equals(mTimeUnitsCombo.getSelectedItem().toString())) {
+					tus = s;
+					break;
+				}
+			}
+			return BngUnitSystem.createAsMolecules(BngUnitOrigin.USER, volume, vus, tus);
 		}
-		return new BngUnitSystem(o, isConcentration, volume, substanceUnit, timeUnit);
 	}
 	
 }
