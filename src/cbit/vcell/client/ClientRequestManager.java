@@ -168,6 +168,7 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
@@ -2907,15 +2908,17 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 				doc = getDocumentManager().getGeometry(gmi);
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
-				if (!externalDocInfo.isXML()){ // not XML, look for BNGL etc.
-					//
+				
+				if (!externalDocInfo.isXML()){ 			// not XML, look for BNGL etc.
 					// we use the BngUnitSystem already created during the 1st pass
-					//
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
 					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
+					// set convention for initial conditions in generated application for seed species (concentration or count)
+					ruleBasedSimContext.setUsingConcentration(bngUnitSystem.isConcentration);
+
 					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
 					RbmUtils.reactionRuleLabelIndex = 0;
 					RbmUtils.reactionRuleNames.clear();

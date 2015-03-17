@@ -170,8 +170,15 @@ public class RbmUtils {
 					
 //					SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
 					SpeciesContextSpec scs = application.getReactionContext().getSpeciesContextSpec(speciesContext);
-					scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
+					if (bngUnitSystem.isConcentration() && application.isUsingConcentration()){
+						scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
+					}else if (!bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
+						scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(exp);
+					}else{
+						throw new RuntimeException("failed to interpret initial conditions as concentration or count");
+					}
 				} catch (Exception ex) {
+					ex.printStackTrace(System.out);
 					throw new RuntimeException(ex.getMessage());
 				}
 			}
