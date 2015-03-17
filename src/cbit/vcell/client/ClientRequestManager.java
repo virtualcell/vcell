@@ -2705,7 +2705,7 @@ static public class BngUnitSystem {
 
 	public BngUnitSystem(BngUnitOrigin bngUnitOrigin) {
 		this.o = bngUnitOrigin;
-		this.volume = 100.0;
+		this.volume = 1.0;
 		this.isConcentration = true;
 		this.volumeUnit = null;
 		this.concUnit = ConcUnitSystem.ConcUnitSymbol_uM;
@@ -2908,12 +2908,14 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 				if (!externalDocInfo.isXML()){ // not XML, look for BNGL etc.
+					//
+					// we use the BngUnitSystem already created during the 1st pass
+					//
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
 					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
-
 					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
 					RbmUtils.reactionRuleLabelIndex = 0;
 					RbmUtils.reactionRuleNames.clear();
@@ -2922,13 +2924,18 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
-						System.out.println("Molecular Definition Block missing.");
+						System.out.println("Molecular Definition Block missing. Extracting it from Species, Reactions, Obserbables.");
 						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
 					} else {
 						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, true);
 					}
+					// we'll convert the kinetic parameters to BngUnitSystem inside the visit(ASTKineticsParameter...)
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
-					
+					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
+					if(!bngUnitSystem.isConcentration()) {
+						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
+						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
+					}
 					ruleBasedSimContext.refreshMathDescription();
 					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 					doc = bioModel;

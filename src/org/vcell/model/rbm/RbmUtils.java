@@ -230,51 +230,9 @@ public class RbmUtils {
 		     return null;
 		}
 		
-		public Object visit(ASTKineticsParameter node, Object data) {
-			if (data instanceof ReactionRule) {
-				ReactionRule rr = (ReactionRule)data;
-				
-				int parameterIndex = 0;
-				for (int i=0; i<node.jjtGetParent().jjtGetNumChildren(); i++){
-					if (node.jjtGetParent().jjtGetChild(i) == node){
-						break;
-					}
-					if (node.jjtGetParent().jjtGetChild(i) instanceof ASTKineticsParameter){
-						parameterIndex++;
-					}
-				}
-
-				if (parameterIndex == 0) {
-					try {
-						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
-					} catch (PropertyVetoException | ExpressionException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				} else {
-					try {
-						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
-					} catch (ExpressionException | PropertyVetoException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-			}
-			return null;
-		}
-
 //		public Object visit(ASTKineticsParameter node, Object data) {
 //			if (data instanceof ReactionRule) {
 //				ReactionRule rr = (ReactionRule)data;
-//				
-//				//
-//				// BngUnitSystem already specified the ModelUnitSystem for this vcell model.
-//				// this tells us what the assumed units are for time, volume, concentration, etc.
-//				// 
-//				// for first order mass action kinetics the K_forward and K_reverse will be consistent no matter what (1/time)
-//				//
-//				// for "molecular" based models, we have to translate Nth-order mass action kinetic parameters we have to divide by volume^(N-1) ... for N>1
-//				//
 //				
 //				int parameterIndex = 0;
 //				for (int i=0; i<node.jjtGetParent().jjtGetNumChildren(); i++){
@@ -285,42 +243,17 @@ public class RbmUtils {
 //						parameterIndex++;
 //					}
 //				}
-//			
-//				
+//
 //				if (parameterIndex == 0) {
 //					try {
-//						int numReactants = rr.getReactantPatterns().size();
-//						if (numReactants > 1 && !bngUnitSystem.isConcentration()){
-//							Double bnglModelVolume = bngUnitSystem.getVolume();
-//							double reactantsFactor = Math.pow(bnglModelVolume,numReactants);
-//							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(reactantsFactor)).flatten();
-//							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, correctedRate);
-//// TODO:	test me please.
-//						}else{
-//							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
-//						}
+//						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
 //					} catch (PropertyVetoException | ExpressionException e1) {
 //						// TODO Auto-generated catch block
 //						e1.printStackTrace();
 //					}
 //				} else {
 //					try {
-//						int numProducts = rr.getProductPatterns().size();
-//						if (numProducts > 1 && !bngUnitSystem.isConcentration()){
-//							Double bnglModelVolume = bngUnitSystem.getVolume();
-//							double productsFactor = Math.pow(bnglModelVolume,numProducts);
-//							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(productsFactor)).flatten();
-//							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, correctedRate);
-////	TODO:  test me please.
-////	
-////	please remember to set the volume in the newly created application to bnglModelVolume
-////	
-////	this results in an expression which is molecules/time ... but we need concentration/time.
-////    K' = K * V^(N-1)
-////
-//						}else{
-//							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
-//						}
+//						rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
 //					} catch (ExpressionException | PropertyVetoException e1) {
 //						// TODO Auto-generated catch block
 //						e1.printStackTrace();
@@ -329,6 +262,64 @@ public class RbmUtils {
 //			}
 //			return null;
 //		}
+
+		public Object visit(ASTKineticsParameter node, Object data) {
+			if (data instanceof ReactionRule) {
+				ReactionRule rr = (ReactionRule)data;
+				//
+				// BngUnitSystem already specified the ModelUnitSystem for this vcell model.
+				// this tells us what the assumed units are for time, volume, concentration, etc.
+				// 
+				// for first order mass action kinetics the K_forward and K_reverse will be consistent no matter what (1/time)
+				// for "molecular" based models, we have to translate Nth-order mass action kinetic parameters we have to divide by volume^(N-1) ... for N>1
+				//
+				int parameterIndex = 0;
+				for (int i=0; i<node.jjtGetParent().jjtGetNumChildren(); i++){
+					if (node.jjtGetParent().jjtGetChild(i) == node){
+						break;
+					}
+					if (node.jjtGetParent().jjtGetChild(i) instanceof ASTKineticsParameter){
+						parameterIndex++;
+					}
+				}
+				if (parameterIndex == 0) {
+					try {
+						int numReactants = rr.getReactantPatterns().size();
+						if (numReactants > 1 && !bngUnitSystem.isConcentration()){
+							Double bnglModelVolume = bngUnitSystem.getVolume();
+							double reactantsFactor = Math.pow(bnglModelVolume,numReactants-1);
+							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(reactantsFactor)).flatten();
+							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, correctedRate);
+// TODO:	test me please.
+						}else{
+							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
+						}
+					} catch (PropertyVetoException | ExpressionException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				} else {
+					try {
+						int numProducts = rr.getProductPatterns().size();
+						if (numProducts > 1 && !bngUnitSystem.isConcentration()){
+							Double bnglModelVolume = bngUnitSystem.getVolume();
+							double productsFactor = Math.pow(bnglModelVolume,numProducts-1);
+							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(productsFactor)).flatten();
+							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, correctedRate);
+//	TODO:  test me please.
+//	this results in an expression which is molecules/time ... but we need concentration/time.
+//    K' = K * V^(N-1)
+						}else{
+							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
+						}
+					} catch (ExpressionException | PropertyVetoException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+			return null;
+		}
 
 		public Object visit(ASTSpeciesPattern node, Object data) {
 			SpeciesPattern sp = new SpeciesPattern();
