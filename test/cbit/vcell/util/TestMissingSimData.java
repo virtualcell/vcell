@@ -142,7 +142,7 @@ public class TestMissingSimData {
 //			rset.close();
 			
 			
-			checkDataExists(con,true);
+			checkDataExists(con,false);
 			//runSimsNew(con);
 		}finally{
 			if(con != null){
@@ -329,21 +329,28 @@ public class TestMissingSimData {
 				}else{
 					updatestr = "false";
 				}
-				if(bExistOnly){
+				if(bExistOnly || updatestr.equals("false")){
 					updateStatement.executeUpdate("update missingdata set dataexists='"+updatestr+"' where simjobsimref="+simJobSimRef.toString());
 					con.commit();
 					continue;
 				}
 				
+				// Log file exists, now check if the data can really be read
 				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, user);
 				VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,jobIndex);
 				//Try to read log,times and simdata to see if this data is well formed
 				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL);
 				double[] dataTimes = simData.getDataTimes();
 				DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
+				DataIdentifier readDataIdentifier = null;
 				for(DataIdentifier dataIdentifier:dataIdentifiers){
 					if(!dataIdentifier.isFunction()){
-						simData.getSimDataBlock(null, dataIdentifier.getName(), dataTimes[0]);
+						if(simData.getIsODEData()){
+							simData.getODEDataBlock();
+						}else{
+							simData.getSimDataBlock(null, dataIdentifier.getName(), dataTimes[0]);
+						}
+						readDataIdentifier = dataIdentifier;
 						break;
 					}
 				}
@@ -351,7 +358,8 @@ public class TestMissingSimData {
 					BeanUtils.forceStringSize(
 						"user= "+user.getName(), 20, " ", false)+
 						" simref= "+BeanUtils.forceStringSize(simJobSimRef.toString(), 14, " ", false)+
-						" numTimes= "+BeanUtils.forceStringSize(dataTimes.length+"",8, " ", true));
+						" numTimes= "+BeanUtils.forceStringSize(dataTimes.length+"",8, " ", true)+
+						" readDataID= "+BeanUtils.forceStringSize(readDataIdentifier.getName()+"",20, " ", true));
 				
 				updatestr = "update missingdata set dataexists='readable' where simjobsimref="+simJobSimRef.toString();
 
