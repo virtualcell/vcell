@@ -59,6 +59,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	public static final String PROPERTY_NAME_SIMULATION_STATUS = "status";
+	private static final long MEGA_TO_BYTES =  1048576; //number of bytes in a megabyte
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -165,17 +166,17 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		warningTimepoints = Simulation.WARNING_SPATIAL_TIMEPOINTS;
 	}
 		
-	long maxSizeBytes = Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L;
-	long warningSizeBytes = Simulation.WARNING_0DE_MEGABYTES*1000000L;
+	long maxSizeBytes = megabytesToBytes( Simulation.MAX_LIMIT_0DE_MEGABYTES );
+	long warningSizeBytes = megabytesToBytes( Simulation.WARNING_0DE_MEGABYTES );
 	if(bSpatial)
 	{
-		maxSizeBytes = Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L;
-		warningSizeBytes = Simulation.WARNING_PDE_MEGABYTES*1000000L;
+		maxSizeBytes  = megabytesToBytes(  Simulation.MAX_LIMIT_PDE_MEGABYTES );
+		warningSizeBytes = megabytesToBytes( Simulation.WARNING_PDE_MEGABYTES );
 	}
 	else if (simulation.getMathDescription().isNonSpatialStoch())
 	{
-		maxSizeBytes = Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L;
-		warningSizeBytes = Simulation.WARNING_STOCH_MEGABYTES*1000000L;
+		maxSizeBytes = megabytesToBytes( Simulation.MAX_LIMIT_STOCH_MEGABYTES );
+		warningSizeBytes = megabytesToBytes( Simulation.WARNING_STOCH_MEGABYTES );
 	}
 	
 	long expectedNumTimePoints = getExpectedNumTimePoints(simulation);
@@ -776,5 +777,13 @@ void showSimulationStatusDetails(Simulation[] sims) {
  */
 void stopSimulations(Simulation[] sims) {
 	getClientSimManager().stopSimulations(sims);
+}
+/**
+ * convert megabytes to bytes
+ * @param megabytes
+ * @return input * {@value #MEGA_TO_BYTES}
+ */
+private static long megabytesToBytes(long megabytes) {
+	return megabytes * MEGA_TO_BYTES;
 }
 }
