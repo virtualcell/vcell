@@ -53,7 +53,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_NON_SPATIAL_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_SPATIAL_TIMEPOINTS = 100000;
-	public static final int MAX_LIMIT_0DE_MEGABYTES = 20;
+	public static final int MAX_LIMIT_0DE_MEGABYTES = 200; //gcw 3/18/2015 bump for now so Phd candiate can get her work done
 	public static final int MAX_LIMIT_PDE_MEGABYTES = 200000;
 	public static final int MAX_LIMIT_STOCH_MEGABYTES = 200; //stoch
 	public static final int WARNING_NON_SPATIAL_TIMEPOINTS = 5000;
