@@ -18,6 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
 import org.vcell.sbml.vcell.StructureSizeSolver;
@@ -237,10 +238,24 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_24.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_CORE.getDescription()) &&
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
+				if(fileFilter.getDescription().equals(FileFilters.FILE_FILTER_BNGL.getDescription())) {
+					boolean hasReactions = bioModel.getModel().getReactionSteps().length > 0 ? true : false;
+					System.out.println(hasReactions);
+					if(hasReactions) {					// mixed
+						String errMsg = "Simple Reactions cannot be exported to .bngl format.";
+						errMsg += "<br>Some information will be lost.";
+						errMsg += "<br><br>Continue anyway?";
+						errMsg = "<html>" + errMsg + "</html>";
+				        int dialogButton = JOptionPane.YES_NO_OPTION;
+				        int returnCode = JOptionPane.showConfirmDialog(topLevelWindowManager.getComponent(), errMsg, "Exporting to .bngl", dialogButton);
+						if (returnCode != JOptionPane.YES_OPTION) {
+							throw UserCancelException.CANCEL_FILE_SELECTION;
+						}
+					}
+				}
 				String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
-					// user cancelled
 					throw UserCancelException.CANCEL_FILE_SELECTION;
 				}
 				chosenSimContextName = (String)choice;
