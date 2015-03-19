@@ -223,7 +223,7 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 					columnCount ++;
 				}
 			}
-			Plot2D plot2D = new SingleXPlot2D(null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+			Plot2D plot2D = new SingleXPlot2D(null, null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
 					new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 			plotPane.setPlot2D(plot2D);
 		} catch (Exception e1) {

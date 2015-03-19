@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.client.data;
+
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/19/2005 1:26:40 PM)
@@ -49,4 +52,6 @@ String getSimulationName();
  */
 String getVolumeNamePhysiology(int subVolumeID);
 String getVolumeNameGeometry(int subVolumeID);
+
+DataSymbolMetadataResolver getDataSymbolMetadataResolver();
 }

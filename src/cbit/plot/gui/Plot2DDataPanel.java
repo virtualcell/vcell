@@ -61,7 +61,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connEtoM2(e);
 		};
 	}
-	private Plot2D fieldPlot2D = new Plot2D(null,null, null);
+	private Plot2D fieldPlot2D = new Plot2D(null,null,null, null);
 	private boolean ivjConnPtoP2Aligning = false;
 	private Plot2D ivjplot2D1 = null;
 	private ScrollTable ivjScrollPaneTable = null;

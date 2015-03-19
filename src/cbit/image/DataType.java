@@ -24,7 +24,7 @@ public class DataType {
 	private static String names[] = { "Byte", "Short", "Float", "Double"};
 /**
  * This method was created in VisualAge.
- * @param type int
+ * @param filterCategory int
  */
 private DataType(int argType) {
 	this.type = argType;
