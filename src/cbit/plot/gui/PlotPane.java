@@ -35,6 +35,10 @@ import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadata;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 4:26:59 AM)
@@ -64,7 +68,7 @@ class LineIcon implements Icon {
 	private EnhancedJLabel ivjJLabelRight = null;
 	private JLabel ivjJLabelBottom = null;
 	private JLabel ivjJLabelTitle = null;
-	private Plot2D fieldPlot2D = new Plot2D(null,null, null);
+	private Plot2D fieldPlot2D = new Plot2D(null,null,null, null);
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanelData = null;
 	private JPanel ivjJPanelPlot = null;
@@ -1296,6 +1300,8 @@ private void updateLabels() {
  */
 private void updateLegend() {
 	Plot2D plot = getPlot2DPanel1().getPlot2D();
+	SymbolTableEntry[] steList = plot.getSymbolTableEntries();
+	DataSymbolMetadataResolver metadataResolver = plot.getDataSymbolMetadataResolver();
 	String[] plotLabels = plot.getVisiblePlotColumnTitles();
 	int[] plotIndices = plot.getVisiblePlotIndices();
 	Component[] legends = getJPanelPlotLegends().getComponents();
@@ -1328,7 +1334,28 @@ private void updateLegend() {
 			plotLabel = plotLabels[2 * i + 1];
 		}
 		((JLabel)legends[2 * i]).setIcon(icon);
-		((JLabel)legends[2 * i + 1]).setText(plotLabel);
+		final int head = 20;
+		final int tail = 0;
+		
+		String unitSymbol = "";
+		if (metadataResolver != null) {
+			DataSymbolMetadata metaData = metadataResolver.getDataSymbolMetadata(plotLabel);
+			if (metaData != null && metaData.unit != null){
+				VCUnitDefinition ud = metaData.unit;
+				if(ud != null) {
+					unitSymbol += ud.getSymbolUnicode();
+				}
+			}
+		}
+		String shortLabel =  plotLabel;
+		if(shortLabel.length()>head+3+tail) {
+			shortLabel = shortLabel.substring(0, head) + "..." + shortLabel.substring(shortLabel.length()-tail, shortLabel.length());
+		}
+//		shortLabel = "<html>" + shortLabel + "<font color=\"red\">" + " [" + unitSymbol + "] " + "</font></html>";
+		shortLabel = "<html>" + shortLabel + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
+		
+		((JLabel)legends[2 * i + 1]).setText(shortLabel);
+		((JLabel)legends[2 * i + 1]).setToolTipText(plotLabel);
 		legends[2 * i].setVisible(true);
 		legends[2 * i + 1].setVisible(true);
 	}

@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.data;
 
+import static org.vcell.util.BeanUtils.notNull;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -107,6 +109,7 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -178,7 +181,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
-import static org.vcell.util.BeanUtils.notNull;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -869,7 +871,7 @@ void plotSpaceStats (TSJobResultsSpaceStats tsjrss) {
 	boolean finalBVolume = bVolume;
 	PlotPane plotPane = new cbit.plot.gui.PlotPane();
 	plotPane.setPlot2D(
-		new SingleXPlot2D(finalSymbolTableEntries,"Time",
+		new SingleXPlot2D(finalSymbolTableEntries,getSimulationModelInfo().getDataSymbolMetadataResolver(), "Time",
 		new String[] {
 				"Max",
 				(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
@@ -1720,6 +1722,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 														public String getContextName() {
 															return PDEDataViewer.this.getSimulationModelInfo().getContextName();
 														}
+														@Override
+														public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
+															return PDEDataViewer.this.getSimulationModelInfo().getDataSymbolMetadataResolver();
+														}
 													};
 											postProcessPdeDataViewer.setSimulationModelInfo(simulationModelInfo);
 											postProcessPdeDataViewer.setSimNameSimDataID(
@@ -2472,7 +2478,7 @@ private void showSpatialPlot() {
 			for (PlotData plotData : plotDatas){
 				if (plotData != null) {			
 					PlotPane plotPane = new PlotPane();
-					Plot2D plot2D = new Plot2D(symbolTableEntries, new String[] { varName },new PlotData[] { plotData },
+					Plot2D plot2D = new Plot2D(symbolTableEntries, getSimulationModelInfo().getDataSymbolMetadataResolver(), new String[] { varName },new PlotData[] { plotData },
 								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"});
 					plotPane.setPlot2D(	plot2D);
 					String title = null;

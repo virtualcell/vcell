@@ -374,8 +374,9 @@ private void configurePlotData(int imgX,int imgY) {
 		valS = nf.format(currentDistances[imgX]);
 	}
 	
+	SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[] {currentSymbolTablEntry};
 	currentTimeSeriesPlot2D =
-		new SingleXPlot2D(new SymbolTableEntry[] {currentSymbolTablEntry},"Time", new String[]{currentInfo}, timeData, new String[] {"Time Series (d="+valS+") Vert","Time"/*"Time (s)"*/,"Value"});
+		new SingleXPlot2D(symbolTableEntries,pdeDataViewer.getSimulationModelInfo().getDataSymbolMetadataResolver(), "Time", new String[]{currentInfo}, timeData, new String[] {"Time Series (d="+valS+") Vert","Time"/*"Time (s)"*/,"Value"});
 	getPlotPaneTimeSeries().setPlot2D(currentTimeSeriesPlot2D);
 
 	
@@ -396,8 +397,9 @@ private void configurePlotData(int imgX,int imgY) {
 		valS = nf.format(currentTimes[imgY]);
 	}
 
+	symbolTableEntries = new SymbolTableEntry[] { currentSymbolTablEntry };
 	currentLineScanPlot2D =
-		new Plot2D(new SymbolTableEntry[] {currentSymbolTablEntry},new String[] { currentInfo },new PlotData[] { plotData }, new String[] {"Line Scan (t="+valS+") Horz","Distance"/*"Distance (\u00b5m)"*/, "Value"});
+		new Plot2D(symbolTableEntries ,pdeDataViewer.getSimulationModelInfo().getDataSymbolMetadataResolver(), new String[] { currentInfo },new PlotData[] { plotData }, new String[] {"Line Scan (t="+valS+") Horz","Distance"/*"Distance (\u00b5m)"*/, "Value"});
 	getPlotPaneLineScan().setPlot2D(currentLineScanPlot2D);
 
 

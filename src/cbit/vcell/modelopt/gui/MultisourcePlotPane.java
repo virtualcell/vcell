@@ -473,7 +473,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	int firstIndex = listSelectionEvent.getFirstIndex();
 	int lastIndex = listSelectionEvent.getLastIndex();
 	if (firstIndex<0 || lastIndex<0){
-		getplotPane().setPlot2D(new Plot2D(null,new String[0],new PlotData[0]));
+		getplotPane().setPlot2D(new Plot2D(null,null,new String[0],new PlotData[0]));
 	}
 
 	//
@@ -527,7 +527,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 		renderHints[i] = ((Integer)renderHintList.elementAt(i)).intValue();
 	}
 
-	Plot2D plot2D = new Plot2D(null,names,plotDatas,labels,visibleFlags,renderHints);
+	Plot2D plot2D = new Plot2D(null,null,names,plotDatas,labels,visibleFlags,renderHints);
 	Color[] colorArr = colorV.toArray(new Color[0]);
 //	if(colorV.size() == plot2D.getNumberOfPlots()){
 //		colorArr = colorV.toArray(new Color[0]);

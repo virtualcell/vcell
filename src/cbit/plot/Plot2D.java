@@ -17,6 +17,7 @@ import javax.swing.event.ChangeListener;
 
 import org.vcell.util.Range;
 
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -26,6 +27,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 public class Plot2D {
 	private SymbolTableEntry[] symbolTableEntries;
+	private DataSymbolMetadataResolver dataSymbolMetadataResolver;
 	private String[] plotNames = new String[0];
 	private PlotData[] plotDatas = new PlotData[0];
 	private Range xDataRange = new Range(0,0);
@@ -52,7 +54,7 @@ public class Plot2D {
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-protected Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, double[][] dataValues, String[] labels, boolean[] visiblePlots) {
+protected Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, double[][] dataValues, String[] labels, boolean[] visiblePlots) {
 	/*
 	 for a Plot2D with a "single X" dataset (all PlotDatas share the same independent values)
 	
@@ -70,7 +72,7 @@ protected Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, double
 			plotDatas[i] = new PlotData(dataValues[0], dataValues[i+1]);
 		}
 	}
-	initialize(argSymbolTableEntries,names, plotDatas, labels, visiblePlots, null);
+	initialize(argSymbolTableEntries,metadataResolver, names, plotDatas, labels, visiblePlots, null);
 }
 
 
@@ -80,8 +82,8 @@ protected Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, double
  * @param names java.lang.String[]
  * @param plotDatas cbit.plot.PlotData[]
  */
-public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas) {
-	this(argSymbolTableEntries,names, plotDatas, null, null);
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, PlotData[] plotDatas) {
+	this(argSymbolTableEntries,metadataResolver,names, plotDatas, null, null);
 }
 
 
@@ -92,21 +94,8 @@ public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[
  * @param plotDatas cbit.plot.PlotData[]
  * @param labels java.lang.String[]
  */
-public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels) {
-	this(argSymbolTableEntries,names, plotDatas, labels, null);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/8/2001 1:47:50 PM)
- * @param names java.lang.String[]
- * @param plotDatas cbit.plot.PlotData[]
- * @param labels java.lang.String[]
- * @param visiblePlots boolean[]
- */
-public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots) {
-	this(argSymbolTableEntries,names, plotDatas, labels, visiblePlots, null);
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, PlotData[] plotDatas, String[] labels) {
+	this(argSymbolTableEntries,metadataResolver,names, plotDatas, labels, null);
 }
 
 
@@ -118,8 +107,25 @@ public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-public Plot2D(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] argRenderHints) {
-	initialize(argSymbolTableEntries,names, plotDatas, labels, visiblePlots, argRenderHints);
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots) {
+	this(argSymbolTableEntries,metadataResolver,names, plotDatas, labels, visiblePlots, null);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/8/2001 1:47:50 PM)
+ * @param names java.lang.String[]
+ * @param plotDatas cbit.plot.PlotData[]
+ * @param labels java.lang.String[]
+ * @param visiblePlots boolean[]
+ */
+public Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] argRenderHints) {
+	initialize(argSymbolTableEntries,metadataResolver,names, plotDatas, labels, visiblePlots, argRenderHints);
+}
+
+public DataSymbolMetadataResolver getDataSymbolMetadataResolver(){
+	return this.dataSymbolMetadataResolver;
 }
 
 
@@ -409,12 +415,13 @@ public String getYLabel() {
  * @param labels java.lang.String[]
  * @param visiblePlots boolean[]
  */
-private void initialize(SymbolTableEntry[] argSymbolTableEntries,String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] renderHints) {
+private void initialize(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String[] names, PlotData[] plotDatas, String[] labels, boolean[] visiblePlots, int[] renderHints) {
 
 	if(argSymbolTableEntries != null && argSymbolTableEntries.length != plotDatas.length){
 		throw new IllegalArgumentException("Number of SymbolTableEntries does not equal number of Data Columns");
 	}
 	symbolTableEntries = argSymbolTableEntries;
+	this.dataSymbolMetadataResolver = metadataResolver;
 	
 	if (names != null && plotDatas != null) {
 		if (names.length != plotDatas.length) {

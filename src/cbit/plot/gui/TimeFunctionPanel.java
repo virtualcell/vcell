@@ -26,8 +26,6 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.util.gui.DialogUtils;
 
-import com.ctc.wstx.ent.ParsedExtEntity;
-
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.vcell.math.ReservedVariable;
@@ -210,7 +208,7 @@ public class TimeFunctionPanel extends JPanel {
 			}
 
 			PlotData plotData = new PlotData(timePoints, funcVals);
-			Plot2D plot2D = new Plot2D(null, new String[] { "Time Function" },new PlotData[] { plotData },
+			Plot2D plot2D = new Plot2D(null, null, new String[] { "Time Function" },new PlotData[] { plotData },
 					new String[] {"Time Function Value", "Time", "[" + "Time Function" + "]"});
 			plotPane.setPlot2D(	plot2D);
 //		} catch (Exception e) {

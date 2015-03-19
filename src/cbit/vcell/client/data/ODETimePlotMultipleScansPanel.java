@@ -232,12 +232,12 @@ private void updateScanParamChoices(){
 			Plot2D plot2D = null;
 			if(simulation.getSolverTaskDescription().getOutputTimeSpec() instanceof DefaultOutputTimeSpec)
 			{
-				plot2D = new Plot2D(symbolTableEntries, plotNames, plotDatas, 
+				plot2D = new Plot2D(symbolTableEntries, null, plotNames, plotDatas, 
 						new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});
 			}
 			else
 			{
-				plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, dataValues);
+				plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, dataValues);
 			}
 							
 			plotPane.setPlot2D(plot2D);

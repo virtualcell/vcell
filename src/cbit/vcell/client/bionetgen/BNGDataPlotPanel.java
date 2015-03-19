@@ -396,7 +396,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	boolean visibleFlags[] = new boolean[dataValues.length];
 	Arrays.fill(visibleFlags, true);	
 	String[] labels = {"", "t", ""};
-	Plot2D plot2D = new SingleXPlot2D(null,"Time", names, dataValues,labels, visibleFlags);
+	Plot2D plot2D = new SingleXPlot2D(null,null,"Time", names, dataValues,labels, visibleFlags);
 	getplotPane().setPlot2D(plot2D);
 
 	return;

@@ -2012,7 +2012,7 @@ public static Plot2D getSamplePlot2D() {
 		yArray[i] = 300 - Math.pow(i - offset, 2);
 	}
 	PlotData plotData3 = new PlotData(xArray,yArray);
-	return new Plot2D(null,new String[] {"plot one", "plot two", "plot three"}, new PlotData[] {plotData1, plotData2, plotData3}, new String[] {"title", "X Data", "Y Data"}, new boolean[] {true, false, true});
+	return new Plot2D(null,null,new String[] {"plot one", "plot two", "plot three"}, new PlotData[] {plotData1, plotData2, plotData3}, new String[] {"title", "X Data", "Y Data"}, new boolean[] {true, false, true});
 }
 
 

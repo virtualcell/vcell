@@ -12,7 +12,6 @@ package cbit.vcell.client.data;
 import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.vcell.util.document.VCDataIdentifier;
@@ -21,7 +20,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
@@ -29,7 +27,6 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
-import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:01:46 AM)
@@ -101,31 +98,29 @@ private void connPtoP1SetTarget() {
 		if (ivjConnPtoP1Aligning == false) {
 			ivjConnPtoP1Aligning = true;
 			
-			final String FILTER_CATEGORY_MAP = "FILTER_CATEGORY_MAP";
+			final String DATASYMBOL_METADATA_MAP = "DATASYMBOL_METADATA_MAP";
 			AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(ODEDataViewer.this.getSimulationModelInfo() != null){
-					HashMap<ColumnDescription, FilterCategoryType> filterCategoryMap =
-					((SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo()).getFilterCategories(getOdeSolverResultSet().getColumnDescriptions());
-					hashTable.put(FILTER_CATEGORY_MAP, filterCategoryMap);
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					if(ODEDataViewer.this.getSimulationModelInfo() != null){
+						SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = (SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo();
+						simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+					}
 				}
-			}
-		};
-		AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				HashMap<ColumnDescription, FilterCategoryType> fcm = (HashMap<ColumnDescription, FilterCategoryType>)hashTable.get(FILTER_CATEGORY_MAP);
-				MyDataInterfaceImpl myDataInterfaceImpl =
-					new MyDataInterfaceImpl(getOdeSolverResultSet(),fcm);
-				getODESolverPlotSpecificationPanel1().setOdeSolverResultSet(myDataInterfaceImpl);
-			}
-		};
-		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
-				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
-				false, false, false, null, true);
-
-			ivjConnPtoP1Aligning = false;
+			};
+			AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = (SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo();
+					MyDataInterfaceImpl myDataInterfaceImpl = new MyDataInterfaceImpl(getOdeSolverResultSet(),simulationWorkspaceModelInfo);
+					getODESolverPlotSpecificationPanel1().setMyDataInterface(myDataInterfaceImpl);
+				}
+			};
+			ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
+					new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+					false, false, false, null, true);
+	
+				ivjConnPtoP1Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP1Aligning = false;

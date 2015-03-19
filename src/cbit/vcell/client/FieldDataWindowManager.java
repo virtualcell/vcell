@@ -49,6 +49,7 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -245,7 +246,7 @@ private static class OutputFunctionViewer extends JPanel{
 	private MathDescription mathDescription;
 	private ExternalDataIdentifier edi;
 	private FieldDataWindowManager fieldDataWindowManager;
-	public OutputFunctionViewer(PDEDataViewer pdeDataViewer,FieldDataWindowManager fieldDataWindowManager,ExternalDataIdentifier edi) throws Exception{
+	public OutputFunctionViewer(final PDEDataViewer pdeDataViewer,FieldDataWindowManager fieldDataWindowManager,ExternalDataIdentifier edi) throws Exception{
 		this.pdeDataViewer = pdeDataViewer;
 		this.edi = edi;
 		this.fieldDataWindowManager = fieldDataWindowManager;
@@ -278,8 +279,7 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 			
 			@Override
-			public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut,
-					boolean bFromGeometry) {
+			public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFromGeometry) {
 				// TODO Auto-generated method stub
 				return "membraneName";
 			}
@@ -288,6 +288,11 @@ private static class OutputFunctionViewer extends JPanel{
 			public String getContextName() {
 				// TODO Auto-generated method stub
 				return "contextName";
+			}
+
+			@Override
+			public DataSymbolMetadataResolver getDataSymbolMetadataResolver(){
+				return pdeDataViewer.getSimulationModelInfo().getDataSymbolMetadataResolver();
 			}
 		});
 		

@@ -88,7 +88,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JComboBox ivjXAxisComboBox = null;
 //	private boolean ivjConnPtoP2Aligning = false;
-	private MyDataInterface fieldOdeSolverResultSet = null;
+	private MyDataInterface myDataInterface = null;
 	
 	private static ImageIcon function_icon = null;
 	
@@ -118,7 +118,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				}else if(evt.getPropertyName().equals(ODE_DATA_CHANGED)){
 					regeneratePlot2D();
 				}else if(evt.getPropertyName().equals(ODE_FILTER_CHANGED)){
-					updateChoices(getOdeSolverResultSet());
+					updateChoices(getMyDataInterface());
 				}else if(evt.getPropertyName().equals(ODESOLVERRESULTSET_CHANGED)){
 					MyDataInterface oldMyDataInterface = (MyDataInterface)evt.getOldValue();
 					MyDataInterface newMyDataInterface = (MyDataInterface)evt.getNewValue();
@@ -503,8 +503,8 @@ private javax.swing.JLabel getMinLabel() {
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public MyDataInterface getOdeSolverResultSet() {
-	return fieldOdeSolverResultSet;
+public MyDataInterface getMyDataInterface() {
+	return myDataInterface;
 }
 
 /**
@@ -518,7 +518,7 @@ public MyDataInterface getOdeSolverResultSet() {
  */
 private Constant getSensitivityParameter() throws ExpressionException {
 	String sensParamName = "";
-	FunctionColumnDescription fcds[] = getOdeSolverResultSet().getFunctionColumnDescriptions();
+	FunctionColumnDescription fcds[] = getMyDataInterface().getFunctionColumnDescriptions();
 
 	// Check for any column description name that starts with the substring "sens" and contains "wrt_".
 	for (int i = 0; i < fcds.length; i++){
@@ -539,7 +539,7 @@ private Constant getSensitivityParameter() throws ExpressionException {
 
 	// If the sens param column exists in the result set, create a Constant and return it, else return null.
 	try{
-		sensParamValue = getOdeSolverResultSet().extractColumn(sensParamName)[1];
+		sensParamValue = getMyDataInterface().extractColumn(sensParamName)[1];
 	}catch(ObjectNotFoundException e){
 		// System.out.println("REUSULT SET DOES NOT HAVE SENSITIVITY ANALYSIS");
 		return null;
@@ -635,7 +635,7 @@ private double[] getSensValues(ColumnDescription colDesc) throws ExpressionExcep
 			}
 		}
 		if (sensIndex > -1) {
-			sens = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
+			sens = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
 		}
 
 		return sens;
@@ -776,14 +776,14 @@ private void initConnections() throws java.lang.Exception {
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-			if (getOdeSolverResultSet() == null) {
+			if (getMyDataInterface() == null) {
 				return this;
 			}
 			
 			String varName = (String)value;
 			ColumnDescription cd = null;
 			try {
-				cd = getOdeSolverResultSet().getColumnDescription(varName);
+				cd = getMyDataInterface().getColumnDescription(varName);
 			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -922,7 +922,7 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 			}
 			count++;
 		}
-		if((getOdeSolverResultSet()!= null) && getOdeSolverResultSet().isMultiTrialData()) {
+		if((getMyDataInterface()!= null) && getMyDataInterface().isMultiTrialData()) {
 			plot2D.setVisiblePlots(visiblePlots,true);
 		}
 		else {
@@ -936,11 +936,11 @@ private void refreshVisiblePlots(Plot2D plot2D) {
  * Comment
  */
 private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundException {
-	if (getOdeSolverResultSet() == null) 
+	if (getMyDataInterface() == null) 
 	{
 		return;
 	} 
-	if(!getOdeSolverResultSet().isMultiTrialData())
+	if(!getMyDataInterface().isMultiTrialData())
 	{
 		if(getXAxisComboBox_frm().getSelectedIndex() < 0)
 		{
@@ -950,7 +950,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 		{
 //			double[] xData = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[getXIndex()]);
 			//getUnfilteredSortedXAxisNames
-			double[] xData = getOdeSolverResultSet().extractColumn((String)getXAxisComboBox_frm().getSelectedItem());
+			double[] xData = getMyDataInterface().extractColumn((String)getXAxisComboBox_frm().getSelectedItem());
 			double[][] allData = new double[((DefaultListModel)getYAxisChoice().getModel()).size() + 1][xData.length];
 			String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
 			allData[0] = xData;
@@ -980,9 +980,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				for (int i=0;i<allData.length-1;i++) {
 					// If sensitivity analysis is enabled, extrapolate values for State vars and non-sensitivity functions
 					if (getSensitivityParameter() != null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+						ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						double sens[] = getSensValues(cd);
-						yData = getOdeSolverResultSet().extractColumn(cd.getName());
+						yData = getMyDataInterface().extractColumn(cd.getName());
 						// sens array != null for non-sensitivity state vars and functions, so extrapolate
 						if (sens != null) {
 							for (int j = 0; j < sens.length; j++) {
@@ -996,11 +996,11 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 							} 
 						// sens array == null for sensitivity state vars and functions, so don't change their original values
 						} else {
-							allData[i+1] = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+							allData[i+1] = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 						} 
 					} else {
 						// No sensitivity analysis case, so do not alter the original values for any variable or function
-						allData[i+1] = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+						allData[i+1] = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 					}
 					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);
 				}
@@ -1019,17 +1019,17 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				//
 				for (int i=0;i<allData.length-1;i++) {
 					// Finding sensitivity var column for each column in result set.
-					ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+					ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
 					int sensIndex = -1;
 					for (int j = 0; j < ((DefaultListModel)getYAxisChoice().getModel()).size(); j++) {
 						if (((DefaultListModel)getYAxisChoice().getModel()).elementAt(j).equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
 							sensIndex = j;
 						}
 					}
-					yData = getOdeSolverResultSet().extractColumn(cd.getName());
+					yData = getMyDataInterface().extractColumn(cd.getName());
 					// If sensitivity var exists, compute log sensitivity
 					if (sensIndex > -1) {
-						double[] sens = getOdeSolverResultSet().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
+						double[] sens = getMyDataInterface().extractColumn((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(sensIndex));
 						for (int k = 0; k < yData.length; k++) {
 							// Extrapolated statevars and functions
 							if (Math.abs(yData[k]) > 1e-6) {
@@ -1082,7 +1082,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 				}
 				
 			}
-			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
+			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,getMyDataInterface().getDataSymbolMetadataResolver(),xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
 			refreshVisiblePlots(plot2D);
 			//here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
 			setPlot2D(plot2D);
@@ -1091,14 +1091,14 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 	else // multitrial data
 	{
 		//a column of data get from ODESolverRestultSet, which is actually the results for a specific variable during multiple trials
-		double[] rowData = new double[getOdeSolverResultSet().getRowCount()];
+		double[] rowData = new double[getMyDataInterface().getRowCount()];
 		PlotData[] plotData = new PlotData[((DefaultListModel)getYAxisChoice().getModel()).size()];
 		
 		
 		for (int i=0; i<plotData.length; i++)
 		{
-			ColumnDescription cd = getOdeSolverResultSet().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
-			rowData = getOdeSolverResultSet().extractColumn(cd.getName());
+			ColumnDescription cd = getMyDataInterface().getColumnDescription((String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i));
+			rowData = getMyDataInterface().extractColumn(cd.getName());
 			Point2D[] histogram = generateHistogram(rowData);
 			double[] x = new double[histogram.length];
 			double[] y = new double[histogram.length];
@@ -1125,7 +1125,7 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 		
 		String[] yNames = new String[((DefaultListModel)getYAxisChoice().getModel()).size()];
 		((DefaultListModel)getYAxisChoice().getModel()).copyInto(yNames);
-		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData, new String[] {title, xLabel, yLabel});
+		Plot2D plot2D = new Plot2D(symbolTableEntries, getMyDataInterface().getDataSymbolMetadataResolver(), yNames, plotData, new String[] {title, xLabel, yLabel});
 		refreshVisiblePlots(plot2D);
 		setPlot2D(plot2D);
 	}
@@ -1137,17 +1137,17 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(MyDataInterface newMyDataInterface) {
-	MyDataInterface oldValue = fieldOdeSolverResultSet;
+public void setMyDataInterface(MyDataInterface newMyDataInterface) {
+	MyDataInterface oldValue = myDataInterface;
 	/* Stop listening for events from the current object */
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(ivjEventHandler);
 	}
-	fieldOdeSolverResultSet = newMyDataInterface;
-	if (fieldOdeSolverResultSet != null) {
-		fieldOdeSolverResultSet.addPropertyChangeListener(ivjEventHandler);
+	myDataInterface = newMyDataInterface;
+	if (myDataInterface != null) {
+		myDataInterface.addPropertyChangeListener(ivjEventHandler);
 	}
-	firePropertyChange(ODESOLVERRESULTSET_CHANGED, oldValue, fieldOdeSolverResultSet);
+	firePropertyChange(ODESOLVERRESULTSET_CHANGED, oldValue, myDataInterface);
 }
 
 /**
@@ -1180,8 +1180,8 @@ private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescripti
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(MyDataInterface odeSolverResultSet) throws ExpressionException,ObjectNotFoundException {
-	if (odeSolverResultSet == null) {
+private synchronized void updateChoices(MyDataInterface myDataInterface) throws ExpressionException,ObjectNotFoundException {
+	if (myDataInterface == null) {
 		return;
 	}
 	Object xAxisSelection = getXAxisComboBox_frm().getSelectedItem();
@@ -1191,14 +1191,14 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	ArrayList<ColumnDescription> sensitivityColumnDescriptions = new ArrayList<ColumnDescription>();
 	ColumnDescription timeColumnDescription = null;
 	//find TIME columnDescription
-	ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getAllColumnDescriptions();
+	ColumnDescription[] columnDescriptions = getMyDataInterface().getAllColumnDescriptions();
     for (int i = 0; i < columnDescriptions.length; i++) {
         if (columnDescriptions[i].getName().equals(ReservedVariable.TIME.getName())) {
         	timeColumnDescription = columnDescriptions[i];
         }
     }
 	//find filtered columnDescriptions
-	columnDescriptions = getOdeSolverResultSet().getFilteredColumnDescriptions();
+	columnDescriptions = getMyDataInterface().getFilteredColumnDescriptions();
     for (int i = 0; i < columnDescriptions.length; i++) {
         ColumnDescription cd = columnDescriptions[i];
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
@@ -1220,7 +1220,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
     	sortedColumndDescriptions.add(timeColumnDescription); // add time first
 	}
     
-    boolean bMultiTrialData = odeSolverResultSet.isMultiTrialData();
+    boolean bMultiTrialData = myDataInterface.isMultiTrialData();
     
     sortedColumndDescriptions.addAll(variableColumnDescriptions);
     if(!bMultiTrialData)
@@ -1237,7 +1237,7 @@ private synchronized void updateChoices(MyDataInterface odeSolverResultSet) thro
 	    getComboBoxModelX_frm().removeAllElements();
 	    if(!bMultiTrialData) {
 	       	// Don't put anything in X Axis, if the results of multiple trials are being displayed.
-	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getOdeSolverResultSet().getAllColumnDescriptions()));
+	    	ArrayList<ColumnDescription> xColumnDescriptions = new ArrayList<ColumnDescription>(Arrays.asList(getMyDataInterface().getAllColumnDescriptions()));
 	    	sortColumnDescriptions(xColumnDescriptions);
 	    	if(timeColumnDescription != null){
 	    		getComboBoxModelX_frm().addElement(timeColumnDescription.getName());
@@ -1396,16 +1396,16 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 	return newJCheckBox;		
 }
 private void showFilterSettings() {
-	if(getOdeSolverResultSet() != null &&
-		getOdeSolverResultSet().getSupportedFilterCategories() != null &&
-		getOdeSolverResultSet().getSupportedFilterCategories().length > 0){
+	if(getMyDataInterface() != null &&
+		getMyDataInterface().getSupportedFilterCategories() != null &&
+		getMyDataInterface().getSupportedFilterCategories().length > 0){
 		
 		getFilterPanel().getContentPanel().removeAll();
 		getFilterPanel().getContentPanel().setLayout(null);
 		HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
 		filterSettings = null;
 
-		FilterCategoryType[] filterCategories = getOdeSolverResultSet().getSupportedFilterCategories();
+		FilterCategoryType[] filterCategories = getMyDataInterface().getSupportedFilterCategories();
 		for (int i = 0; i < filterCategories.length; i++) {
 			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
 			if(oldFilterSettings != null){
@@ -1452,9 +1452,9 @@ private void processFilterSelection(){
 				selectedFilterCategories.add(filterSettings.get(jCheckBox));
 			}
 		}
-		getOdeSolverResultSet().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
+		getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
 	}else{
-		getOdeSolverResultSet().selectCategory(null);
+		getMyDataInterface().selectCategory(null);
 		
 	}
 }
