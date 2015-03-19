@@ -168,7 +168,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 							plotIndex ++;
 						}
 					}
-					Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+					Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
 							new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 					plotPane.setPlot2D(plot2D);
 				}						
@@ -218,7 +218,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		
 		plotPane = new PlotPane();
 		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
-		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
+		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
 				new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		

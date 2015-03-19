@@ -4,6 +4,7 @@ import java.beans.PropertyChangeListener;
 
 import org.vcell.util.ObjectNotFoundException;
 
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
@@ -34,4 +35,6 @@ public interface MyDataInterface {
 	FilterCategoryType[] getSupportedFilterCategories();
 
 	void selectCategory(FilterCategoryType[] filterCategories);
+	
+	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
 }

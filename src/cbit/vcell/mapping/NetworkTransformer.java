@@ -188,6 +188,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		Map<String, BNGSpecies> crossMap = new HashMap<String, BNGSpecies>();
 		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
+		int countGenerated = 0;
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
 //			System.out.println(i+1 + ":\t\t"+ s.toString());
@@ -257,6 +258,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
 			param.setExpression(s.getConcentration());
 			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
+			
 			if (origSpeciesContext!=null){
 				// TODO: execution never goes through here because we do a "continue" early in the for look
 				// when we find one of the original seed species
@@ -265,8 +267,10 @@ public class NetworkTransformer implements SimContextTransformer {
 			}else{
 				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(speciesContext),speciesContext);
 				entityMappings.add(em);
+				countGenerated++;
 			}
 		}
+		System.out.println("Total generated species: " + countGenerated);
 		
 //		System.out.println("------------------------ " + scMap.size() + " species contexts in the map.");
 //		System.out.println("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");

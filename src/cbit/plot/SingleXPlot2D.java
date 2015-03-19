@@ -10,6 +10,7 @@
 
 package cbit.plot;
 
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
@@ -22,30 +23,30 @@ public class SingleXPlot2D extends Plot2D {
 	private String xName = "";
 /**
  * SingleXPlot2D constructor comment.
- * @param names java.lang.String[]
+ * @param names String[]
  * @param dataValues double[][]
  */
-public SingleXPlot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,java.lang.String xName, java.lang.String[] names, double[][] dataValues) {
-	this(argSymbolTableEntries,xName, names, dataValues, null, null);
+public SingleXPlot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String xName, String[] names, double[][] dataValues) {
+	this(argSymbolTableEntries,metadataResolver,xName, names, dataValues, null, null);
 }
 /**
  * SingleXPlot2D constructor comment.
- * @param names java.lang.String[]
+ * @param names String[]
  * @param dataValues double[][]
- * @param labels java.lang.String[]
+ * @param labels String[]
  */
-public SingleXPlot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,java.lang.String xName, java.lang.String[] names, double[][] dataValues, java.lang.String[] labels) {
-	this(argSymbolTableEntries,xName, names, dataValues, labels, null);
+public SingleXPlot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String xName, String[] names, double[][] dataValues, String[] labels) {
+	this(argSymbolTableEntries,metadataResolver,xName, names, dataValues, labels, null);
 }
 /**
  * SingleXPlot2D constructor comment.
- * @param names java.lang.String[]
+ * @param names String[]
  * @param dataValues double[][]
- * @param labels java.lang.String[]
+ * @param labels String[]
  * @param visiblePlots boolean[]
  */
-public SingleXPlot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,java.lang.String xName, java.lang.String[] names, double[][] dataValues, java.lang.String[] labels, boolean[] visiblePlots) {
-	super(argSymbolTableEntries,names, dataValues, labels, visiblePlots);
+public SingleXPlot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolver metadataResolver, String xName, String[] names, double[][] dataValues, String[] labels, boolean[] visiblePlots) {
+	super(argSymbolTableEntries,metadataResolver,names, dataValues, labels, visiblePlots);
 	this.dataValues = dataValues;
 	if (xName != null) {
 		this.xName = xName;
@@ -54,7 +55,7 @@ public SingleXPlot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,
 /**
  * Insert the method's description here.
  * Creation date: (4/20/2001 12:07:44 PM)
- * @return java.lang.String[]
+ * @return String[]
  */
 public String[] getColumnTitles() {
 	String [] columnTitles = new String[getNumberOfPlots() + 1];
@@ -93,7 +94,7 @@ public Double[][] getDataValuesByRow() {
 /**
  * Insert the method's description here.
  * Creation date: (4/20/2001 12:07:44 PM)
- * @return java.lang.String[]
+ * @return String[]
  */
 public String[] getVisiblePlotColumnTitles() {
 	String [] visiblePlotColumnTitles = new String[getNumberOfVisiblePlots() + 1];
