@@ -340,7 +340,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		for (int i = 0; i < plotDatas.length; i++) {
 			plotDatas[i] = new PlotData(independent, dependents[i]);
 		}
-		Plot2D plot2D = new Plot2D(null, varNames, plotDatas);
+		Plot2D plot2D = new Plot2D(null, null,varNames, plotDatas);
 		
 		plotter.setPlot2D(plot2D);
 

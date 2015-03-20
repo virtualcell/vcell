@@ -67,7 +67,7 @@ public void test() {
 			java.awt.Insets insets = frame.getInsets();
 			frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 			frame.setVisible(true);
-			aPlot2DPanel.setPlot2D(new cbit.plot.Plot2D(null,new String[] {"plot1","plot2","plot3","plot4", "plot5"},new cbit.plot.PlotData[] { new cbit.plot.PlotData(t,x), new cbit.plot.PlotData(t2,x2), new cbit.plot.PlotData(t,y), new cbit.plot.PlotData(t2,y2), new cbit.plot.PlotData(t2,f2) }));
+			aPlot2DPanel.setPlot2D(new cbit.plot.Plot2D(null,null,new String[] {"plot1","plot2","plot3","plot4", "plot5"},new cbit.plot.PlotData[] { new cbit.plot.PlotData(t,x), new cbit.plot.PlotData(t2,x2), new cbit.plot.PlotData(t,y), new cbit.plot.PlotData(t2,y2), new cbit.plot.PlotData(t2,f2) }));
 		} catch (Throwable exception) {
 			System.err.println("Exception occurred in main() of javax.swing.JPanel");
 			exception.printStackTrace(System.out);

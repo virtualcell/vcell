@@ -74,7 +74,7 @@ public class DisplayPlot extends Task {
 			labels[i] = rowColumnResultSet.getColumnDescriptions(i+1).getName();
 		}
 
-		Plot2D plot2D = new Plot2D(null,labels,plotDatas);		
+		Plot2D plot2D = new Plot2D(null,null,labels,plotDatas);		
 		
 		aPlotPane.setPlot2D(plot2D);
 	}
