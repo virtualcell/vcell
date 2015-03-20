@@ -1251,6 +1251,9 @@ private synchronized void updateChoices(MyDataInterface myDataInterface) throws 
 	    
 	    getDefaultListModelY().removeAllElements();
 	    for (int i = 0; i < sortedColumndDescriptions.size(); i++) {
+	        if (sortedColumndDescriptions.get(i).getName().equals(ReservedVariable.TIME.getName())) {
+	        	continue;
+	        }
 	        getDefaultListModelY().addElement(sortedColumndDescriptions.get(i).getName());
 	    }
 	    
