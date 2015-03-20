@@ -35,6 +35,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
@@ -309,15 +310,11 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 	
 	@Override
 	public void populateDataSymbolMetadata() {
-		//
-		// must be explicitly called from a non-swing thread
-		//
-		VCellThreadChecker.checkCpuIntensiveInvocation();
+		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
 
 		if (savedMetadataMap != null){
 			return;
 		}
-		
 		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<String,DataSymbolMetadata>();
 		
 		if(simulationOwner instanceof SimulationContext){
@@ -332,14 +329,22 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				Enumeration<Variable> varEnum = mathDescription.getVariables();
 				while (varEnum.hasMoreElements()){
 					Variable var = varEnum.nextElement();
-					if(var.getName().contains("egfr")) {
+					if(var.getName().equals("R_Shc")) {
 						System.out.println(var.getName());
 					}
 					SymbolTableEntry[] bioSymbols = mathSymbolMapping.getBiologicalSymbol(var);
 					if (bioSymbols != null && bioSymbols.length>0){
 						
 						SymbolTableEntry ste = bioSymbols[0];
-
+						if(ste instanceof KineticsProxyParameter) {
+							ste = ((KineticsProxyParameter) ste).getTarget();
+						}
+						for(SymbolTableEntry ss : bioSymbols) {
+							if(ss instanceof GeneratedSpeciesSymbolTableEntry) {
+								ste = ss;
+								break;
+							}
+						}
 						FilterCategoryType filterCategory = FilterCategoryType.Other;
 						
 						if (ste instanceof SpeciesContext){
@@ -353,23 +358,24 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 							filterCategory = FilterCategoryType.Observables;
 						}else if (ste instanceof GeneratedSpeciesSymbolTableEntry){
 							filterCategory = FilterCategoryType.GeneratedSpecies;
-						}else if (ste instanceof ReservedSymbol){
-							ReservedSymbol rs = (ReservedSymbol)ste;
-							if (rs.isTime() || rs.isX() || rs.isY() || rs.isZ()){
-								filterCategory = FilterCategoryType.ReservedXYZT;
-							}
+//						}else if (ste instanceof ReservedSymbol){		// TODO: never executed? var can't be reserved symbol
+//							ReservedSymbol rs = (ReservedSymbol)ste;
+//							if (rs.isTime() || rs.isX() || rs.isY() || rs.isZ()){
+//								filterCategory = FilterCategoryType.ReservedXYZT;
+//							}
 						}
-
 						VCUnitDefinition unit = bioSymbols[0].getUnitDefinition();
-						
 						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit));
+					}else{
+						System.out.println("couldn't find biological symbol for var "+var.getName());
 					}
+				
 				}
 				//
 				// add reserved symbols for x,y,z,t
 				//
-//				ModelUnitSystem unitSystem = simulationContext.getModel().getUnitSystem();
-//				metadataMap.put(ReservedVariable.TIME.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getTimeUnit()));
+				ModelUnitSystem unitSystem = simulationContext.getModel().getUnitSystem();
+				metadataMap.put(ReservedVariable.TIME.getName(),new DataSymbolMetadata(null,unitSystem.getTimeUnit()));
 //				metadataMap.put(ReservedVariable.X.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Y.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Z.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
