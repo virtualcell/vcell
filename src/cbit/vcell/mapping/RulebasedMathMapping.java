@@ -287,7 +287,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	// Particle Observable
 	//
 	for(RbmObservable observable : rbmModelContainer.getObservableList()) {
-		ParticleObservable particleObservable = new VolumeParticleObservable(observable.getName(), defaultDomain);
+		ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, defaultGeometryClass),defaultDomain);
 		try {
 		if(observable.getType() == RbmObservable.ObservableType.Molecules) {
 			particleObservable.setType(ParticleObservable.ObservableType.Molecules);
