@@ -11,12 +11,14 @@
 package cbit.vcell.message.server.sim;
 import java.lang.management.ManagementFactory;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -115,10 +117,6 @@ public class SolverPostprocessor  {
 			}
 			lg.trace(workerEventMessage);
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
-			try {
-				Thread.sleep(2000);
-			}catch (InterruptedException e){
-			}
 		} catch (Throwable e) {
 			log.exception(e);
 		} finally {
@@ -129,7 +127,8 @@ public class SolverPostprocessor  {
 					e.printStackTrace();
 				}
 			}
-			VCMongoMessage.flush();
+			ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0); 
+			VCMongoMessage.shutdown( );
 			System.exit(0);
 		}
 	}

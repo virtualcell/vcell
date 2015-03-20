@@ -1012,6 +1012,13 @@ public final class VCMongoMessage {
 	public static void flush() {
 		VCMongoDbDriver.getInstance().flush();
 	}
+	
+	/**
+	 * @see VCMongoDbDriver#shutdown()
+	 */
+	public static void shutdown() {
+		VCMongoDbDriver.getInstance().shutdown();
+	}
 
 
 }

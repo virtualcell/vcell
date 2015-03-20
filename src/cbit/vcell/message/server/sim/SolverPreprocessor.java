@@ -12,14 +12,18 @@ package cbit.vcell.message.server.sim;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
+import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.SessionLog;
-import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.logging.Log4jSessionLog;
+import org.vcell.util.logging.Logging;
+import org.vcell.util.logging.Logging.ConsoleDestination;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -43,6 +47,7 @@ import cbit.vcell.xml.XmlHelper;
  * @author: Jim Schaff
  */
 public class SolverPreprocessor  {
+	private static final String LOG_NAME = "solverPreprocessor";
 	/**
 	 * Starts the application.
 	 * @param args an array of command-line arguments
@@ -81,8 +86,9 @@ public class SolverPreprocessor  {
 			System.out.println("Missing arguments: " + SolverPreprocessor.class.getName() + " simulationTaskFile userdir");
 			System.exit(1);
 		}
-
-		SessionLog log = new StdoutSessionLog("solverPreprocessor");
+		Logging.init();
+		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT); 
+		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
 		try {
 			
 			PropertyLoader.loadProperties();
@@ -158,39 +164,31 @@ public class SolverPreprocessor  {
 			htcSolver.addSolverListener(solverListener);
 			htcSolver.startSolver();
 			VCMongoMessage.sendInfo("preprocessor done");
-	
-			
-			
-//
-// remove later
-//
-final long doneTimeMS = System.currentTimeMillis();
-Thread daemonThread = new Thread(new Runnable() {
-			
-		@Override
-		public void run() {
-			while (true){
-				try {
-					Thread.sleep(1000);
-				}catch (InterruptedException e){
-				}
-				System.err.println("still waiting to exit ..., elapsed time = "+String.valueOf(System.currentTimeMillis()-doneTimeMS)+" ms");
-				Thread.dumpStack();
-			}
-		}
-	},"Cleanup Thread");
-daemonThread.setDaemon(true);
-daemonThread.start();
-
-
-
-	VCMongoMessage.flush();
-			System.exit(0);
+			exitWithCode(0, log.getLogger());
 		} catch (Throwable e) {
 			log.exception(e);
-			VCMongoMessage.flush();
-			System.exit(-1);
+			exitWithCode(-1,log.getLogger());
 		}
+	}
+	
+	/**
+	 * commence shutdown countdown, shutdown mongo
+	 * @param systemReturnCode
+	 */
+	private static void exitWithCode(int systemReturnCode, Logger lg) {
+		ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10, systemReturnCode); 
+		long start = 0;
+		if (lg.isTraceEnabled()) {
+			lg.trace("starting mongo shutdown");
+			start = System.currentTimeMillis();
+		}
+		VCMongoMessage.shutdown( );
+		if (lg.isTraceEnabled()) {
+			long stop = System.currentTimeMillis();
+			double elapsed = (stop - start) / 1000.0;
+			lg.trace("mongo shutdown " + elapsed + "seconds ");
+		}
+		System.exit(systemReturnCode);
 	}
 
 	private static void recoverLastSimulationData(SimulationTask simTask,File userDir){

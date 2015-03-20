@@ -1,6 +1,5 @@
 package cbit.vcell.mongodb;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,7 +15,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
@@ -130,23 +128,31 @@ public class VCMongoDbDriver implements Runnable {
     
     public void run()
     {
-		getSessionLog().print("Starting MongoDB Thread");
-        while(processing && VCMongoMessage.enabled) {
-            try {
-                sendMessages();
-                try {
-                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
-					Thread.sleep(sleepTimeMS);
-				} catch (InterruptedException e) {
+    	if (Thread.currentThread() == messageProcessingThread) {
+			getSessionLog().print("Starting MongoDB Thread");
+	        while(processing && VCMongoMessage.enabled) {
+	            try {
+	                sendMessages();
+	                try {
+	                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
+						Thread.sleep(sleepTimeMS);
+					} catch (InterruptedException e) {
+					}
+	            } catch (Exception e) {
+					e.printStackTrace(System.out);
 				}
-            } catch (Exception e) {
-				e.printStackTrace(System.out);
-			}
-        }
-        getSessionLog().print("Ended MongoDB Thread");
+	        }
+	        getSessionLog().print("Ended MongoDB Thread");
+    	}
+    	else {
+    		throw new RuntimeException("invalid thread");
+    	}
     }
 
 
+    /**
+     * begin mongo processing thread
+     */
     public void startProcessing()
     {
         if(!processing )
@@ -158,9 +164,16 @@ public class VCMongoDbDriver implements Runnable {
         }
     }
     
+    /**
+     * stop processing thread
+     */
     public void stopProcessing()
     {
         processing = false;
+        if (messageProcessingThread != null) {
+        	messageProcessingThread.interrupt();
+        }
+        
     }
 
     public boolean IsProcessing()
@@ -200,6 +213,17 @@ public class VCMongoDbDriver implements Runnable {
 			e.printStackTrace();
 			//ignore
 		}
+	}
+	
+	/**
+	 * stops daemon processing thread and flushes queue on calling thread
+	 */
+	public void shutdown() {
+		if (!processing) {
+			return;
+		}
+		stopProcessing();
+		sendMessages( );
 	}
      
 
