@@ -44,7 +44,6 @@ public class VCellClient {
 	private StatusUpdater statusUpdater = null;
 	private RequestManager requestManager = null;
 	private MDIManager mdiManager = null;
-	private boolean isApplet = false;
 	
 	public static class CheckThreadViolationRepaintManager extends RepaintManager {
 	    // it is recommended to pass the complete check  
@@ -168,16 +167,6 @@ public RequestManager getRequestManager() {
 StatusUpdater getStatusUpdater() {
 	return statusUpdater;
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (5/20/2005 12:19:36 PM)
- * @return boolean
- */
-public boolean isApplet() {
-	return isApplet;
-}
-
 
 /**
  * Insert the method's description here.

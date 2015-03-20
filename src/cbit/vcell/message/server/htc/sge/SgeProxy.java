@@ -32,10 +32,6 @@ public class SgeProxy extends HtcProxy {
 	private final static String QDEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SGE_SUBMISSION_FILE_EXT = ".sge.sub";
 	private Map<HtcJobID, JobInfoAndStatus> statusMap;
-	/**
-	 * jobs that start with {@link HTC_SIMULATION_JOB_NAME_PREFIX}
-	 */
-	private List<HtcJobID> cachedList;
 
 
 	// note: full commands use the PropertyLoader.htcPbsHome path.
@@ -58,7 +54,6 @@ public class SgeProxy extends HtcProxy {
 	public SgeProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
 		statusMap = new HashMap<HtcJobID,JobInfoAndStatus>( );
-		cachedList = new ArrayList<>(); 
 	}
 
 	@Override
@@ -281,14 +276,17 @@ denied: job "6894" does not exist
 		return SGE_SUBMISSION_FILE_EXT;
 	}
 
+	/**
+	 * @param jobNamePrefix
+	 * return jobs that start with prefix for current user
+	 */
 	@Override
 	public List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException {
 		String[] cmds = {SGE_HOME + JOB_CMD_STATUS,"-f","-xml"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
-		parseXML(output,jobNamePrefix);
-		return cachedList;
+		return parseXML(output,jobNamePrefix);
 	}
 
 	@Override
@@ -310,9 +308,14 @@ denied: job "6894" does not exist
 	private static final String PSYM_JNAME = "JB_name";
 	private static final String PSYM_JNUMBER = "JB_job_number";
 	private static final String PSYM_STATE = "state";
-	private void parseXML(String xmlString, String prefix) {
+	
+	/**
+	 * @param xmlString string to parse (qstat output
+	 * @param prefix to look for
+	 */
+	private List<HtcJobID> parseXML(String xmlString, String prefix) {
 		statusMap.clear();
-		cachedList.clear();
+		List<HtcJobID>  jobList = new ArrayList<>();
 		Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
 		Element rootElement = qstatDoc.getRootElement();
 		Element qElement = rootElement.getChild(PSYM_QINFO);
@@ -329,9 +332,10 @@ denied: job "6894" does not exist
 				HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
 				HtcJobStatus status = new HtcJobStatus(SGEJobStatus.parseStatus(state));
 				statusMap.put(id, new JobInfoAndStatus(hji, status));
-				cachedList.add(id);
+				jobList.add(id);
 			}
 		}
+		return jobList;
 	}
 
 	/**

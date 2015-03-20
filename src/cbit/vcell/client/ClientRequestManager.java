@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 
@@ -67,6 +68,7 @@ import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -177,6 +179,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
@@ -2189,21 +2192,15 @@ public void exitApplication() {
 			return;
 		}
 	}
-	// ready to exit
-	if (getVcellClient().isApplet()) {
-		// can't just exit, since it will take down other applets and possibly the browser, try cleanup
-		// if all end up being closed, we should take care of threads and object references so that the application exits
-		
-		/* more work needed here... */
-		
-		((ClientMDIManager)getMdiManager()).cleanup();
-		getClientServerManager().cleanup();
-		getVcellClient().getStatusUpdater().stop();
-		System.gc();
-	} else {
-		// simply exit in this case
-		System.exit(0);
-	}
+	ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0); 
+	//long start = System.currentTimeMillis();
+	VCMongoMessage.shutdown();
+	/*
+	long stop = System.currentTimeMillis();
+	double ft = (stop - start) /1000.0;
+	System.out.println("mongo flush time " + ft);
+	*/
+	System.exit(0);
 	}
 }
 
@@ -2419,12 +2416,12 @@ private VCellClient getVcellClient() {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (8/26/2005 3:14:24 PM)
- * @return boolean
+ * 
+ * @return false 
  */
+@Deprecated
 public boolean isApplet() {
-	return getVcellClient().isApplet();
+	return false; 
 }
 
 /**
