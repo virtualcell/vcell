@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.server;
 import java.io.PrintWriter;
+import org.jdom.Element;
 
 import org.vcell.util.PropertyLoader;
 
@@ -27,15 +28,21 @@ public abstract class SolverFileWriter {
 	protected final SimulationTask simTask;
 	
 	enum SolverInputFileKeyword {
-		JMS_PARAM_BEGIN,
-		JMS_BROKER,
-		JMS_USER,
-		JMS_QUEUE,
-		JMS_TOPIC,
-		VCELL_USER,
-		SIMULATION_KEY,
-		JOB_INDEX,
-		JMS_PARAM_END,
+		JMS_PARAM_BEGIN("jms"),
+		JMS_BROKER("broker"),
+		JMS_USER("jmsUser"),
+		JMS_QUEUE("queue"),
+		JMS_TOPIC("topic"),
+		VCELL_USER("vcellUser"),
+		SIMULATION_KEY("simKey"),
+		JOB_INDEX("jobIndex"),
+		JMS_PARAM_END(""),
+		JMS_PW("pw"); //currently only used in xml 
+		
+		SolverInputFileKeyword(String xml ) {
+			this.xml = xml;
+		}
+		final String xml;
 	}
 /**
  * OdeFileCoder constructor comment.
@@ -79,6 +86,51 @@ protected void writeJMSParamters() {
 		printWriter.println(SolverInputFileKeyword.JMS_PARAM_END);
 		printWriter.println();
 	}
+}
+
+/**
+ * create Element 
+ * @param sifk
+ * @param content may be null
+ * @return new Element
+ */
+private Element create(SolverInputFileKeyword sifk, String content) {
+	Element e = new Element(sifk.xml);
+	if (content != null) {
+		e.addContent(content);
+	}
+	
+	return e;
+}
+
+/**
+ * create Element 
+ * @param sifk
+ * @param number
+ * @return new Element
+ */
+private Element create(SolverInputFileKeyword sifk, int number) {
+	return create(sifk,Integer.toString(number));
+}
+
+/**
+ * 
+ * @return JMS parameters in XML format
+ */
+protected Element xmlJMSParameters () {
+	Element jms = create(SolverInputFileKeyword.JMS_PARAM_BEGIN,null);
+	Element broker = create(SolverInputFileKeyword.JMS_BROKER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)) ;
+	Element jmsUser = create(SolverInputFileKeyword.JMS_USER, PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser));
+	Element pw = create(SolverInputFileKeyword.JMS_PW, PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword));
+	Element queue = create(SolverInputFileKeyword.JMS_QUEUE, VCellQueue.WorkerEventQueue.getName());  
+	Element topic = create(SolverInputFileKeyword.JMS_TOPIC, VCellTopic.ServiceControlTopic.getName());
+	Element vcellUser = create(SolverInputFileKeyword.VCELL_USER, simTask.getSimulation().getVersion().getOwner().getName());
+	Element simkey = create(SolverInputFileKeyword.SIMULATION_KEY, simTask.getSimulation().getVersion().getVersionKey().toString());
+	Element jobindex = create(SolverInputFileKeyword.JOB_INDEX, simTask.getSimulationJob().getJobIndex());
+
+	jms.addContent(broker).addContent(jmsUser).addContent(pw).addContent(queue).addContent(topic).addContent(vcellUser).addContent(simkey).addContent(jobindex);
+
+	return jms; 
 }
 
 public SimulationTask getSimulationTask()

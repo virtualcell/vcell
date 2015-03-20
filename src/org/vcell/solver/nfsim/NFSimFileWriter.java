@@ -10,15 +10,14 @@
 
 package org.vcell.solver.nfsim;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.PrintWriter;
 
+import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.jdom.Element;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.server.SolverFileWriter;
 
@@ -34,20 +33,15 @@ public class NFSimFileWriter extends SolverFileWriter
 	private long randomSeed = 0; //value assigned in the constructor
 	private RandomDataGenerator dist = new RandomDataGenerator();
 	
-	private File inputFile = null;
-	private String baseFileName = null;
 	
-	
-public NFSimFileWriter(String baseName, SimulationTask simTask, boolean bMessaging) 
+public NFSimFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
 {
-	super(null, simTask, bMessaging);
-	baseFileName = baseName;
-	this.inputFile = new File(baseFileName + SimDataConstants.NFSIM_INPUT_FILE_EXTENSION); 
+	super(pw, simTask, bMessaging);
 	
 	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
-	NFsimSimulationOptions smoldynSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
-	if (smoldynSimulationOptions.getRandomSeed() != null) {
-		this.randomSeed = smoldynSimulationOptions.getRandomSeed();
+	NFsimSimulationOptions nfsimOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
+	if (nfsimOptions.getRandomSeed() != null) {
+		this.randomSeed = nfsimOptions.getRandomSeed();
 	} else {
 		this.randomSeed = System.currentTimeMillis();
 	}
@@ -58,16 +52,14 @@ public NFSimFileWriter(String baseName, SimulationTask simTask, boolean bMessagi
 
 @Override
 public void write(String[] parameterNames) throws Exception {	
-	FileOutputStream fos = new FileOutputStream(inputFile);
-	try {
-		NFsimSimulationOptions nfsimSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
-		Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions);
-		XmlUtil.writeXmlToStream(root, false, fos);
-	}finally{
-		if (fos!=null){
-			fos.close();
-		}
+	WriterOutputStream wos = new WriterOutputStream(printWriter);
+	NFsimSimulationOptions nfsimSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
+	Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions);
+	if (bUseMessaging) {
+		Element jms = super.xmlJMSParameters(); 
+		root.addContent(jms);
 	}
+	XmlUtil.writeXmlToStream(root, false, wos);
 }
 
 
