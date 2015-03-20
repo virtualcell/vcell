@@ -124,6 +124,9 @@ public Plot2D(SymbolTableEntry[] argSymbolTableEntries,DataSymbolMetadataResolve
 	initialize(argSymbolTableEntries,metadataResolver,names, plotDatas, labels, visiblePlots, argRenderHints);
 }
 
+/**
+ * @return metadataResolver, if (may be null)
+ */
 public DataSymbolMetadataResolver getDataSymbolMetadataResolver(){
 	return this.dataSymbolMetadataResolver;
 }
