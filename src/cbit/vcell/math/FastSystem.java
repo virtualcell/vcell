@@ -191,7 +191,7 @@ void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws 
 	//
 	for (int i = 0; i < fastRateList.size(); i++) {
 		Expression oldExp = fastRateList.elementAt(i).getFunction();
-		fastRateList.setElementAt(new FastRate(getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
+		fastRateList.setElementAt(new FastRate(Equation.getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
 	}
 	
 	//
@@ -199,28 +199,8 @@ void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws 
 	//
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		Expression oldExp = fastInvariantList.elementAt(i).getFunction();
-		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
+		fastInvariantList.setElementAt(new FastInvariant(Equation.getFlattenedExpression(simSymbolTable,oldExp,bRoundCoefficients)),i);
 	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/10/2002 10:31:03 AM)
- * @param simSymbolTable cbit.vcell.solver.SimulationSymbolTable
- */
-private Expression getFlattenedExpression(MathSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
-
-	if (exp == null){
-		return null;
-	}
-	
-	exp.bindExpression(simSymbolTable);
-	exp = simSymbolTable.substituteFunctions(exp);
-	exp = exp.flatten();
-	if (bRoundCoefficients){
-		exp.roundToFloat();
-	}
-
-	return exp;
 }
 
 final Enumeration<Expression> getFastRateExpressions() {

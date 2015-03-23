@@ -14,6 +14,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 	private Expression expression = null;
@@ -49,6 +50,11 @@ public class MacroscopicRateConstant extends JumpProcessRateDefinition {
 
 	public void setExpression(Expression expression) {
 		this.expression = expression;
+	}
+
+	@Override
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+		expression = Equation.getFlattenedExpression(mathSymbolTable, expression, bRoundCoefficients);
 	}
 	
 }

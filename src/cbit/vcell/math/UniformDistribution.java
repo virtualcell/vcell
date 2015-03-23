@@ -95,4 +95,11 @@ public class UniformDistribution extends Distribution {
 	public final Expression getMaximum() {
 		return maximum;
 	}
+	
+	@Override
+	public void flatten(MathSymbolTable simSymbolTable,	boolean bRoundCoefficients) throws ExpressionException, MathException {
+		minimum = Equation.getFlattenedExpression(simSymbolTable, minimum, bRoundCoefficients);
+		maximum = Equation.getFlattenedExpression(simSymbolTable, maximum, bRoundCoefficients);
+	}
+
 }

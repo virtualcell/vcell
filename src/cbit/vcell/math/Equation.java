@@ -148,7 +148,7 @@ public abstract Vector<Expression> getExpressions(MathDescription mathDesc);
  * Creation date: (10/10/2002 10:31:03 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-final Expression getFlattenedExpression(MathSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
+public final static Expression getFlattenedExpression(MathSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	if (exp == null){
 		return null;
 	}

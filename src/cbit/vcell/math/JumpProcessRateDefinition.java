@@ -15,10 +15,13 @@ import java.io.Serializable;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 public abstract class JumpProcessRateDefinition implements Matchable, Serializable{
 
 	public abstract String getVCML();
 
 	public abstract Expression[] getExpressions();
+
+	public abstract void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException;
 }
