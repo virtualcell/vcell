@@ -13,7 +13,7 @@ import java.util.Collection;
 public interface VersionedLibrary {
 	public final VersionedLibrary CYGWIN_DLL_CHOMBO = new ChomboCygwinDLL();
 	public final VersionedLibrary CYGWIN_DLL_BIONETGEN = new BioNetGenCygwinDLL(); 
-	public final VersionedLibrary CYGWIN_DLL_NFSIM = new BioNetGenCygwinDLL(); 
+	public final VersionedLibrary CYGWIN_DLL_NFSIM = new ChomboCygwinDLL(); 
 	public final VersionedLibrary NONE = new LicensedPlaceholder(); 
 	
 	/**
