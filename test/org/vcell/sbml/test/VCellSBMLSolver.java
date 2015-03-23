@@ -70,12 +70,16 @@ public class VCellSBMLSolver implements SBMLSolver {
 	}
 	
 	private BioModel importSBML(String filename,VCLogger logger,boolean isSpatial) throws ClassNotFoundException, IOException, ExecutableException, XmlParseException {
-//			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, false);
-//			BioModel bioModel = sbmlImporter.getBioModel();
+			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(filename,logger, false);
+			BioModel bioModel = sbmlImporter.getBioModel();
+		//EXPORT_NOTE isolates JVM from SBML crashes -- generally not needed
+		/*
+			
 		if (standaloneImporter == null) {
 			standaloneImporter = new SBMLStandaloneImporter();
 		}
 		BioModel bioModel = standaloneImporter.importSBML(new File(filename));
+		*/
 		
 		return bioModel;
 		

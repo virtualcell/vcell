@@ -118,19 +118,26 @@ public class BiomodelsDB_TestSuite {
 			BioModelsWebServices service = null; 
 			File outDir = null;
 			boolean isDetailed;
+			boolean isStandaloneCopasi;
 
 			{ //scope for commmand line processing
 
 				Options commandOptions = new Options();
-				Option help = new Option("help",false,"show help");
-				commandOptions.addOption(help);
-				Option detailed = new Option("detailed",false,"record detailed information");
-				commandOptions.addOption(detailed);
 				Option output = new Option("output",true,"output directory");
 				output.setRequired(true);
 				commandOptions.addOption(output);
+				
+				Option help = new Option("help",false,"show help");
+				commandOptions.addOption(help);
+				
+				Option detailed = new Option("detailed",false,"record detailed information");
+				commandOptions.addOption(detailed);
+				
+				
+				Option saCopasiOpt = new Option("standAloneCopasi",false,"using standalone copasi library");
+				commandOptions.addOption(saCopasiOpt);
 
-				OptionGroup primary = new OptionGroup();
+				LOptionGroup primary = new LOptionGroup();
 
 				LOption min = new LOption("min",true,"minimum number of model to import",true);
 				min.setType(Number.class);
@@ -172,7 +179,10 @@ public class BiomodelsDB_TestSuite {
 				Collection<LOption> priOpts = primary.getOptions();
 				priOpts.retainAll(optionSet);
 				if (!priOpts.isEmpty()) {
-					assert(priOpts.size( ) == 1);
+					if (priOpts.size( ) != 1) {
+						throw new IllegalArgumentException("only one primary option in "  +  primary.getAvailable() + " may be set,"
+								+ primary.getNames() + " found");
+					}
 					primaryOpt = priOpts.iterator().next( );
 				}
 
@@ -182,6 +192,7 @@ public class BiomodelsDB_TestSuite {
 					outDir.mkdirs();
 				}
 				isDetailed = optionSet.contains(detailed);
+				isStandaloneCopasi = optionSet.contains(saCopasiOpt);
 			
 
 				BioModelsWebServicesServiceLocator locator = new BioModelsWebServicesServiceLocator();
@@ -250,8 +261,15 @@ public class BiomodelsDB_TestSuite {
 
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log"),true));
 			flusher.add(printWriter);
-			//SBMLSolver copasiSBMLSolver = new CopasiSBMLSolver();
-			SBMLSolver copasiSBMLSolver = new CopasiStandaloneSolver(); 
+			SBMLSolver copasiSBMLSolver; 
+			if (!isStandaloneCopasi) {
+				//EXPORT_NOTE this is easier to debug but crashes out the JVM sometimes
+				copasiSBMLSolver = new CopasiSBMLSolver();
+			}
+			else {
+				//EXPORT_NOTE this is harder to debug but isolates the test suite from a copasi glitch
+				copasiSBMLSolver = new CopasiStandaloneSolver(); 
+			}
 			try {
 				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | ");
 				removeToxic(modelIDs, printWriter);
@@ -759,6 +777,10 @@ public class BiomodelsDB_TestSuite {
 		}
 	}
 
+	/**
+	 * locally defined option which encapsulates whether the option requires
+	 * downloading models
+	 */
 	@SuppressWarnings("serial")
 	private static class LOption extends Option {
 		final boolean downloads;
@@ -767,6 +789,24 @@ public class BiomodelsDB_TestSuite {
 			this.downloads = downloads;
 		}
 
+	}
+	
+	/**
+	 * OptionGroup which tracks available options
+	 */
+	@SuppressWarnings("serial")
+	private static class LOptionGroup extends OptionGroup {
+		private String available = "";
+
+		@Override
+		public OptionGroup addOption(Option option) {
+			available += " '" + option.getOpt() + "'";
+			return super.addOption(option);
+		}
+
+		public String getAvailable() {
+			return available;
+		}
 	}
 
 	@Test

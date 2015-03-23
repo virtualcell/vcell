@@ -25,11 +25,13 @@ package org.vcell.sbml.vcell;
 
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Vector;
 
@@ -55,7 +57,6 @@ import org.sbml.libsbml.DomainType;
 import org.sbml.libsbml.Event;
 import org.sbml.libsbml.FunctionDefinition;
 import org.sbml.libsbml.GeometryDefinition;
-import org.sbml.libsbml.ImageData;
 import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.InteriorPoint;
 import org.sbml.libsbml.KineticLaw;
@@ -77,7 +78,6 @@ import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.ParametricGeometry;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.Reaction;
-import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.Rule;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLReader;
@@ -88,13 +88,18 @@ import org.sbml.libsbml.SampledVolume;
 import org.sbml.libsbml.SpatialCompartmentPlugin;
 import org.sbml.libsbml.SpatialModelPlugin;
 import org.sbml.libsbml.SpatialParameterPlugin;
-import org.sbml.libsbml.SpatialSpeciesRxnPlugin;
-import org.sbml.libsbml.SpatialSymbolReference;
+import org.sbml.libsbml.SpatialReactionPlugin;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.libsbml;
+import org.sbml.libsbml.libsbmlConstants;
+import org.vcell.sbml.BoundaryTypeAdapter;
+import org.vcell.sbml.ListOfAdapter;
+import org.vcell.sbml.OperatorTypeAdapter;
+import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SpatialAdapter;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
@@ -106,6 +111,7 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary;
 
 import cbit.image.VCImage;
@@ -131,7 +137,9 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.BioEvent;
+//import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
@@ -140,6 +148,7 @@ import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
@@ -178,13 +187,7 @@ import cbit.vcell.units.VCUnitSystem;
 import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
-	
-	/**
-	 * keywords for VCLogger error message; used to detect specific error
-	 */
-	public static final String RESERVED_SPATIAL = "reserved spatial";
-	
-	public static class SBMLIssueSource implements IssueSource {
+	public static class SBMLIssueSource implements Issue.IssueSource {
 		private final SBase issueSource;
 		public SBMLIssueSource(SBase issueSource){
 			this.issueSource = issueSource;
@@ -193,7 +196,11 @@ public class SBMLImporter {
 			return issueSource;
 		}
 	}
-
+	/**
+	 * keywords for VCLogger error message; used to detect specific error
+	 */
+	public static final String RESERVED_SPATIAL = "reserved spatial";
+	
 	private long level = 2;
 	//private long version = 3;
 	
@@ -215,7 +222,6 @@ public class SBMLImporter {
 	// issue list for medium-level warnings while importing 
 	private Vector<Issue> localIssueList = new Vector<Issue>();
 	private final IssueContext issueContext = new IssueContext();
-	
 	// is model spatial?
 	private boolean bSpatial = false;
 
@@ -236,7 +242,7 @@ public class SBMLImporter {
 	private SBMLAnnotationUtil sbmlAnnotationUtil = null;
 
 
-	/* A lightweight inner class to contain the SBML and VC concentration units for species. Needed when running the Semantics test suite.
+	/* A lightweight nested class to contain the SBML and VC concentration units for species. Needed when running the Semantics test suite.
 	 * When SBML model is imported into VCell and a simulation is run, the units of the generated results are different from
 	 * units of results in SBML (usually a factor of 1e-6 for species concentration). In order to compare the two results, 
 	 * we need to know the units in SBML (this is after importing to VCEll and running simulations, at which point we only know the 
@@ -258,43 +264,17 @@ public class SBMLImporter {
 			return VCunits;		
 		}
 	}
-	static
-	{
-		NativeLib.SBML.load( );
-	}
-	
-	/**
-	 * helper class for {@link SBMLImporter#addGeometry()}
-	 * sort by ordinal number of sort data, descending
-	 */
-	private static class CSGObjectSorter implements Comparable<CSGObjectSorter>{
-		final CSGObject cSGObject;
-		final Integer ordinal;
-		public CSGObjectSorter(CSGObject cSGObject, int ordinal) {
-			this.cSGObject = cSGObject;
-			this.ordinal = ordinal;
-		}
-		
-		/**
-		 * reverse semantics of sort by multiplying ordinal compare to by -1
-		 */
-		@Override
-		public int compareTo(CSGObjectSorter o) {
-			return -1 * ordinal.compareTo(o.ordinal);
-		}
-	}
 	
 	private static Logger lg = Logger.getLogger(SBMLImporter.class);
 
 	public SBMLImporter(String argSbmlFileName, VCLogger argVCLogger, boolean isSpatial) {
 		super();
+		NativeLib.SBML.load( );
 		this.sbmlFileName = argSbmlFileName;
 		this.logger = argVCLogger;
 		this.vcBioModel = new BioModel(null);
 		this.bSpatial = isSpatial;
 	}
-
-
 	
 protected void addCompartments(VCMetaData metaData) {
 	if (sbmlModel == null) {
@@ -446,20 +426,12 @@ protected void addEvents() {
 				}
 				
 				//delay 
-				boolean bUseValuesFromTriggerTime = true;
-				if (event.isSetUseValuesFromTriggerTime()){
-					bUseValuesFromTriggerTime = event.getUseValuesFromTriggerTime();
-				}
-				BioEvent vcEvent = new BioEvent(eventName, TriggerType.GeneralTrigger, bUseValuesFromTriggerTime, new ArrayList<EventAssignment>(), simContext);
+				BioEvent vcEvent = new BioEvent(eventName, TriggerType.GeneralTrigger, true, simContext);
 				if (event.isSetDelay()) {
 					Expression durationExpr = null;
 					durationExpr = getExpressionFromFormula(event.getDelay().getMath());
 					durationExpr = adjustExpression(durationExpr, vcModel);
 					boolean bUseValsFromTriggerTime = true;
-					/* TODO : This code is used when libSBML-4.1.0-b2 is used. On 3-29-10, version was switched back to 
-					 * libSBML-4.0.1-b2, which does not support boolean 'bUseValueFromTriggerTime'. This code shall be reinstated
-					 * when libSBML version is upgraded.
-					 */ 
 					if (event.isSetUseValuesFromTriggerTime()) {
 						bUseValsFromTriggerTime = event.isSetUseValuesFromTriggerTime();
 					} else {
@@ -471,11 +443,10 @@ protected void addEvents() {
 					if (durationExpr != null && !durationExpr.isZero()) {
 						bUseValsFromTriggerTime = false;
 					}
-					
-					vcEvent.setParameterValue(ParameterType.TriggerDelay, durationExpr);
 					vcEvent.setUseValuesFromTriggerTime(bUseValsFromTriggerTime);
+					vcEvent.getParameter(ParameterType.TriggerDelay).setExpression(durationExpr);
 				}
-				
+
 				// event assignments
 				ArrayList<EventAssignment> vcEvntAssgnList = new ArrayList<EventAssignment>();
 				for (int j = 0; j < event.getNumEventAssignments(); j++) {
@@ -567,7 +538,7 @@ protected void addInitialAssignments() {
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			throw new SBMLImportException("Error reading InitialAssignment : " + e.getMessage(),e); 
+			throw new RuntimeException("Error reading InitialAssignment : " + e.getMessage()); 
 		}
 	}
 }
@@ -649,17 +620,10 @@ protected void addParameters() throws Exception {
 	ModelUnitSystem modelUnitSystem = vcModel.getUnitSystem();
 	
 	// needed to ascertain the boundary condition type (later, when processing the SBML parameters for boundary condition) 
-	CoordinateComponent ccX = null; 
-	CoordinateComponent ccY = null;
-	CoordinateComponent ccZ = null;
+	XYZCoordinates xyzCoordinates = null; 
 	if (bSpatial) {
-		SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-		if (mplugin != null) {
-			org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
-			ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
-			ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
-			ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
-		}
+		org.sbml.libsbml.Geometry sbmlGeometry = getSbmlGeometry();
+		xyzCoordinates = new XYZCoordinates(vcModel, sbmlGeometry);
 	}
 	
 	for (int i = 0; i < sbmlModel.getNumParameters(); i++){
@@ -671,36 +635,24 @@ protected void addParameters() throws Exception {
 			// check if parameter id is x/y/z : if so, check if its 'spatialSymbolRef' child's spatial id and type are non-empty.
 			// If so, the parameter represents a spatial element.
 			// If not, throw an exception, since a parameter that does not represent a spatial element cannot have an id of x/y/z
-			
-			// (a) the requiredElements attributes should be 'spatial'
-			boolean bSpatialParam = false;
-			RequiredElementsSBasePlugin reqPlugin = (RequiredElementsSBasePlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-			if (reqPlugin != null) {
-				if (reqPlugin.getMathOverridden().equals(SBMLUtils.SBML_SPATIAL_NS_PREFIX)) {
-					bSpatialParam = true;
-				}
-				spplugin = (SpatialParameterPlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-				if (paramName.equals("x") || paramName.equals("y") || paramName.equals("z")) {
-					// (b) and the spatialSymbolRef (splatialParamPlugin) attributes should be non-empty
-					SpatialSymbolReference spSymRef = spplugin.getSpatialSymbolReference();
-					if (spSymRef.isSetSpatialId() && spSymRef.isSetType()) {
-						bSpatialParam = bSpatialParam && true;
-					}
-					
-					// if (a) and (b) are not true, for param with id x/y/z, throw exception - not allowed.
-					// if (a) and (b) are true, continue with the next parameter
-					if (!bSpatialParam) {
-						throw new SBMLImportException("Parameter '" + paramName +
+
+			spplugin = SBMLHelper.checkedPlugin(SpatialParameterPlugin.class,sbmlGlobalParam,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+			if (paramName.equals("x") || paramName.equals("y") || paramName.equals("z")) {
+				boolean bSpatialParam = spplugin.isSetSpatialSymbolReference();
+
+				// if (a) and (b) are not true, for param with id x/y/z, throw exception - not allowed.
+				// if (a) and (b) are true, continue with the next parameter
+				if (!bSpatialParam) {
+					throw new RuntimeException("Parameter '" + paramName +
 							"' is not a spatial parameter : Cannot have a variable in VCell named '" + 
 							paramName + "' unless it is a spatial variable.");
-					} else {
-						// go to the next parameter - do not add the spatial parameter to the list of vcell parameters.
-						continue;
-					}
+				} else {
+					// go to the next parameter - do not add the spatial parameter to the list of vcell parameters.
+					continue;
 				}
 			}
 		}
-		
+
 		//
 		// Get param value if set or get its expression from rule
 		//
@@ -727,12 +679,13 @@ protected void addParameters() throws Exception {
 
 		// if SBML model is spatial, check if param represents species diffusion/advection/boundary condition parameters for 'spatial' extension
 		if (bSpatial) {
+			VCAssert.assertTrue(spplugin!=null, "invalid initialization logic");
 			try {
 				SpeciesContext paramSpContext = null;
 				SpeciesContextSpec vcSpContextsSpec = null;
 				// Check for diffusion coefficient(s)
 				DiffusionCoefficient diffCoeff = spplugin.getDiffusionCoefficient();
-				if (diffCoeff.isSetVariable()) {
+				if (diffCoeff !=null && diffCoeff.isSetVariable()) {
 					// get the var of diffCoeff; find appropriate spContext in vcell; set its diff param to param value. 
 					paramSpContext = vcModel.getSpeciesContext(diffCoeff.getVariable());
 					if (paramSpContext != null) {
@@ -745,19 +698,14 @@ protected void addParameters() throws Exception {
 				
 				// Check for advection coefficient(s)
 				AdvectionCoefficient advCoeff = spplugin.getAdvectionCoefficient();
-				if (advCoeff.isSetVariable()) {
+				if (advCoeff !=null && advCoeff.isSetVariable()) {
 					// get the var of advCoeff; find appropriate spContext in vcell; set its adv param to param value. 
 					paramSpContext = vcModel.getSpeciesContext(advCoeff.getVariable());
 					if (paramSpContext != null) {
 						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
-						long coord = advCoeff.getCoordinateIndex();
-						if (coord == 0) {
-							vcSpContextsSpec.getVelocityXParameter().setExpression(valueExpr);
-						} else if (coord == 1) {
-							vcSpContextsSpec.getVelocityYParameter().setExpression(valueExpr);
-						} else if (coord == 2) {
-							vcSpContextsSpec.getVelocityZParameter().setExpression(valueExpr);
-						}
+						SpatialAdapter sa = SpatialAdapter.requiredSBMLType(advCoeff.getCoordinate());
+						SpeciesContextSpecParameter param = vcSpContextsSpec.getParameterFromRole(sa.velocityRole());
+						param.setExpression(valueExpr);
 					}
 					// go to the next parameter - do not add the advection coeff parameter to the list of vcell parameters.
 					continue;
@@ -765,6 +713,8 @@ protected void addParameters() throws Exception {
 	
 				// Check for Boundary condition(s)
 				BoundaryCondition bCondn = spplugin.getBoundaryCondition();
+				VCAssert.assertTrue(bCondn != null, "no boundary condition");
+				VCAssert.assertTrue(xyzCoordinates != null, "coordinates not created for spatial model");
 				if (bCondn.isSetVariable()) {
 					// get the var of boundaryCondn; find appropriate spContext in vcell; 
 					// set the BC param of its speciesContextSpec to param value. 
@@ -772,46 +722,36 @@ protected void addParameters() throws Exception {
 					if (paramSpContext != null) {
 						StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
 						vcSpContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(paramSpContext);
-						if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getSpatialId())) {
+						BoundaryConditionType bct = BoundaryTypeAdapter.fromSbml(bCondn.getType( ));
+						switch (xyzCoordinates.boundaryOf(bCondn)) {
+						case X_MIN:
 							// if type from SBML parameter Boundary Condn is not the same as the boundary type of the 
 							// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping
 							// to the value of 'type' from SBML parameter Boundary Condn. 
-							String bcXmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeXm().boundaryTypeStringValue().equals(bcXmType)) {
-								sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
-							}
+							sm.setBoundaryConditionTypeXm(bct);
 							// set expression for boundary condition in speciesContextSpec
 							vcSpContextsSpec.getBoundaryXmParameter().setExpression(valueExpr);
-						} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
-							String bcXpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeXp().boundaryTypeStringValue().equals(bcXpType)) {
-								sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
-							}
+							break;
+						case X_MAX:
+							sm.setBoundaryConditionTypeXp(bct);
 							vcSpContextsSpec.getBoundaryXpParameter().setExpression(valueExpr);
-						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
-							String bcYmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeYm().boundaryTypeStringValue().equals(bcYmType)) {
-								sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
-							}
+							break;
+						case Y_MIN:
+							sm.setBoundaryConditionTypeYm(bct);
 							vcSpContextsSpec.getBoundaryYmParameter().setExpression(valueExpr);
-						} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
-							String bcYpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeYp().boundaryTypeStringValue().equals(bcYpType)) {
-								sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
-							}
+							break;
+						case Y_MAX:
+							sm.setBoundaryConditionTypeYp(bct);
 							vcSpContextsSpec.getBoundaryYpParameter().setExpression(valueExpr);
-						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
-							String bcZmType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeZm().boundaryTypeStringValue().equals(bcZmType)) {
-								sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
-							}
+							break;
+						case Z_MIN:
+							sm.setBoundaryConditionTypeZm(bct);
 							vcSpContextsSpec.getBoundaryZmParameter().setExpression(valueExpr);
-						} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
-							String bcZpType = bCondn.getType();
-							if (!sm.getBoundaryConditionTypeZp().boundaryTypeStringValue().equals(bcZpType)) {
-								sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
-							}
+							break;
+						case Z_MAX:
+							sm.setBoundaryConditionTypeZp(bct);
 							vcSpContextsSpec.getBoundaryZpParameter().setExpression(valueExpr);
+							break;
 						}
 					}
 					// go to the next parameter - do not add the advection coeff parameter to the list of vcell parameters.
@@ -844,6 +784,55 @@ protected void addParameters() throws Exception {
 	vcModel.setModelParameters(vcModelParamsList.toArray(new ModelParameter[0]));
 }
 
+/**
+ * Cartesian components in 3D
+ */
+private static class XYZCoordinates{
+	enum CartesianBoundary {
+		X_MIN,
+		X_MAX,
+		Y_MIN,
+		Y_MAX,
+		Z_MIN,
+		Z_MAX,
+	}
+	final CoordinateComponent ccX; 
+	final CoordinateComponent ccY;
+	final CoordinateComponent ccZ;
+
+	/**
+	 * get components from SBML geometry
+	 * @param vcModel
+	 * @param sbmlGeometry SBML object
+	 */
+	XYZCoordinates(Model vcModel,org.sbml.libsbml.Geometry sbmlGeometry  ) {
+		ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
+		ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
+		ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
+	}
+
+	/**
+	 * find boundary of condition
+	 * @param bCondn
+	 * @return which boundary condition is for or null if doesn't match any cartesian identifier
+	 */
+	CartesianBoundary boundaryOf(BoundaryCondition bCondn) {
+		if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getId())) {
+			return CartesianBoundary.X_MIN;
+		} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getId())) {
+			return CartesianBoundary.X_MAX;
+		} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getId())) {
+			return CartesianBoundary.Y_MIN;
+		} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getId())) {
+			return CartesianBoundary.Y_MAX;
+		} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getId())) {
+			return CartesianBoundary.Z_MIN;
+		} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getId())) {
+			return CartesianBoundary.Z_MAX;
+		}
+		return null;
+	}
+}
 /**
  * @param spConcFactorInModelParamsList
  * @param valueExpr
@@ -1486,14 +1475,13 @@ public BioModel getBioModel() {
 	SBMLDocument document = reader.readSBML(sbmlFileName);
 
 	long numProblems = document.getNumErrors();
+	
+	System.out.println("\n\nSBML Import Error Report");
 	OStringStream oStrStream = new OStringStream();
-	if (numProblems > 0) {
-		System.out.println("\n\nSBML Import Error Report");
-		document.printErrors(oStrStream);
-		if (lg.isEnabledFor(Level.WARN)) {
-			lg.warn("Num problems in original SBML document : " + numProblems);
-			lg.warn(oStrStream.str());
-		}
+	document.printErrors(oStrStream);
+	if (numProblems > 0 && lg.isEnabledFor(Level.WARN)) {
+		lg.warn("Num problems in original SBML document : " + numProblems);
+		lg.warn(oStrStream.str());
 	}
 
 	try {
@@ -2321,9 +2309,8 @@ protected void addReactions(VCMetaData metaData) {
 				// set kinetics on VCell reaction 
 				if (bSpatial) {
 					// if spatial SBML ('isSpatial' attribute set), create DistributedKinetics)
-					SpatialSpeciesRxnPlugin ssrplugin = null;
+					SpatialReactionPlugin ssrplugin = SBMLHelper.checkedPlugin(SpatialReactionPlugin.class,sbmlRxn,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 					// (a) the requiredElements attributes should be 'spatial'
-					ssrplugin = (SpatialSpeciesRxnPlugin)sbmlRxn.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 					if (ssrplugin != null && ssrplugin.getIsLocal()) {
 						kinetics = new GeneralKinetics(vcReactions[i]);
 					} else {
@@ -2435,49 +2422,39 @@ protected void addReactions(VCMetaData metaData) {
 }
 
 public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNode sbmlCSGNode){
-	String csgNodeName = sbmlCSGNode.getSpatialId();
+	String csgNodeName = sbmlCSGNode.getId();
 	if (sbmlCSGNode.isCSGPrimitive()){
-		String primitiveType = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
-		if (primitiveType.equals(SBMLSpatialConstants.SOLID_SPHERE)){
+		int primitiveKind = ((org.sbml.libsbml.CSGPrimitive)sbmlCSGNode).getPrimitiveType();
+		if (primitiveKind == libsbmlConstants.SPATIAL_PRIMITIVEKIND_SPHERE) {
 			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.SPHERE);
 			return vcellPrimitive;
 		}
-		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CONE)){
+		if (primitiveKind == libsbmlConstants.SPATIAL_PRIMITIVEKIND_CONE) {
 			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CONE);
 			return vcellPrimitive;
 		}
-		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CUBE)){
+		if (primitiveKind == libsbmlConstants.SPATIAL_PRIMITIVEKIND_CUBE) {
 			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CUBE);
 			return vcellPrimitive;
 		}
-		if (primitiveType.equals(SBMLSpatialConstants.SOLID_CYLINDER)){
+		if (primitiveKind == libsbmlConstants.SPATIAL_PRIMITIVEKIND_CYLINDER) {
 			cbit.vcell.geometry.CSGPrimitive vcellPrimitive = new cbit.vcell.geometry.CSGPrimitive(csgNodeName, PrimitiveType.CYLINDER);
 			return vcellPrimitive;
 		}
-		throw new SBMLImportException("PrimitiveType '" + primitiveType + "' not recognized");
+		throw new RuntimeException("PrimitiveType '" + primitiveKind + "' not recognized");
 	}else if (sbmlCSGNode.isCSGPseudoPrimitive()) {
-		throw new SBMLImportException("Pseudo primitives not yet supported in CSGeometry.");
+		throw new RuntimeException("Pseudo primitives not yet supported in CSGeometry.");
 	}else if (sbmlCSGNode.isCSGSetOperator()) {
 		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = (org.sbml.libsbml.CSGSetOperator)sbmlCSGNode;
-		String operatorType = sbmlSetOperator.getOperationType();
-		OperatorType opType = null;
-		if (operatorType.equals(SBMLSpatialConstants.UNION)){
-			opType = OperatorType.UNION;
-		}else if (operatorType.equals(SBMLSpatialConstants.DIFFERENCE)){
-			opType = OperatorType.DIFFERENCE;
-		}else if (operatorType.equals(SBMLSpatialConstants.INTERSECTION)){
-			opType = OperatorType.INTERSECTION;
-		}else{
-			throw new SBMLImportException("unsupported operator type '"+operatorType+"'");
-		}
+		OperatorType opType = OperatorTypeAdapter.fromSbml(sbmlSetOperator.getOperationType());
 		cbit.vcell.geometry.CSGSetOperator vcellSetOperator = new cbit.vcell.geometry.CSGSetOperator(csgNodeName, opType);
-		for (int c = 0; c < sbmlSetOperator.getNumCSGNodeChildren(); c++){
-			vcellSetOperator.addChild(getVCellCSGNode(sbmlSetOperator.getCSGNodeChild(c)));
+		for (int c = 0; c < sbmlSetOperator.getNumCsgNodes(); c++){
+			vcellSetOperator.addChild(getVCellCSGNode(sbmlSetOperator.getCsgNode(c)));
 		}
 		return vcellSetOperator;
-	}else if (sbmlCSGNode.isCSGTransformation()) {
+	}else if (sbmlCSGNode.isCSGHomogeneousTransformation()) {
 		org.sbml.libsbml.CSGTransformation sbmlTransformation = (org.sbml.libsbml.CSGTransformation)sbmlCSGNode;  
-		cbit.vcell.geometry.CSGNode vcellCSGChild = getVCellCSGNode(sbmlTransformation.getChild());
+		cbit.vcell.geometry.CSGNode vcellCSGChild = getVCellCSGNode(sbmlTransformation.getCsgNode());
 		if (sbmlTransformation.isCSGTranslation()) {
 			org.sbml.libsbml.CSGTranslation sbmlTranslation = (org.sbml.libsbml.CSGTranslation) sbmlTransformation;
 			Vect3d translation = new Vect3d(sbmlTranslation.getTranslateX(),sbmlTranslation.getTranslateY(),sbmlTranslation.getTranslateZ());
@@ -2486,8 +2463,8 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 			return vcellTranslation;
 		}else if (sbmlTransformation.isCSGRotation()) {
 			org.sbml.libsbml.CSGRotation sbmlRotation = (org.sbml.libsbml.CSGRotation) sbmlTransformation;
-			Vect3d axis = new Vect3d(sbmlRotation.getRotationAxisX(),sbmlRotation.getRotationAxisY(),sbmlRotation.getRotationAxisZ());
-			double rotationAngleRadians = sbmlRotation.getRotationAngleInRadians();
+			Vect3d axis = new Vect3d(sbmlRotation.getRotateX(),sbmlRotation.getRotateY(),sbmlRotation.getRotateZ());
+			double rotationAngleRadians = sbmlRotation.getRotateAngleInRadians();
 			cbit.vcell.geometry.CSGRotation vcellRotation = new cbit.vcell.geometry.CSGRotation(csgNodeName, axis, rotationAngleRadians);
 			vcellRotation.setChild(vcellCSGChild);
 			return vcellRotation;
@@ -2507,55 +2484,76 @@ public static cbit.vcell.geometry.CSGNode getVCellCSGNode(org.sbml.libsbml.CSGNo
 	}
 }
 
-protected void addGeometry() {
+/**
+ * extract SBML geometry
+ * issue warning if not defined
+ * @return null if not defined
+ * @throws IllegalArgumentException if plugin or geometry not found
+ */
+private org.sbml.libsbml.Geometry getSbmlGeometry( )  {
 	// Get a SpatialModelPlugin object plugged in the model object.
 	//
 	// The type of the returned value of SBase::getPlugin() function is 
 	// SBasePlugin*, and thus the value needs to be cast for the 
 	// corresponding derived class.
 	//
-	SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+	SpatialModelPlugin mplugin = SBMLHelper.checkedPlugin(SpatialModelPlugin.class,sbmlModel,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+	if (mplugin == null) {
+		throw new IllegalArgumentException("SpatialModelPlugin not found");
+	}
 
 	// get a Geometry object via SpatialModelPlugin object.
-	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
+	org.sbml.libsbml.Geometry geometry = mplugin.getGeometry();
+	if (geometry == null) {
+		throw new IllegalArgumentException("SBML Geometry not found");
+	}
 
-	// (2/15/2013) For now, allow model to be imported even without geometry defined. Issue a warning.
-	if (sbmlGeometry.getNumGeometryDefinitions() < 1) {
-		localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not deifned in spatial model.", Issue.SEVERITY_WARNING));
+	if (geometry.getNumGeometryDefinitions() < 1) {
+		// (2/15/2013) For now, allow model to be imported even without geometry defined. Issue a warning.
+		localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, "Geometry not defined in spatial model.", Issue.SEVERITY_WARNING));
+		return null;
+		// throw new RuntimeException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
+	}
+	return geometry;
+	
+}
+protected void addGeometry() {
+	// get a Geometry object via SpatialModelPlugin object.
+	org.sbml.libsbml.Geometry sbmlGeometry = getSbmlGeometry(); 
+	if (sbmlGeometry == null) {
 		return;
-		// throw new SBMLImportException("SBML model does not have any geometryDefinition. Cannot proceed with import.");
 	}
 	
-	// get a CoordComponent object via the Geometry object.	
-	ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
-	if (listOfCoordComps == null) {
-		throw new SBMLImportException("Cannot have 0 coordinate compartments in geometry"); 
-	}
-	// coord component
-	double origX = 0.0; double origY = 0.0; double origZ = 0.0;
-	double extentX = 1.0; double extentY = 1.0; double extentZ = 1.0;
 	int dimension = 0;
-	long dim = sbmlGeometry.getNumCoordinateComponents();
-	for (int i = 0; i < dim; i++) {
-		CoordinateComponent coordComponent = listOfCoordComps.get(i);
-		if (coordComponent.getComponentType().equals("cartesianX") && (coordComponent.getIndex() == 0)) {
-			origX = coordComponent.getBoundaryMin().getValue();
-			extentX = coordComponent.getBoundaryMax().getValue() - origX;
-		} else if (coordComponent.getComponentType().equals("cartesianY") && (coordComponent.getIndex() == 1)) {
-			origY = coordComponent.getBoundaryMin().getValue();
-			extentY = coordComponent.getBoundaryMax().getValue() - origY;
-		} else if (coordComponent.getComponentType().equals("cartesianZ") && (coordComponent.getIndex() == 2)) {
-			origZ = coordComponent.getBoundaryMin().getValue();
-			extentZ = coordComponent.getBoundaryMax().getValue() - origZ;
-		} else {
-			throw new SBMLImportException("unknown componentType '" + coordComponent.getComponentType() + "' : not supported in VCell");
+	Origin vcOrigin = null;
+	Extent vcExtent = null; 
+	{   //local code block
+		// get a CoordComponent object via the Geometry object.	
+		ListOfCoordinateComponents listOfCoordComps = sbmlGeometry.getListOfCoordinateComponents();
+		if (listOfCoordComps == null) {
+			throw new RuntimeException("Cannot have 0 coordinate compartments in geometry"); 
 		}
-		dimension++;
+
+		// coord component
+		double orig[] = new double[SpatialAdapter.LENGTH];
+		double extent[] = new double[SpatialAdapter.LENGTH];
+		Arrays.fill(extent, 1); //Extent ctor requires non zero values
+		ListOfAdapter<CoordinateComponent> lista
+			= new ListOfAdapter<CoordinateComponent>(listOfCoordComps, CoordinateComponent.class);
+
+		for	(CoordinateComponent coordComponent : lista) { 
+			SpatialAdapter sa = SpatialAdapter.requiredSBMLType(coordComponent.getType());
+			int idx = sa.ordinal();
+			orig[idx] =coordComponent.getBoundaryMin().getValue();
+			extent[idx] =coordComponent.getBoundaryMax().getValue() - orig[idx];
+			dimension++;
+		}
+
+		assert SpatialAdapter.LENGTH >= 3;
+		vcOrigin = new Origin(orig[0],orig[1],orig[2]);
+		vcExtent = new Extent(extent[0],extent[1],extent[2]);
 	}
-	
-	Origin vcOrigin = new Origin(origX, origY, origZ);
-	Extent vcExtent = new Extent(extentX, extentY, extentZ);
-	
+
 	// from geometry definition, find out which type of geometry : image or analytic or CSG
 	
 	AnalyticGeometry analyticGeometryDefinition = null;
@@ -2570,11 +2568,14 @@ protected void addGeometry() {
 			analyticGeometryDefinition = (AnalyticGeometry)gd_temp;
 		} else if (gd_temp.isSampledFieldGeometry()){
 			SampledFieldGeometry temp_sampledFieldGeometry = (SampledFieldGeometry)gd_temp;
+			/* UNDONE
+			String sf = temp_sampledFieldGeometry.getSampledField();
 			if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("linear")){
 				distanceMapSampledFieldGeometry = temp_sampledFieldGeometry;
 			}else if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("constant")){
 				segmentedSampledFieldGeometry = temp_sampledFieldGeometry;
 			}
+			*/
 		} else if (gd_temp.isCSGeometry()) {
 			csGeometry = (CSGeometry)gd_temp;
 		} else if (gd_temp.isParametricGeometry()) {
@@ -2607,64 +2608,65 @@ protected void addGeometry() {
 		// get image from sampledFieldGeometry
 		// get a sampledVol object via the listOfSampledVol (from SampledGeometry) object.
 		
-		SampledField sf = sfg.getSampledField();
-		int numX = sf.getNumSamples1();
-		int numY = sf.getNumSamples2();
-		int numZ = sf.getNumSamples3();
-		ImageData id = sf.getImageData();
-		int[] samples = new int[(int) id.getSamplesLength()];
-		id.getSamples(samples);
-		byte[] imageInBytes = new byte[samples.length];
-		if (selectedGeometryDefinition == distanceMapSampledFieldGeometry){
-			//
-			// single distance-map ... negative values are 1, zero and positive are 2 (for now assume that there are only two DomainTypes which are volume)
-			// alternatively, one could use the marching cube algorithm to create polygons which can be super sampled.
-			//
-			// could resample to higher resolution segmented images (via linear interpolation).
-			//
-			for (int i = 0; i < imageInBytes.length; i++) {
-//				if (interpolation(samples[i])<0){
-				if (samples[i]<0){
-					imageInBytes[i] = -1;
-				}else{
-					imageInBytes[i] = 1;
-				}
+//		gcw gcw gcw
+//		SampledField sf = sfg.getSampledField();
+//		int numX = sf.getNumSamples1();
+//		int numY = sf.getNumSamples2();
+//		int numZ = sf.getNumSamples3();
+//		ImageData id = sf.getImageData();
+//		int[] samples = new int[(int) id.getSamplesLength()];
+//		id.getSamples(samples);
+//		byte[] imageInBytes = new byte[samples.length];
+//		if (selectedGeometryDefinition == distanceMapSampledFieldGeometry){
+//			//
+//			// single distance-map ... negative values are 1, zero and positive are 2 (for now assume that there are only two DomainTypes which are volume)
+//			// alternatively, one could use the marching cube algorithm to create polygons which can be super sampled.
+//			//
+//			// could resample to higher resolution segmented images (via linear interpolation).
+//			//
+//			for (int i = 0; i < imageInBytes.length; i++) {
+////				if (interpolation(samples[i])<0){
+//				if (samples[i]<0){
+//					imageInBytes[i] = -1;
+//				}else{
+//					imageInBytes[i] = 1;
+//				}
 			}
-		}else{
-			for (int i = 0; i < imageInBytes.length; i++) {
-				imageInBytes[i] = (byte)samples[i];
-			}
-		}
-		try {
-			VCImage vcImage = null;
-			if (id.getDataType().equals("compressed")) {
-				vcImage = new VCImageCompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
-			}else if (id.getDataType().equals("uint8") || id.getDataType().equals("int16")){
-				vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
-			}else{			
-				throw new SBMLImportException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
-			}
-			vcImage.setName(sf.getSpatialId());
-			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
-			if (listOfSampledVols == null) {
-				throw new SBMLImportException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
-			}
-			int numSampledVols = (int)sfg.getNumSampledVolumes();
-			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
-			// get pixel classes for geometry
-			for (int i = 0; i < numSampledVols; i++) {
-				SampledVolume sVol = listOfSampledVols.get(i);
-				// from subVolume, get pixelClass?
-				vcpixelClasses[i] = new VCPixelClass(null, sVol.getSpatialId(), (int)sVol.getSampledValue());
-			}
-			vcImage.setPixelClasses(vcpixelClasses);
-			// now create image geometry
-			vcGeometry = new Geometry("spatialGeom", vcImage);
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new SBMLImportException("Unable to create image from SampledFieldGeometry : " + e.getMessage(),e);
-		} 
-	}
+//		}else{
+//			for (int i = 0; i < imageInBytes.length; i++) {
+//				imageInBytes[i] = (byte)samples[i];
+//			}
+//		}
+//		try {
+//			VCImage vcImage = null;
+//			if (id.getDataType().equals("compressed")) {
+//				vcImage = new VCImageCompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+//			}else if (id.getDataType().equals("uint8") || id.getDataType().equals("int16")){
+//				vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+//			}else{			
+//				throw new RuntimeException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
+//			}
+//			vcImage.setName(sf.getId());
+//			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
+//			if (listOfSampledVols == null) {
+//				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+//			}
+//			int numSampledVols = (int)sfg.getNumSampledVolumes();
+//			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
+//			// get pixel classes for geometry
+//			for (int i = 0; i < numSampledVols; i++) {
+//				SampledVolume sVol = listOfSampledVols.get(i);
+//				// from subVolume, get pixelClass?
+//				vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(), (int)sVol.getSampledValue());
+//			}
+//			vcImage.setPixelClasses(vcpixelClasses);
+//			// now create image geometry
+//			vcGeometry = new Geometry("spatialGeom", vcImage);
+//		} catch (Exception e) {
+//			e.printStackTrace(System.out);
+//			throw new RuntimeException("Unable to create image from SampledFieldGeometry : " + e.getMessage());
+//		} 
+//	}
 	GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
 	vcGeometrySpec.setOrigin(vcOrigin);
 	try {
@@ -2699,7 +2701,7 @@ protected void addGeometry() {
 				// subvolume
 				if (selectedGeometryDefinition == analyticGeometryDefinition) {
 					// will set expression later - when reading in Analytic Volumes in GeometryDefinition
-					vcGeometrySpec.addSubVolume(new AnalyticSubVolume(dt.getSpatialId(), new Expression(1.0)));
+					vcGeometrySpec.addSubVolume(new AnalyticSubVolume(dt.getId(), new Expression(1.0)));
 				} else {
 					// add SubVolumes later for CSG and Image-based
 				}
@@ -2720,7 +2722,7 @@ protected void addGeometry() {
 				AnalyticVolume analyticVol = listOfAnalyticVols.get(i);
 				SubVolume vcSubvolume = vcGeometrySpec.getSubVolume(analyticVol.getDomainType());
 				if (vcSubvolume == null) {
-					throw new SBMLImportException("analytic volume '" + analyticVol.getSpatialId() + "' does not map to any VC subvolume.");
+					throw new RuntimeException("analytic volume '" + analyticVol.getId() + "' does not map to any VC subvolume.");
 				}
 				try {
 					Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath());
@@ -2743,7 +2745,7 @@ protected void addGeometry() {
 			for (int i = 0; i < numSampledVols; i++) {
 				SampledVolume sVol = listOfSampledVols.get(i);
 				// from subVolume, get pixelClass?
-				vcpixelClasses[i] = new VCPixelClass(null, sVol.getSpatialId(), (int)sVol.getSampledValue());
+				vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(), (int)sVol.getSampledValue());
 			}
 
 			ImageSubVolume[] vcImageSubVols = new ImageSubVolume[numSampledVols]; 
@@ -2758,31 +2760,35 @@ protected void addGeometry() {
 				}
 				//Create the new Image SubVolume - use index of this for loop as 'handle' for ImageSubVol?
 				vcImageSubVols[i] = new ImageSubVolume(null, pixelClass, i);
-				vcImageSubVols[i].setName(sVol.getSpatialId());
+				vcImageSubVols[i].setName(sVol.getId());
 			}
 			vcGeometry.getGeometrySpec().setSubVolumes(vcImageSubVols);
 		}
 		if (selectedGeometryDefinition == csGeometry) {
-			ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCSGObjects();
-			int numCSGObjects = (int)csGeometry.getNumCSGObjects();
-			//ArrayList<CSGObject> vcCSGSubVolumes = new ArrayList<CSGObject>(); 
-			PriorityQueue<CSGObjectSorter> csgQueue = new PriorityQueue<CSGObjectSorter>(); 
-			for (int kk = 0; kk < numCSGObjects;kk++) {
-				org.sbml.libsbml.CSGObject sbmlCSGObject = listOfcsgObjs.get(kk);
-				int index = numCSGObjects - ((int)sbmlCSGObject.getOrdinal()+1);
-				// indx = n - (ordinal+1) : we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
-				// insert vcCSGObj at position 'indx' in arraylist 
-				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), kk);
-				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCSGNodeRoot()));
-				//vcCSGSubVolumes.add(index, vcellCSGObject);
-				csgQueue.add(new CSGObjectSorter(vcellCSGObject, index));
+			ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCsgObjects();
+			ListOfAdapter<org.sbml.libsbml.CSGObject> adapter = 
+					new ListOfAdapter<org.sbml.libsbml.CSGObject>(listOfcsgObjs,org.sbml.libsbml.CSGObject.class); 
+			
+			
+			ArrayList<org.sbml.libsbml.CSGObject> sbmlCSGs = new ArrayList<org.sbml.libsbml.CSGObject>(adapter);
+			// we want the CSGObj with highest ordinal to be the first element in the CSG subvols array. 
+			Collections.sort(sbmlCSGs,
+					new Comparator<org.sbml.libsbml.CSGObject>() {
+						@Override
+						public int compare(org.sbml.libsbml.CSGObject lhs, org.sbml.libsbml.CSGObject rhs) {
+							//minus one to reverse sort
+							return -1 * Integer.compare(lhs.getOrdinal(), rhs.getOrdinal());
+						}
+					});
+			
+			int n = sbmlCSGs.size();
+			CSGObject vcCSGSubVolumes[] = new  CSGObject[n];
+			for (int i = 0 ; i < n ; i++) {
+				org.sbml.libsbml.CSGObject sbmlCSGObject = sbmlCSGs.get(i);
+				CSGObject vcellCSGObject = new CSGObject(null, sbmlCSGObject.getDomainType(), i);
+				vcellCSGObject.setRoot(getVCellCSGNode(sbmlCSGObject.getCsgNode()));
 			}
-			assert csgQueue.size() == numCSGObjects;
-			CSGObject vcCSGSubVolumes []= new CSGObject[numCSGObjects];
-			for (int i = 0; i < numCSGObjects; i++) {
-				vcCSGSubVolumes[i] = csgQueue.poll().cSGObject; 
-			}
-			assert csgQueue.isEmpty(); //no leftovers!
+			
 			vcGeometry.getGeometrySpec().setSubVolumes(vcCSGSubVolumes);
 		}
 		
@@ -2852,7 +2858,7 @@ protected void addGeometry() {
 							// we know vcGeometryReg[j] is a VolGeomRegion
 							GeometryClass geomClassVC = ((VolumeGeometricRegion)vcGeomRegions[j]).getSubVolume();
 							if (geomClassSBML.compareEqual(geomClassVC)) {
-								vcGeomRegions[j].setName(domain.getSpatialId());
+								vcGeomRegions[j].setName(domain.getId());
 							}
 						}
 					}	// end if (regInfoIndx = regId)
@@ -2867,7 +2873,7 @@ protected void addGeometry() {
 		// get the domain that has the same 'domainType' field as 'surfaceClassDomainType'
 		for (int j = 0; j < sbmlGeometry.getNumDomains(); j++) {
 			Domain d = listOfDomains.get(j);
-			if (d.getDomainType().equals(surfaceClassDomainType.getSpatialId())) {
+			if (d.getDomainType().equals(surfaceClassDomainType.getId())) {
 				// get the adjacent domains of this 'surface' domain (surface domain + its 2 adj vol domains)
 				Set<Domain> adjacentDomainsSet = getAssociatedAdjacentDomains(sbmlGeometry, d);
 				// get the domain types of the adjacent domains in SBML and store the corresponding subVol counterparts from VC for adj vol domains 
@@ -2879,7 +2885,7 @@ protected void addGeometry() {
 					DomainType dt = sbmlGeometry.getDomainType(dom.getDomainType());
 					if (dt.getSpatialDimensions() == 3) {
 						// for domain type with sp. dim = 3, get correspoinding subVol from VC geometry.
-						GeometryClass gc = vcGeometry.getGeometryClass(dt.getSpatialId());
+						GeometryClass gc = vcGeometry.getGeometryClass(dt.getId());
 						adjacentSubVolumesVector.add((SubVolume)gc);
 						// store volGeomRegions corresponding to this (vol) geomClass in adjVolGeomRegionsVector : this should return ONLY 1 region for subVol.
 						GeometricRegion[] geomRegion = vcGsd.getGeometricRegions(gc);	
@@ -2888,15 +2894,15 @@ protected void addGeometry() {
 				}
 				// there should be only 2 subVols in this vector
 				if (adjacentSubVolumesVector.size() != 2) {
-					throw new SBMLImportException("Cannot have more or less than 2 subvolumes that are adjacent to surface (membrane) '" + d.getSpatialId() + "'"); 
+					throw new RuntimeException("Cannot have more or less than 2 subvolumes that are adjacent to surface (membrane) '" + d.getId() + "'"); 
 				}
 				// get the surface class with these 2 adj subVols. Set its name to that of 'surfaceClassDomainType'
 				SurfaceClass surfacClass = vcGsd.getSurfaceClass(adjacentSubVolumesVector.get(0), adjacentSubVolumesVector.get(1));
-				surfacClass.setName(surfaceClassDomainType.getSpatialId());
+				surfacClass.setName(surfaceClassDomainType.getId());
 				// get surfaceGeometricRegion that has adjVolGeomRegions as its adjacent vol geom regions and set its name from domain 'd'
 				SurfaceGeometricRegion surfaceGeomRegion = getAssociatedSurfaceGeometricRegion(vcGsd, adjVolGeomRegionsVector);
 				if (surfaceGeomRegion != null) {
-					surfaceGeomRegion.setName(d.getSpatialId());
+					surfaceGeomRegion.setName(d.getId());
 				}
 			}	// end if - domain.domainType == surfaceClassDomainType
 		}	// end for - numDomains
@@ -2916,30 +2922,32 @@ protected void addGeometry() {
 		SpatialCompartmentPlugin cplugin = null;
 		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
 			c = sbmlModel.getCompartment(i);
-			cplugin = (SpatialCompartmentPlugin)c.getPlugin("spatial");
+			cplugin = SBMLHelper.checkedPlugin(SpatialCompartmentPlugin.class,c,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 			CompartmentMapping compMapping = cplugin.getCompartmentMapping();
-			Structure struct = vcModel.getStructure(compMapping.getCompartment());
-			String domainType = compMapping.getDomainType();
-			GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
-			double unitSize = compMapping.getUnitSize();
-			if (struct instanceof Feature) {
-				FeatureMapping featureMapping = new FeatureMapping((Feature)struct, simContext, vcModelUnitSystem);
-				featureMapping.setGeometryClass(geometryClass);
-				if (geometryClass instanceof SubVolume) {
-					featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
-				} else if (geometryClass instanceof SurfaceClass) {
-					featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+			if (compMapping != null) {
+				Structure struct = vcModel.getStructure(compMapping.getId());
+				String domainType = compMapping.getDomainType();
+				GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
+				double unitSize = compMapping.getUnitSize();
+				if (struct instanceof Feature) {
+					FeatureMapping featureMapping = new FeatureMapping((Feature)struct, simContext, vcModelUnitSystem);
+					featureMapping.setGeometryClass(geometryClass);
+					if (geometryClass instanceof SubVolume) {
+						featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+					} else if (geometryClass instanceof SurfaceClass) {
+						featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+					}
+					structMappingsVector.add(featureMapping);
+				} else if (struct instanceof Membrane) {
+					MembraneMapping membraneMapping = new MembraneMapping((Membrane)struct, simContext, vcModelUnitSystem);
+					membraneMapping.setGeometryClass(geometryClass);
+					if (geometryClass instanceof SubVolume) {
+						membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+					} else if (geometryClass instanceof SurfaceClass) {
+						membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+					}
+					structMappingsVector.add(membraneMapping);
 				}
-				structMappingsVector.add(featureMapping);
-			} else if (struct instanceof Membrane) {
-				MembraneMapping membraneMapping = new MembraneMapping((Membrane)struct, simContext, vcModelUnitSystem);
-				membraneMapping.setGeometryClass(geometryClass);
-				if (geometryClass instanceof SubVolume) {
-					membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
-				} else if (geometryClass instanceof SurfaceClass) {
-					membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
-				}
-				structMappingsVector.add(membraneMapping);
 			}
 		}
 		StructureMapping[] structMappings = structMappingsVector.toArray(new StructureMapping[0]);
@@ -2949,49 +2957,48 @@ protected void addGeometry() {
 		// structureMapping of structure of paramSpContext, set the boundary condn type of the structureMapping
 		// to the value of 'type' from SBML parameter Boundary Condn. 
 		ListOfParameters listOfGlobalParams = sbmlModel.getListOfParameters();
-		CoordinateComponent ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
-		CoordinateComponent ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
-		CoordinateComponent ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
+		XYZCoordinates xyzCoordinates = new XYZCoordinates(vcModel, sbmlGeometry);
 
 		for (int i = 0; i < sbmlModel.getNumParameters(); i++){
 			Parameter sbmlGlobalParam = (Parameter)listOfGlobalParams.get(i);
-			SpatialParameterPlugin spplugin = (SpatialParameterPlugin)sbmlGlobalParam.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+			SpatialParameterPlugin spplugin = SBMLHelper.checkedPlugin(SpatialParameterPlugin.class,sbmlGlobalParam,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 			BoundaryCondition bCondn = spplugin.getBoundaryCondition();
-			if (bCondn.isSetVariable()) {
+			if (bCondn == null && lg.isInfoEnabled()) {
+				lg.info("no boundary condition " + sbmlGlobalParam.getId( ) + ' ' + sbmlGlobalParam.getLine());
+			}
+			
+			if (bCondn != null && bCondn.isSetVariable()) {
 				// get the var of boundaryCondn; find appropriate spContext in vcell; 
 				SpeciesContext paramSpContext = simContext.getModel().getSpeciesContext(bCondn.getVariable());
 				if (paramSpContext != null) {
-					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(paramSpContext.getStructure());
-					if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMin().getSpatialId())) {
-						String bcXmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeXm().boundaryTypeStringValue().equals(bcXmType)) {
-							sm.setBoundaryConditionTypeXm(new BoundaryConditionType(bcXmType));
-						}
-					} else if (bCondn.getCoordinateBoundary().equals(ccX.getBoundaryMax().getSpatialId())) {
-						String bcXpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeXp().boundaryTypeStringValue().equals(bcXpType)) {
-							sm.setBoundaryConditionTypeXp(new BoundaryConditionType(bcXpType));
-						}
-					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMin().getSpatialId())) {
-						String bcYmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeYm().boundaryTypeStringValue().equals(bcYmType)) {
-							sm.setBoundaryConditionTypeYm(new BoundaryConditionType(bcYmType));
-						}
-					} else if (bCondn.getCoordinateBoundary().equals(ccY.getBoundaryMax().getSpatialId())) {
-						String bcYpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeYp().boundaryTypeStringValue().equals(bcYpType)) {
-							sm.setBoundaryConditionTypeYp(new BoundaryConditionType(bcYpType));
-						}
-					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMin().getSpatialId())) {
-						String bcZmType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeZm().boundaryTypeStringValue().equals(bcZmType)) {
-							sm.setBoundaryConditionTypeZm(new BoundaryConditionType(bcZmType));
-						}
-					} else if (bCondn.getCoordinateBoundary().equals(ccZ.getBoundaryMax().getSpatialId())) {
-						String bcZpType = bCondn.getType();
-						if (!sm.getBoundaryConditionTypeZp().boundaryTypeStringValue().equals(bcZpType)) {
-							sm.setBoundaryConditionTypeZp(new BoundaryConditionType(bcZpType));
-						}
+					Structure s = paramSpContext.getStructure();
+					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(s);
+					if (sm != null) {
+					BoundaryConditionType bct = BoundaryTypeAdapter.fromSbml(bCondn.getType());
+					switch (xyzCoordinates.boundaryOf(bCondn)) {
+					case X_MIN:
+							sm.setBoundaryConditionTypeXm(bct);
+							break;
+					case X_MAX:
+							sm.setBoundaryConditionTypeXp(bct);
+							break;
+					case Y_MIN:
+							sm.setBoundaryConditionTypeYm(bct);
+							break;
+					case Y_MAX:
+							sm.setBoundaryConditionTypeYp(bct);
+							break;
+					case Z_MIN:
+							sm.setBoundaryConditionTypeZm(bct);
+							break;
+					case Z_MAX:
+							sm.setBoundaryConditionTypeZp(bct);
+							break;
+					}
+					} //sm != null
+					else {
+						logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS,
+								"No structure " + s.getName() + " requested by species context " + paramSpContext.getName());
 					}
 				}	// end if (paramSpContext != null)
 			}	// end if (bCondn.isSetVar()) 
@@ -3034,7 +3041,7 @@ private Set<Domain> getAssociatedAdjacentDomains(org.sbml.libsbml.Geometry sbmlG
 	Set<Domain> adjacentDomainsSet = new HashSet<Domain>();
 	for (int i = 0; i < sbmlGeom.getNumAdjacentDomains(); i++) {
 		AdjacentDomains adjDomains = sbmlGeom.getAdjacentDomains(i);
-		if (adjDomains.getDomain1().equals(d.getSpatialId()) || adjDomains.getDomain2().equals(d.getSpatialId())) {
+		if (adjDomains.getDomain1().equals(d.getId()) || adjDomains.getDomain2().equals(d.getId())) {
 			if (!adjacentDomainsSet.contains(sbmlGeom.getDomain(adjDomains.getDomain1()))) {
 				adjacentDomainsSet.add(sbmlGeom.getDomain(adjDomains.getDomain1()));
 			}

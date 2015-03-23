@@ -9,59 +9,64 @@
  */
 
 package org.vcell.sbml.vcell;
+import static org.vcell.sbml.SpatialAdapter.SPATIAL_X;
+import static org.vcell.sbml.SpatialAdapter.SPATIAL_Y;
+import static org.vcell.sbml.SpatialAdapter.SPATIAL_Z;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Vector;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AdjacentDomains;
-import org.sbml.libsbml.AdvectionCoefficient;
 import org.sbml.libsbml.AnalyticGeometry;
 import org.sbml.libsbml.AnalyticVolume;
 import org.sbml.libsbml.AssignmentRule;
-import org.sbml.libsbml.BoundaryCondition;
-import org.sbml.libsbml.BoundaryMax;
-import org.sbml.libsbml.BoundaryMin;
+import org.sbml.libsbml.Boundary;
 import org.sbml.libsbml.CSGeometry;
 import org.sbml.libsbml.Compartment;
 import org.sbml.libsbml.CompartmentMapping;
 import org.sbml.libsbml.CoordinateComponent;
 import org.sbml.libsbml.Delay;
-import org.sbml.libsbml.DiffusionCoefficient;
 import org.sbml.libsbml.Domain;
 import org.sbml.libsbml.DomainType;
 import org.sbml.libsbml.Event;
-import org.sbml.libsbml.ImageData;
 import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.InteriorPoint;
-import org.sbml.libsbml.ModifierSpeciesReference;
-import org.sbml.libsbml.OStringStream;
-import org.sbml.libsbml.RequiredElementsSBasePlugin;
 import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.SBMLDocumentPlugin;
 import org.sbml.libsbml.SBMLNamespaces;
 //import org.sbml.libsbml.SBMLValidator;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SBase;
-import org.sbml.libsbml.SBasePlugin;
 import org.sbml.libsbml.SampledField;
 import org.sbml.libsbml.SampledFieldGeometry;
 import org.sbml.libsbml.SampledVolume;
+import org.sbml.libsbml.SimpleSpeciesReference;
 import org.sbml.libsbml.SpatialCompartmentPlugin;
 import org.sbml.libsbml.SpatialModelPlugin;
 import org.sbml.libsbml.SpatialParameterPlugin;
-import org.sbml.libsbml.SpatialSpeciesRxnPlugin;
+import org.sbml.libsbml.SpatialReactionPlugin;
 import org.sbml.libsbml.SpatialSymbolReference;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Trigger;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
+import org.sbml.libsbml.libsbmlConstants;
+import org.vcell.sbml.LibSBMLConstantsAdapter;
+import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SpatialAdapter;
+import org.vcell.sbml.vcell.SpeciesContextSpecSBMLBridge.Coordinates;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCAssert;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -93,6 +98,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -104,6 +110,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -143,12 +150,15 @@ public class SBMLExporter {
 	
 	private SBMLExportSpec sbmlExportSpec = null;
 	
+	private static Logger lg = Logger.getLogger(SBMLExporter.class);
+	
 	public class SBMLExportSpec {
 		private VCUnitDefinition substanceUnits = null;
 		private VCUnitDefinition volUnits = null;
 		private VCUnitDefinition areaUnits = null;
 		private VCUnitDefinition lengthUnits = null;
 		private VCUnitDefinition timeUnits = null;
+		private Collection<VCUnitDefinition> availableUnits = new ArrayList<VCUnitDefinition>();
 		
 		public SBMLExportSpec(VCUnitDefinition argSunits, VCUnitDefinition argVUnits, VCUnitDefinition argAUnits, VCUnitDefinition argLUnits, VCUnitDefinition argTUnits) {
 			ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
@@ -172,6 +182,13 @@ public class SBMLExporter {
 			this.areaUnits = argAUnits;
 			this.lengthUnits = argLUnits;
 			this.timeUnits = argTUnits;
+			
+			//add these in order most likely to succeed
+			availableUnits.add(volUnits);
+			availableUnits.add(areaUnits);
+			availableUnits.add(lengthUnits);
+			availableUnits.add(substanceUnits);
+			availableUnits.add(timeUnits);
 		}
 		public VCUnitDefinition getSubstanceUnits() {
 			return substanceUnits;			
@@ -197,8 +214,53 @@ public class SBMLExporter {
 			case 3 : 
 				return getSubstanceUnits().divideBy(getVolumeUnits());
 			default :
-				throw new RuntimeException("Unsupported dimension of compartment; unable to compute concentration units");
+				throw new RuntimeException("Unsupported dimension " + dimension + " of compartment; unable to compute concentration units");
 			}
+		}
+		/**
+		 * find unit that has same dimensionality as existing unit
+		 * @param unitToMatch 
+		 * @return matching unit
+		 * @throws ProgrammingException if not match
+		 */
+		public VCUnitDefinition getMatchingUnit(VCUnitDefinition unitToMatch) {
+			for (VCUnitDefinition candidate : availableUnits) {
+				if (unitToMatch.isCompatible(candidate)) {
+					return candidate;
+				}
+			}
+			throw new ProgrammingException("no unit match for " + unitToMatch.getSymbol());
+		}
+		
+	}
+	
+	/**
+	 * set log4j level (for unit tests)
+	 * @param lvl
+	 */
+	public void setLogLevel(Level lvl) {
+		lg.setLevel(lvl);
+	}
+	
+	public static class VCellSBMLDoc implements AutoCloseable {
+		public final SBMLDocument document;
+		public final org.sbml.libsbml.Model model; 
+		public final String xmlString;
+
+		public VCellSBMLDoc(SBMLDocument document, org.sbml.libsbml.Model model, String xmlString) {
+			super();
+			this.document = document;
+			this.model = model;
+			this.xmlString = xmlString;
+		}
+
+
+		/**
+		 * cleanup C++ implementation
+		 */
+		@Override
+		public void close() throws Exception {
+			//document.delete();
 		}
 	}
 
@@ -217,10 +279,33 @@ public class SBMLExporter {
 		sbmlVersion = argSbmlVersion;
 		bSpatial = isSpatial;
 		if (vcBioModel != null) {
-			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLUtils.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
+			sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLHelper.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
 		}
 		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
 		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
+	}
+	
+	public SBMLExporter(SimulationContext ctx, int argSbmlLevel, int argSbmlVersion, boolean isSpatial) {
+		if (isSpatial && !validSpatial(ctx)) {
+			throw new IllegalArgumentException(ctx.getName() + " not valid for spatialSBML export");
+		}
+		this.vcBioModel = ctx.getBioModel(); 
+		vcSelectedSimContext = ctx;
+		sbmlLevel = argSbmlLevel;
+		sbmlVersion = argSbmlVersion;
+		bSpatial = isSpatial;
+		sbmlAnnotationUtil = new SBMLAnnotationUtil(vcBioModel.getVCMetaData(), vcBioModel, SBMLHelper.getNamespaceFromLevelAndVersion(sbmlLevel, sbmlVersion));
+		ModelUnitSystem vcModelUnitSystem = vcBioModel.getModel().getUnitSystem();
+		this.sbmlExportSpec = new SBMLExportSpec(vcModelUnitSystem.getLumpedReactionSubstanceUnit(), vcModelUnitSystem.getVolumeUnit(), vcModelUnitSystem.getAreaUnit(), vcModelUnitSystem.getLengthUnit(), vcModelUnitSystem.getTimeUnit());
+	}
+	
+	/**
+	 * @param ctx
+	 * @return true if ctx spatial and not stochastic
+	 */
+	public static boolean validSpatial(SimulationContext ctx) {
+		boolean isSpatial = ctx.getGeometry().getDimension() > 0;
+		return isSpatial && !ctx.isStoch( );
 	}
 	
 
@@ -250,17 +335,18 @@ protected void addCompartments() {
 			}
 			sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
 			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
-			
-			ModelUnitSystem vcUnitSystem = vcModel.getUnitSystem();
-			UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlSizeUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
-			sbmlModel.addUnitDefinition(unitDefn);
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
 			Feature outsideFeature = structTopology.getOutsideFeature(vcMembrane);
-			sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName()));
-			sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
-			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			if (outsideFeature != null) {
+				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName()));
+				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
+				sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			} else if (lg.isEnabledFor(Level.WARN)) {
+				lg.warn(this.sbmlModel.getName() + " membrame "  + vcMembrane.getName()  + " has not outside feature");
+				
+			}
 		}
 		sbmlCompartment.setConstant(true);
 
@@ -273,7 +359,8 @@ protected void addCompartments() {
 			VCUnitDefinition vcSizeUnit = vcStructMapping.getSizeParameter().getUnitDefinition();
 			if (vcStructMapping.getSizeParameter().getExpression() != null) {
 				double factor = 1.0;
-				factor = vcSizeUnit.convertTo(factor, sbmlSizeUnit);
+				//factor = vcSizeUnit.convertTo(factor, sbmlExportSpec.getVolumeUnits());
+				factor = vcSizeUnit.convertTo(factor, sbmlExportSpec.getMatchingUnit(vcSizeUnit));
 				sizeExpr = Expression.mult(vcStructMapping.getSizeParameter().getExpression(), new Expression(factor));
 				sbmlCompartment.setSize(sizeExpr.evaluateConstant());
 			} else {
@@ -381,16 +468,19 @@ protected void addParameters() throws ExpressionException {
 	Model vcModel = getSelectedSimContext().getModel();
 	// add VCell global parameters to the SBML listofParameters
 	ModelParameter[] vcGlobalParams = vcModel.getModelParameters();  
-	for (int i = 0; vcGlobalParams != null && i < vcGlobalParams.length; i++) {
+	if (vcGlobalParams != null) {
+	for (ModelParameter vcParam : vcGlobalParams) {
 		org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
-		sbmlParam.setId(vcGlobalParams[i].getName());
-		Expression paramExpr = new Expression(vcGlobalParams[i].getExpression());
+		sbmlParam.setId(vcParam.getName());
+		sbmlParam.setConstant(vcParam.isConstant());
+		
+		Expression paramExpr = new Expression(vcParam.getExpression());
 		boolean bParamIsNumeric = true;
 		if (paramExpr.isNumeric()) {
 			// For a VCell global param, if it is numeric, it has a constant value and is not defined by a rule, hence set Constant = true.
 			sbmlParam.setValue(paramExpr.evaluateConstant());
 			// the expression for modelParam might be numeric, but modelParam could have a rate rule, if so, set constant attribute to 'false'
-			if (getSelectedSimContext().getRateRule(vcGlobalParams[i]) != null) {
+			if (getSelectedSimContext().getRateRule(vcParam) != null) {
 				bParamIsNumeric = false;
 			}
 		} else {
@@ -399,14 +489,15 @@ protected void addParameters() throws ExpressionException {
 			// add assignment rule for param
 			ASTNode paramFormulaNode = getFormulaFromExpression(paramExpr);
 			AssignmentRule sbmlParamAssignmentRule = sbmlModel.createAssignmentRule();
-			sbmlParamAssignmentRule.setVariable(vcGlobalParams[i].getName());
+			sbmlParamAssignmentRule.setVariable(vcParam.getName());
 			sbmlParamAssignmentRule.setMath(paramFormulaNode);
 		}
 		sbmlParam.setConstant(bParamIsNumeric);
-		VCUnitDefinition vcParamUnit = vcGlobalParams[i].getUnitDefinition();
+		VCUnitDefinition vcParamUnit = vcParam.getUnitDefinition();
 		if (!vcParamUnit.isTBD()) {
 			sbmlParam.setUnits(TokenMangler.mangleToSName(vcParamUnit.getSymbol()));
 		}
+	}
 	}
 }
 
@@ -530,6 +621,7 @@ protected void addReactions() {
 										org.sbml.libsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
 										sbmlKinParam.setId(newParamName);
 										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+										sbmlKinParam.setConstant(vcKineticsParams[j].isConstant());
 										// Set SBML units for sbmlParam using VC units from vcParam  
 										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 											sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
@@ -548,6 +640,7 @@ protected void addReactions() {
 							org.sbml.libsbml.Parameter sbmlKinParam = sbmlKLaw.createParameter();
 							sbmlKinParam.setId(origParamName);
 							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+							sbmlKinParam.setConstant(vcKineticsParams[j].isConstant());
 							// Set SBML units for sbmlParam using VC units from vcParam  
 							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 								sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
@@ -619,32 +712,40 @@ protected void addReactions() {
 		}
 		
 		// Add kineticLaw to sbmlReaction - not needed now, since we use sbmlRxn.createKLaw() ??
-		sbmlReaction.setKineticLaw(sbmlKLaw);
+		//sbmlReaction.setKineticLaw(sbmlKLaw);
 		
 		// Add reactants, products, modifiers
 		// Simple reactions have catalysts, fluxes have 'flux' 
 		cbit.vcell.model.ReactionParticipant[] rxnParticipants = vcReactionStep.getReactionParticipants();
-		for (int j = 0; j < rxnParticipants.length; j++){
-			if (rxnParticipants[j] instanceof cbit.vcell.model.Reactant) {
-				SpeciesReference reactantSpRef = sbmlReaction.createReactant();
-				reactantSpRef.setSpecies(rxnParticipants[j].getSpeciesContext().getName());
-				reactantSpRef.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticipants[j].getStoichiometry())));
-			} else if (rxnParticipants[j] instanceof cbit.vcell.model.Product) {
-				SpeciesReference pdtSpRef = sbmlReaction.createProduct();
-				pdtSpRef.setSpecies((rxnParticipants[j].getSpeciesContext().getName()));
-				pdtSpRef.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticipants[j].getStoichiometry())));
-			} else if (rxnParticipants[j] instanceof cbit.vcell.model.Catalyst) {
-				ModifierSpeciesReference modifierSpRef = sbmlReaction.createModifier();
-				modifierSpRef.setSpecies(rxnParticipants[j].getSpeciesContext().getName());
+		for (ReactionParticipant rxnParticpant:rxnParticipants) { 
+			SimpleSpeciesReference ssr = null;
+			SpeciesReference sr = null;
+			if (rxnParticpant instanceof cbit.vcell.model.Reactant) {
+				ssr = sr = sbmlReaction.createReactant();
+			} else if (rxnParticpant instanceof cbit.vcell.model.Product) {
+				ssr = sr  = sbmlReaction.createProduct();
+			} 
+			if (rxnParticpant instanceof cbit.vcell.model.Catalyst) {
+				ssr = sbmlReaction.createModifier();
+			}
+			if (ssr != null) {
+				ssr.setSpecies(rxnParticpant.getSpeciesContext().getName());
+			}
+			if (sr != null) {
+				sr.setStoichiometry(Double.parseDouble(Integer.toString(rxnParticpant.getStoichiometry())));
+				String modelUniqueName = vcReactionStep.getName() + '-'  + rxnParticpant.getName();
+				sr.setId(modelUniqueName);
+				sr.setConstant(true); //SBML-REVIEW
+				//int rcode = sr.appendNotes("<
+				try {
+					SBMLHelper.addNote(sr, "VCELL guess: how do we know if reaction is constant?");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 
-		if (vcReactionSpecs[i].isFast()) {
-			sbmlReaction.setFast(true);
-		} else {
-			// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
-			sbmlReaction.setFast(false);
-		}
+		sbmlReaction.setFast(vcReactionSpecs[i].isFast());
 		
 		// this attribute is mandatory for L3, optional for L2. So explicitly setting value.
 		sbmlReaction.setReversible(true);
@@ -652,17 +753,15 @@ protected void addReactions() {
 		if (bSpatial) {
 			// set compartment for reaction if spatial
 			sbmlReaction.setCompartment(vcReactionStep.getStructure().getName());
-			// set requiredElements attributes
-			RequiredElementsSBasePlugin reqplugin = (RequiredElementsSBasePlugin)sbmlReaction.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-			reqplugin.setMathOverridden(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-			reqplugin.setCoreHasAlternateMath(true);
+			//CORE  HAS ALT MATH true
 	
 			// set the "isLocal" attribute = true (in 'spatial' namespace) for each species
-			SpatialSpeciesRxnPlugin srplugin = (SpatialSpeciesRxnPlugin)sbmlReaction.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+			SpatialReactionPlugin srplugin = SBMLHelper.checkedPlugin(SpatialReactionPlugin.class,sbmlReaction,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 			srplugin.setIsLocal(true);
 		}
 
 		// delete used objects
+		sbmlKLaw.delete();
 		sbmlKLaw.delete();
 		sbmlReaction.delete();
 	}
@@ -733,22 +832,16 @@ protected void addSpecies() {
 
 		// need to do the following if exporting to SBML spatial
 		if (bSpatial) {
-			// set requiredElements attributes
-			RequiredElementsSBasePlugin reqplugin = (RequiredElementsSBasePlugin)sbmlSpecies.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-			reqplugin.setMathOverridden(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-			reqplugin.setCoreHasAlternateMath(true);
-	
-			// set the "isSpatial" attribute = true (in 'spatial' namespace) for each species
-			SpatialSpeciesRxnPlugin srplugin = (SpatialSpeciesRxnPlugin)sbmlSpecies.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-			srplugin.setIsSpatial(true);
 			
 			// Required for setting BoundaryConditions : structureMapping for vcSpeciesContext[i] & sbmlGeometry.coordinateComponents
 			StructureMapping sm = getSelectedSimContext().getGeometryContext().getStructureMapping(vcSpeciesContexts[i].getStructure());
-			SpatialModelPlugin mplugin = (SpatialModelPlugin)sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+			SpatialModelPlugin mplugin = SBMLHelper.checkedPlugin(SpatialModelPlugin.class,sbmlModel,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 			org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
 			CoordinateComponent ccX = sbmlGeometry.getCoordinateComponent(vcModel.getX().getName());
 			CoordinateComponent ccY = sbmlGeometry.getCoordinateComponent(vcModel.getY().getName());
 			CoordinateComponent ccZ = sbmlGeometry.getCoordinateComponent(vcModel.getZ().getName());
+			SpeciesContextSpecSBMLBridge.Coordinates coords = new Coordinates(sbmlGeometry, vcModel);
+			
 			// add diffusion, advection, boundary condition parameters for species, if they exist
 			Parameter[] scsParams = vcSpeciesContextsSpec.getParameters();
 			if (scsParams != null) {
@@ -757,14 +850,13 @@ protected void addSpecies() {
 						SpeciesContextSpecParameter scsParam = (SpeciesContextSpecParameter)scsParams[j];
 						// no need to add parameters in SBML for init conc or init count
 						int role = scsParam.getRole();
+						SpeciesContextSpecSBMLBridge bridge = SpeciesContextSpecSBMLBridge.forRole(role);
+						VCAssert.assertTrue(bridge.roleCode == role, "logic error");
 						if (role == SpeciesContextSpec.ROLE_InitialConcentration || role == SpeciesContextSpec.ROLE_InitialCount) {
 							continue;
 						}
 						// if diffusion is 0 && vel terms are not specified, boundary condition not present
-						boolean bBCParam = ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) || (role == SpeciesContextSpec.ROLE_BoundaryValueXp) ||
-								 			(role == SpeciesContextSpec.ROLE_BoundaryValueYm) || (role == SpeciesContextSpec.ROLE_BoundaryValueYp) ||
-								 			(role == SpeciesContextSpec.ROLE_BoundaryValueZm) || (role == SpeciesContextSpec.ROLE_BoundaryValueZp));
-						if (bBCParam) {
+						if (bridge.isDiffusionOrAdvection()) {
 							Expression diffExpr = vcSpeciesContextsSpec.getDiffusionParameter().getExpression();	
 							boolean bDiffExprNull = (diffExpr == null);
 							boolean bDiffExprIsZero = false;
@@ -788,9 +880,11 @@ protected void addSpecies() {
 								continue;
 							}
 						}
+						bridge.addSBMLChildIf(this, vcSpeciesContexts[i],scsParam,sm,coords);
 						
 						// if scsParam is a boundary condition and the corresponding coordniateComponent (from SBML) is null, do not create SBML parameter
 						// for example, if scsParam is BC_Zm and if coordinateComponent 'ccZ' is null, no SBML parameter should be created for BC_Zm
+						/*
 						if ( (((role == SpeciesContextSpec.ROLE_BoundaryValueXm) || (role == SpeciesContextSpec.ROLE_BoundaryValueXp)) && (ccX == null)) || 
 	  						 (((role == SpeciesContextSpec.ROLE_BoundaryValueYm) || (role == SpeciesContextSpec.ROLE_BoundaryValueYp)) && (ccY == null)) ||
 							 (((role == SpeciesContextSpec.ROLE_BoundaryValueZm) || (role == SpeciesContextSpec.ROLE_BoundaryValueZp)) && (ccZ == null)) )
@@ -799,74 +893,78 @@ protected void addSpecies() {
 						}
 						org.sbml.libsbml.Parameter sbmlParam = createSBMLParamFromSpeciesParam(vcSpeciesContexts[i], (SpeciesContextSpecParameter)scsParams[j]);
 						if (sbmlParam != null) {
-							SpatialParameterPlugin spplugin = (SpatialParameterPlugin)sbmlParam.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+							SpatialParameterPlugin spplugin = SBMLHelper.checkedPlugin(SpatialParameterPlugin.class,sbmlParam,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 							if (role == SpeciesContextSpec.ROLE_DiffusionRate) {
 								// set diffusionCoefficient element in SpatialParameterPlugin for param
-								DiffusionCoefficient sbmlDiffCoeff = spplugin.getDiffusionCoefficient();
+								DiffusionCoefficient sbmlDiffCoeff = spplugin.createDiffusionCoefficient();
 								sbmlDiffCoeff.setVariable(vcSpeciesContexts[i].getName());
-								sbmlDiffCoeff.setCoordinateIndex(0);
+								sbmlDiffCoeff.setType(libsbmlConstants.SPATIAL_DIFFUSIONKIND_ISOTROPIC);
+								//SBMLUPGRADE sbmlDiffCoeff.setCoordinateIndex(0);
+								//SBMLUtils.setCoordinateReference(sbmlDiffCoeff, 0);
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXm) && (ccX != null)) {
 								// set BoundaryCondn Xm element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCXm = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCXm = spplugin.createBoundaryCondition();
 								sbmlBCXm.setVariable(vcSpeciesContexts[i].getName());
-								sbmlBCXm.setType(sm.getBoundaryConditionTypeXm().boundaryTypeStringValue());
-								sbmlBCXm.setCoordinateBoundary(ccX.getBoundaryMin().getSpatialId());
+								int sType = BoundaryTypeAdapter.fromBoundaryConditionType(sm.getBoundaryConditionTypeXm());
+								sbmlBCXm.setType(sType);
+								sbmlBCXm.setCoordinateBoundary(ccX.getBoundaryMin().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueXp) && (ccX != null)) {
 								// set BoundaryCondn Xp element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCXp = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCXp = spplugin.createBoundaryCondition();
 								sbmlBCXp.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCXp.setType(sm.getBoundaryConditionTypeXp().boundaryTypeStringValue());
-								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMax().getSpatialId());
+								sbmlBCXp.setCoordinateBoundary(ccX.getBoundaryMax().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYm)  && (ccY != null)) {
 								// set BoundaryCondn Ym element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCYm = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCYm = spplugin.createBoundaryCondition();
 								sbmlBCYm.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCYm.setType(sm.getBoundaryConditionTypeYm().boundaryTypeStringValue());
-								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMin().getSpatialId());
+								sbmlBCYm.setCoordinateBoundary(ccY.getBoundaryMin().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueYp) && (ccY != null)){
 								// set BoundaryCondn Yp element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCYp = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCYp = spplugin.createBoundaryCondition();
 								sbmlBCYp.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCYp.setType(sm.getBoundaryConditionTypeYp().boundaryTypeStringValue());
-								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMax().getSpatialId());
+								sbmlBCYp.setCoordinateBoundary(ccY.getBoundaryMax().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZm)  && (ccZ != null)) {
 								// set BoundaryCondn Zm element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCZm = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCZm = spplugin.createBoundaryCondition();
 								sbmlBCZm.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCZm.setType(sm.getBoundaryConditionTypeZm().boundaryTypeStringValue());
-								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMin().getSpatialId());
+								sbmlBCZm.setCoordinateBoundary(ccZ.getBoundaryMin().getId());
 							} 
 							if ((role == SpeciesContextSpec.ROLE_BoundaryValueZp)  && (ccZ != null)) {
 								// set BoundaryCondn Zp element in SpatialParameterPlugin for param
-								BoundaryCondition sbmlBCZp = spplugin.getBoundaryCondition();
+								BoundaryCondition sbmlBCZp = spplugin.createBoundaryCondition();
 								sbmlBCZp.setVariable(vcSpeciesContexts[i].getName());
 								sbmlBCZp.setType(sm.getBoundaryConditionTypeZp().boundaryTypeStringValue());
-								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMax().getSpatialId());
+								sbmlBCZp.setCoordinateBoundary(ccZ.getBoundaryMax().getId());
 							} 
 							if (role == SpeciesContextSpec.ROLE_VelocityX) {
 								// set advectionCoeff X element in SpatialParameterPlugin for param
-								AdvectionCoefficient sbmlAdvCoeffX = spplugin.getAdvectionCoefficient();
+								AdvectionCoefficient sbmlAdvCoeffX = spplugin.createAdvectionCoefficient();
 								sbmlAdvCoeffX.setVariable(vcSpeciesContexts[i].getName());
-								sbmlAdvCoeffX.setCoordinateIndex(0);
+								sbmlAdvCoeffX.setCoordinate(SPATIAL_X.sbmlType());
 							} 
 							if (role == SpeciesContextSpec.ROLE_VelocityY) {
 								// set advectionCoeff Y element in SpatialParameterPlugin for param
-								AdvectionCoefficient sbmlAdvCoeffY = spplugin.getAdvectionCoefficient();
+								AdvectionCoefficient sbmlAdvCoeffY = spplugin.createAdvectionCoefficient();
 								sbmlAdvCoeffY.setVariable(vcSpeciesContexts[i].getName());
-								sbmlAdvCoeffY.setCoordinateIndex(1);
+								sbmlAdvCoeffY.setCoordinate(SPATIAL_Y.sbmlType());
 							} 
 							if (role == SpeciesContextSpec.ROLE_VelocityZ) {
 								// set advectionCoeff Z element in SpatialParameterPlugin for param
-								AdvectionCoefficient sbmlAdvCoeffZ = spplugin.getAdvectionCoefficient();
+								AdvectionCoefficient sbmlAdvCoeffZ = spplugin.createAdvectionCoefficient();
 								sbmlAdvCoeffZ.setVariable(vcSpeciesContexts[i].getName());
-								sbmlAdvCoeffZ.setCoordinateIndex(2);
+								sbmlAdvCoeffZ.setCoordinate(SPATIAL_Z.sbmlType());
 							}
 						} 	// if sbmlParam != null
+							*/
 					}	// if scsParams[j] != null
 				}	// end for scsParams
 			}	// end scsParams != null
@@ -895,7 +993,7 @@ protected void addSpecies() {
  * @param scsParam
  * @return
  */
-private org.sbml.libsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext spContext, SpeciesContextSpecParameter scsParam) {
+org.sbml.libsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContext spContext, SpeciesContextSpecParameter scsParam) {
 	try {
 		Expression paramExpr = scsParam.getExpression();
 		// if scsParam is diff, Vel X, Y, Z parameter and if its expression is null or 0.0, don't create parameter.
@@ -962,10 +1060,7 @@ private org.sbml.libsbml.Parameter createSBMLParamFromSpeciesParam(SpeciesContex
 		org.sbml.libsbml.Parameter param = sbmlModel.createParameter();
 		param.setId(TokenMangler.mangleToSName(spContext.getName() + "_" + scsParam.getName()));
 		param.setUnits(scsParam.getUnitDefinition().getSymbol());
-		// set requiredElements attributes
-		RequiredElementsSBasePlugin reqplugin = (RequiredElementsSBasePlugin)param.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-		reqplugin.setMathOverridden(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-		reqplugin.setCoreHasAlternateMath(true);
+		param.setConstant(scsParam.isConstant());
 		
 		if (paramExpr.isNumeric()) {
 			param.setValue(paramExpr.evaluateConstant());
@@ -1028,10 +1123,6 @@ protected void addUnitDefinitions() {
 	// Define actual units of substance in vol.,(eg. uM.um3 in default VCell units).
 //	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnitSystem.getVolumeSubstanceUnit(), sbmlLevel, sbmlVersion, vcUnitSystem);
 //	sbmlModel.addUnitDefinition(unitDefn);
-	
-	VCUnitDefinition sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
-	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlSizeUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
-	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Add units from parameter list in kinetics
 	ArrayList<String> unitList = new ArrayList<String>();
@@ -1051,25 +1142,23 @@ protected void addEvents() {
 			sbmlEvent.setId(vcEvent.getName());
 			// create trigger
 			Trigger trigger = sbmlEvent.createTrigger();
-			// if trigger expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
-			Expression triggerExpr = null;
 			try {
-				triggerExpr = vcEvent.generateTriggerExpression();
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new RuntimeException("SBMLExporter.addEvents() error: "+e.getMessage(), e);
+				Expression triggerExpr = vcEvent.generateTriggerExpression();
+				ASTNode math = getFormulaFromExpression(triggerExpr);
+				trigger.setMath(math);
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("failed to generate trigger expression for event "+vcEvent.getName()+": "+e.getMessage());
 			}
-			ASTNode math = getFormulaFromExpression(triggerExpr);
-			trigger.setMath(math);
 			
 			// create delay
-			LocalParameter delayParameter = vcEvent.getParameter(ParameterType.TriggerDelay);
-			if (delayParameter != null && delayParameter.getExpression()!=null && !delayParameter.getExpression().isZero()) {
+			LocalParameter delayParam = vcEvent.getParameter(ParameterType.TriggerDelay);
+			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().isZero()) {
 				Delay delay = sbmlEvent.createDelay();
-				// if delay expression has speciesContext in its list of symbols, need to multiply the unit conversion factor to SBML
-				Expression delayExpr = delayParameter.getExpression();
-				math = getFormulaFromExpression(delayExpr);
+				Expression delayExpr = delayParam.getExpression();
+				ASTNode math = getFormulaFromExpression(delayExpr);
 				delay.setMath(math);
+				sbmlEvent.setUseValuesFromTriggerTime(vcEvent.getUseValuesFromTriggerTime());
 			}
 			
 			// create eventAssignments
@@ -1080,8 +1169,8 @@ protected void addEvents() {
 				sbmlEA.setVariable(target.getName());
 				Expression eventAssgnExpr = new Expression(vcEventAssgns.get(j).getAssignmentExpression());
 				
-				math = getFormulaFromExpression(eventAssgnExpr);
-				sbmlEA.setMath(math);
+				ASTNode eaMath = getFormulaFromExpression(eventAssgnExpr);
+				sbmlEA.setMath(eaMath);
 			}
 		}
 	}
@@ -1211,7 +1300,7 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
 	ASTNode mathNode = libsbml.readMathMLFromString(expMathMLStr);
-	return mathNode.deepCopy();
+	return (ASTNode) mathNode.deepCopy();
 }
 
 public SimulationContext getSelectedSimContext() {
@@ -1225,23 +1314,32 @@ private Simulation getSelectedSimulation() {
 	return vcSelectedSimJob.getSimulation();
 }
 
-
 public String getSBMLFile() {
+	String rval = null;
+	try (VCellSBMLDoc vdoc = convertToSBML()) {
+		rval = vdoc.xmlString;
+	} catch (Exception e) {
+		//ignore close error
+	} 
+	return rval;
+}
+
+public VCellSBMLDoc convertToSBML() {
 
 	SBMLDocument sbmlDocument = null;
 	if (bSpatial) {
 		// SBMLNamespaces of SBML Level 3 Version 1 with Spatial Version 1
-		SBMLNamespaces sbmlns = new SBMLNamespaces(3,1,SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX,1);
-		sbmlns.addPkgNamespace(SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
+		SBMLNamespaces sbmlns = new SBMLNamespaces(3,1,SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
+		//sbmlns.addPkgNamespace(SBMLUtils.SBML_SPATIAL_NS_PREFIX,1);
 		
 		// create the L3V1 document with spatial package
 		sbmlDocument = new SBMLDocument(sbmlns);
 		
 	    // set 'required' attribute on document for 'spatial' and 'req' packages to 'T'??
-		SBMLDocumentPlugin dplugin = (SBMLDocumentPlugin)sbmlDocument.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-		dplugin.setRequired(true);
-		dplugin = (SBMLDocumentPlugin)sbmlDocument.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-		dplugin.setRequired(true);
+		//SBMLDocumentPlugin dplugin = (SBMLDocumentPlugin)sbmlDocument.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
+		//dplugin.setRequired(true);
+		//dplugin = (SBMLDocumentPlugin)sbmlDocument.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+		//dplugin.setRequired(true);
 	} else {
 		// Create an SBMLDocument and create the sbmlModel from the document, so that other details can be added to it in translateBioModel()
 		sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
@@ -1294,10 +1392,15 @@ public String getSBMLFile() {
 
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
+	
+	long rcode = sbmlDocument.setPackageRequired(SBMLUtils.SBML_SPATIAL_NS_PREFIX,true);
+	LibSBMLConstantsAdapter.displayIfError(System.err, (int) rcode,false); 
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
+	/*
+	long numErrors = sbmlDocument.validateSBML() ;
 
 	// Error check - use libSBML's document.printError to print to outputstream
-	System.out.println("\n\nSBML Export Error Report");
+	System.out.println("\n\nSBML Export Error Report, " + numErrors + " errors ");
 	OStringStream oStrStream = new OStringStream();
 	sbmlDocument.printErrors(oStrStream);
 	System.out.println(oStrStream.str());
@@ -1308,21 +1411,21 @@ public String getSBMLFile() {
 //	System.out.println("\nSBML Validator : # of validation failures : " + validationFailureCount);
 	
 	// cleanup
-	sbmlModel.delete();
-	sbmlDocument.delete();
 	sbmlWriter.delete();	
+	*/
 
-	return sbmlStr;
+	return new VCellSBMLDoc(sbmlDocument, sbmlModel, sbmlStr);
 }
 
 private void addGeometry() {
 
-	SBasePlugin plugin = sbmlModel.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-    SpatialModelPlugin mplugin = (SpatialModelPlugin)plugin;
+    SpatialModelPlugin mplugin = SBMLHelper.checkedPlugin(SpatialModelPlugin.class,
+    		sbmlModel,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
 
     // Creates a geometry object via SpatialModelPlugin object.
-	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.getGeometry();
-	sbmlGeometry.setCoordinateSystem("Cartesian");
+	org.sbml.libsbml.Geometry sbmlGeometry = mplugin.createGeometry();
+	sbmlGeometry.setCoordinateSystem(libsbmlConstants.SPATIAL_GEOMETRYKIND_CARTESIAN);
+	sbmlGeometry.setId("vcell");
 
 	Geometry vcGeometry = getSelectedSimContext().getGeometry();
 	Model vcModel = getSelectedSimContext().getModel();
@@ -1334,46 +1437,43 @@ private void addGeometry() {
 	Origin vcOrigin = vcGeometry.getOrigin();
 	// add x coordinate component
 	CoordinateComponent xComp = sbmlGeometry.createCoordinateComponent();
-	xComp.setSpatialId(vcModel.getX().getName());
-	xComp.setComponentType("cartesianX");
-	xComp.setSbmlUnit(vcModel.getX().getUnitDefinition().getSymbol());
-	xComp.setIndex(0);
-	BoundaryMin minX = xComp.createBoundaryMin();
-	minX.setSpatialId("Xmin");
+	xComp.setId(vcModel.getX().getName());
+	xComp.setType(SPATIAL_X.sbmlType());
+	xComp.setUnit(SBMLUnitTranslator.LENGTH);
+	Boundary minX = xComp.createBoundaryMin();
+	minX.setId("Xmin");
 	minX.setValue(vcOrigin.getX());
-	BoundaryMax maxX = xComp.createBoundaryMax();
-	maxX.setSpatialId("Xmax");
+	Boundary maxX = xComp.createBoundaryMax();
+	maxX.setId("Xmax");
 	maxX.setValue(vcOrigin.getX() + (vcExtent.getX()));
-	createParamForSpatialElement(xComp, xComp.getSpatialId());
+	createParamForSpatialElement(xComp, xComp.getId());
 	// add y coordinate component
 	if (dimension == 2 || dimension == 3) {
 		CoordinateComponent yComp = sbmlGeometry.createCoordinateComponent();
-		yComp.setSpatialId(vcModel.getY().getName());
-		yComp.setComponentType("cartesianY");
-		yComp.setSbmlUnit(vcModel.getY().getUnitDefinition().getSymbol());
-		yComp.setIndex(1);
-		BoundaryMin minY = yComp.createBoundaryMin();
-		minY.setSpatialId("Ymin");
+		yComp.setId(vcModel.getY().getName());
+		yComp.setType(SPATIAL_Y.sbmlType());
+		yComp.setUnit(SBMLUnitTranslator.LENGTH);
+		Boundary minY = yComp.createBoundaryMin();
+		minY.setId("Ymin");
 		minY.setValue(vcOrigin.getY());
-		BoundaryMax maxY = yComp.createBoundaryMax();
-		maxY.setSpatialId("Ymax");
+		Boundary maxY = yComp.createBoundaryMax();
+		maxY.setId("Ymax");
 		maxY.setValue(vcOrigin.getY() + (vcExtent.getY()));
-		createParamForSpatialElement(yComp, yComp.getSpatialId());
+		createParamForSpatialElement(yComp, yComp.getId());
 	}
 	// add z coordinate component
 	if (dimension == 3) {
 		CoordinateComponent zComp = sbmlGeometry.createCoordinateComponent();
-		zComp.setSpatialId(vcModel.getZ().getName());
-		zComp.setComponentType("cartesianZ");
-		zComp.setSbmlUnit(vcModel.getZ().getUnitDefinition().getSymbol());
-		zComp.setIndex(2);
-		BoundaryMin minZ = zComp.createBoundaryMin();
-		minZ.setSpatialId("Zmin");
+		zComp.setId(vcModel.getZ().getName());
+		zComp.setType(SPATIAL_Z.sbmlType());
+		zComp.setUnit(SBMLUnitTranslator.LENGTH);
+		Boundary minZ = zComp.createBoundaryMin();
+		minZ.setId("Zmin");
 		minZ.setValue(vcOrigin.getZ());
-		BoundaryMax maxZ = zComp.createBoundaryMax();
-		maxZ.setSpatialId("Zmax");
+		Boundary maxZ = zComp.createBoundaryMax();
+		maxZ.setId("Zmax");
 		maxZ.setValue(vcOrigin.getZ() + (vcExtent.getZ()));
-		createParamForSpatialElement(zComp, zComp.getSpatialId());
+		createParamForSpatialElement(zComp, zComp.getId());
 	}
 
 	//
@@ -1385,18 +1485,26 @@ private void addGeometry() {
 		StructureMapping vcStructMapping = vcStrucMappings[i];
 		String structName = vcStructMapping.getStructure().getName();
 		Compartment comp = sbmlModel.getCompartment(TokenMangler.mangleToSName(structName));
-		plugin = comp.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-		SpatialCompartmentPlugin cplugin = (SpatialCompartmentPlugin)plugin;
-		CompartmentMapping compMapping = cplugin.getCompartmentMapping();
-		String geomClassName = vcStructMapping.getGeometryClass().getName();
-		compMapping.setSpatialId(TokenMangler.mangleToSName(geomClassName + structName));
-		compMapping.setCompartment(TokenMangler.mangleToSName(structName));
+		SpatialCompartmentPlugin cplugin = 
+			SBMLHelper.checkedPlugin(SpatialCompartmentPlugin.class,comp,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+		GeometryClass gc = vcStructMapping.getGeometryClass();
+		if (!goodPointer(gc,GeometryClass.class,structName))  {
+			continue;
+		}
+		CompartmentMapping compMapping = cplugin.createCompartmentMapping();
+		String geomClassName = gc.getName();
+		String id = TokenMangler.mangleToSName(geomClassName + structName);
+		compMapping.setId(id);
 		compMapping.setDomainType(TokenMangler.mangleToSName(geomClassName));
 		try {
-			compMapping.setUnitSize(vcStructMapping.getUnitSizeParameter().getConstantValue());
+			StructureMappingParameter usp = vcStructMapping.getUnitSizeParameter();
+			Expression e = usp.getExpression();
+			if (goodPointer(e,Expression.class, id)) {
+				compMapping.setUnitSize(e.evaluateConstant());
+			}
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getSpatialId() +"' : " + e.getMessage());
+			throw new RuntimeException("Unable to create compartment mapping for structureMapping '" + compMapping.getId() +"' : " + e.getMessage());
 		}
 	}
 	
@@ -1410,7 +1518,7 @@ private void addGeometry() {
 	int numSubVols = 0;
 	for (int i = 0; i < vcGeomClasses.length; i++) {
 	    DomainType domainType = sbmlGeometry.createDomainType();
-	    domainType.setSpatialId(vcGeomClasses[i].getName());
+	    domainType.setId(vcGeomClasses[i].getName());
 	    if (vcGeomClasses[i] instanceof SubVolume) {
 	    	if (((SubVolume)vcGeomClasses[i]) instanceof AnalyticSubVolume) {
 	    		bAnyAnalyticSubvolumes = true;
@@ -1452,7 +1560,7 @@ private void addGeometry() {
 	for (int i = 0; i < vcGeometricRegions.length; i++) {
 		// domains
 		Domain domain = sbmlGeometry.createDomain();
-		domain.setSpatialId(vcGeometricRegions[i].getName());
+		domain.setId(vcGeometricRegions[i].getName());
 		if (vcGeometricRegions[i] instanceof VolumeGeometricRegion) {
 			domain.setDomainType(((VolumeGeometricRegion)vcGeometricRegions[i]).getSubVolume().getName());
 			
@@ -1504,12 +1612,12 @@ private void addGeometry() {
 			GeometricRegion adjGeomRegion0 = vcSurfaceGeomReg.getAdjacentGeometricRegions()[0];
 			GeometricRegion adjGeomRegion1 = vcSurfaceGeomReg.getAdjacentGeometricRegions()[1];
 			AdjacentDomains adjDomain = sbmlGeometry.createAdjacentDomains();
-			adjDomain.setSpatialId(TokenMangler.mangleToSName(vcSurfaceGeomReg.getName()+"_"+adjGeomRegion0.getName()));
+			adjDomain.setId(TokenMangler.mangleToSName(vcSurfaceGeomReg.getName()+"_"+adjGeomRegion0.getName()));
 			adjDomain.setDomain1(vcSurfaceGeomReg.getName());
 			adjDomain.setDomain2(adjGeomRegion0.getName());
 			// adj domain 2
 			adjDomain = sbmlGeometry.createAdjacentDomains();
-			adjDomain.setSpatialId(TokenMangler.mangleToSName(vcSurfaceGeomReg.getName()+"_"+adjGeomRegion1.getName()));
+			adjDomain.setId(TokenMangler.mangleToSName(vcSurfaceGeomReg.getName()+"_"+adjGeomRegion1.getName()));
 			adjDomain.setDomain1(vcSurfaceGeomReg.getName());
 			adjDomain.setDomain2(adjGeomRegion1.getName());
 		}
@@ -1520,11 +1628,11 @@ private void addGeometry() {
 	//
 	if (bAnyAnalyticSubvolumes && !bAnyImageSubvolumes && !bAnyCSGSubvolumes){
 		AnalyticGeometry sbmlAnalyticGeomDefinition = sbmlGeometry.createAnalyticGeometry();
-		sbmlAnalyticGeomDefinition.setSpatialId(TokenMangler.mangleToSName("Analytic_"+vcGeometry.getName()));	
+		sbmlAnalyticGeomDefinition.setId(TokenMangler.mangleToSName("Analytic_"+vcGeometry.getName()));	
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
 				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume();
-				analyticVol.setSpatialId(vcGeomClasses[i].getName());
+				analyticVol.setId(vcGeomClasses[i].getName());
 				analyticVol.setDomainType(vcGeomClasses[i].getName());
 				analyticVol.setFunctionType("layered");
 				analyticVol.setOrdinal(numSubVols - (i+1));
@@ -1544,17 +1652,17 @@ private void addGeometry() {
 	// add CSGeometry
 	//
 	if (!bAnyAnalyticSubvolumes && !bAnyImageSubvolumes && bAnyCSGSubvolumes){
-		CSGeometry sbmlCSGeomDefinition = sbmlGeometry.createCSGeometry();
-		sbmlCSGeomDefinition.setSpatialId(TokenMangler.mangleToSName("CSG_"+vcGeometry.getName()));
+		CSGeometry sbmlCSGeomDefinition = sbmlGeometry.createCsGeometry();
+		sbmlCSGeomDefinition.setId(TokenMangler.mangleToSName("CSG_"+vcGeometry.getName()));
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof CSGObject) {
 				CSGObject vcellCSGObject = (CSGObject)vcGeomClasses[i];
-				org.sbml.libsbml.CSGObject sbmlCSGObject = sbmlCSGeomDefinition.createCSGObject();
-				sbmlCSGObject.setSpatialId(vcellCSGObject.getName());
+				org.sbml.libsbml.CSGObject sbmlCSGObject = sbmlCSGeomDefinition.createCsgObject();
+				sbmlCSGObject.setId(vcellCSGObject.getName());
 				sbmlCSGObject.setDomainType(vcellCSGObject.getName());
 				sbmlCSGObject.setOrdinal(numSubVols - (i+1));	// the ordinal should the the least for the default/background subVolume
 				org.sbml.libsbml.CSGNode sbmlcsgNode = getSBMLCSGNode(vcellCSGObject.getRoot());
-				sbmlCSGObject.setCSGNodeRoot(sbmlcsgNode);
+				sbmlCSGObject.setCsgNode(sbmlcsgNode);
 			}
 		}
 	}
@@ -1566,7 +1674,7 @@ private void addGeometry() {
 		// add "Segmented" SampledFieldGeometry
 		//
 		SampledFieldGeometry segmentedImageSampledFieldGeometry = sbmlGeometry.createSampledFieldGeometry();
-		segmentedImageSampledFieldGeometry.setSpatialId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
+		segmentedImageSampledFieldGeometry.setId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
 		boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 		Geometry vcImageGeometry = null;
 		{
@@ -1608,30 +1716,29 @@ private void addGeometry() {
 		for (int j = 0; j < vcImageGeomClasses.length; j++) {
 			if (vcImageGeomClasses[j] instanceof ImageSubVolume) {
 				SampledVolume sampledVol = segmentedImageSampledFieldGeometry.createSampledVolume();
-				sampledVol.setSpatialId(vcGeomClasses[j].getName());
+				sampledVol.setId(vcGeomClasses[j].getName());
 				sampledVol.setDomainType(vcGeomClasses[j].getName());
 				sampledVol.setSampledValue(((ImageSubVolume) vcImageGeomClasses[j]).getPixelValue());
 			}
 		}
 		// add sampledField to sampledFieldGeometry
-		SampledField segmentedImageSampledField = segmentedImageSampledFieldGeometry.createSampledField();
+		SampledField segmentedImageSampledField = sbmlGeometry.createSampledField(); 
 		VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
-		segmentedImageSampledField.setSpatialId("SegmentedImageSampledField");
+		segmentedImageSampledField.setId("SegmentedImageSampledField");
 		segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
 		segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
 		segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
 		segmentedImageSampledField.setDataType("integer");
 		segmentedImageSampledField.setInterpolationType("constant");
+		segmentedImageSampledField.setDataType("uint8");
 		try {
-			ImageData segmentedImageData = segmentedImageSampledField.createImageData();
 			byte[] vcImagePixelsBytes = vcImage.getPixels();
-			segmentedImageData.setDataType("uint8");
 //			imageData.setCompression("");
 			int[] segmentedImagePixelsInt = new int[vcImagePixelsBytes.length];
 			for (int i = 0; i < vcImagePixelsBytes.length; i++) {
 				segmentedImagePixelsInt[i] = 0x000000ff & ((int)vcImagePixelsBytes[i]);
 			}
-			segmentedImageData.setSamples(segmentedImagePixelsInt, segmentedImagePixelsInt.length);
+			segmentedImageSampledField.setSamples(segmentedImagePixelsInt, segmentedImagePixelsInt.length);
 		} catch (ImageException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Unable to export image from VCell to SBML : " + e.getMessage());
@@ -1660,9 +1767,9 @@ private void addGeometry() {
 			//
 			double[] signedDistances = distanceMaps[0].getSignedDistances();
 			SampledFieldGeometry distanceMapSampledFieldGeometry = sbmlGeometry.createSampledFieldGeometry();
-			distanceMapSampledFieldGeometry.setSpatialId(TokenMangler.mangleToSName("DistanceMap_"+vcGeometry.getName()));
+			distanceMapSampledFieldGeometry.setId(TokenMangler.mangleToSName("DistanceMap_"+vcGeometry.getName()));
 			SampledField distanceMapSampledField = distanceMapSampledFieldGeometry.createSampledField();
-			distanceMapSampledField.setSpatialId("DistanceMapSampledField");
+			distanceMapSampledField.setId("DistanceMapSampledField");
 			distanceMapSampledField.setNumSamples1(distanceMaps[0].getSamplesX().length);
 			distanceMapSampledField.setNumSamples2(distanceMaps[0].getSamplesY().length);
 			distanceMapSampledField.setNumSamples3(distanceMaps[0].getSamplesZ().length);
@@ -1689,11 +1796,11 @@ System.err.println("should be:\n  distanceMapImageData.setDataType(\"float32\")"
 			distanceMapImageData.setSamples(scaledIntegerDistanceMap, signedDistances.length);
 System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signedDistances,signedDistances.length)");
 			SampledVolume sampledVol = distanceMapSampledFieldGeometry.createSampledVolume();
-			sampledVol.setSpatialId(distanceMaps[0].getInsideSubvolumeName());
+			sampledVol.setId(distanceMaps[0].getInsideSubvolumeName());
 			sampledVol.setDomainType(distanceMaps[0].getInsideSubvolumeName());
 			sampledVol.setSampledValue(255);
 			sampledVol = distanceMapSampledFieldGeometry.createSampledVolume();
-			sampledVol.setSpatialId(distanceMaps[1].getInsideSubvolumeName());
+			sampledVol.setId(distanceMaps[1].getInsideSubvolumeName());
 			sampledVol.setDomainType(distanceMaps[1].getInsideSubvolumeName());
 			sampledVol.setSampledValue(1);
 		}
@@ -1704,9 +1811,16 @@ System.err.println("should be:\n  distanceMapImageData.setSamples((float[])signe
 	//
 //	if (bAnyAnalyticSubvolumes || bAnyImageSubvolumes || bAnyCSGSubvolumes){
 //		ParametricGeometry sbmlParametricGeomDefinition = sbmlGeometry.createParametricGeometry();
-//		sbmlParametricGeomDefinition.setSpatialId(TokenMangler.mangleToSName("SurfaceMesh_"+vcGeometry.getName()));
+//		sbmlParametricGeomDefinition.setId(TokenMangler.mangleToSName("SurfaceMesh_"+vcGeometry.getName()));
 //		xxxx
 //	}
+}
+
+private boolean goodPointer(Object obj, Class<?> clzz, String sourceName) {
+	if (lg.isEnabledFor(Level.WARN)) {
+		lg.warn(sourceName + "has no " + clzz.getSimpleName());
+	}
+	return obj != null;
 }
 
 public static org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNode vcCSGNode) {
@@ -1714,7 +1828,7 @@ public static org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNod
 	if (vcCSGNode instanceof cbit.vcell.geometry.CSGPrimitive){
 		cbit.vcell.geometry.CSGPrimitive vcCSGprimitive = (cbit.vcell.geometry.CSGPrimitive)vcCSGNode; 
 		org.sbml.libsbml.CSGPrimitive sbmlPrimitive = new org.sbml.libsbml.CSGPrimitive();
-		sbmlPrimitive.setSpatialId(csgNodeName);
+		sbmlPrimitive.setId(csgNodeName);
 		switch (vcCSGprimitive.getType()){
 		case SPHERE: {
 			sbmlPrimitive.setPrimitiveType(SBMLSpatialConstants.SOLID_SPHERE);
@@ -1739,12 +1853,12 @@ public static org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNod
 		return sbmlPrimitive;
 	}else if (vcCSGNode instanceof cbit.vcell.geometry.CSGPseudoPrimitive){
 		// org.sbml.libsbml.CSGPseudoPrimitive sbmlPseudoPrimitive = new org.sbml.libsbml.CSGPseudoPrimitive();
-		// sbmlPseudoPrimitive.setSpatialId(vcCSGNode.getName());
+		// sbmlPseudoPrimitive.setId(vcCSGNode.getName());
 		throw new RuntimeException("pseudoPrimitive not yet supported in sbml export");
 	}else if (vcCSGNode instanceof cbit.vcell.geometry.CSGSetOperator){
 		cbit.vcell.geometry.CSGSetOperator vcCSGSetOperator = (cbit.vcell.geometry.CSGSetOperator)vcCSGNode; 
 		org.sbml.libsbml.CSGSetOperator sbmlSetOperator = new org.sbml.libsbml.CSGSetOperator();
-		sbmlSetOperator.setSpatialId(csgNodeName);
+		sbmlSetOperator.setId(csgNodeName);
 		switch (vcCSGSetOperator.getOpType()){
 		case UNION: {
 			sbmlSetOperator.setOperationType(SBMLSpatialConstants.UNION);
@@ -1763,7 +1877,7 @@ public static org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNod
 		}
 		}
 		for (cbit.vcell.geometry.CSGNode vcChild : vcCSGSetOperator.getChildren()){
-			sbmlSetOperator.addCSGNodeChild(getSBMLCSGNode(vcChild));
+			sbmlSetOperator.addCsgNode(getSBMLCSGNode(vcChild));
 		}
 
 		return sbmlSetOperator;
@@ -1772,7 +1886,7 @@ public static org.sbml.libsbml.CSGNode getSBMLCSGNode(cbit.vcell.geometry.CSGNod
 		if (vcTransformation instanceof cbit.vcell.geometry.CSGTranslation){
 			cbit.vcell.geometry.CSGTranslation vcTranslation = (cbit.vcell.geometry.CSGTranslation)vcTransformation;
 			org.sbml.libsbml.CSGTranslation sbmlTranslation = new org.sbml.libsbml.CSGTranslation();
-			sbmlTranslation.setSpatialId(csgNodeName);
+			sbmlTranslation.setId(csgNodeName);
 			sbmlTranslation.setTranslateX(vcTranslation.getTranslation().getX());
 			sbmlTranslation.setTranslateY(vcTranslation.getTranslation().getY());
 			sbmlTranslation.setTranslateZ(vcTranslation.getTranslation().getZ());
@@ -1790,26 +1904,26 @@ if (translateZ != vcTranslation.getTranslation().getZ()){
 	System.err.println("sbml z translation "+translateZ+" doesn't match vcell "+vcTranslation.getTranslation().getZ());
 }
 }
-			sbmlTranslation.setChild(getSBMLCSGNode(vcTranslation.getChild()));
+			sbmlTranslation.setCsgNode(getSBMLCSGNode(vcTranslation.getChild()));
 			return sbmlTranslation;
 		}else if (vcTransformation instanceof cbit.vcell.geometry.CSGRotation){
 			cbit.vcell.geometry.CSGRotation vcRotation = (cbit.vcell.geometry.CSGRotation)vcTransformation;
 			org.sbml.libsbml.CSGRotation sbmlRotation = new org.sbml.libsbml.CSGRotation();
-			sbmlRotation.setSpatialId(csgNodeName);
-			sbmlRotation.setRotationAngleInRadians(vcRotation.getRotationRadians());
-			sbmlRotation.setRotationAxisX(vcRotation.getAxis().getX());
-			sbmlRotation.setRotationAxisY(vcRotation.getAxis().getY());
-			sbmlRotation.setRotationAxisZ(vcRotation.getAxis().getZ());
-			sbmlRotation.setChild(getSBMLCSGNode(vcRotation.getChild()));
+			sbmlRotation.setId(csgNodeName);
+			sbmlRotation.setRotateAngleInRadians(vcRotation.getRotationRadians());
+			sbmlRotation.setRotateX(vcRotation.getAxis().getX());
+			sbmlRotation.setRotateY(vcRotation.getAxis().getY());
+			sbmlRotation.setRotateZ(vcRotation.getAxis().getZ());
+			sbmlRotation.setCsgNode( getSBMLCSGNode(vcRotation.getChild()));
 			return sbmlRotation;
 		}else if (vcTransformation instanceof cbit.vcell.geometry.CSGScale){
 			cbit.vcell.geometry.CSGScale vcScale = (cbit.vcell.geometry.CSGScale)vcTransformation;
 			org.sbml.libsbml.CSGScale sbmlScale = new org.sbml.libsbml.CSGScale();
-			sbmlScale.setSpatialId(csgNodeName);
+			sbmlScale.setId(csgNodeName);
 			sbmlScale.setScaleX(vcScale.getScale().getX());
 			sbmlScale.setScaleY(vcScale.getScale().getY());
 			sbmlScale.setScaleZ(vcScale.getScale().getZ());
-			sbmlScale.setChild(getSBMLCSGNode(vcScale.getChild()));
+			sbmlScale.setCsgNode(getSBMLCSGNode(vcScale.getChild()));
 			return sbmlScale;
 		}else{
 			throw new RuntimeException("unsupported transformation "+vcTransformation.getClass().getName());
@@ -1830,30 +1944,21 @@ private void createParamForSpatialElement(SBase sBaseElement, String spatialId) 
 	org.sbml.libsbml.Parameter p = sbmlModel.createParameter();
 	if (sBaseElement instanceof CoordinateComponent) {
 		CoordinateComponent cc = (CoordinateComponent)sBaseElement;
+		SpatialAdapter sa = SpatialAdapter.fromSBMLType(cc.getType());
 		// coordComponent with index = 1 represents X-axis, hence set param id as 'x'
-		if (cc.getIndex() == 0) {
-			p.setId("x");
-		} else if (cc.getIndex() == 1) {
-			p.setId("y");
-		} else if (cc.getIndex() == 2) {
-			p.setId("z");
+		if (sa != null) {
+			p.setId(sa.getName( ));
 		}
 	} else {
 		p.setId(spatialId);
 	}
 	p.setValue(0.0);
-	// since p is a parameter from 'spatial' package, need to set the
-	// requiredElements attributes on parameter 
-	SBasePlugin plugin = p.getPlugin(SBMLUtils.SBML_REQUIREDELEMENTS_NS_PREFIX);
-	RequiredElementsSBasePlugin reqPlugin = (RequiredElementsSBasePlugin)plugin;
-	reqPlugin.setMathOverridden(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-	reqPlugin.setCoreHasAlternateMath(false);
+	p.setConstant(true);
 	// now need to create a SpatialSymbolReference for parameter
-	plugin = p.getPlugin(SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-	SpatialParameterPlugin spPlugin = (SpatialParameterPlugin)plugin;
-	SpatialSymbolReference spSymRef = spPlugin.getSpatialSymbolReference();
-	spSymRef.setSpatialId(spatialId);
-	spSymRef.setType(sBaseElement.getElementName());
+	SpatialParameterPlugin spPlugin = SBMLHelper.checkedPlugin(SpatialParameterPlugin.class,p,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+	SpatialSymbolReference spSymRef = spPlugin.createSpatialSymbolReference();
+	spSymRef.setId(spatialId);
+	spSymRef.setSpatialRef(spatialId);
 	
 }
 
