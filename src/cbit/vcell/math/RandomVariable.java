@@ -106,4 +106,10 @@ public abstract class RandomVariable extends Variable {
 		seed.bindExpression(symbolTable);
 		distribution.bind(symbolTable);
 	}
+
+	public void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+
+		seed = Equation.getFlattenedExpression(simSymbolTable,seed,bRoundCoefficients);
+		distribution.flatten(simSymbolTable, bRoundCoefficients);
+	}
 }

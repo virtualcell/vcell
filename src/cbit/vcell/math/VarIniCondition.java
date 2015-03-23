@@ -9,9 +9,10 @@
  */
 
 package cbit.vcell.math;
-import org.vcell.util.Matchable;
-
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
 /**
  * The class is tentatively used to store variable's initial value
  * for stochastic simulation. A better solution would be adding one
@@ -96,5 +97,10 @@ public String toString() {
 	
 	buffer.append(getVar().getName()+" = "+initialValue);
 	return buffer.toString();
+}
+
+
+public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+	iniValue = Equation.getFlattenedExpression(mathSymbolTable, iniValue, bRoundCoefficients);
 }
 }

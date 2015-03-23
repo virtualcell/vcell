@@ -10,6 +10,8 @@
 
 package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+
 import java.util.*;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -263,5 +265,22 @@ public String toString() {
 	buffer.append(VCML.JumpProcess+"_"+getName());
 	
 	return buffer.toString();
+}
+
+
+public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+	//
+	// replace fastRates with flattended and substituted fastRates
+	//
+	for (int i = 0; i < actions.size(); i++) {
+		Action action = actions.get(i);
+		Expression oldExp = action.getOperand();
+		actions.set(i,new Action(action.getVar(),action.getOperation(),Equation.getFlattenedExpression(mathSymbolTable,oldExp,bRoundCoefficients)));
+	}
+	
+	//
+	// replace fastInvariants with flattended and substituted fastInvariants
+	//
+	probabilityRate = Equation.getFlattenedExpression(mathSymbolTable,probabilityRate,bRoundCoefficients);
 }
 }
