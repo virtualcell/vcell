@@ -272,4 +272,15 @@ public void bind(MathDescription mathDescription) throws ExpressionBindingExcept
 	}
 }
 
+
+public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+	for (int i = 0; i < actions.size(); i++) {
+		Action action = actions.get(i);
+		Expression oldExp = action.getOperand();
+		actions.set(i,new Action(action.getVar(),action.getOperation(),Equation.getFlattenedExpression(mathSymbolTable,oldExp,bRoundCoefficients)));
+	}
+	
+	rateDefinition.flatten(mathSymbolTable,bRoundCoefficients);
+}
+
 }

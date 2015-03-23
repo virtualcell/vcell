@@ -99,4 +99,10 @@ public class GaussianDistribution extends Distribution {
 	public final Expression getStandardDeviation() {
 		return standardDeviation;
 	}
+
+	@Override
+	public void flatten(MathSymbolTable simSymbolTable,	boolean bRoundCoefficients) throws ExpressionException, MathException {
+		mean = Equation.getFlattenedExpression(simSymbolTable, mean, bRoundCoefficients);
+		standardDeviation = Equation.getFlattenedExpression(simSymbolTable, standardDeviation, bRoundCoefficients);
+	}
 }

@@ -28,6 +28,7 @@ public class ParticleProperties implements Serializable, Matchable {
 	public abstract static class ParticleInitialCondition implements Serializable, Matchable {
 		public abstract String getVCML(int dimension);
 		abstract void bind(SymbolTable symbolTable) throws ExpressionBindingException;
+		abstract void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException;
 	}
 	
 	public static class ParticleInitialConditionConcentration extends ParticleInitialCondition {
@@ -77,6 +78,10 @@ public class ParticleProperties implements Serializable, Matchable {
 		}
 		public Expression getDistribution() {
 			return distribution;
+		}
+		@Override
+		void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+			distribution = Equation.getFlattenedExpression(mathSymbolTable, distribution, bRoundCoefficients);
 		}
 	}
 	public static class ParticleInitialConditionCount extends ParticleInitialCondition {
@@ -191,6 +196,13 @@ public class ParticleProperties implements Serializable, Matchable {
 			if (locationZ != null && !isZUniform()) {
 				locationZ.bindExpression(symbolTable);
 			}
+		}
+		@Override
+		void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+			count = Equation.getFlattenedExpression(mathSymbolTable, count, bRoundCoefficients);
+			locationX = Equation.getFlattenedExpression(mathSymbolTable, locationX, bRoundCoefficients);;
+			locationY = Equation.getFlattenedExpression(mathSymbolTable, locationY, bRoundCoefficients);;
+			locationZ = Equation.getFlattenedExpression(mathSymbolTable, locationZ, bRoundCoefficients);;
 		}	
 	}
 	
@@ -342,5 +354,16 @@ public class ParticleProperties implements Serializable, Matchable {
 
 	public Expression getDriftZ() {
 		return driftZExp;
+	}
+
+	public void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+		diffExp = Equation.getFlattenedExpression(mathSymbolTable, diffExp, bRoundCoefficients);
+		driftXExp = Equation.getFlattenedExpression(mathSymbolTable, driftXExp, bRoundCoefficients);
+		driftYExp = Equation.getFlattenedExpression(mathSymbolTable, driftYExp, bRoundCoefficients);
+		driftZExp = Equation.getFlattenedExpression(mathSymbolTable, driftZExp, bRoundCoefficients);
+
+		for (ParticleInitialCondition particleIniCond : listOfParticleInitialConditions){
+			particleIniCond.flatten(mathSymbolTable,bRoundCoefficients);
+		}
 	}
 }
