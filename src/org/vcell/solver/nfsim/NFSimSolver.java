@@ -21,6 +21,7 @@ import org.vcell.util.SessionLog;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -157,13 +158,35 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				.getRequiredProperty(PropertyLoader.nfsimExecutableProperty);
 		String inputFilename = getInputFilename();
 		String outputFilename = getOutputFilename();
-		Integer seed = simTask.getSimulation().getSolverTaskDescription()
-				.getNFSimSimulationOptions().getRandomSeed();
-		if (seed == null) {
-			seed = new Integer(0);
+		
+		NFsimSimulationOptions nfsso = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
+		String adv = "";
+		boolean observableComputationOff = nfsso.getObservableComputationOff();
+		if(observableComputationOff == true) {
+			adv += " -notf true";		// false is by default, no need to specify
 		}
-		TimeBounds tb = getSimulationJob().getSimulation()
-				.getSolverTaskDescription().getTimeBounds();
+		Integer moleculeDistance = nfsso.getMoleculeDistance();
+		if(moleculeDistance != null) {
+			adv += " -utl " + moleculeDistance;
+		}
+		boolean aggregateBookkeeping = nfsso.getAggregateBookkeeping();
+		if(aggregateBookkeeping == true) {
+			adv += " -cb true";			// false is by default, no need to specify
+		}
+		Integer maxMoleculesPerType = nfsso.getMaxMoleculesPerType();
+		if(maxMoleculesPerType != null) {
+			adv += " -gml " + maxMoleculesPerType;
+		}
+		Integer equilibrateTime = nfsso.getEquilibrateTime();
+		if(equilibrateTime != null) {
+			adv += " -eq " + equilibrateTime;
+		}
+		boolean preventIntraBonds = nfsso.getPreventIntraBonds();
+		if(preventIntraBonds == true) {
+			adv +=  "-bscb true";			// false is by default, no need to specify
+		}
+		
+		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
 		double dtime = tb.getEndingTime() - tb.getStartingTime();
 		// long time = Math.round(dtime);
 		// TimeStep ts =
@@ -177,6 +200,11 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
 		int steps = dots.getKeepAtMost();
 
+		Integer seed = nfsso.getRandomSeed();
+		if (seed == null) {
+			seed = new Integer(0);
+		}
+
 		String baseCommands[] = { executableName, "-seed", seed.toString(),
 					"-xml", inputFilename, "-o", outputFilename,
 					"-sim", Double.toString(dtime), "-oSteps",
@@ -189,7 +217,8 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			// this will make your code run much slower.
 			// http://emonet.biology.yale.edu/nfsim/pages/support/support.html
 			cmds.add("-cb");
-		}	
+		}
+		cmds.add(adv);
 		if (!bMessaging) {
 			cmds.add("-v");
 		}
