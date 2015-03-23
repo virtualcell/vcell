@@ -27,7 +27,13 @@ import cbit.vcell.math.VCML;
 
 public class NFsimSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
+	boolean observableComputationOff = false;
+	Integer moleculeDistance = null;
+	boolean aggregateBookkeeping = false;
+	Integer maxMoleculesPerType = null;
+	Integer equilibrateTime = null;
 	private Integer randomSeed = null;
+	boolean preventIntraBonds = false;
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -41,7 +47,13 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	
 	public NFsimSimulationOptions(NFsimSimulationOptions smoldynSimulationOptions) {
 		this();
+		observableComputationOff = smoldynSimulationOptions.observableComputationOff;
+		moleculeDistance = smoldynSimulationOptions.moleculeDistance;
+		aggregateBookkeeping = smoldynSimulationOptions.aggregateBookkeeping;
+		maxMoleculesPerType = smoldynSimulationOptions.maxMoleculesPerType;
+		equilibrateTime = smoldynSimulationOptions.equilibrateTime;
 		randomSeed = smoldynSimulationOptions.randomSeed;
+		preventIntraBonds = smoldynSimulationOptions.preventIntraBonds;
 	}
 
 	public NFsimSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
@@ -53,21 +65,74 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 		if (!(obj instanceof NFsimSimulationOptions)) {
 			return false;
 		}
-		NFsimSimulationOptions smoldynSimulationOptions = (NFsimSimulationOptions)obj;
-		if (!Compare.isEqualOrNull(randomSeed, smoldynSimulationOptions.randomSeed)) {
+		NFsimSimulationOptions nfsimSimulationOptions = (NFsimSimulationOptions)obj;
+		if (observableComputationOff != nfsimSimulationOptions.observableComputationOff) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(moleculeDistance, nfsimSimulationOptions.moleculeDistance)) {
+			return false;
+		}
+		if (aggregateBookkeeping != nfsimSimulationOptions.aggregateBookkeeping) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(maxMoleculesPerType, nfsimSimulationOptions.maxMoleculesPerType)) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(equilibrateTime, nfsimSimulationOptions.equilibrateTime)) {
+			return false;
+		}
+		if (!Compare.isEqualOrNull(randomSeed, nfsimSimulationOptions.randomSeed)) {
+			return false;
+		}
+		if (preventIntraBonds != nfsimSimulationOptions.preventIntraBonds) {
 			return false;
 		}
 		return true;
 	}
-
+// -----------------------------------------------------------------------------------
+	public final boolean getObservableComputationOff() {
+		return observableComputationOff;
+	}
+	public final void setObservableComputationOff(boolean newValue) {
+		this.observableComputationOff = newValue;
+	}
+	public final Integer getMoleculeDistance() {
+		return moleculeDistance;
+	}
+	public final void setMoleculeDistance(Integer newValue) {
+		this.moleculeDistance = newValue;
+	}
+	public final boolean getAggregateBookkeeping() {
+		return aggregateBookkeeping;
+	}
+	public final void setAggregateBookkeeping(boolean newValue) {
+		this.aggregateBookkeeping = newValue;
+	}
+	public final Integer getMaxMoleculesPerType() {
+		return maxMoleculesPerType;
+	}
+	public final void setMaxMoleculesPerType(Integer newValue) {
+		this.maxMoleculesPerType = newValue;
+	}
+	public final Integer getEquilibrateTime() {
+		return equilibrateTime;
+	}
+	public final void setEquilibrateTime(Integer newValue) {
+		this.equilibrateTime = newValue;
+	}
 	public final Integer getRandomSeed() {
 		return randomSeed;
 	}
-
 	public final void setRandomSeed(Integer newValue) {
 		Integer oldValue = this.randomSeed;
 		this.randomSeed = newValue;
 		firePropertyChange(PROPERTY_NAME_RANDOM_SEED, oldValue, newValue);
+	}
+	public final boolean getPreventIntraBonds() {
+		return preventIntraBonds;
+	}
+	public final void setPreventIntraBonds(boolean newValue) {
+		this.preventIntraBonds = newValue;
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {

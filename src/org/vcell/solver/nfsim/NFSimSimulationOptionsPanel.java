@@ -100,7 +100,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> In many cases, however you may have a very large pattern, but the maximal number of bonds you need to traverse to "
 						+ "make sure that pattern can always be matched is low. This will happen, for instance, when many molecules are connected "
 						+ "to a single hub molecule. "
-						+ "<br><br> NFSim option �utl [integer] Default: the size of the largest reactant pattern in the rule-set."
+						+ "<br><br> NFSim option -utl [integer] Default: the size of the largest reactant pattern in the rule-set."
 						+ "</html>");
 			} else if (source == aggregateBookkeepingHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
@@ -112,7 +112,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "system for molecular complexes that form by assigning each connected aggregate a unique id. Then, it becomes easy "
 						+ "to check if any two molecules are connected. The trade-off is that there is an overhead involved with maintaining "
 						+ "the bookkeeping system with a cost that depends on the size of the molecular complexes that can form."
-						+ "<br><br> NFSim option �cb Default: off"
+						+ "<br><br> NFSim option -cb Default: off"
 						+ "</html>");
 			} else if (source == maxMoleculesPerTypeHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
@@ -120,7 +120,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
-						+ "<br><br> NFSim option: �gml [limit] Default: 100,000"
+						+ "<br><br> NFSim option: -gml [limit] Default: 100,000"
 						+ "</html>");
 			} else if (source == equilibrateTimeHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
@@ -137,7 +137,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "</html>");
 			} else if (source == preventIntraBondsHelpButton) {
 				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
-						"<html>-bscb <i>int</i> "
+						"<html>-bscb <i>boolean</i> "
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
 						+ "</html>");
@@ -148,15 +148,34 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "</html>");
 
 // ----------------------------------------------------------------------------------------------------------
+			} else if (source == observableComputationCheckBox) {
+				setNewObservableComputation();
+			} else if (source == moleculeDistanceCheckBox) {
+				moleculeDistanceTextField.setEditable(moleculeDistanceCheckBox.isSelected());
+				if(!moleculeDistanceCheckBox.isSelected()) {
+					setNewMoleculeDistance();
+				}
+			} else if (source == aggregateBookkeepingCheckBox) {
+				setNewAggregateBookkeeping();
+			} else if (source == maxMoleculesPerTypeCheckBox) {
+				maxMoleculesPerTypeTextField.setEditable(maxMoleculesPerTypeCheckBox.isSelected());
+				if(!maxMoleculesPerTypeCheckBox.isSelected()) {
+					setNewMaxMoleculesPerType();
+				}
+			} else if (source == equilibrateTimeCheckBox) {
+				equilibrateTimeTextField.setEditable(equilibrateTimeCheckBox.isSelected());
+				if(!equilibrateTimeCheckBox.isSelected()) {
+					setNewEquilibrateTime();
+				}
 			} else if (source == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
-				if(!randomSeedCheckBox.isSelected())
-				{
+				if(!randomSeedCheckBox.isSelected()) {
 					setNewRandomSeed();
 				}
+			} else if (source == preventIntraBondsCheckBox) {
+				setNewPreventIntraBonds();
 			}
 		}
-
 		public void focusGained(FocusEvent e) {
 		}
 
@@ -164,16 +183,83 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			if (e.isTemporary()) {
 				return;
 			}
-			if (e.getSource() == randomSeedTextField) {
+			if (e.getSource() == moleculeDistanceTextField) {
+				setNewMoleculeDistance();
+			} else if (e.getSource() == maxMoleculesPerTypeTextField) {
+				setNewMaxMoleculesPerType();
+			} else if (e.getSource() == equilibrateTimeTextField) {
+				setNewEquilibrateTime();
+			} else if (e.getSource() == randomSeedTextField) {
 				setNewRandomSeed();
 			}
 		}
-
 		public void propertyChange(PropertyChangeEvent evt) {
-			
 		}
-		
 	}
+	
+	private void setNewObservableComputation() {		// boolean
+		solverTaskDescription.getNFSimSimulationOptions().setObservableComputationOff(observableComputationCheckBox.isSelected());
+	}
+	private void setNewMoleculeDistance() {
+		Integer moleculeDistance = null;
+		if (moleculeDistanceCheckBox.isSelected()) {
+			try {
+				moleculeDistance = new Integer(moleculeDistanceTextField.getText());				
+			} catch (NumberFormatException ex) {
+				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
+				return;
+			}
+		}
+		solverTaskDescription.getNFSimSimulationOptions().setMoleculeDistance(moleculeDistance);
+	}
+	private void setNewAggregateBookkeeping() {			// boolean
+		solverTaskDescription.getNFSimSimulationOptions().setAggregateBookkeeping(aggregateBookkeepingCheckBox.isSelected());
+	}
+	private void setNewMaxMoleculesPerType() {
+		Integer maxMoleculesPerType = null;
+		if (maxMoleculesPerTypeCheckBox.isSelected()) {
+			try {
+				maxMoleculesPerType = new Integer(maxMoleculesPerTypeTextField.getText());				
+			} catch (NumberFormatException ex) {
+				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
+				return;
+			}
+		}
+		solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(maxMoleculesPerType);
+	}
+	private void setNewEquilibrateTime() {
+		Integer equilibrateTime = null;
+		if (equilibrateTimeCheckBox.isSelected()) {
+			try {
+				equilibrateTime = new Integer(equilibrateTimeTextField.getText());				
+			} catch (NumberFormatException ex) {
+				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
+				return;
+			}
+		}
+		solverTaskDescription.getNFSimSimulationOptions().setEquilibrateTime(equilibrateTime);
+	}
+	private void setNewRandomSeed(){
+		if(!isVisible()){
+			return;
+		}
+		Integer randomSeed = null;
+		if (randomSeedCheckBox.isSelected()) {
+			try {
+				randomSeed = new Integer(randomSeedTextField.getText());
+			} catch (NumberFormatException ex) {
+				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
+				return;
+			}
+		}
+		solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(randomSeed);		
+	}
+	private void setNewPreventIntraBonds() {		// boolean
+		solverTaskDescription.getNFSimSimulationOptions().setPreventIntraBonds(preventIntraBondsCheckBox.isSelected());
+	}
+
+	
+// ----------------------------------------------------------------------------------------------------------------------------	
 	public NFSimSimulationOptionsPanel() {
 		super("Advanced Solver Options", false);
 		initialize();
@@ -476,14 +562,15 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 			
 		setVisible(true);
+		NFsimSimulationOptions nfsimSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();
 		
-		boolean notf = false;
+		boolean notf = nfsimSimulationOptions.getObservableComputationOff();
 		if (notf == false) {
 			observableComputationCheckBox.setSelected(false);
 		} else {			
 			observableComputationCheckBox.setSelected(true);
 		}
-		Integer utl = 5;
+		Integer utl = nfsimSimulationOptions.getMoleculeDistance();
 		if (utl == null) {
 			moleculeDistanceTextField.setEditable(false);
 			moleculeDistanceCheckBox.setSelected(false);
@@ -492,13 +579,13 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			moleculeDistanceCheckBox.setSelected(true);
 			moleculeDistanceTextField.setText(""+utl);
 		}
-		boolean cb = false;
+		boolean cb = nfsimSimulationOptions.getAggregateBookkeeping();
 		if (cb == false) {
 			aggregateBookkeepingCheckBox.setSelected(false);
 		} else {			
 			aggregateBookkeepingCheckBox.setSelected(true);
 		}
-		Integer gml = 100000;
+		Integer gml = nfsimSimulationOptions.getMaxMoleculesPerType();
 		if (gml == null) {
 			maxMoleculesPerTypeTextField.setEditable(false);
 			maxMoleculesPerTypeCheckBox.setSelected(false);
@@ -507,9 +594,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			maxMoleculesPerTypeCheckBox.setSelected(true);
 			maxMoleculesPerTypeTextField.setText(""+gml);
 		}
-		
-		
-		Integer eq = 100;
+		Integer eq = nfsimSimulationOptions.getEquilibrateTime();
 		if (eq == null) {
 			equilibrateTimeTextField.setEditable(false);
 			equilibrateTimeCheckBox.setSelected(false);
@@ -518,9 +603,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			equilibrateTimeCheckBox.setSelected(true);
 			equilibrateTimeTextField.setText(""+eq);
 		}
-		
-		NFsimSimulationOptions smoldynSimulationOptions = solverTaskDescription.getNFSimSimulationOptions();
-		Integer randomSeed = smoldynSimulationOptions.getRandomSeed();
+		Integer randomSeed = nfsimSimulationOptions.getRandomSeed();
 		if (randomSeed == null) {
 			randomSeedTextField.setEditable(false);
 			randomSeedCheckBox.setSelected(false);
@@ -529,28 +612,11 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 			randomSeedCheckBox.setSelected(true);
 			randomSeedTextField.setText(randomSeed.toString());
 		}
-
-		boolean bscb = false;
+		boolean bscb = nfsimSimulationOptions.getPreventIntraBonds();
 		if (bscb == false) {
 			preventIntraBondsCheckBox.setSelected(false);
 		} else {			
 			preventIntraBondsCheckBox.setSelected(true);
 		}
-	}
-	
-	private void setNewRandomSeed(){
-		if(!isVisible()){
-			return;
-		}
-		Integer randomSeed = null;
-		if (randomSeedCheckBox.isSelected()) {
-			try {
-				randomSeed = new Integer(randomSeedTextField.getText());
-			} catch (NumberFormatException ex) {
-				DialogUtils.showErrorDialog(this, "Wrong number format for random seed: " + ex.getMessage());
-				return;
-			}
-		}
-		solverTaskDescription.getNFSimSimulationOptions().setRandomSeed(randomSeed);		
 	}
 }
