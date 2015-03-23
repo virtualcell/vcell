@@ -3073,7 +3073,7 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				delayDurationExpression = unMangleExpression((delayElement.getText()));
 			}
 			
-			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, new ArrayList<cbit.vcell.mapping.BioEvent.EventAssignment>(), simContext);
+			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, simContext);
 			try {
 				newBioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, triggerExpression);
 				if (delayDurationExpression != null){
@@ -3120,7 +3120,7 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				delayDurationExpression = unMangleExpression((delayElement.getText()));
 			}
 			
-			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, new ArrayList<cbit.vcell.mapping.BioEvent.EventAssignment>(), simContext);
+			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, simContext);
 			try {
 				newBioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, triggerExpression);
 				if (delayDurationExpression != null){
@@ -3139,7 +3139,7 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			TriggerType triggerType = TriggerType.fromXmlName(bEventElement.getAttributeValue(XMLTags.BioEventTriggerTypeAttrTag));
 			boolean bUseValuesFromTriggerTime = Boolean.parseBoolean(bEventElement.getAttributeValue(XMLTags.UseValuesFromTriggerTimeAttrTag));
 
-			newBioEvent = new BioEvent(name, triggerType, bUseValuesFromTriggerTime, new ArrayList<cbit.vcell.mapping.BioEvent.EventAssignment>(), simContext);
+			newBioEvent = new BioEvent(name, triggerType, bUseValuesFromTriggerTime, simContext);
 			
 			Iterator<Element> paramElementIter = bEventElement.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
 			ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();

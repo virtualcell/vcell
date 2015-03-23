@@ -155,7 +155,7 @@ public class CopasiStandaloneSolver implements SBMLSolver {
 		jvmArgs.add("-D" + PropertyLoader.installationRoot + '=' + inst);
 		
 		//jvmArgs.add("-Dlog4j.debug");
-		jvmArgs.add("-Dlog4j.configuration=file:standalonelog4j.properties");
+		//jvmArgs.add("-Dlog4j.configuration=file:standalonelog4j.properties");
 		return jvmArgs;
 	}
 	

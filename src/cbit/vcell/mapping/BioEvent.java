@@ -279,10 +279,14 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	
 	
 	public BioEvent(String name, SimulationContext simContext){
-		this(name, TriggerType.SingleTriggerTime, true, new ArrayList<EventAssignment>(), simContext);
+		this(name, TriggerType.SingleTriggerTime, true, simContext);
 	}
 	
-	public BioEvent(String name, TriggerType triggerType, boolean bUseValuesFromTrigger, ArrayList<EventAssignment> eventAssignmentList, SimulationContext simContext) {
+	public BioEvent(String name, TriggerType triggerType, boolean bUseValuesFromTrigger, SimulationContext simContext) {
+		this(name, triggerType, bUseValuesFromTrigger, null, simContext);
+	}
+
+	private BioEvent(String name, TriggerType triggerType, boolean bUseValuesFromTrigger, ArrayList<EventAssignment> eventAssignmentList, SimulationContext simContext) {
 		super();
 		this.name = name; 
 		this.bUseValuesFromTriggerTime = bUseValuesFromTrigger;
