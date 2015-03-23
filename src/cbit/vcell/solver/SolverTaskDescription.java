@@ -245,6 +245,9 @@ public boolean compareEqual(Matchable object) {
 		if (!Compare.isEqualOrNull(chomboSolverSpec,solverTaskDescription.chomboSolverSpec)) {
 			return false;
 		}
+		if (!Compare.isEqualOrNull(nfsimSimulationOptions,solverTaskDescription.nfsimSimulationOptions)) {
+			return false;
+		}
 		return numProcessors == solverTaskDescription.numProcessors;
 	}
 	return false;
