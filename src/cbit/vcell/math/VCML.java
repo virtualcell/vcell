@@ -203,7 +203,13 @@ public class VCML {
 	public final static String VolumeParticleSpeciesPatterns     = "VolumeParticleSpeciesPatterns";
 		
 	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";
+	public final static String NFSimSimulationOptions_observableComputationOff	= "ObservableComputationOff";
+	public final static String NFSimSimulationOptions_moleculeDistance	= "MoleculeDistance";
+	public final static String NFSimSimulationOptions_aggregateBookkeeping	= "AggregateBookkeeping";
+	public final static String NFSimSimulationOptions_maxMoleculesPerType	= "MaxMoleculesPerType";
+	public final static String NFSimSimulationOptions_equilibrateTime	= "EquilibrateTime";
 	public final static String NFSimSimulationOptions_randomSeed	= "RandomSeed";
+	public final static String NFSimSimulationOptions_preventIntraBonds	= "PreventIntraBonds";
 
 	public final static String SmoldynSimulationOptions	= "SmoldynSimulationOptions";
 	public final static String SmoldynSimulationOptions_randomSeed	= "RandomSeed";

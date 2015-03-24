@@ -168,11 +168,28 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.NFSimSimulationOptions + " " + VCML.BeginBlock + "\n");
+		if (observableComputationOff == true) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_observableComputationOff + " " + observableComputationOff + "\n");			
+		}
+		if (moleculeDistance != null) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_moleculeDistance + " " + moleculeDistance + "\n");			
+		}
+		if (aggregateBookkeeping == true) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_aggregateBookkeeping + " " + aggregateBookkeeping + "\n");			
+		}
+		if (maxMoleculesPerType != null) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_maxMoleculesPerType + " " + maxMoleculesPerType + "\n");			
+		}
+		if (equilibrateTime != null) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_equilibrateTime + " " + equilibrateTime + "\n");			
+		}
 		if (randomSeed != null) {
 			buffer.append("\t\t" + VCML.NFSimSimulationOptions_randomSeed + " " + randomSeed + "\n");			
 		}
+		if (preventIntraBonds == true) {
+			buffer.append("\t\t" + VCML.NFSimSimulationOptions_preventIntraBonds + " " + preventIntraBonds + "\n");			
+		}
 		buffer.append("\t" + VCML.EndBlock + "\n");
-		
 		return buffer.toString();
 	}
 	
@@ -184,21 +201,41 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 				throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
 			}
 		}
-		
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
 			}
-			if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions_randomSeed)) {
+			if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_observableComputationOff)) {
+				token = tokens.nextToken();
+				observableComputationOff = Boolean.parseBoolean(token);
+				assert observableComputationOff == true;		// when this option is present it must be set to true. Default is false
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_moleculeDistance)) {
+				token = tokens.nextToken();
+				moleculeDistance = new Integer(token);
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_aggregateBookkeeping)) {
+				token = tokens.nextToken();
+				aggregateBookkeeping = Boolean.parseBoolean(token);
+				assert aggregateBookkeeping == true;
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_maxMoleculesPerType)) {
+				token = tokens.nextToken();
+				maxMoleculesPerType = new Integer(token);
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_equilibrateTime)) {
+				token = tokens.nextToken();
+				equilibrateTime = new Integer(token);
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_randomSeed)) {
 				token = tokens.nextToken();
 				randomSeed = new Integer(token);
+			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_preventIntraBonds)) {
+				token = tokens.nextToken();
+				preventIntraBonds = Boolean.parseBoolean(token);
+				assert preventIntraBonds == true;
 			}  else { 
 				throw new DataAccessException("unexpected identifier " + token);
 			}
 		}
 	}
-
+	
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
 	}
 	
