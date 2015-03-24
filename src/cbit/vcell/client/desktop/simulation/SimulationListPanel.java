@@ -63,6 +63,7 @@ import cbit.vcell.solver.SolverTaskDescription;
  */
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
+	private static final String QUICK_RUN_TOOL_TIP = "Quick Run";
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JToolBar toolBar = null;
 	private JButton ivjEditButton = null;
@@ -249,7 +250,7 @@ private javax.swing.JToolBar getToolBar() {
 			particleViewButton.setToolTipText("Real-Time Particle View");
 			particleViewButton.addActionListener(ivjEventHandler);
 			quickRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
-			quickRunButton.setToolTipText("Quick Run");
+			quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
 			quickRunButton.addActionListener(ivjEventHandler);
 						
 			toolBar.addSeparator();
@@ -646,11 +647,22 @@ private void newSimulation() {
 
 /**
  * can this task run locally?
+ * sets {@link #quickRunButton} tool tip
  * @param taskDesc
  * @return true if it can
  */
 private boolean canQuickRun(SolverTaskDescription taskDesc) {
-	return !taskDesc.isParallel() && !taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly);
+	if (taskDesc.isParallel())  {
+		quickRunButton.setToolTipText("Parallel solver not supported");
+		return false;
+	}
+		
+	if (taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly)) {
+		quickRunButton.setToolTipText("Not supported by selected solver");
+		return false;
+	}
+	quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
+	return true;
 }
 /**
  * Comment
