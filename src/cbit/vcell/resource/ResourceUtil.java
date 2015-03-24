@@ -36,6 +36,7 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
 
@@ -66,18 +67,21 @@ public class ResourceUtil {
 	 */
 	private static File downloadDirectory = null;
 
-	private static List<File>  librariesLoaded = new ArrayList<File>();
+	private static Map<File, ProvidedLibrary>  librariesLoaded = new HashMap<>();
 	private static boolean nativeLibrariesSetup = false; 
+	/**
+	 * uniquely identify version and variant (OperatingSystemInfo)
+	 */
+	private static String ourManifest = null;
 	private static final Logger lg = Logger.getLogger(ResourceUtil.class);
-		    
+	
     /**
      * ensure class loaded so static initialization executes
      */
     public static void init( ) {
     	
     }
-	
-	/**
+    /**
 	 * class which can help find executable via some means
 	 */
 	public interface ExecutableFinder {
@@ -146,24 +150,25 @@ public class ResourceUtil {
 	 * @param envs
 	 */
 	public static void setEnvForOperatingSystem(Map<String,String> env) {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (osi.isLinux()) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
+		switch (osi.getOsType()) {
+		case LINUX:
 			final String LIBPATH="LD_LIBRARY_PATH";
 			String existing = env.get(LIBPATH);
 			if (existing == null) {
 				env.put(LIBPATH,getSolversDirectory().getAbsolutePath());
-				return;
 			}
-			else {
-				env.put(LIBPATH,existing);
-			}
-		}
-		if (osi.isWindows()) {
-			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
+			break;
+		
+		case WINDOWS:			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
 			//calls a cygwin compile "run_network" program. If run_network prints
 			//anything to standard error,The BNG script aborts
 			//The setting below prevents the cygwin "MS-DOS style path detected" warning from 
 			//being issued
 			env.put("CYGWIN","nodosfilewarning"); 
+			break;
+		case MAC:
+			break;
 		}
 	}
 	
@@ -232,52 +237,66 @@ public class ResourceUtil {
 			prefs.clear();
 		}
 	
-	}	/**
+	}	
+	/**
+	 * load solver executable from resources along with libraries
 	 * @param basename name of executable without path or os specific extension
-	 * @param ll LicensedLibrary, may not be null 
-	 * @param firstLoad is the first exe loaded?
+	 * @param vl VersionedLibrary, may not be null 
 	 * @return executable
-	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
+	 * @throws IOException
 	 */
 	public static File loadSolverExecutable(String basename, VersionedLibrary vl) throws IOException {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		vl.makePresentIn(getSolversDirectory());
-		
-		//String name = basename + EXE_BIT_SUFFIX;
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		//File solverDest = new java.io.File(getSolversDirectory());
 		String name = basename + osi.getExeBitSuffix(); 
-		//String res = RES_PACKAGE + "/" + name;
-		String res = osi.getResourcePackage() + name;
-		File exe = new java.io.File(getSolversDirectory(), name);
+		return loadExecutable(name, vl, getSolversDirectory()); 
+	}
+	/**
+	 * load arbitrary executable from resources along with libraries
+	 * @param filename full name (without path) of executable
+	 * @param vl may not be null
+	 * @param destination where to install executable and libraries if appropriate
+	 * @return executable
+	 * @throws IOException
+	 */
+	public static File loadExecutable(String filename, VersionedLibrary vl, File destination) throws IOException {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		final String pkgName = osi.getResourcePackage();
+
+		String res = pkgName + filename;
+		File exe = new java.io.File(destination, filename);
 		if (!exe.exists()) {
 			ResourceUtil.writeFileFromResource(res, exe);
 		}
-		ArrayList<String> fromResourceLibraries = new ArrayList<String>();
-		for (String libName : vl.bundledLibraryNames()) {
-			fromResourceLibraries.add(libName);
-		}
+		ArrayList<ProvidedLibrary> fromResourceLibraries = new ArrayList<>();
+		fromResourceLibraries.addAll(vl.getLibraries());
+
 		if (osi.isWindows()) {
 			if (osi.is64bit()) {
-				fromResourceLibraries.add("glut64.dll");
-			}else{
-				fromResourceLibraries.add("glut32.dll");
+				fromResourceLibraries.add(new ProvidedLibrary("glut64.dll"));
+			} else {
+				fromResourceLibraries.add(new ProvidedLibrary("glut32.dll"));
 			}
+		} else if (osi.isLinux()) {
+			fromResourceLibraries.add(new ProvidedLibrary("libgfortran.so.3"));
 		}
-		else if (osi.isLinux()) {
-			fromResourceLibraries.add("libgfortran.so.3");
-		}
-		for (String dllName : fromResourceLibraries){
-			//String RES_DLL = RES_PACKAGE + "/" + dllName;
-			String RES_DLL = osi.getResourcePackage() + dllName;
-			File file_dll = new java.io.File(getSolversDirectory(), dllName);
-			if (!librariesLoaded.contains(file_dll)) {
-				if (!file_dll.exists()) {
+		for (ProvidedLibrary pl : fromResourceLibraries) {
+			String RES_DLL = pkgName + pl.resourceUrl;
+			File file_dll = new java.io.File(destination, pl.libraryName);
+			ProvidedLibrary previous = librariesLoaded.get(file_dll);
+			if (previous == null) {
+				if (!pl.isCacheable() || !file_dll.exists()) {
 					ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
 				}
-			librariesLoaded.add(file_dll);
+				librariesLoaded.put(file_dll,pl);
 			}
+			else {
+				VCAssert.assertTrue(previous.equals(pl),"clash between " + previous.resourceUrl  + " and "
+						+ pl.resourceUrl + " destination " + file_dll);
+				}
 		}
 		return exe;
 	}
-	
+
 	public static JavaVersion getJavaVersion() {
 		if ((System.getProperty("java.version")).contains("1.5")) {
 			return JavaVersion.FIVE;
@@ -507,8 +526,8 @@ public class ResourceUtil {
 							entry.toFile().delete();
 						}
 						//write manifest
-						String versionString = VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString();
-						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),versionString.getBytes());
+						String manifestString = getManifest(); 
+						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),manifestString.getBytes());
 					} catch (IOException e) {
 						lg.warn("Error cleaning solvers directory",e); 
 					}
@@ -529,15 +548,23 @@ public class ResourceUtil {
 			if (existingManifest.canRead()) {
 				List<String> lines = Files.readAllLines(existingManifest.toPath(), StandardCharsets.UTF_8);
 				if (!lines.isEmpty()) {
-					String manifest = lines.get(0);
-					VCellSoftwareVersion sv = VCellSoftwareVersion.fromSystemProperty();
-					return sv.getSoftwareVersionString().equals(manifest);
+					String storedManifest = lines.get(0);
+					return storedManifest.equals(getManifest());
 				}
 			}
 		} catch (IOException e) {
 			lg.warn("Error getting manifest", e);
 		}
 		return false;
+	}
+	
+	private static String getManifest( ) {
+		if (ourManifest != null) {
+			return ourManifest;
+		}
+		VCellSoftwareVersion sv = VCellSoftwareVersion.fromSystemProperty();
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
+		ourManifest = sv.getSoftwareVersionString() + osi.toString( );		return ourManifest;
 	}
 
 

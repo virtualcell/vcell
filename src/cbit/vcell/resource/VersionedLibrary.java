@@ -11,38 +11,15 @@ import java.util.Collection;
  *
  */
 public interface VersionedLibrary {
-	public final VersionedLibrary CYGWIN_DLL_CHOMBO = new ChomboCygwinDLL();
+	public final VersionedLibrary CYGWIN_DLL_CHOMBO = new VCellCygwinDLL();
 	public final VersionedLibrary CYGWIN_DLL_BIONETGEN = new BioNetGenCygwinDLL(); 
-	public final VersionedLibrary CYGWIN_DLL_NFSIM = new ChomboCygwinDLL(); 
+	public final VersionedLibrary CYGWIN_DLL_NFSIM = new VCellCygwinDLL(); 
 	public final VersionedLibrary NONE = new LicensedPlaceholder(); 
-	
 	/**
-	 * make file present in directory.
-	 * {@link #isLicensed()} must be true
-	 * @param directory
-	 * @throws IllegalStateException if not licensed
+	 * collection of zero to many libraries which should be extracted from  resources
+	 * @return non-null , possibly empty collection
 	 */
-	public void makePresentIn(File directory) throws IllegalStateException;
-	
-	/**
-	 * optional; required if {@link #isInstalled()} may return false
-	 * @return name of library
-	 * @throws UnsupportedOperationException 
-	 */
-	public String libraryName( ) throws UnsupportedOperationException;
-	/**
-	 * optional; required if {@link #isInstalled()} may return false
-	 * @return specific version name of library; 
-	 * @throws UnsupportedOperationException
-	 */
-	public String version( ) throws UnsupportedOperationException;
-	
-	
-	/**
-	 * unmodifiable list of library names bundled into deliverable
-	 * @return collection of library names; may be empty but not null 
-	 */
-	public Collection<String> bundledLibraryNames( );
+	public Collection<ProvidedLibrary> getLibraries( );
 	
 
 }
