@@ -1,7 +1,5 @@
 package cbit.vcell.resource;
 
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * cygwin library packaged with BioNetGen (run_network) 
@@ -15,12 +13,5 @@ public class BioNetGenCygwinDLL extends CygwinDLL {
 		return "cygwin1.bionetgen"; 
 	}
 
-	/**
-	 * return empty collection 
-	 */
-	@Override
-	public Collection<String> bundledLibraryNames() {
-		return Collections.emptyList();
-	}
 
 }

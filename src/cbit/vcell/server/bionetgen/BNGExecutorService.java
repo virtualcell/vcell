@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -53,6 +54,7 @@ public class BNGExecutorService {
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
 	private static Logger lg = Logger.getLogger(BNGExecutorService.class);
+	private static String sharedLibrarySuffix = null; 
 	static {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		EXE_SUFFIX = osi.isWindows() ? ".exe" : "";
@@ -62,6 +64,7 @@ public class BNGExecutorService {
 		// run_network is called from within BNG2.exe, so the extension is not controlled from here
 		EXE_RUN_NETWORK = "run_network" + (osi.isWindows() ? ".exe" : "");
 		RES_EXE_RUN_NETWORK = osi.getResourcePackage() + EXE_RUN_NETWORK;
+		sharedLibrarySuffix = osi.getNativelibSuffix();
 	}
 
 /**
@@ -153,10 +156,12 @@ public BNGOutput executeBNG() throws BNGException {
 		File[] files = workingDir.listFiles();
 		ArrayList<String> filenames = new ArrayList<String>();
 		ArrayList<String> filecontents = new ArrayList<String>();
+		Pattern sharedLibPattern = OperatingSystemInfo.getInstance().getSharedLibraryPattern();
 	
 		for (int i = 0; i < files.length; i ++) {
-			if(files[i].getName().equals(VersionedLibrary.CYGWIN_DLL_BIONETGEN.libraryName())
-					|| files[i].getName().equals(file_exe_bng.getName()) || files[i].getName().equals(file_exe_run_network.getName())){
+			String filename = files[i].getName();
+			if (sharedLibPattern.matcher(filename).matches() 
+					|| filename.equals(file_exe_bng.getName()) || filename.equals(file_exe_run_network.getName())){
 				continue;
 			}
 			filenames.add(files[i].getName());
@@ -207,7 +212,7 @@ private static synchronized void initialize() throws IOException {
 	
 	file_exe_bng = new java.io.File(bngHome, EXE_BNG);
 	file_exe_run_network = new java.io.File(bngHome, EXE_RUN_NETWORK);
-	VersionedLibrary.CYGWIN_DLL_BIONETGEN.makePresentIn(bngHome);
+	ResourceUtil.loadExecutable(EXE_BNG, VersionedLibrary.CYGWIN_DLL_BIONETGEN,bngHome); 
 		
 	if (!file_exe_bng.exists()) {
 		ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);

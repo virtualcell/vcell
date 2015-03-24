@@ -10,6 +10,8 @@
 
 package cbit.vcell.resource;
 
+import java.util.regex.Pattern;
+
 import cbit.vcell.util.NativeLoader;
 
 /**
@@ -52,6 +54,8 @@ public class OperatingSystemInfo {
 	private final String exeSuffix;
 	private final String nativelibSuffix;
 	private final String resourcePackage; 
+	private final Pattern sharedLibraryPattern; 
+	private String description; 
 	//private final boolean bWindows; 
 	//private final boolean bMac;
 	//private final boolean bLinux;
@@ -145,6 +149,18 @@ public class OperatingSystemInfo {
 		return b64bit;
 	}
 
+	@Override
+	public String toString() {
+		return description; 
+	}
+
+	/**
+	 * @return pattern which matches shared libraries on system
+	 */
+	public Pattern getSharedLibraryPattern() {
+		return sharedLibraryPattern;
+	}
+
 	//	Implementation note: this was refactored from static data / initializer block in 
 	//	ResourceUtil because information messages (e.g. log4j) were being lost due to occurring
 	//	before redirection of standard out to user writable directory. 
@@ -155,27 +171,35 @@ public class OperatingSystemInfo {
 		boolean bWindows = system_osname.contains("Windows");
 		boolean bMac = system_osname.contains("Mac");
 		boolean bLinux = system_osname.contains("Linux");
-		String BIT_SUFFIX = "";
-		if (b64bit) {
-			BIT_SUFFIX ="_x64";
-		}
 		if (bWindows) {
 			osType = OsType.WINDOWS;
 			osnamePrefix = "win";
 			exeSuffix = ".exe";
+			sharedLibraryPattern = Pattern.compile(".dll$");
 			NativeLoader.setOsType(OperatingSystemInfo.OsType.WINDOWS);
 		} else if (bMac) {
 			osType = OsType.MAC;
 			osnamePrefix = "mac";
 			exeSuffix = "";
+			sharedLibraryPattern = Pattern.compile(".*[dylib|jnilib]$");
 			NativeLoader.setOsType(OperatingSystemInfo.OsType.MAC);
 		} else if (bLinux) {
 			osType = OsType.LINUX;
 			osnamePrefix = "linux";
 			exeSuffix = "";
+			sharedLibraryPattern = Pattern.compile(".+\\.so[.\\d]*$"); //libc.so, libc.so.1, libc.so.1.4
 			NativeLoader.setOsType(OperatingSystemInfo.OsType.LINUX);
 		} else {
 			throw new RuntimeException(system_osname + " is not supported by the Virtual Cell.");
+		}
+		description = osnamePrefix;
+		String BIT_SUFFIX = "";
+		if (b64bit) {
+			BIT_SUFFIX ="_x64";
+			description += "64";
+		}
+		else {
+			description += "32";
 		}
 		exeBitSuffix = BIT_SUFFIX + exeSuffix;
 		nativeLibDirectory =   osnamePrefix + (b64bit ? "64/" : "32/");

@@ -55,6 +55,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverTaskDescription;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -218,6 +219,7 @@ private void editSimulation() {
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 		if (!simStatus.isRunning()){
 			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), sim); // just the first one if more than one selected...
+			refreshButtonsLax(); //need to check if parallel option changed
 		}
 	}
 }
@@ -643,6 +645,14 @@ private void newSimulation() {
 }
 
 /**
+ * can this task run locally?
+ * @param taskDesc
+ * @return true if it can
+ */
+private boolean canQuickRun(SolverTaskDescription taskDesc) {
+	return !taskDesc.isParallel() && !taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly);
+}
+/**
  * Comment
  */
 private void refreshButtonsLax() {
@@ -675,7 +685,7 @@ private void refreshButtonsLax() {
 			}
 			final boolean onlyOne = firstSelection.getScanCount() == 1;	
 			bParticleView = onlyOne; 
-			bQuickRun = onlyOne && !firstSelection.getSolverTaskDescription().getSolverDescription().supports(SolverFeature.Feature_ServerOnly);
+			bQuickRun = onlyOne && canQuickRun( firstSelection.getSolverTaskDescription() );
 		}
 		
 		// we make'em true if at least one sim satisfies criterion (lax policy)

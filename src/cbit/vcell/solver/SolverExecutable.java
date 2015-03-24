@@ -17,7 +17,7 @@ public enum SolverExecutable {
 	Hybrid_Mil(PropertyLoader.hybridMilExecutableProperty, "Hybrid_MIL" ),
 	Hybrid_Mil_Adaptive(PropertyLoader.hybridMilAdaptiveExecutableProperty,"Hybrid_MIL_Adaptive" ),
 	Smoldyn(PropertyLoader.smoldynExecutableProperty, "smoldyn" ),
-	NFSIM(PropertyLoader.nfsimExecutableProperty, "NFSim");
+	NFSIM(PropertyLoader.nfsimExecutableProperty, "NFsim");
 	;
 	
 	public static class NameInfo {
