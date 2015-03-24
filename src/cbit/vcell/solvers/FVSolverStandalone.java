@@ -348,7 +348,7 @@ private String getInputFilename() {
 @Override
 public MathExecutable getMathExecutable() {
 	if (isChombo) {
-		throw new UnsupportedOperationException("Chombo does not support Quick Run");
+		//throw new UnsupportedOperationException("Chombo does not support Quick Run");
 	}
 	MathExecutable me = super.getMathExecutable();
 	if (me != null) {
@@ -418,6 +418,7 @@ private Collection<ExecutableCommand> getChomboCommands() {
 	else {
 		ExecutableCommand ec = new ExecutableCommand(true, false, executableName, inputFilename );
 		commands.add(ec);
+		primaryCommand = ec;
 	}
 	
 	return commands; 

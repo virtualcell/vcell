@@ -1,6 +1,8 @@
 package cbit.vcell.resource;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * GPL licensed cygwin1.dll 
@@ -8,23 +10,49 @@ import java.io.File;
  *
  */
 abstract class CygwinDLL implements VersionedLibrary {
-	private final OperatingSystemInfo operatingSystemInfo = OperatingSystemInfo.getInstance();
-	@Override
+	private final OperatingSystemInfo operatingSystemInfo;
+	private Collection<ProvidedLibrary> libs;
+	protected CygwinDLL( ) {
+		operatingSystemInfo = OperatingSystemInfo.getInstance();
+	     libs = null; 
+	}
 	public String libraryName() {
 		return "cygwin1.dll"; 
 	}
-
+	
 	@Override
-	public void makePresentIn(File directory) {
-		if (operatingSystemInfo.isWindows()) {
-			String resourcePathName = operatingSystemInfo.getResourcePackage() + "/" + version();
-			try {
-				File dest = new File(directory, libraryName());
-				ResourceUtil.writeFileFromResource(resourcePathName,dest); 
-			} catch (Exception e) {
-				throw new RuntimeException("error providing support library " + libraryName() + " from " + resourcePathName
-						+ " " + e.getMessage(),e);
-			}
+	public Collection<ProvidedLibrary> getLibraries() {
+		if (libs != null) {
+			return libs;
 		}
+		if (operatingSystemInfo.isWindows()) {
+			libs = new ArrayList<>();
+			ProvidedLibrary pl = new ProvidedLibrary(version( ), "cygwin1.dll");
+			libs.add( pl ) ; 
+			Collection<String> bitLibs;
+			if (operatingSystemInfo.is64bit()) {
+				bitLibs = get64bit( );
+			}
+			else {
+				bitLibs = get32bit( );
+			}
+			for (String supportingDll: bitLibs) {
+				pl = new ProvidedLibrary(supportingDll);
+				libs.add( pl ) ; 
+			}
+			return libs;
+		}
+		
+		libs =  Collections.emptyList( ); 
+		return libs; 
 	}
+	protected abstract String version( ); 
+	
+	protected Collection<String> get32bit( ) {
+		return Collections.emptyList( ); 
+	}
+	protected Collection<String> get64bit( ) {
+		return Collections.emptyList( ); 
+	}
+
 }
