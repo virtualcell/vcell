@@ -616,6 +616,15 @@ public class XMLTags {
 	public final static String SmoldynSimulationOptions_saveParticleFiles	= "saveParticleFiles";
 	public final static String SmoldynSimulationOptions_gaussianTableSize	= "gaussianTableSize";
 	
+	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";				// =========================================
+	public final static String NFSimSimulationOptions_observableComputationOff	= "ObservableComputationOff";
+	public final static String NFSimSimulationOptions_moleculeDistance	= "MoleculeDistance";
+	public final static String NFSimSimulationOptions_aggregateBookkeeping	= "AggregateBookkeeping";
+	public final static String NFSimSimulationOptions_maxMoleculesPerType	= "MaxMoleculesPerType";
+	public final static String NFSimSimulationOptions_equilibrateTime	= "EquilibrateTime";
+	public final static String NFSimSimulationOptions_randomSeed	= "RandomSeed";
+	public final static String NFSimSimulationOptions_preventIntraBonds	= "PreventIntraBonds";
+
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
 
