@@ -181,7 +181,6 @@ public class BNGLUnitsPanel extends JPanel {
 // --------------------------------------------------------------------- lower panels ------------------
 		lowerConPanel.setLayout(new GridBagLayout());
 		lowerConPanel.setPreferredSize(new Dimension(195,100));
-		lowerConPanel.setVisible(true);
 		
 		gridy = 0;
 		gbc = new GridBagConstraints();
@@ -219,7 +218,6 @@ public class BNGLUnitsPanel extends JPanel {
 
 		lowerMolPanel.setLayout(new GridBagLayout());
 		lowerMolPanel.setPreferredSize(new Dimension(195,100));
-		lowerMolPanel.setVisible(false);
 		
 		gridy = 0;
 		gbc = new GridBagConstraints();
@@ -297,6 +295,10 @@ public class BNGLUnitsPanel extends JPanel {
 		Dimension size = new Dimension(195,150);
 		setPreferredSize(size);
 		setMaximumSize(size);
+		
+		lowerConPanel.setVisible(false);	// hide the "Concentration" panel
+		lowerMolPanel.setVisible(true);		// show the "Molecules" panel
+		mol.setSelected(true);				// select the "Molecules" button
 		
 		con.addActionListener(eventHandler);
 		mol.addActionListener(eventHandler);
