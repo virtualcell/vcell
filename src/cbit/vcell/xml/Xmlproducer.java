@@ -240,6 +240,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
@@ -4361,6 +4362,10 @@ private Element getXML(SolverTaskDescription param) {
 	if (smoldynSimulationOptions != null) {		
 		solvertask.addContent(getXML(smoldynSimulationOptions));
 	}
+	NFsimSimulationOptions nfsimSimulationOptions = param.getNFSimSimulationOptions();
+	if (nfsimSimulationOptions != null) {		
+		solvertask.addContent(getXML(nfsimSimulationOptions));
+	}
 	SundialsSolverOptions sundialsSolverOptions = param.getSundialsSolverOptions();
 	if (sundialsSolverOptions != null) {		
 		solvertask.addContent(getXML(sundialsSolverOptions));
@@ -4376,7 +4381,46 @@ private Element getXML(SolverTaskDescription param) {
 	solvertask.addContent(numProcessors);
 	return solvertask;
 }
-
+private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is not null, no need to check again
+	Element e = null;
+	Element ssoe = new Element(XMLTags.NFSimSimulationOptions);
+	if(sso.getObservableComputationOff() == true) {
+		e = new Element(XMLTags.NFSimSimulationOptions_observableComputationOff);
+		e.setText("true");		// we know it to be true, we don't save the default ("false") at all
+		ssoe.addContent(e);
+	}
+	if (sso.getMoleculeDistance() != null) {
+		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);
+		e.setText(sso.getMoleculeDistance() + "");
+		ssoe.addContent(e);			
+	}
+	if(sso.getAggregateBookkeeping() == true) {
+		e = new Element(XMLTags.NFSimSimulationOptions_aggregateBookkeeping);
+		e.setText("true");
+		ssoe.addContent(e);
+	}
+	if (sso.getMaxMoleculesPerType() != null) {
+		e = new Element(XMLTags.NFSimSimulationOptions_maxMoleculesPerType);
+		e.setText(sso.getMaxMoleculesPerType() + "");
+		ssoe.addContent(e);			
+	}
+	if (sso.getEquilibrateTime() != null) {
+		e = new Element(XMLTags.NFSimSimulationOptions_equilibrateTime);
+		e.setText(sso.getEquilibrateTime() + "");
+		ssoe.addContent(e);			
+	}
+	if (sso.getRandomSeed() != null) {
+		e = new Element(XMLTags.NFSimSimulationOptions_randomSeed);
+		e.setText(sso.getRandomSeed() + "");
+		ssoe.addContent(e);			
+	}
+	if(sso.getPreventIntraBonds() == true) {
+		e = new Element(XMLTags.NFSimSimulationOptions_preventIntraBonds);
+		e.setText("true");
+		ssoe.addContent(e);
+	}
+	return ssoe;
+}
 private Element getXML(SmoldynSimulationOptions sso) {
 	Element ssoElement = null;
 	if (sso != null) {

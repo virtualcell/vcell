@@ -272,6 +272,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
@@ -5697,6 +5698,11 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 			solverTaskDesc.setSerialParameterScan(new Boolean(runParameterScanSeriallyAttributeValue).booleanValue());
 		}
 		
+		Element nfsimSimulationOptionsElement = param.getChild(XMLTags.NFSimSimulationOptions, vcNamespace);
+		if (nfsimSimulationOptionsElement != null) {
+			NFsimSimulationOptions nfsimSimulationOptions = getNFSimSimulationOptions(nfsimSimulationOptionsElement);
+			solverTaskDesc.setNFSimSimulationOptions(nfsimSimulationOptions);			
+		}
 		Element smoldySimulationOptionsElement = param.getChild(XMLTags.SmoldynSimulationOptions, vcNamespace);
 		if (smoldySimulationOptionsElement != null) {
 			SmoldynSimulationOptions smoldynSimulationOptions = getSmoldySimulationOptions(smoldySimulationOptionsElement);
@@ -5718,6 +5724,40 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 	}
 		
 	return solverTaskDesc;
+}
+private NFsimSimulationOptions getNFSimSimulationOptions(Element nfsimSimulationOptionsElement) throws XmlParseException {
+	NFsimSimulationOptions so = new NFsimSimulationOptions();
+	String temp = null;
+	
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_observableComputationOff, vcNamespace);
+	if(temp != null) {
+		so.setObservableComputationOff(new Boolean(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_moleculeDistance, vcNamespace);
+	if(temp != null) {
+		so.setMoleculeDistance(new Integer(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_aggregateBookkeeping, vcNamespace);
+	if(temp != null) {
+		so.setAggregateBookkeeping(new Boolean(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_maxMoleculesPerType, vcNamespace);
+	if(temp != null) {
+		so.setMaxMoleculesPerType(new Integer(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_equilibrateTime, vcNamespace);
+	if(temp != null) {
+		so.setEquilibrateTime(new Integer(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_randomSeed, vcNamespace);
+	if(temp != null) {
+		so.setRandomSeed(new Integer(temp));
+	}
+	temp = nfsimSimulationOptionsElement.getChildText(XMLTags.NFSimSimulationOptions_preventIntraBonds, vcNamespace);
+	if(temp != null) {
+		so.setPreventIntraBonds(new Boolean(temp));
+	}
+	return so;
 }
 
 private SmoldynSimulationOptions getSmoldySimulationOptions(Element smoldySimulationOptionsElement) throws XmlParseException {

@@ -531,7 +531,9 @@ public String getVCML() {
 	if (bSerialParameterScan) {
 		buffer.append(VCML.RunParameterScanSerially + " " + bSerialParameterScan + "\n");
 	}
-	
+	if (nfsimSimulationOptions != null) {
+		buffer.append(nfsimSimulationOptions.getVCML());
+	}
 	if (smoldynSimulationOptions != null) {
 		buffer.append(smoldynSimulationOptions.getVCML());
 	}
@@ -548,6 +550,11 @@ public String getVCML() {
 		
 	return buffer.toString();
 }
+
+//if (token.equalsIgnoreCase(VCML.NFSimSimulationOptions)) {
+//	getNFSimSimulationOptions().readVCML(tokens);
+//	continue;
+//}
 
 
 /**
