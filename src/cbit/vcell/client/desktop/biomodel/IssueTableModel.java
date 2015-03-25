@@ -190,6 +190,8 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				} else {
 					description = ((SymbolTableEntry) source).getNameScope().getPathDescription();
 				}
+			} else if (source instanceof MolecularType) {
+				description = "Model / Molecules" ;
 			} else if (source instanceof ReactionStep) {
 				ReactionStep reactionStep = (ReactionStep) source;
 				description = ((ReactionNameScope)reactionStep.getNameScope()).getPathDescription();
