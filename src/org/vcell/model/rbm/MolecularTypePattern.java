@@ -29,12 +29,28 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	private Map<String,ArrayList<MolecularComponent>> processedMolecularComponentsMultiMap = new HashMap<String,ArrayList<MolecularComponent>>();
 	 
 	public MolecularTypePattern(MolecularType molecularType) {
+		// TODO: this works as long as there can only be one component pattern in the molecular type pattern for each component in the molecular type
+		// TODO: this will have to be redesigned once we accept multiple component patterns with the same name
+		this(molecularType, true);
+	}
+	public MolecularTypePattern(MolecularType molecularType, boolean insertComponentsAutomatically) {
 		this.molecularType = molecularType;
-		for (MolecularComponent mc : this.molecularType.getComponentList()) {
-			componentPatternList.add(new MolecularComponentPattern(mc));
+		// TODO: this works as long as there can only be one component pattern in the molecular type pattern for each component in the molecular type
+		// TODO: this will have to be redesigned once we accept multiple component patterns with the same name
+		if(insertComponentsAutomatically) {
+			for (MolecularComponent mc : this.molecularType.getComponentList()) {
+				componentPatternList.add(new MolecularComponentPattern(mc));
+			}
 		}
 	}
-		
+	public boolean hasMolecularComponentPattern(MolecularComponent mc) {
+		for (MolecularComponentPattern mcp : componentPatternList) {
+			if (mcp.getMolecularComponent() == mc) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public MolecularComponentPattern getMolecularComponentPattern(MolecularComponent mc) {
 		for (MolecularComponentPattern mcp : componentPatternList) {
 			if (mcp.getMolecularComponent() == mc) {
@@ -218,7 +234,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		if(mt == null) {
 			return "";
 		}
-		return mt.getDisplayName();
+		return mt.getDisplayName() + "(" + index + ")";
 	}
 	@Override
 	public String getDisplayType() {

@@ -360,9 +360,9 @@ public class RbmUtils {
 				MolecularType molecularType = model.getRbmModelContainer().getMolecularType(name);
 				if (molecularType == null) {
 					if(stopOnError) {
-						throw new RuntimeException("Molecule type '" + name + "' doesn't exist!");
+						throw new RuntimeException(MolecularType.typeName + " '" + name + "' doesn't exist!");
 					} else {
-						System.out.println("Molecule type '" + name + "' doesn't exist!");
+						System.out.println(MolecularType.typeName + " '" + name + "' doesn't exist! Creating it.");
 					}
 					molecularType = new MolecularType(name);
 					try {
@@ -371,7 +371,7 @@ public class RbmUtils {
 						e.printStackTrace();
 					}
 				}
-				MolecularTypePattern molecularTypePattern = new MolecularTypePattern(molecularType);
+				MolecularTypePattern molecularTypePattern = new MolecularTypePattern(molecularType, false);
 				node.childrenAccept(this, molecularTypePattern);
 				((SpeciesPattern) data).addMolecularTypePattern(molecularTypePattern);
 				molecularTypePattern.ClearProcessedMolecularComponentsMultiMap();
@@ -383,6 +383,11 @@ public class RbmUtils {
 		public Object visit(ASTMolecularComponentPattern node, Object data) {
 			String name = node.getName();
 			if (data instanceof MolecularType) {
+				MolecularComponent[] mcl = ((MolecularType) data).getMolecularComponents(name);
+				if(mcl.length > 0) {
+					throw new RuntimeException(MolecularComponent.typeName + " '" + name + "' already exists in " + MolecularType.typeName + " '" 
+								+ ((MolecularType) data).getDisplayName() + "'!");
+				}
 				MolecularComponent molecularComponent = new MolecularComponent(name);
 				node.childrenAccept(this, molecularComponent);
 				((MolecularType)data).addMolecularComponent(molecularComponent);				
@@ -391,7 +396,7 @@ public class RbmUtils {
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) data;
 				MolecularType molecularType = molecularTypePattern.getMolecularType();
 				MolecularComponent[] molecularComponents = molecularType.getMolecularComponents(name);
-				// find first unused molecularComponent with the correct name;
+				// find first unused molecularComponent with the correct name;	TODO: this is probably obsolete, all logic here is bad !!! revisit !!!
 				MolecularComponent molecularComponent = null;
 				if(molecularComponents.length == 1) {
 					molecularComponent = molecularType.getMolecularComponent(name);
@@ -400,18 +405,28 @@ public class RbmUtils {
 				}				
 				if (molecularComponent == null) {
 					if(stopOnError) {
-						throw new RuntimeException("Molecule component '" + name + "' doesn't exist!");
+						throw new RuntimeException(MolecularComponent.typeName + " '" + name + "' doesn't exist in " + MolecularType.typeName + " '" 
+									+ ((MolecularType) data).getDisplayName() + "'!");
 					} else {
-						System.out.println("Molecule component '" + name + "' doesn't exist!");
+						System.out.println(MolecularComponent.typeName + " '" + name + "' doesn't exist in " + MolecularType.typeName + " '" 
+									+ ((MolecularType) data).getDisplayName() + "'! Creating it.");
 					}
 					molecularComponent = new MolecularComponent(name);
 					molecularType.addMolecularComponent(molecularComponent);
 					node.childrenAccept(this, molecularComponent);
 				}
-				MolecularComponentPattern molecularComponentPattern = molecularTypePattern.getMolecularComponentPattern(molecularComponent);
-				molecularComponentPattern.setBondType(BondType.None);
-				node.childrenAccept(this, molecularComponentPattern);
-				return molecularComponentPattern;
+				MolecularComponentPattern molecularComponentPattern;
+				if(!molecularTypePattern.hasMolecularComponentPattern(molecularComponent)) {
+					// we create and add the molecular component pattern to the molecular type pattern
+					// getMolecularComponentPattern() does all that automatically
+					molecularComponentPattern = molecularTypePattern.getMolecularComponentPattern(molecularComponent);
+					molecularComponentPattern.setBondType(BondType.None);
+					node.childrenAccept(this, molecularComponentPattern);
+					return molecularComponentPattern;
+				} else {
+					throw new RuntimeException(MolecularComponentPattern.typeName + " '" + name + "' already exists in " + MolecularTypePattern.typeName + " '" 
+								+ ((MolecularTypePattern) data).getDisplayName() + "'!");
+				}
 			}
 			return null;
 		}
@@ -430,7 +445,7 @@ public class RbmUtils {
 					if(stopOnError) {
 						throw new RuntimeException("ComponentStateDefinition '" + node.getComponentState() + "' doesn't exist!");
 					} else {
-						System.out.println("ComponentStateDefinition '" + node.getComponentState() + "' doesn't exist!");
+						System.out.println("ComponentStateDefinition '" + node.getComponentState() + "' doesn't exist! Creating it.");
 					}
 					// here we try to recover what's missing
 					componentState = new ComponentStateDefinition(node.getComponentState());

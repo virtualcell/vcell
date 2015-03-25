@@ -12,6 +12,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
@@ -150,6 +151,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+		issueContext = issueContext.newChildContext(ContextType.MolecularType, this);
 		if(name == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is null", Issue.SEVERITY_ERROR));
 		} else if(name.equals("")) {
@@ -160,10 +162,19 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		} else if(componentList.isEmpty()) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is empty", Issue.SEVERITY_INFO));
 		} else {
+			for (MolecularComponent mc : componentList) {
+				MolecularComponent[] mcList = getMolecularComponents(mc.getName());
+				if(mcList.length > 1) {
+					String msg = "Duplicate " + mc.getDisplayType() + " '" + mc.getDisplayName() + "' in the definition of the " + MolecularType.typeName + ".";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+				}
+			}
+			
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
 			}
 		}
+		
 	}
 	
 	public static final String typeName = "Molecule";

@@ -25,11 +25,11 @@ public class IssueContext implements Serializable {
 		ParameterEstimationTask,
 		MicroscopyMeasurement,
 		ReactionStep, 
-		SeedSpecies,    // context for species pattern
+		SeedSpecies,    	// context for species pattern
 		ReactionRule, 
-		RbmObservable,  // context for species patterns
-		SpeciesContext, // context for species pattern
-		
+		RbmObservable,
+		SpeciesContext,		// context for species pattern
+		MolecularType,
 	}
 
 	private final IssueContext.ContextType contextType;
