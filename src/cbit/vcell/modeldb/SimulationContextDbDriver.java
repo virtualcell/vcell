@@ -139,7 +139,8 @@ private void assignReactionSpecsSQL(Connection con,KeyValue simContextKey, Simul
 	String sql;
 	sql = 	" SELECT " + "*" + 
 			" FROM " + reactionSpecTable.getTableName() + 
-			" WHERE " + reactionSpecTable.simContextRef + " = " + simContextKey;
+			" WHERE " + reactionSpecTable.simContextRef + " = " + simContextKey +
+			" ORDER BY " + reactionSpecTable.id;
 //System.out.println("SimulationContextDbDriver.assignReactionSpecsSQL(), sql = "+sql);
 	Statement stmt = con.createStatement();
 	try {
@@ -176,7 +177,8 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 	String sql;
 	sql = 	" SELECT " + "*" + 
 			" FROM " + speciesContextSpecTable.getTableName() + 
-			" WHERE " + speciesContextSpecTable.simContextRef + " = " + simContextKey;
+			" WHERE " + speciesContextSpecTable.simContextRef + " = " + simContextKey +
+			" ORDER BY " + speciesContextSpecTable.id;
 	Statement stmt = con.createStatement();
 	Boolean bUseConcentration = null;
 	try {

@@ -424,7 +424,8 @@ ReactionStep[] getReactionStepsFromModel(QueryHashtable dbc, Connection con, Mod
 	String sql;
 	sql = 	" SELECT " + reactStepTable.getTableName()+".*" + 
 			" FROM " + reactStepTable.getTableName() + 
-			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + modelKey;
+			" WHERE " + reactStepTable.getTableName() + "." + reactStepTable.modelRef + " = " + modelKey +
+			" ORDER BY " + reactStepTable.id;
 			
 	return getReactionStepArray(dbc, con, model, sql);
 }
