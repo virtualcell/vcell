@@ -231,8 +231,8 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 				System.out.println("we already fired an issue about component missing");
 				continue;	// nothing to do here, we already fired an issue about component missing 
 			} else if(mcThatList.length > 1) {
-				String msg = "Multiple components with the same name are not yet supported.";
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+				String msg = "Multiple " + MolecularComponent.typeName + "s with the same name are not yet supported.";
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 			} else {	// found exactly 1 component
 				MolecularComponent mcThat = mcThatList[0];
 				List<ComponentStateDefinition> csdListThat = mcThat.getComponentStateDefinitions();
