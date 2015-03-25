@@ -234,7 +234,7 @@ public Node flatten() throws ExpressionException {
 			if (child instanceof ASTMultNode){
 				for (int j=0;j<child.jjtGetNumChildren();j++){
 					//tempChildren.add(i+j,child.jjtGetChild(j).flatten());
-					tempChildren.add(child.jjtGetChild(j).flatten());
+					tempChildren.insertElementAt(child.jjtGetChild(j).flatten(),i+j);
 				}
 				tempChildren.remove(child);
 //				return flatten();
