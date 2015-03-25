@@ -59,6 +59,9 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	public MolecularComponentPattern(MolecularComponent molecularComponent) {
 		super();
 		this.molecularComponent = molecularComponent;
+		if(!molecularComponent.getComponentStateDefinitions().isEmpty()) {
+			componentStatePattern = new ComponentStatePattern();
+		}
 	}
 	
 	public  boolean isFullyDefined(){
