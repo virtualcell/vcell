@@ -19,6 +19,7 @@ public class LoginChecker {
 	
 	private static final String DOMAIN = "rmi-SITE.cam.uchc.edu";
 	private static final String SERVICE = "/VCellBootstrapServer";
+	private static final boolean VERBOSE = System.getProperty("LOGINCHECK_VERBOSE") != null;
 	private static class SiteInfo {
 		final String name;
 		final String host;
@@ -101,11 +102,17 @@ public class LoginChecker {
 			UserLoginInfo uli = new UserLoginInfo(user,dp);
 			VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(uli);
 			if (vcellConnection==null){
+				if (VERBOSE) {
+					System.out.println("no connection on " + si);
+				}
 				return false;
 			}
 			UserMetaDbServer dataServer = vcellConnection.getUserMetaDbServer();
 			@SuppressWarnings("unused")
 			BioModelInfo[] bmi = dataServer.getBioModelInfos(false);
+			if (VERBOSE) {
+				System.out.println("success on " + si);
+			}
 			return true;
 		} catch (MalformedURLException e) { 
 			e.printStackTrace();
