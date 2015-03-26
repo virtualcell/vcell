@@ -93,6 +93,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
+	
+	private transient boolean isInitial = false;
 
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
@@ -551,7 +553,7 @@ public void refreshMathDescription() {
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
-			setMathDescription(createNewMathMapping().getMathDescription());
+			setMathDescription(createNewMathMapping(true).getMathDescription());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(
@@ -2231,6 +2233,10 @@ public VersionedLibrary getRequiredLibrary( ) {
 }
 
 public MathMapping createNewMathMapping() {
+	return createNewMathMapping(false);
+}
+public MathMapping createNewMathMapping(boolean isInitial) {
+	this.isInitial = isInitial;
 	mostRecentlyCreatedMathMapping = null;
 	if (isStoch() && !isRuleBased()){
 		if (getGeometry().getDimension()==0){
@@ -2243,6 +2249,7 @@ public MathMapping createNewMathMapping() {
 	}else {
 		mostRecentlyCreatedMathMapping = new MathMapping(this);
 	}
+	this.isInitial = false;
 	return mostRecentlyCreatedMathMapping;
 }
 
@@ -2363,6 +2370,10 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 		}
 	}
 	return null;
+}
+
+public final boolean isInitial() {
+	return isInitial;
 }
 
 public MathMapping getMostRecentlyCreatedMathMapping(){

@@ -72,7 +72,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_MODEL);	
 		writer.println();
 		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext);
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
@@ -147,7 +147,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_MODEL);	
 		writer.println();
 		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext);
 		writer.println();
 	}
 	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
@@ -213,11 +213,18 @@ public class RbmNetworkGenerator {
 		writer.println(END_REACTIONS);	
 		writer.println();
 	}
-	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer) {
+	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
 		writer.print("generate_network({");
-		writer.print("max_iter=>" + constraints.getMaxIteration());
+		if(sc.isInitial()) {
+			// this is called when we create the first simulation in a new application
+			// we don't really care about the network, we just want to do the minimal thing (the fastest)
+			// hence we just do one single iteration
+			writer.print("max_iter=>1");
+		} else {
+			writer.print("max_iter=>" + constraints.getMaxIteration());
+		}
 		writer.print(",");
 		writer.print("max_agg=>" + constraints.getMaxMoleculesPerSpecies());
 		StringBuilder max_stoich = new StringBuilder(); 
