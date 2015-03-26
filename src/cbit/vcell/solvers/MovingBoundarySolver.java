@@ -48,7 +48,6 @@ import cbit.vcell.solver.server.SolverStatus;
  * 
  */
 public class MovingBoundarySolver extends SimpleCompiledSolver {
-	protected CppCoderVCell cppCoderVCell = null;
 	private SimResampleInfoProvider simResampleInfoProvider;
 	private Geometry resampledGeometry = null;
 	
@@ -71,200 +70,6 @@ public MovingBoundarySolver (SimulationTask simTask, File dir, SessionLog sessio
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
 	}
 	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
-	this.cppCoderVCell = new CppCoderVCell((new File(getBaseName())).getName(), getSaveDirectory(), simTask);
-}
-
-
-/**
- * This method was created by a SmartGuide.
- */
-private void autoCode(boolean bNoCompile) throws SolverException {
-	getSessionLog().print("LocalMathController.autoCode()");
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_CODEGEN));
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_CODEGEN);
-	
-	String baseName = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()).getPath();
-
-	String Compile = System.getProperty(PropertyLoader.compilerProperty);                 // "cl /c";
-	String Link = System.getProperty(PropertyLoader.linkerProperty);                      // "cl";
-	String exeOutputSpecifier = System.getProperty(PropertyLoader.exeOutputProperty);     // "/Fe";
-	String objOutputSpecifier = System.getProperty(PropertyLoader.objOutputProperty);     // "/Fo";
-	String compileFlags = System.getProperty(PropertyLoader.includeProperty)+" "+
-							System.getProperty(PropertyLoader.definesProperty);           // "/I"+includeDir+" /DWIN32 /DDEBUG";
-	String CodeFilename = baseName+System.getProperty(PropertyLoader.srcsuffixProperty);  // ".cpp";
-	String libs = System.getProperty(PropertyLoader.libsProperty);                        // libraryDir+"VCLIB.lib";
-	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty);              // ".exe";
-	String HeaderFilename = baseName+".h";
-	String ExeFilename = baseName+exeSuffix;
-	String ObjFilename = baseName+System.getProperty(PropertyLoader.objsuffixProperty);
-
-	try {
-		cppCoderVCell.initialize();
-	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("autocode init exception: "+e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("autocode init exception: "+e.getMessage());
-	}		
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_CODEGEN));
-	
-	java.io.FileOutputStream osCode = null;
-	java.io.FileOutputStream osHeader = null;
-	try {
-		osCode = new java.io.FileOutputStream(CodeFilename);
-	}catch (java.io.IOException e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error opening code file '"+CodeFilename+": "+e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("error opening code file '"+CodeFilename+": "+e.getMessage());
-	}		
-	
-	try {
-		osHeader = new java.io.FileOutputStream(HeaderFilename);
-	}catch (java.io.IOException e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error opening header file '"+HeaderFilename+": "+e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("error opening header file '"+HeaderFilename+": "+e.getMessage());
-	}		
-	
-	try {
-		cppCoderVCell.code(osHeader,osCode);
-		osCode.close();
-		osHeader.close();
-	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException(e.getMessage());
-	}	
-	
-	if (bNoCompile){
-		return;
-	}	
-	
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILING));
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_COMPILELINK);
-	try {		
-		String compileCommand = Compile+" "+CodeFilename+" "+compileFlags+" "+objOutputSpecifier+ObjFilename;
-		System.out.println(compileCommand);
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_CompileCommand("% "+compileCommand)));
-		
-		Runtime runtime = Runtime.getRuntime();
-		Process process = runtime.exec(compileCommand);
-
-		String stdoutString = "";
-		String stderrString = "";
-
-		InputStream inputStream = process.getInputStream();
-		if (inputStream!=null){
-			char charArray[] = new char[1000];
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			int numRead = inputStreamReader.read(charArray,0,charArray.length);
-			if (numRead>0){
-				stdoutString += new String(charArray,0,numRead);
-				if (numRead == charArray.length){
-					stdoutString += "\n(standard output truncated...)";
-				}	
-			}
-			inputStreamReader.close();
-		}	
-		
-		inputStream = process.getErrorStream();
-		if (inputStream!=null){
-			char charArray[] = new char[1000];
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			int numRead = inputStreamReader.read(charArray,0,charArray.length);
-			if (numRead>0){
-				stderrString += new String(charArray,0,numRead);
-				if (numRead == charArray.length){
-					stderrString += "\n(standard output truncated...)";
-				}	
-			}
-			inputStreamReader.close();	
-		}	
-		
-		try {
-			process.waitFor();
-//			throw new RemoteException("didn't wait for process");
-		}catch (InterruptedException e){
-		}	
-		int retcode = 0;
-		retcode = process.exitValue();
-		if (retcode == 0){
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILE_OK));	
-		}else{
-			getSessionLog().print("stderr:\n"+stderrString);
-			getSessionLog().print("stdout:\n"+stdoutString);
-			throw new SolverException("compilation failed, return code = "+retcode+"\n"+stderrString);
-		}		
-		process = null;
-		
-	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error compiling: "+e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("Failed to compile your simulation, please contact the Virtual Cell for further assistance");		
-	}
-
-	
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_LINKING));
-	try {		
-		String linkCommand = Link+" "+exeOutputSpecifier+ExeFilename+" "+ObjFilename+" "+libs;
-		System.out.println(linkCommand);
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.solverRunning_LinkCommand("% "+linkCommand)));
-		
-		Runtime runtime = Runtime.getRuntime();
-		Process process = runtime.exec(linkCommand);
-
-		String stdoutString = "";
-		String stderrString = "";
-
-		InputStream inputStream = process.getInputStream();
-		if (inputStream!=null){
-			char charArray[] = new char[1000];
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			int numRead = inputStreamReader.read(charArray,0,charArray.length);
-			if (numRead>0){
-				stdoutString += new String(charArray,0,numRead);
-				if (numRead == charArray.length){
-					stdoutString += "\n(standard output truncated...)";
-				}	
-			}
-			inputStreamReader.close();
-		}	
-		
-		inputStream = process.getErrorStream();
-		if (inputStream!=null){
-			char charArray[] = new char[1000];
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			int numRead = inputStreamReader.read(charArray,0,charArray.length);
-			if (numRead>0){
-				stderrString += new String(charArray,0,numRead);
-				if (numRead == charArray.length){
-					stderrString += "\n(standard output truncated...)";
-				}	
-			}
-			inputStreamReader.close();	
-		}	
-		
-		try {
-			process.waitFor();
-//			throw new RemoteException("didn't wait for process");
-		}catch (InterruptedException e){
-		}	
-		int retcode = 0;
-		retcode = process.exitValue();
-		if (retcode == 0){
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_LINK_OK));	
-		}else{
-			getSessionLog().print("stderr:\n"+stderrString);
-			getSessionLog().print("stdout:\n"+stdoutString);
-			throw new SolverException("link failed, return code = "+retcode);
-		}		
-		process = null;
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_COMPILELINK_OK));
-		
-	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("error linking: "+e.getMessage())));
-		e.printStackTrace(System.out);
-		throw new SolverException("Failed to link your simulation, please contact the Virtual Cell for further assistance");	
-	}	
 }
 
 
@@ -354,12 +159,9 @@ public static String getDescription() {
  */
 protected void initialize() throws SolverException {
 	writeFunctionsFile();
-	writeVCGAndResampleFieldData();	
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INIT));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
-	
-	autoCode(false);
 	
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 	
@@ -370,7 +172,7 @@ protected void initialize() throws SolverException {
 @Override
 protected String[] getMathExecutableCommand() {
 	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
-	String baseName = cppCoderVCell.getBaseFilename();
+	String baseName = "MovingBoundary" ;
 	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
 	return new String[] { exeFile.getAbsolutePath() };
 }
@@ -394,68 +196,6 @@ public Geometry getResampledGeometry() throws SolverException {
 	return resampledGeometry;
 }
 		
-protected void writeVCGAndResampleFieldData() throws SolverException {
-	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_PROC_GEOM);
-	
-	try {
-		// write subdomains file
-		SubdomainInfo.write(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + SimDataConstants.SUBDOMAINS_FILE_SUFFIX), simTask.getSimulation().getMathDescription());
-		
-		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+SimDataConstants.VCG_FILE_EXTENSION)));
-		GeometryFileWriter.write(pw, getResampledGeometry());
-		pw.close();
-				
-		FieldDataIdentifierSpec[] argFieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
-		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
-			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_RESAMPLE_FD);
-			
-			FieldFunctionArguments psfFieldFunc = null;
-			Variable var = simTask.getSimulationJob().getSimulationSymbolTable().getVariable(Simulation.PSF_FUNCTION_NAME);
-			if (var != null) {
-				FieldFunctionArguments[] ffas = FieldUtilities.getFieldFunctionArguments(var.getExpression());
-				if (ffas == null || ffas.length == 0) {
-					throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
-				} else {				
-					Expression newexp;
-					try {
-						newexp = new Expression(ffas[0].infix());
-						if (!var.getExpression().compareEqual(newexp)) {
-							throw new DataAccessException("Point Spread Function " + Simulation.PSF_FUNCTION_NAME + " can only be a single field function.");
-						}
-						psfFieldFunc = ffas[0];
-					} catch (ExpressionException e) {
-						e.printStackTrace();
-						throw new DataAccessException(e.getMessage());
-					}
-				}
-			}			
-			
-			boolean bResample[] = new boolean[argFieldDataIDSpecs.length];
-			Arrays.fill(bResample, true);
-			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
-				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(simTask.getSimulationJob().getSimulationSymbolTable());
-				if (argFieldDataIDSpecs[i].getFieldFuncArgs().equals(psfFieldFunc)) {
-					bResample[i] = false;
-				}
-			}
-			
-			int numMembraneElements = getResampledGeometry().getGeometrySurfaceDescription().getSurfaceCollection().getTotalPolygonCount();
-			CartesianMesh simpleMesh = CartesianMesh.createSimpleCartesianMesh(getResampledGeometry().getOrigin(), 
-					getResampledGeometry().getExtent(),
-					simTask.getSimulation().getMeshSpecification().getSamplingSize(),
-					getResampledGeometry().getGeometrySurfaceDescription().getRegionImage());
-			String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);			
-			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(), null, getSaveDirectory().getParentFile(),
-					secondarySimDataDir == null ? null : new File(secondarySimDataDir));
-			dsci.writeFieldFunctionData(null,argFieldDataIDSpecs, bResample, simpleMesh, simResampleInfoProvider, 
-					numMembraneElements, HESM_OVERWRITE_AND_CONTINUE);
-		}
-	} catch(Exception e){
-		throw new SolverException(e.getMessage());
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (6/27/2001 2:33:03 PM)
