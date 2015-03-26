@@ -143,6 +143,16 @@ public class NetworkTransformer implements SimContextTransformer {
 		String bngNetString = bngOutput.getNetFileContent();
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
+		
+		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
+		if(outputSpec.getBNGSpecies().length > 800) {
+			message = "Species limit exceeded: max allowed number: 800, actual number: " + outputSpec.getBNGSpecies().length + message;
+			throw new RuntimeException(message);
+		}
+		if(outputSpec.getBNGReactions().length > 2000) {
+			message = "Reaction limit exceeded: max allowed number: 2000, actual number: " + outputSpec.getBNGReactions().length + message;
+			throw new RuntimeException(message);
+		}
 		return outputSpec;
 	}
 
@@ -268,6 +278,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(speciesContext),speciesContext);
 				entityMappings.add(em);
 				countGenerated++;
+			}
+			if(i%50 == 0) {
+				System.out.println(i+"");
 			}
 		}
 		System.out.println("Total generated species: " + countGenerated);
