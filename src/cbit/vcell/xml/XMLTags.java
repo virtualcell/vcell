@@ -676,8 +676,10 @@ public class XMLTags {
   public final static String SaveChomboOutput = "SaveChomboOutput";
   public final static String ROIExpressionTag = "ROIExpression";
   public final static String MeshRefinementTag = "MeshRefinement";
-  public final static String RefinementLevelTag = "RefinementLevel";
-  public final static String RefineRatioAttrTag = "RefineRatio";
+  public final static String RefinementRoiTag = "RefinementRoi";
+  public final static String RefinementRoiTypeAttrTag = "Type";
+  public final static String RefineRatios = "Ratios";
+  public final static String RefineRoiLevelAttrTag = "Level";
   public final static String TagsGrowAttrTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
   

@@ -26,7 +26,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.RefinementLevel;
+import org.vcell.chombo.RefinementRoi;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -4585,42 +4585,58 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 	return rateRulesElement;
 }
 
-	private Element getXML(ChomboSolverSpec param) {
+	private Element getXML(ChomboSolverSpec chomboSolverSpec) {
 		Element chomboElement = new Element(XMLTags.ChomboSolverSpec);
 		
 		Element maxBoxSize = new Element(XMLTags.MaxBoxSizeTag);
-		maxBoxSize.setText(param.getMaxBoxSize() + "");
+		maxBoxSize.setText(chomboSolverSpec.getMaxBoxSize() + "");
 		chomboElement.addContent(maxBoxSize);
 		
-		Element viewLevel = new Element(XMLTags.ViewLevelTag);
-		viewLevel.setText(param.getViewLevel() + "");
-		chomboElement.addContent(viewLevel);
+		if (!chomboSolverSpec.isFinestViewLevel())
+		{
+			Element viewLevel = new Element(XMLTags.ViewLevelTag);
+			viewLevel.setText(chomboSolverSpec.getViewLevel() + "");
+			chomboElement.addContent(viewLevel);
+		}
 		
 		Element fillRatio = new Element(XMLTags.FillRatioTag);
-		fillRatio.setText(param.getFillRatio() + "");
+		fillRatio.setText(chomboSolverSpec.getFillRatio() + "");
 		chomboElement.addContent(fillRatio);
 		
+		List<Integer> ratios = chomboSolverSpec.getRefineRatioList();
+		if (ratios.size() > 0)
+		{
+			Element ratiosElement = new Element(XMLTags.RefineRatios);
+			StringBuilder sb = new StringBuilder();
+			for (Integer i: ratios)
+			{
+				sb.append("," + i);
+			}
+			ratiosElement.setText(sb.substring(1) + "");
+			chomboElement.addContent(ratiosElement);
+		}
+	
 		Element saveVCellOutput = new Element(XMLTags.SaveVCellOutput);
-		saveVCellOutput.setText(param.isSaveVCellOutput() + "");
+		saveVCellOutput.setText(chomboSolverSpec.isSaveVCellOutput() + "");
 		chomboElement.addContent(saveVCellOutput);
 		
 		Element saveChomboOutput = new Element(XMLTags.SaveChomboOutput);
-		saveChomboOutput.setText(param.isSaveChomboOutput() + "");
+		saveChomboOutput.setText(chomboSolverSpec.isSaveChomboOutput() + "");
 		chomboElement.addContent(saveChomboOutput);
 		
 		Element meshRefinement = new Element(XMLTags.MeshRefinementTag);
-		for (int i = 0; i < param.getNumRefinementLevels(); i ++) {
-			RefinementLevel rfl = param.getRefinementLevel(i);
-			Element levelElement = new Element(XMLTags.RefinementLevelTag);
-			levelElement.setAttribute(XMLTags.RefineRatioAttrTag, String.valueOf(rfl.getRefineRatio()));
-			levelElement.setAttribute(XMLTags.TagsGrowAttrTag, String.valueOf(rfl.getTagsGrow()));
-			if (rfl.getRoiExpression() != null)
+		for (RefinementRoi roi : chomboSolverSpec.getRefinementRois()) {
+			Element roiElement = new Element(XMLTags.RefinementRoiTag);
+			roiElement.setAttribute(XMLTags.RefineRoiLevelAttrTag, String.valueOf(roi.getLevel()));
+			roiElement.setAttribute(XMLTags.RefinementRoiTypeAttrTag, roi.getType().name());
+			roiElement.setAttribute(XMLTags.TagsGrowAttrTag, String.valueOf(roi.getTagsGrow()));
+			if (roi.getRoiExpression() != null)
 			{
-				Element roi = new Element(XMLTags.ROIExpressionTag);
-				roi.setText(rfl.getRoiExpression().infix() + ";");
-				levelElement.addContent(roi);
+				Element expElement = new Element(XMLTags.ROIExpressionTag);
+				expElement.setText(roi.getRoiExpression().infix() + ";");
+				roiElement.addContent(expElement);
 			}
-			meshRefinement.addContent(levelElement);
+			meshRefinement.addContent(roiElement);
 		}
 		chomboElement.addContent(meshRefinement);
 		return chomboElement;

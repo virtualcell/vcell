@@ -271,7 +271,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		}
 		else
 		{
-			errorMessage = simulation.getSolverTaskDescription().getChomboSolverSpec().checkParamters();
+			//errorMessage = simulation.getSolverTaskDescription().getChomboSolverSpec().checkParamters();
 		}
 	} else {		
 		errorMessage = null;
