@@ -216,7 +216,6 @@ public static void main(java.lang.String[] args) {
 		if (!serverConfig.equals(MESSAGING)){
 			throw new Exception("expecting '" + MESSAGING + "' as third argument");
 		}
-		//VCMessagingService vcMessagingService = new VCMessagingServiceSonicMQ();
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
 		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
