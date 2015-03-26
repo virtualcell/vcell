@@ -419,8 +419,6 @@ public class LicenseWriter {
 		directoryExceptions.add(numericsPrefix + "qhull");
 		directoryExceptions.add(numericsPrefix + "smoldyn");
 		directoryExceptions.add(numericsPrefix + "smoldyn-2.15");
-		directoryExceptions.add(numericsPrefix + "SonicCClient");
-		directoryExceptions.add(numericsPrefix + "SonicCClient64");
 //		directoryExceptions.add(numericsPrefix + "Stochastic");
 		directoryExceptions.add(numericsPrefix + "sundials");
 		directoryExceptions.add(numericsPrefix + "SundialsSolverStandalone");
