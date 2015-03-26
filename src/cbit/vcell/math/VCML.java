@@ -239,11 +239,14 @@ public class VCML {
 	public final static String ROIExpression = "ROIExpression";
 	public final static String MeshRefinement = "MeshRefinement";
 	public final static String RefinementLevel = "RefinementLevel";
+	public final static String RefinementRoi = "RefinementRoi";
+	public final static String RefinementRoiType = "RoiType";
 	public final static String ViewLevel = "ViewLevel";
 	public final static String ChomboBox = "ChomboBox";
 	public final static String NumOfLevels = "NumOfLevels";
 	public final static String NumOfBoxes = "NumOfBoxes";
 	public final static String RefineRatio = "RefineRatio";		
+	public final static String Level = "Level";		
 	public final static String SaveVCellOutput = "SaveVCellOutput";		
 	public final static String SaveChomboOutput = "SaveChomboOutput";		
 	public final static String TagsGrow = "TagsGrow";		

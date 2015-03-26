@@ -464,7 +464,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsGeometrySizeLabel = new java.awt.GridBagConstraints();
 		constraintsGeometrySizeLabel.gridx = 0; constraintsGeometrySizeLabel.gridy = gridy;
 		constraintsGeometrySizeLabel.anchor = java.awt.GridBagConstraints.LINE_END;
-		constraintsGeometrySizeLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsGeometrySizeLabel.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getGeometrySizeLabel(), constraintsGeometrySizeLabel);
 
 		java.awt.GridBagConstraints constraintsGeometrySizeTextField = new java.awt.GridBagConstraints();
@@ -472,7 +472,7 @@ private void initialize() {
 		constraintsGeometrySizeTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsGeometrySizeTextField.weightx = 1.0;
 		constraintsGeometrySizeTextField.gridwidth = 2;
-		constraintsGeometrySizeTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsGeometrySizeTextField.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getGeometrySizeTextField(), constraintsGeometrySizeTextField);
 
 		//
@@ -480,7 +480,7 @@ private void initialize() {
 		java.awt.GridBagConstraints constraintsMeshSizeLabel = new java.awt.GridBagConstraints();
 		constraintsMeshSizeLabel.gridx = 0; constraintsMeshSizeLabel.gridy = gridy;
 		constraintsMeshSizeLabel.anchor = java.awt.GridBagConstraints.LINE_END;
-		constraintsMeshSizeLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsMeshSizeLabel.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getMeshSizeLabel(), constraintsMeshSizeLabel);
 		
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
@@ -488,7 +488,7 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new java.awt.Insets(4, 0, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 0, 1, 4);
 		gbc.anchor = GridBagConstraints.WEST;
 		getContentPanel().add(getAutoMeshSizeCheckBox(), gbc);
 		
@@ -496,14 +496,14 @@ private void initialize() {
 		gridy ++;
 		java.awt.GridBagConstraints constraintsXLabel = new java.awt.GridBagConstraints();
 		constraintsXLabel.gridx = 1; constraintsXLabel.gridy = gridy;
-		constraintsXLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXLabel.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getXLabel(), constraintsXLabel);
 
 		java.awt.GridBagConstraints constraintsXTextField = new java.awt.GridBagConstraints();
 		constraintsXTextField.gridx = 2; constraintsXTextField.gridy = gridy;
 		constraintsXTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsXTextField.weightx = 1.0;
-		constraintsXTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsXTextField.insets = new java.awt.Insets(4, 4, 1, 4);
 		constraintsXTextField.gridwidth = 2;
 		getContentPanel().add(getXTextField(), constraintsXTextField);
 		
@@ -511,7 +511,7 @@ private void initialize() {
 		gridy ++;
 		java.awt.GridBagConstraints constraintsYLabel = new java.awt.GridBagConstraints();
 		constraintsYLabel.gridx = 1; constraintsYLabel.gridy = gridy;
-		constraintsYLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsYLabel.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getYLabel(), constraintsYLabel);
 
 		java.awt.GridBagConstraints constraintsYTextField = new java.awt.GridBagConstraints();
@@ -519,14 +519,14 @@ private void initialize() {
 		constraintsYTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsYTextField.weightx = 1.0;
 		constraintsYTextField.gridwidth = 2;
-		constraintsYTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsYTextField.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getYTextField(), constraintsYTextField);
 
 		//
 		gridy ++;
 		java.awt.GridBagConstraints constraintsZLabel = new java.awt.GridBagConstraints();
 		constraintsZLabel.gridx = 1; constraintsZLabel.gridy = gridy;
-		constraintsZLabel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsZLabel.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getZLabel(), constraintsZLabel);
 
 		java.awt.GridBagConstraints constraintsZTextField = new java.awt.GridBagConstraints();
@@ -534,7 +534,7 @@ private void initialize() {
 		constraintsZTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsZTextField.weightx = 1.0;
 		constraintsZTextField.gridwidth = 2;
-		constraintsZTextField.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsZTextField.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(getZTextField(), constraintsZTextField);
 		
 		//
@@ -542,7 +542,7 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(new JLabel("Total Size (elements)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -551,7 +551,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		totalSizeTextField.setForeground(Color.blue);
 		getContentPanel().add(totalSizeTextField, gbc);
 		
@@ -561,14 +561,14 @@ private void initialize() {
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(new JLabel("Spatial Step (um)"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(new JLabel("\u0394x"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -577,7 +577,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		ivjDxTextField.setForeground(Color.blue);
 		getContentPanel().add(ivjDxTextField, gbc);
 		
@@ -587,7 +587,7 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		getContentPanel().add(ivjDyLabel, gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -596,7 +596,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		ivjDyTextField.setForeground(Color.blue);
 		getContentPanel().add(ivjDyTextField, gbc);
 		
@@ -606,7 +606,7 @@ private void initialize() {
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = java.awt.GridBagConstraints.LINE_END;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);		
 		getContentPanel().add(ivjDzLabel, gbc);
 
 		gbc = new java.awt.GridBagConstraints();
@@ -615,7 +615,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(4, 4, 1, 4);
 		ivjDzTextField.setForeground(Color.blue);
 		getContentPanel().add(ivjDzTextField, gbc);
 		

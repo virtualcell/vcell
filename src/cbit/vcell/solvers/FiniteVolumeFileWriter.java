@@ -30,7 +30,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.RefinementLevel;
+import org.vcell.chombo.RefinementRoi;
+import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -241,6 +242,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		IF,
 		USER,
 		REFINEMENTS,
+		REFINEMENT_ROIS,
 		CHOMBO_SPEC_END,
 	}
 
@@ -2066,21 +2068,38 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.VIEW_LEVEL + " " + chomboSolverSpec.getViewLevel());
 		printWriter.println(FVInputFileKeyword.SAVE_VCELL_OUTPUT + " " + chomboSolverSpec.isSaveVCellOutput());
 		printWriter.println(FVInputFileKeyword.SAVE_CHOMBO_OUTPUT + " " + chomboSolverSpec.isSaveChomboOutput());
-		int numLevels = chomboSolverSpec.getNumRefinementLevels();
-		printWriter.println(FVInputFileKeyword.REFINEMENTS + " " + (numLevels + 1));
-		for (int i = 0; i < numLevels; i ++) {		
-			RefinementLevel rfl = chomboSolverSpec.getRefinementLevel(i);
-			printWriter.println(rfl.getRefineRatio() 
-					+ (rfl.getRoiExpression() == null ? "" : " " + rfl.getRoiExpression().infix()  +";"));
-		}
-		printWriter.println("2"); // write last refinement ratio, fake	
-		printWriter.print(FVInputFileKeyword.TAGS_GROW);
-		for (int i = 0; i < numLevels; i ++) {		
-			RefinementLevel rfl = chomboSolverSpec.getRefinementLevel(i);
-			printWriter.print(" " + rfl.getTagsGrow());
-		}
-		printWriter.println(" 2"); // write last tags grow, fake	
 		
+		// Refinement
+		int numLevels = chomboSolverSpec.getNumRefinementLevels();
+		// Refinements #Levels ratio 1, ratio 2, etc
+		printWriter.print(FVInputFileKeyword.REFINEMENTS + " " + (numLevels + 1));
+		List<Integer> ratios = chomboSolverSpec.getRefineRatioList();
+		for (int i: ratios) {		
+			printWriter.print(" " + i); 
+		}
+		printWriter.println(" 2"); // write last refinement ratio, fake
+		
+		// membrane rois
+		List<RefinementRoi> memRios = chomboSolverSpec.getMembraneRefinementRois();
+		printWriter.println(FVInputFileKeyword.REFINEMENT_ROIS + " " + RoiType.Membrane + " " + memRios.size());
+		for (RefinementRoi roi: memRios) {
+			if (roi.getRoiExpression() == null)
+			{
+				throw new SolverException("ROI expression cannot be null");
+			}
+			// level tagsGrow ROIexpression
+			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+		}
+		
+		List<RefinementRoi> volRios = chomboSolverSpec.getVolumeRefinementRois();
+		printWriter.println(FVInputFileKeyword.REFINEMENT_ROIS + " " + RoiType.Volume + " " + volRios.size());
+		for (RefinementRoi roi: volRios) {
+			if (roi.getRoiExpression() == null)
+			{
+				throw new SolverException("ROI expression cannot be null");
+			}
+			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
+		}
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
 		printWriter.println();
 	}
