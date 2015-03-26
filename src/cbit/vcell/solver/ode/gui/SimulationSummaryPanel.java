@@ -180,34 +180,16 @@ private void displayMesh() {
 					labelFinestMesh.setText(text);
 					boolean bHasRefinement = numRefinementLevels > 0;
 					if (bHasRefinement) {
-						String refinementText = numRefinementLevels + " level(s), Refinement ratio(s): ";
-						for (int i = 0; i < numRefinementLevels; i ++) {
-							if (i > 0) {
-								refinementText += ",";
-							}
-							refinementText += chomboSolverSpec.getRefinementLevel(i).getRefineRatio();
-						}
+						String refinementText = numRefinementLevels + " level(s)";
 						getJLabelMeshRefinement().setText(refinementText);
 						labelRefinementRoiTitle.setVisible(true);
 						labelRefinementRoi.setVisible(true);
+						String roiText = "Membrane ROI(s): " + chomboSolverSpec.getMembraneRefinementRois().size()
+								+ "; Volume ROI(s): " + chomboSolverSpec.getVolumeRefinementRois().size() + ";";
 						labelViewLevelMeshTitle.setVisible(true);
 						labelViewLevelMesh.setVisible(true);
 						labelViewLevelMesh.setText(GuiUtils.getMeshSizeText(dimension, chomboSolverSpec.getViewLevelSamplingSize(samplingSize), true));
-						if (chomboSolverSpec.hasRefinementRoi())
-						{
-							int maxLen = 60;
-							String refinementRoiDisplayLabel = chomboSolverSpec.getRefinementRoiDisplayLabel();
-							labelRefinementRoi.setToolTipText(refinementRoiDisplayLabel);
-							if (refinementRoiDisplayLabel.length() > maxLen)
-							{
-								refinementRoiDisplayLabel = refinementRoiDisplayLabel.substring(0, maxLen) + "...";
-							}
-							labelRefinementRoi.setText(refinementRoiDisplayLabel);
-						}
-						else
-						{
-							labelRefinementRoi.setText("All membrane elements");
-						}
+						labelRefinementRoi.setText(roiText);
 					} else {
 						labelMeshRefinementTitle.setVisible(false);
 						meshRefinementLabel.setVisible(false);

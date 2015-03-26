@@ -8,8 +8,12 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
+import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
@@ -23,19 +27,24 @@ import cbit.vcell.solver.SolverUtilities;
 @SuppressWarnings("serial")
 public class ChomboSolverSpec implements Matchable, Serializable, VetoableChangeListener {
 	
+	public static final int defaultRefineRatio = 2;
+	
 	private static double defaultFillRatio = 0.9;
 	
 	private int maxBoxSize = 32;
 	private double fillRatio = defaultFillRatio;
-	private ArrayList<RefinementLevel> refinementLevelList = new ArrayList<RefinementLevel>();
+	private List<RefinementRoi> refinementRoiList = new ArrayList<RefinementRoi>();
 	public static String PROPERTY_NAME_MAX_BOX_SIZE = "maxBoxSize";
 	public static String PROPERTY_NAME_FILL_RATIO = "fillRatio";
+	public static String PROPERTY_NAME_ROI = "ROI";
+	public static String PROPERTY_NAME_FINEST_VIEW_LEVEL = "bFinestViewLevel";
 
 	private transient PropertyChangeSupport propertyChange;
 	private transient VetoableChangeSupport vetoChange;
-	private int viewLevel = 0;
+	private Integer viewLevel = null;  // if null, viewLeve is finest
 	private boolean bSaveVCellOutput = true;
 	private boolean bSaveChomboOutput = false;
+	private List<Integer> refineRatioList = null;
 
 	public ChomboSolverSpec(int maxBoxSize) {
 		this.maxBoxSize = maxBoxSize;
@@ -47,22 +56,23 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.viewLevel = css.viewLevel;
 		this.bSaveVCellOutput = css.bSaveVCellOutput;
 		this.bSaveChomboOutput = css.bSaveChomboOutput;
-		this.refinementLevelList = new ArrayList<RefinementLevel>();
-		for (RefinementLevel rl : css.refinementLevelList)
+		this.refinementRoiList = new ArrayList<RefinementRoi>();
+		for (RefinementRoi roi : css.refinementRoiList)
 		{
-			refinementLevelList.add(new RefinementLevel(rl));
+			refinementRoiList.add(new RefinementRoi(roi));
 		}
 	}
 	
-	public ChomboSolverSpec(int maxBoxSize, double fillRatio, int viewLevel, boolean bSaveVCellOutput, boolean bSaveChomboOutput, 
-			ArrayList<RefinementLevel> refineLevelList) throws ExpressionException {
+	public ChomboSolverSpec(int maxBoxSize, double fillRatio, Integer viewLevel, boolean bSaveVCellOutput, 
+			boolean bSaveChomboOutput, List<Integer> refineRatioList) throws ExpressionException 
+	{
 		super();
 		this.maxBoxSize = maxBoxSize;
 		this.fillRatio = fillRatio;
 		this.viewLevel = viewLevel;
 		this.bSaveVCellOutput = bSaveVCellOutput;
 		this.bSaveChomboOutput = bSaveChomboOutput;
-		refinementLevelList = refineLevelList;
+		this.refineRatioList = refineRatioList;
 		addVetoableChangeListener(this);
 	}
 	
@@ -81,55 +91,86 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		return defaultFillRatio;
 	}
 	
-	public RefinementLevel getRefinementLevel(int index) {
-		if (index >= refinementLevelList.size()) {
-			return null;
-		}
-		return refinementLevelList.get(index);
+	public List<RefinementRoi> getMembraneRefinementRois() {
+		return getRefinementRois(RoiType.Membrane);
 	}
 
-	public void addRefinementLevel(RefinementLevel rfl) {
-		int lastRefineIndex = refinementLevelList.size();
-		refinementLevelList.add(rfl);
-		if (viewLevel == lastRefineIndex) // finest level was chosen
-		{
-			viewLevel = refinementLevelList.size();
-		}
+	public List<RefinementRoi> getVolumeRefinementRois() {
+		return getRefinementRois(RoiType.Volume);
 	}
 	
-	public void deleteRefinementLevel() {
-		int lastRefineIndex = refinementLevelList.size();
-		if (viewLevel >= lastRefineIndex) // finest level was chosen
+	public List<RefinementRoi> getRefinementRois() {
+		return refinementRoiList;
+	}
+	
+	public List<RefinementRoi> getRefinementRois(RoiType type) {
+		List<RefinementRoi> l = new ArrayList<RefinementRoi>();
+		for (RefinementRoi roi: refinementRoiList)
 		{
-			viewLevel --;
+			if (roi.getType() == type)
+			{
+				l.add(roi);
+			}
 		}
-		refinementLevelList.remove(refinementLevelList.size() - 1);
+		return l;
+	}
+	
+	public void addRefinementRoi(RefinementRoi roi) {
+		List<RefinementRoi> oldValue = getRefinementRois(roi.getType());
+		refinementRoiList.add(roi);
+		List<RefinementRoi> newValue = getRefinementRois(roi.getType());
+		firePropertyChange(PROPERTY_NAME_ROI, oldValue, newValue);
+	}
+	
+	public void deleteRefinementRoi(RoiType roiType, int index) {
+		List<RefinementRoi> oldValue = getRefinementRois(roiType);
+		int cnt = 0;
+		Iterator<RefinementRoi> iter = refinementRoiList.iterator();
+		// remove the i-th element for that type
+		while (iter.hasNext())
+		{
+			RefinementRoi roi = iter.next();
+			if (roi.getType() == roiType)
+			{
+				if (index == cnt)
+				{
+					iter.remove();
+					break;
+				}
+				++ cnt;
+			}
+		}
+		List<RefinementRoi> newValue = getRefinementRois(roiType);
+		firePropertyChange(PROPERTY_NAME_ROI, oldValue, newValue);
 	}
 
 	public int getNumRefinementLevels() {
-		return refinementLevelList.size();
+		int numLevels = 0;
+		for (RefinementRoi roi: refinementRoiList)
+		{
+			numLevels = Math.max(numLevels, roi.getLevel());
+		}
+		return numLevels;
 	}
 	
 	public ISize getFinestSamplingSize(ISize coarsestSize) {
-		return getLevelSamplingSize(coarsestSize, refinementLevelList.size());
+		return getLevelSamplingSize(coarsestSize, getNumRefinementLevels());
 	}
 
 	public ISize getLevelSamplingSize(ISize coarsestSize, int level) {
 		int xsize = coarsestSize.getX();
 		int ysize = coarsestSize.getY();
 		int zsize = coarsestSize.getZ();
-		for (int i = 0; i < level; ++ i) {
-			RefinementLevel rfl = refinementLevelList.get(i);
-			xsize *= rfl.getRefineRatio();
-			ysize *= rfl.getRefineRatio();
-			zsize *= rfl.getRefineRatio();
-		}
+		int levelRefineRatio = (int)Math.pow(defaultRefineRatio, level);
+		xsize = xsize * levelRefineRatio;
+		ysize = ysize * levelRefineRatio;
+		zsize = zsize * levelRefineRatio;
 		return new ISize(xsize, ysize, zsize);
 	}
 	
 	public ISize getViewLevelSamplingSize(ISize coarsestSize) 
 	{
-		return getLevelSamplingSize(coarsestSize, viewLevel);
+		return getLevelSamplingSize(coarsestSize, getViewLevel());
 	}
 	
 	
@@ -146,7 +187,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		{
 			return false;
 		}
-		if (chomboSolverSpec.viewLevel != viewLevel)
+		if (!Compare.isEqual(chomboSolverSpec.viewLevel, viewLevel))
 		{
 			return false;
 		}
@@ -165,8 +206,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		if (chomboSolverSpec.getNumRefinementLevels() != getNumRefinementLevels()) {
 			return false;
 		}
-		for (int levelIndex = 0; levelIndex < refinementLevelList.size(); levelIndex ++) {
-			if (!refinementLevelList.get(levelIndex).compareEqual(chomboSolverSpec.refinementLevelList.get(levelIndex))) {
+		if (chomboSolverSpec.refinementRoiList.size() != refinementRoiList.size()) {
+			return false;
+		}
+		for (int i = 0; i < refinementRoiList.size(); i ++) {
+			if (!refinementRoiList.get(i).compareEqual(chomboSolverSpec.refinementRoiList.get(i))) {
 				return false;
 			}
 		}				
@@ -178,12 +222,15 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		buffer.append(VCML.ChomboSolverSpec + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t" + VCML.MaxBoxSize + " " + maxBoxSize + "\n");
 		buffer.append("\t" + VCML.FillRatio + " " + fillRatio + "\n");
-		buffer.append("\t" + VCML.ViewLevel + " " + viewLevel + "\n");
+		if (!isFinestViewLevel())
+		{
+			buffer.append("\t" + VCML.ViewLevel + " " + getViewLevel() + "\n");
+		}
 		buffer.append("\t" + VCML.SaveVCellOutput + " " + bSaveVCellOutput + "\n");
 		buffer.append("\t" + VCML.SaveChomboOutput + " " + bSaveChomboOutput + "\n");
 		buffer.append("\t" + VCML.MeshRefinement + " " + VCML.BeginBlock + "\n");
-		for (RefinementLevel level : refinementLevelList) {
-			buffer.append(level.getVCML());
+		for (RefinementRoi roi : refinementRoiList) {
+			buffer.append(roi.getVCML());
 		}
 		buffer.append("\t" + VCML.EndBlock+"\n");
 		buffer.append(VCML.EndBlock+"\n");
@@ -191,6 +238,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	}
 
 	public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
+		viewLevel = null;
+		
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.ChomboSolverSpec)) {
 			token = tokens.nextToken();
@@ -235,14 +284,14 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			}
 			if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
-				readVCMLRefinementLevels(tokens);
+				readVCMLRefinementRois(tokens);
 				continue;
 			}
 			throw new DataAccessException("unexpected token " + token); 
 		}
 	}
 	
-	private void readVCMLRefinementLevels(CommentStringTokenizer tokens) throws DataAccessException {
+	private void readVCMLRefinementRois(CommentStringTokenizer tokens) throws DataAccessException {
 		// BeginToken
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
@@ -250,10 +299,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 		while (tokens.hasMoreTokens()) {
 			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.RefinementLevel)) 
+			if (token.equalsIgnoreCase(VCML.RefinementRoi)) 
 			{
-				RefinementLevel rfl = new RefinementLevel(tokens);
-				refinementLevelList.add(rfl);				
+				RefinementRoi roi = new RefinementRoi(tokens);
+				addRefinementRoi(roi);			
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
@@ -287,11 +336,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		return fillRatio;
 	}
 	
-	private void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
+	private void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 	}
 
-	private void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws PropertyVetoException {
+	private void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws PropertyVetoException {
 		getVetoChange().fireVetoableChange(propertyName, oldValue, newValue);
 	}
 
@@ -317,7 +366,6 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 				throw new PropertyVetoException("Max box size must be an integer power of 2.", evt);
 			}
 		}
-		
 	}
 
 	private java.beans.VetoableChangeSupport getVetoChange() {
@@ -337,51 +385,11 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	
 	public boolean hasRefinementRoi()
 	{
-		for (RefinementLevel rl : refinementLevelList)
-		{
-			if (rl.getRoiExpression() != null)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public String getRefinementRoiDisplayLabel() {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < refinementLevelList.size(); ++ i)
-		{
-			RefinementLevel rl = refinementLevelList.get(i);
-			if (rl.getRoiExpression() != null)
-			{
-				sb.append("Level " + (i+1)  + ": " + rl.getRoiExpression().infix() + ";  ");
-			}
-		}
-		return sb.toString();
-	}
-
-	public String checkParamters() {
-		String errorMessage = null;
-		
-		if (refinementLevelList.size() > 0)
-		{
-			int finestLevel = refinementLevelList.size() - 1;
-			if (refinementLevelList.get(finestLevel).getRoiExpression() == null)
-			{
-				for (int i = 0; i < finestLevel; ++ i)
-				{
-					if (refinementLevelList.get(i).getRoiExpression() != null)
-					{
-						errorMessage = "Finest level must have ROI if not refining all membrane elements";
-					}
-				}
-			}
-		}
-		return errorMessage;
+		return refinementRoiList.size() > 0;
 	}
 	
 	public int getViewLevel() {
-		return viewLevel;
+		return viewLevel == null ? getNumRefinementLevels() : viewLevel;
 	}
 
 	public void setViewLevel(int viewLevel) {
@@ -417,4 +425,32 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public static ErrorTolerance getDefaultEBChomboSemiImplicitErrorTolerance() {
 		return new ErrorTolerance(1e-9, 1e-8);
 	}
+
+	public boolean isFinestViewLevel() {
+		return viewLevel == null;
+	}
+
+	public void setFinestViewLevel(boolean bFinestViewLevel) {
+		Integer oldValue = this.viewLevel;
+		this.viewLevel = null;
+		firePropertyChange(PROPERTY_NAME_FINEST_VIEW_LEVEL, oldValue, this.viewLevel);
+	}
+	
+	public List<Integer> getRefineRatioList()
+	{
+		List<Integer> ratios = new ArrayList<Integer>();
+		if (refineRatioList != null && refineRatioList.size() > 0)
+		{
+			ratios.addAll(refineRatioList);
+		}
+		else
+		{
+			for (int i = 0;  i < getNumRefinementLevels(); ++ i)
+			{
+				ratios.add(defaultRefineRatio);
+			}
+		}
+		return ratios;
+	}
+	
 }

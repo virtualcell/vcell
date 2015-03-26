@@ -86,7 +86,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+		gbc.weighty = 0.2;
 		gbc.insets = new java.awt.Insets(10, 4, 4, 4);
 		add(meshSpecificationPanel, gbc);
 
