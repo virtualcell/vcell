@@ -72,6 +72,11 @@ public MovingBoundarySolver (SimulationTask simTask, File dir, SessionLog sessio
 	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
 }
 
+@Override
+protected String[] getMathExecutableCommand() {
+	throw new UnsupportedOperationException(); 
+}
+
 
 /**
  * Insert the method's description here.
@@ -169,6 +174,7 @@ protected void initialize() throws SolverException {
 
 }
 
+/*
 @Override
 protected String[] getMathExecutableCommand() {
 	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
@@ -176,6 +182,7 @@ protected String[] getMathExecutableCommand() {
 	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
 	return new String[] { exeFile.getAbsolutePath() };
 }
+*/
 
 
 
