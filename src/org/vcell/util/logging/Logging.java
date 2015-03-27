@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -77,14 +78,23 @@ public class Logging {
 	 */
 	private static void initFromFile(File initFile) {
 		if (initFile != null && initFile.exists()) {
-			try {
-				PropertyConfigurator.configure(initFile.toURI().toURL());
-				if (lg.isInfoEnabled()) {
-					lg.info("logger initialized from file  " + initFile.getAbsolutePath());
+			final boolean watchTheLog = WatchLogging.WATCH_LOGGING_DELAY_MILLIS != 0;
+			if (!watchTheLog) {
+				PropertyConfigurator.configure(initFile.getAbsolutePath());
+			}
+			else {
+				PropertyConfigurator.configureAndWatch(initFile.getAbsolutePath(),WatchLogging.WATCH_LOGGING_DELAY_MILLIS);
+			}
+			if (lg.isInfoEnabled()) {
+				if (watchTheLog) {
+					lg.info("logger initialized from file  " + initFile.getAbsolutePath() + " and watching every " 
+						+ WatchLogging.WATCH_LOGGING_DELAY_MILLIS / 1000.0 + " seconds");
 				}
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}	
+				else {
+					lg.info("logger initialized from file  " + initFile.getAbsolutePath() ); 
+					
+				}
+			}
 		}
 	}
 
