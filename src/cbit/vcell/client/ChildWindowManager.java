@@ -3,38 +3,19 @@ package cbit.vcell.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.GraphicsConfiguration;
 import java.awt.Point;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Vector;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.client.desktop.TopLevelWindow;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.util.DebugUtils;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 
 
@@ -48,22 +29,6 @@ public class ChildWindowManager {
 		public JDialog createJDialog(Frame owner, String title, boolean modal) {
 			return new JDialog(owner, title, modal);
 		}
-				
-		public  JDialog createJDialog(Window owner, String title, ModalityType requestedModalityType) throws Exception {
-			// may throw any of: SecurityException, NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException
-			
-			if ((ResourceUtil.getJavaVersion()==ResourceUtil.JavaVersion.SIX) || (ResourceUtil.getJavaVersion()==ResourceUtil.JavaVersion.SEVEN)){	
-				Class modalityTypeClass = Class.forName("java.awt.Dialog$ModalityType");
-				Constructor<JDialog> jDialogConstructor = JDialog.class.getConstructor(new Class[] { Window.class, modalityTypeClass });
-				Object modality = modalityTypeClass.getEnumConstants()[requestedModalityType.ordinal()];
-				JDialog jDialog = jDialogConstructor.newInstance(new Object[] {owner, title, modality});
-				return jDialog;
-			} else {
-				// If we're not running Java 1.6 or 1.7, assume we're running 1.5.  Do what's safe in any case.	
-				return new JDialog(owner, title);
-			}
-		}		
-		
 	}
 	
 	public class ChildWindow {
