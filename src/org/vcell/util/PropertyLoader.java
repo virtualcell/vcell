@@ -27,195 +27,120 @@ public class PropertyLoader {
 
 	public static final String propertyFileProperty			= "vcell.propertyfile";
 
-	public static final String vcellServerIDProperty        = record("vcell.server.id",RequiredFor.NOT,ValueType.GEN);
+	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
-	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",RequiredFor.SERVER,ValueType.DIR);
-	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",RequiredFor.SERVER,ValueType.DIR);
-	public static final String PARALLEL_DATA_DIR			= record("vcell.parallelDatadir",RequiredFor.SERVER,ValueType.DIR);
+	public static final String primarySimDataDirProperty	= record("vcell.primarySimdatadir",ValueType.DIR);
+	public static final String secondarySimDataDirProperty	= record("vcell.secondarySimdatadir",ValueType.DIR);
+	public static final String PARALLEL_DATA_DIR			= record("vcell.parallelDatadir",ValueType.DIR);
 
-	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",RequiredFor.NOT,ValueType.GEN);
-	public static final String htcBatchSystemQueue			= record("vcell.htc.queue",RequiredFor.NOT,ValueType.GEN);
-	public static final String htcLogDir					= record("vcell.htc.logdir",RequiredFor.NOT,ValueType.DIR);
-	public static final String htcUser						= record("vcell.htc.user",RequiredFor.NOT,ValueType.GEN);
-	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",RequiredFor.NOT,ValueType.GEN);
-	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",RequiredFor.NOT,ValueType.GEN);
-	public static final String sgeModulePath				= record("vcell.htc.sge.module",RequiredFor.NOT,ValueType.GEN);
-	public static final String pbsModulePath				= record("vcell.htc.pbs.module",RequiredFor.NOT,ValueType.GEN);
-	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",RequiredFor.SERVER,ValueType.DIR);
+	public static final String jobMemoryOverheadMB			= record("vcell.htc.jobMemoryOverheadMB",ValueType.GEN);
+	public static final String htcBatchSystemQueue			= record("vcell.htc.queue",ValueType.GEN);
+	public static final String htcLogDir					= record("vcell.htc.logdir",ValueType.DIR);
+	public static final String htcUser						= record("vcell.htc.user",ValueType.GEN);
+	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
+	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
+	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
+	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
+	public static final String MPI_HOME				        = record("vcell.htc.mpi.home",ValueType.DIR);
 
-	public static final String compilerProperty				= record("vcell.c++.compiler",RequiredFor.NOT,ValueType.GEN);
-	public static final String linkerProperty				= record("vcell.c++.linker",RequiredFor.NOT,ValueType.GEN);
-	public static final String exeOutputProperty			= record("vcell.c++.exeoutput",RequiredFor.NOT,ValueType.GEN);
-	public static final String objOutputProperty			= record("vcell.c++.objoutput",RequiredFor.NOT,ValueType.GEN);
-	public static final String srcsuffixProperty			= record("vcell.c++.srcsuffix",RequiredFor.NOT,ValueType.GEN);
-	public static final String objsuffixProperty			= record("vcell.c++.objectsuffix",RequiredFor.NOT,ValueType.GEN);
-	public static final String exesuffixProperty			= record("vcell.c++.exesuffix",RequiredFor.NOT,ValueType.GEN);
-	public static final String includeProperty				= record("vcell.c++.include",RequiredFor.NOT,ValueType.GEN);
-	public static final String definesProperty				= record("vcell.c++.defines",RequiredFor.NOT,ValueType.GEN);
-	public static final String libsProperty					= record("vcell.c++.libs",RequiredFor.NOT,ValueType.GEN);
-	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",RequiredFor.NOT,ValueType.EXE);
+	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
 
 	//
-	public static final String sundialsSolverExecutableProperty		= record("vcell.sundialsSolver.executable",RequiredFor.NOT,ValueType.EXE);
+	public static final String sundialsSolverExecutableProperty		= record("vcell.sundialsSolver.executable",ValueType.EXE);
 
 	// Smoldyn
-	public static final String smoldynExecutableProperty		= record("vcell.smoldyn.executable",RequiredFor.NOT,ValueType.EXE);
+	public static final String smoldynExecutableProperty		= record("vcell.smoldyn.executable",ValueType.EXE);
 
 	// NFSim
-	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",RequiredFor.NOT,ValueType.EXE);
+	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
 	
 	//Stoch properties
-	public static final String stochExecutableProperty		= record("vcell.stoch.executable",RequiredFor.NOT,ValueType.EXE);	
-	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",RequiredFor.NOT,ValueType.EXE);
-	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",RequiredFor.NOT,ValueType.EXE);
-	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",RequiredFor.NOT,ValueType.EXE);
+	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);	
+	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);
+	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
+	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
 
-	public static final String visitSmoldynVisitExecutableProperty	= record("vcell.visit.smoldynvisitexecutable",RequiredFor.NOT,ValueType.EXE);
-	public static final String visitSmoldynScriptPathProperty		= record("vcell.visit.smoldynscript",RequiredFor.NOT,ValueType.GEN);
+	public static final String visitSmoldynVisitExecutableProperty	= record("vcell.visit.smoldynvisitexecutable",ValueType.EXE);
+	public static final String visitSmoldynScriptPathProperty		= record("vcell.visit.smoldynscript",ValueType.GEN);
 
 	//BioFormats plugin properties
 
-	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",RequiredFor.NOT,ValueType.GEN);
-	public static final String bioformatsClasspath			= record("vcell.bioformatsClasspath",RequiredFor.NOT,ValueType.GEN);
-	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",RequiredFor.NOT,ValueType.URL);
+	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
+	public static final String bioformatsClasspath			= record("vcell.bioformatsClasspath",ValueType.GEN);
+	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
 
 	//
-	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",RequiredFor.NOT,ValueType.GEN);
-	public static final String exportdataThreadsProperty	= record("vcell.exportdataThreads",RequiredFor.NOT,ValueType.GEN);
-	public static final String simdataThreadsProperty		= record("vcell.simdataThreads",RequiredFor.NOT,ValueType.GEN);
-	public static final String htcworkerThreadsProperty		= record("vcell.htcworkerThreads",RequiredFor.NOT,ValueType.GEN);
+	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",ValueType.GEN);
+	public static final String exportdataThreadsProperty	= record("vcell.exportdataThreads",ValueType.GEN);
+	public static final String simdataThreadsProperty		= record("vcell.simdataThreads",ValueType.GEN);
+	public static final String htcworkerThreadsProperty		= record("vcell.htcworkerThreads",ValueType.GEN);
 
-	public static final String databaseCacheSizeProperty	= record("vcell.databaseCacheSize",RequiredFor.NOT,ValueType.GEN);
-	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",RequiredFor.NOT,ValueType.GEN);
+	public static final String databaseCacheSizeProperty	= record("vcell.databaseCacheSize",ValueType.GEN);
+	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",ValueType.GEN);
 
-	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",RequiredFor.NOT,ValueType.GEN);
-	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",RequiredFor.NOT,ValueType.GEN);
-	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",RequiredFor.NOT,ValueType.INT);
+	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",ValueType.GEN);
+	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",ValueType.GEN);
+	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",ValueType.INT);
 
-	public static final String dbDriverName					= record("vcell.server.dbDriverName",RequiredFor.NOT,ValueType.GEN);
-	public static final String dbConnectURL					= record("vcell.server.dbConnectURL",RequiredFor.NOT,ValueType.GEN);
-	public static final String dbUserid						= record("vcell.server.dbUserid",RequiredFor.NOT,ValueType.GEN);
-	public static final String dbPassword					= record("vcell.server.dbPassword",RequiredFor.NOT,ValueType.GEN);
+	public static final String dbDriverName					= record("vcell.server.dbDriverName",ValueType.GEN);
+	public static final String dbConnectURL					= record("vcell.server.dbConnectURL",ValueType.GEN);
+	public static final String dbUserid						= record("vcell.server.dbUserid",ValueType.GEN);
+	public static final String dbPassword					= record("vcell.server.dbPassword",ValueType.GEN);
 
-	public static final String jmsProvider				= record("vcell.jms.provider",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsURL					= record("vcell.jms.url",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsUser					= record("vcell.jms.user",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsPassword				= record("vcell.jms.password",RequiredFor.NOT,ValueType.GEN);
+	public static final String jmsProvider				= record("vcell.jms.provider",ValueType.GEN);
+	public static final String jmsProviderValueActiveMQ		= record("ActiveMQ",ValueType.GEN);
+	public static final String jmsURL					= record("vcell.jms.url",ValueType.GEN);
+	public static final String jmsUser					= record("vcell.jms.user",ValueType.GEN);
+	public static final String jmsPassword				= record("vcell.jms.password",ValueType.GEN);
 
-	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsDataRequestQueue		= record("vcell.jms.queue.dataReq",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsDbRequestQueue		= record("vcell.jms.queue.dbReq",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsSimJobQueue			= record("vcell.jms.queue.simJob",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsWorkerEventQueue		= record("vcell.jms.queue.workerEvent",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsServiceControlTopic	= record("vcell.jms.topic.serviceControl",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsDaemonControlTopic	= record("vcell.jms.topic.daemonControl",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsClientStatusTopic		= record("vcell.jms.topic.clientStatus",RequiredFor.NOT,ValueType.GEN);
+	public static final String jmsSimReqQueue			= record("vcell.jms.queue.simReq",ValueType.GEN);
+	public static final String jmsDataRequestQueue		= record("vcell.jms.queue.dataReq",ValueType.GEN);
+	public static final String jmsDbRequestQueue		= record("vcell.jms.queue.dbReq",ValueType.GEN);
+	public static final String jmsSimJobQueue			= record("vcell.jms.queue.simJob",ValueType.GEN);
+	public static final String jmsWorkerEventQueue		= record("vcell.jms.queue.workerEvent",ValueType.GEN);
+	public static final String jmsServiceControlTopic	= record("vcell.jms.topic.serviceControl",ValueType.GEN);
+	public static final String jmsDaemonControlTopic	= record("vcell.jms.topic.daemonControl",ValueType.GEN);
+	public static final String jmsClientStatusTopic		= record("vcell.jms.topic.clientStatus",ValueType.GEN);
 
-	public static final String jmsBlobMessageMinSize	= record("vcell.jms.blobMessageMinSize",RequiredFor.NOT,ValueType.GEN);
-	public static final String jmsBlobMessageTempDir	= record("vcell.jms.blobMessageTempDir",RequiredFor.NOT,ValueType.GEN);
-	public static final String vcellClientTimeoutMS 	= record("vcell.client.timeoutMS",RequiredFor.NOT,ValueType.GEN);
+	public static final String jmsBlobMessageMinSize	= record("vcell.jms.blobMessageMinSize",ValueType.GEN);
+	public static final String jmsBlobMessageTempDir	= record("vcell.jms.blobMessageTempDir",ValueType.GEN);
+	public static final String vcellClientTimeoutMS 	= record("vcell.client.timeoutMS",ValueType.GEN);
 
-	public static final String maxOdeJobsPerUser	= record("vcell.server.maxOdeJobsPerUser",RequiredFor.NOT,ValueType.GEN);
-	public static final String maxPdeJobsPerUser	= record("vcell.server.maxPdeJobsPerUser",RequiredFor.NOT,ValueType.GEN);
-	public static final String maxJobsPerScan		= record("vcell.server.maxJobsPerScan",RequiredFor.NOT,ValueType.GEN);
-	public static final String maxJobsPerSite		= record("vcell.server.maxJobsPerSite",RequiredFor.NOT,ValueType.GEN);
-	public static final String limitJobMemoryMB		= record("vcell.limit.jobMemoryMB",RequiredFor.NOT,ValueType.GEN);
+	public static final String maxOdeJobsPerUser	= record("vcell.server.maxOdeJobsPerUser",ValueType.GEN);
+	public static final String maxPdeJobsPerUser	= record("vcell.server.maxPdeJobsPerUser",ValueType.GEN);
+	public static final String maxJobsPerScan		= record("vcell.server.maxJobsPerScan",ValueType.GEN);
+	public static final String maxJobsPerSite		= record("vcell.server.maxJobsPerSite",ValueType.GEN);
+	public static final String limitJobMemoryMB		= record("vcell.limit.jobMemoryMB",ValueType.GEN);
 
-	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",RequiredFor.NOT,ValueType.GEN);
-	public static final String vcellThirdPartyLicense = record("vcell.thirdPartyLicense",RequiredFor.NOT,ValueType.GEN);
+	public static final String vcellSoftwareVersion = record("vcell.softwareVersion",ValueType.GEN);
+	public static final String vcellThirdPartyLicense = record("vcell.thirdPartyLicense",ValueType.GEN);
 
-	public static final String vcellServerHost = record("vcell.serverHost",RequiredFor.NOT,ValueType.GEN);
+	public static final String vcellServerHost = record("vcell.serverHost",ValueType.GEN);
 
-	public static final String vcellSMTPHostName = record("vcell.smtp.hostName",RequiredFor.NOT,ValueType.GEN);
-	public static final String vcellSMTPPort = record("vcell.smtp.port",RequiredFor.NOT,ValueType.GEN);
-	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",RequiredFor.NOT,ValueType.GEN);
+	public static final String vcellSMTPHostName = record("vcell.smtp.hostName",ValueType.GEN);
+	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
+	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
-	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",RequiredFor.NOT,ValueType.EXE);
-	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",RequiredFor.NOT,ValueType.EXE);
-	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",RequiredFor.NOT,ValueType.EXE);
+	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.EXE);
+	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.EXE);
+	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.EXE);
 
-	public final static String mongodbHost						= record("vcell.mongodb.host",RequiredFor.NOT,ValueType.GEN);
-	public final static String mongodbPort						= record("vcell.mongodb.port",RequiredFor.NOT,ValueType.GEN);   // default 27017
-	public final static String mongodbDatabase					= record("vcell.mongodb.database",RequiredFor.NOT,ValueType.GEN);
-	public final static String mongodbLoggingCollection			= record("vcell.mongodb.loggingCollection",RequiredFor.NOT,ValueType.GEN);
-	public final static String mongodbThreadSleepMS				= record("vcell.mongodb.threadSleepMS",RequiredFor.NOT,ValueType.GEN);
+	public final static String mongodbHost						= record("vcell.mongodb.host",ValueType.GEN);
+	public final static String mongodbPort						= record("vcell.mongodb.port",ValueType.GEN);   // default 27017
+	public final static String mongodbDatabase					= record("vcell.mongodb.database",ValueType.GEN);
+	public final static String mongodbLoggingCollection			= record("vcell.mongodb.loggingCollection",ValueType.GEN);
+	public final static String mongodbThreadSleepMS				= record("vcell.mongodb.threadSleepMS",ValueType.GEN);
 
-	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",RequiredFor.NOT,ValueType.EXE);
-	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",RequiredFor.NOT,ValueType.EXE);
+	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",ValueType.EXE);
+	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",ValueType.EXE);
 
-	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",RequiredFor.NOT,ValueType.GEN);
-	public static final String installationRoot = record("vcell.installDir",RequiredFor.CLIENT,ValueType.DIR);
-	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
-	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);
-	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", RequiredFor.NOT, ValueType.BOOL);
+	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",ValueType.GEN);
+	public static final String installationRoot = record("vcell.installDir",ValueType.DIR);
+	public static final String vcellDownloadDir = record("vcell.downloadDir",ValueType.URL);
+	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",ValueType.GEN);
+	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", ValueType.BOOL);
 	
 	private static File systemTemporaryDirectory = null;
-
-	/**
-	 * under which context(s) are we running? 
-	 */
-	public enum Context {
-		/**
-		 * not properties required 
-		 */
-		TEST(0),
-		/**
-		 * running as server 
-		 */
-		SERVER(1), //binary 01
-		/**
-		 * required as Java client
-		 */
-		CLIENT(2), //binary 10
-		/**
-		 * running as both  
-		 */
-		BOTH(3), //binary 11
-		;
-		private final int bitMap;
-
-		private Context(int bitMap) {
-			this.bitMap = bitMap;
-		}
-
-	}
-	/**
-	 * under which context(s) is property required
-	 */
-	private enum RequiredFor {
-		/**
-		 * not required
-		 */
-		NOT(0),
-		/**
-		 * required for server code
-		 */
-		SERVER(1),
-		/**
-		 * required for Java client
-		 */
-		CLIENT(2),
-		/**
-		 * required for both server and client
-		 */
-		BOTH(3),
-		;
-		private final int bitMap;
-
-		private RequiredFor(int bitMap) {
-			this.bitMap = bitMap;
-		}
-
-		boolean requiredInContext(Context ctx)  {
-			if (ctx != null) {
-				return (this.bitMap & ctx.bitMap) != 0;
-			}
-			return false;
-
-		}
-	}
-
 
 	private enum ValueType {
 		/**
@@ -249,10 +174,6 @@ public class PropertyLoader {
 	 */
 	private static class MetaProp{
 		/**
-		 * in which contexts is this required? 
-		 */
-		final RequiredFor reqFor;
-		/**
 		 * specific value type, if any
 		 */
 		final ValueType valueType;
@@ -265,13 +186,11 @@ public class PropertyLoader {
 		 */
 		boolean set = false;
 
-		MetaProp(RequiredFor rf, ValueType valueType) {
-			this.reqFor = rf; 
+		MetaProp(ValueType valueType) {
 			this.valueType = valueType;
 		} 
 
 	}
-	private static Context validationContext = Context.TEST;
 	/**
 	 * has user been nagged about required property not marked required?
 	 */
@@ -281,15 +200,14 @@ public class PropertyLoader {
 	/**
 	 * * record static String in {@link #propMap}
 	 * @param in
-	 * @param ctx 
 	 * @param vt 
 	 * @return in
 	 */
-	private static String record(String in, RequiredFor ctx, ValueType vt) {
-		if (ctx == null || vt == null) {
+	private static String record(String in, ValueType vt) {
+		if (vt == null) {
 			throw new Error("PropertyLoader not set correctly");
 		}
-		propMap.put(in, new MetaProp(ctx,vt));
+		propMap.put(in, new MetaProp(vt));
 		return in;
 	}
 
@@ -384,10 +302,6 @@ public class PropertyLoader {
 				System.err.println("Unknown required property " + propertyName);
 				nagged.put(propertyName, null);
 			}
-			else if (validationContext != Context.TEST && !propMap.get(propertyName).reqFor.requiredInContext(validationContext) ) {
-				System.err.println("Required property " + propertyName + " not marked required for " + validationContext);
-				nagged.put(propertyName, null);
-			}
 		}
 		try {
 			String propertyValue = System.getProperty(propertyName);
@@ -405,7 +319,7 @@ public class PropertyLoader {
 	 * @throws java.io.IOException
 	 */
 	public final static void loadProperties() throws java.io.IOException {
-		loadProperties(Context.TEST, false);
+		loadProperties(false);
 	}
 
 	/**
@@ -414,10 +328,7 @@ public class PropertyLoader {
 	 * @param throwException throw exception if validation error
 	 * @throws java.io.IOException
 	 */
-	public final static void loadProperties(Context ctx, boolean throwException) throws java.io.IOException {
-		if (ctx != null) {
-			validationContext = ctx;
-		}
+	public final static void loadProperties(boolean throwException) throws java.io.IOException {
 
 		File propertyFile = null;
 		//
@@ -464,7 +375,7 @@ public class PropertyLoader {
 				}
 			}
 		}
-		validateSystemProperties(ctx, throwException);
+		validateSystemProperties(throwException);
 
 		// display new properties
 		//System.getProperties().list(System.out);
@@ -534,7 +445,7 @@ public class PropertyLoader {
 	 * @param throwException
 	 * @return true if good ; false if not (and throwException is false)
 	 */
-	private static boolean validateSystemProperties(Context ctx, boolean throwException) {
+	private static boolean validateSystemProperties(boolean throwException) {
 		Properties p = System.getProperties();
 
 		for (Object propName : p.keySet()) {
@@ -549,9 +460,6 @@ public class PropertyLoader {
 		for (Map.Entry<String,MetaProp> entry : propMap.entrySet( )) {
 			MetaProp mp = entry.getValue();
 			if (!mp.set) {  
-				if (mp.reqFor.requiredInContext(ctx) ) {
-					missingReq.add(entry.getKey());
-				}
 			}
 			if (mp.set) {
 				verifyEntry(entry,validationReport, mp.fileSet);
@@ -631,6 +539,10 @@ public class PropertyLoader {
 			}
 		case URL:
 			//not going to make trip web to verify at this point
+		case BOOL:
+			break;
+		default:
+			break;
 		}
 	}
 }
