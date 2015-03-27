@@ -97,7 +97,7 @@ public class SolverPreprocessor  {
 			File simulationFile = new File(args[0]);
 			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
 			File userdir = new File(args[1]);
-			recoverLastSimulationData(simTask,userdir);
+			recoverLastSimulationData(simTask,userdir,log.getLogger());
 			final String hostName = null;
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
@@ -191,11 +191,14 @@ public class SolverPreprocessor  {
 		System.exit(systemReturnCode);
 	}
 
-	private static void recoverLastSimulationData(SimulationTask simTask,File userDir){
+	private static void recoverLastSimulationData(SimulationTask simTask,File userDir, Logger lg){
 		String amplistor_VCell_Users_RootPath = PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null);
 		if(amplistor_VCell_Users_RootPath != null){
 			try{
-				long startTime = System.currentTimeMillis();
+				long startTime = 0;
+				if (lg.isInfoEnabled( )) {
+					startTime = System.currentTimeMillis();
+				}
 				if(SimulationData.AmplistorHelper.hasLogFileAnywhere(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser(),simTask.getSimulationJob().getJobIndex(), userDir)){
 					//Get back all data since we are "restarting" a simulation
 					ArrayList<String> amplistorList = SimulationData.AmplistorHelper.getAllMatchingSimData(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser());
@@ -224,10 +227,13 @@ public class SolverPreprocessor  {
 						SimulationData.AmplistorHelper.downloadFiles(amplistor_VCell_Users_RootPath, amplistorList,simTask.getUser(), userDir);
 					}
 				}
-				System.out.println("amplistor preprocess data restore time="+((System.currentTimeMillis()-startTime)/1000)+" seconds");
+				if (lg.isInfoEnabled( )) {
+					lg.info("amplistor preprocess data restore time="+((System.currentTimeMillis()-startTime)/1000)+" seconds");
+				}
 			}catch(Exception e){
 				//ignore, try to run sim
-				e.printStackTrace();
+				System.out.println("recoverLastSimulationData exception " + e.getMessage());
+				lg.info("recoverLastSimulationData",e);
 			}
 		}
 
