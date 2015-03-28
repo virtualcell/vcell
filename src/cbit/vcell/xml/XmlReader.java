@@ -7090,16 +7090,24 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 				}
 			}
 		}
-		Element viewLevelChild = element.getChild(XMLTags.ViewLevelTag,vcNamespace);
 		Integer viewLevel = null;
-		if (viewLevelChild != null)
+		try 
 		{
-			viewLevel = parseIntWithDefault(element,XMLTags.ViewLevelTag, 0);
-		}
-		try {
 			ChomboSolverSpec css = new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineRatioList);
 			Element meshRefineElement = element.getChild(XMLTags.MeshRefinementTag, vcNamespace);		
-			if (meshRefineElement != null) {
+			if (meshRefineElement != null) 
+			{
+				if (meshRefineElement.getChildren().size() != 0)
+				{
+					// in old model, if there is no refinement, set view level to finest
+					// only set viewLevel when meshRefinement has children
+					Element viewLevelChild = element.getChild(XMLTags.ViewLevelTag,vcNamespace);
+					if (viewLevelChild != null)
+					{
+						viewLevel = parseIntWithDefault(element,XMLTags.ViewLevelTag, 0);
+						css.setViewLevel(viewLevel);
+					}
+				}
 				List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementRoiTag, vcNamespace);
 				for (Element levelElement : levelElementList) {
 					String levelStr = levelElement.getAttributeValue(XMLTags.RefineRoiLevelAttrTag);
