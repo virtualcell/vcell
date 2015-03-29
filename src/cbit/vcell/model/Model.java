@@ -2248,21 +2248,6 @@ public Feature createFeature() {
 }
 
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-private String getFreeMembraneName() {
-	int count=0;
-	while (true) {
-		String memName = Structure.TYPE_NAME_MEMBRANE + count;
-		if (getStructure(memName) == null) {
-			return memName;
-		}
-		count++;
-	}
-}
-
-/**
  * @return java.lang.String
  * @throws PropertyVetoException 
  */
@@ -2893,6 +2878,9 @@ public StructureTopology getStructureTopology(){
 }
 
 //wei's code
+/**
+ * @return non-null list of membranes, may be empty
+ */
 public ArrayList<Membrane> getMembranes(){
 	ArrayList<Membrane> membranes = new ArrayList<Membrane>();
 	for (int i = 0; i < fieldStructures.length; i++) {
@@ -3674,7 +3662,6 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 	}
 
 	if (e.getSource() == this && e.getPropertyName().equals(PROPERTY_NAME_STRUCTURES)){
-		Structure topStructure = null;
 		Structure newStructures[] = (Structure[])e.getNewValue();
 		if (newStructures==null){
 			throw new ModelPropertyVetoException("structures cannot be null",e);
@@ -4145,7 +4132,7 @@ public String isValidForStochApp()
 								reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 						{
 							try{
-								MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
+								MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
@@ -4159,7 +4146,7 @@ public String isValidForStochApp()
 						{
 							Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 							try{
-								MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
+								MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
