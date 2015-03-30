@@ -15,8 +15,8 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
 
-import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,67 +32,71 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
+import cbit.vcell.mapping.gui.MembraneConditionsPanel;
 import cbit.vcell.mapping.gui.ReactionSpecsPanel;
 
 @SuppressWarnings("serial")
 public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
+	public static interface Specifier {
+		ActiveViewID getActiveView( );
+		void setSelectionManager(SelectionManager s);
+		void setIssueManager(IssueManager i);
+		void setSearchText(String s);
+		void setSimulationContext(SimulationContext newValue);
+	}
+	
+	/*
 	private InitialConditionsPanel initialConditionsPanel;
 	private ReactionSpecsPanel reactionSpecsPanel;	
+	*/
 	private NetworkConstraintsPanel networkConstraintsPanel;	
+	//private MembraneConditionsPanel membraneConditionsPanel; 
 	private JTextField textField_1;
-	/**
-	 * keep handle to network tab to allow finding / removing / enabling
-	 */
-	private SettingsPanelTab networkTab; 
-		
-	private enum SettingsPanelTabID {
-		species_settings("Species"),
-		reaction_settings("Reactions"),
-		network_settings("Network");
-		
-		String title = null;
-		SettingsPanelTabID(String name) {
-			this.title = name;
-		}
-	}
-	
-	
-	private class SettingsPanelTab {
-		SettingsPanelTabID id;
-		JComponent component = null;
-		Icon icon = null;
-		SettingsPanelTab(SettingsPanelTabID id, JComponent component, Icon icon) {
-			this.id = id;
+	private static class SpecifierComponent {
+		final Specifier setter;
+		final JComponent component;
+		public SpecifierComponent(Specifier setter, JComponent component) {
+			super();
+			this.setter = setter;
 			this.component = component;
-			this.icon = icon;
-		}		
+		}
+		
+		
 	}
+	private ArrayList<SpecifierComponent> subPanels;
 	
 	public ApplicationSpecificationsPanel() {
 		super();
+		subPanels = new ArrayList<>();
 		initialize();
+	}
+	
+	/**
+	 * setup tab component
+	 * @param id for looking up later 
+	 * @param cmpt must implement {@link ApplicationSpecificationsPanel.Specifier}
+	 */
+	void setupTab(String title, ActiveViewID id, JComponent cmpt) {
+		cmpt.setBorder(GuiConstants.TAB_PANEL_BORDER);
+		tabbedPane.add(title,cmpt);
+		subPanels.add( new SpecifierComponent( (Specifier) cmpt, cmpt)  );
 	}
 
 	@Override
 	protected void initialize(){
 		super.initialize();	
-		initialConditionsPanel = new InitialConditionsPanel();
-		reactionSpecsPanel = new ReactionSpecsPanel();
+		InitialConditionsPanel initialConditionsPanel = new InitialConditionsPanel();
+		ReactionSpecsPanel reactionSpecsPanel = new ReactionSpecsPanel();
 		networkConstraintsPanel = new NetworkConstraintsPanel();
+		MembraneConditionsPanel membraneConditionsPanel = new MembraneConditionsPanel();
 		
-		SettingsPanelTab settingsPanelTabs[] = new SettingsPanelTab[SettingsPanelTabID.values().length]; 
-		settingsPanelTabs[SettingsPanelTabID.species_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.species_settings, initialConditionsPanel, null);
-		settingsPanelTabs[SettingsPanelTabID.reaction_settings.ordinal()] = new SettingsPanelTab(SettingsPanelTabID.reaction_settings, reactionSpecsPanel, null);
-		networkTab = new SettingsPanelTab(SettingsPanelTabID.network_settings, networkConstraintsPanel, null);
-		settingsPanelTabs[SettingsPanelTabID.network_settings.ordinal()] = networkTab; 
+		setupTab("Species",ActiveViewID.species_settings,initialConditionsPanel);
+		setupTab("Reaction",ActiveViewID.reaction_setting,reactionSpecsPanel);
+		setupTab("Membrane",ActiveViewID.membrane_setting,membraneConditionsPanel);
+		setupTab("Network",ActiveViewID.network_setting,networkConstraintsPanel);
 		
-		for (SettingsPanelTab tab : settingsPanelTabs) {
-			tab.component.setBorder(GuiConstants.TAB_PANEL_BORDER);
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-		}
 		
 		JPanel searchPanel = new JPanel();
 		GridBagLayout gbl_searchPanel = new GridBagLayout();
@@ -146,33 +150,27 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	}
 	
 	private void searchTable() {		
-		if(tabbedPane.getSelectedIndex() == SettingsPanelTabID.species_settings.ordinal()){
-			initialConditionsPanel.setSearchText(textField_1.getText());
-		}else if(tabbedPane.getSelectedIndex() == SettingsPanelTabID.reaction_settings.ordinal()){
-			reactionSpecsPanel.setSearchText(textField_1.getText());
-		}else if(tabbedPane.getSelectedIndex() == SettingsPanelTabID.network_settings.ordinal()){
-//			networkConstraintsPanel.setSearchText(textField_1.getText());
+		final int idx = tabbedPane.getSelectedIndex();
+		for (SpecifierComponent spc : subPanels) {
+			if (idx == tabbedPane.indexOfComponent(spc.component)) {
+				spc.setter.setSearchText(textField_1.getText());
+				return;
+			}
 		}
 	}
 
 	@Override
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
-		initialConditionsPanel.setSimulationContext(simulationContext);
-		reactionSpecsPanel.setSimulationContext(simulationContext);		
-		networkConstraintsPanel.setSimulationContext(simulationContext);
-		int indexOfNetworkTab = tabbedPane.indexOfComponent(networkTab.component);
+		
+		for (SpecifierComponent spc : subPanels) {
+			spc.setter.setSimulationContext(newValue);
+		}
 		if(simulationContext.isRuleBased()) {
-			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			if (indexOfNetworkTab >= 0) {
-				tabbedPane.removeTabAt(indexOfNetworkTab);
-			}
+			networkConstraintsPanel.setVisible(false);
 		} else {	// this panel only for flattened rule based applications
-			networkConstraintsPanel.setNetworkConstraints(simulationContext.getModel().getRbmModelContainer().getNetworkConstraints());
-			if (indexOfNetworkTab == -1) {
-				tabbedPane.addTab(networkTab.id.title, networkTab.icon, networkTab.component);
-				indexOfNetworkTab = tabbedPane.indexOfComponent(networkTab.component);
-			}
+			final int indexOfNetworkTab = tabbedPane.indexOfComponent(networkConstraintsPanel);
+			networkConstraintsPanel.setVisible(true);
 			 if(simulationContext.getModel().getRbmModelContainer().isEmpty()) {
 				 // TODO: here is should be initialized to false if rbm model container is empty...
 				 // but we should monitor the container and enable the panel as soon as a molecular type is created
@@ -186,30 +184,30 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	@Override
 	public void setSelectionManager(SelectionManager selectionManager) {
 		super.setSelectionManager(selectionManager);
-		networkConstraintsPanel.setSelectionManager(selectionManager);
-		reactionSpecsPanel.setSelectionManager(selectionManager);
-		initialConditionsPanel.setSelectionManager(selectionManager);
+		for (SpecifierComponent spc : subPanels) {
+			spc.setter.setSelectionManager(selectionManager);
+		}
 	}
 	
 	@Override
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
-		networkConstraintsPanel.setIssueManager(issueManager);
-		reactionSpecsPanel.setIssueManager(issueManager);
-		initialConditionsPanel.setIssueManager(issueManager);
+		for (SpecifierComponent spc : subPanels) {
+			spc.setter.setIssueManager(issueManager);
+		}
 	}
 	
 	@Override
 	protected void onActiveViewChange(ActiveView activeView) {
 		super.onActiveViewChange(activeView);
 		if (DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
-			if (activeView.getActiveViewID() != null) {
-				if (activeView.getActiveViewID().equals(ActiveViewID.species_settings)) {
-					tabbedPane.setSelectedIndex(SettingsPanelTabID.species_settings.ordinal());
-				} else if (activeView.getActiveViewID().equals(ActiveViewID.reaction_setting)) {
-					tabbedPane.setSelectedIndex(SettingsPanelTabID.reaction_settings.ordinal());
-				} else if (activeView.getActiveViewID().equals(ActiveViewID.network_setting)) {
-					tabbedPane.setSelectedIndex(SettingsPanelTabID.network_settings.ordinal());
+			ActiveViewID id = activeView.getActiveViewID();
+			if (id != null) {
+				for (SpecifierComponent spc : subPanels) {
+					if (spc.setter.getActiveView() == id) {
+						tabbedPane.setSelectedComponent(spc.component);
+						return;
+					}
 				}
 			}
 		}
@@ -219,12 +217,11 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	public ActiveView getActiveView() {
 		Component selectedComponent = tabbedPane.getSelectedComponent();
 		ActiveViewID activeViewID = null;
-		if (selectedComponent == initialConditionsPanel) {
-			activeViewID = ActiveViewID.species_settings;
-		} else if (selectedComponent == reactionSpecsPanel) {
-			activeViewID = ActiveViewID.reaction_setting;
-		} else if (selectedComponent == networkConstraintsPanel) {
-			activeViewID = ActiveViewID.network_setting;
+		for (SpecifierComponent spc : subPanels) {
+			if (selectedComponent == spc.component) {
+				activeViewID = spc.setter.getActiveView();
+				break;
+			}
 		}
 		return new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, activeViewID);
 	}

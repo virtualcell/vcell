@@ -17,7 +17,7 @@ public interface Matchable {
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
- * @param obj java.lang.Object
+ * @param obj java.lang.Object not null
  */
 boolean compareEqual(Matchable obj);
 }

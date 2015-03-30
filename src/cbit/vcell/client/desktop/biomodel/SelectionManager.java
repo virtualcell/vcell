@@ -16,7 +16,6 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 
 public class SelectionManager {
 	public static enum ActiveViewID {
@@ -49,6 +48,7 @@ public class SelectionManager {
 		species_settings,
 		reaction_setting,
 		network_setting,
+		membrane_setting,
 		
 		events,
 		electrical,

@@ -36,8 +36,10 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
@@ -60,7 +62,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class InitialConditionsPanel extends DocumentEditorSubPanel {
+public class InitialConditionsPanel extends DocumentEditorSubPanel implements ApplicationSpecificationsPanel.Specifier {
 	private SimulationContext fieldSimulationContext = null;
 	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
@@ -79,6 +81,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 
 		InternalScrollTableActionManager(JTable table) {
 			super(table);
+			ApplicationSpecificationsPanel asp;
 		}
 
 		@Override
@@ -137,6 +140,11 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel {
 public InitialConditionsPanel() {
 	super();
 	initialize();
+}
+
+@Override
+public ActiveViewID getActiveView() {
+	return ActiveViewID.species_settings; 
 }
 
 public void setSearchText(String searchText){

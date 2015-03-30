@@ -10,7 +10,11 @@
 
 package org.vcell.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -559,4 +563,33 @@ public static <KeyType extends Matchable, ValueType extends Matchable> boolean i
 	}
 	return true;
 }
+
+/**
+ * compares list for same numbers of items and elements that {@link Matchable#compareEqual(Matchable)}, in any order 
+ * @param lhs
+ * @param rhs
+ * @return true if criteria met
+ */
+public static <T extends Matchable> boolean areEquivalent(Collection<T> lhs, Collection<T> rhs ) {
+	if (lhs.size() == rhs.size( )) {
+		List<Matchable> punchList = new LinkedList<Matchable>(rhs);
+		for (Matchable m : lhs) {
+			boolean found = false;
+			Iterator<T> iter = rhs.iterator();
+			while (iter.hasNext() && !found) {
+				if (m.compareEqual(iter.next( ))) {
+					iter.remove();
+					found = true;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+		VCAssert.assertTrue(punchList.isEmpty(), "logic error");
+	}
+	
+	return false;	
+}
+
 }

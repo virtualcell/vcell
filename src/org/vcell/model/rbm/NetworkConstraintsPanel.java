@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -30,15 +31,16 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.JTextPane;
 
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.CreateBNGOutputSpec;
@@ -53,14 +55,14 @@ import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
+import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.solvers.ApplicationMessage;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
-public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback {
-
+@SuppressWarnings("serial")
+public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback, ApplicationSpecificationsPanel.Specifier {
 	BNGOutputSpec outputSpec = null;
 	
 	private JTextField maxIterationTextField;
@@ -129,6 +131,17 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		initialize();
 	}
 	
+	@Override
+	public ActiveViewID getActiveView() {
+		return ActiveViewID.network_setting;
+	}
+	/**
+	 * no-op 
+	 */
+	@Override
+	public void setSearchText(String s) {
+		
+	}
 	public void changeMaxMolPerSpecies() {
 		String text = maxMolTextField.getText();
 		if (text == null || text.trim().length() == 0) {
@@ -409,6 +422,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		netGenConsoleText.setEditable(false);
 	}
 	
+	/*
 	public void setNetworkConstraints(NetworkConstraints newValue) {
 		if (networkConstraints == newValue) {
 			return;
@@ -416,6 +430,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		networkConstraints = newValue;
 		refreshInterface();
 	}
+	*/
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
 		if(simulationContext == null) {
@@ -432,6 +447,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			m.removePropertyChangeListener(eventHandler);
 			m.addPropertyChangeListener(eventHandler);
 		}
+		networkConstraints = simulationContext.getModel().getRbmModelContainer().getNetworkConstraints();
 		refreshInterface();
 	}
 	public SimulationContext getSimulationContext() {
