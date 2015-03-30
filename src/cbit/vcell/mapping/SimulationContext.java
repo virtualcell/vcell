@@ -262,6 +262,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private Version version = null;
 	private GeometryContext geoContext = null;
 	private ReactionContext reactionContext = null;
+	private MembraneContext membraneContext = null; 
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 	private MathDescription mathDesc = null;
 	private Double characteristicSize = null;
@@ -314,6 +315,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this, newClonedGeometry);
 	geoContext.addPropertyChangeListener(this);
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
+	this.membraneContext = new MembraneContext(this);
 	this.version = null;
 	this.characteristicSize = simulationContext.getCharacteristicSize();
 	this.fieldName = "copied_from_"+simulationContext.getName();
@@ -431,6 +433,7 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 	refreshCharacteristicSize();
 	
 	this.reactionContext = new ReactionContext(model,this);
+	this.membraneContext = new MembraneContext(this);
 	this.mathDesc = argMathDesc;
 	this.version = argVersion;
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
@@ -458,6 +461,7 @@ public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean
 	refreshCharacteristicSize();
 	
 	this.reactionContext = new ReactionContext(model,this);
+	this.membraneContext = new MembraneContext(this);
 	this.version = null;
 	geometry.getGeometrySpec().addPropertyChangeListener(this);
 	this.fieldName = "Application_with_"+geometry.getName();
@@ -1177,6 +1181,13 @@ public ReactionContext getReactionContext() {
 	return reactionContext;
 }
 
+/**
+ * 
+ * @return non-null membrane Context
+ */
+public MembraneContext getMembraneContext() {
+	return membraneContext;
+}
 
 /**
  * Insert the method's description here.
