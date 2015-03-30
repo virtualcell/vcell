@@ -20,8 +20,10 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
 import org.vcell.util.gui.sorttable.SortTableModel;
 
+import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
 
@@ -31,7 +33,7 @@ import cbit.vcell.model.ReactionStep;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsPanel extends DocumentEditorSubPanel {
+public class ReactionSpecsPanel extends DocumentEditorSubPanel implements ApplicationSpecificationsPanel.Specifier {
 	private JSortTable ivjScrollPaneTable = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
@@ -56,6 +58,13 @@ public ReactionSpecsPanel() {
 	super();
 	initialize();
 }
+
+
+@Override
+public ActiveViewID getActiveView() {
+	return ActiveViewID.reaction_setting; 
+}
+
 
 public void setSearchText(String searchText){
 	ivjReactionSpecsTableModel.setSearchText(searchText);
