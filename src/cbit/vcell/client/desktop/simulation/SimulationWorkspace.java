@@ -56,6 +56,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import edu.uchc.connjur.spectrumtranslator.CodeUtil;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	public static final String PROPERTY_NAME_SIMULATION_STATUS = "status";
@@ -205,7 +206,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		}
 	} else if (expectedSizeBytes>maxSizeBytes){
 		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
-				        "The simulation's result dataset ("+(expectedSizeBytes/1000000L)+"MB) is too large, which has exceeded our limit.\n\n"+
+				        "The simulation's result dataset ("+ CodeUtil.humanBytePrint(expectedSizeBytes) + ") is too large, which has exceeded our limit.\n\n"+
 						"maximum size limits are:\n" + 
 						"     "+Simulation.MAX_LIMIT_0DE_MEGABYTES + " MB for compartmental ODE simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_PDE_MEGABYTES + " MB for spatial simulations\n"+
