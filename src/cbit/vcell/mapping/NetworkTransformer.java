@@ -66,11 +66,9 @@ public class NetworkTransformer implements SimContextTransformer {
 		transformedSimContext.refreshDependencies1(false);
 
 		ArrayList<ModelEntityMapping> entityMappings = new ArrayList<ModelEntityMapping>();
-		
 		transform(originalSimContext,transformedSimContext,entityMappings,mathMappingCallback,networkGenerationRequirements);
 		
 		ModelEntityMapping[] modelEntityMappings = entityMappings.toArray(new ModelEntityMapping[0]);
-		
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
 	
@@ -105,9 +103,6 @@ public class NetworkTransformer implements SimContextTransformer {
 	};
 	
 	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
-		if (mathMappingCallback.isInterrupted()){
-			throw new UserCancelException("canceled by user");
-		}
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
 		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap, networkGenerationRequirements);
@@ -162,13 +157,17 @@ public class NetworkTransformer implements SimContextTransformer {
 		return outputSpec;
 	}
 
+	static final float progressFractionQuota = 2.0f/5.0f;
+	static final float progressFractionQuotaSpecies = progressFractionQuota / 2.0f / 10.0f;
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
-		mathMappingCallback.setMessage("starting network generation");
-		
+		mathMappingCallback.setMessage("generating network: flattening...");
 		long startTime = System.currentTimeMillis();
 		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
 		BNGOutputSpec outputSpec = generateNetwork(simContext, mathMappingCallback, networkGenerationRequirements);
+		if (mathMappingCallback.isInterrupted()){
+			throw new UserCancelException("Canceled by user.");
+		}
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
@@ -198,6 +197,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		System.out.println("     " + elapsedTime + " milliseconds");
 		
 		// ---- Species ------------------------------------------------------------------------------------------------------------
+		mathMappingCallback.setMessage("generating network: adding species...");
+		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f);
 		startTime = System.currentTimeMillis();
 		System.out.println("\nSpecies :");
 		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
@@ -207,6 +208,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
 		int countGenerated = 0;
+		final int decimalTickCount = outputSpec.getBNGSpecies().length/10;
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
 //			System.out.println(i+1 + ":\t\t"+ s.toString());
@@ -287,8 +289,16 @@ public class NetworkTransformer implements SimContextTransformer {
 				entityMappings.add(em);
 				countGenerated++;
 			}
+			if (mathMappingCallback.isInterrupted()){
+				throw new UserCancelException("Canceled by user.");
+			}
 			if(i%50 == 0) {
 				System.out.println(i+"");
+			}
+			if(i%decimalTickCount == 0) {
+				int multiplier = i/decimalTickCount;
+				float progress = progressFractionQuota/4.0f + progressFractionQuotaSpecies*multiplier;
+				mathMappingCallback.setProgressFraction(progress);
 			}
 		}
 		System.out.println("Total generated species: " + countGenerated);
@@ -355,6 +365,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
 		
+		mathMappingCallback.setMessage("generating network: adding reactions...");
+		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f*3.0f);
 		startTime = System.currentTimeMillis();
 		System.out.println("\nReactions :");
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
@@ -409,10 +421,15 @@ public class NetworkTransformer implements SimContextTransformer {
 		ReactionStep[] reactionSteps = new ReactionStep[reactionStepMap.size()];
 		reactionStepMap.values().toArray(reactionSteps); 
 		model.setReactionSteps(reactionSteps);
+		if (mathMappingCallback.isInterrupted()){
+			throw new UserCancelException("Canceled by user.");
+		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
 
+		mathMappingCallback.setMessage("generating network: adding observables...");
+		mathMappingCallback.setProgressFraction(progressFractionQuota/8.0f*7.0f);
 		startTime = System.currentTimeMillis();
 		System.out.println("\nObservables :");
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
@@ -440,6 +457,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
 			entityMappings.add(em);
 		}
+		if (mathMappingCallback.isInterrupted()){
+			throw new UserCancelException("Canceled by user.");
+		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
@@ -458,8 +478,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(ex.getMessage());
 		}
 		System.out.println("Done transforming");
-		mathMappingCallback.setProgressFraction(1.0f/3.0f);
-		mathMappingCallback.setMessage("done with network generation");
+		mathMappingCallback.setMessage("generating math...");
+		mathMappingCallback.setProgressFraction(progressFractionQuota);
 	}
 
 }
