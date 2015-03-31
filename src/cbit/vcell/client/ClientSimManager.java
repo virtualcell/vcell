@@ -72,6 +72,7 @@ import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverFactory;
@@ -599,11 +600,19 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
 				}
 				public void solverStarting(SolverEvent event) {
-					getClientTaskStatusSupport().setMessage(event.getSimulationMessage().getDisplayMessage());
+					String displayMessage = event.getSimulationMessage().getDisplayMessage();
+					System.out.println(displayMessage);
+					getClientTaskStatusSupport().setMessage(displayMessage);
+					if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT.getDisplayMessage())) {
+						getClientTaskStatusSupport().setProgress(75);
+					} else if(displayMessage.equals(SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE.getDisplayMessage())) {
+						getClientTaskStatusSupport().setProgress(90);
+					}
 				}
 				public void solverProgress(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage("Running...");
-					getClientTaskStatusSupport().setProgress((int)(event.getProgress() * 100));
+					int progress = (int)(event.getProgress() * 100);
+					getClientTaskStatusSupport().setProgress(progress);
 				}
 				public void solverPrinted(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage("Running...");
@@ -616,7 +625,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 				}
 			});
 			solver.startSolver();
-			
+
 			while (true){
 				try { 
 					Thread.sleep(500); 
