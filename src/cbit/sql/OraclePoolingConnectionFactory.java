@@ -32,6 +32,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
+import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * This type was created in VisualAge.y
@@ -90,7 +91,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 //	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
 //	connectionPoolManaager.startConnectionPool(connectionCacheName);
 	
-	Timer timer = new Timer();
+	Timer timer = new Timer(ExecutionTrace.justClassName(OraclePoolingConnectionFactory.class));
 	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
 }
 
