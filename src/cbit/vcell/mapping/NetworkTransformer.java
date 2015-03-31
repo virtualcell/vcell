@@ -13,6 +13,7 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
@@ -20,6 +21,8 @@ import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -50,7 +53,7 @@ public class NetworkTransformer implements SimContextTransformer {
 	private Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new HashMap<String, Pair<SpeciesContext, Expression>>();
 		
 	@Override
-	final public SimContextTransformation transform(SimulationContext originalSimContext) {
+	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		SimulationContext transformedSimContext;
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
@@ -64,7 +67,7 @@ public class NetworkTransformer implements SimContextTransformer {
 
 		ArrayList<ModelEntityMapping> entityMappings = new ArrayList<ModelEntityMapping>();
 		
-		transform(originalSimContext,transformedSimContext,entityMappings);
+		transform(originalSimContext,transformedSimContext,entityMappings,mathMappingCallback,networkGenerationRequirements);
 		
 		ModelEntityMapping[] modelEntityMappings = entityMappings.toArray(new ModelEntityMapping[0]);
 		
@@ -101,10 +104,13 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 	};
 	
-	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions) {
+	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
+		if (mathMappingCallback.isInterrupted()){
+			throw new UserCancelException("canceled by user");
+		}
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap);
+		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap, networkGenerationRequirements);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		System.out.println(bngl);
@@ -118,9 +124,9 @@ public class NetworkTransformer implements SimContextTransformer {
 		return bngl;
 	}
 	
-	private BNGOutputSpec generateNetwork(SimulationContext simContext) {
+	private BNGOutputSpec generateNetwork(SimulationContext simContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		BNGOutputSpec outputSpec;
-		String input = convertToBngl(simContext, true);
+		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
 		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 		    String key = entry.getKey();
 		    Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -156,11 +162,13 @@ public class NetworkTransformer implements SimContextTransformer {
 		return outputSpec;
 	}
 
-	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
+	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
+		mathMappingCallback.setMessage("starting network generation");
+		
 		long startTime = System.currentTimeMillis();
 		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
-		BNGOutputSpec outputSpec = generateNetwork(simContext);
+		BNGOutputSpec outputSpec = generateNetwork(simContext, mathMappingCallback, networkGenerationRequirements);
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
@@ -450,6 +458,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(ex.getMessage());
 		}
 		System.out.println("Done transforming");
+		mathMappingCallback.setProgressFraction(1.0f/3.0f);
+		mathMappingCallback.setMessage("done with network generation");
 	}
 
 }

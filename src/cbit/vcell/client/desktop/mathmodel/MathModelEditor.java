@@ -301,22 +301,8 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 				switch (folderClass) {
 				case MATH_SIMULATIONS_NODE:
-					AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-						
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							mathModel.refreshMathDescription();
-						}
-					};
-					AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-						
-						@Override
-						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							Object newsim = mathModel.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
-							selectionManager.setSelectedObjects(new Object[]{newsim});
-						}
-					};
-					ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});					
+					Object newsim = mathModel.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+					selectionManager.setSelectedObjects(new Object[]{newsim});
 					break;
 				case MATH_OUTPUT_FUNCTIONS_NODE:
 					break;

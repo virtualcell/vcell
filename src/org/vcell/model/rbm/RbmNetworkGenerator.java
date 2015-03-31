@@ -13,6 +13,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -72,11 +73,11 @@ public class RbmNetworkGenerator {
 		writer.println(END_MODEL);	
 		writer.println();
 		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext);
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, NetworkGenerationRequirements.ComputeFullNetwork);
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
-	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap) {
+	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, NetworkGenerationRequirements networkGenerationRequirements) {
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
 		if(!callerClassName.equals(networkTransformerClassName)) {
@@ -147,7 +148,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_MODEL);	
 		writer.println();
 		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext);
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, networkGenerationRequirements);
 		writer.println();
 	}
 	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
@@ -213,17 +214,19 @@ public class RbmNetworkGenerator {
 		writer.println(END_REACTIONS);	
 		writer.println();
 	}
-	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc) {
+	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
 		writer.print("generate_network({");
-		if(sc.isInitial()) {
+		if(networkGenerationRequirements == NetworkGenerationRequirements.AllowTruncatedNetwork) {
 			// this is called when we create the first simulation in a new application
 			// we don't really care about the network, we just want to do the minimal thing (the fastest)
 			// hence we just do one single iteration
 			writer.print("max_iter=>1");
-		} else {
+		} else if (networkGenerationRequirements == NetworkGenerationRequirements.ComputeFullNetwork) {
 			writer.print("max_iter=>" + constraints.getMaxIteration());
+		} else {
+			throw new RuntimeException("internal error: invocation of BioNetGen called unexpectly");
 		}
 		writer.print(",");
 		writer.print("max_agg=>" + constraints.getMaxMoleculesPerSpecies());

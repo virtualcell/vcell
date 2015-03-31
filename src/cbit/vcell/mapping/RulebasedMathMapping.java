@@ -33,6 +33,8 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -91,8 +93,8 @@ public class RulebasedMathMapping extends MathMapping {
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  */
-protected RulebasedMathMapping(SimulationContext simContext) {
-	super(simContext);
+protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
+	super(simContext, callback, networkGenerationRequirements);
 }
 
 

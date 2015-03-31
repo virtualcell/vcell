@@ -27,6 +27,8 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
@@ -74,14 +76,14 @@ import cbit.vcell.xml.XmlParseException;
 
 public class OptXmlWriter {
 	
-	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask) throws IOException, XmlParseException, ExpressionException{
+	public static Element getCoapsiOptProblemDescriptionXML(ParameterEstimationTask parameterEstimationTask, MathMappingCallback mathMappingCallback) throws IOException, XmlParseException, ExpressionException{
 		OptimizationSpec optimizationSpec = parameterEstimationTask.getModelOptimizationMapping().getOptimizationSpec();			
 
 		Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
 		
 		File modelSbmlFile = File.createTempFile("mathModel", ".xml", ResourceUtil.getVcellHome());
 		SimulationContext simulationContext = parameterEstimationTask.getSimulationContext();
-		simulationContext.refreshMathDescription();
+		simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.ComputeFullNetwork);
         MathModel vcellMathModel = new MathModel(null);
         vcellMathModel.setMathDescription(simulationContext.getMathDescription());
         //get math model string

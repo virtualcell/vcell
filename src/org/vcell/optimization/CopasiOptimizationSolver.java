@@ -10,13 +10,12 @@
 
 package org.vcell.optimization;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.jdom.Element;
-import org.vcell.util.FileUtils;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
@@ -29,7 +28,6 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.NativeLib;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
@@ -40,10 +38,10 @@ public class CopasiOptimizationSolver {
 	}
 	private static native String solve(String optProblemXml, CopasiOptSolverCallbacks optSolverCallbacks);
 	
-	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks) 
+	public static OptimizationResultSet solve(ParameterEstimationTaskSimulatorIDA parestSimulator, ParameterEstimationTask parameterEstimationTask, CopasiOptSolverCallbacks optSolverCallbacks, MathMappingCallback mathMappingCallback) 
 							throws IOException, ExpressionException, OptimizationException {
 		try {		
-			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask);
+			Element optProblemXML = OptXmlWriter.getCoapsiOptProblemDescriptionXML(parameterEstimationTask,mathMappingCallback);
 			String inputXML = XmlUtil.xmlToString(optProblemXML);
 			System.out.println(inputXML);
 			String optResultsXML = solve(inputXML, optSolverCallbacks);

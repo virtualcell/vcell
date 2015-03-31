@@ -13,7 +13,6 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -30,6 +29,8 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -672,8 +673,14 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 /**
  * Comment
  */
-int newSimulation() throws java.beans.PropertyVetoException {
-	Simulation newSim = getSimulationOwner().addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+int newSimulation(MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
+	
+	Simulation newSim = null;
+	if (simulationOwner instanceof SimulationContext){
+		newSim = ((SimulationContext)getSimulationOwner()).addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
+	}else{
+		newSim = ((MathModel)getSimulationOwner()).addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+	}
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
 		if (getSimulationOwner().getSimulations()[i].getName().equals(newSim.getName())) {
 			return i;

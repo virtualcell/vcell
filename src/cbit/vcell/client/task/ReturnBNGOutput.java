@@ -13,6 +13,8 @@ package cbit.vcell.client.task;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
+import org.vcell.util.ClientTaskStatusSupport;
+
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.TaskCallbackMessage;
@@ -48,6 +50,18 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 
 //	BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 }
+@Override
+public ClientTaskStatusSupport getClientTaskStatusSupport() {
+	// TODO Auto-generated method stub
+	return super.getClientTaskStatusSupport();
+}
+
+@Override
+public void setClientTaskStatusSupport(ClientTaskStatusSupport clientTaskStatusSupport) {
+	// TODO Auto-generated method stub
+	super.setClientTaskStatusSupport(clientTaskStatusSupport);
+}
+
 private void broadcastRun() {
 	for(BioNetGenUpdaterCallback callback : bngService.getCallbacks()) {
 		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, message);

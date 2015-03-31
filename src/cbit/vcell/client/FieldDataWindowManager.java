@@ -350,12 +350,6 @@ private static class OutputFunctionViewer extends JPanel{
 			}
 			
 			@Override
-			public void refreshMathDescription() {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
 			public Simulation[] getSimulations() {
 				// TODO Auto-generated method stub
 				return null;
@@ -386,12 +380,6 @@ private static class OutputFunctionViewer extends JPanel{
 				return null;
 			}
 			
-			@Override
-			public Simulation addNewSimulation(String simNamePrefix) throws PropertyVetoException {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
 			@Override
 			public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String name) {
 				// TODO Auto-generated method stub

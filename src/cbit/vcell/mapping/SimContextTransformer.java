@@ -1,7 +1,7 @@
 package cbit.vcell.mapping;
 
-import java.io.IOException;
-
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.parser.SymbolTableEntry;
 
 
@@ -29,6 +29,6 @@ public interface SimContextTransformer {
 		}
 	}
 	
-	public SimContextTransformation transform(SimulationContext originalModel);
+	public SimContextTransformation transform(SimulationContext originalModel, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements);
 
 }

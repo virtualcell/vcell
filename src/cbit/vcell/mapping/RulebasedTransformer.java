@@ -13,6 +13,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
@@ -37,7 +39,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 public class RulebasedTransformer implements SimContextTransformer {
 
 	@Override
-	final public SimContextTransformation transform(SimulationContext originalSimContext) {
+	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements netGenReq_NOT_USED) {
 		SimulationContext transformedSimContext;
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
