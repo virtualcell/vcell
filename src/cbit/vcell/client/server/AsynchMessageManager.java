@@ -16,6 +16,7 @@ import javax.swing.event.EventListenerList;
 
 
 
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
@@ -32,6 +33,7 @@ import cbit.vcell.client.SimStatusListener;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.server.VCellConnection;
+import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -74,6 +76,7 @@ private void startPolling() {
 			}
 		}
 	);
+	pollingThread.setName(ExecutionTrace.justClassName(AsynchMessageManager.class));
 	pollingThread.setDaemon(true);
 	pollingThread.start();	
 }
