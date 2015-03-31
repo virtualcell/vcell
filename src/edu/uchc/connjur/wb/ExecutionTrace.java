@@ -11,11 +11,6 @@ import java.lang.reflect.Field;
 public class ExecutionTrace {
 
     /**
-     * use same stringbuilder to avoid object creation cost
-     */
-    private static StringBuilder sb = new StringBuilder();
-
-    /**
      * uniquely identify by classname, object id, and thread executing in
      * @param o
      * @return String with identifying info
@@ -25,9 +20,8 @@ public class ExecutionTrace {
         int objectId = System.identityHashCode(o);
 
         String name = (o != null) ? justClassName(o) : "null";
-
-        sb.delete(0, sb.length());
-
+        StringBuilder sb = new StringBuilder();
+        
         sb.append(name);
         sb.append(" id ");
         sb.append(Integer.toHexString(objectId));
