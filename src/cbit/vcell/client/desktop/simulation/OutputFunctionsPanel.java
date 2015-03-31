@@ -56,6 +56,10 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
@@ -659,7 +663,11 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				simulationWorkspace.getSimulationOwner().refreshMathDescription();
+				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+				if (simulationWorkspace.getSimulationOwner() instanceof SimulationContext){
+					SimulationContext simulationContext = (SimulationContext)simulationWorkspace.getSimulationOwner();
+					simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.AllowTruncatedNetwork);
+				} // else, for mathModels, nothing to refresh.
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

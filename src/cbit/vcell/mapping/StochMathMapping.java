@@ -17,6 +17,8 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -77,8 +79,8 @@ public class StochMathMapping extends MathMapping {
 	 * @param model cbit.vcell.model.Model
 	 * @param geometry cbit.vcell.geometry.Geometry
 	 */
-	protected StochMathMapping(SimulationContext simContext) {
-		super(simContext);
+	protected StochMathMapping(SimulationContext simContext, MathMappingCallback callback,	NetworkGenerationRequirements networkGenerationRequirements) {
+		super(simContext, callback, networkGenerationRequirements);
 	}
 
 /**

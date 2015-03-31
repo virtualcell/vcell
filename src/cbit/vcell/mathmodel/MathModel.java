@@ -729,10 +729,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		return getMathDescription().getGeometry();
 	}
 
-	public void refreshMathDescription() {
-		// do nothing. math description always exists		
-	}
-	
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.MathModel, this);

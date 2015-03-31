@@ -48,6 +48,9 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
@@ -86,7 +89,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewButton()) {
-				newSimulation();
+				newSimulation(NetworkGenerationRequirements.AllowTruncatedNetwork);
 			} else if (e.getSource() == SimulationListPanel.this.getEditButton()) {
 				editSimulation();
 			} else if (e.getSource() == copyButton) {
@@ -625,19 +628,24 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-private void newSimulation() {
+private void newSimulation(final NetworkGenerationRequirements networkGenerationRequirements) {
 	AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			getSimulationWorkspace().getSimulationOwner().refreshMathDescription();
+			MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext){
+				SimulationContext simulationContext = (SimulationContext)getSimulationWorkspace().getSimulationOwner();
+				simulationContext.refreshMathDescription(mathMappingCallback,networkGenerationRequirements);
+			}
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			int newSimIndex = getSimulationWorkspace().newSimulation();
+			MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+			int newSimIndex = getSimulationWorkspace().newSimulation(mathMappingCallback,networkGenerationRequirements);
 			getScrollPaneTable().getSelectionModel().setSelectionInterval(newSimIndex, newSimIndex);
 			getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(newSimIndex, 0, true));
 		}

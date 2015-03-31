@@ -64,6 +64,9 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Parameter;
@@ -1054,7 +1057,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false);
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullNetwork);
 		for (AsynchClientTask task : updateTasks) {
 			taskList.add(task);
 		}
@@ -1086,7 +1089,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask task2 = new AsynchClientTask("solving", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks);
+				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
 				hashTable.put("Optimiation Result Set", optResultSet);
 			}
 
@@ -1297,7 +1301,19 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				throw new Exception("New Simulation name cannot be 0 characters");
 			}
 			SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			Simulation newSim = simContext.addNewSimulation(newSimName);
+			MathMappingCallback dummyCallback = new MathMappingCallback() {
+				@Override
+				public void setProgressFraction(float fractionDone) {
+				}
+				@Override
+				public void setMessage(String message) {
+				}
+				@Override
+				public boolean isInterrupted() {
+					return false;
+				}
+			};
+			Simulation newSim = simContext.addNewSimulation(newSimName, dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			DialogUtils.showInfoDialog(this, "created simulation \""+newSim.getName()+"\"");
 		}catch (UtilCancelException e){

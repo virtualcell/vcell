@@ -170,7 +170,9 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
@@ -2936,8 +2938,12 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
 						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
 					}
-					ruleBasedSimContext.refreshMathDescription();
-					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+					// it is rule-based so it wont have to flatten, should be fast.
+					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+					NetworkGenerationRequirements networkGenerationRequirements = null; // network generation should not be executed.
+					
+					ruleBasedSimContext.refreshMathDescription(callback,networkGenerationRequirements);
+					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 					doc = bioModel;
 				}else{ // is XML
 					XMLSource xmlSource = externalDocInfo.createXMLSource();
@@ -3974,10 +3980,10 @@ public void accessPermissions(Component requester, VCDocument vcDoc) {
 }
 
 
-public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext) {
-	return updateMath(requester, simulationContext, true);
+public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext, NetworkGenerationRequirements networkGenerationRequirements) {
+	return updateMath(requester, simulationContext, true, networkGenerationRequirements);
 }
-public static AsynchClientTask[] updateMath(final Component requester, final SimulationContext simulationContext, final boolean bShowWarning) {
+public static AsynchClientTask[] updateMath(final Component requester, final SimulationContext simulationContext, final boolean bShowWarning, final NetworkGenerationRequirements networkGenerationRequirements) {
 	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -3988,8 +3994,9 @@ public static AsynchClientTask[] updateMath(final Component requester, final Sim
 			}
 			// Use differnt mathmapping for different applications (stoch or non-stoch)
 			simulationContext.checkValidity();
+			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 			
-			MathMapping mathMapping = simulationContext.createNewMathMapping();
+			MathMapping mathMapping = simulationContext.createNewMathMapping(callback, networkGenerationRequirements);
 			MathDescription mathDesc = mathMapping.getMathDescription();
 			hashTable.put("mathMapping", mathMapping);
 			hashTable.put("mathDesc", mathDesc);
