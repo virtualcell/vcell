@@ -86,6 +86,12 @@ import cbit.vcell.units.VCUnitDefinition;
 @SuppressWarnings("serial")
 public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource {
+	
+	public interface MathMappingCallback {
+		public void setMessage(String message);
+		public void setProgressFraction(float fractionDone);
+		public boolean isInterrupted();
+	}
 
 	public static final String PROPERTY_NAME_DESCRIPTION = "description";
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
@@ -94,8 +100,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	
-	private transient boolean isInitial = false;
-
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
@@ -508,8 +512,8 @@ public BioEvent addBioEvent(BioEvent bioEvent) throws PropertyVetoException {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public Simulation addNewSimulation(String simNamePrefix) throws java.beans.PropertyVetoException {
-	refreshMathDescription();
+public Simulation addNewSimulation(String simNamePrefix, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
+	refreshMathDescription(callback, networkGenerationRequirements);
 	if (bioModel==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
@@ -545,7 +549,7 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 	return newSimulation;
 }
 
-public void refreshMathDescription() {
+public void refreshMathDescription(MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	//The code below is used to check if the sizes are ready for required models.
 	try {
 		checkValidity();
@@ -557,7 +561,7 @@ public void refreshMathDescription() {
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
-			setMathDescription(createNewMathMapping(true).getMathDescription());
+			setMathDescription(createNewMathMapping(callback, networkGenerationRequirements).getMathDescription());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(
@@ -2243,24 +2247,46 @@ public VersionedLibrary getRequiredLibrary( ) {
 	return null;
 }
 
+public enum NetworkGenerationRequirements {
+	AllowTruncatedNetwork,
+	ComputeFullNetwork
+};
+
 public MathMapping createNewMathMapping() {
-	return createNewMathMapping(false);
+	MathMappingCallback callback = new MathMappingCallback() {
+		@Override
+		public void setProgressFraction(float fractionDone) {
+			Thread.dumpStack();
+			System.out.println("---> stdout mathMapping: progress = "+(fractionDone*100.0)+"% done");
+		}
+		
+		@Override
+		public void setMessage(String message) {
+			Thread.dumpStack();
+			System.out.println("---> stdout mathMapping: message = "+message);
+		}
+		
+		@Override
+		public boolean isInterrupted() {
+			return false;
+		}
+	};
+	return createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNetwork);
 }
-public MathMapping createNewMathMapping(boolean isInitial) {
-	this.isInitial = isInitial;
+
+public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
 	mostRecentlyCreatedMathMapping = null;
 	if (isStoch() && !isRuleBased()){
 		if (getGeometry().getDimension()==0){
-			mostRecentlyCreatedMathMapping = new StochMathMapping(this);
+			mostRecentlyCreatedMathMapping = new StochMathMapping(this, callback, networkGenReq);
 		}else{
-			mostRecentlyCreatedMathMapping = new ParticleMathMapping(this);
+			mostRecentlyCreatedMathMapping = new ParticleMathMapping(this, callback, networkGenReq);
 		}
 	}else if (isRuleBased()){
-		mostRecentlyCreatedMathMapping = new RulebasedMathMapping(this);
+		mostRecentlyCreatedMathMapping = new RulebasedMathMapping(this, callback, null);
 	}else {
-		mostRecentlyCreatedMathMapping = new MathMapping(this);
+		mostRecentlyCreatedMathMapping = new MathMapping(this, callback, networkGenReq);
 	}
-	this.isInitial = false;
 	return mostRecentlyCreatedMathMapping;
 }
 
@@ -2381,10 +2407,6 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 		}
 	}
 	return null;
-}
-
-public final boolean isInitial() {
-	return isInitial;
 }
 
 public MathMapping getMostRecentlyCreatedMathMapping(){

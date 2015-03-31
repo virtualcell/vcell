@@ -53,8 +53,11 @@ import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
@@ -180,14 +183,16 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 							
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
-								selectedSimulationContext.refreshMathDescription();
+								MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+								selectedSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
 							}
 						};
 						AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 							
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
-								Object newsim = selectedSimulationContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
+								MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+								Object newsim = selectedSimulationContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
 								selectionManager.setSelectedObjects(new Object[]{newsim});
 							}
 						};

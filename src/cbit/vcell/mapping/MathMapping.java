@@ -45,6 +45,8 @@ import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -171,6 +173,9 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector<Issue> localIssueList = new Vector<Issue>();
 	protected final IssueContext issueContext;
+	
+	protected final NetworkGenerationRequirements networkGenerationRequirements;
+	protected final MathMappingCallback callback;
 
 	
 	protected MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
@@ -442,10 +447,12 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  */
-protected MathMapping(SimulationContext simContext) {
-	SimContextTransformer transformer = simContext.createNewTransformer();
+protected MathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
+	this.callback = callback;
+	this.networkGenerationRequirements = networkGenerationRequirements;
+	NetworkTransformer transformer = (NetworkTransformer)simContext.createNewTransformer();
 	if (transformer != null){
-		this.transformation = transformer.transform(simContext);
+		this.transformation = transformer.transform(simContext, callback, networkGenerationRequirements);
 		this.simContext = transformation.transformedSimContext;
 	}else{
 		this.transformation = null;

@@ -15,6 +15,8 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
 import cbit.vcell.geometry.GeometryOwner;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.VersionedLibrary;
 /**
@@ -25,7 +27,6 @@ import cbit.vcell.resource.VersionedLibrary;
 public interface SimulationOwner extends GeometryOwner {
 	public static String DEFAULT_SIM_NAME_PREFIX = "Simulation";
 
-	Simulation addNewSimulation(String simNamePrefix) throws PropertyVetoException;
 	Simulation copySimulation(Simulation simulation) throws PropertyVetoException;
 	Simulation[] getSimulations();
 	void removeSimulation(Simulation simulation) throws PropertyVetoException;
@@ -34,7 +35,6 @@ public interface SimulationOwner extends GeometryOwner {
 	 * may required licensed libraries; see {@link #getRequiredLibrary()}
 	 */
 	MathDescription getMathDescription();
-	void refreshMathDescription();
 	String getName();
 	public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName);
 	/**

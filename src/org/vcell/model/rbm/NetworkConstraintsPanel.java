@@ -51,6 +51,8 @@ import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
@@ -629,7 +631,12 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		netGenConsoleText.setText("");
 
 		NetworkTransformer transformer = new NetworkTransformer();
-		String input = transformer.convertToBngl(fieldSimulationContext, true);
+		MathMappingCallback dummyCallback = new MathMappingCallback() {
+			public void setProgressFraction(float percentDone) {}
+			public void setMessage(String message) {}
+			public boolean isInterrupted() { return false; }
+		};
+		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
 		BNGInput bngInput = new BNGInput(input);
 		final BNGExecutorService bngService = new BNGExecutorService(bngInput);
 		bngService.registerBngUpdaterCallback(this);
@@ -682,6 +689,11 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			System.err.println("Exception occurred viewing Network");
 			exception.printStackTrace(System.out);
 		}
+	}
+	@Override
+	public boolean isInterrupted() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

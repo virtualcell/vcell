@@ -50,6 +50,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
@@ -458,7 +459,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	SimulationOwner simulationOwner = simWorkspace.getSimulationOwner();
 	AsynchClientTask[] tasks = null;	
 	if (simulationOwner instanceof SimulationContext) {
-		AsynchClientTask[] updateTask = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false);
+		AsynchClientTask[] updateTask = ClientRequestManager.updateMath(documentWindowManager.getComponent(), (SimulationContext)simulationOwner, false, NetworkGenerationRequirements.ComputeFullNetwork);
 		tasks = new AsynchClientTask[updateTask.length + 1];
 		System.arraycopy(updateTask, 0, tasks, 0, updateTask.length);
 	} else {
@@ -564,7 +565,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 	
 	// ----------- update math if it is from biomodel (simulationContext)
 	if (simulationOwner instanceof SimulationContext) {
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false);
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false, NetworkGenerationRequirements.ComputeFullNetwork);
 		for (AsynchClientTask task : updateTasks) {
 			taskList.add(task);
 		}

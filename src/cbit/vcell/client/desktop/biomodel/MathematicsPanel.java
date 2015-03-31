@@ -30,11 +30,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 
+
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.gui.MathDescEditor;
 import cbit.vcell.math.gui.MathDescPanel;
 
@@ -179,12 +181,12 @@ public class MathematicsPanel extends JPanel {
 	}
 	
 	private void refreshMath() {
-		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext), false);
+		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, NetworkGenerationRequirements.ComputeFullNetwork), false);
 	}
 	
 	private void createMathModel(final ActionEvent e) {
 		// relays an action event with this as the source
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, simulationContext);
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, simulationContext, NetworkGenerationRequirements.ComputeFullNetwork);
 		AsynchClientTask[] tasks = new AsynchClientTask[updateTasks.length + 1];
 		System.arraycopy(updateTasks, 0, tasks, 0, updateTasks.length);
 		

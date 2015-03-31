@@ -25,6 +25,8 @@ import ucar.units.RationalNumber;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
@@ -85,8 +87,8 @@ public class ParticleMathMapping extends MathMapping {
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  */
-protected ParticleMathMapping(SimulationContext simContext) {
-	super(simContext);
+protected ParticleMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
+	super(simContext, callback, networkGenerationRequirements);
 }
 
 
@@ -1114,7 +1116,7 @@ protected void combineHybrid() throws MappingException, ExpressionException, Mat
 	//
 	// create continuous mathDescription ... add stochastic variables and processes to the continuous Math and use this.
 	//
-	MathMapping mathMapping = new MathMapping(getSimulationContext());
+	MathMapping mathMapping = new MathMapping(getSimulationContext(),callback,networkGenerationRequirements);
 	mathMapping.refresh();
 	MathDescription contMathDesc = mathMapping.getMathDescription();
 	

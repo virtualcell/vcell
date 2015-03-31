@@ -28,9 +28,12 @@ import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -88,7 +91,8 @@ public class ClientTaskManager {
 				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, bStochastic, bRuleBased);
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
-					newSimulationContext.refreshMathDescription();
+					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+					newSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
 				}
 				hashTable.put("newSimulationContext", newSimulationContext);
 			}

@@ -6,4 +6,5 @@ public interface BioNetGenUpdaterCallback {
 	
 	void updateBioNetGenOutput(BNGOutputSpec outputSpec);
 	void setNewCallbackMessage(TaskCallbackMessage newCallbackMessage);
+	boolean isInterrupted();
 }
