@@ -450,7 +450,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 protected MathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	this.callback = callback;
 	this.networkGenerationRequirements = networkGenerationRequirements;
-	NetworkTransformer transformer = (NetworkTransformer)simContext.createNewTransformer();
+	SimContextTransformer transformer = simContext.createNewTransformer();
 	if (transformer != null){
 		this.transformation = transformer.transform(simContext, callback, networkGenerationRequirements);
 		this.simContext = transformation.transformedSimContext;
