@@ -119,6 +119,15 @@ public class NetworkTransformer implements SimContextTransformer {
 		return bngl;
 	}
 	
+	public final static int speciesLimit = 800;
+	public final static int reactionsLimit = 2000;
+	public static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
+		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length;
+	}
+	public static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
+		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length;
+	}
+	
 	private BNGOutputSpec generateNetwork(SimulationContext simContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		BNGOutputSpec outputSpec;
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
@@ -146,12 +155,12 @@ public class NetworkTransformer implements SimContextTransformer {
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 		
 		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
-		if(outputSpec.getBNGSpecies().length > 800) {
-			message = "Species limit exceeded: max allowed number: 800, actual number: " + outputSpec.getBNGSpecies().length + message;
+		if(outputSpec.getBNGSpecies().length > speciesLimit) {
+			message = getSpeciesLimitExceededMessage(outputSpec) + message;
 			throw new RuntimeException(message);
 		}
-		if(outputSpec.getBNGReactions().length > 2000) {
-			message = "Reaction limit exceeded: max allowed number: 2000, actual number: " + outputSpec.getBNGReactions().length + message;
+		if(outputSpec.getBNGReactions().length > reactionsLimit) {
+			message = getReactionsLimitExceededMessage(outputSpec) + message;
 			throw new RuntimeException(message);
 		}
 		return outputSpec;
