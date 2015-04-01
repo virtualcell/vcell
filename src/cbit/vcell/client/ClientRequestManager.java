@@ -3997,7 +3997,7 @@ public static AsynchClientTask[] updateMath(final Component requester, final Sim
 			MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 			
 			MathMapping mathMapping = simulationContext.createNewMathMapping(callback, networkGenerationRequirements);
-			MathDescription mathDesc = mathMapping.getMathDescription();
+			MathDescription mathDesc = mathMapping.getMathDescription(callback);
 			callback.setProgressFraction(1.0f/3.0f*2.0f);
 			hashTable.put("mathMapping", mathMapping);
 			hashTable.put("mathDesc", mathDesc);

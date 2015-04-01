@@ -1071,13 +1071,16 @@ protected void refreshVariables() throws MappingException {
 }
 
 @Override
-protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
+protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	refreshSpeciesContextMappings();
 	//refreshStructureAnalyzers();
+	if(callback != null) {
+		callback.setProgressFraction(52.0f/100.0f);
+	}
 	refreshVariables();
 	refreshLocalNameCount();
 	refreshMathDescription();
@@ -1117,7 +1120,7 @@ protected void combineHybrid() throws MappingException, ExpressionException, Mat
 	// create continuous mathDescription ... add stochastic variables and processes to the continuous Math and use this.
 	//
 	MathMapping mathMapping = new MathMapping(getSimulationContext(),callback,networkGenerationRequirements);
-	mathMapping.refresh();
+	mathMapping.refresh(null);
 	MathDescription contMathDesc = mathMapping.getMathDescription();
 	
 	//

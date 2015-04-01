@@ -943,7 +943,13 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
  */
 public MathDescription getMathDescription() throws MappingException, MathException, MatrixException, ExpressionException, ModelException {
 	if (mathDesc==null){
-		refresh();
+		refresh(null);
+	}
+	return mathDesc;
+}
+public MathDescription getMathDescription(MathMappingCallback callback) throws MappingException, MathException, MatrixException, ExpressionException, ModelException {
+	if (mathDesc==null){
+		refresh(callback);
 	}
 	return mathDesc;
 }
@@ -1438,7 +1444,7 @@ protected Variable newFunctionOrConstant(String name, Expression exp, GeometryCl
  * @param obs java.util.Observable
  * @param obj java.lang.Object
  */
-protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
+protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 //System.out.println("MathMapping.refresh()");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
@@ -1446,6 +1452,10 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 //	refreshKFluxParameters();
 	refreshSpeciesContextMappings();
 	refreshStructureAnalyzers();
+
+	if(callback != null) {
+		callback.setProgressFraction(52.0f/100.0f);
+	}
 	refreshVariables();
 	refreshLocalNameCount();
 	refreshMathDescription();		// we create math based on the transformed sim context
