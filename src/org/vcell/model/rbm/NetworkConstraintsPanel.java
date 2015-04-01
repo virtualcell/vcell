@@ -467,6 +467,15 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
 		this.outputSpec = outputSpec;
 		refreshInterface();
+		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
+			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
+			appendToConsole(message);
+		}
+		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
+			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
+			appendToConsole(message);
+		}
+
 	}
 	@Override
 	public void setNewCallbackMessage(final TaskCallbackMessage newCallbackMessage) {
@@ -482,7 +491,17 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}else{
 			appendToConsole(newCallbackMessage);
 		}
-		
+	}
+	
+	private void appendToConsole(String string) {
+		StyledDocument doc = netGenConsoleText.getStyledDocument();
+		SimpleAttributeSet keyWord = new SimpleAttributeSet();
+		StyleConstants.setForeground(keyWord, Color.RED);
+		try {
+		doc.insertString(doc.getLength(), string + "\n", keyWord);
+		} catch(Exception e) {
+			System.out.println(e);
+		}
 	}
 	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
 		TaskCallbackStatus status = newCallbackMessage.getStatus();
