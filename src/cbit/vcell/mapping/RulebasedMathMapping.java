@@ -1202,13 +1202,16 @@ protected void refreshVariables() throws MappingException {
 
 
 @Override
-protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
+protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	refreshSpeciesContextMappings();
 	//refreshStructureAnalyzers();
+	if(callback != null) {
+		callback.setProgressFraction(52.0f/100.0f);
+	}
 	refreshVariables();
 	refreshLocalNameCount();
 	refreshMathDescription();
