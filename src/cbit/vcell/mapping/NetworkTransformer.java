@@ -154,20 +154,21 @@ public class NetworkTransformer implements SimContextTransformer {
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 		
-		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
-		if(outputSpec.getBNGSpecies().length > speciesLimit) {
-			message = getSpeciesLimitExceededMessage(outputSpec) + message;
-			throw new RuntimeException(message);
-		}
-		if(outputSpec.getBNGReactions().length > reactionsLimit) {
-			message = getReactionsLimitExceededMessage(outputSpec) + message;
-			throw new RuntimeException(message);
-		}
+//		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
+//		if(outputSpec.getBNGSpecies().length > speciesLimit) {
+//			message = getSpeciesLimitExceededMessage(outputSpec) + message;
+//			throw new RuntimeException(message);
+//		}
+//		if(outputSpec.getBNGReactions().length > reactionsLimit) {
+//			message = getReactionsLimitExceededMessage(outputSpec) + message;
+//			throw new RuntimeException(message);
+//		}
 		return outputSpec;
 	}
 
 	static final float progressFractionQuota = 2.0f/5.0f;
 	static final float progressFractionQuotaSpecies = progressFractionQuota / 2.0f / 10.0f;
+	
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
 		mathMappingCallback.setMessage("generating network: flattening...");
@@ -217,7 +218,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
 		int countGenerated = 0;
-		final int decimalTickCount = outputSpec.getBNGSpecies().length/10;
+		final int decimalTickCount = Math.max(outputSpec.getBNGSpecies().length/10, 1);
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
 //			System.out.println(i+1 + ":\t\t"+ s.toString());
@@ -225,9 +226,12 @@ public class NetworkTransformer implements SimContextTransformer {
 			String key = s.getConcentration().infix();
 			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
 			    Pair<SpeciesContext, Expression> value = speciesEquivalenceMap.get(key);
-			    SpeciesContext sc = value.one;
+			    SpeciesContext originalsc = value.one;		// the species context of the original model
 			    Expression initial = value.two;
 				s.setConcentration(initial);		// replace the fake initial condition with the real one
+				
+				// we'll have to find the species context from the cloned model which correspond to the original species
+				SpeciesContext sc = model.getSpeciesContext(originalsc.getName());
 				
 //				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
 				speciesMap.put(s.getNetworkFileIndex(), sc.getName());		// existing name
@@ -275,29 +279,30 @@ public class NetworkTransformer implements SimContextTransformer {
 					count++;
 				}
 			}
+//			System.out.println(speciesName);
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
 			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
 			speciesContext.setName(speciesName);
-			model.addSpecies(speciesContext.getSpecies());
-			model.addSpeciesContext(speciesContext);
+//			model.addSpecies(speciesContext.getSpecies());
+//			model.addSpeciesContext(speciesContext);
 			sMap.put(speciesName, speciesContext.getSpecies());
 			scMap.put(speciesName, speciesContext);
 			crossMap.put(speciesName, s);
-			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(speciesContext);
-			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
-			param.setExpression(s.getConcentration());
-			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
-			
-			if (origSpeciesContext!=null){
-				// TODO: execution never goes through here because we do a "continue" early in the for look
-				// when we find one of the original seed species
-				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,speciesContext);
-				entityMappings.add(em);
-			}else{
-				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(speciesContext),speciesContext);
-				entityMappings.add(em);
-				countGenerated++;
-			}
+//			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(speciesContext);
+//			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
+//			param.setExpression(s.getConcentration());
+//			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
+//			
+//			if (origSpeciesContext!=null){
+//				// TODO: execution never goes through here because we do a "continue" early in the for look
+//				// when we find one of the original seed species
+//				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,speciesContext);
+//				entityMappings.add(em);
+//			}else{
+//				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(speciesContext),speciesContext);
+//				entityMappings.add(em);
+//				countGenerated++;
+//			}
 			if (mathMappingCallback.isInterrupted()){
 				throw new UserCancelException("Canceled by user.");
 			}
@@ -312,64 +317,65 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		System.out.println("Total generated species: " + countGenerated);
 		
+//		System.out.println("------------------------ " + sMap.size() + " species in the map.");
 //		System.out.println("------------------------ " + scMap.size() + " species contexts in the map.");
+//		System.out.println("------------------------ " + model.getSpecies().length + " species in the Model.");
 //		System.out.println("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");
-//
-//		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
-//		scMap.values().toArray(sca);
-//		for(SpeciesContext sc1 : model.getSpeciesContexts()) {
-//			boolean found = false;
-//			for(SpeciesContext sc2 : sca) {
-//				if(sc1 == sc2) {
-//					found = true;
-//					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
-//					break;
-//				}
-//			}
-//			if(found == false) {
-//				System.out.println("species context not found " + sc1.getName());
-//				scMap.put(sc1.getName(), sc1);
-//				sMap.put(sc1.getName(), sc1.getSpecies());
-//				noMapForThese.add(sc1);
-//			}
-//		}
-//		Species[] sa = new Species[sMap.size()];
-//		sMap.values().toArray(sa); 
-//		for(Species s1 : model.getSpecies()) {
-//			boolean found = false;
-//			for(Species s2 : sa) {
-//				if(s1 == s2) {
-//					found = true;
-//					System.out.println("found species " + s1.getCommonName());
-//					break;
-//				}
-//			}
-//			if(found == false) {
-//				System.out.println("species not found " + s1.getCommonName());
-//				
-//			}
-//		}
-//
-//		model.setSpecies(sa);
-//		model.setSpeciesContexts(sca);
-//		
-//		for(SpeciesContext sc : sca) {
-//			if(noMapForThese.contains(sc) {
-//				continue;
-//			}
-//			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
-//			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
-//			BNGSpecies s = crossMap.get(sc.getName());
-//			param.setExpression(s.getConcentration());
-//			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
-//			if (origSpeciesContext!=null){
-//				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,sc);
-//				entityMappings.add(em);
-//			}else{
-//				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(sc),sc);
-//				entityMappings.add(em);
-//			}
-//		}
+
+		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+		scMap.values().toArray(sca);
+		for(SpeciesContext sc1 : model.getSpeciesContexts()) {
+			boolean found = false;
+			for(SpeciesContext sc2 : sca) {
+				if(sc1.getName().equals(sc2.getName())) {
+					found = true;
+					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
+					break;
+				}
+			}
+			if(found == false) {	// we add to the map the species context and the species which exist in the model but which are not in the map yet
+									// the only ones in this situation should be plain species which were not given to bngl for flattening (they are flat already)
+				System.out.println("species context " + sc1.getName() + " not found in the map. Adding it.");
+				scMap.put(sc1.getName(), sc1);
+				sMap.put(sc1.getName(), sc1.getSpecies());
+				noMapForThese.add(sc1);
+			}
+		}
+		Species[] sa = new Species[sMap.size()];
+		sMap.values().toArray(sa); 
+		for(Species s1 : model.getSpecies()) {
+			boolean found = false;
+			for(Species s2 : sa) {
+				if(s1.getCommonName().equals(s2.getCommonName())) {
+					found = true;
+					System.out.println("found species " + s1.getCommonName());
+					break;
+				}
+			}
+			if(found == false) {
+				System.out.println("species " + s1.getCommonName() + " not found in the map!");
+			}
+		}
+		model.setSpecies(sa);
+		model.setSpeciesContexts(sca);
+		
+		for(SpeciesContext sc : sca) {
+			if(noMapForThese.contains(sc)) {
+				continue;
+			}
+			SpeciesContextSpec scs = reactionContext.getSpeciesContextSpec(sc);
+			Parameter param = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration);
+			BNGSpecies s = crossMap.get(sc.getName());
+			param.setExpression(s.getConcentration());
+			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
+			if (origSpeciesContext!=null){
+				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,sc);
+				entityMappings.add(em);
+			}else{
+				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(sc),sc);
+				entityMappings.add(em);
+			}
+		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		System.out.println("     " + elapsedTime + " milliseconds");
