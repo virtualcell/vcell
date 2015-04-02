@@ -7,7 +7,7 @@ import org.sbml.libsbml.libsbmlConstants;
 
 
 public class SBMLHelper {
-
+	
 	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
 	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
 	public static final String SBML_NS_2_2 = "http://www.sbml.org/sbml/level2/version2";
@@ -89,6 +89,70 @@ public class SBMLHelper {
 					+ ", " + LibSBMLConstantsAdapter.lookup(rcode));
 		}
 	}
+	
+	/**
+	 * map Java types to corresponding SBML constants 
+	 */
+	public enum DataKind {
+		UNKNOWN(libsbmlConstants.DATAKIND_UNKNOWN),
+		DOUBLE(libsbmlConstants.SPATIAL_DATAKIND_DOUBLE),
+		FLOAT(libsbmlConstants.SPATIAL_DATAKIND_FLOAT),
+		BYTE(libsbmlConstants.SPATIAL_DATAKIND_UINT8),
+		SHORT(libsbmlConstants.SPATIAL_DATAKIND_UINT16),
+		INT(libsbmlConstants.SPATIAL_DATAKIND_UINT32)
+		;
+
+		private DataKind(int code) {
+			assert(ordinal( ) == code);
+		}
+		
+	}
+	
+	/**
+	 * map Java types to corresponding SBML constants 
+	 */
+	public enum CompressionKind {
+		UNKNOWN(libsbmlConstants.COMPRESSIONKIND_UNKNOWN),
+		UNCOMPRESSED(libsbmlConstants.SPATIAL_COMPRESSIONKIND_UNCOMPRESSED),
+		DEFLATED(libsbmlConstants.SPATIAL_COMPRESSIONKIND_DEFLATED),
+		//BASE64(libsbmlConstants.SPATIAL_COMPRESSIONKIND_BASE64); proposed 
+		;
+		private CompressionKind(int code) {
+			assert(ordinal( ) == code);
+		}
+	}
+	
+	/**
+	 * map Java types to corresponding SBML constants 
+	 */
+	public enum InterpolationKind {
+		UNKNOWN(libsbmlConstants.INTERPOLATIONKIND_UNKNOWN),
+		NEAREST_NEIGHBOR(libsbmlConstants.SPATIAL_INTERPOLATIONKIND_NEARESTNEIGHBOR),
+		LINEAR(libsbmlConstants.SPATIAL_INTERPOLATIONKIND_LINEAR);
+		private InterpolationKind(int code) {
+			assert(ordinal( ) == code);
+		}
+	}
+	/*
+	public enum BoundaryKind {
+
+		UNKNOWN(null,libsbmlConstants.BOUNDARYCONDITIONKIND_UNKNOWN),
+		DIRICHLET(BoundaryConditionType.DIRICHLET, libsbmlConstants.SPATIAL_BOUNDARYKIND_DIRICHLET),
+		NEUMANN(BoundaryConditionType.NEUMANN,libsbmlConstants.SPATIAL_BOUNDARYKIND_NEUMANN),
+		ROBIN_VALUE(null,libsbmlConstants.SPATIAL_BOUNDARYKIND_ROBIN_VALUE_COEFFICIENT),
+		ROBIN_SUM(null,libsbmlConstants.SPATIAL_BOUNDARYKIND_ROBIN_SUM),
+		ROBIN_INWARD(null,libsbmlConstants.SPATIAL_BOUNDARYKIND_ROBIN_INWARD_NORMAL_GRADIENT_COEFFICIENT) 
+		;
+
+		BoundaryConditionType boundaryConditionType;
+		int sbmlCode;
+
+		private BoundaryKind(BoundaryConditionType boundaryConditionType, int sbmlCode) {
+			this.boundaryConditionType = boundaryConditionType;
+			this.sbmlCode = sbmlCode;
+		}
+	}
+	*/
 
 }
 

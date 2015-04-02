@@ -19,10 +19,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
-
-import cbit.vcell.client.ChildWindowManager;
-import org.vcell.util.ClientTaskStatusSupport;;
 
 /**
  * Insert the type's description here.
@@ -60,7 +58,7 @@ public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskS
 	private int progress = 0;
 	private int autoProgress = 0;
 	private boolean inputBlocking = false;
-	private boolean knowsProgress = false;
+	private final boolean knowsProgress;
 
 	private Component requester = null;
 	private String title = null;
@@ -158,7 +156,12 @@ public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thr
 protected ProgressDialog getDialog() {
 	if (dialog == null) {
 		Frame owner = JOptionPane.getFrameForComponent(requester);
-		dialog = new DefaultProgressDialog(owner);
+		if (knowsProgress) {
+			dialog = new DefaultProgressDialog(owner);
+		}
+		else {
+			dialog = new IndefiniteProgressDialog(owner);
+		}
 		if (bCancelable && progressDialogListener!=null){
 			dialog.setCancelButtonVisible(true);
 			dialog.addProgressDialogListener(progressDialogListener);
@@ -186,19 +189,16 @@ protected ProgressDialog getDialog() {
  * Creation date: (5/19/2004 3:08:59 PM)
  */
 protected void guiToDo() {
+	if (knowsProgress) {
 	new SwingDispatcherAsync (){
 		public void runSwing() {
-			if (knowsProgress) {
-				getDialog().setProgress(progress);
-			} else {
-				getDialog().setProgress(autoProgress % 100);
-				autoProgress += 5;
-			}
+			getDialog().setProgress(progress);
 		}
 		public void handleException(Throwable e) {
 			e.printStackTrace();
 		}
 	}.dispatch();
+	}
 
 }
 

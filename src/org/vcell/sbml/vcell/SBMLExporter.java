@@ -58,7 +58,11 @@ import org.sbml.libsbml.libsbml;
 import org.sbml.libsbml.libsbmlConstants;
 import org.vcell.sbml.LibSBMLConstantsAdapter;
 import org.vcell.sbml.SBMLHelper;
+import org.vcell.sbml.SBMLHelper.CompressionKind;
+import org.vcell.sbml.SBMLHelper.DataKind;
+import org.vcell.sbml.SBMLHelper.InterpolationKind;
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SpatialAdapter;
 import org.vcell.sbml.vcell.SpeciesContextSpecSBMLBridge.Coordinates;
 import org.vcell.util.Extent;
@@ -1314,17 +1318,14 @@ private Simulation getSelectedSimulation() {
 	return vcSelectedSimJob.getSimulation();
 }
 
-public String getSBMLFile() {
+public String getSBMLFile() throws SbmlException {
 	String rval = null;
-	try (VCellSBMLDoc vdoc = convertToSBML()) {
-		rval = vdoc.xmlString;
-	} catch (Exception e) {
-		//ignore close error
-	} 
+	VCellSBMLDoc vdoc = convertToSBML();
+	rval = vdoc.xmlString;
 	return rval;
 }
 
-public VCellSBMLDoc convertToSBML() {
+public VCellSBMLDoc convertToSBML() throws SbmlException {
 
 	SBMLDocument sbmlDocument = null;
 	if (bSpatial) {
@@ -1393,8 +1394,8 @@ public VCellSBMLDoc convertToSBML() {
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
 	
-	long rcode = sbmlDocument.setPackageRequired(SBMLUtils.SBML_SPATIAL_NS_PREFIX,true);
-	LibSBMLConstantsAdapter.displayIfError(System.err, (int) rcode,false); 
+	int rcode = sbmlDocument.setPackageRequired(SBMLUtils.SBML_SPATIAL_NS_PREFIX,true);
+	LibSBMLConstantsAdapter.checkReturnCode(lg, rcode);
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 	/*
 	long numErrors = sbmlDocument.validateSBML() ;
@@ -1417,7 +1418,7 @@ public VCellSBMLDoc convertToSBML() {
 	return new VCellSBMLDoc(sbmlDocument, sbmlModel, sbmlStr);
 }
 
-private void addGeometry() {
+private void addGeometry() throws SbmlException {
 
     SpatialModelPlugin mplugin = SBMLHelper.checkedPlugin(SpatialModelPlugin.class,
     		sbmlModel,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
@@ -1675,13 +1676,13 @@ private void addGeometry() {
 		//
 		SampledFieldGeometry segmentedImageSampledFieldGeometry = sbmlGeometry.createSampledFieldGeometry();
 		segmentedImageSampledFieldGeometry.setId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
+		segmentedImageSampledFieldGeometry.setIsActive(true);
+		int r = segmentedImageSampledFieldGeometry.setSampledField("RangerRick");
 		boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 		Geometry vcImageGeometry = null;
 		{
 		if (bVCGeometryIsImage){
 			// use existing image
-			vcImageGeometry = vcGeometry;
-		}else if (dimension>0){
 			// make a resampled image;
 			if (dimension == 3) {
 				try {
@@ -1724,13 +1725,18 @@ private void addGeometry() {
 		// add sampledField to sampledFieldGeometry
 		SampledField segmentedImageSampledField = sbmlGeometry.createSampledField(); 
 		VCImage vcImage = vcImageGeometry.getGeometrySpec().getImage();
-		segmentedImageSampledField.setId("SegmentedImageSampledField");
-		segmentedImageSampledField.setNumSamples1(vcImage.getNumX());
-		segmentedImageSampledField.setNumSamples2(vcImage.getNumY());
-		segmentedImageSampledField.setNumSamples3(vcImage.getNumZ());
-		segmentedImageSampledField.setDataType("integer");
-		segmentedImageSampledField.setInterpolationType("constant");
-		segmentedImageSampledField.setDataType("uint8");
+		validate(segmentedImageSampledField.setId("SegmentedImageSampledField") );
+		validate(segmentedImageSampledField.setNumSamples1(vcImage.getNumX()) );
+		validate(segmentedImageSampledField.setNumSamples2(vcImage.getNumY() ));
+		validate(segmentedImageSampledField.setNumSamples3(vcImage.getNumZ()) );
+		validate(segmentedImageSampledField.setInterpolationType(InterpolationKind.NEAREST_NEIGHBOR.ordinal()) );
+		validate(segmentedImageSampledField.setCompression(CompressionKind.UNCOMPRESSED.ordinal()) );
+		validate(segmentedImageSampledField.setDataType(DataKind.INT.ordinal( )) );
+		segmentedImageSampledFieldGeometry.setSampledField(segmentedImageSampledField.getId());
+		if (segmentedImageSampledFieldGeometry.isSampledFieldGeometry()) {
+			System.out.println("Sample field is " + segmentedImageSampledFieldGeometry.getSampledField());
+		}
+		
 		try {
 			byte[] vcImagePixelsBytes = vcImage.getPixels();
 //			imageData.setCompression("");
@@ -1972,8 +1978,9 @@ public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
 
 /**
  * VC_to_SB_Translator constructor comment.
+ * @throws SbmlException 
  */
-public void translateBioModel() {
+public void translateBioModel() throws SbmlException {
 	// 'Parse' the Virtual cell model into an SBML model
 	addUnitDefinitions();
 	// Add features/compartments
@@ -1998,4 +2005,13 @@ public void translateBioModel() {
 	// Add Events
 	addEvents();
 }
+/**
+ * throw exception if invalid return code
+ * @param code
+ * @throws SbmlException 
+ */
+private static void validate( int code ) throws SbmlException {
+	LibSBMLConstantsAdapter.throwIfError(code);
+}
+
 }
