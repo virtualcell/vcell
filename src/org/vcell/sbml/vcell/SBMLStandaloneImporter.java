@@ -27,6 +27,8 @@ import org.vcell.util.executable.LiveProcess.LiveProcessStatus;
 import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLogger.ErrorType;
+import cbit.util.xml.VCLogger.Priority;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.XMLSource;
@@ -289,16 +291,10 @@ public class SBMLStandaloneImporter {
 		}
 
 		@Override
-		public void sendMessage(int messageLevel, int messageType) throws Exception {
-			Priority p = Priority.fromOrdinal(messageLevel);
-			ErrorType et = ErrorType.fromOrdinal(messageType);
+		public void sendMessage(Priority p, ErrorType et, String message)
+				throws Exception {
+			
 		}
 
-		@Override
-		public void sendMessage(int messageLevel, int messageType, String message)
-				throws Exception {
-			Priority p = Priority.fromOrdinal(messageLevel);
-			ErrorType et = ErrorType.fromOrdinal(messageType);
-		}
 	}
 }

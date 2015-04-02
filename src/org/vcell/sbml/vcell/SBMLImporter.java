@@ -98,7 +98,11 @@ import org.vcell.sbml.BoundaryTypeAdapter;
 import org.vcell.sbml.ListOfAdapter;
 import org.vcell.sbml.OperatorTypeAdapter;
 import org.vcell.sbml.SBMLHelper;
+import org.vcell.sbml.SBMLHelper.CompressionKind;
+import org.vcell.sbml.SBMLHelper.DataKind;
+import org.vcell.sbml.SBMLHelper.InterpolationKind;
 import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SpatialAdapter;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.BeanUtils;
@@ -107,7 +111,6 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
@@ -137,7 +140,6 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.BioEvent;
 //import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
@@ -305,7 +307,7 @@ protected void addCompartments(VCMetaData metaData) {
 				structVector.insertElementAt(membrane, structIndx);
 				structureNameMap.put(compartmentName, membrane);
 			} else {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
+				logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
 				throw new SBMLImportException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
 			structIndx++;
@@ -350,7 +352,7 @@ protected void addCompartments(VCMetaData metaData) {
 			String compartmentName = compartment.getId();
 
 			if (!compartment.isSetSize()) {
-				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.COMPARTMENT_ERROR, "compartment "+compartmentName+" size is not set in SBML document.");
+				// logger.sendMessage(VCLogger.Priority.MediumPriority, TranslationMessage.COMPARTMENT_ERROR, "compartment "+compartmentName+" size is not set in SBML document.");
 				allSizesSet = false;
 			} else {
 				double size = compartment.getSize();
@@ -358,7 +360,7 @@ protected void addCompartments(VCMetaData metaData) {
 				Expression sizeExpr = getValueFromAssignmentRule(compartmentName);
 				if (sizeExpr != null && !sizeExpr.isNumeric()) {
 					// We are NOT handling compartment sizes with assignment rules/initial Assignments that are NON-numeric at this time ...
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an assignment rule which is not a numeric value, cannot handle it at this time.");
+					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "compartment "+compartmentName+" size has an assignment rule which is not a numeric value, cannot handle it at this time.");
 				}
 				// check if sizeExpr is null - no assignment rule for size - check if it is specified by initial assignment
 				if (sizeExpr == null) {
@@ -369,7 +371,7 @@ protected void addCompartments(VCMetaData metaData) {
 				}
 				if (sizeExpr != null && !sizeExpr.isNumeric()) {
 					// We are NOT handling compartment sizes with assignment rules/initial Assignments that are NON-numeric at this time ...
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an initial assignment which is not a numeric value, cannot handle it at this time.");
+					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "compartment "+compartmentName+" size has an initial assignment which is not a numeric value, cannot handle it at this time.");
 				}
 				
 				// no init assignment or assignment rule; create expression from 'size' attribute,  
@@ -459,7 +461,7 @@ protected void addEvents() {
 						EventAssignment vcEvntAssgn = vcEvent.new EventAssignment(varSTE, evntAssgnExpr);
 						vcEvntAssgnList.add(vcEvntAssgn);
 					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "No symbolTableEntry for '"+varName + "'; Cannot add event assignment.");
+						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, "No symbolTableEntry for '"+varName + "'; Cannot add event assignment.");
 					}
 				}
 				
@@ -511,7 +513,7 @@ protected void addInitialAssignments() {
 			// if initial assignment is for a compartment, VCell doesn't support compartmentSize expressions, warn and bail out.
 			if (sbmlModel.getCompartment(initAssgnSymbol) != null) {
 				if (!initAssignMathExpr.isNumeric()) {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "compartment '"+initAssgnSymbol+"' size has an initial assignment, cannot handle it at this time.");
+					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "compartment '"+initAssgnSymbol+"' size has an initial assignment, cannot handle it at this time.");
 				} 
 				// if init assgn for compartment is numeric, the numeric value for size is set in addCompartments().
 			}
@@ -520,7 +522,7 @@ protected void addInitialAssignments() {
 				if (initAssignMathExpr.hasSymbol(vcModel.getX().getName()) || 
 					initAssignMathExpr.hasSymbol(vcModel.getY().getName()) ||
 					initAssignMathExpr.hasSymbol(vcModel.getZ().getName()) ) {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "species '"+initAssgnSymbol+"' initial assignment expression cannot contain 'x', 'y', 'z'.");
+					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError, "species '"+initAssgnSymbol+"' initial assignment expression cannot contain 'x', 'y', 'z'.");
 				}
 			}
 			
@@ -534,7 +536,7 @@ protected void addInitialAssignments() {
 				mp.setExpression(initAssignMathExpr);
 			} else {
 				localIssueList.add(new Issue(new SBMLIssueSource(initAssgn), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement , "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored.", Issue.SEVERITY_WARNING));
-				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
+				// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnsupportedConstruct, "Symbol '"+initAssgnSymbol+"' not a species or global parameter in VCell; initial assignment ignored..");
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -668,7 +670,7 @@ protected void addParameters() throws Exception {
 				// if value for global param is not set and param has a rate rule, need to set an init value for param (else, there will be a problem in reaction which uses this parameter).
 				// use a 'default' initial value of '0'
 				valueExpr = new Expression(0.0);
-				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.LOW_PRIORITY, "Parameter did not have an initial value, but has a rate rule specified. Using a default value of 0.0.");
+				// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.Priority.LowPriority, "Parameter did not have an initial value, but has a rate rule specified. Using a default value of 0.0.");
 			}
 		}
 
@@ -880,7 +882,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
 							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
 								Category.NON_INTEGER_STOICH	);
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+							// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} 
 				} else {
@@ -889,12 +891,12 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
 							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for reactant '" + sbmlReactantSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
 								Category.NON_INTEGER_STOICH	);
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+							// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+							// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} else {
 						throw new SBMLImportException("This is a SBML level 3 model, stoichiometry is not set for the reactant '" + sbmlReactantSpId + "' and no default value can be assumed.");
-						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");						
+						// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "This is a SBML level 3 model, stoichiometry is not set for the reactant '" + spRef.getSpecies() + "' and no default value can be assumed.");						
 					}
 				}
 				
@@ -937,7 +939,7 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
 							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
 									Category.NON_INTEGER_STOICH);
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+							// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} 
 				} else {
@@ -946,11 +948,11 @@ private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reaction
 						if ( ((int)stoichiometry != stoichiometry) || spRef.isSetStoichiometryMath()) {
 							throw new SBMLImportException("Non-integer stoichiometry ('" + stoichiometry + "' for product '" + sbmlProductSpId + "' in reaction '" + sbmlRxn.getId() + "') or stoichiometryMath not handled in VCell at this time.",
 									Category.NON_INTEGER_STOICH);
-							// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
+							// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "Non-integer stoichiometry or stoichiometryMath not handled in VCell at this time.");							
 						}
 					} else {
 						throw new SBMLImportException("This is a SBML level 3 model, stoichiometry is not set for the product '" + sbmlProductSpId + "' and no default value can be assumed.");
-						// logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.REACTION_ERROR, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");						
+						// logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.ReactionError, "This is a SBML level 3 model, stoichiometry is not set for the product '" + spRef.getSpecies() + "' and no default value can be assumed.");						
 					}
 				}
 
@@ -1039,7 +1041,7 @@ protected void addAssignmentRules() throws Exception {
 						if (assignmentRuleMathExpr.hasSymbol(vcModel.getX().getName()) || 
 							assignmentRuleMathExpr.hasSymbol(vcModel.getY().getName()) || 
 							assignmentRuleMathExpr.hasSymbol(vcModel.getZ().getName())) {
-							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() 
+							logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError,  "An assignment rule for species " + ruleSpecies.getId() 
 									+ " contains " + RESERVED_SPATIAL + " variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
 						}
 					}
@@ -1160,7 +1162,7 @@ protected void addSpecies(VCMetaData metaData) {
 			// Units in SBML, compute this using some of the attributes of sbmlSpecies
 			int dimension = (int)sbmlModel.getCompartment(sbmlSpecies.getCompartment()).getSpatialDimensions();
 			if (dimension == 0 || dimension == 1){
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, dimension+" dimensional compartment "+compartmentId+" not supported");
+				logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, dimension+" dimensional compartment "+compartmentId+" not supported");
 			}
 		} // end - for sbmlSpecies
 		
@@ -1219,7 +1221,7 @@ private void setSpeciesInitialConditions() {
 					if (compartmentSize != 0.0) {
 						initConcentration = new Expression(initAmount / compartmentSize);
 					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment '"+compartment.getId()+"' has zero size, unable to determine initial concentration for species "+speciesName);
+						logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, "compartment '"+compartment.getId()+"' has zero size, unable to determine initial concentration for species "+speciesName);
 					}
 					// check if initConc is set by a (assignment) rule. That takes precedence over initConc/initAmt value set on species.
 					initExpr = getValueFromAssignmentRule(speciesName);
@@ -1227,7 +1229,7 @@ private void setSpeciesInitialConditions() {
 						initExpr = new Expression(initConcentration);
 					}
 				} else {
-					logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
+					logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.SpeciesError, " Compartment '" + compartment.getId() + "' size not set or is defined by a rule; cannot calculate initConc.");
 				}
 			} else {
 				// initConc/initAmt not set; check if species has a (assignment) rule.
@@ -1236,7 +1238,7 @@ private void setSpeciesInitialConditions() {
 					// no assignment rule (and there was no initConc or initAmt); if it doesn't have initialAssignment, throw warning and set it to 0.0
 					if (sbmlModel.getInitialAssignment(speciesName) == null) {
 						localIssueList.add(new Issue(new SBMLIssueSource(sbmlModel.getSpecies(speciesName)), issueContext, IssueCategory.SBMLImport_MissingSpeciesInitCondition , "no initial condition for species "+speciesName+", assuming 0.0", Issue.SEVERITY_WARNING));
-						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
+						// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "no initial condition for species "+speciesName+", assuming 0.0");
 					}
 					initExpr = new Expression(0.0);
 				}
@@ -1278,17 +1280,17 @@ private void setSpeciesInitialConditions() {
 private Expression removeCompartmentScaleFactorInRxnRateExpr(Expression rateExpr, String compartmentSizeParamName, String rxnName) throws Exception {
 	Expression diffExpr = rateExpr.differentiate(compartmentSizeParamName).flatten();
 	if (diffExpr.hasSymbol(compartmentSizeParamName)) {
-		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
+		logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
 	}
 
 	Expression expr1 = rateExpr.getSubstitutedExpression(new Expression(compartmentSizeParamName), new Expression(1.0)).flatten();
 	if (!expr1.compareEqual(diffExpr) && !(ExpressionUtils.functionallyEquivalent(expr1, diffExpr))) {
-		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
+		logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
 	}
 
 	Expression expr0 = rateExpr.getSubstitutedExpression(new Expression(compartmentSizeParamName), new Expression(0.0)).flatten();
 	if (!expr0.isZero()) {
-		logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
+		logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, "Unable to interpret Kinetic rate for reaction : " + rxnName + " Cannot interpret non-linear function of compartment size");
 	}
 
 	return expr1;
@@ -1570,7 +1572,7 @@ public BioModel getBioModel() {
 			}
 			if (issueCount>0){
 				try {
-					logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS, messageBuffer.toString());
+					logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning, messageBuffer.toString());
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 				}
@@ -1697,14 +1699,14 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 					modelVolumeUnit = sbmlUnitDefinition;
 				} else if (!sbmlUnitDefinition.isEquivalent(modelVolumeUnit)) {
 					localIssueList.add(new Issue(new SBMLIssueSource(sbmlComp), issueContext, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
-					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")");
+					// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current vol unit (" + modelVolumeUnit.getSymbol() + ")");
 				}
 			} else if (dim == 2) {
 				if (modelAreaUnit == null) {
 					modelAreaUnit = sbmlUnitDefinition;
 				} else if (!sbmlUnitDefinition.isEquivalent(modelAreaUnit)) {
 					localIssueList.add(new Issue(new SBMLIssueSource(sbmlComp), issueContext, IssueCategory.Units, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
-					// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")");
+					// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "unit for compartment '" + sbmlComp.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current area unit (" + modelAreaUnit.getSymbol() + ")");
 				}
 			}
 		}
@@ -1725,7 +1727,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 				modelSubstanceUnit = sbmlUnitDefinition;
 			}else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
 				localIssueList.add(new Issue(new SBMLIssueSource(sbmlSpecies), issueContext, IssueCategory.Units, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
-				// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
+				// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "unit for species '" + sbmlSpecies.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
 			}
 		}
 
@@ -1750,7 +1752,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 						modelSubstanceUnit = sbmlUnitDefinition;
 					} else if (!sbmlUnitDefinition.isEquivalent(modelSubstanceUnit)) {
 						localIssueList.add(new Issue(new SBMLIssueSource(sbmlReaction), issueContext, IssueCategory.Units, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
-						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
+						// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "substance unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current substance unit (" + modelSubstanceUnit.getSymbol() + ")");
 					}
 					// check time unit
 					unitStr = kineticLaw.getTimeUnits();
@@ -1764,7 +1766,7 @@ private ModelUnitSystem createSBMLUnitSystemForVCModel() throws Exception {
 						modelTimeUnit = sbmlUnitDefinition;
 					} else if (!sbmlUnitDefinition.isEquivalent(modelTimeUnit)) {
 						localIssueList.add(new Issue(new SBMLIssueSource(sbmlReaction), issueContext, IssueCategory.Units, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")", Issue.SEVERITY_WARNING));
-						// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNIT_ERROR, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")");
+						// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnitError, "time unit for reaction '" + sbmlReaction.getId() + "' (" + unitStr + ") : (" + sbmlUnitDefinition.getSymbol() + ") not compatible with current time unit (" + modelTimeUnit.getSymbol() + ")");
 					}
 				}
 			}
@@ -2011,7 +2013,7 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 		for (int i = 0; i < sbmlModel.getNumRules(); i++){
 			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
 			if (rule instanceof AlgebraicRule) {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic rules are not handled in the Virtual Cell at this time");
+				logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, "Algebraic rules are not handled in the Virtual Cell at this time");
 			}
 		}
 	}
@@ -2023,18 +2025,18 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 		if (level > 2) {
 			// level 3+ does not have default value for spatialDimension. So cannot assume a value.
 			if (!comp.isSetSpatialDimensions()) {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment '" + comp.getId() + "' spatial dimension is not set; default value cannot be assumed in an SBML Level 3 model.");
+				logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "Compartment '" + comp.getId() + "' spatial dimension is not set; default value cannot be assumed in an SBML Level 3 model.");
 			}
 		} 
 		if (comp.getSpatialDimensions() == 0 || comp.getSpatialDimensions() == 1) {
-			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
+			logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.CompartmentError, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
 		}
 	}
 	
 	// if SBML model is spatial and has events, it cannot be imported, since events are not supported in a spatial VCell model.
 	if (bSpatial) {
 		if (sbmlModel.getNumEvents() > 0) {
-			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Events are not supported in a spatial Virtual Cell model at this time, they are only supported in a non-spatial model.");
+			logger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnsupportedConstruct, "Events are not supported in a spatial Virtual Cell model at this time, they are only supported in a non-spatial model.");
 		}
 	}
 	
@@ -2187,7 +2189,7 @@ private void checkIdentifiersNameLength() throws Exception {
 						"the names to avoid problems with the length of expressions these names might be used in.";
 		
 		localIssueList.add(new Issue(new SBMLIssueSource(issueSource), issueContext, IssueCategory.SBMLImport_UnsupportedAttributeOrElement, warningMsg, Issue.SEVERITY_WARNING));
-		// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, warningMsg);
+		// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.UnsupportedConstruct, warningMsg);
 	}
 }
 
@@ -2253,7 +2255,7 @@ protected void addReactions(VCMetaData metaData) {
 							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 						} else {
 							localIssueList.add(new Issue(vcReactions[i], issueContext, IssueCategory.SBMLImport_Reaction, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName, Issue.SEVERITY_WARNING));
-							// logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.REACTION_ERROR, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
+							// logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.ReactionError, "Unknown FluxOption : " + fluxOptionStr + " for SBML reaction : " + rxnName);
 						}
 					} else if (embeddedRxnElement.getName().equals(XMLTags.SimpleReactionTag)) {
 						// if embedded element is a simple reaction, set simple reaction's structure from element attributes
@@ -2564,18 +2566,26 @@ protected void addGeometry() {
 	
 	for (int i = 0; i < sbmlGeometry.getNumGeometryDefinitions(); i++) {
 		GeometryDefinition gd_temp = sbmlGeometry.getGeometryDefinition(i);
+		if (!gd_temp.isSetIsActive()) {
+			continue;
+		}
 		if (gd_temp.isAnalyticGeometry()) {
 			analyticGeometryDefinition = (AnalyticGeometry)gd_temp;
 		} else if (gd_temp.isSampledFieldGeometry()){
-			SampledFieldGeometry temp_sampledFieldGeometry = (SampledFieldGeometry)gd_temp;
-			/* UNDONE
-			String sf = temp_sampledFieldGeometry.getSampledField();
-			if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("linear")){
-				distanceMapSampledFieldGeometry = temp_sampledFieldGeometry;
-			}else if (temp_sampledFieldGeometry.getSampledField().getInterpolationType().equals("constant")){
-				segmentedSampledFieldGeometry = temp_sampledFieldGeometry;
+			SampledFieldGeometry sfg = (SampledFieldGeometry)gd_temp;
+			String sfn = sfg.getSampledField();
+			SampledField sf = sbmlGeometry.getSampledField(sfn);
+			InterpolationKind ik = BeanUtils.lookupEnum(InterpolationKind.class, sf.getInterpolationType()); 
+			switch (ik) {
+				case LINEAR:
+					distanceMapSampledFieldGeometry = sfg; 
+					break;
+				case NEAREST_NEIGHBOR:
+					segmentedSampledFieldGeometry = sfg; 
+					break;
+				default:	
+					lg.warn("Unsupported " + sf.getName() + " interpolation type " + ik);
 			}
-			*/
 		} else if (gd_temp.isCSGeometry()) {
 			csGeometry = (CSGeometry)gd_temp;
 		} else if (gd_temp.isParametricGeometry()) {
@@ -2609,64 +2619,75 @@ protected void addGeometry() {
 		// get a sampledVol object via the listOfSampledVol (from SampledGeometry) object.
 		
 //		gcw gcw gcw
-//		SampledField sf = sfg.getSampledField();
-//		int numX = sf.getNumSamples1();
-//		int numY = sf.getNumSamples2();
-//		int numZ = sf.getNumSamples3();
-//		ImageData id = sf.getImageData();
-//		int[] samples = new int[(int) id.getSamplesLength()];
-//		id.getSamples(samples);
-//		byte[] imageInBytes = new byte[samples.length];
-//		if (selectedGeometryDefinition == distanceMapSampledFieldGeometry){
-//			//
-//			// single distance-map ... negative values are 1, zero and positive are 2 (for now assume that there are only two DomainTypes which are volume)
-//			// alternatively, one could use the marching cube algorithm to create polygons which can be super sampled.
-//			//
-//			// could resample to higher resolution segmented images (via linear interpolation).
-//			//
-//			for (int i = 0; i < imageInBytes.length; i++) {
-////				if (interpolation(samples[i])<0){
-//				if (samples[i]<0){
-//					imageInBytes[i] = -1;
-//				}else{
-//					imageInBytes[i] = 1;
-//				}
+		String sfn = sfg.getSampledField();
+		SampledField sf = sbmlGeometry.getSampledField(sfn);
+		int numX = sf.getNumSamples1();
+		int numY = sf.getNumSamples2();
+		int numZ = sf.getNumSamples3();
+		int[] samples = new int[sf.getSamplesLength()];
+		sf.getSamples(samples);
+		byte[] imageInBytes = new byte[samples.length];
+		if (selectedGeometryDefinition == distanceMapSampledFieldGeometry){
+			//
+			// single distance-map ... negative values are 1, zero and positive are 2 (for now assume that there are only two DomainTypes which are volume)
+			// alternatively, one could use the marching cube algorithm to create polygons which can be super sampled.
+			//
+			// could resample to higher resolution segmented images (via linear interpolation).
+			//
+			for (int i = 0; i < imageInBytes.length; i++) {
+//				if (interpolation(samples[i])<0){
+				if (samples[i]<0){
+					imageInBytes[i] = -1;
+				}else{
+					imageInBytes[i] = 1;
+				}
 			}
-//		}else{
-//			for (int i = 0; i < imageInBytes.length; i++) {
-//				imageInBytes[i] = (byte)samples[i];
-//			}
-//		}
-//		try {
-//			VCImage vcImage = null;
-//			if (id.getDataType().equals("compressed")) {
-//				vcImage = new VCImageCompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
-//			}else if (id.getDataType().equals("uint8") || id.getDataType().equals("int16")){
-//				vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
-//			}else{			
-//				throw new RuntimeException("Unknown dataType for imageData : datatType should be 'compressed' to be able to be imported into the Virtual Cell.");
-//			}
-//			vcImage.setName(sf.getId());
-//			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
-//			if (listOfSampledVols == null) {
-//				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
-//			}
-//			int numSampledVols = (int)sfg.getNumSampledVolumes();
-//			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
-//			// get pixel classes for geometry
-//			for (int i = 0; i < numSampledVols; i++) {
-//				SampledVolume sVol = listOfSampledVols.get(i);
-//				// from subVolume, get pixelClass?
-//				vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(), (int)sVol.getSampledValue());
-//			}
-//			vcImage.setPixelClasses(vcpixelClasses);
-//			// now create image geometry
-//			vcGeometry = new Geometry("spatialGeom", vcImage);
-//		} catch (Exception e) {
-//			e.printStackTrace(System.out);
-//			throw new RuntimeException("Unable to create image from SampledFieldGeometry : " + e.getMessage());
-//		} 
-//	}
+		}else{
+			for (int i = 0; i < imageInBytes.length; i++) {
+				imageInBytes[i] = (byte)samples[i];
+			}
+		}
+		try {
+			System.out.println("ident " + sf.getId( )  + " " + sf.getName( ) );
+			VCImage vcImage = null;
+			CompressionKind ck = BeanUtils.lookupEnum(CompressionKind.class, sf.getCompression() ); 
+			DataKind dk = BeanUtils.lookupEnum(DataKind.class, sf.getDataType() );
+			
+			if (ck == CompressionKind.DEFLATED) {
+				vcImage = new VCImageCompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+			}else  {
+				switch (dk) {
+				case BYTE: 
+				case SHORT: 
+				case INT: 
+					vcImage = new VCImageUncompressed(null, imageInBytes, vcExtent, numX, numY, numZ);
+				default:
+				}
+			}
+			if (vcImage == null) {
+				throw new SbmlException("Unsupported type combination " + ck + ", " + dk + " for sampled field " + sf.getName());
+			}
+			vcImage.setName(sf.getId());
+			ListOfSampledVolumes listOfSampledVols = sfg.getListOfSampledVolumes();
+			if (listOfSampledVols == null) {
+				throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry"); 
+			}
+			int numSampledVols = (int)sfg.getNumSampledVolumes();
+			VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols]; 
+			// get pixel classes for geometry
+			for (int i = 0; i < numSampledVols; i++) {
+				SampledVolume sVol = listOfSampledVols.get(i);
+				// from subVolume, get pixelClass?
+				vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(), (int)sVol.getSampledValue());
+			}
+			vcImage.setPixelClasses(vcpixelClasses);
+			// now create image geometry
+			vcGeometry = new Geometry("spatialGeom", vcImage);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Unable to create image from SampledFieldGeometry : " + e.getMessage());
+		} 
+	}
 	GeometrySpec vcGeometrySpec = vcGeometry.getGeometrySpec();
 	vcGeometrySpec.setOrigin(vcOrigin);
 	try {
@@ -2997,7 +3018,7 @@ protected void addGeometry() {
 					}
 					} //sm != null
 					else {
-						logger.sendMessage(VCLogger.MEDIUM_PRIORITY, VCLogger.OVERALL_WARNINGS,
+						logger.sendMessage(VCLogger.Priority.MediumPriority, VCLogger.ErrorType.OverallWarning,
 								"No structure " + s.getName() + " requested by species context " + paramSpContext.getName());
 					}
 				}	// end if (paramSpContext != null)

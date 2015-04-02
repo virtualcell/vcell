@@ -1,12 +1,11 @@
 package org.vcell.sbml;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.sbml.libsbml.libsbmlConstants;
 
 public class LibSBMLConstantsAdapter {
@@ -52,23 +51,30 @@ public class LibSBMLConstantsAdapter {
 	}
 	
 	/**
-	 * display error message to stream if i != {@link libsbmlConstants#LIBSBML_OPERATION_SUCCESS}
-	 * @param dest
-	 * @param i
-	 * @param throwException throw exception if i != success
-	 * @throws RuntimeException if requested
+	 * if i != {@link libsbmlConstants#LIBSBML_OPERATION_SUCCESS}, log warning message 
+	 * @param lg logger to log to 
+	 * @param i libsbml return code
 	 */
-	public static void displayIfError(OutputStream dest, int i, boolean throwException) {
+	public static void checkReturnCode(Logger lg, int i) {
 		if (i == libsbmlConstants.LIBSBML_OPERATION_SUCCESS) {
 			return;
 		}
-		PrintWriter pw = new PrintWriter(dest);
 		String msg = "SBML Error " + lookup(i);
-		pw.println(msg);
-		if (throwException) {
-			throw new RuntimeException(msg);
+		lg.warn(msg);
+	}
+
+	/**
+	 * if i != {@link libsbmlConstants#LIBSBML_OPERATION_SUCCESS}  throw exception
+	 * @param dest, may be null if throwException is true
+	 * @param i libsbml return code
+	 * @throws SbmlException 
+	 */
+	public static void throwIfError(int i) throws SbmlException {
+		if (i == libsbmlConstants.LIBSBML_OPERATION_SUCCESS) {
+			return;
 		}
-		
+		String msg = "SBML Error " + lookup(i);
+		throw new SbmlException(msg);
 	}
 	
 	
