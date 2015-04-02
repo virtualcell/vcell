@@ -56,7 +56,8 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
+			//WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
+			WatchLogging.init(TimeUnit.MINUTES.toMillis(5));
 			if (args.length!=4){
 				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir)");
 				System.exit(1);
