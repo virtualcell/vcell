@@ -13,6 +13,12 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 #
 shopt -s -o nounset
 
+#
+# set java compiler
+#
+buildsupport=/share/apps/vcell2/buildsupport/currentjdk
+export PATH=${buildsupport}/bin:$PATH
+
 classpath="${vcellapi_jars}:${common_jvm_jars}"
 
 javac -cp ${classpath} -d ${vcellapi_root}/bin -sourcepath ${vcellapi_root}/src ${vcellapi_root}/src/org/vcell/rest/VCellApiMain.java
