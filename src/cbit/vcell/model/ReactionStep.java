@@ -22,6 +22,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -56,7 +57,8 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
  */
 @SuppressWarnings("serial")
 public abstract class ReactionStep implements ModelProcess, BioModelEntityObject, Model.ElectricalTopologyListener,
-		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, IssueSource
+		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener, Identifiable, 
+		IssueSource, Displayable
 {
 
 	public static final String PROPERTY_NAME_REACTION_PARTICIPANTS = "reactionParticipants";

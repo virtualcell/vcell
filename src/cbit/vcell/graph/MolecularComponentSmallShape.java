@@ -6,10 +6,15 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
+
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentSmallShape extends AbstractComponentShape {
 	
@@ -64,20 +69,56 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	}
 	
 	private Color setComponentColor() {
-
+		if(owner == null) {
+			return componentBad;
+		}
 		Color componentColor = componentBad;
-		if(mc.getComponentStateDefinitions().isEmpty()) {
+		if(owner instanceof MolecularType) {
 			componentColor = componentGreen;
-		} else {
-			componentColor = componentYellow;
-		}
-		if(isHidden(owner, mcp)) {
+		} else if(owner instanceof SpeciesContext) {
+			componentColor = componentGreen;
+		} else if(mcp != null && owner instanceof RbmObservable) {
 			componentColor = componentHidden;
+			if(mcp.isbVisible()) {
+				componentColor = componentGreen;
+			}
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			if(csp != null && !csp.isAny()) {
+				componentColor = componentGreen;
+			}
+		} else if(owner instanceof ReactionRule) {
+			componentColor = componentHidden;
+			if(mcp.isbVisible()) {
+				componentColor = componentGreen;
+			}
+			ComponentStatePattern csp = mcp.getComponentStatePattern();
+			if(csp != null && !csp.isAny()) {
+				componentColor = componentGreen;
+			}
 		}
-		if(hasIssues(owner, mcp, mc)) {
+//		if(!mc.getComponentStateDefinitions().isEmpty()) {
+//			// comment this out if don't want to show the states at all
+//			componentColor = componentYellow;
+//		}
+		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			componentColor = componentBad;
 		}
 		return componentColor;
+
+//		Old way of doing it below
+//		Color componentColor = componentBad;
+//		if(mc.getComponentStateDefinitions().isEmpty()) {
+//			componentColor = componentGreen;
+//		} else {
+//			componentColor = componentYellow;
+//		}
+//		if(isHidden(owner, mcp)) {
+//			componentColor = componentHidden;
+//		}
+//		if(hasIssues(owner, mcp, mc)) {
+//			componentColor = componentBad;
+//		}
+//		return componentColor;
 	}
 
 
@@ -94,5 +135,13 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 		g2.fillOval(xPos, yPos, componentDiameter, componentDiameter);			// g.fillRect(xPos, yPos, width, height);
 		g2.setColor(Color.BLACK);
 		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
+		
+		if(mc.getComponentStateDefinitions().size()>0) {
+			g2.setColor(componentYellow);
+			g2.fillOval(xPos + width - 5, yPos-2, 5, 5);
+			g.setColor(Color.darkGray);
+			g2.drawOval(xPos + width - 5, yPos-2, 5, 5);
+		}
+
 	}
 }
