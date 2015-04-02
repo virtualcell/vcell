@@ -37,6 +37,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	
 	private Displayable owner;
 	private SpeciesPattern sp;
+	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
 	
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
@@ -125,6 +126,22 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 	public int getWidth(){
 		return width;
 	}
+	public int getRightEnd(){		// get the x of the right end of the species pattern
+		int xRightmostMolecularType = 0;
+		int widthRightmostMolecularType = 0;
+		
+		for(MolecularTypeSmallShape stls : speciesShapes) {
+			int xCurrentMolecularType = stls.getX();
+			if(xRightmostMolecularType < xCurrentMolecularType) {
+				xRightmostMolecularType = xCurrentMolecularType;
+				widthRightmostMolecularType = stls.getWidth();
+			}
+		}
+		return xRightmostMolecularType + widthRightmostMolecularType;
+	}
+	public void addEndText(final String string) {
+		this.endText = string;
+	}
 	
 	public void paintSelf(Graphics g) {
 		final int offset = 2;			// initial lenth of vertical bar
@@ -150,10 +167,19 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 			g2.drawLine(bp.to.x, bp.to.y+1, bp.to.x, bp.to.y+offset);
 			g2.drawLine(bp.from.x, bp.from.y+offset, bp.to.x, bp.to.y+offset);
 
-			g.setFont(fontOld);
+			g2.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
-		g.setFont(fontOld);
+		
+		if(!endText.isEmpty()) {
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Color fontColor = Color.black;
+			g2.setFont(font);
+			g2.setColor(fontColor);
+			g2.drawString(endText, getRightEnd() + 4, yPos + 9);
+		}
+
+		g2.setFont(fontOld);
 		g2.setColor(colorOld);
 	}
 }
