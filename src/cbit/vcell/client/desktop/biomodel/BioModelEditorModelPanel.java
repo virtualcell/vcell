@@ -854,6 +854,100 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
+// ---------------------------------------------------------------------------------------------------------------------------------
+		DefaultScrollTableCellRenderer rbmReactionShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			List<SpeciesPatternSmallShape> spssList = new ArrayList<SpeciesPatternSmallShape>();
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == reactionTableModel) {
+						selectedObject = reactionTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof ReactionRule) {
+							ReactionRule rr = (ReactionRule)selectedObject;
+							Graphics panelContext = table.getGraphics();
+
+							spssList.clear();
+							List<ReactantPattern> rpList = rr.getReactantPatterns();
+							int xPos = 4;
+							for(int i = 0; i<rpList.size(); i++) {
+								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rr, isSelected);
+								if(i < rpList.size()-1) {
+									spss.addEndText("+");
+								} else {
+									if(rr.isReversible()) {
+										spss.addEndText("<->");
+										xPos += 7;
+									} else {
+										spss.addEndText("->");
+									}
+								}
+								xPos += spss.getWidth() + 10;
+								spssList.add(spss);
+							}
+							
+							List<ProductPattern> ppList = rr.getProductPatterns();
+							xPos+= 7;
+							for(int i = 0; i<ppList.size(); i++) {
+								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rr, isSelected);
+								if(i < ppList.size()-1) {
+									spss.addEndText("+");
+								}
+								xPos += spss.getWidth() + 10;
+								spssList.add(spss);
+							}
+						} else {
+							ReactionStep rs = (ReactionStep)selectedObject;
+							Graphics panelContext = table.getGraphics();
+							spssList.clear();
+							int xPos = 4;
+							for(int i = 0; i<rs.getNumReactants(); i++) {
+								spss = new SpeciesPatternSmallShape(xPos, 2, null, panelContext, rs, isSelected);
+								if(i < rs.getNumReactants()-1) {
+									spss.addEndText("+");
+								} else {
+									spss.addEndText("->");
+								}
+								xPos += spss.getWidth() + 25;
+								spssList.add(spss);
+							}
+							xPos+= 6;
+							for(int i = 0; i<rs.getNumProducts(); i++) {
+								spss = new SpeciesPatternSmallShape(xPos, 2, null, panelContext, rs, isSelected);
+								if(i < rs.getNumProducts()-1) {
+									spss.addEndText("+");
+								}
+								xPos += spss.getWidth() + 25;
+								spssList.add(spss);
+							}
+						}
+					} else {
+						spssList.clear();
+					}
+				}
+				setText("");
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternSmallShape spss : spssList) {
+					if(spss == null) {
+						continue;
+					}
+					spss.paintSelf(g);
+				}
+			}
+		};
+// -------------------------------------------------------------------------------------------------------------------------------
 		DefaultScrollTableCellRenderer rbmObservableShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
 			List<SpeciesPatternSmallShape> spssList = new ArrayList<SpeciesPatternSmallShape>();
 			SpeciesPatternSmallShape spss = null;
@@ -876,14 +970,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							spssList.clear();
 							for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 								SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-								// TODO: count the number of bonds for this sp and allow enough vertical space for them
 								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, observable, isSelected);
 								xPos += spss.getWidth() + 6;
 								spssList.add(spss);
 							}
-
-						
-						
 						}
 					} else {
 						spssList.clear();
@@ -903,7 +993,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
-// TODO: !!! add renderers for depiction of small shapes in the reactions table !!!
 
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
@@ -917,6 +1006,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
 		observablesTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setPreferredWidth(180);
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);

@@ -49,11 +49,12 @@ import cbit.vcell.parser.SymbolTable;
 public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ModelProcess> {	
 	public final static int COLUMN_EQUATION = 0;
 	public final static int COLUMN_LINK = 1;
-	public final static int COLUMN_NAME = 2;
-	public final static int COLUMN_STRUCTURE = 3;
-	public final static int COLUMN_KINETICS = 4;
+	public final static int COLUMN_DEPICTION = 2;
+	public final static int COLUMN_NAME = 3;
+	public final static int COLUMN_STRUCTURE = 4;
+	public final static int COLUMN_KINETICS = 5;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Reaction", "Link", "Name", "Structure", "Kinetics"};
+	private static String[] columnNames = new String[] {"Reaction", "Link", "Depiction", "Name", "Structure", "Kinetics"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
@@ -67,6 +68,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			}
 			case COLUMN_LINK:{
 				return BioPaxObject.class;
+			}
+			case COLUMN_DEPICTION:{
+				return Object.class;
 			}
 			case COLUMN_EQUATION:{
 				return ModelProcessEquation.class;

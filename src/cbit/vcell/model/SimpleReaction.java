@@ -127,4 +127,14 @@ public void setReactionParticipantsFromDatabase(Model model, ReactionParticipant
 	setReactionParticipants(reactionParticipants);
 }
 
+private static final String typeName = "Reaction";
+@Override
+public final String getDisplayName() {
+	return getName();
+}
+@Override
+public final String getDisplayType() {
+	return typeName;
+}
+
 }
