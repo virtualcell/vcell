@@ -73,7 +73,7 @@ public class VCellApiMain {
 				throw new RuntimeException("javascriptDir '"+args[2]+"' is not a directory");
 			}
 
-			PropertyLoader.loadProperties(false,false); //don't validate
+			PropertyLoader.loadProperties( ); //don't validate
 			
 			lg.trace("properties loaded");
 			
