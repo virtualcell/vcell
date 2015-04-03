@@ -323,12 +323,18 @@ public class PropertyLoader {
 	}
 
 	/**
-	 * 
-	 * @param ctx context to validate in (may be null)
 	 * @param throwException throw exception if validation error
 	 * @throws java.io.IOException
 	 */
 	public final static void loadProperties(boolean throwException) throws java.io.IOException {
+		loadProperties(throwException,false);
+	}
+	/**
+	 * @param throwException throw exception if validation error
+	 * @param validate validate properties 
+	 * @throws java.io.IOException
+	 */
+	public final static void loadProperties(boolean throwException, boolean validate) throws java.io.IOException {
 
 		File propertyFile = null;
 		//
@@ -375,7 +381,9 @@ public class PropertyLoader {
 				}
 			}
 		}
-		validateSystemProperties(throwException);
+		if (validate) {
+			validateSystemProperties(throwException);
+		}
 
 		// display new properties
 		//System.getProperties().list(System.out);
