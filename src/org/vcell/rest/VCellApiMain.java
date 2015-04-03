@@ -56,8 +56,9 @@ public class VCellApiMain {
 	 */
 	public static void main(String[] args) {
 		try {
-			//WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
-			WatchLogging.init(TimeUnit.MINUTES.toMillis(5));
+			WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
+			//don't use static field -- want to initialize logging first
+			Logger lg = Logger.getLogger(VCellApiMain.class);
 			if (args.length!=4){
 				System.out.println("usage: VCellApiMain keystorePath keystorePassword javascriptDir (-|logDir)");
 				System.exit(1);
@@ -72,10 +73,8 @@ public class VCellApiMain {
 				throw new RuntimeException("javascriptDir '"+args[2]+"' is not a directory");
 			}
 
-			PropertyLoader.loadProperties();
+			PropertyLoader.loadProperties(false,false); //don't validate
 			
-			//don't use static field -- want to initialize logging first
-			Logger lg = Logger.getLogger(VCellApiMain.class);
 			lg.trace("properties loaded");
 			
 			//
