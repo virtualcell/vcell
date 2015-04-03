@@ -12,11 +12,12 @@ package org.vcell.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+
+import cbit.vcell.mongodb.VCMongoMessage;
 
 public class PropertyLoader {
 	
@@ -185,17 +186,39 @@ public class PropertyLoader {
 		 * is property set 
 		 */
 		boolean set = false;
+		/**
+		 * is property required?
+		 */
+		boolean required = false;
+		/**
+		 * was message sent to mongo?
+		 */
+		boolean sentToMongo = false;
+		/**
+		 * stored message for sending later
+		 */
+		String message = null;
 
 		MetaProp(ValueType valueType) {
 			this.valueType = valueType;
 		} 
 
 	}
-	/**
-	 * has user been nagged about required property not marked required?
-	 */
-	private static Map<String,Object> nagged = new HashMap<String, Object>();
+	private static boolean errorsToMongo = false;
+	private static boolean checkRequired = false; 
 
+	public static void sendErrorsToMongo( )  {
+		if (errorsToMongo == false) {
+			for (Entry<String, MetaProp> entry  : propMap.entrySet()) {
+				MetaProp mp = entry.getValue();
+				if (mp.message  != null && mp.sentToMongo == false) {
+					VCMongoMessage.sendInfo(mp.message);
+					mp.sentToMongo = true;
+				}
+			}
+			errorsToMongo = true;
+		}
+	}
 
 	/**
 	 * * record static String in {@link #propMap}
@@ -230,8 +253,6 @@ public class PropertyLoader {
 		query.delete();
 		return systemTemporaryDirectory;
 	}
-
-
 
 	public final static boolean getBooleanProperty(String propertyName, boolean defaultValue){
 		try {
@@ -290,17 +311,46 @@ public class PropertyLoader {
 			return defaultValue;
 		}		
 	}
-
+	
+	/**
+	 * set to mongo if {@link #errorsToMongo} is true, or Standard out and save message for later
+	 * @param prop not null
+	 * @param message not null
+	 */
+	private static void report(MetaProp prop, String message) {
+		if (errorsToMongo) {
+			if (!prop.sentToMongo) {
+				VCMongoMessage.sendInfo(message);
+				prop.sentToMongo = true;
+			}
+			return;
+		}
+	
+		//else
+		
+		if (prop.message == null) {
+			prop.message = message;
+			System.err.println(message);
+		}
+	}
+	
 	/**
 	 * This method was created in VisualAge.
 	 * @return java.lang.String
 	 * @param propertyName java.lang.String
 	 */
-	public final static String getRequiredProperty(String propertyName) throws ConfigurationException {
-		if (!nagged.containsKey(propertyName)) {
-			if (!propMap.containsKey(propertyName) ) {
-				System.err.println("Unknown required property " + propertyName);
-				nagged.put(propertyName, null);
+	public final static synchronized String getRequiredProperty(String propertyName) throws ConfigurationException {
+		if (checkRequired) {
+			MetaProp mp = propMap.get(propertyName);
+			if (mp != null) {
+				if (!mp.sentToMongo && !mp.required) {
+					report(mp, "PROPERTY: " + propertyName + " not marked required");
+				}
+			}
+			else {
+				mp = new MetaProp(ValueType.GEN);
+				propMap.put(propertyName,mp);
+				report(mp, "PROPERTY: required property " + propertyName + " not mapped");
 			}
 		}
 		try {
@@ -314,27 +364,20 @@ public class PropertyLoader {
 			throw new ConfigurationException("required System property \""+propertyName+"\" not defined");
 		}		
 	}
+	public final static void loadProperties(String[] required) throws java.io.IOException {
+		loadProperties();
+		validateSystemProperties(required);
+	}
+
+	@Deprecated
+	public final static void loadProperties(boolean throwException, boolean validate) throws java.io.IOException {
+		loadProperties();
+	}
 	/**
 	 * default; no validation of required
 	 * @throws java.io.IOException
 	 */
 	public final static void loadProperties() throws java.io.IOException {
-		loadProperties(false);
-	}
-
-	/**
-	 * @param throwException throw exception if validation error
-	 * @throws java.io.IOException
-	 */
-	public final static void loadProperties(boolean throwException) throws java.io.IOException {
-		loadProperties(throwException,false);
-	}
-	/**
-	 * @param throwException throw exception if validation error
-	 * @param validate validate properties 
-	 * @throws java.io.IOException
-	 */
-	public final static void loadProperties(boolean throwException, boolean validate) throws java.io.IOException {
 
 		File propertyFile = null;
 		//
@@ -368,7 +411,6 @@ public class PropertyLoader {
 			p.load(propFile);
 			propFile.close();
 			System.out.println("loaded properties from " + propertyFile.getAbsolutePath() + " specifed by " + where);
-			verifyPropertiesInFile(propertyFile,p);
 			for (Map.Entry<Object,Object> entry : p.entrySet() ) {
 				String key = entry.getKey().toString();
 				String value = entry.getValue().toString();
@@ -381,34 +423,10 @@ public class PropertyLoader {
 				}
 			}
 		}
-		if (validate) {
-			validateSystemProperties(throwException);
-		}
-
 		// display new properties
 		//System.getProperties().list(System.out);
 		System.out.println("ServerID=" + getRequiredProperty(vcellServerIDProperty)+", SoftwareVersion="+getRequiredProperty(vcellSoftwareVersion));
 	}
-
-	/**
-	 * This method was created in VisualAge.
-	 * @param args java.lang.String[]
-	 */
-	public static void main(String args[]) {
-		try {
-			System.out.println("\n\n\nloading properties....\n\n\n");
-			PropertyLoader.loadProperties();
-
-			PropertyLoader.show();
-
-			//	System.out.println("verifying consistency of system properties");
-			//	System.getProperty
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-			System.exit(1);
-		}
-	}
-
 
 	/**
 	 * This method was created in VisualAge.
@@ -417,83 +435,39 @@ public class PropertyLoader {
 		System.getProperties().list(System.out);
 	}
 
-
-	/**
-	 * verify no missing properties and no extra properties
-	 * @param f file properties came from
-	 * @param p the properties 
-	 */
-	private static void verifyPropertiesInFile(File f, Properties p) {
-		String propertyFileName = f.getAbsolutePath();
-
-		for (Object propName : p.keySet()) {
-			//
-			// complain if property file has an unknown property
-			//
-			if (!propMap.containsKey(propName)){
-				System.out.println("<<<ERROR>>> UNKNOWN PROPERTY \""+propName+"\" in property file \""+propertyFileName+"\"");
-			}
-			else {
-				propMap.get(propName).fileSet = true;
-			}
-		}
-
-		//listing missing properties
-		for (Map.Entry<String,MetaProp> entry : propMap.entrySet( )) {
-			MetaProp mp = entry.getValue();
-			if (!mp.fileSet) {
-				System.out.println("<<<WARNING>>> MISSING PROPERTY \""+entry.getKey()+"\" in property file \""+propertyFileName+"\"");
-			}
-		}
-	}
-
 	/***
 	 * check system properties against expected
-	 * @param ctx
-	 * @param throwException
-	 * @return true if good ; false if not (and throwException is false)
+	 * @param required array of required properties
 	 */
-	private static boolean validateSystemProperties(boolean throwException) {
+	private static void validateSystemProperties(String[] required) {
+		checkRequired = true;
 		Properties p = System.getProperties();
-
+		
 		for (Object propName : p.keySet()) {
 			if (propMap.containsKey(propName)) {
 				propMap.get(propName).set = true;
 			}
 		}
-
+		
 		StringBuffer validationReport = new StringBuffer();
-		List<String> missingReq = new ArrayList<String>( );
-		//listing missing properties
-		for (Map.Entry<String,MetaProp> entry : propMap.entrySet( )) {
-			MetaProp mp = entry.getValue();
-			if (!mp.set) {  
-			}
-			if (mp.set) {
-				verifyEntry(entry,validationReport, mp.fileSet);
-			}
-		}
-		String errors = "";
-		if (missingReq.size( ) > 0) {
-			errors = "Followed required properties not set:";
-			for (String m : missingReq) {
-				errors  += "\n" + m;
-			}
-			errors  += "\n";
-		}
-		if (validationReport.length() > 0) {
-			errors  += "\n" + validationReport.toString();
-		}
-		if (!errors.isEmpty()) {
-			if (throwException) {
-				throw new IllegalStateException(errors);
+		for (String propName: required) {
+			MetaProp meta = propMap.get(propName);
+			if (meta != null) {
+				if (meta.set) {
+					verifyEntry(propName,meta,validationReport);
+				}
+				else {
+					validationReport.append("Process required property " + propName + " not set\n");
+				}
+				meta.required = true;
 			}
 			else {
-				System.err.println(errors);
+				validationReport.append("Process required property " + propName + " not mapped\n");
 			}
-
 		}
-		return true;
+		if (validationReport.length( ) > 0) {
+			throw new IllegalStateException(validationReport.toString());
+		}
 	}
 
 	/**
@@ -513,12 +487,14 @@ public class PropertyLoader {
 	 * @param report destination to report discrepancies
 	 * @param fileSet is set from file? (for formatting messages)
 	 */
-	private static void verifyEntry( Map.Entry<String,MetaProp> entry, StringBuffer report, boolean fileSet)  {
-		ValueType vt = entry.getValue().valueType;
+	//private static void verifyEntry( Map.Entry<String,MetaProp> entry, StringBuffer report, boolean fileSet)  {
+	private static void verifyEntry(String name, MetaProp meta, StringBuffer report)  {
+		ValueType vt = meta.valueType;
 		if (vt == ValueType.GEN) {
 			return;
 		}
-		String value = System.getProperty(entry.getKey());
+	    final boolean fileSet = meta.fileSet;
+		String value = System.getProperty(name);
 		switch (vt) {
 		case GEN:
 			assert false : "don't go here";
@@ -527,7 +503,7 @@ public class PropertyLoader {
 		{
 			File f = new File(value);
 			if (!f.isDirectory()) {
-				report.append(entry.getKey() + " value " + value + fromFile(fileSet) + " is not a directory\n");
+				report.append(name + " value " + value + fromFile(fileSet) + " is not a directory\n");
 			}
 			return;
 		}
@@ -535,7 +511,7 @@ public class PropertyLoader {
 		{
 			File f = new File(value);
 			if (!f.canExecute()) {
-				report.append(entry.getKey() + " value " + value + fromFile(fileSet) + " is not executable\n");
+				report.append(name + " value " + value + fromFile(fileSet) + " is not executable\n");
 			}
 			return;
 		}
@@ -543,7 +519,7 @@ public class PropertyLoader {
 			try {
 				Long.parseLong(value);
 			} catch (NumberFormatException e) {
-				report.append(entry.getKey() + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n"); 
+				report.append(name + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n"); 
 			}
 		case URL:
 			//not going to make trip web to verify at this point
