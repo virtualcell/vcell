@@ -2209,6 +2209,13 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			if (rateRules == null) {
 				if (simContext.getRateRule(scm.getSpeciesContext()) == null) {
 					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
+					if (sm.getGeometryClass() == null) {
+						Structure s = sm.getStructure(); 
+						if (s != null) {
+							throw new RuntimeException("unmapped structure " + s.getName());
+						}
+						throw new RuntimeException("structure mapping with no structure or mapping");
+					}
 					Variable dependentVariable = newFunctionOrConstant(getMathSymbol(scm.getSpeciesContext(),sm.getGeometryClass()),getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass());
 					dependentVariable.setDomain(new Domain(sm.getGeometryClass()));
 					varHash.addVariable(dependentVariable);
