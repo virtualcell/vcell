@@ -19,17 +19,17 @@ package cbit.util.xml;
 public abstract class VCLogger {
 
 	//importance of messages from the translator, decides whether to bail out, interrupt/request feedback, or just report.
-	private static final int LOW_PRIORITY = 0;
-	private static final int MEDIUM_PRIORITY = 1;
-	private static final int HIGH_PRIORITY = 2;
+	public static final int LOW_PRIORITY = 0;
+	public static final int MEDIUM_PRIORITY = 1;
+	public static final int HIGH_PRIORITY = 2;
 	
-	private static final int SCHEMA_VALIDATION_ERROR = 0;
-	private static final int UNSUPPORED_ELEMENTS_OR_ATTS = 1;	//useful for SBML imports
-	private static final int COMPARTMENT_ERROR = 2;           
-	private static final int UNIT_ERROR = 3;
-	private static final int SPECIES_ERROR = 4;
-	private static final int REACTION_ERROR = 5;
-	private static final int OVERALL_WARNINGS = 6;
+	public static final int SCHEMA_VALIDATION_ERROR = 0;
+	public static final int UNSUPPORED_ELEMENTS_OR_ATTS = 1;	//useful for SBML imports
+	public static final int COMPARTMENT_ERROR = 2;           
+	public static final int UNIT_ERROR = 3;
+	public static final int SPECIES_ERROR = 4;
+	public static final int REACTION_ERROR = 5;
+	public static final int OVERALL_WARNINGS = 6;
 
 	public enum Priority {
 		LowPriority(LOW_PRIORITY),
@@ -79,14 +79,12 @@ public abstract class VCLogger {
 		 * @param m
 		 * @return {@link #OverallWarning} if m invalid
 		 */
-		/*
 		public static ErrorType fromOrdinal(int m)  {
 			if (isValidOrdinal(m)) {
 				return errorTypes[m];
 			}
 			return OverallWarning;
 		}
-		*/
 		
 		/**
 		 * cache for faster access
@@ -94,6 +92,7 @@ public abstract class VCLogger {
 		private static final ErrorType[] errorTypes = ErrorType.values();
 
 	}
+	
 	
 	private static void eCheck(Enum<?> e, int i) {
 		if (e.ordinal() != i) {
@@ -106,19 +105,31 @@ public abstract class VCLogger {
 
 	public abstract void sendAllMessages();
 
-	public void sendMessage(Priority p, ErrorType et) throws Exception {
-		sendMessage(p,et,et.message);
-		
-	}
+	/**
+	 * replaced by {@link #sendMessage(Priority, ErrorType)}
+	 */
+	@Deprecated
+	public abstract void sendMessage(int messageLevel, int messageType) throws Exception;
 	
-	public abstract void sendMessage(Priority p, ErrorType et, String message) throws Exception; 
+	public void sendMessage(Priority p, ErrorType et) throws Exception {
+		sendMessage(p.ordinal(),et.ordinal());
+	}
 
 
-	/*
+	/**
+	 * replaced by {@link #sendMessage(Priority, ErrorType, String))}
+	 */
+	@Deprecated
+	public abstract void sendMessage(int messageLevel, int messageType, String message) throws Exception;
+	
+	public void sendMessage(Priority p, ErrorType et, String message) throws Exception {
+		sendMessage(p.ordinal(),et.ordinal(), message);
+	}
+
+
 	public static String getDefaultMessage(int messageType) {
 		return ErrorType.fromOrdinal(messageType).message;
 	}
-	*/
 
 	/**
 	 * prefer {@link ErrorType#isValidOrdinal(int)}
