@@ -54,10 +54,15 @@ Typical usage:
  
  */
 public class AsynchProgressPopup extends AsynchGuiUpdater implements ClientTaskStatusSupport {
+	/**
+	 * cached dialog
+	 */
 	private ProgressDialog dialog = null;
 	private int progress = 0;
-	private int autoProgress = 0;
 	private boolean inputBlocking = false;
+	/**
+	 * used to determine which dialog to use; make final since {@link #dialog} is cached
+	 */
 	private final boolean knowsProgress;
 
 	private Component requester = null;
@@ -153,6 +158,10 @@ public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thr
 	};
 }
 
+/**
+ * select and created dialog based on {@link #knowsProgress} value
+ * @return {@link DefaultProgressDialog} or {@link IndefiniteProgressDialog}
+ */
 protected ProgressDialog getDialog() {
 	if (dialog == null) {
 		Frame owner = JOptionPane.getFrameForComponent(requester);
