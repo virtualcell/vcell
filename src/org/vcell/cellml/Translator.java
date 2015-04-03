@@ -113,7 +113,7 @@ public abstract class Translator {
       		if (errorLog.length() > 0) {
 				System.err.println(errorLog);
 				if (vcLogger != null) {
-					vcLogger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.SCHEMA_VALIDATION_ERROR);
+					vcLogger.sendMessage(VCLogger.Priority.LowPriority, VCLogger.ErrorType.SchemaValidation);
 					//vcLogger.sendMessage(VCLogger.LOW_PRIORITY, TranslationMessage.SCHEMA_VALIDATION_ERROR, 
 					//                          "The source model has invalid elements/attributes:\n" + errorLog)
 				}
