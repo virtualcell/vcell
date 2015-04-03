@@ -24,6 +24,7 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.Text;
 import org.vcell.cellml.CellQuanVCTranslator;
+import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -200,7 +201,7 @@ public static String exportSBML(VCDocument vcDoc, int level, int version, int pk
 			sbmlExporter.setSelectedSimContext(simContextFromModifiedBioModel);
 			sbmlExporter.setSelectedSimulationJob(modifiedSimJob);
 			return sbmlExporter.getSBMLFile();
-		} catch (ExpressionException e) {
+		} catch (ExpressionException | SbmlException e) {
 			e.printStackTrace(System.out);
 			throw new XmlParseException(e);
 		}
