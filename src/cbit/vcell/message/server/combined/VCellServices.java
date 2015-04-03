@@ -153,20 +153,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	 * @param args an array of command-line arguments
 	 */
 	public static void main(java.lang.String[] args) {
-		long watchDelayMillis = TimeUnit.MINUTES.toMillis(5);
-		final String PNAME = "vcell.watchLog4JInterval";
-		String intvlProp = System.getProperty(PNAME);
-		if (intvlProp != null) {
-			try {
-				watchDelayMillis = Long.parseLong(intvlProp);
-			}
-			catch (NumberFormatException nfe) {
-				System.err.println("invalid " + PNAME +  " property " + intvlProp);
-			}
-		}
-		
-		
-		WatchLogging.init(watchDelayMillis);
+		WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 		OperatingSystemInfo.getInstance();
 	
 		if (args.length != 3 && args.length != 6) {

@@ -2946,44 +2946,43 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 					doc = bioModel;
 				}else{ // is XML
-					XMLSource xmlSource = externalDocInfo.createXMLSource();
-					org.jdom.Element rootElement = xmlSource.getXmlDoc().getRootElement();
-					String xmlType = rootElement.getName();
-					String modelXmlType = null;
-					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
-						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
-						// Will deal with multiple children of <vcml> Element when we get to model composition.
-						@SuppressWarnings("unchecked")
-						List<Element> childElementList = rootElement.getChildren();
-						Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
-						modelXmlType = modelElement.getName();
-					}
-					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
-						doc = XmlHelper.XMLToBioModel(xmlSource);
-					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
-						doc = XmlHelper.XMLToMathModel(xmlSource);					
-					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
-						doc = XmlHelper.XMLToGeometry(xmlSource);
-					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-						Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
-						boolean bIsSpatial = (namespace==null) ? false : true; 
-						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
-					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
-						if (requester instanceof BioModelWindowManager){
-							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importBioCellML(transLogger, xmlSource);
-						}else{
-							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importMathCellML(transLogger, xmlSource);
+					try (TranslationLogger transLogger = new TranslationLogger(requester)) {
+						XMLSource xmlSource = externalDocInfo.createXMLSource();
+						org.jdom.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+						String xmlType = rootElement.getName();
+						String modelXmlType = null;
+						if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
+							// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
+							// Will deal with multiple children of <vcml> Element when we get to model composition.
+							@SuppressWarnings("unchecked")
+							List<Element> childElementList = rootElement.getChildren();
+							Element modelElement = childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+							modelXmlType = modelElement.getName();
 						}
-					} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
-						doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(), requester);
-					} else { // unknown XML format
-						throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
-					}
-					if(externalDocInfo.getDefaultName() != null){
-						doc.setName(externalDocInfo.getDefaultName());
+						if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
+							doc = XmlHelper.XMLToBioModel(xmlSource);
+						} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
+							doc = XmlHelper.XMLToMathModel(xmlSource);					
+						} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
+							doc = XmlHelper.XMLToGeometry(xmlSource);
+						} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+							Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+							boolean bIsSpatial = (namespace==null) ? false : true; 
+							doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
+						} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
+							if (requester instanceof BioModelWindowManager){
+								doc = XmlHelper.importBioCellML(transLogger, xmlSource);
+							}else{
+								doc = XmlHelper.importMathCellML(transLogger, xmlSource);
+							}
+						} else if (xmlType.equals(MicroscopyXMLTags.FRAPStudyTag)) {
+							doc = VFrapXmlHelper.VFRAPToBioModel(hashTable, xmlSource, getDocumentManager(), requester);
+						} else { // unknown XML format
+							throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
+						}
+						if(externalDocInfo.getDefaultName() != null){
+							doc.setName(externalDocInfo.getDefaultName());
+						}
 					}
 				}
 			}

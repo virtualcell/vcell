@@ -78,7 +78,7 @@ public class Logging {
 	 */
 	private static void initFromFile(File initFile) {
 		if (initFile != null && initFile.exists()) {
-			final boolean watchTheLog = WatchLogging.WATCH_LOGGING_DELAY_MILLIS != 0;
+			final boolean watchTheLog = WatchLogging.WATCH_LOGGING_DELAY_MILLIS > 0;
 			if (!watchTheLog) {
 				PropertyConfigurator.configure(initFile.getAbsolutePath());
 			}
