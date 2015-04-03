@@ -87,28 +87,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	public File solve(String filePrefix, File outDir, String sbmlFileName, SimSpec testSpec) throws IOException, SolverException, SbmlException {
 		try {
-		    cbit.util.xml.VCLogger sbmlImportLogger = new cbit.util.xml.VCLogger() {
-		        public void sendMessage(int messageLevel, int messageType) {
-		            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
-		            sendMessage(messageLevel, messageType, message);	
-		        }
-		        public void sendMessage(int messageLevel, int messageType, String message) {
-		            System.out.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
-		            if (messageLevel==VCLogger.HIGH_PRIORITY){
-		            	SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
-		            	if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {
-		            		cat = SBMLImportException.Category.RESERVED_SPATIAL;
-		            	}
-		            	
-		            	throw new SBMLImportException(message,cat);
-		            }
-		        }
-		        public void sendAllMessages() {
-		        }
-		        public boolean hasMessages() {
-		            return false;
-		        }
-		    };
+		    cbit.util.xml.VCLogger sbmlImportLogger = new LocalLogger(); 
 	
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
@@ -396,25 +375,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 
 	public File solveVCell(String filePrefix, File outDir, String sbmlFileName, SimSpec testSpec) throws IOException, SolverException, SbmlException {
 		try {
-		    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-		        private StringBuffer buffer = new StringBuffer();
-		        public void sendMessage(int messageLevel, int messageType) {
-		            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
-		            sendMessage(messageLevel, messageType, message);	
-		        }
-		        public void sendMessage(int messageLevel, int messageType, String message) {
-		            System.out.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
-		            if (messageLevel==VCLogger.HIGH_PRIORITY){
-		            	throw new RuntimeException("SBML Import Error: "+message);
-		            }
-		        }
-		        public void sendAllMessages() {
-		        }
-		        public boolean hasMessages() {
-		            return false;
-		        }
-		    };
-	
+		    cbit.util.xml.VCLogger logger = new LocalLogger(); 
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		    // and import SBML  (sbml->bioModel)
@@ -780,6 +741,25 @@ public class VCellSBMLSolver implements SBMLSolver {
 	
 		return odeSolverResultSet;
 	}
-
-
+	
+    private class LocalLogger extends VCLogger{
+				@Override
+				public void sendMessage(Priority p, ErrorType et, String message)
+						throws Exception {
+		            System.out.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+		            if (p==VCLogger.Priority.HighPriority) {
+		            	SBMLImportException.Category cat = SBMLImportException.Category.UNSPECIFIED;
+		            	if (message.contains(SBMLImporter.RESERVED_SPATIAL) ) {
+		            		cat = SBMLImportException.Category.RESERVED_SPATIAL;
+		            	}
+		            	
+		            	throw new SBMLImportException(message,cat);
+		            }
+		        }
+		        public void sendAllMessages() {
+		        }
+		        public boolean hasMessages() {
+		            return false;
+		        }
+		    };
 }

@@ -46,15 +46,10 @@ public class SBMLImporterTest {
 		}
 
 		@Override
-		public void sendMessage(int messageLevel, int messageType)
+		public void sendMessage(Priority p, ErrorType et, String message)
 				throws Exception {
-			System.err.println(messageLevel + " " + messageType);
-			
+			System.err.println(p + " " + et + ": "  + message);
 		}
 
-		@Override
-		public void sendMessage(int messageLevel, int messageType, String message) throws Exception {
-			System.err.println(messageLevel + " " + messageType + " " + message);
-		}
 	}
 }

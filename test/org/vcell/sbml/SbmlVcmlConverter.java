@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.test.VCellSBMLSolver;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.Executable;
@@ -80,14 +79,12 @@ public static void main(String[] args) {
 			}
 			// Create a default VCLogger - SBMLImporter needs it
 	        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-	            private StringBuffer buffer = new StringBuffer();
-	            public void sendMessage(int messageLevel, int messageType) {
-	                String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
-	                sendMessage(messageLevel, messageType, message);	
-	            }
-	            public void sendMessage(int messageLevel, int messageType, String message) {
-	                System.err.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
-	                if (messageLevel == VCLogger.HIGH_PRIORITY) {
+	        	
+	        	
+	            @Override
+				public void sendMessage(Priority p, ErrorType et, String message) {
+	                System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+	                if (p == VCLogger.Priority.HighPriority) {
 	                	throw new RuntimeException("Import failed : " + message);
 	                }
 	            }
