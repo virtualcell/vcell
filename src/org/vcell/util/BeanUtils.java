@@ -42,7 +42,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Executors;
@@ -72,11 +74,13 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 
-import com.ibm.icu.math.BigDecimal;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.AmplistorUtils;
+
+import com.ibm.icu.math.BigDecimal;
+
+import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
@@ -1170,6 +1174,41 @@ public final class BeanUtils {
 		BigDecimal d = BigDecimal.valueOf(divisor);
 		BigDecimal remainder = n.remainder(d);
 		return remainder.compareTo(BigDecimal.ZERO) == 0;
+	}
+
+	/**
+	 * convert ordinal to Enum
+	 * @param clzz may not be null
+	 * @param ordinal
+	 * @return e with e.ordinal( ) == ordinal
+	 * @throws IllegalArgumentException if ordinal out of range
+	 */
+	public static <E extends Enum<E> > E lookupEnum(Class<E> clzz, int ordinal) {
+		EnumSet<E> set = EnumSet.allOf(clzz);
+		if (ordinal < set.size()) {
+			Iterator<E> iter = set.iterator();
+			for (int i = 0; i < ordinal; i++) {
+				iter.next();
+			}
+			E rval = iter.next();
+			assert(rval.ordinal() == ordinal);
+			return rval;
+		}
+		throw new IllegalArgumentException("Invalid value " + ordinal + " for " + ExecutionTrace.justClassName(clzz) + ", must be < " + set.size());
+	}
+	
+	/**
+	 * downcast to object or return null
+	 * @param clzz return type, not null 
+	 * @param obj may be null 
+	 * @return obj as T or null if obj is null or not of type T
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T downcast(Class<T> clzz, Object obj) {
+		if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
+			return (T) obj;
+		}
+		return null;
 	}
 
 }
