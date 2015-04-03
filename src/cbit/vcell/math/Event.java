@@ -337,4 +337,15 @@ public class Event extends CommentedBlockObject implements Matchable, Serializab
 		}
 		
 	}
+	
+	public void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
+
+		triggerExpression = Equation.getFlattenedExpression(simSymbolTable,triggerExpression,bRoundCoefficients);
+		if (delay!=null && delay.durationExpression!=null){
+			delay.durationExpression = Equation.getFlattenedExpression(simSymbolTable,delay.durationExpression,bRoundCoefficients);
+		}
+		for (EventAssignment eventAssignment : eventAssignmentList){
+			eventAssignment.assignmentExpression = Equation.getFlattenedExpression(simSymbolTable,eventAssignment.assignmentExpression,bRoundCoefficients);
+		}
+	}
 }

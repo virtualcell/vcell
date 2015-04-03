@@ -449,7 +449,8 @@ private SpeciesContext[] getSpeciesContextFromModel(QueryHashtable dbc, Connecti
 	
 	sql =	" SELECT * " +
 			" FROM " + speciesContextModelTable.getTableName() + 
-			" WHERE " + speciesContextModelTable.getTableName()+"."+speciesContextModelTable.modelRef+" = "+modelKey;
+			" WHERE " + speciesContextModelTable.getTableName()+"."+speciesContextModelTable.modelRef+" = "+modelKey +
+			" ORDER BY " + speciesContextModelTable.id;
 	
 //System.out.println(sql);
 	//Connection con = conFact.getConnection();
