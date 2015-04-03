@@ -49,6 +49,7 @@ public class VCellClientTest {
 	}
 	
 	
+	
 /**
  * Starts the application.
  * @param args an array of command-line arguments
@@ -128,13 +129,15 @@ public static void main(java.lang.String[] args) {
 		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");
 		if (propertyFile.length()>0){
 			try {
-				PropertyLoader.loadProperties();
+				PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
 				VCMongoMessage.enabled = true;
 				VCMongoMessage.serviceStartup(ServiceName.client,null,null);
+				PropertyLoader.sendErrorsToMongo();
 			}catch (Exception e){
 				System.out.println("failed to start Mongo logging");
 			}
 		}else{
+			PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
 			VCMongoMessage.enabled = false;
 		}
 
@@ -154,4 +157,24 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
+
+/**
+ * array of properties required for correct operation
+ */
+private static final String REQUIRED_CLIENT_PROPERTIES[] = {
+	PropertyLoader.installationRoot,
+	PropertyLoader.primarySimDataDirProperty,
+	PropertyLoader.secondarySimDataDirProperty,
+	PropertyLoader.dbPassword,
+	PropertyLoader.dbUserid,
+	PropertyLoader.dbDriverName,
+	PropertyLoader.dbConnectURL,
+	PropertyLoader.vcellSoftwareVersion,
+	PropertyLoader.vcellServerIDProperty,
+	PropertyLoader.mongodbDatabase,
+	PropertyLoader.mongodbHost,
+	PropertyLoader.mongodbLoggingCollection,
+	PropertyLoader.mongodbPort
+	
+};
 }
