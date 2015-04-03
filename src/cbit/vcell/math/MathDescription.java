@@ -39,6 +39,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.SubVolume;
@@ -2595,7 +2596,22 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 	MathSymbolTable mathSymbolTable = mathSymbolTableFactory.createMathSymbolTable(newMath);
 	
 	//
-	// substitute all rates, initial conditions, boundary conditions, jump conditions
+	// for top-level objects, substitute all events, 
+	//
+	for (Event event : eventList){
+		event.flatten(mathSymbolTable,bRoundCoefficients);
+	}
+
+	Enumeration<Variable> varEnum = variableList.elements();
+	while (varEnum.hasMoreElements()){
+		Variable var = varEnum.nextElement();
+		if (var instanceof RandomVariable){
+			((RandomVariable)var).flatten(mathSymbolTable,bRoundCoefficients);
+		}
+	}
+	
+	//
+	// for each subdomain, substitute all rates, initial conditions, boundary conditions, jump conditions
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
 		SubDomain subDomain = newMath.subDomainList.elementAt(i);
@@ -2603,6 +2619,18 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 		while (equEnum.hasMoreElements()){
 			Equation equ = equEnum.nextElement();
 			equ.flatten(mathSymbolTable,bRoundCoefficients);
+		}
+		for (VarIniCondition varIniCondition : subDomain.getVarIniConditions()){
+			varIniCondition.flatten(mathSymbolTable,bRoundCoefficients);
+		}
+		for (JumpProcess jumpProcess : subDomain.getJumpProcesses()){
+			jumpProcess.flatten(mathSymbolTable,bRoundCoefficients);
+		}
+		for (ParticleJumpProcess jumpProcess : subDomain.getParticleJumpProcesses()){
+			jumpProcess.flatten(mathSymbolTable,bRoundCoefficients);
+		}
+		for (ParticleProperties particleProperty : subDomain.getParticleProperties()){
+			particleProperty.flatten(mathSymbolTable,bRoundCoefficients);
 		}
 		if (subDomain instanceof MembraneSubDomain){
 			Enumeration<JumpCondition> jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
