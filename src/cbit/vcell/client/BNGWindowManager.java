@@ -30,6 +30,8 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.VCLogger.ErrorType;
+import cbit.util.xml.VCLogger.Priority;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -144,14 +146,12 @@ public void importSbml(String bngSbmlStr) {
 	
 	// Create a default VCLogger - SBMLImporter needs it
     cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-        //private StringBuffer buffer = new StringBuffer();
-        public void sendMessage(int messageLevel, int messageType) {
-            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
-            sendMessage(messageLevel, messageType, message);	
-        }
-        public void sendMessage(int messageLevel, int messageType, String message) {
-            System.err.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
-            if (messageLevel == VCLogger.HIGH_PRIORITY) {
+    	
+        @Override
+		public void sendMessage(Priority p, ErrorType et, String message)
+				throws Exception {
+            System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+            if (p == VCLogger.Priority.HighPriority) {
             	throw new RuntimeException("Import failed : " + message);
             }
         }
