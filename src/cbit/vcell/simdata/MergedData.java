@@ -532,7 +532,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 				if (symbols != null && (symbols.length > 0)) {
 					for (int jj = 0; jj < symbols.length; jj++) {
 						for (int kk = 0; kk < newVarNames.length; kk++) {
-							if (newVarNames[kk].indexOf(symbols[jj]) > 0) {
+							if (newVarNames[kk].equals(dataSetPrefix[i]+"."+symbols[jj])) {
 								newExp.substituteInPlace(new Expression(symbols[jj]), new Expression(newVarNames[kk]));
 								break;
 							}
