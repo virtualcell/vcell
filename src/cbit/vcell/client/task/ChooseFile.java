@@ -18,7 +18,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
+import org.apache.commons.io.FilenameUtils;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
 import org.vcell.sbml.gui.SimulationSelectionPanel;
 import org.vcell.sbml.vcell.StructureSizeSolver;
@@ -48,7 +48,15 @@ import cbit.vcell.solver.Simulation;
  * @author: Ion Moraru
  */
 public class ChooseFile extends AsynchClientTask {
-
+	/**
+	 * extension user typed info file chooser
+	 */
+	private String extensionUserProvided = null;
+	/**
+	 * key to use as flag the saved file name was different than user provided
+	 */
+	public static final String RENAME_KEY = ChooseFile.class.getCanonicalName() + "-renameKey";
+	
 	public ChooseFile() {
 		super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
 	}
@@ -62,6 +70,31 @@ public class ChooseFile extends AsynchClientTask {
 			userPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
 		}
 		System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + oldPath);
+	}
+	
+	/**
+	 * removes extension, if any and stores in {@link #extensionUserProvided}
+	 * @param userProvided could be null 
+	 * @return userProvided with extension removed if present
+	 */
+	private String recordAndRemoveExtension(String userProvided) {
+		extensionUserProvided = FilenameUtils.getExtension(userProvided);
+		return FilenameUtils.removeExtension(userProvided);
+	}
+	
+	/**
+	 * warn user if file asks
+	 * @param selectedFile may be null
+	 * @param topLevelWindowManager
+	 * @param userPreferences
+	 */
+	private void checkForOverwrites(File selectedFile, TopLevelWindowManager topLevelWindowManager, UserPreferences userPreferences) {
+		if (selectedFile != null && selectedFile.exists()) {
+			String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
+			if (answer.equals(UserMessage.OPTION_CANCEL)){
+				throw UserCancelException.CANCEL_FILE_SELECTION;
+			}
+		}
 	}
 
 
@@ -83,6 +116,14 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		exportFile = showGeometryModelXMLFileChooser(hashTable);
 	} else {
 		throw new Exception("Unsupported document type for XML export: " + documentToExport.getClass());
+	}
+	//check to see if we've changed extension from what user entered
+	if (extensionUserProvided  != null && !extensionUserProvided.isEmpty()) {
+		String fp = exportFile.getAbsolutePath(); 
+		String currentExt = FilenameUtils.getExtension( fp ); 
+		if (!extensionUserProvided.equals(currentExt)) {
+			hashTable.put(RENAME_KEY, fp); 
+		}
 	}
 	hashTable.put("exportFile", exportFile);
 }
@@ -174,6 +215,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") || n.endsWith(".txt"))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			} 
+			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML) || fileFilter.equals(FileFilters.FILE_FILTER_SEDML)) {
@@ -497,18 +539,8 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
-			// we have a file selection, check for overwrites
-			if (selectedFile.exists()) {
-				String answer = PopupGenerator.showWarningDialog(comp, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
-				if (answer.equals(UserMessage.OPTION_CANCEL)){
-					throw UserCancelException.CANCEL_FILE_SELECTION;
-				}
-			}
 			///
-			String selectedFileName = selectedFile.getPath();
-			if (selectedFileName.lastIndexOf(".") > 0) {
-				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
-			}
+			String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
 			String n = selectedFile.getPath().toLowerCase();
 			if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
@@ -519,6 +551,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			if (fileFilter==null) {
 				throw new Exception("No file save type was selected.");
 			}
+			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
 			
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -570,18 +603,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
-			// we have a file selection, check for overwrites
-			if (selectedFile.exists()) {
-				String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
-				if (answer.equals(UserMessage.OPTION_CANCEL)){
-					throw UserCancelException.CANCEL_FILE_SELECTION;
-				}
-			}
 			///
-			String selectedFileName = selectedFile.getPath();
-			if (selectedFileName.lastIndexOf(".") > 0) {
-				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
-			}
+			String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
 			String n = selectedFile.getPath().toLowerCase();
 			if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFileName + ".xml");
@@ -596,6 +619,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") ||(n.endsWith(".txt")))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			}
+			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			//only non-spatial math models can be exported to CellML.
