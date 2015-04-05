@@ -16,6 +16,7 @@
 	<classpathentry kind="lib" path="lib/mdbtools-java.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.3-freshTrunk-7-21/nativelibs/win64"/>
