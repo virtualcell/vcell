@@ -11,6 +11,9 @@
 package cbit.vcell.client.task;
 
 import java.util.Hashtable;
+
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.client.MDIManager;
 import cbit.vcell.client.TopLevelWindowManager;
 /**
@@ -33,6 +36,11 @@ public class FinishExport extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	MDIManager mdiManager= (MDIManager)hashTable.get("mdiManager");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+		Object obj = hashTable.get(ChooseFile.RENAME_KEY);
+		if (obj != null) {
+			String fn = obj.toString();
+			DialogUtils.showInfoDialog(topLevelWindowManager.getComponent(),"Export saved as  " + fn);
+		}
 	mdiManager.unBlockWindow(topLevelWindowManager.getManagerID());
 	mdiManager.showWindow(topLevelWindowManager.getManagerID());
 }
