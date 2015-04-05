@@ -147,7 +147,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
-	//fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); Bug 4099: PDF not currently functioning
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); 
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
