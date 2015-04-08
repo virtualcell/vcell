@@ -15,6 +15,7 @@ package cbit.vcell.geometry.surface;
  * Creation date: (6/27/2003 10:35:01 PM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public final class Node implements java.io.Serializable {
 	private double fieldX = 0.0;
 	private double fieldY = 0.0;
@@ -146,4 +147,26 @@ public void setZ(double z) {
 public String toString() {
 	return "Node(" + getX() + "," + getY() + "," + getZ() + ")";
 }
+
+/**
+ * return distance between this and other, squared
+ * @param other not null
+ * @return distance squared
+ */
+public double distanceSquared(Node other) {
+	double dX = fieldX - other.fieldX;
+	double dY = fieldY - other.fieldY;
+	double dZ = fieldZ - other.fieldZ;
+	return dX * dX + dY * dY + dZ * dZ;
+}
+/**
+ * return distance between this and other.
+ * {@link #distanceSquared(Node)} should be used for comparison if exact distance not required
+ * @param other not null
+ * @return distance squared
+ */
+public double distance(Node other) {
+	return Math.sqrt(distanceSquared(other));
+}
+
 }
