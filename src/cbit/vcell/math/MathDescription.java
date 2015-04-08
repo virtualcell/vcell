@@ -11,6 +11,7 @@
 package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1411,6 +1412,13 @@ public Enumeration<SubDomain> getSubDomains() {
 	return subDomainList.elements();
 }
 
+/**
+ * Collection equivalent of {@link #getSubDomains()}
+ * @return unmodifiable collection
+ */
+public Collection<SubDomain> getSubDomainCollection() {
+	return Collections.unmodifiableCollection(subDomainList);
+}
 
 /**
  * This method was created by a SmartGuide.

@@ -37,7 +37,9 @@ import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.NullSessionLog;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.VCAssert;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -80,6 +82,7 @@ import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.message.VCellQueue;
@@ -158,6 +161,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private ArrayList<String> killMolCommands = new ArrayList<String>();
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
+	private ArrayList<ClosestTriangle> closestTriangles = null;
 	enum SmoldynKeyword {
 		max_species,
 		species,
@@ -389,6 +393,7 @@ private void init() throws SolverException {
 @Override
 public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException, ImageException, PropertyVetoException, GeometryException {	
 	init();
+	setupMolecules();
 	
 	if (bUseMessaging) {
 		writeJms(simulation);
@@ -419,6 +424,49 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSimulationSettings();
 	printWriter.println(SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
+}
+
+/**
+ * lazy create {@link #closestTriangles} 
+ * @return new or existing
+ */
+private ArrayList<ClosestTriangle> getClosestTriangle( ) {
+	if (closestTriangles  == null) {
+		closestTriangles = new ArrayList<>(); 
+	}
+	return closestTriangles;
+}
+
+/**
+ * scan subdomains looking for {@link ParticleInitialConditionCount} on @link {@link MembraneSubDomain}
+ * records for later use
+ * @throws ExpressionException
+ * @throws MathException
+ */
+private void setupMolecules() throws ExpressionException, MathException{
+	// write molecules
+	for ( SubDomain sd : mathDesc.getSubDomainCollection()) {
+		MembraneSubDomain msd = BeanUtils.downcast(MembraneSubDomain.class, sd);
+		if (msd != null) {
+			for (ParticleProperties particleProperties :msd.getParticleProperties() ) {
+				ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
+				for (ParticleInitialCondition pic : particleInitialConditions) {
+					ParticleInitialConditionCount picc = BeanUtils.downcast(ParticleInitialConditionCount.class, pic);
+					if (picc != null && !picc.isUniform()) {
+						Variable var = particleProperties.getVariable();
+						try {
+							Domain vd = var.getDomain();
+							if (vd.getName().equals(msd.getName())) {
+								getClosestTriangle().add(new ClosestTriangle(picc, this));
+							}
+						} catch (NotAConstantException e) {
+							throw new ExpressionException("Non-constant expression for initial position for " + var.getName());
+						}
+					}
+				}
+			}
+		}		
+	}
 }
 
 private void writeHighResVolumeSamples() throws SolverException {	
@@ -1152,6 +1200,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 	return totalCount;
 }
 
+
 private double writeInitialCount(ParticleInitialConditionCount initialCount, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
 	double count = 0;
 	try {
@@ -1164,9 +1213,10 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 	}
 	if (count > 0) {
 		int intcount = (int)count;
+		final boolean isCompartment = subDomain instanceof CompartmentSubDomain;
 		if (initialCount.isUniform()) {
 			// here count has to split between all compartments
-			if (subDomain instanceof CompartmentSubDomain) {
+			if (isCompartment) {
 				sb.append(SmoldynKeyword.compartment_mol);
 				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + "\n");
 			} else if (subDomain instanceof MembraneSubDomain) {
@@ -1174,34 +1224,67 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
 			}
 		} else {
-			sb.append(SmoldynKeyword.mol + " " + intcount + " " + variableName);
-			try {
-				if (initialCount.isXUniform()) {
-					sb.append(" " + initialCount.getLocationX().infix());					
-				} else {
-					double locX = subsituteFlattenToConstant(initialCount.getLocationX());
-					sb.append(" " + locX);
-				}
-				if (dimension > 1) {
-					if (initialCount.isYUniform()) {
-						sb.append(" " + initialCount.getLocationY().infix());					
+			if (isCompartment) {
+				sb.append(SmoldynKeyword.mol + " " + intcount + " " + variableName);
+				try {
+					if (initialCount.isXUniform()) {
+						sb.append(" " + initialCount.getLocationX().infix());					
 					} else {
-						double locY = subsituteFlattenToConstant(initialCount.getLocationY());
-						sb.append(" " + locY);
+						double locX = subsituteFlattenToConstant(initialCount.getLocationX());
+						sb.append(" " + locX);
 					}
-					if (dimension > 2) {
-						if (initialCount.isZUniform()) {
-							sb.append(" " + initialCount.getLocationZ().infix());					
+					if (dimension > 1) {
+						if (initialCount.isYUniform()) {
+							sb.append(" " + initialCount.getLocationY().infix());					
 						} else {
-							double locZ = subsituteFlattenToConstant(initialCount.getLocationZ());
-							sb.append(" " + locZ);
+							double locY = subsituteFlattenToConstant(initialCount.getLocationY());
+							sb.append(" " + locY);
+						}
+						if (dimension > 2) {
+							if (initialCount.isZUniform()) {
+								sb.append(" " + initialCount.getLocationZ().infix());					
+							} else {
+								double locZ = subsituteFlattenToConstant(initialCount.getLocationZ());
+								sb.append(" " + locZ);
+							}
 						}
 					}
+				} catch (NotAConstantException ex) {
+					throw new ExpressionException("location for variable " + variableName + " is not a constant. Constants are required for all locations");
 				}
-			} catch (NotAConstantException ex) {
-				throw new ExpressionException("location for variable " + variableName + " is not a constant. Constants are required for all locations");
+
+				sb.append('\n');
 			}
-			sb.append("\n");
+			else if (subDomain instanceof MembraneSubDomain) {
+				//closestTriangles should have been allocated in setupMolecules if this condition exists
+				for (ClosestTriangle ct : closestTriangles) { 
+					if (ct.picc == initialCount) {
+						final char space = ' ';
+						sb.append(SmoldynKeyword.surface_mol); 
+						sb.append(space);
+						sb.append(intcount);
+						sb.append(space);
+						sb.append(variableName);
+						sb.append(space);
+						sb.append(subDomain.getName());
+						sb.append(" tri "); //pshape, always triangle for us
+						sb.append(ct.triPanel.name);
+						sb.append(space);
+						sb.append(ct.node.getX());
+						if (dimension > 1) {
+							sb.append(space);
+							sb.append(ct.node.getY());
+						}
+						if (dimension > 2) {
+							sb.append(space);
+							sb.append(ct.node.getZ());
+						}
+						sb.append('\n');
+						return count;
+					}
+				}
+				throw new ProgrammingException("unable to find " + variableName + " in closest triangles" );
+			}
 		}
 	}
 	return count;
@@ -1332,7 +1415,8 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 			int triLocalCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
-			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
+			final boolean initialMoleculesOnMembrane = (closestTriangles != null ); 
+			ArrayList<TrianglePanel> triList = initialMoleculesOnMembrane ?  new InspectingList(closestTriangles) : new ArrayList<TrianglePanel>();
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 				VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
@@ -2043,5 +2127,80 @@ private void writeJms(Simulation simulation) {
 		printWriter.println();
 	}
 }
+
+/**
+ * find and stores information about which {@link TrianglePanel} is closest to a 
+ * {@link ParticleInitialConditionCount}
+ */
+private static class ClosestTriangle {
+	final ParticleInitialConditionCount picc;
+	final Node node;
+	double currentDistanceSquared;
+	TrianglePanel triPanel;
+	
+	/**
+	 * @param picc not null
+	 * @param sfw not null
+	 * @throws MathException
+	 * @throws NotAConstantException
+	 * @throws ExpressionException
+	 */
+	ClosestTriangle(ParticleInitialConditionCount picc, SmoldynFileWriter sfw) throws MathException, NotAConstantException, ExpressionException {
+		if (picc.isXUniform() || picc.isYUniform() || picc.isZUniform()) {
+			throw new ExpressionException("Uniform specifier " + ParticleInitialConditionCount.UNIFORM + " for membrane initial condition not supported"); 
+		}
+		this.picc = picc;
+		double x = sfw.subsituteFlattenToConstant(picc.getLocationX());
+		double y = sfw.subsituteFlattenToConstant(picc.getLocationY());
+		double z = sfw.subsituteFlattenToConstant(picc.getLocationZ());
+		node = new Node(x,y,z);
+		triPanel = null;
+		currentDistanceSquared = Double.MAX_VALUE; 
+	}
+	
+	/**
+	 * see if this panel is closer than ones previously evaluated
+	 * @param tp no null
+	 */
+	void evaluate(TrianglePanel tp) {
+		for (Node n : tp.triangle.getNodes()) {
+			double ds = node.distanceSquared(n);
+			if (ds < currentDistanceSquared) {
+				currentDistanceSquared = ds;
+				triPanel = tp;
+			}
+		}
+	}
+}
+	
+
+	/**
+	 *  list which passes added elements to {@link SmoldynFileWriter#closestTriangles}
+	 */
+	@SuppressWarnings("serial")
+	private class InspectingList extends ArrayList<TrianglePanel> {
+		final ArrayList<ClosestTriangle> closest;
+
+		/**
+		 * @param closest not null
+		 */
+		InspectingList(ArrayList<ClosestTriangle> closest) {
+			super( );
+			VCAssert.assertValid(closest);
+			this.closest = closest;
+		}
+
+		/**
+		 * add, passing to closet
+		 */
+		@Override
+		public boolean add(TrianglePanel e) {
+			for ( ClosestTriangle ct : closest) {
+				ct.evaluate(e);
+			}
+			
+			return super.add(e);
+		}
+	}
 
 }

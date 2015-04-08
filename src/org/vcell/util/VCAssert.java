@@ -30,6 +30,16 @@ public class VCAssert {
 		}
 		throw new ProgrammingException(message);
 	}
+	/**
+	 * object not null
+	 * @param obj
+	 * @throws NullPointerException if it is
+	 */
+	public static void assertValid(Object obj) {
+		if (obj == null) {
+			throw new NullPointerException();
+		}
+	}
 
 	/**
 	 * prevent objects

@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.vcell.util.logging.NoLogging;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
+	private static final String USE_CURRENT_WORKING_DIRECTORY = "cwd";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 
 	public static enum JavaVersion  {
@@ -332,7 +334,7 @@ public class ResourceUtil {
 	 */
 	public static void setNativeLibraryDirectory( ) throws Error {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		if (!nativeLibrariesSetup) {
-			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
+			String iRoot = getVCellInstall().getAbsolutePath();
 			String nativeDir = iRoot + "/nativelibs/" + osi.getNativeLibDirectory(); 
 			NativeLoader.setNativeLibraryDirectory(nativeDir);
 		}
@@ -579,11 +581,18 @@ public class ResourceUtil {
 		ourManifest = sv.getSoftwareVersionString() + osi.toString( );		return ourManifest;
 	}
 
-
 	public static File getVCellInstall()
 	{
-		File installDirectory = new File(PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot));
-		if (!installDirectory.exists() || !installDirectory.isDirectory()){			throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from property");		}		return installDirectory;	}
+		String rootString = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
+		File installDirectory = new File(rootString);
+		if (!installDirectory.exists() || !installDirectory.isDirectory()){
+			if (!rootString.toLowerCase().equals(USE_CURRENT_WORKING_DIRECTORY)) {				throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory " + installDirectory + " from property");
+			}
+			File cwd = Paths.get("").toAbsolutePath().toFile();
+			if (!cwd.isDirectory()) {
+				throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from current working directory " + cwd);
+			}
+			return cwd;		}		return installDirectory;	}
 
 	public static String getSiteName() {
 		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
