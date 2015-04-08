@@ -42,6 +42,7 @@ import org.vcell.util.document.Versionable;
 
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -291,9 +292,14 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	
 	// rate rules
 	private RateRule[] fieldRateRules = null;
-	private transient MathMapping mostRecentlyCreatedMathMapping;
 	public static final String FLUOR_DATA_NAME = "fluor";
 
+	// speed optimizations
+	private transient String md5hash = null;
+	private transient BNGOutputSpec mostRecentlyCreatedOutputSpec = null;	// valid only if the hash is verified
+	// warning: we don't verify the validity of the mostRecentlyCreatedMathMapping,
+	// use it only when certain that it's still valid!
+	private transient MathMapping mostRecentlyCreatedMathMapping;
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -2409,6 +2415,18 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 	return null;
 }
 
+public String getMd5hash() {
+	return md5hash;
+}
+public void setMd5hash(String md5hash) {
+	this.md5hash = md5hash;
+}
+public BNGOutputSpec getMostRecentlyCreatedOutputSpec() {
+	return mostRecentlyCreatedOutputSpec;
+}
+public void setMostRecentlyCreatedOutputSpec(BNGOutputSpec mostRecentlyCreatedOutputSpec) {
+	this.mostRecentlyCreatedOutputSpec = mostRecentlyCreatedOutputSpec;
+}
 public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
