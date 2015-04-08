@@ -66,6 +66,7 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
@@ -219,7 +220,8 @@ public class VFrapXmlHelper {
 		// ------- recover simulation data for this user name, load the images in memory ------------
 		String userDirName = filename.substring(0,filename.indexOf(dataID)-1);	// ex  c:\\VirtualMicroscopy\\SimulationData
 		File userDir = new File(userDirName);
-		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, null,PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
+		SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, null,simDataAmplistorInfo);
 
 		CartesianMesh incompleteMesh = simData.getMesh();	// build a valid mesh in 2 steps, what we have in simData is incomplete
 		Extent extent = incompleteMesh.getExtent();
