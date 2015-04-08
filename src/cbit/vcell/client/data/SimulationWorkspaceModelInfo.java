@@ -327,6 +327,8 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				MathDescription mathDescription = mathMapping.getMathDescription();
 				MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 				Enumeration<Variable> varEnum = mathDescription.getVariables();
+				
+				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
 					Variable var = varEnum.nextElement();
 					if(var.getName().equals("R_Shc")) {
@@ -367,9 +369,12 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 						VCUnitDefinition unit = bioSymbols[0].getUnitDefinition();
 						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit));
 					}else{
-						System.out.println("couldn't find biological symbol for var "+var.getName());
+						isSymbolsNotFound = true;
+//						System.out.println("couldn't find biological symbol for var "+var.getName());
 					}
-				
+				}
+				if(isSymbolsNotFound) {
+					System.out.println("couldn't find biological symbol(s) for one or more variables.");
 				}
 				//
 				// add reserved symbols for x,y,z,t
