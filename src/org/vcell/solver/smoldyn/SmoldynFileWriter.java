@@ -457,7 +457,7 @@ private void setupMolecules() throws ExpressionException, MathException{
 						try {
 							Domain vd = var.getDomain();
 							if (vd.getName().equals(msd.getName())) {
-								getClosestTriangle().add(new ClosestTriangle(picc, this));
+								getClosestTriangle().add(new ClosestTriangle(picc, msd, this));
 							}
 						} catch (NotAConstantException e) {
 							throw new ExpressionException("Non-constant expression for initial position for " + var.getName());
@@ -1259,6 +1259,7 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 				//closestTriangles should have been allocated in setupMolecules if this condition exists
 				for (ClosestTriangle ct : closestTriangles) { 
 					if (ct.picc == initialCount) {
+						VCAssert.assertTrue(ct.membrane == subDomain, "wrong subdomain");
 						final char space = ' ';
 						sb.append(SmoldynKeyword.surface_mol); 
 						sb.append(space);
@@ -1415,8 +1416,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 			int triLocalCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
-			final boolean initialMoleculesOnMembrane = (closestTriangles != null ); 
-			ArrayList<TrianglePanel> triList = initialMoleculesOnMembrane ?  new InspectingList(closestTriangles) : new ArrayList<TrianglePanel>();
+			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 				VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
@@ -1530,6 +1530,11 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 			CompartmentSubDomain csd1 = simulation.getMathDescription().getCompartmentSubDomain(adjacentSubvolums[1].getName());
 			MembraneSubDomain membraneSubDomain = simulation.getMathDescription().getMembraneSubDomain(csd0, csd1);
 			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
+			final boolean initialMoleculesOnMembrane = (closestTriangles != null ); 
+			if (initialMoleculesOnMembrane) {
+				findClosestTriangles(membraneSubDomain, triList);
+				
+			}
 			
 			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
@@ -1615,6 +1620,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 	}
 	
 }
+
 
 private void writeCompartments() throws ImageException, PropertyVetoException, GeometryException, ExpressionException {
 	MeshSpecification meshSpecification = simulation.getMeshSpecification();
@@ -2129,27 +2135,45 @@ private void writeJms(Simulation simulation) {
 }
 
 /**
+ * find closest triangles for membrane initial condition 
+ * @param membraneSubDomain not null
+ * @param triList panels to evaluated not null
+ */
+private void findClosestTriangles(MembraneSubDomain membraneSubDomain, ArrayList<TrianglePanel> triList) {
+	VCAssert.assertValid(membraneSubDomain);
+	for ( ClosestTriangle ct : closestTriangles) {
+		if (ct.membrane == membraneSubDomain) {
+			for (TrianglePanel tp : triList) {
+				ct.evaluate(tp);
+			}
+		}
+	}
+}
+/**
  * find and stores information about which {@link TrianglePanel} is closest to a 
  * {@link ParticleInitialConditionCount}
  */
 private static class ClosestTriangle {
 	final ParticleInitialConditionCount picc;
+	final MembraneSubDomain membrane; 
 	final Node node;
 	double currentDistanceSquared;
 	TrianglePanel triPanel;
 	
 	/**
 	 * @param picc not null
+	 * @param msb not null
 	 * @param sfw not null
 	 * @throws MathException
 	 * @throws NotAConstantException
 	 * @throws ExpressionException
 	 */
-	ClosestTriangle(ParticleInitialConditionCount picc, SmoldynFileWriter sfw) throws MathException, NotAConstantException, ExpressionException {
+	ClosestTriangle(ParticleInitialConditionCount picc, MembraneSubDomain msb, SmoldynFileWriter sfw) throws MathException, NotAConstantException, ExpressionException {
 		if (picc.isXUniform() || picc.isYUniform() || picc.isZUniform()) {
 			throw new ExpressionException("Uniform specifier " + ParticleInitialConditionCount.UNIFORM + " for membrane initial condition not supported"); 
 		}
 		this.picc = picc;
+		this.membrane = msb;
 		double x = sfw.subsituteFlattenToConstant(picc.getLocationX());
 		double y = sfw.subsituteFlattenToConstant(picc.getLocationY());
 		double z = sfw.subsituteFlattenToConstant(picc.getLocationZ());
@@ -2172,35 +2196,6 @@ private static class ClosestTriangle {
 		}
 	}
 }
-	
 
-	/**
-	 *  list which passes added elements to {@link SmoldynFileWriter#closestTriangles}
-	 */
-	@SuppressWarnings("serial")
-	private class InspectingList extends ArrayList<TrianglePanel> {
-		final ArrayList<ClosestTriangle> closest;
-
-		/**
-		 * @param closest not null
-		 */
-		InspectingList(ArrayList<ClosestTriangle> closest) {
-			super( );
-			VCAssert.assertValid(closest);
-			this.closest = closest;
-		}
-
-		/**
-		 * add, passing to closet
-		 */
-		@Override
-		public boolean add(TrianglePanel e) {
-			for ( ClosestTriangle ct : closest) {
-				ct.evaluate(e);
-			}
-			
-			return super.add(e);
-		}
-	}
 
 }
