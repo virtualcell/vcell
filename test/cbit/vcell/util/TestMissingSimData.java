@@ -355,7 +355,8 @@ public class TestMissingSimData {
 				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, user);
 				VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,jobIndex);
 				//Try to read log,times and simdata to see if this data is well formed
-				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL);
+				SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, simDataAmplistorInfo);
 				double[] dataTimes = simData.getDataTimes();
 				DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
 				DataIdentifier readDataIdentifier = null;
