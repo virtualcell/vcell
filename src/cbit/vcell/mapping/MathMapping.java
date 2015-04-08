@@ -791,11 +791,11 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+//			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
 			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD()){
 			String expStr = origExp.renameBoundSymbols(getNameScope()).infix();
-			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
+//			System.out.println("...........exp='"+expStr+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
 			localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+expStr,Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
@@ -1445,7 +1445,7 @@ protected Variable newFunctionOrConstant(String name, Expression exp, GeometryCl
  * @param obj java.lang.Object
  */
 protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
-//System.out.println("MathMapping.refresh()");
+	System.out.println("MathMapping.refresh Start");
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
 	localIssueList.clear();
@@ -1460,6 +1460,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	refreshLocalNameCount();
 	refreshMathDescription();		// we create math based on the transformed sim context
 	reconcileWithOriginalModel();	// we relate the symbols in the math to the symbols in the original sim context
+	System.out.println("MathMapping.refresh End");
 }
 
 protected void reconcileWithOriginalModel() throws MappingException, MathException, MatrixException, ExpressionException, ModelException {

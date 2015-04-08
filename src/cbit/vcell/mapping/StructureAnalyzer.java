@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.mapping;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
@@ -437,7 +438,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		}
 	}
 				
-//System.out.println("there are "+nullSpaceMatrix.rows+" dependencies");
+//	System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
+	long startTime = System.currentTimeMillis();
 
 	Vector<Dependency> dependencyList = new Vector<Dependency>();
 	
@@ -445,6 +447,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		//
 		// find first variable
 		//
+		ArrayList<Expression> cel = new ArrayList<Expression> ();
 		Expression exp = null;
 		Expression constantExp = null;
 		String     constantName = null;
@@ -479,6 +482,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}
 					constantExp = Expression.mult(new Expression(coeff),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																new Expression(scSTE, argMathMapping.getNameScope()));
+					cel.add(constantExp);
 					bFirst = false;
 				}else{
 					//
@@ -499,8 +503,10 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp,Expression.mult(new Expression(coeff),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
-																			new Expression(scSTE, argMathMapping.getNameScope())));
+					Expression mult = Expression.mult(new Expression(coeff),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+																			new Expression(scSTE, argMathMapping.getNameScope()));
+//					constantExp = Expression.add(constantExp, mult);
+					cel.add(mult);
 				}
 			}
 		}
@@ -522,11 +528,22 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			dependency.dependencyExpression = exp;
 			dependency.speciesContextMapping = firstSCM;
 			dependency.invariantSymbolName = constantName;
-			dependency.conservedMoietyExpression = constantExp.flatten();
-
+			
+//			Expression slow = constantExp.flatten();			// old way, very slow
+//			dependency.conservedMoietyExpression = slow;
+			
+			Expression cev[] = cel.toArray(new Expression[cel.size()]);
+			Expression ce = Expression.add(cev);
+			Expression fast = ce.flatten();						// new way, much faster
+			dependency.conservedMoietyExpression = fast;
+			
 			dependencyList.add(dependency);
 		}
 	}
+	long endTime = System.currentTimeMillis();
+	long elapsedTime = endTime - startTime;
+	System.out.println("     " + elapsedTime + " milliseconds");
+	
 	return (StructureAnalyzer.Dependency[])BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
 }
 
