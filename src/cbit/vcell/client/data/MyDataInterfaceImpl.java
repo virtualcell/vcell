@@ -134,7 +134,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 
 	@Override
 	public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
-		return simulationWorkspaceModelInfo.getDataSymbolMetadataResolver();
+		return (simulationWorkspaceModelInfo!=null?simulationWorkspaceModelInfo.getDataSymbolMetadataResolver():null);
 	}
 
 }
