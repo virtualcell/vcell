@@ -467,6 +467,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
 		this.outputSpec = outputSpec;
 		refreshInterface();
+		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
+			return;
+		}
 		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
 			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
 			appendToConsole(message);
