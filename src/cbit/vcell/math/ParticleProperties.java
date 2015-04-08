@@ -89,7 +89,10 @@ public class ParticleProperties implements Serializable, Matchable {
 		Expression locationX = null;
 		Expression locationY = null;
 		Expression locationZ = null;
-		private static final String UNIFORM = "u";
+		/**
+		 * symbol used to indicated uniform distribution 
+		 */
+		public static final String UNIFORM = "u";
 		
 		public ParticleInitialConditionCount(Expression count, Expression locationX,
 				Expression locationY, Expression locationZ) {
