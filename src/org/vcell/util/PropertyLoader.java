@@ -428,7 +428,7 @@ public class PropertyLoader {
 		}
 		// display new properties
 		//System.getProperties().list(System.out);
-		System.out.println("ServerID=" + getRequiredProperty(vcellServerIDProperty)+", SoftwareVersion="+getRequiredProperty(vcellSoftwareVersion));
+		System.out.println("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
 	}
 
 	/**
