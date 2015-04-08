@@ -276,7 +276,7 @@ public class AmplistorUtils {
 			bis = new BufferedInputStream(new FileInputStream(currentFile));
 			String urlStr = remoteDestinationDirURL.toString()+"/"+currentFile.getName();
 			uploadStream(new URL(urlStr), amplistorCredential, bis, currentFile.length());
-			setFileMetaData(urlStr, amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
+			setFileMetaData(urlStr, amplistorCredential, CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
 		}finally{
 			try{if(bis != null){bis.close();}}catch(Exception e){System.out.println("bis close error "+e.getMessage());}
 		}
