@@ -108,7 +108,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap, networkGenerationRequirements);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
-		System.out.println(bngl);
+//		System.out.println(bngl);
+		
 //		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 //	    String key = entry.getKey();
 //	    Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -128,9 +129,30 @@ public class NetworkTransformer implements SimContextTransformer {
 		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length;
 	}
 	
+	private boolean isBngHashValid(String input, String hash, SimulationContext simContext) {
+		if(input == null || input.length() == 0) {
+			return false;
+		}
+		if(simContext == null || simContext.getMd5hash() == null || simContext.getMostRecentlyCreatedOutputSpec() == null) {
+			return false;
+		}
+		if(hash.equals(simContext.getMd5hash())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	private BNGOutputSpec generateNetwork(SimulationContext simContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		BNGOutputSpec outputSpec;
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
+
+		String md5hash = MD5.md5(input);
+		if(isBngHashValid(input, md5hash, simContext)) {
+			System.out.println("Saved outputSpec is up-to-date, retrieving.");
+			return simContext.getMostRecentlyCreatedOutputSpec();
+		}
+		
 		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 		    String key = entry.getKey();
 		    Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -163,6 +185,18 @@ public class NetworkTransformer implements SimContextTransformer {
 //			message = getReactionsLimitExceededMessage(outputSpec) + message;
 //			throw new RuntimeException(message);
 //		}
+		
+//		System.out.println("new hash: " + md5hash);
+//		System.out.println("old hash: " + simContext.getMd5hash());
+		if(md5hash != null && md5hash.length() != 0 && outputSpec != null) {
+			System.out.println("saving hash and output spec");
+			synchronized (this) {
+				simContext.setMd5hash(md5hash);
+				simContext.setMostRecentlyCreatedOutputSpec(outputSpec);
+			}
+		} else {
+			System.out.println("something is wrong with the hash and/or output spec");
+		}
 		return outputSpec;
 	}
 
@@ -217,8 +251,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		Map<String, BNGSpecies> crossMap = new HashMap<String, BNGSpecies>();
 		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
-		int countGenerated = 0;
-		final int decimalTickCount = Math.max(outputSpec.getBNGSpecies().length/10, 1);
+//		int countGenerated = 0;
+//		final int decimalTickCount = Math.max(outputSpec.getBNGSpecies().length/10, 1);
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
 //			System.out.println(i+1 + ":\t\t"+ s.toString());
@@ -306,17 +340,17 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (mathMappingCallback.isInterrupted()){
 				throw new UserCancelException("Canceled by user.");
 			}
-			if(i%50 == 0) {
-				System.out.println(i+"");
-			}
-			if(i%decimalTickCount == 0) {
-				int multiplier = i/decimalTickCount;
-				float progress = progressFractionQuota/4.0f + progressFractionQuotaSpecies*multiplier;
-				mathMappingCallback.setProgressFraction(progress);
-			}
+//			if(i%50 == 0) {
+//				System.out.println(i+"");
+//			}
+//			if(i%decimalTickCount == 0) {
+//				int multiplier = i/decimalTickCount;
+//				float progress = progressFractionQuota/4.0f + progressFractionQuotaSpecies*multiplier;
+//				mathMappingCallback.setProgressFraction(progress);
+//			}
 		}
-		System.out.println("Total generated species: " + countGenerated);
 		
+//		System.out.println("Total generated species: " + countGenerated);
 //		System.out.println("------------------------ " + sMap.size() + " species in the map.");
 //		System.out.println("------------------------ " + scMap.size() + " species contexts in the map.");
 //		System.out.println("------------------------ " + model.getSpecies().length + " species in the Model.");
@@ -329,13 +363,13 @@ public class NetworkTransformer implements SimContextTransformer {
 			for(SpeciesContext sc2 : sca) {
 				if(sc1.getName().equals(sc2.getName())) {
 					found = true;
-					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
+//					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
 					break;
 				}
 			}
 			if(found == false) {	// we add to the map the species context and the species which exist in the model but which are not in the map yet
 									// the only ones in this situation should be plain species which were not given to bngl for flattening (they are flat already)
-				System.out.println("species context " + sc1.getName() + " not found in the map. Adding it.");
+//				System.out.println("species context " + sc1.getName() + " not found in the map. Adding it.");
 				scMap.put(sc1.getName(), sc1);
 				sMap.put(sc1.getName(), sc1.getSpecies());
 				noMapForThese.add(sc1);
@@ -348,7 +382,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			for(Species s2 : sa) {
 				if(s1.getCommonName().equals(s2.getCommonName())) {
 					found = true;
-					System.out.println("found species " + s1.getCommonName());
+//					System.out.println("found species " + s1.getCommonName());
 					break;
 				}
 			}
