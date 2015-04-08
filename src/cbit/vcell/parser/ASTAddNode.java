@@ -130,7 +130,7 @@ public Node flatten() throws ExpressionException {
 				// get all grandchildren and remove child
 				//
 				for (int j=0;j<child.jjtGetNumChildren();j++){
-					tempChildren.addElement(child.jjtGetChild(j));
+					tempChildren.insertElementAt(child.jjtGetChild(j),i+j);
 				}
 				tempChildren.removeElement(child);
 				
