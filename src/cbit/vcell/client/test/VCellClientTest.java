@@ -163,18 +163,6 @@ public static void main(java.lang.String[] args) {
  */
 private static final String REQUIRED_CLIENT_PROPERTIES[] = {
 	PropertyLoader.installationRoot,
-	PropertyLoader.primarySimDataDirProperty,
-	PropertyLoader.secondarySimDataDirProperty,
-	PropertyLoader.dbPassword,
-	PropertyLoader.dbUserid,
-	PropertyLoader.dbDriverName,
-	PropertyLoader.dbConnectURL,
 	PropertyLoader.vcellSoftwareVersion,
-	PropertyLoader.vcellServerIDProperty,
-	PropertyLoader.mongodbDatabase,
-	PropertyLoader.mongodbHost,
-	PropertyLoader.mongodbLoggingCollection,
-	PropertyLoader.mongodbPort
-	
 };
 }
