@@ -70,6 +70,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.util.AmplistorUtils;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:28:34 PM)
@@ -196,10 +197,11 @@ private ParticleInfo checkParticles(final ExportSpecs exportSpecs,User user,Data
 	final File visitSmoldynScriptTempDir = PropertyLoader.getSystemTemporaryDirectory();
 
 	//-----Get all data (from archive if necessary)
+	SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 	SimulationData simData = new SimulationData(vcdID,
 			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),vcdID.getOwner().getName()),
 			new File(PropertyLoader.getProperty(PropertyLoader.primarySimDataDirProperty,null),vcdID.getOwner().getName()),
-			PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
+			simDataAmplistorInfo);
 		
 	File logFile = simData.getLogFile();
 	if(!logFile.exists()){
