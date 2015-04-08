@@ -109,11 +109,11 @@ public void setComponentStates() {
 			String componentName = component.substring(0, tildaIndx);
 			String statename = component.substring(tildaIndx+1);
 			componentsVector.addElement(new BNGSpeciesComponent(componentName, statename, null));
-			System.out.println("component : " + componentName + ";\t state : " + statename);
+//			System.out.println("component : " + componentName + ";\t state : " + statename);
 		} else {
 			String componentName = component;
 			componentsVector.addElement(new BNGSpeciesComponent(componentName, null, null));
-			System.out.println("component : " + componentName);
+//			System.out.println("component : " + componentName);
 		}
 	}
 
