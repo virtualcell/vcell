@@ -67,6 +67,7 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.util.AmplistorUtils;
 
 /**
 Useful stuff for importing vFrap biomodels and the associated images into vCell
@@ -214,7 +215,7 @@ public class VFrapXmlHelper {
 		// ------- recover simulation data for this user name, load the images in memory ------------
 		String userDirName = filename.substring(0,filename.indexOf(dataID)-1);	// ex  c:\\VirtualMicroscopy\\SimulationData
 		File userDir = new File(userDirName);
-		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, null,PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null));
+		SimulationData simData = new SimulationData(vcDataIdentifier, userDir, null,AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader());
 
 		CartesianMesh incompleteMesh = simData.getMesh();	// build a valid mesh in 2 steps, what we have in simData is incomplete
 		Extent extent = incompleteMesh.getExtent();

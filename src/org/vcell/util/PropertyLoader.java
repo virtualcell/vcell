@@ -132,8 +132,10 @@ public class PropertyLoader {
 	public final static String mongodbThreadSleepMS				= "vcell.mongodb.threadSleepMS";
 	public static final String autoflushStandardOutAndErr = "vcell.autoflushlog";
 
-	public static final String amplistorVCellUsersRootPath = "vcell.amplistor.usersDir.root";
-	
+	public static final String amplistorVCellServiceURL = "vcell.amplistor.vcellserviceurl";
+	public static final String amplistorVCellServiceUser = "vcell.amplistor.vcellservice.user";
+	public static final String amplistorVCellServicePassword = "vcell.amplistor.vcellservice.password";
+
 	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		primarySimDataDirProperty,
@@ -234,7 +236,9 @@ public class PropertyLoader {
 		mongodbThreadSleepMS,
 
 		
-		amplistorVCellUsersRootPath,
+		amplistorVCellServiceURL,
+		amplistorVCellServiceUser,
+		amplistorVCellServicePassword,
 	};
 
 

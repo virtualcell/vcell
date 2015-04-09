@@ -10,16 +10,20 @@
 
 package cbit.vcell.message.server.sim;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
@@ -32,10 +36,13 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.SimulationData.SimDataAmplistorInfo;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationMessage;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.solver.SolverListener;
 import cbit.vcell.solvers.HTCSolver;
+import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -193,14 +200,43 @@ daemonThread.start();
 		}
 	}
 
+	public static void downloadFiles(SimDataAmplistorInfo simDataAmplistorInfo,ArrayList<String> fileNames,User user,File destinationUserDir) throws Exception{
+		String amplistorUserPath = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+user.getName();
+		for(String fileName:fileNames){
+			File destinationFile = new File(destinationUserDir,fileName);
+			if(!destinationFile.exists()){
+				try {
+					AmplistorUtils.getObjectDataPutInFile(amplistorUserPath+"/"+fileName, simDataAmplistorInfo.getAmplistorCredential(), destinationFile);
+				} catch (Exception e) {
+					e.printStackTrace();
+					//ignore
+				}
+			}
+
+		}
+	}
+	
+	public static ArrayList<String> getAllMatchingSimData(SimDataAmplistorInfo simDataAmplistorInfo,KeyValue simKey,User user) throws FileNotFoundException,Exception{
+		ArrayList<String> matchedFileNames = new ArrayList<String>();
+		String match = Simulation.createSimulationID(simKey);
+		String amplistorUserPath = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+user.getName();
+		ArrayList<String> dirList = AmplistorUtils.listDir(amplistorUserPath, simDataAmplistorInfo.getAmplistorCredential());
+		for(String fileName:dirList){
+			if(fileName.startsWith(match)){
+				matchedFileNames.add(fileName);
+			}
+		}
+		return matchedFileNames;
+	}
+
 	private static void recoverLastSimulationData(SimulationTask simTask,File userDir){
-		String amplistor_VCell_Users_RootPath = PropertyLoader.getProperty(PropertyLoader.amplistorVCellUsersRootPath, null);
-		if(amplistor_VCell_Users_RootPath != null){
+		SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+		if(simDataAmplistorInfo != null){
 			try{
-				long startTime = System.currentTimeMillis();
-				if(SimulationData.AmplistorHelper.hasLogFileAnywhere(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser(),simTask.getSimulationJob().getJobIndex(), userDir)){
+				long startTime = 0;
+				if(SimulationData.AmplistorHelper.hasLogFileAnywhere(simDataAmplistorInfo, simTask.getSimKey(),simTask.getUser(),simTask.getSimulationJob().getJobIndex(), userDir)){
 					//Get back all data since we are "restarting" a simulation
-					ArrayList<String> amplistorList = SimulationData.AmplistorHelper.getAllMatchingSimData(amplistor_VCell_Users_RootPath, simTask.getSimKey(),simTask.getUser());
+					ArrayList<String> amplistorList = getAllMatchingSimData(simDataAmplistorInfo, simTask.getSimKey(),simTask.getUser());
 					if(amplistorList.size() > 0){
 //						Collections.sort(amplistorList, new Comparator<String> () {
 //						    public int compare(String a, String b) {
@@ -223,7 +259,7 @@ daemonThread.start();
 //								break;
 //							}
 //						}
-						SimulationData.AmplistorHelper.downloadFiles(amplistor_VCell_Users_RootPath, amplistorList,simTask.getUser(), userDir);
+						downloadFiles(simDataAmplistorInfo, amplistorList,simTask.getUser(), userDir);
 					}
 				}
 				System.out.println("amplistor preprocess data restore time="+((System.currentTimeMillis()-startTime)/1000)+" seconds");

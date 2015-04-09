@@ -35,9 +35,10 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 
+
+
 //import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.util.BeanUtils;
@@ -74,34 +75,30 @@ import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.util.AmplistorUtils;
+import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 /**
  * This type was created in VisualAge.
  */
 public class SimulationData extends VCData {
 	public static class AmplistorHelper{
-		private String amplistorVCellUsersRootPath;
-		private static final String AMPLISTOR_CUSTOM_META_PREFIX = "X-Ampli-Custom-Meta-";
-		public static final String CUSTOM_FILE_MODIFICATION_DATE = AMPLISTOR_CUSTOM_META_PREFIX+"modification-date";
-		private static final TimeZone GMT_ZONE = TimeZone.getTimeZone("GMT");
-		private static final String RFC1123_PATTERN = "EEE, dd MMM yyyyy HH:mm:ss z";
-		private static final DateFormat rfc1123Format = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
-		static {
-			 rfc1123Format.setTimeZone(GMT_ZONE);
-		}
 		private File userDirectory;
 		private VCDataIdentifier ahvcDataId;
 		private KeyValue simulationKey;
 		private int jobIndex = 0;
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
-		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUserRootPath) throws FileNotFoundException{
+		
+		SimDataAmplistorInfo simDataAmplistorInfo;
+		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
+			this.simDataAmplistorInfo = simDataAmplistorInfo;
 			if(primaryUserDir == null || !primaryUserDir.exists() || !primaryUserDir.isDirectory()){
 				throw new FileNotFoundException("PrimaryUserDir required and it must exist and be a directory");
 			}
 			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
 				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
 			}
-			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
+//			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
 			String logFileName = null;
 			String logFileNameOldStyle = null;
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
@@ -133,12 +130,12 @@ public class SimulationData extends VCData {
 			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
 				this.userDirectory = secondaryUserDir;
 				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-			}else if(amplistorVCellUserRootPath != null){
+			}else if(simDataAmplistorInfo != null && simDataAmplistorInfo.getAmplistorVCellUsersRootPath() != null){
 				try{
-					if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileName)){
+					if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileName)){
 						this.userDirectory = primaryUserDir;//use primary by default for amplistor
 						this.ahvcDataId = argVCDataID;
-					}else if(amplistorFileExists(amplistorVCellUserRootPath,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
+					}else if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
 						this.userDirectory = primaryUserDir;//use primary by default for amplistor
 						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
 					}else{
@@ -160,7 +157,7 @@ public class SimulationData extends VCData {
 					File logfile = getLogFile();
 					fis = new FileInputStream(logfile);
 					String log3Bytes = new String(new char[] {(char)fis.read(),(char)fis.read(),(char)fis.read()});
-					if(log3Bytes.equals("IDA") || log3Bytes.equals("ODE")){
+					if(log3Bytes.equals("IDA") || log3Bytes.equals("ODE") || log3Bytes.equals("NFS")){
 						bNonSpatial = true;
 					}
 				}catch(Exception e){
@@ -171,7 +168,7 @@ public class SimulationData extends VCData {
 			}
 
 		}
-		public static boolean hasLogFileAnywhere(String amplistorAllVCellUsersRootPath,KeyValue simKey,User user,int jobIndex,File destinationUserDir) throws Exception{
+		public static boolean hasLogFileAnywhere(SimDataAmplistorInfo simDataAmplistorInfo,KeyValue simKey,User user,int jobIndex,File destinationUserDir) throws Exception{
 			HttpURLConnection urlCon = null;
 			try{
 				String simLogFileName = SimulationData.createCanonicalSimLogFileName(simKey, jobIndex, false);
@@ -179,100 +176,7 @@ public class SimulationData extends VCData {
 				if(logfile.exists()){
 					return true;
 				}
-				String urlStr = amplistorAllVCellUsersRootPath+"/"+user.getName()+"/"+simLogFileName;
-				urlCon = createGETConnection(urlStr);
-				urlCon.setRequestProperty("Accept","application/xml");
-				int responseCode = urlCon.getResponseCode();
-				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
-					return false;
-				}
-//				if(responseCode == HttpURLConnection.HTTP_NO_CONTENT){
-//					return null;
-//				}
-				if(responseCode != HttpURLConnection.HTTP_OK){
-					throw new Exception("URL connection "+urlStr+" not OK, HTTP code="+responseCode);
-				}
-				return true;
-			}finally{
-				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
-			}
-		}
-		public static void downloadFiles(String amplistorAllVCellUsersRootPath,ArrayList<String> fileNames,User user,File destinationUserDir) throws Exception{
-			String amplistorUserPath = amplistorAllVCellUsersRootPath+"/"+user.getName();
-			for(String fileName:fileNames){
-				File desinationFile = new File(destinationUserDir,fileName);
-				if(!desinationFile.exists()){
-					try {
-						xferAmplistorData(amplistorUserPath+"/"+fileName,desinationFile);
-					} catch (Exception e) {
-						e.printStackTrace();
-						//ignore
-					}
-				}
-
-			}
-		}
-		public static ArrayList<String> getAllMatchingSimData(String amplistorAllVCellUsersRootPath,KeyValue simKey,User user) throws FileNotFoundException,Exception{
-			//amplistor has limit on how many list entries from object with children it can return at 1 time
-			//this method gets max num at a time and saves name of last child then
-			//gets next batch starting from the last found child until there are no more
-			//(this function built into amplistor using "marker" parameter)
-			ArrayList<String> matchedFileNames = new ArrayList<String>();
-			String marker = null;
-			String match = Simulation.createSimulationID(simKey);
-			String amplistorUserPath = amplistorAllVCellUsersRootPath+"/"+user.getName();
-			boolean bFinished = false;
-			while(true){
-				Document responseDoc = getXMLDirList(amplistorUserPath+(marker!=null?"?marker="+marker+"&limit=1000":""));
-				if(responseDoc != null){
-					List<Element> dirEntryElements = responseDoc.getRootElement().getChildren();
-					for(Element dirEntry:dirEntryElements){
-						String fileName = dirEntry.getText();
-						if(fileName.equals(marker)){
-							if(dirEntryElements.size() == 1){
-								bFinished = true;
-								break;
-							}
-							continue;
-						}
-						marker = fileName;
-						if(fileName.startsWith(match)){
-							matchedFileNames.add(fileName);
-						}
-					}
-					if(bFinished){
-						break;
-					}
-				}else{
-					break;
-				}
-			}
-			return matchedFileNames;
-		}
-		private static Document getXMLDirList(String urlStr) throws Exception{
-			HttpURLConnection urlCon = null;
-			try{
-				urlCon = createGETConnection(urlStr);
-				urlCon.setRequestProperty("Accept","application/xml");
-				int responseCode = urlCon.getResponseCode();
-				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
-					throw new FileNotFoundException();
-				}
-				if(responseCode == HttpURLConnection.HTTP_NO_CONTENT){
-					return null;
-				}
-				if(responseCode != HttpURLConnection.HTTP_OK){
-					throw new Exception("URL connection "+urlStr+" not OK, HTTP code="+responseCode);
-				}
-				//Get xml of response
-				BufferedReader in = new BufferedReader(new InputStreamReader(urlCon.getInputStream()));
-				String inputLine;
-				StringBuffer response = new StringBuffer();
-				while ((inputLine = in.readLine()) != null) {
-					response.append(inputLine);
-				}
-				in.close();
-				return XmlUtil.stringToXML(response.toString(), null);
+				return amplistorFileExists(simDataAmplistorInfo, user.getName(), simLogFileName);
 			}finally{
 				if(urlCon != null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
 			}
@@ -291,21 +195,9 @@ public class SimulationData extends VCData {
 			}
 		}
 
-		private static boolean amplistorFileExists(String amplistorUsersRootPath,String userid,String fileName) throws Exception{
-			String urlStr = amplistorUsersRootPath+"/"+userid+"/"+fileName;
-			HttpURLConnection urlCon = null;
-			try{
-				urlCon = createGETConnection(urlStr);
-//				urlCon.setRequestProperty("Content-Type","application/xml");
-//				urlCon.setRequestProperty("Accept","application/xml");
-				int responseCode = urlCon.getResponseCode();
-				if(responseCode == 404){//filenotfound
-					return false;
-				}
-				return true;
-			}finally{
-				if(urlCon!=null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
-			}
+		private static boolean amplistorFileExists(SimDataAmplistorInfo simDataAmplistorInfo,String userid,String fileName) throws Exception{
+			String urlStr = simDataAmplistorInfo.getAmplistorVCellUsersRootPath()+"/"+userid+"/"+fileName;
+			return AmplistorUtils.bFileExists(new URL(urlStr), simDataAmplistorInfo.getAmplistorCredential());
 		}
 		public VCDataIdentifier getVCDataiDataIdentifier(){
 			return ahvcDataId;
@@ -318,30 +210,18 @@ public class SimulationData extends VCData {
 		}
 		public File getFunctionsFile(boolean bFirst){
 			return getFile(SimulationData.createCanonicalFunctionsFileName(getsimulationKey(),(bFirst?0:getJobIndex()), isOldStyle()));
-//			File file = new File(userDirectory,SimulationData.createCanonicalFunctionsFileName(getsimulationKey(),(bFirst?0:getJobIndex()), isOldStyle()));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getLogFile(){
 			return getFile(SimulationData.createCanonicalSimLogFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			File file = new File(userDirectory,SimulationData.createCanonicalSimLogFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getSmoldynOutputFile(int timeIndex){
 			return getFile(SimulationData.createCanonicalSmoldynOutputFileName(((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getSimulationKey(), ((VCSimulationDataIdentifier)getVCDataiDataIdentifier()).getJobIndex(), timeIndex));
 		}
 		public File getMeshMetricsFile(){
 			return getFile(SimulationData.createCanonicalMeshMetricsFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			File file = new File(userDirectory,SimulationData.createCanonicalMeshMetricsFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getSubdomainFile(){
 			return getFile(SimulationData.createCanonicalSubdomainFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			File file = new File(userDirectory,SimulationData.createCanonicalSubdomainFileName(getsimulationKey(),getJobIndex(), isOldStyle()));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getMeshFile(boolean bHDF5){
 			String meshFileName = SimulationData.createCanonicalMeshFileName(getsimulationKey(),getJobIndex(), isOldStyle())+(bHDF5?".hdf5":"");
@@ -350,9 +230,6 @@ public class SimulationData extends VCData {
 				return getLocalFilePath(meshFileName);
 			}
 			return getFile(meshFileName);
-//			File file = new File(userDirectory,SimulationData.createCanonicalMeshFileName(getsimulationKey(),getJobIndex(), isOldStyle())+(bHDF5?".hdf5":""));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getZipFile(boolean bHDF5,Integer zipIndex){
 			String zipFileName = SimulationData.createCanonicalSimZipFileName(getsimulationKey(),zipIndex,getJobIndex(), isOldStyle(),bHDF5);
@@ -361,9 +238,6 @@ public class SimulationData extends VCData {
 				return getLocalFilePath(zipFileName);
 			}
 			return getFile(zipFileName);
-//			File file = new File(userDirectory,SimulationData.createCanonicalSimZipFileName(getsimulationKey(),zipIndex,getJobIndex(), isOldStyle(),bHDF5));
-//			xferAmplistor(file);
-//			return file;
 		}
 		public File getPostProcessFile(){
 			return getFile(SimulationData.createCanonicalPostProcessFileName(getVCDataiDataIdentifier()));
@@ -380,10 +254,12 @@ public class SimulationData extends VCData {
 			return new File(userDirectory,fileName);	
 		}
 		private void xferAmplistor(File file){
-			if(amplistorVCellUsersRootPath != null && !amplistorNotfoundSet.contains(file.getName()) && !file.exists()){//we may have already xferred it
-//				System.out.println("-----Amplistor tried "+file.getAbsolutePath());
+			if(simDataAmplistorInfo != null && !amplistorNotfoundSet.contains(file.getName()) && !file.exists()){//we may have already xferred it
 				try{
-					xferAmplistorData(amplistorVCellUsersRootPath+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(), file);
+					AmplistorUtils.getObjectDataPutInFile(
+						simDataAmplistorInfo.amplistorVCellUsersRootPath+"/"+getVCDataiDataIdentifier().getOwner().getName()+"/"+file.getName(),
+						simDataAmplistorInfo.amplistorCredential,
+						file);
 				}catch(Exception e){
 					if(e instanceof FileNotFoundException){
 						amplistorNotfoundSet.add(file.getName());
@@ -398,84 +274,6 @@ public class SimulationData extends VCData {
 		}
 		private boolean isOldStyle(){
 			return getVCDataiDataIdentifier() instanceof VCSimulationDataIdentifierOldStyle;
-		}
-		private static HttpURLConnection createGETConnection(String urlStr) throws IOException{
-			URL url = new URL(urlStr);
-			HttpURLConnection urlCon = (HttpURLConnection) url.openConnection();
-			urlCon.setRequestMethod("GET");
-			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
-			urlCon.setConnectTimeout(30*1000);
-			urlCon.setReadTimeout(30*1000);
-			return urlCon;
-		}
-		private static void xferAmplistorData(String urlStr,File destinationFile) throws IOException,FileNotFoundException{
-			BufferedOutputStream bos = null;
-			HttpURLConnection urlCon = null;
-			try{
-				urlCon = createGETConnection(urlStr);
-				int responseCode = urlCon.getResponseCode();
-				if(responseCode == HttpURLConnection.HTTP_NOT_FOUND){
-					throw new FileNotFoundException();
-				}
-				if(responseCode != HttpURLConnection.HTTP_OK){
-					throw new IOException("Unexpected HttpURLConnection.getResonseCode()="+responseCode+" for amplistor url="+urlStr);
-				}
-				String xAmpliSize = urlCon.getHeaderField("X-Ampli-Size");
-				long contentLength = (xAmpliSize==null?131072:Long.parseLong(xAmpliSize));
-				BufferedInputStream bis = new BufferedInputStream(urlCon.getInputStream());
-				byte[] tempBuffer = new byte[(int)Math.min(contentLength, Math.pow(8, 7))];
-				bos = new BufferedOutputStream(new FileOutputStream(destinationFile));
-		        while(true){
-		        	int numread = bis.read(tempBuffer,0,tempBuffer.length);
-		        	if(numread == -1){
-		        		break;
-		        	}
-		        	bos.write(tempBuffer,0,numread);
-		        }
-		        bos.flush();
-		        restoreFileDates(urlCon.getHeaderFields(), destinationFile);
-			}finally{
-				if(bos!=null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
-				if(urlCon!=null){try{urlCon.disconnect();}catch(Exception e){e.printStackTrace();}}
-			}
-		}
-		private static String getRFC1123FormattedDate(){
-			return rfc1123Format.format(new Date());
-		}
-		private static void restoreFileDates(Map<String, List<String>> headerFields,File destinationFile){
-			try{
-				List<String> modificationMetaData = headerFields.get(CUSTOM_FILE_MODIFICATION_DATE);
-				if(modificationMetaData != null && modificationMetaData.size() == 1){
-					Date customModificationDate = AmplistorHelper.convertDateMetaData(modificationMetaData.get(0));
-					destinationFile.setLastModified(customModificationDate.getTime());
-				}
-			}catch(Exception e){
-				//ignore
-				e.printStackTrace();
-			}
-		}
-		private static Date convertDateMetaData(String dateLong) throws Exception{
-			if(dateLong.indexOf('"') != -1){//get rid of quotes
-				if(dateLong.charAt(0)=='"' && dateLong.charAt(dateLong.length()-1)=='"'){
-					dateLong = dateLong.substring(1, dateLong.length()-1);
-				}else{
-					throw new Exception("Unexpected quotes in date string '"+dateLong+"'");
-				}
-			}
-			int dotIndex = dateLong.indexOf('.');
-			Date date = null;
-			if(dotIndex != -1){
-				//parse fractional seconds and convert to milliseconds
-				String beforeDot = dateLong.substring(0,dotIndex);
-				String afterDot = dateLong.substring(dotIndex,dateLong.length());
-				double secFrac = (afterDot.equals(".")?0.0:Double.parseDouble(afterDot));
-				afterDot = ""+(int)(secFrac*1000);
-				afterDot = (afterDot.length()<2?"0":"")+(afterDot.length()<3?"0":"")+afterDot;
-				date = new Date(Long.parseLong(beforeDot+afterDot));
-			}else{
-				date = new Date(Long.parseLong(dateLong+"000"));//add 000 milisecs
-			}
-			return date;
 		}
 	}
 	
@@ -508,12 +306,28 @@ public class SimulationData extends VCData {
 	private int odeKeepMost = 0;
 	private String odeIdentifier = null;
 	
+	public static class SimDataAmplistorInfo {
+		private String amplistorVCellUsersRootPath;
+		private AmplistorCredential amplistorCredential;
+		public SimDataAmplistorInfo(String amplistorVCellUsersRootPath,AmplistorCredential amplistorCredential) {
+			this.amplistorVCellUsersRootPath = amplistorVCellUsersRootPath;
+			this.amplistorCredential = amplistorCredential;
+		}
+		public String getAmplistorVCellUsersRootPath() {
+			return amplistorVCellUsersRootPath;
+		}
+		public AmplistorCredential getAmplistorCredential() {
+			return amplistorCredential;
+		}
+	}
+
+	
 /**
  * SimResults constructor comment.
  */
-public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,String amplistorVCellUsersRootPath) throws IOException, DataAccessException {
+public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws IOException, DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
-	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,amplistorVCellUsersRootPath);
+	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,simDataAmplistorInfo);
 	this.vcDataId = amplistorHelper.getVCDataiDataIdentifier();
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() getting var and function identifiers");
 	getVarAndFunctionDataIdentifiers(null);
