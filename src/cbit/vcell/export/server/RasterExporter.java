@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.Vector;
 
 import org.vcell.util.DataAccessException;
@@ -28,6 +29,9 @@ import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdWriter;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
@@ -61,6 +65,14 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						throws RemoteException, DataAccessException, IOException {
 
 	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+	DataProcessingOutputInfo dataProcessingOutputInfo = null;
+	try {
+		dataProcessingOutputInfo = (DataProcessingOutputInfo)dataServerImpl.doDataOperation(user,new DataOperation.DataProcessingOutputInfoOP(vcdID,true,outputContext));
+	} catch (Exception e) {
+		e.printStackTrace();
+//		throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
+	}
+
 	String simID = vcdID.getID();
 	int NUM_TIMES = timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1;
 	switch (rasterSpecs.getFormat()) {
@@ -68,6 +80,56 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 			// single info, specifying 5D
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
+					if(dataProcessingOutputInfo != null){
+						String myVarName = variableSpecs.getVariableNames()[0];
+						for(int ppvar=0;ppvar<dataProcessingOutputInfo.getVariableNames().length;ppvar++){
+							if(dataProcessingOutputInfo.getVariableNames()[ppvar].equals(myVarName) && dataProcessingOutputInfo.getPostProcessDataType(myVarName) == PostProcessDataType.image){
+								NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
+										5,
+										new int[] {dataProcessingOutputInfo.getVariableISize(myVarName).getX(),
+												dataProcessingOutputInfo.getVariableISize(myVarName).getY(),
+												dataProcessingOutputInfo.getVariableISize(myVarName).getZ(),
+												NUM_TIMES, 1},
+										"double",
+										"raw"
+									);
+								nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + "postprocvars");
+								nrrdInfo.setContent("5D(x,y,z,t,var) PostProcess VCData from " + simID+":"+myVarName);
+								nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell", "???"});
+								nrrdInfo.setSpacings(new double[] {
+									dataProcessingOutputInfo.getVariableExtent(myVarName).getX()/dataProcessingOutputInfo.getVariableISize(myVarName).getX(),
+									dataProcessingOutputInfo.getVariableExtent(myVarName).getY()/dataProcessingOutputInfo.getVariableISize(myVarName).getY(),
+									dataProcessingOutputInfo.getVariableExtent(myVarName).getZ()/dataProcessingOutputInfo.getVariableISize(myVarName).getZ(),
+									Double.NaN,	// timepoints can have irregular intervals
+									Double.NaN  // not meaningful for variables
+								});
+								nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
+								// make datafile and update info
+								nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+								//DataOutputStream out = null;
+							
+									//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
+									for (int i = 0; i < 1; i++){
+										for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+											double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, myVarName, timeSpecs2.getAllTimes()[j]).getData();
+											byte[] output = new byte[8*data.length];
+											for (int k = 0; k < data.length; k++){
+												long lng = Double.doubleToLongBits(data[k]);
+												for(int l = 0; l < 8; l++){
+													output[(k*8)+l] = (byte)((lng >> ((7 - l) * 8)) & 0xff);
+												}
+											}
+											fileDataContainerManager.append(nrrdInfo.getDataFileID(), output);
+										}
+									}
+								
+								// write out final output
+								nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+								return new NrrdInfo[] {nrrdInfo};
+							}
+						}
+						
+					}
 					// create the info object
 					NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
 						5,
