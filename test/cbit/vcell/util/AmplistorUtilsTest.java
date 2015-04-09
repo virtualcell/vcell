@@ -137,7 +137,7 @@ public class AmplistorUtilsTest {
 		calendar.set(Calendar.MILLISECOND,0);
 		System.out.println("Set Custom Modification time----- "+calendar.getTime());
 //		AmplistorUtils.setFileMetaData(dirNameURL+"/"+tmpFiles[0].getName(), amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, tmpFiles[0].lastModified()/1000+".0");
-		AmplistorUtils.setFileMetaData(file0url, amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, calendar.getTime().getTime()/1000+".0");
+		AmplistorUtils.setFileMetaData(file0url, amplistorCredential, AmplistorUtils.CUSTOM_FILE_MODIFICATION_DATE, calendar.getTime().getTime()/1000+".0");
 
 		//
 		//Print the http header info for one of the uploaded files
