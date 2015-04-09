@@ -114,7 +114,7 @@ public static NrrdInfo writeNRRD(NrrdInfo nrrdInfo,FileDataContainerManager file
 	//BufferedInputStream dataIN = null;
 	if (! nrrdInfo.isSeparateHeader()) {
 		
-		fileDataContainerManager.append(nrrdInfo.getDataFileID(), nrrdInfo.getHeaderFileID());
+		fileDataContainerManager.append(nrrdInfo.getHeaderFileID(),nrrdInfo.getDataFileID());
 		
 //		headerdOut = new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getHeaderFileID()), true));
 //		dataIN = new BufferedInputStream(new FileInputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID())));
