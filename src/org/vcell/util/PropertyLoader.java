@@ -142,7 +142,10 @@ public class PropertyLoader {
 	public static final String VCellChomboExecutable2D = record("vcell.chombo.executable.2d",RequiredFor.NOT,ValueType.EXE);
 	public static final String VCellChomboExecutable3D = record("vcell.chombo.executable.3d",RequiredFor.NOT,ValueType.EXE);
 
-	public static final String amplistorVCellUsersRootPath = record("vcell.amplistor.usersDir.root",RequiredFor.NOT,ValueType.GEN);
+	public static final String amplistorVCellServiceURL = record("vcell.amplistor.vcellserviceurl", RequiredFor.NOT,ValueType.GEN);
+	public static final String amplistorVCellServiceUser = record("vcell.amplistor.vcellservice.user", RequiredFor.NOT,ValueType.GEN);
+	public static final String amplistorVCellServicePassword = record("vcell.amplistor.vcellservice.password", RequiredFor.NOT,ValueType.GEN);
+	
 	public static final String installationRoot = record("vcell.installDir",RequiredFor.CLIENT,ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",RequiredFor.NOT,ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",RequiredFor.NOT,ValueType.GEN);

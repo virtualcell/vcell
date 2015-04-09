@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -38,17 +39,21 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 import org.vcell.util.Hex;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.SimulationData.AmplistorHelper;
 import cbit.vcell.solver.Simulation;
 
 public class AmplistorUtils {
 
 	private static Random rand = null;
 
+	private static final String AMPLISTOR_CUSTOM_META_PREFIX = "X-Ampli-Custom-Meta-";
+	public static final String CUSTOM_FILE_MODIFICATION_DATE = AMPLISTOR_CUSTOM_META_PREFIX+"modification-date";
 
 	private static enum AMPLI_OP_KIND {FILE,DIR};
 	private static enum AMPLI_OP_METHOD {GET,PUT,DELETE};
@@ -65,6 +70,18 @@ public class AmplistorUtils {
 			this.userName = userName;
 			this.password = password;
 		}
+	}
+	
+	public static SimulationData.SimDataAmplistorInfo getSimDataAmplistorInfoFromPropertyLoader(){
+		SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = null;
+		String amplistor_VCell_Users_RootPath = PropertyLoader.getProperty(PropertyLoader.amplistorVCellServiceURL, null);
+		if(amplistor_VCell_Users_RootPath != null){
+			String ampliUserName = PropertyLoader.getProperty(PropertyLoader.amplistorVCellServiceUser, null);
+			String ampliPassword = PropertyLoader.getProperty(PropertyLoader.amplistorVCellServicePassword, null);
+			simDataAmplistorInfo = new SimulationData.SimDataAmplistorInfo(amplistor_VCell_Users_RootPath,
+				(ampliUserName!=null && ampliPassword != null?new AmplistorUtils.AmplistorCredential(ampliUserName, ampliPassword):null));
+		}
+		return simDataAmplistorInfo;
 	}
 	
 	public static boolean bFileExists(URL ampliURLFilePath,AmplistorCredential amplistorCredential) throws Exception{
@@ -99,6 +116,63 @@ public class AmplistorUtils {
 		}finally{
 			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){checkOPHelper.httpURLConnection.disconnect();}
 		}
+	}
+
+	public static void getObjectDataPutInFile(String urlStr,AmplistorCredential amplistorCredential,File toFile) throws Exception{
+		CheckOPHelper checkOPHelper = null;
+		BufferedOutputStream bos = null;
+		try{
+			URL httpURL = new URL(urlStr);
+			checkOPHelper = ampliCheckOP(httpURL, amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE,null);
+			long contentLength = 256*256;
+			try{
+				contentLength = Long.parseLong(checkOPHelper.httpURLConnection.getHeaderField("X-Ampli-Size"));
+			}catch(NumberFormatException nfe){
+				nfe.printStackTrace();
+			}
+			BufferedInputStream bis = new BufferedInputStream(checkOPHelper.httpURLConnection.getInputStream());
+			byte[] tempBuffer = new byte[(int)Math.min(contentLength, Math.pow(8, 7))];
+			bos = new BufferedOutputStream(new FileOutputStream(toFile));
+	        while(true){
+	        	int numread = bis.read(tempBuffer,0,tempBuffer.length);
+	        	if(numread == -1){
+	        		break;
+	        	}
+	        	bos.write(tempBuffer,0,numread);
+	        }
+	        bos.flush();
+	        if(checkOPHelper.httpURLConnection.getHeaderField(CUSTOM_FILE_MODIFICATION_DATE) != null){
+				Date customModificationDate = convertDateMetaData(checkOPHelper.httpURLConnection.getHeaderField(CUSTOM_FILE_MODIFICATION_DATE));
+				toFile.setLastModified(customModificationDate.getTime());
+	        }
+		}finally{
+			if(bos!=null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
+			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){checkOPHelper.httpURLConnection.disconnect();}
+		}
+	}
+
+	private static Date convertDateMetaData(String dateLong) throws Exception{
+		if(dateLong.indexOf('"') != -1){//get rid of quotes
+			if(dateLong.charAt(0)=='"' && dateLong.charAt(dateLong.length()-1)=='"'){
+				dateLong = dateLong.substring(1, dateLong.length()-1);
+			}else{
+				throw new Exception("Unexpected quotes in date string '"+dateLong+"'");
+			}
+		}
+		int dotIndex = dateLong.indexOf('.');
+		Date date = null;
+		if(dotIndex != -1){
+			//parse fractional seconds and convert to milliseconds
+			String beforeDot = dateLong.substring(0,dotIndex);
+			String afterDot = dateLong.substring(dotIndex,dateLong.length());
+			double secFrac = (afterDot.equals(".")?0.0:Double.parseDouble(afterDot));
+			afterDot = ""+(int)(secFrac*1000);
+			afterDot = (afterDot.length()<2?"0":"")+(afterDot.length()<3?"0":"")+afterDot;
+			date = new Date(Long.parseLong(beforeDot+afterDot));
+		}else{
+			date = new Date(Long.parseLong(dateLong+"000"));//add 000 milisecs
+		}
+		return date;
 	}
 
 	public static Hashtable<File, Exception> uploadFilesOperation(File userDir,URL remoteDestinationDirURL,final AmplistorCredential amplistorCredential) throws Exception{
@@ -202,7 +276,7 @@ public class AmplistorUtils {
 			bis = new BufferedInputStream(new FileInputStream(currentFile));
 			String urlStr = remoteDestinationDirURL.toString()+"/"+currentFile.getName();
 			uploadStream(new URL(urlStr), amplistorCredential, bis, currentFile.length());
-			setFileMetaData(urlStr, amplistorCredential, SimulationData.AmplistorHelper.CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
+			setFileMetaData(urlStr, amplistorCredential, CUSTOM_FILE_MODIFICATION_DATE, currentFile.lastModified()/1000+".0");
 		}finally{
 			try{if(bis != null){bis.close();}}catch(Exception e){System.out.println("bis close error "+e.getMessage());}
 		}

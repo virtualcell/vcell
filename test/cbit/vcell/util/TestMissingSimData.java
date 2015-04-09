@@ -35,6 +35,7 @@ import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.SimulationData.SimDataAmplistorInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
@@ -393,7 +394,8 @@ public class TestMissingSimData {
 				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, user);
 				VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier,jobIndex);
 				//Try to read log,times and simdata to see if this data is well formed
-				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL);
+				SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
+				SimulationData simData = new SimulationData(vcSimulationDataIdentifier, primaryDataDir, null, simDataAmplistorInfo);
 				double[] dataTimes = simData.getDataTimes();
 				DataIdentifier[] dataIdentifiers = simData.getVarAndFunctionDataIdentifiers(null);
 				DataIdentifier readDataIdentifier = null;
