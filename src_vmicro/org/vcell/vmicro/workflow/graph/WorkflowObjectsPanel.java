@@ -39,11 +39,11 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.vmicro.op.display.DisplayImageOp;
+import org.vcell.vmicro.op.display.DisplayPlotOp;
+import org.vcell.vmicro.op.display.DisplayProfileLikelihoodPlotsOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.vmicro.workflow.task.DisplayImage;
-import org.vcell.vmicro.workflow.task.DisplayPlot;
-import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.DisplayTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -389,20 +389,20 @@ public class WorkflowObjectsPanel extends JPanel {
 			if (data instanceof RowColumnResultSet){
 				RowColumnResultSet rc = (RowColumnResultSet)data;
 				try {
-					DisplayPlot.displayPlot(rc, title, listener);
+					new DisplayPlotOp().displayPlot(rc, title, listener);
 				} catch (ExpressionException e) {
 					e.printStackTrace();
 				}
 			}else if (data instanceof ROI){
 				ROI roi = (ROI)data;
 				Image image = roi.getRoiImages()[0];
-				DisplayImage.displayImage(image, title, listener);
+				new DisplayImageOp().displayImage(image, title, listener);
 			}else if (data instanceof ProfileData[]){
 				ProfileData[] profileData = (ProfileData[])data;
-				DisplayProfileLikelihoodPlots.displayProfileLikelihoodPlots(profileData, title, listener);
+				new DisplayProfileLikelihoodPlotsOp().displayProfileLikelihoodPlots(profileData, title, listener);
 			}else if (data instanceof Image){
 				Image image = (Image)data;
-				DisplayImage.displayImage(image, title, listener);
+				new DisplayImageOp().displayImage(image, title, listener);
 			}else if (data instanceof ImageTimeSeries){
 				ImageTimeSeries imageTimeSeries = (ImageTimeSeries)data;
 				try {

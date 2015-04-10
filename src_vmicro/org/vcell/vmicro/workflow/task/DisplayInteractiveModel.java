@@ -1,20 +1,14 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.awt.event.WindowListener;
-
-import javax.swing.JFrame;
-
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.workflow.data.OptContext;
-import org.vcell.vmicro.workflow.gui.OptModelParamPanel;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.ROI;
-import cbit.vcell.parser.ExpressionException;
 
 public class DisplayInteractiveModel extends Task {
 	
@@ -45,27 +39,15 @@ public class DisplayInteractiveModel extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		// get input
 		String titleString = context.getDataWithDefault(title, "no title - not connected");
-		displayOptModel(context.getData(optContext), context.getData(rois), context.getLocalWorkspace(), titleString, null);
+		OptContext optcontext = context.getData(optContext);
+		ROI[] roiArray = context.getData(rois);
+		
+		DisplayInteractiveModelOp op = new DisplayInteractiveModelOp();
+		op.displayOptModel(optcontext, roiArray, context.getLocalWorkspace(), titleString, null);
+		
+		// set output
 		context.setData(displayed,true);
 	}
-	
-	public static void displayOptModel(OptContext optContext, ROI[] rois, LocalWorkspace localWorkspace, String title, WindowListener listener) throws ExpressionException {
-		JFrame frame = new javax.swing.JFrame();
-		
-		OptModelParamPanel optModelParamPanel = new OptModelParamPanel();
-		frame.setContentPane(optModelParamPanel);
-		frame.setSize(optModelParamPanel.getSize());
-		frame.addWindowListener(listener);
-		frame.setTitle(title);
-		frame.setSize(500, 500);
-		frame.setVisible(true);
-		
-		
-		optModelParamPanel.init(optContext, rois, localWorkspace);
-		
-	}
-
-	
-
 }

@@ -1,6 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.GenerateBleachRoiOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -45,42 +46,16 @@ public class GenerateBleachROI extends Task {
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
-		Image[] allImages = context.getData(normalizedTimeSeries).getAllImages();
-		int numPixels = allImages[0].getNumXYZ();
-		int numTimes = allImages.length;
-
-		ImageStatistics[] imageStats = new ImageStatistics[numTimes];
-		for (int i=0;i<numTimes;i++){
-			imageStats[i] = allImages[i].getImageStatistics();
-		}
+		// get input
+		Image firstPostbleachImage = context.getData(normalizedTimeSeries).getAllImages()[0];
+		ROI cellROI = context.getData(cellROI_2D);
+		double bleachThresholdValue = context.getData(bleachThreshold);
 		
-		short[] scaledBleachedDataShort = new short[numPixels];
-				
-		short[] erodedCellUShort = context.getData(cellROI_2D).getRoiImages()[0].getBinaryPixels(1);
-		double bleachThresholdValue = context.getData(bleachThreshold); // input is already normalized to 1.0 ... if relative to max, then crazy values from outside cell can interfere.
-		double[] firstPostbleachImage = allImages[0].getDoublePixels();
-		for (int j = 0; j < numPixels; j++) {
-			boolean isCell = (erodedCellUShort[j] == 1);
-			boolean isBleach = firstPostbleachImage[j] < bleachThresholdValue;
-			if (isCell && isBleach) {
-				scaledBleachedDataShort[j] = 1;
-			}
-		}
-
-
-		UShortImage bleachedImage =
-			new UShortImage(
-					scaledBleachedDataShort,
-					allImages[0].getOrigin(),
-					allImages[0].getExtent(),
-					allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
-
-		if (clientTaskStatusSupport != null){
-			clientTaskStatusSupport.setProgress(100);
-		}
+		// do op
+		GenerateBleachRoiOp op = new GenerateBleachRoiOp();
+		ROI bleachedROI = op.generateBleachRoi(firstPostbleachImage, cellROI, bleachThresholdValue);
 		
-		ROI bleachedROI = new ROI(bleachedImage,"bleachedROI");
-		
+		// set output
 		context.setData(bleachedROI_2D,bleachedROI);
 		context.setData(bleachedROI_2D_array,new ROI[] { bleachedROI });
 	}

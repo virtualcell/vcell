@@ -1,9 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
+import org.vcell.vmicro.op.GenerateTrivial2DPsfOp;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
@@ -32,14 +30,12 @@ public class GenerateTrivial2DPsf extends Task {
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		
-		//	psf image is now expecting a 3x3 image that are all zeros with a 1 in the middle (Kronecker delta)
-		short[] pixels = new short[] { 0, 0, 0, 0, 1, 0, 0, 0, 0 };
-		Origin origin = new Origin(0,0,0);
-		Extent extent =new Extent(1, 1, 1);
-		ISize isize = new ISize(3, 3, 1);
+		// do op
+		GenerateTrivial2DPsfOp op = new GenerateTrivial2DPsfOp();
+		UShortImage psf = op.generateTrivial2D_Psf();
 		
-		UShortImage psfImage = new UShortImage(pixels,origin,extent,isize.getX(),isize.getY(),isize.getZ());
-		context.setData(psf_2D,psfImage);
+		// set output
+		context.setData(psf_2D,psf);
 	}
 
 }

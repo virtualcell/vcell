@@ -1,6 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.Generate2DOptContextOp;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.workflow.DataInput;
@@ -9,6 +10,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.math.RowColumnResultSet;
+import cbit.vcell.parser.ExpressionException;
 
 public class Generate2DOptContext extends Task {
 	
@@ -36,32 +38,18 @@ public class Generate2DOptContext extends Task {
 	}
 
 	@Override
-	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-
-		
+	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws ExpressionException {
+		// get inputs
 		RowColumnResultSet normExpDataset = context.getData(normExpData);
-		double[] normExpTimePoints = normExpDataset.extractColumn(0);
-
-		int numRois = normExpDataset.getDataColumnCount()-1;
-		int numNormExpTimes = normExpDataset.getRowCount();
-		double[][] normExpData = new double[numRois][numNormExpTimes];
-		for (int roi=0; roi<numRois; roi++){
-			double[] roiData = normExpDataset.extractColumn(roi+1);
-			for (int t=0; t<numNormExpTimes; t++){
-				normExpData[roi][t] = roiData[t];
-			}
-		}
-		
 		RowColumnResultSet measurementErrorDataset = context.getData(normalizedMeasurementErrors);
-		double[][] measurementErrors = new double[numRois][numNormExpTimes];
-		for (int roi=0; roi<numRois; roi++){
-			double[] roiData = measurementErrorDataset.extractColumn(roi+1);
-			for (int t=0; t<numNormExpTimes; t++){
-				measurementErrors[roi][t] = roiData[t];
-			}
-		}
+		OptModel optmodel = context.getData(optModel);
 		
-		context.setData(optContext,new OptContext(context.getData(optModel),normExpData,normExpTimePoints,measurementErrors));
+		// do op
+		Generate2DOptContextOp op = new Generate2DOptContextOp();
+		OptContext optcontext = op.generate2DOptContext(optmodel, normExpDataset, measurementErrorDataset);
+		
+		// set output
+		context.setData(optContext,optcontext);
 	}
 	
 }

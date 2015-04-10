@@ -1,43 +1,18 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VersionFlag;
+import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.Context;
+import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.GeneratedModelResults;
+import org.vcell.vmicro.op.Generate2DExpModel_GaussianBleachOp;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.GeneralKinetics;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class Generate2DExpModel_GaussianBleach extends Task {
 	
@@ -115,170 +90,64 @@ public class Generate2DExpModel_GaussianBleach extends Task {
 	}
 
 	@Override
-	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	protected void compute0(final TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		// get input
+		double deltaX = context.getData(this.deltaX);
+		double bleachRadius = context.getData(this.bleachRadius);
+		double cellRadius = context.getData(this.cellRadius);
+		double bleachDuration = context.getData(this.bleachDuration);
+		double bleachRate = context.getData(this.bleachRate);
+		double postbleachDelay = context.getData(this.postbleachDelay);
+		double postbleachDuration = context.getData(this.postbleachDuration);
+		double psfSigma = context.getData(this.psfSigma);
+		double outputTimeStep = context.getData(this.outputTimeStep);
+		double primaryDiffusionRate = context.getData(this.primaryDiffusionRate);
+		double primaryFraction = context.getData(this.primaryFraction);
+		double bleachMonitorRate = context.getData(this.bleachMonitorRate);
+		double secondaryDiffusionRate = context.getData(this.secondaryDiffusionRate);
+		double secondaryFraction = context.getData(this.secondaryFraction);
+		String extracellularName = context.getData(this.extracellularName);
+		String cytosolName = context.getData(this.cytosolName);
+		
+		// isolate from Workflow
+		Context modelGenerationContext = new Context(){
+			@Override
+			public User getDefaultOwner() {
+				return context.getDefaultOwner();
+			}
+			
+			@Override
+			public KeyValue createNewKeyValue() {
+				return context.createNewKeyValue();
+			}
+		};
 
-		double domainSize = 2.2*context.getData(cellRadius);
-		Extent extent = new Extent(domainSize, domainSize, 1.0);
-		Origin origin = new Origin(-extent.getX()/2.0, -extent.getY()/2.0, -extent.getZ()/2.0);
-		
-		String EXTRACELLULAR_NAME = context.getData(extracellularName);
-		String CYTOSOL_NAME = context.getData(cytosolName);
+		// do op
+		Generate2DExpModel_GaussianBleachOp op = new Generate2DExpModel_GaussianBleachOp();
+		GeneratedModelResults results = op.generateModel(
+				deltaX, 
+				bleachRadius, 
+				cellRadius, 
+				bleachDuration, 
+				bleachRate, 
+				postbleachDelay, 
+				postbleachDuration, 
+				psfSigma, 
+				outputTimeStep, 
+				primaryDiffusionRate, 
+				primaryFraction, 
+				bleachMonitorRate, 
+				secondaryDiffusionRate, 
+				secondaryFraction, 
+				extracellularName, 
+				cytosolName, 
+				modelGenerationContext);
 
-		AnalyticSubVolume cytosolSubVolume = new AnalyticSubVolume(CYTOSOL_NAME,new Expression("pow(x,2)+pow(y,2)<pow("+context.getData(cellRadius)+",2)"));
-		AnalyticSubVolume extracellularSubVolume = new AnalyticSubVolume(EXTRACELLULAR_NAME,new Expression(1.0));
-		Geometry geometry = new Geometry("geometry",2);
-		geometry.getGeometrySpec().setExtent(extent);
-		geometry.getGeometrySpec().setOrigin(origin);
-		geometry.getGeometrySpec().addSubVolume(extracellularSubVolume);
-		geometry.getGeometrySpec().addSubVolume(cytosolSubVolume, true);
-		geometry.getGeometrySurfaceDescription().updateAll();
-
-		BioModel bioModel = new BioModel(null);
-		bioModel.setName("unnamed");
-		Model model = new Model("model");
-		bioModel.setModel(model);
-		model.addFeature(EXTRACELLULAR_NAME);
-		Feature extracellular = (Feature)model.getStructure(EXTRACELLULAR_NAME);
-		model.addFeature(CYTOSOL_NAME);
-		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
-
-		SpeciesContext immobileSC = model.createSpeciesContext(cytosol);
-		SpeciesContext primarySC = model.createSpeciesContext(cytosol);
-		SpeciesContext secondarySC = model.createSpeciesContext(cytosol);
-		
-		//
-		// common bleaching rate for all species
-		//
-		
-		double blStart = 10*context.getData(outputTimeStep) - context.getData(bleachDuration) - context.getData(postbleachDelay);
-		double blEnd =  blStart + context.getData(bleachDuration);
-		double blRadius2 = context.getData(bleachRadius) * context.getData(bleachRadius);
-		double blMonRate = context.getData(bleachMonitorRate);
-		double blRate = context.getData(bleachRate);
-		Expression bleachRateExp = new Expression(blMonRate+"*((t<"+blStart+")||(t>"+blEnd+")) + "+blRate+"*exp(-2*(x*x + y*y)/"+blRadius2+")*((t>="+blStart+")&&(t<="+blEnd+"))");		
-		
-		{
-		SimpleReaction immobileBWM = model.createSimpleReaction(cytosol);
-		GeneralKinetics immobileBWMKinetics = new GeneralKinetics(immobileBWM);
-		immobileBWM.setKinetics(immobileBWMKinetics);
-		immobileBWM.addReactant(immobileSC, 1);
-		immobileBWMKinetics.getReactionRateParameter().setExpression(Expression.mult( bleachRateExp, new Expression(immobileSC.getName())));
-		}
-		{
-		SimpleReaction primaryBWM = model.createSimpleReaction(cytosol);
-		GeneralKinetics primaryBWMKinetics = new GeneralKinetics(primaryBWM);
-		primaryBWM.setKinetics(primaryBWMKinetics);
-		primaryBWM.addReactant(primarySC, 1);
-		primaryBWMKinetics.getReactionRateParameter().setExpression(Expression.mult( bleachRateExp, new Expression(primarySC.getName())));
-		}
-		{
-		SimpleReaction secondaryBWM = model.createSimpleReaction(cytosol);
-		GeneralKinetics secondaryBWMKinetics = new GeneralKinetics(secondaryBWM);
-		secondaryBWM.setKinetics(secondaryBWMKinetics);
-		secondaryBWM.addReactant(secondarySC, 1);
-		secondaryBWMKinetics.getReactionRateParameter().setExpression(Expression.mult( bleachRateExp, new Expression(secondarySC.getName())));
-		}
-				
-		//create simulation context		
-		SimulationContext simContext = bioModel.addNewSimulationContext("simContext", false, false);
-		simContext.setGeometry(geometry);
-		
-		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
-		FeatureMapping extracellularFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(extracellular);
-		
-		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
-		SubVolume exSubVolume = geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME);
-		
-		cytosolFeatureMapping.setGeometryClass(cytSubVolume);
-		extracellularFeatureMapping.setGeometryClass(exSubVolume);
-		
-		cytosolFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
-		extracellularFeatureMapping.getUnitSizeParameter().setExpression(new Expression(1.0));
-		
-		double fixedFraction = 1.0 - context.getData(primaryFraction) - context.getData(secondaryFraction);
-
-		SpeciesContextSpec immobileSCS = simContext.getReactionContext().getSpeciesContextSpec(immobileSC);
-		immobileSCS.getInitialConditionParameter().setExpression(new Expression(fixedFraction));
-		immobileSCS.getDiffusionParameter().setExpression(new Expression(0.0));
-
-		SpeciesContextSpec primarySCS = simContext.getReactionContext().getSpeciesContextSpec(primarySC);
-		primarySCS.getInitialConditionParameter().setExpression(new Expression(context.getData(primaryFraction)));
-		primarySCS.getDiffusionParameter().setExpression(new Expression(context.getData(primaryDiffusionRate)));
-
-		SpeciesContextSpec secondarySCS = simContext.getReactionContext().getSpeciesContextSpec(secondarySC);
-		secondarySCS.getInitialConditionParameter().setExpression(new Expression(context.getData(secondaryFraction)));
-		secondarySCS.getDiffusionParameter().setExpression(new Expression(context.getData(secondaryDiffusionRate)));
-
-		simContext.getMicroscopeMeasurement().addFluorescentSpecies(immobileSC);
-		simContext.getMicroscopeMeasurement().addFluorescentSpecies(primarySC);
-		simContext.getMicroscopeMeasurement().addFluorescentSpecies(secondarySC);
-		simContext.getMicroscopeMeasurement().setConvolutionKernel(new GaussianConvolutionKernel(new Expression(context.getData(psfSigma)), new Expression(context.getData(psfSigma))));
-		
-		MathMapping mathMapping = simContext.createNewMathMapping();
-		MathDescription mathDesc = mathMapping.getMathDescription();		
-		simContext.setMathDescription(mathDesc);
-
-		
-		User owner = context.getDefaultOwner();
-
-		int meshSize = (int)(domainSize/context.getData(deltaX));
-		if (meshSize % 2== 0){
-			meshSize = meshSize + 1; // want an odd-sized mesh in x and y ... so centered at the origin.
-		}
-
-		TimeBounds timeBounds = new TimeBounds(0.0,context.getData(postbleachDuration));
-		
-		//
-		// simulation to use for data generation (output time steps as recorded by the microscope)
-		//
-		double bleachBlackoutBegin = blStart-context.getData(postbleachDelay);
-		double bleachBlackoutEnd = blEnd+context.getData(postbleachDelay);
-
-//		ArrayList<Double> times = new ArrayList<Double>();
-//		double time = 0;
-//		while (time<=timeBounds.getEndingTime()){
-//			if (time<=bleachBlackoutBegin || time>bleachBlackoutEnd){
-//				// postbleachDelay is the time it takes to switch the filters.
-//				times.add(time);
-//			}
-//			time += outputTimeStep.getData();
-//		}
-//		double[] timeArray = new double[times.size()];
-//		for (int i=0;i<timeArray.length;i++){
-//			timeArray[i] = times.get(i);
-//		}
-//		OutputTimeSpec fakeDataSimOutputTimeSpec = new ExplicitOutputTimeSpec(timeArray);
-		OutputTimeSpec fakeDataSimOutputTimeSpec = new UniformOutputTimeSpec(context.getData(outputTimeStep));
-		
-		KeyValue fakeDataSimKey = context.createNewKeyValue();
-		SimulationVersion fakeDataSimVersion = new SimulationVersion(fakeDataSimKey,"fakeDataSim",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation fakeDataSim = new Simulation(fakeDataSimVersion, mathDesc);
-		simContext.addSimulation(fakeDataSim);
-		
-		fakeDataSim.getSolverTaskDescription().setTimeBounds(timeBounds);
-		fakeDataSim.getMeshSpecification().setSamplingSize(new ISize(meshSize, meshSize, 1));
-		fakeDataSim.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
-		fakeDataSim.getSolverTaskDescription().setOutputTimeSpec(fakeDataSimOutputTimeSpec);
-
-		//
-		// simulation to use for viewing the protocol (output time steps to understand the physics)
-		//
-		KeyValue fullExperimentSimKey = context.createNewKeyValue();
-		SimulationVersion fullExperimentSimVersion = new SimulationVersion(fullExperimentSimKey,"fullExperiment",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
-		Simulation fullExperimentSim = new Simulation(fullExperimentSimVersion, mathDesc);
-		simContext.addSimulation(fullExperimentSim);
-				
-		OutputTimeSpec fullExperimentOutputTimeSpec = new UniformOutputTimeSpec(context.getData(outputTimeStep)/10.0);
-
-		fullExperimentSim.getSolverTaskDescription().setTimeBounds(timeBounds);
-		fullExperimentSim.getMeshSpecification().setSamplingSize(new ISize(meshSize, meshSize, 1));
-		fullExperimentSim.getSolverTaskDescription().setSolverDescription(SolverDescription.SundialsPDE);
-		fullExperimentSim.getSolverTaskDescription().setOutputTimeSpec(fullExperimentOutputTimeSpec);
-		
-		context.setData(this.bioModel_2D,bioModel);
-		context.setData(this.simulation_2D,fakeDataSim);
-		context.setData(this.bleachBlackoutBeginTime,bleachBlackoutBegin);
-		context.setData(this.bleachBlackoutEndTime,bleachBlackoutEnd);
+		// set output
+		context.setData(this.bioModel_2D,results.bioModel_2D);
+		context.setData(this.simulation_2D,results.simulation_2D);
+		context.setData(this.bleachBlackoutBeginTime,results.bleachBlackoutBeginTime);
+		context.setData(this.bleachBlackoutEndTime,results.bleachBlackoutEndTime);
 	}
 
 }
