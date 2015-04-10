@@ -9,11 +9,18 @@
  */
 
 package cbit.vcell.geometry.surface;
+
+import org.apache.commons.lang3.StringUtils;
+import org.vcell.util.VCAssert;
+//import org.apache.commons.lang.StringUtils;
+
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2003 12:08:02 AM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class AbstractPolygon implements Polygon, java.io.Serializable {
 	private Node[] fieldNodes = new Node[0];
 
@@ -118,7 +125,6 @@ public void getUnitNormal(cbit.vcell.render.Vect3d unitNormal) {
 	//
 	// using first triangle as the reference, assumes fairly planar
 	//
-	double area = 0.0;
 	int N = getNodeCount();
 	int j = 0;
 	int i=(j+1)%N;
@@ -136,7 +142,6 @@ public void getUnitNormal(cbit.vcell.render.Vect3d unitNormal) {
 		double crossy = -(vect1x*vect2z - vect1z*vect2x);
 		double crossz = vect1x*vect2y - vect1y*vect2x;
 		double length = Math.sqrt(crossx*crossx + crossy*crossy + crossz*crossz);
-		area += length/2.0;
 		i = (i+1)%N;
 //	}
 	unitNormal.set(crossx/length,crossy/length,crossz/length);
@@ -152,5 +157,25 @@ public void reverseDirection() {
 		fieldNodes[n] = fieldNodes[getNodeCount() - 1 - n];
 		fieldNodes[getNodeCount() - 1 - n] = node;
 	}
+}
+
+
+@Override
+public String toString() {
+	return "Polygon {" + StringUtils.join(fieldNodes,',') + "}";
+}
+
+/**
+ * return total distance squared to all points on polgon 
+ * @param point not null
+ * @return total distance
+ */
+public double totalDistanceSquared(Node point) {
+	VCAssert.assertValid(point);
+	double sum = 0;
+	for (Node  n : fieldNodes) {
+		sum += point.distanceSquared(n);
+	}
+	return sum;
 }
 }

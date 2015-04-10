@@ -18,13 +18,18 @@
 	<classpathentry kind="lib" path="lib/httpcore-4.3.2.jar"/>
 	<classpathentry kind="lib" path="testlib/commons-cli-1.2.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/VCellTrunkMerge/testlib/commons-cli-1.2-javadoc.jar!/"/>
+			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-cli/javadocs/api-release"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jgraphx_2.2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/colt_1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/libthrift-0.9.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://commons.apache.org/proper/commons-lang/javadocs/api-3.3/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="src">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell-5.4-trunk/nativelibs/win64"/>
@@ -73,7 +78,11 @@
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-rio-turtle-2.6.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="sesame/sesame-util-2.6.2.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/commons-math3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/VCellTrunkCurrent/testlib/commons-lang3-3.4-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/ojdbc5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libsbmlj.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmf.jar"/>
