@@ -22,8 +22,10 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -196,20 +198,38 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		// dsteps = ts.getMaximumTimeStep();
 		// }
 		// int steps = (int)Math.round(dtime/dsteps);
-		DefaultOutputTimeSpec dots = (DefaultOutputTimeSpec) getSimulationJob()
-				.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
-		int steps = dots.getKeepAtMost();
-
+		
+		String timeSpecOption1 = "-oSteps";
+		String timeSpecOption2 = "10";
+		OutputTimeSpec outputTimeSpec = getSimulationJob().getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+		if(outputTimeSpec instanceof DefaultOutputTimeSpec) {
+			DefaultOutputTimeSpec dots = (DefaultOutputTimeSpec) outputTimeSpec;
+			int steps = dots.getKeepAtMost();
+			timeSpecOption1 = "-oSteps";
+			timeSpecOption2 = Integer.toString(steps);
+		} else if(outputTimeSpec instanceof UniformOutputTimeSpec) {
+			UniformOutputTimeSpec dots = (UniformOutputTimeSpec) outputTimeSpec;
+			double steps = dtime / dots.getOutputTimeStep();
+			timeSpecOption1 = "-oSteps";
+			int stepsi = (int)Math.round(steps);
+			timeSpecOption2 = Integer.toString(stepsi);
+		} else {
+			throw new RuntimeException("Unsupported output time spec class");
+		}
+		
 		Integer seed = nfsso.getRandomSeed();
 		if (seed == null) {
 			seed = new Integer(0);
 		}
-
+//		String baseCommands[] = { executableName, "-seed", seed.toString(), "-xml", inputFilename, "-o", outputFilename,
+//				"-sim", Double.toString(dtime), "-oSteps", Integer.toString(steps) };
 		String baseCommands[] = { executableName, "-seed", seed.toString(),
-					"-xml", inputFilename, "-o", outputFilename,
-					"-sim", Double.toString(dtime), "-oSteps",
-					Integer.toString(steps) };
+				"-xml", inputFilename, "-o", outputFilename,
+				"-sim", Double.toString(dtime) };
 		ArrayList<String> cmds = new ArrayList<String>(Arrays.asList(baseCommands));
+		cmds.add(timeSpecOption1);
+		cmds.add(timeSpecOption2);
+		
 		if (simTask.getSimulation().getMathDescription().hasSpeciesObservable()) {
 			// To run a Species observable, you have to turn on aggregate
 			// bookkeeping
