@@ -79,7 +79,7 @@ public class ChooseFile extends AsynchClientTask {
 	/**
 	 * warn user if file asks
 	 * @param selectedFile may be null
-	 * @param topLevelWindowManager
+	 * @param parent should not be null 
 	 * @param userPreferences
 	 */
 	private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
