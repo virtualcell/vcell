@@ -138,6 +138,10 @@ public class SmoldynFileWriter extends SolverFileWriter
 			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + triLocalIndex + "_" + triGlobalIndex + (membraneIndex >= 0 ? "_" + membraneIndex : "");
 			this.triangle = triangle;
 		}
+		@Override
+		public String toString() {
+			return "TrianglePanel [" + name + ' ' + triangle + "]";
+		}
 	}
 	private static final int MAX_MOL_LIMIT = 1000000;
 	private long randomSeed = 0; //value assigned in the constructor
@@ -2157,7 +2161,8 @@ private static class ClosestTriangle {
 	final ParticleInitialConditionCount picc;
 	final MembraneSubDomain membrane; 
 	final Node node;
-	double currentDistanceSquared;
+	double currentNodeDistanceSquared;
+	double currentTriangleDistanceSquared;
 	TrianglePanel triPanel;
 	
 	/**
@@ -2179,7 +2184,7 @@ private static class ClosestTriangle {
 		double z = sfw.subsituteFlattenToConstant(picc.getLocationZ());
 		node = new Node(x,y,z);
 		triPanel = null;
-		currentDistanceSquared = Double.MAX_VALUE; 
+		currentNodeDistanceSquared = Double.MAX_VALUE; 
 	}
 	
 	/**
@@ -2189,9 +2194,17 @@ private static class ClosestTriangle {
 	void evaluate(TrianglePanel tp) {
 		for (Node n : tp.triangle.getNodes()) {
 			double ds = node.distanceSquared(n);
-			if (ds < currentDistanceSquared) {
-				currentDistanceSquared = ds;
+			if (ds < currentNodeDistanceSquared) {
+				currentNodeDistanceSquared = ds;
+				currentTriangleDistanceSquared = tp.triangle.totalDistanceSquared(node);
 				triPanel = tp;
+			}
+			else if (ds == currentNodeDistanceSquared ){
+				double tds = tp.triangle.totalDistanceSquared(node);
+				if (tds < currentTriangleDistanceSquared) {
+					currentTriangleDistanceSquared = tds;
+					triPanel = tp;
+				}
 			}
 		}
 	}
