@@ -16,6 +16,7 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -80,10 +81,17 @@ public class DisplayTimeSeries extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		// set input
 		ImageTimeSeries<Image> imageDataset = context.getData(imageTimeSeries);
 		String titleString = "no title - not connected";
 		titleString = context.getDataWithDefault(title,"no title");
-		displayImageTimeSeries(imageDataset, titleString, null);
+		WindowListener listener = null;
+		
+		// do op
+		DisplayTimeSeriesOp op = new DisplayTimeSeriesOp();
+		op.displayImageTimeSeries(imageDataset, titleString, listener);
+		
+		// set output
 		context.setData(displayed,true);
 	}
 	

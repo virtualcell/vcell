@@ -1,15 +1,13 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.vmicro.op.display.DisplayBioModelOp;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.server.ClientServerInfo;
 
 public class DisplayBioModel extends Task {
 	
@@ -34,17 +32,14 @@ public class DisplayBioModel extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		displayBioModel(context.getData(bioModel));
+		// get input
+		BioModel biomodel = context.getData(bioModel);
+		
+		// do op
+		DisplayBioModelOp op = new DisplayBioModelOp();
+		op.displayBioModel(biomodel);
+		
+		// set output
 		context.setData(displayed,true);
 	}
-	
-	public static void displayBioModel(final BioModel bioModel){
-		new Thread() {
-			public void run(){
-				ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo("schaff", new DigestedPassword("abc"));
-				VCellClient vcellClient = VCellClient.startClient(bioModel, clientServerInfo);
-			}
-		}.start();
-	}
-	
 }

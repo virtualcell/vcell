@@ -1,6 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.GenerateReducedROIDataOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -8,6 +9,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
+import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 
@@ -36,41 +38,15 @@ public class GenerateReducedROIData extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+		// get input
 		ROI[] rois = context.getData(imageDataROIs);
-		int numROIs = rois.length;
+		ImageTimeSeries<? extends Image> simData = (ImageTimeSeries<? extends Image>)context.getData(imageTimeSeries);
 		
-		ImageTimeSeries<FloatImage> simData = context.getData(imageTimeSeries);
-		int numTimes = simData.getSizeT();
-		int numPixels = simData.getISize().getXYZ();
+		// do op
+		GenerateReducedROIDataOp op = new GenerateReducedROIDataOp();
+		RowColumnResultSet reducedData = op.generateReducedData(simData, rois);
 		
-		String[] roiNames = new String[numROIs+1];
-		roiNames[0] = "t";
-		for (int i=0; i<numROIs; i++){
-			roiNames[i+1] = rois[i].getROIName();
-		}
-		RowColumnResultSet reducedData = new RowColumnResultSet(roiNames);
-		
-		for (int t=0;t<numTimes;t++){
-			double[] row = new double[numROIs+1];
-			row[0] = simData.getImageTimeStamps()[t];
-			double[] simDataPixels = simData.getAllImages()[t].getDoublePixels();
-			for (int r=0; r<numROIs; r++){
-				double average = 0.0;
-				int count = 0;
-				short[] roiPixels = rois[r].getBinaryPixelsXYZ(1);
-				for (int p=0; p<numPixels; p++){
-					if (roiPixels[p] != 0){
-						count++;
-						average += simDataPixels[p];
-					}
-				}
-				if (count==0){
-					throw new RuntimeException("roi \""+rois[r].getROIName()+"\" has zero pixels");
-				}
-				row[r+1] = average/count;
-			}
-			reducedData.addRow(row);
-		}
+		// set output
 		context.setData(reducedROIData,reducedData);
 	}
 

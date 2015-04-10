@@ -1,11 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.awt.event.WindowListener;
-
-import javax.swing.JFrame;
-
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.workflow.gui.DependentROIPanel;
+import org.vcell.vmicro.op.display.DisplayDependentROIsOp;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
@@ -42,24 +38,16 @@ public class DisplayDependentROIs extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		displayDependentROIs(context.getData(imageROIs), context.getData(cellROI), context.getDataWithDefault(title,"no title"), null);
+		// get inputs
+		ROI[] imagerois = context.getData(imageROIs);
+		ROI cellroi = context.getData(cellROI);
+		String titleString = context.getDataWithDefault(title,"no title");
+		
+		// do op
+		DisplayDependentROIsOp op = new DisplayDependentROIsOp();
+		op.displayDependentROIs(imagerois, cellroi, titleString, null);
+		
+		// set output
 		context.setData(displayed,true);
 	}
-	
-	public static void displayDependentROIs(ROI[] allROIs, ROI cellROI, String title, WindowListener listener) {
-		DependentROIPanel aDependentROIPanel = new DependentROIPanel(allROIs, cellROI);
-
-		JFrame jframe = new JFrame();
-		jframe.setTitle(title);
-		jframe.getContentPane().add(aDependentROIPanel);
-		jframe.setSize(500,500);
-		if (listener!=null){
-			jframe.addWindowListener(listener);
-		}
-		jframe.setVisible(true);
-		
-		aDependentROIPanel.refresh();
-		
-	}
-	
 }

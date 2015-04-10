@@ -5,6 +5,8 @@ uniformDisk2ModelName = "KenworthyUniformDisk2Param"
 uniformDisk2PanelTitle = "Uniform Disk Model - 2 parameters"
 uniformDisk3ModelName = "KenworthyUniformDisk3Param"
 uniformDisk3PanelTitle = "Uniform Disk Model - 3 parameters"
+prebleachFluor = 10
+
 
 importVFrap = ImportRawTimeSeriesFromVFrap()
 	importVFrap.vfrapFile = vfrapFile
@@ -24,7 +26,7 @@ generateROIs = GenerateBleachROI()
 	generateROIs.cellROI_2D = generateCellROIs.cellROI_2D
 	generateROIs.normalizedTimeSeries = generateNormalizedFrapData.normalizedFrapData
 	
-generateReducedNormalizedData = GenerateReducedRefData()
+generateReducedNormalizedData = GenerateReducedROIData()
 	generateReducedNormalizedData.imageTimeSeries = generateNormalizedFrapData.normalizedFrapData
 	generateReducedNormalizedData.imageDataROIs = generateROIs.bleachedROI_2D_array
 		
@@ -57,6 +59,7 @@ displayInteractiveModel2 = DisplayInteractiveModel()
 generateUniformDiskModel3 = GenerateKenworthyOptModel()
 	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
 	generateUniformDiskModel3.modelType = uniformDisk3ModelName	
+	generateUniformDiskModel3.prebleachFluor = prebleachFluor
 
 generate2DOptContextUniformDisk3 = Generate2DOptContext()
 	generate2DOptContextUniformDisk3.optModel = generateUniformDiskModel3.optModel

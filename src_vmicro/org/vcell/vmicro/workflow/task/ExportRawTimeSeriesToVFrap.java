@@ -1,12 +1,9 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.ExportRawTimeSeriesToVFrapOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -14,11 +11,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.Image;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.microscopy.MicroscopyXMLTags;
-import cbit.vcell.microscopy.MicroscopyXmlproducer;
-import cbit.vcell.xml.Xmlproducer;
 
 public class ExportRawTimeSeriesToVFrap extends Task {
 	
@@ -46,12 +39,10 @@ public class ExportRawTimeSeriesToVFrap extends Task {
 	@Override
 	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
-		ImageTimeSeries imageTimeSeries = context.getData(rawTimeSeriesImages);
+		// get inputs
 		File outputFile = context.getData(vfrapFile);
-
-		Xmlproducer vcellXMLProducer = new Xmlproducer(false);
-		boolean bSaveCompressed = true;
-		
+		ImageTimeSeries imageTimeSeries = context.getData(rawTimeSeriesImages);
+		// validate that imageTimeSeries is of type ImageTimeSeries<UShortImage>
 		Image[] images = imageTimeSeries.getAllImages();
 		UShortImage[] usImages = new UShortImage[images.length];
 		for (int i=0;i<usImages.length;i++){
@@ -60,26 +51,11 @@ public class ExportRawTimeSeriesToVFrap extends Task {
 			}
 			usImages[i] = (UShortImage)images[i];
 		}
-		ImageDataset imageData = new ImageDataset(usImages,imageTimeSeries.getImageTimeStamps(),imageTimeSeries.getSizeZ());
 		
-		Element root = new Element(MicroscopyXMLTags.FRAPStudyTag);
-		Element next = new Element(MicroscopyXMLTags.FRAPDataTag);
-		root.addContent(next);
-		Element imageDataXML = MicroscopyXmlproducer.getXML(imageData,vcellXMLProducer,clientTaskStatusSupport,bSaveCompressed);
-		next.addContent(imageDataXML);
-		java.io.FileOutputStream fileOutStream = new java.io.FileOutputStream(outputFile);
-		BufferedOutputStream bufferedStream = new BufferedOutputStream(fileOutStream);
+		ExportRawTimeSeriesToVFrapOp op = new ExportRawTimeSeriesToVFrapOp();
+		op.exportToVFRAP(outputFile, usImages, imageTimeSeries.getImageTimeStamps(), imageTimeSeries.getSizeZ(), clientTaskStatusSupport);
 
-		//XmlUtil.writeXmlToStream(root, false, bufferedStream);
-		
-		XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-    	xmlOut.getFormat().setTextMode(Format.TextMode.PRESERVE);
-		xmlOut.output(root, bufferedStream);
-		
-		bufferedStream.flush();
-		fileOutStream.flush();
-		fileOutStream.close();
-		
+		// write output (just boolean "done" flag)
 		context.setData(written, true);
 	}
 

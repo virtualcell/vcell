@@ -1,6 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.ComputeMeasurementErrorOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -48,85 +49,11 @@ public class ComputeMeasurementError extends Task {
 		ImageTimeSeries<UShortImage> rawImageDataset = context.getData(rawImageTimeSeries);
 		FloatImage prebleachAvgImage = context.getData(prebleachAverage);
 		
-		double[][] sigma = refreshNormalizedMeasurementError(rawImageDataset, prebleachAvgImage, rois, indexPostbleach);
-		String[] columnNames = new String[rois.length+1];
-		columnNames[0] = "t";
-		for (int i=0; i<rois.length; i++){
-			columnNames[i+1] = rois[i].getROIName();
-		}
-		RowColumnResultSet rowColumnResultSet = new RowColumnResultSet(columnNames);
-		double[] allTimePoints = rawImageDataset.getImageTimeStamps();
-		for (int time=0; time<(allTimePoints.length-indexPostbleach); time++){
-			double[] rowValues = new double[rois.length+1];
-			rowValues[0] = allTimePoints[time+indexPostbleach];
-			for (int col=0; col<rois.length; col++){
-				rowValues[col+1] = sigma[col][time]; 
-			}
-			rowColumnResultSet.addRow(rowValues);
-		}
+		// do op
+		ComputeMeasurementErrorOp op = new ComputeMeasurementErrorOp();
+		RowColumnResultSet rowColumnResultSet = op.computeNormalizedMeasurementError(rois, indexPostbleach, rawImageDataset.getAllImages(), rawImageDataset.getImageTimeStamps(), prebleachAvgImage, clientTaskStatusSupport);
 		
+		// set output
 		context.setData(normalizedMeasurementError,rowColumnResultSet);
 	}
-
-	/*
-	 * Calculate Measurement error for data that is normalized 
-	 * and averaged at each ROI ring.
-	 * The first dimension is ROI rings(according to the Enum in FRAPData)
-	 * The second dimension is time points (from starting index to the end) 
-	 */
-	public double[][] refreshNormalizedMeasurementError(ImageTimeSeries<UShortImage> rawImageTimeSeries, FloatImage prebleachAverage, ROI[] rois, int indexFirstPostbleach) throws Exception
-	{
-		double[] timeStamp = rawImageTimeSeries.getImageTimeStamps();
-		int startIndexRecovery = indexFirstPostbleach;
-		int roiLen = rois.length;
-		double[][] sigma = new double[roiLen][timeStamp.length - startIndexRecovery];
-		double[] prebleachAvg = prebleachAverage.getDoublePixels();
-		
-		for(int roiIdx=0; roiIdx<roiLen; roiIdx++)
-		{
-			ROI roi = rois[roiIdx];
-			short[] roiData = roi.getPixelsXYZ();
-			for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
-			{
-				double[] rawTimeData = rawImageTimeSeries.getAllImages()[timeIdx].getDoublePixels();
-				if(roiData.length != rawTimeData.length || roiData.length != prebleachAvg.length || rawTimeData.length != prebleachAvg.length)
-				{
-					throw new Exception("ROI data and image data are not in the same length.");
-				}
-				else
-				{
-					//loop through ROI
-					int roiPixelCounter = 0;
-					double sigmaVal = 0;
-					for(int i = 0 ; i<roiData.length; i++)
-					{
-						if(roiData[i] != 0)
-						{
-							sigmaVal = sigmaVal + rawTimeData[i]/(prebleachAvg[i]*prebleachAvg[i]);
-							roiPixelCounter ++;
-						}
-					}
-					if(roiPixelCounter == 0)
-					{
-						sigmaVal = 0;
-					}
-					else
-					{
-						sigmaVal = Math.sqrt(sigmaVal)/roiPixelCounter;
-					}
-					sigma[roiIdx][timeIdx-startIndexRecovery] = sigmaVal;
-				}
-			}
-		}
-		//for debug purpose
-//		for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
-//		{
-//			String value = sigma[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][timeIdx-startIndexRecovery]+"\t"+
-//			sigma[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][timeIdx-startIndexRecovery];
-//			System.out.println(value);
-//		}
-		return sigma;
-	}
-	
-
 }
