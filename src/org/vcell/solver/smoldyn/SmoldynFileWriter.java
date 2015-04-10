@@ -1020,7 +1020,7 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 	if (subdomain instanceof MembraneSubDomain){
 		MembraneSubDomain membrane = (MembraneSubDomain)subdomain;
 		if (var.getDomain().getName().equals(membrane.getName())){
-			return var.getName()+"("+SmoldynKeyword.up+")";
+			return var.getName()+"("+SmoldynKeyword.front+")"; //front tells Smoldyn to put particles on membrane when using "surface_mol"
 		}else if (membrane.getInsideCompartment().getName().equals(var.getDomain().getName())){
 			return var.getName()+"("+SmoldynKeyword.bsoln+")";
 		}else if (membrane.getOutsideCompartment().getName().equals(var.getDomain().getName())){
