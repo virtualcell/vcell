@@ -2,19 +2,15 @@ package org.vcell.vmicro.workflow.task;
 
 import java.io.File;
 
-import org.jdom.Element;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.importer.AnnotatedImageDataset;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXmlReader;
 
 public class ImportRawTimeSeriesFromVFrap extends Task {
 	
@@ -39,18 +35,14 @@ public class ImportRawTimeSeriesFromVFrap extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-
-		String xmlString = XmlUtil.getXMLString(context.getData(vfrapFile).getAbsolutePath());
-		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
-		Element vFrapRoot = XmlUtil.stringToXML(xmlString, null).getRootElement();
-
-		// loading frap images and a ROIs subset for display purposes only (see next task)
-		AnnotatedImageDataset annotatedImages = xmlReader.getAnnotatedImageDataset(vFrapRoot, null);
-		ImageDataset imageDataset = annotatedImages.getImageDataset();
-		UShortImage[] allImages = imageDataset.getAllImages();
-		double[] imageTimeStamps = imageDataset.getImageTimeStamps();
-		ImageTimeSeries<UShortImage> imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,allImages,imageTimeStamps,1);
+		// get input
+		File vfrap_file = context.getData(vfrapFile);
 		
+		// do op
+		ImportRawTimeSeriesFromVFrapOp op = new ImportRawTimeSeriesFromVFrapOp();
+		ImageTimeSeries<UShortImage> imageTimeSeries = op.importRawTimeSeriesFromVFrap(vfrap_file);
+		
+		// set output		
 		context.setData(rawTimeSeriesImages,imageTimeSeries);
 	}
 

@@ -3,14 +3,13 @@ package org.vcell.vmicro.workflow.task;
 import java.io.File;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.op.ImportRawTimeSeriesFromExperimentImagesOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReaderFactory;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 public class ImportRawTimeSeriesFromExperimentImages extends Task {
@@ -39,10 +38,15 @@ public class ImportRawTimeSeriesFromExperimentImages extends Task {
 
 	@Override
 	protected void compute0(TaskContext context, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
-		boolean isTimeSeries = true;
+		// get input
 		File[] files = context.getData(expTimeSeriesFiles);
-		ImageDataset rawTimeData = ImageDatasetReaderFactory.createImageDatasetReader().readImageDatasetFromMultiFiles(files, clientTaskStatusSupport, isTimeSeries, context.getData(timeInterval));
-		ImageTimeSeries<UShortImage> imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,rawTimeData.getAllImages(),rawTimeData.getImageTimeStamps(),1);
+		Double tInterval = context.getData(timeInterval);
+		
+		// do op
+		ImportRawTimeSeriesFromExperimentImagesOp op = new ImportRawTimeSeriesFromExperimentImagesOp();
+		ImageTimeSeries<UShortImage> imageTimeSeries = op.importRawTimeSeries(files, tInterval);
+
+		// set output
 		context.setData(rawTimeSeriesImages,imageTimeSeries);
 	}
 
