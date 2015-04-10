@@ -48,6 +48,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 	private JButton randomSeedHelpButton = null;
 	private JButton accuracyHelpButton = null;
 	private JButton gaussianTableSizeHelpButton = null;
+	private int lastUserEnteredSeed = 0;
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
@@ -56,7 +57,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == randomSeedHelpButton) {
-				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Random Seed", "<html>rand_seed <i>int</i> " +
+				DialogUtils.showInfoDialog(SmoldynSimulationOptionsPanel.this, "Random Seed", "<html>sequence seed <i>int</i> " +
 						"<br>Seed for random number generator. If this line is not entered, the current " +
 						"time is used as a seed, producing different sequences for each run.</html>");
 			} else if (source == accuracyHelpButton) {
@@ -82,11 +83,17 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 						"<br>This sets the size of a lookup table that is used to generate Gaussiandistributed random numbers. " +
 						"It needs to be an integer power of 2. The default value is 4096, which should be appropriate for nearly all applications.</html>");
 			} else if (source == randomSeedCheckBox) {
-				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
 				if(!randomSeedCheckBox.isSelected())
 				{
-					setNewRandomSeed();
+					randomSeedTextField.setEditable(false);
+					lastUserEnteredSeed = currentlyEnteredSeed().value;
+					randomSeedTextField.setText("");
 				}
+				else {
+					randomSeedTextField.setEditable(true);
+					randomSeedTextField.setText(Integer.toString(lastUserEnteredSeed));
+				}
+				setNewRandomSeed();
 			} else if (source == highResCheckBox) {
 				setUseHighResolutionSample();
 			} else if (source == saveParticleLocationsCheckBox) {
@@ -122,7 +129,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		initialize();
 	}
 	private void initialize() {
-		randomSeedCheckBox = new JCheckBox("random seed");
+		randomSeedCheckBox = new JCheckBox("sequence seed");
 		highResCheckBox = new JCheckBox("fast mesh sampling");
 		saveParticleLocationsCheckBox = new JCheckBox("save particle files");
 		randomSeedTextField = new JTextField();
@@ -281,6 +288,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			randomSeedTextField.setEditable(true);
 			randomSeedCheckBox.setSelected(true);
 			randomSeedTextField.setText(randomSeed.toString());
+			lastUserEnteredSeed = randomSeed;
 		}
 		
 		highResCheckBox.setSelected(smoldynSimulationOptions.isUseHighResolutionSample());
@@ -319,6 +327,43 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		}
 	}
 	
+	private static class SeedValue {
+		final int value;
+		NumberFormatException nfe;
+		SeedValue(int value) {
+			super();
+			this.value = value;
+			this.nfe = null;
+		}
+		
+		SeedValue(NumberFormatException nfe) {
+			value = 0;
+			this.nfe = nfe;
+		}
+		
+		/**
+		 * was value from set or default
+		 * @return true if set, false otherwise
+		 */
+		boolean isSet( ) {
+			return nfe == null;
+		}
+		
+	}
+	
+	/**
+	 * get currently entered seed info
+	 * @return new non null object
+	 */
+	private SeedValue currentlyEnteredSeed() {
+			try {
+				Integer s = new Integer(randomSeedTextField.getText());
+				return new SeedValue(s);
+			} catch (NumberFormatException ex) { 
+				return new SeedValue(ex); 
+			}
+	}
+	
 	private void setNewRandomSeed(){
 		if(!isVisible()){
 			return;
@@ -326,15 +371,16 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 		
 		Integer randomSeed = null;
 		if (randomSeedCheckBox.isSelected()) {
-			try {
-				randomSeed = new Integer(randomSeedTextField.getText());
-			} catch (NumberFormatException ex) {
-				DialogUtils.showErrorDialog(this, "Wrong number format for random seed: " + ex.getMessage());
+			SeedValue sv = currentlyEnteredSeed();
+			if (!sv.isSet( )) {
+				DialogUtils.showErrorDialog(this, "Wrong number format for random seed: " + sv.nfe.getMessage());
 				return;
 			}
+			randomSeed = sv.value;
 		}
 		solverTaskDescription.getSmoldynSimulationOptions().setRandomSeed(randomSeed);		
 	}
+	
 	private void setUseHighResolutionSample(){
 		if(!isVisible()){
 			return;
