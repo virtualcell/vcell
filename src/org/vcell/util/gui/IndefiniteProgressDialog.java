@@ -133,15 +133,15 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		/** index into #colors **/
 		int colorIndex;
 		/** at longest rate? **/
-		boolean adjusting;
+		boolean adjustingRate;
 		
 		final Timer swingTimer;
 		
 		WorkingPanel(Timer t) {
 			//width - height -radius set in #componentResized 
-			radians = 0;
+			radians = Math.PI;
 			colorIndex = 0;
-			adjusting = true;
+			adjustingRate = true;
 			setPreferredSize(new Dimension(GRAPHIC_SIZE, GRAPHIC_SIZE));
 			swingTimer = t; 
 			swingTimer.addActionListener(this);
@@ -170,7 +170,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 			if (!isModelDialogPresent()) {
 				radians -= INCREMENT;
 				repaint( );
-				if (adjusting) {
+				if (adjustingRate) {
 					final int currentDelay = swingTimer.getDelay();
 					if (lg.isDebugEnabled()) {
 						lg.debug("cd " + currentDelay);
@@ -180,7 +180,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 						swingTimer.setDelay(updated);
 					}
 					else {
-						adjusting = false;
+						adjustingRate = false;
 					}
 				}
 			}
