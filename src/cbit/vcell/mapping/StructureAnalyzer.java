@@ -438,7 +438,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		}
 	}
 				
-//	System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
+	System.out.println("there are "+nullSpaceMatrix.getNumRows()+" dependencies, " + nullSpaceMatrix.getNumCols() + " columns.");
 	long startTime = System.currentTimeMillis();
 
 	Vector<Dependency> dependencyList = new Vector<Dependency>();
@@ -447,6 +447,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		//
 		// find first variable
 		//
+		ArrayList<Expression> el = new ArrayList<Expression> ();
 		ArrayList<Expression> cel = new ArrayList<Expression> ();
 		Expression exp = null;
 		Expression constantExp = null;
@@ -469,6 +470,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext firstSC = firstSCM.getSpeciesContext();
 					constantName = MathMapping.PARAMETER_MASS_CONSERVATION_PREFIX+firstSC.getName()+MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX;
 					exp = new Expression(constantName);
+					el.add(exp);
 					//
 					// first term of K expression
 					//
@@ -492,8 +494,10 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = argSimContext.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff),
-							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),new Expression(sc, argMathMapping.getNameScope()))));
+					Expression negate = Expression.negate(Expression.mult(new Expression(coeff),
+							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),new Expression(sc, argMathMapping.getNameScope())));
+					exp = Expression.add(exp, negate);
+					el.add(negate);
 					//
 					// add term to K expression
 					//
@@ -505,7 +509,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}
 					Expression mult = Expression.mult(new Expression(coeff),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																			new Expression(scSTE, argMathMapping.getNameScope()));
-//					constantExp = Expression.add(constantExp, mult);
+					constantExp = Expression.add(constantExp, mult);
 					cel.add(mult);
 				}
 			}
@@ -519,23 +523,35 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 			//
 			StructureMapping sm = argSimContext.getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure());
-			exp = Expression.mult(exp,Expression.invert(sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping)));
-			exp = exp.flatten();
-			//exp.bindExpression(mathMapping_temp);
-			//firstSCM.setDependencyExpression(exp);
-			
+			Expression invert = Expression.invert(sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping));
 			Dependency dependency = new Dependency();
-			dependency.dependencyExpression = exp;
+			
+//			exp = Expression.mult(exp,invert);
+//			exp = exp.flatten();							// old way
+//			System.out.println(exp.infix());
+//			//exp.bindExpression(mathMapping_temp);
+//			//firstSCM.setDependencyExpression(exp);
+//			dependency.dependencyExpression = exp;
+			
+			Expression ev[] = el.toArray(new Expression[el.size()]);
+			Expression e = Expression.add(ev);
+			e = Expression.mult(e,invert);
+			e = e.flatten();								// new way
+//			System.out.println(e.infix());
+			//e.bindExpression(mathMapping_temp);
+			//firstSCM.setDependencyExpression(e);
+			dependency.dependencyExpression = e;
+			
 			dependency.speciesContextMapping = firstSCM;
 			dependency.invariantSymbolName = constantName;
 			
-//			Expression slow = constantExp.flatten();			// old way, very slow
+//			Expression slow = constantExp.flatten();		// old way, very slow
 //			dependency.conservedMoietyExpression = slow;
 			
 			Expression cev[] = cel.toArray(new Expression[cel.size()]);
 			Expression ce = Expression.add(cev);
-			Expression fast = ce.flatten();						// new way, much faster
-			dependency.conservedMoietyExpression = fast;
+			ce = ce.flatten();								// new way, much faster
+			dependency.conservedMoietyExpression = ce;
 			
 			dependencyList.add(dependency);
 		}
