@@ -82,9 +82,9 @@ public class ChooseFile extends AsynchClientTask {
 	 * @param topLevelWindowManager
 	 * @param userPreferences
 	 */
-	private void checkForOverwrites(File selectedFile, TopLevelWindowManager topLevelWindowManager, UserPreferences userPreferences) {
+	private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
 		if (selectedFile != null && selectedFile.exists()) {
-			String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
+			String answer = PopupGenerator.showWarningDialog(parent, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
 			if (answer.equals(UserMessage.OPTION_CANCEL)){
 				throw UserCancelException.CANCEL_FILE_SELECTION;
 			}
@@ -132,6 +132,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	if (topLevelWindowManager == null) {
+		throw new RuntimeException("toplLevelWindowManager required");
+	}
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -190,7 +193,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") || n.endsWith(".txt"))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			} 
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML) || fileFilter.equals(FileFilters.FILE_FILTER_SEDML)) {
@@ -512,7 +515,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			if (fileFilter==null) {
 				throw new Exception("No file save type was selected.");
 			}
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, comp, userPreferences);
 			
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -536,6 +539,9 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	if (topLevelWindowManager == null) {
+		throw new RuntimeException("toplLevelWindowManager required");
+	}
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -580,7 +586,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") ||(n.endsWith(".txt")))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			}
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			//only non-spatial math models can be exported to CellML.
