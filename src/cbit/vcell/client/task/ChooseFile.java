@@ -9,14 +9,13 @@
  */
 
 package cbit.vcell.client.task;
-import java.awt.Component;
-import java.io.File;
-import java.util.Hashtable;
-import java.util.Vector;
+import cbit.vcell.client.server.*;
 
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import java.util.*;
+import java.awt.Component;
+import java.io.*;
+
+import javax.swing.*;
 
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
@@ -30,18 +29,13 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.geometry.*;
+import cbit.vcell.mathmodel.*;
+import cbit.vcell.client.*;
+import cbit.vcell.mapping.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -85,19 +79,17 @@ public class ChooseFile extends AsynchClientTask {
 	/**
 	 * warn user if file asks
 	 * @param selectedFile may be null
-	 * @param topLevelWindowManager
+	 * @param parent should not be null 
 	 * @param userPreferences
 	 */
-	private void checkForOverwrites(File selectedFile, TopLevelWindowManager topLevelWindowManager, UserPreferences userPreferences) {
+	private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
 		if (selectedFile != null && selectedFile.exists()) {
-			String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
+			String answer = PopupGenerator.showWarningDialog(parent, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
 			if (answer.equals(UserMessage.OPTION_CANCEL)){
 				throw UserCancelException.CANCEL_FILE_SELECTION;
 			}
 		}
 	}
-
-
 
 /**
  * Insert the method's description here.
@@ -138,6 +130,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	if (topLevelWindowManager == null) {
+		throw new RuntimeException("toplLevelWindowManager required");
+	}
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -151,11 +146,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_BNGL);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_NFSIM);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); 
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
@@ -174,21 +167,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
-			// we have a file selection, check for overwrites
-			if (selectedFile.exists()) {
-				String answer = PopupGenerator.showWarningDialog(topLevelWindowManager, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
-				if (answer.equals(UserMessage.OPTION_CANCEL)){
-					throw UserCancelException.CANCEL_FILE_SELECTION;
-				}
-			}
 			///
-			String selectedFileName = selectedFile.getPath();
-			int fileNameStartIndex = 0;
-			fileNameStartIndex = Math.max(fileNameStartIndex, selectedFileName.lastIndexOf("/", fileNameStartIndex));
-			fileNameStartIndex = Math.max(fileNameStartIndex, selectedFileName.lastIndexOf("\\", fileNameStartIndex));
-			if (selectedFileName.lastIndexOf(".",fileNameStartIndex) > 0) {
-				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
-			}
+			String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
 			String n = selectedFile.getPath().toLowerCase();
 			if (((fileFilter == FileFilters.FILE_FILTER_SBML_12) || (fileFilter == FileFilters.FILE_FILTER_SBML_21) ||
 				(fileFilter == FileFilters.FILE_FILTER_SBML_22) || (fileFilter == FileFilters.FILE_FILTER_SBML_23) ||
@@ -202,10 +182,6 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				if((!n.endsWith(".sedml") && (!n.endsWith(".sedx")))) {
 					selectedFile = new File(selectedFileName + ".sedml");
 				}
-			} else if (fileFilter == FileFilters.FILE_FILTER_BNGL && !n.endsWith(".bngl")) {
-				selectedFile = new File(selectedFileName + ".bngl");
-			} else if (fileFilter == FileFilters.FILE_FILTER_NFSIM && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
 				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
@@ -215,7 +191,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") || n.endsWith(".txt"))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			} 
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML) || fileFilter.equals(FileFilters.FILE_FILTER_SEDML)) {
@@ -551,7 +527,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			if (fileFilter==null) {
 				throw new Exception("No file save type was selected.");
 			}
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, comp, userPreferences);
 			
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -575,6 +551,9 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	if (topLevelWindowManager == null) {
+		throw new RuntimeException("toplLevelWindowManager required");
+	}
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -619,7 +598,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") ||(n.endsWith(".txt")))) {
 				selectedFile = new File(selectedFileName + ".smoldynInput");
 			}
-			checkForOverwrites(selectedFile, topLevelWindowManager, userPreferences);
+			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			//only non-spatial math models can be exported to CellML.
