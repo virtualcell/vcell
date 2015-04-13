@@ -2,6 +2,8 @@ package cbit.vcell.export.server;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Hex;
 import org.vcell.util.PropertyLoader;
 
 public class FileDataContainerManager {
@@ -31,59 +34,53 @@ public class FileDataContainerManager {
 
 		File tempDataFile = null;
 		byte[] dataBytes = null;
-		private int maxMemoryArraySize=1024*1024*200;
-		private boolean bDataInFile = false;
 		public boolean bNoAppend = false;
 
 
-		FileDataContainer(boolean bFileBacked) throws IOException{
-			tempDataFile = File.createTempFile("TempFile", ".tmp");
-			tempDataFile.deleteOnExit();
-			if (bFileBacked){
-				maxMemoryArraySize=0;
-				bDataInFile=true;
+		FileDataContainer() throws IOException{
+			if(isLimited()){
+				createTempfile();
 			}
 		}
 
-
-		FileDataContainer(byte[] dataBytes, boolean bFileBacked) throws IOException{
-			this(bFileBacked);
-			if (dataBytes.length > maxMemoryArraySize){
-				bDataInFile = true;
-				FileUtils.writeByteArrayToFile(dataBytes, tempDataFile);
+		FileDataContainer(byte[] dataBytes) throws IOException{
+			this();
+			if (isDataInFile()){
+				if(dataBytes != null && dataBytes.length > 0){
+					FileUtils.writeByteArrayToFile(dataBytes, tempDataFile);
+				}
 			} else {
 				this.dataBytes = dataBytes;
 			}
 		}
 
-		FileDataContainer(FileDataContainer container, boolean bFileBacked) throws IOException{
-			this(bFileBacked);
-			this.append(container, bFileBacked);
+		private void createTempfile() throws IOException{
+			tempDataFile = File.createTempFile("TempFile", ".tmp");
+			tempDataFile.deleteOnExit();
 		}
+		private void transistion() throws IOException{
+			//first copy data to file if not there already
+			if(isLimited() && !isDataInFile()){
+				createTempfile();
+				if(dataBytes != null){
+					try(
+							BufferedOutputStream bos = getBufferedOutputStream()
+						){
+							bos.write(dataBytes, 0, dataBytes.length);  
+							bos.flush();
+						}
+					dataBytes = null;  //no longer needed
+				}
+			}
 
-		void append(CharSequence csq, boolean bFileBacked) throws IOException	{
+		}
+		void append(CharSequence csq) throws IOException	{
 			if (bNoAppend){
 				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
 			}
-			int dataBytesSize=0;
-			if (dataBytes!=null) {
-				dataBytesSize=dataBytes.length;
-			}
-			if (bDataInFile || (dataBytesSize + csq.length() > maxMemoryArraySize)){
-				//first copy data to file if not there already
-				if (!bDataInFile){
-					try(
-							BufferedOutputStream bos = getBufferedOutputStream(true)
-						){
-							if (dataBytes!=null) {
-								getBufferedOutputStream(true).write(dataBytes, 0, dataBytes.length);  
-								bos.flush();
-							}
-						}
-					bDataInFile = true;
-					dataBytes = null;  //no longer needed or not needed in the first place
-				}	
-				try(BufferedOutputStream bos = getBufferedOutputStream(true)){
+			transistion();
+			if (isDataInFile()){
+				try(BufferedOutputStream bos = getBufferedOutputStream()){
 					bos.write(csq.toString().getBytes());
 					bos.flush();
 				} 
@@ -107,11 +104,12 @@ public class FileDataContainerManager {
 			if (bNoAppend){
 				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
 			}
-			if (bDataInFile){
+			transistion();
+			if (isDataInFile()){
 				try(
-						BufferedOutputStream bos = getBufferedOutputStream(true)
+						BufferedOutputStream bos = getBufferedOutputStream()
 					){
-		   				getBufferedOutputStream(true).write(bytesToAppend, 0, bytesToAppend.length);                 
+		   				bos.write(bytesToAppend, 0, bytesToAppend.length);                 
 						bos.flush();
 
 					}
@@ -120,24 +118,10 @@ public class FileDataContainerManager {
 					dataBytes=bytesToAppend;
 					return;
 				}
-				if (dataBytes.length + bytesToAppend.length < maxMemoryArraySize){
-					byte[] newDataBytes = new byte[dataBytes.length+bytesToAppend.length];
-					System.arraycopy(dataBytes,0,newDataBytes,0,dataBytes.length);
-					System.arraycopy(bytesToAppend,0,newDataBytes,dataBytes.length,bytesToAppend.length);
-					dataBytes=newDataBytes;
-				} else {
-					try(
-							BufferedOutputStream bos = getBufferedOutputStream(true)
-						){
-							bos.write(dataBytes, 0, dataBytes.length);  
-			   				getBufferedOutputStream(true).write(bytesToAppend, 0, bytesToAppend.length);                 
-							bos.flush();
-							bDataInFile = true;
-							dataBytes = null; //no longer needed
-
-						}
-				}
-				
+				byte[] newDataBytes = new byte[dataBytes.length+bytesToAppend.length];
+				System.arraycopy(dataBytes,0,newDataBytes,0,dataBytes.length);
+				System.arraycopy(bytesToAppend,0,newDataBytes,dataBytes.length,bytesToAppend.length);
+				dataBytes=newDataBytes;				
 			}
 		}
 
@@ -146,104 +130,101 @@ public class FileDataContainerManager {
 			if (bNoAppend){
 				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
 			}
-			if (bDataInFile) {
-			try(
+			transistion();
+			if (isDataInFile()) {
+				try(
 					FileInputStream fis = new FileInputStream(fileToAppend);
 					BufferedInputStream bis = new BufferedInputStream(fis);
-					BufferedOutputStream bos = getBufferedOutputStream(true)
+					BufferedOutputStream bos = getBufferedOutputStream()
 				){
-				
-				IOUtils.copy(bis, bos);
-					// Copy the contents of the file to the output stream
-//					byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,fileToAppend.length())];
-//					int count = 0;                 
-//					while ((count = bis.read(buffer)) >= 0) {    
-//						bos.write(buffer, 0, count);
-//					}                 
-					bos.flush();
-					fis.close();
+					IOUtils.copy(bis, bos);
 				}
 			} else {
-				try(
-						BufferedOutputStream bos = getBufferedOutputStream(true)
-					){
-		   				if (dataBytes!=null){
-		   					bos.write(dataBytes, 0, dataBytes.length);                 
-		   					bos.flush();
-		   				}
-						bDataInFile = true;
-						dataBytes = null; //no longer needed
-					}
+				byte[] bytesToAppend = FileUtils.readByteArrayFromFile(fileToAppend);
+				if (dataBytes==null){
+					dataBytes=bytesToAppend;
+					return;
+				}
+				byte[] newDataBytes = new byte[dataBytes.length+bytesToAppend.length];
+				System.arraycopy(dataBytes,0,newDataBytes,0,dataBytes.length);
+				System.arraycopy(bytesToAppend,0,newDataBytes,dataBytes.length,bytesToAppend.length);
+				dataBytes=newDataBytes;				
 			}
 		}
 
-		void append(FileDataContainer container, boolean bFileBacked) throws IOException {
+		void append(FileDataContainer container) throws IOException {
 			if (bNoAppend){
 				throw new RuntimeException("FileDataContainer can't append externally supplied files"); 
 			}
-			File appendThisDataFile = null;
-			byte[] appendThisData = null;
-			if (bFileBacked){
-				maxMemoryArraySize = 0;
-			}
-
-			if (container.isDataInFile()){
-				appendThisDataFile = container.getDataFile();
-				appendFileContainer(appendThisDataFile);
+			transistion();
+			if (isDataInFile()){
+				if(container.isDataInFile()){
+					appendFileContainer(container.getDataFile());
+				}else{
+					try(
+							ByteArrayInputStream byis = new ByteArrayInputStream(container.getDataBytes());
+							BufferedInputStream bis = new BufferedInputStream(byis);
+							BufferedOutputStream bos = getBufferedOutputStream()
+						){
+							IOUtils.copy(bis, bos);
+						}
+				}
+				
 			} else {
-				appendThisData = container.getDataBytes();
-				appendArrayContainer(appendThisData);
+				if(container.isDataInFile()){
+					appendFileContainer(container.getDataFile());
+//					try(
+//							FileInputStream fis = new FileInputStream(container.getDataFile());
+//							ByteArrayOutputStream byos = new ByteArrayOutputStream();
+//						){
+//							IOUtils.copy(fis, byos);//fis buffered in IOUtils
+//							appendArrayContainer(byos.toByteArray());
+//						}
+				}else{
+					appendArrayContainer(container.getDataBytes());
+				}
 			}
 		}
 
 		public boolean isDataInFile(){
-			return bDataInFile;
+			return tempDataFile != null;
 		}
 
 		public File getDataFile() throws IOException{
-			if (!isDataInFile() && dataBytes!=null){
-				try(
-						BufferedOutputStream bos = getBufferedOutputStream(true)
-					){
-						bos.write(dataBytes, 0, dataBytes.length);                
-						bos.flush();
-						dataBytes = null; //no longer needed
-
-					}
+			if(!isDataInFile()){
+				throw new RuntimeException("No Datafile");
 			}
-			bDataInFile=true;
 			return tempDataFile;
 		}
 
 		public byte[] getDataBytes(){
+			if(tempDataFile != null){
+				throw new RuntimeException("getDataBytes() not allowed for FileBacked containers");
+			}
 			return dataBytes;
 		}
 
 		public long size(){
-			if (!bDataInFile){
+			if (!isDataInFile()){
 				if (dataBytes==null){
 					return 0;
 				} else {
 					return (long)dataBytes.length;
 				} 
 			} else {
-				if (tempDataFile==null){
-					return 0;
-				} else {
-					return tempDataFile.length();
-				}
+				return tempDataFile.length();
 			}
 		}
 
-		private BufferedOutputStream getBufferedOutputStream(boolean bAppend) throws FileNotFoundException{
-			return new BufferedOutputStream(new FileOutputStream(tempDataFile, bAppend));
+		private BufferedOutputStream getBufferedOutputStream() throws FileNotFoundException{
+			return new BufferedOutputStream(new FileOutputStream(tempDataFile, true));
 
 		}
 
 		void deleteTempFile() throws IOException {
-			if(getDataFile() != null && getDataFile().exists()){
-				if (!getDataFile().delete()){	
-				new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'").printStackTrace();
+			if(isDataInFile() && getDataFile().exists()){
+				if (!getDataFile().delete()){
+					new Exception("Failed to delete ExportOutput Tempfile '"+getDataFile().getAbsolutePath()+"'").printStackTrace();
 				}
 			}
 		}
@@ -259,7 +240,7 @@ public class FileDataContainerManager {
 	 * 
 	 */
 	
-	FileDataContainerManager(long memLimitOverride){
+	public FileDataContainerManager(long memLimitOverride){
 		this.AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT = memLimitOverride;
 	}
 	
@@ -269,12 +250,11 @@ public class FileDataContainerManager {
 	public FileDataContainerID getNewFileDataContainerID() throws IOException{
 		return getNewFileDataContainerID(null);
 	}
-	private FileDataContainerID getNewFileDataContainerID(byte[] initData) throws IOException{
+	public FileDataContainerID getNewFileDataContainerID(byte[] initData) throws IOException{
 		if(initData == null){
-			fileDataContainers.add(new FileDataContainer(aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT));
+			fileDataContainers.add(new FileDataContainer());
 		}else{
-			aggregateDataSize = aggregateDataSize + initData.length;
-			fileDataContainers.add(new FileDataContainer(initData, aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT));
+			fileDataContainers.add(new FileDataContainer(initData));
 		}
 		return new FileDataContainerID(fileDataContainers.size()-1);
 	}
@@ -283,6 +263,7 @@ public class FileDataContainerManager {
 	}
 	public void closeAllAndDelete() throws IOException{
 		for(FileDataContainer fileDataContainer:fileDataContainers){
+//			System.out.println("deleting: "+fileDataContainer.getDataFile().getAbsolutePath());
 			fileDataContainer.deleteTempFile();
 		}
 	}
@@ -302,7 +283,7 @@ public class FileDataContainerManager {
 			fis.close();	
 		}else{
 			ps.println("Data in memory is:\n");
-			byte[] data = getDataBytes(fileDataContainerID);
+			byte[] data = getFileDataContainer(fileDataContainerID).getDataBytes();
 			for (byte aByte : data){
 				ps.write((int)aByte);
 				totalSize++;
@@ -313,38 +294,11 @@ public class FileDataContainerManager {
 	}
 	
 	public void writeAndFlush(FileDataContainerID fileDataContainerID, OutputStream outputStream) throws IOException{
-//		FileInputStream fis = new FileInputStream(data.getDataFile());
-//		ReadableByteChannel source = Channels.newChannel(fis);
-//	    WritableByteChannel target = Channels.newChannel(outputStream);
-	//
-//	    ByteBuffer buffer = ByteBuffer.allocate(16 * 4096);
-//	    while (source.read(buffer) != -1) {
-//	        buffer.flip(); // Prepare the buffer to be drained
-//	        while (buffer.hasRemaining()) {
-//	            target.write(buffer);
-//	        }
-//	        buffer.clear(); // Empty buffer to get ready for filling
-//	    }
-	//
-//	    source.close();
-//		fis.close();
 		if (isDataInFile(fileDataContainerID)){
-			FileInputStream fis = null;
-			BufferedInputStream bis = null;
-			try{
-				File dataFile = getFileDataContainer(fileDataContainerID).getDataFile();
-				fis = new FileInputStream(dataFile);
-				bis = new BufferedInputStream(fis);
-				// Copy the contents of the file to the output stream
-				byte[] buffer = new byte[(int)Math.min(1048576/*2^20*/,dataFile.length())];
-				int count = 0;                 
-				while ((count = bis.read(buffer)) >= 0) {    
-					outputStream.write(buffer, 0, count);
-				}                 
-				outputStream.flush();
-			}finally{
-				if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-				if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
+			try(
+					FileInputStream fis = new FileInputStream(getFileDataContainer(fileDataContainerID).getDataFile());
+				){
+				IOUtils.copy(fis, outputStream);//fis buffered inside of IOUtils
 			}
 		} else{
 			/*
@@ -357,39 +311,149 @@ public class FileDataContainerManager {
 	}
 	
 	public void append(FileDataContainerID appendToThis,FileDataContainerID appendThis) throws IOException{
-		aggregateDataSize = aggregateDataSize + getFileDataContainer(appendThis).size();
-		getFileDataContainer(appendToThis).append(getFileDataContainer(appendThis), aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT);
+		updateAggregate(getFileDataContainer(appendThis).size());
+		getFileDataContainer(appendToThis).append(getFileDataContainer(appendThis));
 	}
 	public void append(FileDataContainerID appendToThis,String appendThis) throws IOException{
-		aggregateDataSize = aggregateDataSize + appendThis.length();
-		getFileDataContainer(appendToThis).append(appendThis, aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT);
+		updateAggregate(appendThis.length());
+		getFileDataContainer(appendToThis).append(appendThis);
 	}
 	public void append(FileDataContainerID appendToThis,byte[] appendThis) throws IOException{
-		aggregateDataSize = aggregateDataSize + getFileDataContainer(getNewFileDataContainerID(appendThis)).size();
-		getFileDataContainer(appendToThis).append(getFileDataContainer(getNewFileDataContainerID(appendThis)),aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT);
+		updateAggregate(appendThis.length);
+		getFileDataContainer(appendToThis).appendArrayContainer(appendThis);
 	}
 	
+	private void updateAggregate(long increase){
+//		if((aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT) != ((aggregateDataSize+increase) > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT)){
+//			System.out.println("-----Limit reached");
+//		}
+		aggregateDataSize = aggregateDataSize + increase;
+	}
 	private boolean isDataInFile(FileDataContainerID fileDataContainerID){
 		return getFileDataContainer(fileDataContainerID).isDataInFile();
 	}
-	
-//	public File getFile(FileDataContainerID fileDataContainerID) throws IOException{
-//		return getFileDataContainer(fileDataContainerID).getDataFile();
-//	}
-	
-	private byte[] getDataBytes(FileDataContainerID fileDataContainerID){
-		return getFileDataContainer(fileDataContainerID).getDataBytes();
-	}
 
 	public void manageExistingTempFile(FileDataContainerID fileDataContainerID, File incomingFile) {
-		if (getFileDataContainer(fileDataContainerID).tempDataFile.length()>0 || getFileDataContainer(fileDataContainerID).dataBytes!=null){
+		if ((isDataInFile(fileDataContainerID) && getFileDataContainer(fileDataContainerID).tempDataFile.length()>0) ||
+			(!isDataInFile(fileDataContainerID) &&getFileDataContainer(fileDataContainerID).dataBytes!=null)){
 			throw new RuntimeException("FileDataContainer already has data");
 		}
 		if (!incomingFile.exists()){
 			throw new RuntimeException("");
 		}
 		getFileDataContainer(fileDataContainerID).bNoAppend = true;
-		getFileDataContainer(fileDataContainerID).bDataInFile = true;
 		getFileDataContainer(fileDataContainerID).tempDataFile = incomingFile;
 	}
+	public boolean isLimited(){
+		return aggregateDataSize > AGGREGATE_DATA_SIZE_IN_MEMORY_LIMIT;
+	}
+
+//	//
+//	//Code coverage test, scrapbook2.default.TestFileDataContainer
+//	//
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		try{
+//			ArrayList<Byte> byteArr = new ArrayList<>();
+//			FileDataContainerManager fileDataContainerManager = new FileDataContainerManager(1000);
+//			FileDataContainerID fileDataContainerIDAll = fileDataContainerManager.getNewFileDataContainerID();
+//			FileDataContainerID databytesFiledataContainerID = null;
+//			byte[] dataBytes = null;
+//			FileDataContainerID limitedFiledataContainerID = null;
+//			String mngStr = "this is a managed entry\n";
+//			for(int i=0;i<100;i++){
+//				FileDataContainerID fileDataContainerID = null;
+//				if(i==0){
+//					fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
+//					File managedFile = File.createTempFile("imanage", "test");
+//					fileDataContainerManager.manageExistingTempFile(fileDataContainerID, managedFile);
+//					BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(managedFile));
+//					bos.write(mngStr.getBytes());
+//					bos.close();
+//					byte[] strBytes = mngStr.getBytes();
+//					for(int j=0;j<strBytes.length;j++){
+//						byteArr.add(strBytes[j]);
+//					}
+//					for(int j=0;j<strBytes.length;j++){
+//						byteArr.add(strBytes[j]);
+//					}
+//					fileDataContainerManager.append(fileDataContainerIDAll, fileDataContainerID);
+//				}else{
+//					String str = "fileDataContainerID "+i+"\n";
+//					byte[] strBytes = str.getBytes();
+//					if(databytesFiledataContainerID == null){
+//						fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID(strBytes);
+//						databytesFiledataContainerID = fileDataContainerID;
+//						dataBytes = strBytes;
+//					}else if(limitedFiledataContainerID == null && fileDataContainerManager.isLimited()){
+//						fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID(strBytes);
+//						limitedFiledataContainerID = fileDataContainerID;
+//					}else{
+//						fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
+//						fileDataContainerManager.append(fileDataContainerID,str);
+//					}
+//					fileDataContainerManager.append(fileDataContainerID,str);
+//					for(int j=0;j<strBytes.length;j++){
+//						byteArr.add(strBytes[j]);
+//					}
+//					for(int j=0;j<strBytes.length;j++){
+//						byteArr.add(strBytes[j]);
+//					}
+//				}
+//				fileDataContainerManager.append(fileDataContainerIDAll, fileDataContainerID);
+//				
+//			}
+//			fileDataContainerManager.append(fileDataContainerIDAll, databytesFiledataContainerID);
+//			for(int i=0;i<dataBytes.length;i++){
+//				byteArr.add(dataBytes[i]);
+//			}
+//			for(int i=0;i<dataBytes.length;i++){
+//				byteArr.add(dataBytes[i]);
+//			}
+//			
+//			byte[] bytes = new byte[256];
+//			for(int i=0;i<256;i++){
+//				bytes[i] = (byte)(i&0x000000ff);
+//				byteArr.add(bytes[i]);
+//			}
+//			fileDataContainerManager.append(fileDataContainerIDAll, bytes);
+//
+//			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//			fileDataContainerManager.writeAndFlush(fileDataContainerIDAll, bos);
+//			byte[] allBytes = bos.toByteArray();
+//			bos.close();
+//
+//			//check managed for code coverage
+//			ByteArrayOutputStream byos = new ByteArrayOutputStream();
+//			fileDataContainerManager.writeAndFlush(databytesFiledataContainerID, byos);
+//			byte[] managedbytes = byos.toByteArray();
+//			byos.close();
+//			for(int i=0;i<managedbytes.length;i++){
+//				if(managedbytes[i] != allBytes[i+mngStr.length()*2]){
+//					throw new Exception("databytes don't match at "+i);
+//				}
+//			}
+//
+//			fileDataContainerManager.closeAllAndDelete();
+//			
+//			System.out.println("RAW:\n"+(new String(allBytes)));
+//			System.out.println("\nHEX:\n"+Hex.toString(allBytes));
+//			if(allBytes.length != byteArr.size()){
+//				throw new Exception("sizes don't match allBytes="+allBytes.length+" byteArr="+byteArr.size());
+//			}
+//			byte[] b = new byte[1];
+//			for(int i=0;i<byteArr.size();i++){
+//				b[0] = byteArr.get(i);
+//				if(b[0] != allBytes[i]){
+//					throw new Exception("bytes don't match at "+i);
+//				}
+//				System.out.print(Hex.toString(b));
+//			}
+//			
+//			
+//		}catch(Exception e){
+//			e.printStackTrace();
+//		}
+//	}
+
 }
