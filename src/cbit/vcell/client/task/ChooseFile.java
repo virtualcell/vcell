@@ -54,6 +54,16 @@ public class ChooseFile extends AsynchClientTask {
 	public ChooseFile() {
 		super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
 	}
+	
+	/**
+	 * removes extension, if any and stores in {@link #extensionUserProvided}
+	 * @param userProvided could be null 
+	 * @return userProvided with extension removed if present
+	 */
+	private String recordAndRemoveExtension(String userProvided) {
+		extensionUserProvided = FilenameUtils.getExtension(userProvided);
+		return FilenameUtils.removeExtension(userProvided);
+	}
 
 	//reset the user preference for the default path, if needed.
 	private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
@@ -64,16 +74,6 @@ public class ChooseFile extends AsynchClientTask {
 			userPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
 		}
 		System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + oldPath);
-	}
-	
-	/**
-	 * removes extension, if any and stores in {@link #extensionUserProvided}
-	 * @param userProvided could be null 
-	 * @return userProvided with extension removed if present
-	 */
-	private String recordAndRemoveExtension(String userProvided) {
-		extensionUserProvided = FilenameUtils.getExtension(userProvided);
-		return FilenameUtils.removeExtension(userProvided);
 	}
 	
 	/**
@@ -117,6 +117,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			hashTable.put(RENAME_KEY, fp); 
 		}
 	}
+	
 	hashTable.put("exportFile", exportFile);
 }
 
@@ -462,7 +463,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				resetPreferredFilePath(selectedFile, userPreferences);
 				return selectedFile;
 			}
-				
+			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
+			
 			resetPreferredFilePath(selectedFile, userPreferences);
 			return selectedFile;
 		}
