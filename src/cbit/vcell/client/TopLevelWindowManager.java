@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -125,8 +126,8 @@ public void exitApplication() {
 /**
  * Comment
  */
-public void exportDocument() {
-	getRequestManager().exportDocument(this);
+public void exportDocument(FileFilter forceFileFilter) {
+	getRequestManager().exportDocument(this,forceFileFilter);
 }
 
 

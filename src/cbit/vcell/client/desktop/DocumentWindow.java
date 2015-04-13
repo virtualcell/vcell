@@ -47,6 +47,7 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
+import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -101,6 +102,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	//private JMenu recentMenuItem = new JMenu("Open Recent...");
 	private JMenuItem ivjReconnectMenuItem = null;
 	private JMenuItem ivjSave_AsMenuItem = null;
+	private JMenuItem ivjSave_AsLocalMenuItem = null;
 	private JMenuItem ivjSave_VersionMenuItem = null;
 	private JMenuItem ivjSaveMenuItem = null;
 	private JMenu ivjServerMenu = null;
@@ -115,6 +117,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemNewBioModel = null;
 	private JMenuItem ivjJMenuItemOpenBioModel = null;
 	private JMenuItem ivjJMenuItemOpenGeometry = null;
+	private JMenuItem ivjJMenuItemOpenLocal = null;
 	private JMenuItem ivjJMenuItemOpenMathModel = null;
 	private JProgressBar ivjJProgressBarMemory = null;
 	private DocumentWindowManager fieldWindowManager = null;
@@ -161,12 +164,16 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC7(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenBioModel()) 
 				connEtoC10(e);
+			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenLocal()) 
+				importExternalDocument();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel()) 
 				connEtoC11(e);
 			if (e.getSource() == DocumentWindow.this.getSaveMenuItem()) 
 				connEtoC13(e);
 			if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem()) 
 				connEtoC14(e);
+			if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem()) 
+				saveAsLocal();
 			try {
 				if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
 					DocumentWindow.this.importExternalDocument();
@@ -872,7 +879,7 @@ private void exitApplication() {
  * Comment
  */
 private void exportDocument() {
-	getWindowManager().exportDocument();
+	getWindowManager().exportDocument(null);
 }
 
 
@@ -1137,6 +1144,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getSaveMenuItem());
 			ivjFileMenu.add(getSave_VersionMenuItem());
 			ivjFileMenu.add(getSave_AsMenuItem());
+			ivjFileMenu.add(getSave_AsLocalMenuItem());
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getJMenuItemRevert());
 			ivjFileMenu.add(getJMenuItemCompare());
@@ -1413,6 +1421,23 @@ private javax.swing.JMenuItem getJMenuItemOpenBioModel() {
 		}
 	}
 	return ivjJMenuItemOpenBioModel;
+}
+
+private javax.swing.JMenuItem getJMenuItemOpenLocal() {
+	if (ivjJMenuItemOpenLocal == null) {
+		try {
+			ivjJMenuItemOpenLocal = new javax.swing.JMenuItem();
+			ivjJMenuItemOpenLocal.setName("JMenuItemOpenLocal");
+			ivjJMenuItemOpenLocal.setText("Local...");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemOpenLocal;
 }
 
 /**
@@ -1754,6 +1779,7 @@ private javax.swing.JMenu getOpenMenuItem() {
 			ivjOpenMenuItem.add(getJMenuItemOpenBioModel());
 			ivjOpenMenuItem.add(getJMenuItemOpenMathModel());
 			ivjOpenMenuItem.add(getJMenuItemOpenGeometry());
+			ivjOpenMenuItem.add(getJMenuItemOpenLocal());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1857,6 +1883,24 @@ private javax.swing.JMenuItem getSave_AsMenuItem() {
 		}
 	}
 	return ivjSave_AsMenuItem;
+}
+
+private javax.swing.JMenuItem getSave_AsLocalMenuItem() {
+	if (ivjSave_AsLocalMenuItem == null) {
+		try {
+			ivjSave_AsLocalMenuItem = new javax.swing.JMenuItem();
+			ivjSave_AsLocalMenuItem.setName("Save_AsLocalMenuItem");
+			ivjSave_AsLocalMenuItem.setText("Save As Local...");
+			ivjSave_AsLocalMenuItem.setEnabled(true);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjSave_AsLocalMenuItem;
 }
 
 /**
@@ -2244,8 +2288,10 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemNewBioModel().addActionListener(ivjEventHandler);
 	getJMenuItemOpenBioModel().addActionListener(ivjEventHandler);
 	getJMenuItemOpenMathModel().addActionListener(ivjEventHandler);
+	getJMenuItemOpenLocal().addActionListener(ivjEventHandler);
 	getSaveMenuItem().addActionListener(ivjEventHandler);
 	getSave_AsMenuItem().addActionListener(ivjEventHandler);
+	getSave_AsLocalMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemImport().addActionListener(ivjEventHandler);
 	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
 	getChange_UserMenuItem().addActionListener(ivjEventHandler);
@@ -2421,6 +2467,9 @@ private void saveDocumentAsNew() {
 	getWindowManager().saveDocumentAsNew();
 }
 
+private void saveAsLocal(){
+	getWindowManager().exportDocument(FileFilters.FILE_FILTER_VCML);
+}
 
 /**
  * Sets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
@@ -2569,6 +2618,13 @@ private void showTestingFrameworkWindow() {
 }
 
 
+private void enableOpenMenuItems(boolean bEnableServerOps){
+	getOpenMenuItem().setEnabled(true);
+	getJMenuItemOpenBioModel().setEnabled(bEnableServerOps);
+	getJMenuItemOpenMathModel().setEnabled(bEnableServerOps);
+	getJMenuItemOpenGeometry().setEnabled(bEnableServerOps);
+	getJMenuItemOpenLocal().setEnabled(true);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/10/2004 4:32:17 PM)
@@ -2586,9 +2642,12 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(false);
-			getOpenMenuItem().setEnabled(false);
+			
+			enableOpenMenuItems(false);
+			
 			getSaveMenuItem().setEnabled(false);
 			getSave_AsMenuItem().setEnabled(false);
+			getSave_AsLocalMenuItem().setEnabled(true);
 			getSave_VersionMenuItem().setEnabled(false);
 			getJMenuItemRevert().setEnabled(false);
 			getJMenuItemCompare().setEnabled(false);
@@ -2606,7 +2665,9 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(true);
 			getReconnectMenuItem().setEnabled(true);
-			getOpenMenuItem().setEnabled(true);
+			
+			enableOpenMenuItems(true);
+			
 			boolean bVersionedDocument = getWindowManager() != null &&  getWindowManager().getVCDocument() != null 
 							&& getWindowManager().getVCDocument().getVersion() != null;
 			getSaveMenuItem().setEnabled(
@@ -2616,6 +2677,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 				)
 			);
 			getSave_AsMenuItem().setEnabled(true);
+			getSave_AsLocalMenuItem().setEnabled(true);
 			getSave_VersionMenuItem().setEnabled(bVersionedDocument);
 			getJMenuItemRevert().setEnabled(bVersionedDocument);
 			getJMenuItemCompare().setEnabled(bVersionedDocument);
@@ -2640,9 +2702,11 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(false);
 			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(false);
-			getOpenMenuItem().setEnabled(false);
+			enableOpenMenuItems(false);
+			getSave_AsLocalMenuItem().setEnabled(true);
 			getSaveMenuItem().setEnabled(false);
 			getSave_AsMenuItem().setEnabled(false);
+			getSave_AsLocalMenuItem().setEnabled(true);
 			getSave_VersionMenuItem().setEnabled(false);
 			getJMenuItemRevert().setEnabled(false);
 			getJMenuItemCompare().setEnabled(false);
@@ -2661,7 +2725,8 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getChange_UserMenuItem().setEnabled(true);
 			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(true);
-			getOpenMenuItem().setEnabled(false);
+			enableOpenMenuItems(false);
+			getSave_AsLocalMenuItem().setEnabled(true);
 			getSaveMenuItem().setEnabled(false);
 			getSave_AsMenuItem().setEnabled(false);
 			getSave_VersionMenuItem().setEnabled(false);

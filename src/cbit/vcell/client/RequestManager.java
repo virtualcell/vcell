@@ -11,6 +11,8 @@
 package cbit.vcell.client;
 import java.awt.Component;
 
+import javax.swing.filechooser.FileFilter;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -127,7 +129,7 @@ void exitApplication();
 /**
  * Comment
  */
-void exportDocument(TopLevelWindowManager manager);
+void exportDocument(TopLevelWindowManager manager,FileFilter forceFileFilter);
 
 /**
  * Insert the method's description here.

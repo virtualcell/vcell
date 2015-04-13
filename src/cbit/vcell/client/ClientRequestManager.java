@@ -60,6 +60,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileFilter;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -2210,7 +2211,7 @@ public void exitApplication() {
 /**
  * Comment
  */
-public void exportDocument(TopLevelWindowManager manager) {
+public void exportDocument(TopLevelWindowManager manager,FileFilter forceFilefilter) {
 	/* block window */
 	JFrame currentWindow = getMdiManager().blockWindow(manager.getManagerID());
 	/* prepare hashtable for tasks */
@@ -2220,6 +2221,9 @@ public void exportDocument(TopLevelWindowManager manager) {
 	hash.put("topLevelWindowManager", manager);
 	hash.put("currentWindow", currentWindow);
 	hash.put("userPreferences", getUserPreferences());
+	if(forceFilefilter != null){
+		hash.put(ChooseFile.FORCE_FILE_FILTER, forceFilefilter);
+	}
 	/* create tasks */
 	// get document to be exported
 	AsynchClientTask documentToExport = new DocumentToExport();

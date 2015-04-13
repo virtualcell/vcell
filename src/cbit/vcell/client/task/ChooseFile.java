@@ -121,7 +121,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	hashTable.put("exportFile", exportFile);
 }
 
-
+public static String FORCE_FILE_FILTER = "FORCE_FILE_FILTER";
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
@@ -131,6 +131,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
+	javax.swing.filechooser.FileFilter forceFileFilter = (javax.swing.filechooser.FileFilter)hashTable.get(FORCE_FILE_FILTER);
 	if (topLevelWindowManager == null) {
 		throw new RuntimeException("toplLevelWindowManager required");
 	}
@@ -138,23 +139,25 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_12);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_22);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_CORE);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
-//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); 
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
+	if(forceFileFilter == null){
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_12);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_22);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_CORE);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_31_SPATIAL);
+	//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); 
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
+	}
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	// Set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
+	fileChooser.setFileFilter((forceFileFilter!=null?forceFileFilter:FileFilters.FILE_FILTER_VCML));
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");
