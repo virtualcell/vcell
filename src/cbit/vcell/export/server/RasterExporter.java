@@ -268,9 +268,6 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 						nrrdinfoV.add(nrrdInfo);		
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							if(variableSpecs.getVariableNames()[i].equals("Total_fluorescence")){
-								System.out.println("-----"+j+" "+timeSpecs2.getAllTimes()[j]+" "+variableSpecs.getVariableNames()[i]+" len="+data.length);
-							}
 							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 
 						}
