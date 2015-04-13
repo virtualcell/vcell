@@ -1,5 +1,6 @@
 package org.vcell.sbml.vcell;
 
+import org.apache.log4j.Logger;
 import org.sbml.libsbml.AdvectionCoefficient;
 import org.sbml.libsbml.Boundary;
 import org.sbml.libsbml.BoundaryCondition;
@@ -22,7 +23,12 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.SpeciesContext;
 
 
+/**
+ * connects {@link SpeciesContextSpec} parameters by role into SBML
+ */
 public abstract class SpeciesContextSpecSBMLBridge {
+	private static Logger lg = Logger.getLogger(SpeciesContextSpecSBMLBridge.class);
+	
 	/**
 	 * package 3D coordinates
 	 */
@@ -38,6 +44,9 @@ public abstract class SpeciesContextSpecSBMLBridge {
 		}
 	}
 	
+	/**
+	 * {@link SpeciesContextSpec} ROLE_ supports
+	 */
 	public final int roleCode;
 
 	protected SpeciesContextSpecSBMLBridge(int roleCode) {
@@ -69,10 +78,21 @@ public abstract class SpeciesContextSpecSBMLBridge {
 		return false;
 	}
 
+	/**
+	 * return specific object for role
+	 * @param role
+	 * @return concrete {@link SpeciesContextSpecSBMLBridge}  instance
+	 * @throws ProgrammingException if invalid role code
+	 */
 	public static SpeciesContextSpecSBMLBridge forRole(int role)  {
-		SpeciesContextSpecSBMLBridge b = bridges[role];
-		if (b != null) {
-			return b;
+		if (role < bridges.length) {
+			SpeciesContextSpecSBMLBridge b = bridges[role];
+			if (b != null) {
+				if (lg.isDebugEnabled()) {
+					lg.debug("Bridging role " + role + ' ' + SpeciesContextSpec.RoleDescriptions[role] + " with " + b); 
+				}
+				return b;
+			}
 		}
 		throw new ProgrammingException("Unsupported role " + role);
 	}
@@ -95,6 +115,14 @@ public abstract class SpeciesContextSpecSBMLBridge {
 	private static SpeciesContextSpecSBMLBridge bridges[] = new SpeciesContextSpecSBMLBridge[SpeciesContextSpec.NUM_ROLES];
 	
 	
+	@Override
+	public String toString() {
+		return getClass().getName() + " role code "  + roleCode + " isDiffusionOrAdvection" + isDiffusionOrAdvection();
+	}
+
+	/*-******************************************
+	 * roles begin 
+	*********************************************/
 	private static class NoOp extends SpeciesContextSpecSBMLBridge {
 
 		protected NoOp(int roleCode) {
@@ -286,4 +314,6 @@ public abstract class SpeciesContextSpecSBMLBridge {
 		new Zp();
 		new Zm();
 	}
+	
+	
 }
