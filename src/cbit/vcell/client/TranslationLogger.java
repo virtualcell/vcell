@@ -75,16 +75,18 @@ public class TranslationLogger extends VCLogger implements AutoCloseable {
 
 	@Override
 	public void sendAllMessages() {
+		if (!messages.isEmpty()) {
 
-		StringBuilder messageBuf = new StringBuilder("The translation process has encountered the following problem(s):\n ");
-													//"which can affect the quality of the translation:\n");
-		int i = 0;
-		for (Message m : messages) {
-			messageBuf.append(++i +") " + m.message + "\n");
+			StringBuilder messageBuf = new StringBuilder("The translation process has encountered the following problem(s):\n ");
+			//"which can affect the quality of the translation:\n");
+			int i = 0;
+			for (Message m : messages) {
+				messageBuf.append(++i +") " + m.message + "\n");
+			}
+			UserMessage userMessage = new UserMessage(messageBuf.toString(), new String [] {TranslationLogger.OK_OPTION}, 
+					TranslationLogger.OK_OPTION);
+			PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
 		}
-		UserMessage userMessage = new UserMessage(messageBuf.toString(), new String [] {TranslationLogger.OK_OPTION}, 
-			                                      TranslationLogger.OK_OPTION);
-		PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
 	}
 
 

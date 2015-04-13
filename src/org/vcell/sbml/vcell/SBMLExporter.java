@@ -56,6 +56,7 @@ import org.sbml.libsbml.Trigger;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
 import org.sbml.libsbml.libsbmlConstants;
+import org.vcell.sbml.KineticsAdapter;
 import org.vcell.sbml.LibSBMLConstantsAdapter;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLHelper.CompressionKind;
@@ -508,8 +509,9 @@ protected void addParameters() throws ExpressionException {
 
 /**
  * addReactions comment.
+ * @throws SbmlException 
  */
-protected void addReactions() {
+protected void addReactions() throws SbmlException {
 
 	// Check if any reaction has electrical mapping
 	boolean bCalculatePotential = false;
@@ -559,22 +561,13 @@ protected void addReactions() {
 		// Get reaction kineticLaw
 		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
 		org.sbml.libsbml.KineticLaw sbmlKLaw = sbmlReaction.createKineticLaw();
+		KineticsAdapter kineticsAdapter = KineticsAdapter.create(vcRxnKinetics);
 
 		try {
 			// Convert expression from kinetics rate parameter into MathML and use libSBMl utilities to convert it to formula
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
-			Expression correctedRateExpr = null; 
-			if (vcRxnKinetics instanceof DistributedKinetics) {
-				// If DistributedKinetics, multiply by compartmentSize to convert to molecules/sec for feature reaction and membrane flux
-				Compartment sbmlCompartment = sbmlModel.getCompartment(org.vcell.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
-				correctedRateExpr = Expression.mult(((DistributedKinetics)vcRxnKinetics).getReactionRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
-			} else if (vcRxnKinetics instanceof LumpedKinetics) {
-				// LumpedKinetics is already in molecules/sec, no need to do anything?
-				correctedRateExpr = ((LumpedKinetics)vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
-			} else {
-				throw new RuntimeException("Unknown kinetics type for reaction : " + vcReactionStep.getName());
-			}
+			Expression correctedRateExpr = kineticsAdapter.getExpression(); 
 			
 			// Add parameters, if any, to the kineticLaw
 			Kinetics.KineticsParameter[] vcKineticsParams = vcRxnKinetics.getKineticsParameters();
@@ -761,7 +754,7 @@ protected void addReactions() {
 	
 			// set the "isLocal" attribute = true (in 'spatial' namespace) for each species
 			SpatialReactionPlugin srplugin = SBMLHelper.checkedPlugin(SpatialReactionPlugin.class,sbmlReaction,SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-			srplugin.setIsLocal(true);
+			srplugin.setIsLocal(kineticsAdapter.isLocal());
 		}
 
 		// delete used objects
@@ -1677,7 +1670,6 @@ private void addGeometry() throws SbmlException {
 		SampledFieldGeometry segmentedImageSampledFieldGeometry = sbmlGeometry.createSampledFieldGeometry();
 		segmentedImageSampledFieldGeometry.setId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
 		segmentedImageSampledFieldGeometry.setIsActive(true);
-		int r = segmentedImageSampledFieldGeometry.setSampledField("RangerRick");
 		boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 		Geometry vcImageGeometry = null;
 		{
