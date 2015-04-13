@@ -2,6 +2,8 @@ package cbit.vcell.client;
 
 import java.awt.Component;
 
+import javax.swing.filechooser.FileFilter;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -58,7 +60,7 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void exitApplication() {}
 	@Override
-	public void exportDocument(TopLevelWindowManager manager) {}
+	public void exportDocument(TopLevelWindowManager manager, FileFilter forceFileFilter) {}
 	@Override
 	public AsynchMessageManager getAsynchMessageManager() { return null; }
 	@Override
