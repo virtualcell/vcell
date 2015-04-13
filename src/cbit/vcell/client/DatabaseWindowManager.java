@@ -542,7 +542,7 @@ public void deleteSelected() {
 
 public void exportDocument() {
 	if (getPanelSelection() != null) {
-		getRequestManager().exportDocument(this);
+		getRequestManager().exportDocument(this,null);
 	}
 	else {
 		PopupGenerator.showInfoDialog(this, "no model selected");
