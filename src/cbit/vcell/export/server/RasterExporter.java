@@ -27,6 +27,8 @@ import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
 import org.vcell.vis.mapping.ChomboVtkFileWriter;
 
+import com.sun.org.apache.bcel.internal.generic.LSTORE;
+
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdWriter;
@@ -211,15 +213,19 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 		e.printStackTrace();
 //		throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
 	}
-
+	long lastUpdateTime = 0;
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
 					NrrdInfo nrrdInfo =
 						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh, dataProcessingOutputInfo).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 						}
@@ -237,7 +243,11 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 				case GEOMETRY_FULL: {
 					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh, dataProcessingOutputInfo);
 					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
 						NrrdInfo nrrdInfo = nrrdHelper.createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);
 						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
@@ -262,14 +272,17 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
 					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 						NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh, dataProcessingOutputInfo);
 						NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);		
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
 							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
-
 						}
 						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					}
@@ -291,6 +304,13 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	}											
 }
 
+	private static long fireThrottledProgress(ExportServiceImpl exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex){
+		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
+			lastUpdateTime = System.currentTimeMillis();
+			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));
+		}
+		return lastUpdateTime;
+	}
 
 /**
  * This method was created in VisualAge.
