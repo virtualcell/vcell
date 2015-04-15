@@ -1,6 +1,7 @@
 package org.vcell.vmicro.op;
 
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -9,7 +10,10 @@ import cbit.vcell.math.RowColumnResultSet;
 
 public class ComputeMeasurementErrorOp {
 	
-	public RowColumnResultSet computeNormalizedMeasurementError(ROI[] rois, int indexPostbleach, UShortImage[] rawImages, double[] timeStamps, FloatImage prebleachAvgImage, final ClientTaskStatusSupport clientTaskStatusSupport) {
+	public RowColumnResultSet computeNormalizedMeasurementError(ROI[] rois, int indexPostbleach, ImageTimeSeries<UShortImage> rawImageDataset, FloatImage prebleachAvgImage, final ClientTaskStatusSupport clientTaskStatusSupport) {
+		
+		UShortImage[] rawImages = rawImageDataset.getAllImages();
+		double[] timeStamps = rawImageDataset.getImageTimeStamps();
 		
 		double[][] sigma = refreshNormalizedMeasurementError(rawImages, timeStamps, prebleachAvgImage, rois, indexPostbleach);
 		String[] columnNames = new String[rois.length+1];
