@@ -18,6 +18,7 @@ import java.util.Vector;
 
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
@@ -29,6 +30,8 @@ import org.vcell.vis.mapping.ChomboVtkFileWriter;
 
 import com.sun.org.apache.bcel.internal.generic.LSTORE;
 
+import cbit.image.SourceDataInfo;
+import cbit.image.gui.ImagePlaneManager;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.nrrd.NrrdWriter;
@@ -66,7 +69,7 @@ private static class NRRDHelper {
 	private ISize isize;
 	private Coordinate spacing;
 	private boolean bPostProcessInfo = false;
-	public NRRDHelper(String exportVarName,CartesianMesh pdeMesh,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
+	public NRRDHelper(String exportVarName,ISize isize,Extent extent,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
 		if(dataProcessingOutputInfo != null){
 			for(int varIndex=0;varIndex<dataProcessingOutputInfo.getVariableNames().length;varIndex++){
 				if(dataProcessingOutputInfo.getVariableNames()[varIndex].equals(exportVarName)){
@@ -85,10 +88,10 @@ private static class NRRDHelper {
 			}
 		}
 		if(!bPostProcessInfo){
-			isize = new ISize(pdeMesh.getSizeX(),pdeMesh.getSizeY(),pdeMesh.getSizeZ());
-			spacing = new Coordinate(pdeMesh.getExtent().getX() / isize.getX(),
-					pdeMesh.getExtent().getY() / isize.getY(),
-					pdeMesh.getExtent().getZ() / isize.getZ());
+			this.isize = isize;
+			spacing = new Coordinate(extent.getX() / isize.getX(),
+					extent.getY() / isize.getY(),
+					extent.getZ() / isize.getZ());
 		}
 	}
 	
@@ -177,10 +180,10 @@ private static class NRRDHelper {
 		return nrrdInfo;
 
 	}
-	public static NRRDHelper getSizeCheckedNrrdHelper(VariableSpecs variableSpecs,CartesianMesh mesh,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
+	public static NRRDHelper getSizeCheckedNrrdHelper(VariableSpecs variableSpecs,ISize isize,Extent extent,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
 		NRRDHelper lastNRRDHelper = null;
 		for(int nameIndex=0;nameIndex<variableSpecs.getVariableNames().length;nameIndex++){
-			NRRDHelper currentNRDHelper = new NRRDHelper(variableSpecs.getVariableNames()[nameIndex], mesh, dataProcessingOutputInfo);
+			NRRDHelper currentNRDHelper = new NRRDHelper(variableSpecs.getVariableNames()[nameIndex], isize,extent, dataProcessingOutputInfo);
 			if(lastNRRDHelper != null && !lastNRRDHelper.isSizeEqual(currentNRDHelper)){
 				throw new DataAccessException("NRRD export error: all variables must have the same x,y,z size"+(lastNRRDHelper.isPostProcessInfo() != currentNRDHelper.isPostProcessInfo()?" (mixed postprocess)":""));
 			}
@@ -217,9 +220,9 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
 			switch (geometrySpecs.getModeID()) {
-				case GEOMETRY_FULL: {
+				case GEOMETRY_FULL:{
 					NrrdInfo nrrdInfo =
-						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh, dataProcessingOutputInfo).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
 					int progressIndex = 1;
 					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
@@ -233,6 +236,43 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
 					return new NrrdInfo[] {nrrdInfo};
 				}
+				case GEOMETRY_SLICE: {
+					ImagePlaneManager imagePlaneManager = new ImagePlaneManager();
+					//Calculate the plane size for nrrdinfo
+					ISize planeISize = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getISize(), geometrySpecs.getAxis());
+					planeISize = new ISize(planeISize.getX(),planeISize.getY(),1);
+					Extent planeExtent = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getExtent(), geometrySpecs.getAxis());
+					planeExtent = new Extent(planeExtent.getX(),planeExtent.getY(),1);
+					NrrdInfo nrrdInfo =
+						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs,planeISize,planeExtent,dataProcessingOutputInfo).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+					double[] sliceData = new double[planeISize.getXYZ()];
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							SourceDataInfo sdi = new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, data, mesh.getExtent(), mesh.getOrigin(),
+									null, 0, mesh.getSizeX(), 1, mesh.getSizeY(), mesh.getSizeX(), mesh.getSizeZ(), mesh.getSizeX()*mesh.getSizeY());
+							//Setup manager to extract plane
+							imagePlaneManager.setSourceDataInfo(sdi);
+							imagePlaneManager.setNormalAxis(geometrySpecs.getAxis());
+							imagePlaneManager.setSlice(geometrySpecs.getSliceNumber());
+							int index = 0;
+							//copy plane to double[]
+							for(int y=0;y<planeISize.getY();y++){
+								for(int x=0;x<planeISize.getX();x++){
+									sliceData[index] = imagePlaneManager.getImagePlaneData().getDataAsTypeRaw(x, y, 0);
+									index++;
+								}
+							}
+							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager,sliceData, variableSpecs.getVariableNames()[i]);
+						}
+					}
+					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+					return new NrrdInfo[] {nrrdInfo};
+				}
 				default: {
 					throw new DataAccessException("NRRD export from slice not yet supported");
 				}
@@ -241,7 +281,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 		case NRRD_BY_TIME: {
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
-					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh, dataProcessingOutputInfo);
+					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
 					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
 					int progressIndex = 1;
 					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
@@ -275,7 +315,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 					int progressIndex = 1;
 					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh, dataProcessingOutputInfo);
+						NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
 						NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);		
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
