@@ -101,7 +101,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		lblMessage.setText(s);
 	}
 	
-	private static class WorkingPanel extends JPanel implements ComponentListener, ActionListener {
+	private class WorkingPanel extends JPanel implements ComponentListener, ActionListener {
 
 		final Timer swingTimer;
 		static final double INCREMENT = Math.PI / 8;	// step angle
@@ -153,7 +153,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 			g2d.setPaint(Color.gray);		// moving indicator
 			bs = new BasicStroke(StrokeWidth-2);
 			g2d.setStroke(bs);
-			a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, toDegrees(radians), extent, Arc2D.OPEN);
+			a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, Math.toDegrees(radians), extent, Arc2D.OPEN);
 			g2d.draw(a2d);
 			
 			g2d.setStroke(oldStroke);		// borders of background ring
@@ -164,9 +164,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 			g2d.draw(c2);
 
 		}
-		private static double toDegrees(double radians) {
-			return (radians*57.296)%360;
-		}
+		
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if (!isModelDialogPresent()) {
@@ -182,7 +180,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 			for (Window w: Window.getWindows()) {
 				if (w.isShowing()) {
 					Dialog d = BeanUtils.downcast(Dialog.class, w);
-					if (d != null) {
+					if (d != null && d != IndefiniteProgressDialog.this) {
 						switch (d.getModalityType()) {
 						case MODELESS:
 							continue;
