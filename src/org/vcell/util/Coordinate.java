@@ -163,6 +163,20 @@ public static final Coordinate convertAxisFromStandardXYZToNormal(double origX, 
 		axisConversion(origX, origY, origZ, Z_AXIS, normalAxis,false));
 	return newCoord;
 }
+public static final ISize convertAxisFromStandardXYZToNormal(ISize isize,int normalAxis) {
+	ISize newISize = new ISize(
+		(int)axisConversion(isize.getX(), isize.getY(), isize.getZ(), X_AXIS, normalAxis,false),
+		(int)axisConversion(isize.getX(), isize.getY(), isize.getZ(), Y_AXIS, normalAxis,false),
+		(int)axisConversion(isize.getX(), isize.getY(), isize.getZ(), Z_AXIS, normalAxis,false));
+	return newISize;
+}
+public static final Extent convertAxisFromStandardXYZToNormal(Extent extent,int normalAxis) {
+	Extent newExtent = new Extent(
+		(int)axisConversion(extent.getX(), extent.getY(), extent.getZ(), X_AXIS, normalAxis,false),
+		(int)axisConversion(extent.getX(), extent.getY(), extent.getZ(), Y_AXIS, normalAxis,false),
+		(int)axisConversion(extent.getX(), extent.getY(), extent.getZ(), Z_AXIS, normalAxis,false));
+	return newExtent;
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/10/00 5:50:50 PM)

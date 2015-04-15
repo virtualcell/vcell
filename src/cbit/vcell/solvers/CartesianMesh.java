@@ -1210,6 +1210,12 @@ public Origin getOrigin() {
 	return origin;
 }
 
+public ISize getISize() {
+	if (size == null) {
+		inflate();
+	}	
+	return size;
+}
 
 /**
  * Insert the method's description here.
