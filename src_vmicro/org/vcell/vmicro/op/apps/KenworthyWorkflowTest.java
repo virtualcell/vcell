@@ -2,40 +2,50 @@ package org.vcell.vmicro.op.apps;
 
 import java.io.File;
 
+import org.vcell.vmicro.op.ComputeMeasurementErrorOp;
+import org.vcell.vmicro.op.FitBleachSpotOp;
+import org.vcell.vmicro.op.FitBleachSpotOp.FitBleachSpotOpResults;
+import org.vcell.vmicro.op.Generate2DOptContextOp;
 import org.vcell.vmicro.op.GenerateBleachRoiOp;
 import org.vcell.vmicro.op.GenerateCellROIsFromRawTimeSeriesOp;
 import org.vcell.vmicro.op.GenerateCellROIsFromRawTimeSeriesOp.GeneratedCellRoiResults;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResults;
+import org.vcell.vmicro.op.GenerateReducedROIDataOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
+import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.workflow.data.OptContext;
+import org.vcell.vmicro.workflow.data.OptModel;
+import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk2P;
+import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk3P;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.math.RowColumnResultSet;
 
 public class KenworthyWorkflowTest {
 
 	public static void main(String[] args) {
 		try {
-			doit();
+			File workingDirectory = new File("/Users/schaff/Documents/workspace/VCell_5.4/workingDir");
+			LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
+			doit(localWorkspace);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
 
 	}
 	
-	private static void doit() throws Exception{
+	private static void doit(LocalWorkspace localWorkspace) throws Exception{
 		double bleachThreshold = 0.80;
 		double cellThreshold = 0.5;
 		double prebleachFluor = 10;
 		
-		File vfrapFile = new File("d:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\vfrapPaper\\rawData\\sim3\\workflow.txt.save");
+		File vfrapFile = new File("/Users/schaff/Documents/workspace/VCell_5.4/vfrapPaper/rawData/sim3/workflow.txt.save");
 		
-		String uniformDisk2ModelName = "KenworthyUniformDisk2Param";
-		String uniformDisk2PanelTitle = "Uniform Disk Model - 2 parameters";
-		String uniformDisk3ModelName = "KenworthyUniformDisk3Param";
-		String uniformDisk3PanelTitle = "Uniform Disk Model - 3 parameters";
 
 		ImageTimeSeries<UShortImage> rawTimeSeriesImages = new ImportRawTimeSeriesFromVFrapOp().importRawTimeSeriesFromVFrap(vfrapFile);
 					
@@ -51,51 +61,44 @@ public class KenworthyWorkflowTest {
 
 		ROI bleachROI = new GenerateBleachRoiOp().generateBleachRoi(normalizedPostbleach, cellROI, bleachThreshold);
 					
-//		new GenerateReducedROIDataOp().generateReducedData(normalizedTimeSeries, bleachROI);
-//					generateReducedNormalizedData.imageTimeSeries = generateNormalizedFrapData.normalizedFrapData
-//					generateReducedNormalizedData.imageDataROIs = generateROIs.bleachedROI_2D_array
-//						
-//				computeMeasurementError = ComputeMeasurementError()
-//					computeMeasurementError.imageDataROIs = generateROIs.bleachedROI_2D_array
-//					computeMeasurementError.indexFirstPostbleach = generateCellROIs.indexOfFirstPostbleach
-//					computeMeasurementError.prebleachAverage = generateNormalizedFrapData.prebleachAverage
-//					computeMeasurementError.rawImageTimeSeries = importVFrap.rawTimeSeriesImages
-//
-//				fitBleachSpot = FitBleachSpot()
-//					fitBleachSpot.normalizedImages = generateNormalizedFrapData.normalizedFrapData
-//					fitBleachSpot.bleachROI = generateROIs.bleachedROI_2D
-//
-//
-//				generateUniformDiskModel2 = GenerateKenworthyOptModel()
-//					generateUniformDiskModel2.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
-//					generateUniformDiskModel2.modelType = uniformDisk2ModelName
-//
-//				generate2DOptContextUniformDisk2 = Generate2DOptContext()
-//					generate2DOptContextUniformDisk2.optModel = generateUniformDiskModel2.optModel
-//					generate2DOptContextUniformDisk2.normalizedMeasurementErrors = computeMeasurementError.normalizedMeasurementError
-//					generate2DOptContextUniformDisk2.normExpData = generateReducedNormalizedData.reducedROIData
-//					
-//				displayInteractiveModel2 = DisplayInteractiveModel()
-//					displayInteractiveModel2.optContext = generate2DOptContextUniformDisk2.optContext
-//					displayInteractiveModel2.rois = generateROIs.bleachedROI_2D_array
-//					displayInteractiveModel2.title = uniformDisk2PanelTitle
-//
-//
-//				generateUniformDiskModel3 = GenerateKenworthyOptModel()
-//					generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
-//					generateUniformDiskModel3.modelType = uniformDisk3ModelName	
-//					generateUniformDiskModel3.prebleachFluor = prebleachFluor
-//
-//				generate2DOptContextUniformDisk3 = Generate2DOptContext()
-//					generate2DOptContextUniformDisk3.optModel = generateUniformDiskModel3.optModel
-//					generate2DOptContextUniformDisk3.normalizedMeasurementErrors = computeMeasurementError.normalizedMeasurementError
-//					generate2DOptContextUniformDisk3.normExpData = generateReducedNormalizedData.reducedROIData
-//
-//				displayInteractiveModel3 = DisplayInteractiveModel()
-//					displayInteractiveModel3.optContext = generate2DOptContextUniformDisk3.optContext
-//					displayInteractiveModel3.rois = generateROIs.bleachedROI_2D_array
-//					displayInteractiveModel3.title = uniformDisk3PanelTitle
-//
+		//
+		// only use bleach ROI for fitting etc.
+		//
+		ROI[] dataROIs = new ROI[] { bleachROI };
+		
+		//
+		// get reduced data and errors for each ROI
+		//
+		RowColumnResultSet reducedData = new GenerateReducedROIDataOp().generateReducedData(normalizedTimeSeries, dataROIs);
+		RowColumnResultSet measurementErrors = new ComputeMeasurementErrorOp().computeNormalizedMeasurementError(
+				dataROIs, indexOfFirstPostbleach, rawTimeSeriesImages, prebleachAvg, null);
+
+		//
+		// fit 2D Gaussian to normalized data to determine center, radius and K factor of bleach (assuming exp(-exp
+		//
+		FitBleachSpotOpResults fitSpotResults = new FitBleachSpotOp().fit(bleachROI, normalizedTimeSeries.getAllImages()[0]);
+		double bleachFactorK_GaussianFit = fitSpotResults.bleachFactorK_GaussianFit;
+		double bleachRadius_GaussianFit = fitSpotResults.bleachRadius_GaussianFit;
+		double bleachRadius_ROI = fitSpotResults.bleachRadius_ROI;
+		double centerX_GaussianFit = fitSpotResults.centerX_GaussianFit;
+		double centerX_ROI = fitSpotResults.centerX_ROI;
+		double centerY_GaussianFit = fitSpotResults.centerY_GaussianFit;
+		double centerY_ROI = fitSpotResults.centerY_ROI;
+
+		//
+		// 2 parameter uniform disk model
+		//
+		OptModel uniformDisk2OptModel = new OptModelKenworthyUniformDisk2P(bleachRadius_GaussianFit);
+		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk2OptModel, reducedData, measurementErrors);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "Uniform Disk Model - 2 parameters", null);
+
+		//
+		// 3 parameter uniform disk model
+		//
+		OptModel uniformDisk3OptModel = new OptModelKenworthyUniformDisk3P(bleachRadius_GaussianFit);
+		OptContext uniformDisk3Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk3OptModel, reducedData, measurementErrors);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk3Context, dataROIs, localWorkspace, "Uniform Disk Model - 3 parameters", null);
+
 
 	}
 

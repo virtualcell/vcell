@@ -51,7 +51,7 @@ public class ComputeMeasurementError extends Task {
 		
 		// do op
 		ComputeMeasurementErrorOp op = new ComputeMeasurementErrorOp();
-		RowColumnResultSet rowColumnResultSet = op.computeNormalizedMeasurementError(rois, indexPostbleach, rawImageDataset.getAllImages(), rawImageDataset.getImageTimeStamps(), prebleachAvgImage, clientTaskStatusSupport);
+		RowColumnResultSet rowColumnResultSet = op.computeNormalizedMeasurementError(rois, indexPostbleach, rawImageDataset, prebleachAvgImage, clientTaskStatusSupport);
 		
 		// set output
 		context.setData(normalizedMeasurementError,rowColumnResultSet);
