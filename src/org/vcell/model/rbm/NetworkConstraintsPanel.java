@@ -83,10 +83,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private JButton viewGeneratedReactionsButton;
 	
 	private JTextPane netGenConsoleText;
-	private EditorScrollTable molecularTypeTable = null;
+//	private EditorScrollTable molecularTypeTable = null;
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
-	private JButton viewNetworkButton;
+//	private JButton viewNetworkButton;
 	
 	private int currentIterationSpecies = 0;
 	private int previousIterationSpecies = 0;
@@ -104,8 +104,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				viewGeneratedReactions();
 			} else if(e.getSource() == getRefreshMathButton()) {
 				runBioNetGen();
-			} else if(e.getSource() == getViewNetworkButton()) {
-				viewNetwork();
+//			} else if(e.getSource() == getViewNetworkButton()) {
+//				viewNetwork();
 			}
 		}
 
@@ -181,13 +181,13 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}
 		return refreshMathButton;
 	}
-	private JButton getViewNetworkButton() {
-		if (viewNetworkButton == null) {
-			viewNetworkButton = new javax.swing.JButton(" View Network ");
-			viewNetworkButton.setName("ViewNetworkButton");
-		}
-		return viewNetworkButton;
-	}
+//	private JButton getViewNetworkButton() {
+//		if (viewNetworkButton == null) {
+//			viewNetworkButton = new javax.swing.JButton(" View Network ");
+//			viewNetworkButton.setName("ViewNetworkButton");
+//		}
+//		return viewNetworkButton;
+//	}
 
 	private void initialize() {
 		netGenConsoleText = new JTextPane();
@@ -197,7 +197,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		reactionRulesLabel = new JLabel();
 		generatedSpeciesLabel = new JLabel();
 		generatedReactionsLabel = new JLabel();
-		molecularTypeTable = new EditorScrollTable();
+//		molecularTypeTable = new EditorScrollTable();
 //		molecularTypeTableModel = new ApplicationMolecularTypeTableModel(molecularTypeTable);
 		
 		maxIterationTextField.addActionListener(eventHandler);
@@ -206,7 +206,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		getViewGeneratedSpeciesButton().addActionListener(eventHandler);
 		getViewGeneratedReactionsButton().addActionListener(eventHandler);
 		getRefreshMathButton().addActionListener(eventHandler);
-		getViewNetworkButton().addActionListener(eventHandler);
+//		getViewNetworkButton().addActionListener(eventHandler);
 		
 		netGenConsoleText.addFocusListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
@@ -322,15 +322,15 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		top.add(maxMolTextField, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
-		bottom.setLayout(new GridBagLayout());		// --- bottom
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = gbc.weighty = 1.0;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(20, 4, 4, 10);
-		bottom.add(molecularTypeTable, gbc);
+//		bottom.setLayout(new GridBagLayout());		// --- bottom
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.weightx = gbc.weighty = 1.0;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.anchor = GridBagConstraints.NORTHWEST;
+//		gbc.insets = new Insets(20, 4, 4, 10);
+//		bottom.add(molecularTypeTable, gbc);
 		
 		// ------------------------------------------- Populating the right group box ------------
 		top = new JPanel();
@@ -397,18 +397,16 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(getViewGeneratedReactionsButton(), gbc);
 		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(5, 4, 4, 10);
-		top.add(getViewNetworkButton(), gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = gridy;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(5, 4, 4, 10);
+//		top.add(getViewNetworkButton(), gbc);
 
 		bottom.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
@@ -627,7 +625,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			viewGeneratedSpeciesButton.setEnabled(false);
 			viewGeneratedReactionsButton.setEnabled(false);
 			refreshMathButton.setEnabled(false);
-			viewNetworkButton.setEnabled(false);
+//			viewNetworkButton.setEnabled(false);
 			netGenConsoleText.setText("");
 		} else {
 			if(outputSpec!= null && outputSpec.getBNGSpecies().length > 0) {
@@ -641,7 +639,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				viewGeneratedReactionsButton.setEnabled(false);
 			}
 			refreshMathButton.setEnabled(true);
-			viewNetworkButton.setEnabled(true);
+//			viewNetworkButton.setEnabled(true);
 		}
 	}
 	
