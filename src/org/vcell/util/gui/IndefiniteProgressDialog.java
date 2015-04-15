@@ -1,80 +1,74 @@
 package org.vcell.util.gui;
 
-import java.awt.BorderLayout;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 
 import javax.help.UnsupportedOperationException;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
-import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 @SuppressWarnings("serial")
 
 public class IndefiniteProgressDialog extends ProgressDialog {
-	/**
-	 * size of main dialog
-	 */
-	//private final static int DIALOG_SIZE = 400;
-	/**
-	 * size of rotating dot panel
-	 */
-	private final static int GRAPHIC_SIZE = 120;
-	/**
-	 * update time, milliseconds
-	 */
-	private final static int INITIAL_UPDATE_TIME_MILLIS = 200; 
-	/**
-	 * update time not to exceed 
-	 */
-	private final static int LONGEST_UPDATE_TIME_MILLIS = 1200; 
-	/**
-	 * update time not to exceed 
-	 */
-	private final static int DELAY_ADJUST_RATE = 10; 
+	private final static int GRAPHIC_SIZE = 60;					// size of rotating "wait" image panel
+	private final static int INITIAL_UPDATE_TIME_MILLIS = 60; 	// update time, milliseconds
 
 	private JLabel lblMessage;
 	private Timer swingTimer;
-	
-	private static Logger lg = Logger.getLogger(IndefiniteProgressDialog.class);
 
 	public IndefiniteProgressDialog(Frame owner) {
 		super(owner);
 		setLocationRelativeTo(null);
 		setContentPane(new JPanel( ));
-		getContentPane().setLayout(new BorderLayout(0, 0));
-		
-		JPanel msgPanel = new JPanel();
-		getContentPane().add(msgPanel, BorderLayout.NORTH);
-		
-		lblMessage = new JLabel("Message");
-		msgPanel.add(lblMessage);
-		lblMessage.setHorizontalAlignment(SwingConstants.CENTER);
+		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 		
 		swingTimer = new Timer(INITIAL_UPDATE_TIME_MILLIS, null);
 		JPanel graphicPanel = new WorkingPanel(swingTimer);
-		getContentPane().add(graphicPanel, BorderLayout.CENTER);
+		Dimension ps = new Dimension(GRAPHIC_SIZE, GRAPHIC_SIZE);
+		graphicPanel.setPreferredSize(ps);
+		graphicPanel.setBackground(Color.WHITE);
+		getContentPane().add(graphicPanel);						// left
 		
-		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.SOUTH);
+		JPanel rightPanel = new JPanel();
+		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+		ps = new Dimension(250, GRAPHIC_SIZE);
+		rightPanel.setPreferredSize(ps);
+		getContentPane().add(rightPanel);
 		
+		JPanel msgPanel = new JPanel();
+		msgPanel.setBackground(Color.white);
+		rightPanel.add(msgPanel);
+		
+		JPanel cancelPanel = new JPanel();
+		cancelPanel.setBackground(Color.white);
+		rightPanel.add(cancelPanel);
+		
+		lblMessage = new JLabel("Message");
+		msgPanel.add(lblMessage);
+		lblMessage.setHorizontalAlignment(SwingConstants.LEFT);
 		JButton cButton = super.getCancelButton(); 
-		panel.add(cButton);
+		cancelPanel.add(cButton);
+
 		pack( );
 	}
 	
@@ -83,7 +77,6 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		swingTimer.stop();
 		super.dispose( );
 	}
-	
 	/**
 	 * @throws UnsupportedOperationException (always)
 	 */
@@ -91,98 +84,94 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 	public void setProgress(int progress) {
 		throw new UnsupportedOperationException(getClass( ).getName() + " does not support setProgress");
 	}
-
 	@Override
 	void setProgressBarString(String progressString) {
 		setTitle(progressString);
 	}
-
 	@Override
-	public void setMessage(String message) {
-		Dimension before = lblMessage.getPreferredSize();
-		lblMessage.setText(message);
-		Dimension after = lblMessage.getPreferredSize();
-		if (after.width > before.width) {
-			pack( );
+	public void setMessage(String s) {
+		final int MaxLen = 40;
+		final int TruncTailLen = 3;
+		final int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
+		
+		int len = s.length();
+		if(len > MaxLen) {
+			s = s.substring(0,TruncHeaderLen) + ".." + s.substring(len-TruncTailLen, len);
 		}
-		if (lg.isDebugEnabled()) {
-			lg.debug ("msg current "+ lblMessage.getSize( ) );
-			lg.debug ("msg preferred  " +  lblMessage.getPreferredSize() );
-			lg.debug ("dlg current "+ getSize( ) );
-			lg.debug ("dlg preferred  " +  getPreferredSize() );
-		}
+		lblMessage.setText(s);
 	}
 	
 	private static class WorkingPanel extends JPanel implements ComponentListener, ActionListener {
-		/** step angle **/
-		static final double INCREMENT = Math.PI / 20;
-		/** how big the dot **/
-		static final int DOT_DIAMETER = 10; 
-		
-		static final Color colors[] = {Color.BLACK,Color.BLUE,Color.CYAN,Color.DARK_GRAY,Color.GRAY,Color.GREEN,Color.LIGHT_GRAY,Color.MAGENTA,
-				Color.ORANGE,Color.PINK,Color.RED,Color.PINK}; 
-		
-		/** of panel **/
-		int width;
-		/** of panel **/
-		int height;
-		/** of circle **/
-		int radius;
-		/** current position */
-		double radians;
-		/** index into #colors **/
-		int colorIndex;
-		/** at longest rate? **/
-		boolean adjustingRate;
-		
+
 		final Timer swingTimer;
+		static final double INCREMENT = Math.PI / 8;	// step angle
+
+		int width;			// of panel
+		int height;
+		double radians;		// current position
 		
 		WorkingPanel(Timer t) {
-			//width - height -radius set in #componentResized 
 			radians = Math.PI;
-			colorIndex = 0;
-			adjustingRate = true;
-			setPreferredSize(new Dimension(GRAPHIC_SIZE, GRAPHIC_SIZE));
 			swingTimer = t; 
 			swingTimer.addActionListener(this);
 			swingTimer.setRepeats(true);
 			swingTimer.start();
 			this.addComponentListener(this);
-			setBackground(Color.WHITE);
 		}
 		
 		@Override
 		public void paint(Graphics g) {
-			double x = width/2 + radius * Math.sin(radians);
-			double y = height/2+ radius * Math.cos(radians);
+			// Arc2D with a fairly thick BasicStroke drawn with a GradientPaint.
+			// we only use width, may want to adjust and use min between width and height
+			
+//			float x = (float) (width/2 + radius * Math.sin(radians));
+//			float y = (float) (height/2+ radius * Math.cos(radians));
 
 			Graphics2D g2d = (Graphics2D)g;
-			g2d.setColor(colors[colorIndex]);
-			g2d.clearRect(0, 0,width,height); 
-			Ellipse2D.Double circle = new Ellipse2D.Double(x, y, DOT_DIAMETER,DOT_DIAMETER); 
-			g2d.fill(circle);
-			if (++colorIndex == colors.length) {
-				colorIndex = 0;
-			}
+			Stroke oldStroke = g2d.getStroke();
+			g2d.clearRect(0, 0, width, height);
+			
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			
+//			Point2D center = new Point2D.Float(x, y);
+//			float rr = 40f;
+//			Point2D focus = new Point2D.Float(x, y);
+//			float[] dist = {0.1f, 1.0f};
+//			Color[] colors = {Color.blue, Color.lightGray};
+//			RadialGradientPaint paint = new RadialGradientPaint(center, rr, focus, dist, colors, CycleMethod.REFLECT);
+
+			final float StrokeWidth = 7.0f;
+			final int circleOffset = 15;
+			final double extent = 30;
+			BasicStroke bs = new BasicStroke(StrokeWidth);
+			g2d.setStroke(bs);				// background ring
+			g2d.setPaint(Color.lightGray);
+			Arc2D a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, 0, 360, Arc2D.OPEN);
+			g2d.draw(a2d);
+			
+			g2d.setPaint(Color.gray);		// moving indicator
+			bs = new BasicStroke(StrokeWidth-2);
+			g2d.setStroke(bs);
+			a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, toDegrees(radians), extent, Arc2D.OPEN);
+			g2d.draw(a2d);
+			
+			g2d.setStroke(oldStroke);		// borders of background ring
+			g2d.setColor(Color.darkGray);
+			Ellipse2D.Double c1 = new Ellipse2D.Double(circleOffset-3, circleOffset-3, width-(circleOffset-3)*2, width-(circleOffset-3)*2);
+			g2d.draw(c1);
+			Ellipse2D.Double c2 = new Ellipse2D.Double(circleOffset+3, circleOffset+3, width-(circleOffset+3)*2, width-(circleOffset+3)*2); 
+			g2d.draw(c2);
+
+		}
+		private static double toDegrees(double radians) {
+			return (radians*57.296)%360;
 		}
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if (!isModelDialogPresent()) {
 				radians -= INCREMENT;
 				repaint( );
-				if (adjustingRate) {
-					final int currentDelay = swingTimer.getDelay();
-					if (lg.isDebugEnabled()) {
-						lg.debug("cd " + currentDelay);
-					}
-					if (currentDelay < LONGEST_UPDATE_TIME_MILLIS) {
-						final int updated = Math.min(currentDelay + DELAY_ADJUST_RATE,LONGEST_UPDATE_TIME_MILLIS);
-						swingTimer.setDelay(updated);
-					}
-					else {
-						adjustingRate = false;
-					}
-				}
 			}
 		}
 		
@@ -209,21 +198,16 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		@Override
 		public void componentHidden(ComponentEvent arg0) {
 			swingTimer.stop( );
-			
 		}
-
 		@Override
 		public void componentMoved(ComponentEvent arg0) {
-			//don't care
 		}
-
 		@Override
 		public void componentResized(ComponentEvent arg0) {
 			width = getWidth();
-			height = getHeight( );
-			radius = 4 * Math.min(width,height)/10;
+			height = getHeight();
+			System.out.println(width + ", " + height);
 		}
-
 		@Override
 		public void componentShown(ComponentEvent arg0) {
 			swingTimer.start( );
