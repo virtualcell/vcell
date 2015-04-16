@@ -11,8 +11,8 @@
 package org.vcell.util.gui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellRenderer;
@@ -178,4 +177,31 @@ public class GuiUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * first first child of Container of given type. Performs breadth first search
+	 * @param container to search. not null
+	 * @param clzz type to search for. not null
+	 * @return first found child or null if none
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T findFirstChild(Container container, Class<T> clzz) {
+		for (Component c : container.getComponents()) {
+			if (clzz.isAssignableFrom(c.getClass())) {
+				return (T) c;
+			}
+		}
+		for (Component c : container.getComponents()) {
+			if (c instanceof Container) {
+				Container child = (Container) c;
+				T find = findFirstChild(child, clzz);
+				if (find != null) {
+					return find;
+				}
+			}
+		}
+		return null;
+	}
+	
+	
 }
