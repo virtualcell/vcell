@@ -10,10 +10,14 @@
 
 package org.vcell.sbml;
 
+@SuppressWarnings("serial")
 public class SbmlException extends Exception {
 	
 	public SbmlException(String message){
 		super(message);
+	}
+	public SbmlException(String message, Throwable cause){
+		super(message,cause);
 	}
 
 }

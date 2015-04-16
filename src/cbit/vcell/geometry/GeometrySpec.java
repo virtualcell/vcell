@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.Issue.IssueCategory;
@@ -52,6 +55,11 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 
 	public final static int IMAGE_SIZE_LIMIT =  4000000;
 	
+	public static final String ORIGIN_PROPERTY = "origin";
+	public static final String EXTENT_PROPERTY = "extent";
+	
+	private static final Logger lg = Logger.getLogger(GeometrySpec.class);
+	
 	private VCImage vcImage = null;
 	private transient byte[] uncompressedPixels = null;
 	private transient State<VCImage> sampledImage = new State<VCImage>(null);
@@ -69,8 +77,6 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SubVolume[] fieldSubVolumes = new SubVolume[0];
 	private FilamentGroup fieldFilamentGroup = new FilamentGroup();
-	public static final String ORIGIN_PROPERTY = "origin";
-	public static final String EXTENT_PROPERTY = "extent";
 	
 /**
  * This method was created in VisualAge.
@@ -1334,7 +1340,7 @@ public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVeto
 	firePropertyChange("subVolumes", oldSubVolumes, subVolumes);
 }
 
-public void gatherIssues(Object issueSource, List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, Geometry geometry,List<Issue> issueVector) {
 	//
 	// from SimulationContext, expecting issueSource to be a GeometryContext
 	// from a MathModel, expecting issueSource to be a geometry.
@@ -1358,7 +1364,7 @@ public void gatherIssues(Object issueSource, List<Issue> issueVector) {
 			}
 			if (count>0){
 				String errorMessage = "Invalid Geometry - " + count + " of "+samples.length + " samples of geometry domain didn't map to any subdomain";
-				Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
+				Issue issue = new Issue(geometry, issueContext, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
 				issueVector.add(issue);
 			}
 			//
@@ -1374,12 +1380,12 @@ public void gatherIssues(Object issueSource, List<Issue> issueVector) {
 			if (missingSubVolumeList.size()>0){
 				for (int i = 0; i < missingSubVolumeList.size(); i++){
 					String errorMessage = "Subdomain '" + missingSubVolumeList.get(i).getName() + "' is not resolved in geometry domain";
-					Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
+					Issue issue = new Issue(geometry, issueContext, IssueCategory.SubVolumeVerificationError, errorMessage, Issue.SEVERITY_ERROR);
 					issueVector.add(issue);
 				}
 			}	
 		} catch (Exception ex) {
-			Issue issue = new Issue(issueSource, IssueCategory.SubVolumeVerificationError, ex.getMessage(), Issue.SEVERITY_ERROR);
+			Issue issue = new Issue(geometry, issueContext, IssueCategory.SubVolumeVerificationError, ex.getMessage(), Issue.SEVERITY_ERROR);
 			issueVector.add(issue);
 		}
 	}
@@ -1397,7 +1403,9 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 			VCImage newVCImage = (VCImage)event.getNewValue();
 			if (newVCImage.getNumXYZ() > IMAGE_SIZE_LIMIT){
 				//throw new PropertyVetoException("image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT,event);
-				System.out.println("WARNING: image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT);				
+				if (lg.isEnabledFor(Level.WARN)) {
+					lg.warn("WARNING: image size "+newVCImage.getNumXYZ()+" pixels exceeded limit of "+IMAGE_SIZE_LIMIT);				
+				}
 			}
 		}
 	}

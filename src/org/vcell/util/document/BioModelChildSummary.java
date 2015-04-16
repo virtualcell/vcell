@@ -9,6 +9,8 @@
  */
 
 package org.vcell.util.document;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -270,4 +272,81 @@ public String toDatabaseSerialization() {
 	}
 	return sb.toString();
 }
+
+/**
+ * bundled information about Application / SimContext
+ */
+public static class ApplicationInfo {
+	public final String name;
+	public final MathType type; 
+	public final int dimensions;
+	public final String geometryName;
+	ApplicationInfo(String name, MathType type, int dimensions,
+			String geometryName) {
+		super();
+		this.name = name;
+		this.type = type;
+		this.dimensions = dimensions;
+		this.geometryName = geometryName;
+	}
+	
+	@Override
+	public String toString() {
+		return name + '(' + type + ' ' + dimensions + "D " + geometryName + ')';
+	} 
+}
+
+/**
+ * bundled {@link ApplicationInfo} information. Recreated on each method call.
+ * @return non-null Collection
+ */
+public Collection<ApplicationInfo> getApplicationInfo( ) {
+	ArrayList<ApplicationInfo> rval = new ArrayList<>();
+	String[] appNames = getSimulationContextNames();
+	MathType[] appTypeArray = getAppTypes();
+	int[] dimSets = getGeometryDimensions();
+	String[] gnames = getGeometryNames();
+	for (int i = 0; i < appNames.length; i++) {
+		ApplicationInfo ai = new ApplicationInfo(appNames[i],appTypeArray[i],dimSets[i],gnames[i]);
+		rval.add(ai);
+	}
+	return rval;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

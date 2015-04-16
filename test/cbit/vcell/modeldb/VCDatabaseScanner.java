@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -28,6 +29,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.BioModelVisitor;
 import cbit.vcell.model.VCMultiBioVisitor;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
@@ -404,6 +406,41 @@ public void multiScanBioModels(VCMultiBioVisitor databaseVisitor, Writer writer,
 	}catch(Exception e)
 	{
 		e.printStackTrace();
+	}
+}
+
+public void scanBioModels(BioModelVisitor databaseVisitor, Logger logger, User users[], boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	if (users==null){
+		users = getAllUsers();
+	}
+	//start visiting models and writing log
+	logger.info("Start scanning bio-models......");
+
+
+	for (int i=0;i<users.length;i++)
+	{
+		User user = users[i];
+		BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
+		for (int j = 0; j < bioModelInfos.length; j++){
+			BioModelInfo bmi = bioModelInfos[j];
+			if (!databaseVisitor.filterBioModel(bmi) ){
+				continue;
+			}
+			try {
+				BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
+				BioModel bioModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+				bioModel.refreshDependencies();
+				if (logger.isDebugEnabled()) {
+					logger.debug("---- " + (j+1) + " ----> " + bioModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
+				}
+				databaseVisitor.visitBioModel(bioModel);
+			}catch (Exception e2){
+				logger.warn("exception biomodel " + bmi.getModelKey(),e2);
+				if (bAbortOnDataAccessException){
+					throw e2;
+				}
+			}
+		}
 	}
 }
 

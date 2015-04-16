@@ -25,7 +25,6 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 
 public class RDFChopper {
 	
@@ -96,7 +95,6 @@ public class RDFChopper {
 		}
 		// remove statements that have been added to "resources"
 		//	remains.remove(chopNew);
-		System.out.println("done");
 	}
 	
 	public Map<Resource, Graph> getChops() {

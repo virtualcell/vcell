@@ -230,7 +230,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					}
 				}
 				if (applicableAppNameList.size() == 0) {
-					throw new Exception("Only spatial stochastic applications can be exported to this format. No spatial stochastic applications exist in the \"" + bioModel.getName() + "\".");
+					throw new Exception("Only spatial deterministic applications can be exported to this format. No spatial deterministic applications exist in the \"" + bioModel.getName() + "\".");
 				}
 			} else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription())) {
 				// export to smoldyn input file,  only spatial stochastic applications 

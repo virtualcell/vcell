@@ -44,7 +44,6 @@ import org.vcell.util.logging.NoLogging;
 import cbit.vcell.util.NativeLoader;
 
 public class ResourceUtil {
-	private static final String USE_CURRENT_WORKING_DIRECTORY = "cwd";
 	private static final String MANIFEST_FILE_NAME = ".versionManifest.txt";
 
 	public static enum JavaVersion  {
@@ -583,16 +582,7 @@ public class ResourceUtil {
 
 	public static File getVCellInstall()
 	{
-		String rootString = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
-		File installDirectory = new File(rootString);
-		if (!installDirectory.exists() || !installDirectory.isDirectory()){
-			if (!rootString.toLowerCase().equals(USE_CURRENT_WORKING_DIRECTORY)) {				throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory " + installDirectory + " from property");
-			}
-			File cwd = Paths.get("").toAbsolutePath().toFile();
-			if (!cwd.isDirectory()) {
-				throw new RuntimeException("ResourceUtil::getVCellInstall() : failed to read install directory from current working directory " + cwd);
-			}
-			return cwd;		}		return installDirectory;	}
+		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);	}
 
 	public static String getSiteName() {
 		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();

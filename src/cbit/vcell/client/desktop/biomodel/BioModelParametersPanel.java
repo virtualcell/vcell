@@ -18,6 +18,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.Icon;
@@ -38,6 +41,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.vcell.util.VCAssert;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
@@ -56,9 +60,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.xml.XmlParseException;
 
 @SuppressWarnings("serial")
 public class BioModelParametersPanel extends DocumentEditorSubPanel {
@@ -182,7 +184,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			}
 		}
 	}
-
+	
 	private void initialize(){
 		addNewButton = new JButton("Add New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
@@ -298,6 +300,21 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 			}
 			
 		});
+		{ //make double click on units panel bring up editing box
+			JPanel p = getModelUnitSystemPanel();
+			VCAssert.assertValid(p);
+			EditorScrollTable est = GuiUtils.findFirstChild(p, EditorScrollTable.class);
+			VCAssert.assertValid(est);
+			MouseListener ml = new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (e.getClickCount() == 2) {
+						changeUnitsButtonPressed();
+					}
+				}
+			};
+			est.addMouseListener(ml);
+		}
 	}
 	
 	private JPanel getModelUnitSystemPanel() {
