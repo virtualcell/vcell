@@ -49,34 +49,12 @@ public class OptModelKenworthyUniformDisk3P extends OptModel {
 	 * returns the expected fluorescence under the bleaching area for a uniform disk
 	 */
 	@Override
-	public double[][] getSolution(double[] newParams, double[] solutionTimePoints) {
+	public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
 
-		double diffusionRate;
-		double bleachAmplitude; // 0 to 1 (1 means complete bleaching)
-		double bleachWhileMonitoringRate;
-
-		if (newParams.length==2){
-			if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_DIFFUSION_RATE])){
-				diffusionRate = getFixedParameterValue();
-				bleachAmplitude = newParams[0];
-				bleachWhileMonitoringRate = newParams[1];
-			}else if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_AMPLITUDE])){
-				diffusionRate = newParams[0];
-				bleachAmplitude = getFixedParameterValue();
-				bleachWhileMonitoringRate = newParams[1];
-			}else if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE])){
-				diffusionRate = newParams[0];
-				bleachAmplitude = newParams[1];
-				bleachWhileMonitoringRate = getFixedParameterValue();
-			}else{
-				throw new RuntimeException("unexpected fixed parameter");
-			}
-		}else{
-			diffusionRate = newParams[INDEX_DIFFUSION_RATE];
-			bleachAmplitude = newParams[INDEX_BLEACH_AMPLITUDE];
-			bleachWhileMonitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
-		}
-		
+		double diffusionRate = newParams[INDEX_DIFFUSION_RATE];
+		double bleachAmplitude = newParams[INDEX_BLEACH_AMPLITUDE];   // 0 to 1 (1 means complete bleaching)
+		double bleachWhileMonitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
+				
 		double[][] solutionData = new double[1][solutionTimePoints.length];
 		
 		for (int j = 0; j < solutionTimePoints.length; j++) {

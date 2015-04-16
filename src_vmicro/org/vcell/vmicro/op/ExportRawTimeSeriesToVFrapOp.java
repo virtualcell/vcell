@@ -17,12 +17,12 @@ import cbit.vcell.xml.Xmlproducer;
 
 public class ExportRawTimeSeriesToVFrapOp {
 		
-	public void exportToVFRAP(File vfrapFile, UShortImage[] usImages, double[] timeStamps, int numZ, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
+	public void exportToVFRAP(File vfrapFile, ImageTimeSeries<UShortImage> imageTimeSeries, ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 
 		Xmlproducer vcellXMLProducer = new Xmlproducer(false);
 		boolean bSaveCompressed = true;
 		
-		ImageDataset imageData = new ImageDataset(usImages,timeStamps,numZ);
+		ImageDataset imageData = new ImageDataset(imageTimeSeries.getAllImages(),imageTimeSeries.getImageTimeStamps(),imageTimeSeries.getSizeZ());
 		
 		Element root = new Element(MicroscopyXMLTags.FRAPStudyTag);
 		Element next = new Element(MicroscopyXMLTags.FRAPDataTag);

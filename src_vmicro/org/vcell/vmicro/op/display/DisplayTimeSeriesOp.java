@@ -1,6 +1,7 @@
 package org.vcell.vmicro.op.display;
 
 import java.awt.event.WindowListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
@@ -10,10 +11,13 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
@@ -21,10 +25,23 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.MessageEvent;
 import cbit.vcell.VirtualMicroscopy.Image;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.DataViewerManager;
+import cbit.vcell.client.FieldDataWindowManager;
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.RequestManagerAdapter;
+import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.DataSetControllerProvider;
+import cbit.vcell.client.server.SimStatusEvent;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -33,6 +50,7 @@ import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetMetadata;
@@ -50,10 +68,99 @@ import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class DisplayTimeSeriesOp {
+	
+	public static class TopLevelFrame extends JFrame implements TopLevelWindow {
 		
-	public void displayImageTimeSeries(final ImageTimeSeries<Image> imageTimeSeries, String title, WindowListener windowListener) throws ImageException, IOException {
-		
+		ChildWindowManager childWindowManager = new ChildWindowManager(this);
 
+		@Override
+		public TopLevelWindowManager getTopLevelWindowManager() {
+			return null;
+		}
+
+		@Override
+		public void updateConnectionStatus(ConnectionStatus connectionStatus) {
+		}
+
+		@Override
+		public void updateMemoryStatus(long freeBytes, long totalBytes) {
+		}
+
+		@Override
+		public void updateWhileInitializing(int i) {
+		}
+
+		@Override
+		public ChildWindowManager getChildWindowManager() {
+			return childWindowManager;
+		}
+		
+	}
+		
+	public void displayImageTimeSeries(final ImageTimeSeries<? extends Image> imageTimeSeries, String title, WindowListener windowListener) throws ImageException, IOException {
+		
+		PDEDataViewer pdeDataViewer = new PDEDataViewer();
+
+		DataSetControllerProvider dataSetControllerProvider = getDataSetControllerProvider(imageTimeSeries,pdeDataViewer);
+		VCDataManager vcDataManager = new VCDataManager(dataSetControllerProvider);
+		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+		final VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
+			public User getOwner() {	return new User("nouser",null);		}
+			public String getID()  {	return "mydata";					}
+		};
+		PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);
+		NewClientPDEDataContext myPdeDataContext = new NewClientPDEDataContext(pdeDataManager);
+		
+		JFrame jframe = new TopLevelFrame();
+		jframe.setTitle(title);
+		jframe.getContentPane().add(pdeDataViewer);
+		jframe.setSize(1000,600);
+		jframe.setVisible(true);
+		if (windowListener!=null){
+			jframe.addWindowListener(windowListener);
+		}
+		
+		final RequestManager requestManager = new RequestManagerAdapter(){
+			
+		};
+		
+		DataViewerManager dataViewerManager = new DataViewerManager() {
+			public void dataJobMessage(DataJobEvent event){
+			}
+			public void exportMessage(ExportEvent event){
+			}
+			public void addDataListener(DataListener newListener){
+			}
+			public UserPreferences getUserPreferences(){
+				return null; // getRequestManager().getUserPreferences();
+			}
+			public void removeDataListener(DataListener newListener){
+			}
+			public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
+				//getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
+			}
+			public void simStatusChanged(SimStatusEvent simStatusEvent) {
+			}
+			public User getUser() {
+				return new User("dummy", new KeyValue("123"));
+//				return getRequestManager().getDocumentManager().getUser();
+			}
+			public RequestManager getRequestManager() {
+				return requestManager;
+			}
+		};
+
+		try {
+			pdeDataViewer.setDataViewerManager(dataViewerManager);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+		}
+		
+		pdeDataViewer.setPdeDataContext(myPdeDataContext);
+	}
+	
+	
+	private DataSetControllerProvider getDataSetControllerProvider(final ImageTimeSeries<? extends Image> imageTimeSeries, final PDEDataViewer pdeDataViewer) throws ImageException, IOException {
 		ISize size = imageTimeSeries.getISize();
 		int dimension = (size.getZ()>0)?(3):(2);
 		Extent extent = imageTimeSeries.getExtent();
@@ -70,10 +177,31 @@ public class DisplayTimeSeriesOp {
 			public ExportEvent makeRemoteFile(OutputContext outputContext, ExportSpecs exportSpecs) throws DataAccessException,	RemoteException {
 				throw new RuntimeException("not yet implemented");
 			}
-			
+
 			@Override
 			public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,	TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException, DataAccessException {
-				throw new RuntimeException("not yet implemented");
+				pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_START, vcdataID, new Double(0), null, null));
+				if (!timeSeriesJobSpec.isCalcSpaceStats() && !timeSeriesJobSpec.isCalcTimeStats()){
+					int[][] indices = timeSeriesJobSpec.getIndices();
+					double[] timeStamps = imageTimeSeries.getImageTimeStamps();
+					// [var][dataindex+1][timeindex]
+					double[][][] dataValues = new double[1][indices[0].length+1][timeStamps.length];
+					for (int timeIndex=0;timeIndex<timeStamps.length;timeIndex++){
+						// index 0 is time
+						dataValues[0][0][timeIndex] = timeStamps[timeIndex];
+					}
+					for (int timeIndex=0;timeIndex<timeStamps.length;timeIndex++){
+						float[] pixelValues = imageTimeSeries.getAllImages()[timeIndex].getFloatPixels();
+						for (int samplePointIndex=0;samplePointIndex<indices[0].length;samplePointIndex++){
+							int pixelIndex = indices[0][samplePointIndex];
+							dataValues[0][samplePointIndex+1][timeIndex] = pixelValues[pixelIndex];
+						}
+					}
+					TSJobResultsNoStats timeSeriesJobResults = new TSJobResultsNoStats(new String[] { "var" }, indices, timeStamps, dataValues);
+					pdeDataViewer.dataJobMessage(new DataJobEvent(timeSeriesJobSpec.getVcDataJobID(), MessageEvent.DATA_COMPLETE, vcdataID, new Double(0), timeSeriesJobResults, null));
+					return timeSeriesJobResults;
+				}
+				return null;
 			}
 			
 			@Override
@@ -165,26 +293,9 @@ public class DisplayTimeSeriesOp {
 				return dataSetController;
 			}
 		};
-		VCDataManager vcDataManager = new VCDataManager(dataSetControllerProvider);
-		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
-			public User getOwner() {	return new User("nouser",null);		}
-			public String getID()  {	return "mydata";					}
-		};
-		PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);
-		NewClientPDEDataContext myPdeDataContext = new NewClientPDEDataContext(pdeDataManager);
-		PDEDataViewer pdeDataViewer = new PDEDataViewer();
-
-		JFrame jframe = new JFrame();
-		jframe.setTitle(title);
-		jframe.getContentPane().add(pdeDataViewer);
-		jframe.setSize(1000,600);
-		jframe.setVisible(true);
-		if (windowListener!=null){
-			jframe.addWindowListener(windowListener);
-		}
 		
-		pdeDataViewer.setPdeDataContext(myPdeDataContext);
+		return dataSetControllerProvider;
+
 	}
 	
 }

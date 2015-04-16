@@ -9,36 +9,35 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.vmicro.op.ComputeMeasurementErrorOp;
 import org.vcell.vmicro.op.FitBleachSpotOp;
-import org.vcell.vmicro.op.FitBleachSpotOp.FitBleachSpotOpResults;
 import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.Context;
 import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.GeneratedModelResults;
-import org.vcell.vmicro.op.ExportRawTimeSeriesToVFrapOp;
 import org.vcell.vmicro.op.Generate2DExpModel_GaussianBleachOp;
 import org.vcell.vmicro.op.Generate2DOptContextOp;
-import org.vcell.vmicro.op.GenerateBleachRoiOp;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp.GeometryRoisAndBleachTiming;
-import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp;
-import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResults;
+import org.vcell.vmicro.op.GenerateActivationRoiOp;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawFlipTimeSeriesOp;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawFlipTimeSeriesOp.GeometryRoisAndBleachTiming;
+import org.vcell.vmicro.op.GenerateNormalizedFlipDataOp;
+import org.vcell.vmicro.op.GenerateNormalizedFlipDataOp.NormalizedFlipDataResults;
 import org.vcell.vmicro.op.GenerateReducedROIDataOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
+import org.vcell.vmicro.op.RunProfileLikelihoodGeneralOp;
+import org.vcell.vmicro.op.display.DisplayImageOp;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
-import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk2P;
-import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk3P;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.math.RowColumnResultSet;
+import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.Simulation;
 
-public class KenworthyWorkflowTest {
+public class FlipExperimentTest {
 
 	public static void main(String[] args) {
 		try {
@@ -92,9 +91,10 @@ public class KenworthyWorkflowTest {
 			//
 			// analyze raw data (from file?) using Keyworthy method.
 			//
-			File vfrapFile = new File(baseDir, "vfrapPaper/rawData/sim3/workflow.txt.save");
+			//File vfrapFile = new File(baseDir, "vfrapPaper/photoactivation/Actin.vfrap");
+			File vfrapFile = new File(baseDir, "vfrapPaper/photoactivation/Actin_binding_protein.vfrap");
 			ImageTimeSeries<UShortImage> fluorTimeSeriesImages = new ImportRawTimeSeriesFromVFrapOp().importRawTimeSeriesFromVFrap(vfrapFile);
-			analyzeKeyworthy(fluorTimeSeriesImages, localWorkspace);
+			analyzeFlip(fluorTimeSeriesImages, localWorkspace);
 			
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -109,66 +109,82 @@ public class KenworthyWorkflowTest {
 	 * @param localWorkspace
 	 * @throws Exception
 	 */
-	private static void analyzeKeyworthy(ImageTimeSeries<UShortImage> rawTimeSeriesImages, LocalWorkspace localWorkspace) throws Exception {
+	private static void analyzeFlip(ImageTimeSeries<UShortImage> rawTimeSeriesImages, LocalWorkspace localWorkspace) throws Exception {
 
+		//
+		// correct the timestamps (1 per second).
+		//
+		double[] timeStamps = rawTimeSeriesImages.getImageTimeStamps();
+		for (int i=0;i<timeStamps.length;i++){
+			timeStamps[i] = i;
+		}
+		
+		
 		new DisplayTimeSeriesOp().displayImageTimeSeries(rawTimeSeriesImages, "raw images", (WindowListener)null);
 		
 		double cellThreshold = 0.5;
-		GeometryRoisAndBleachTiming cellROIresults = new GenerateCellROIsFromRawFrapTimeSeriesOp().generate(rawTimeSeriesImages, cellThreshold);
+		GeometryRoisAndBleachTiming cellROIresults = new GenerateCellROIsFromRawFlipTimeSeriesOp().generate(rawTimeSeriesImages, cellThreshold);
 		ROI backgroundROI = cellROIresults.backgroundROI_2D;
 		ROI cellROI = cellROIresults.cellROI_2D;
-		int indexOfFirstPostbleach = cellROIresults.indexOfFirstPostbleach;
+		int indexOfFirstPostactivation = cellROIresults.indexOfFirstPostactivation;
 		
-		NormalizedFrapDataResults normResults = new GenerateNormalizedFrapDataOp().generate(rawTimeSeriesImages, backgroundROI, indexOfFirstPostbleach);
-		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedFrapData;
-		FloatImage prebleachAvg = normResults.prebleachAverage;
-		FloatImage normalizedPostbleach = normalizedTimeSeries.getAllImages()[0];
-
+		NormalizedFlipDataResults normResults = new GenerateNormalizedFlipDataOp().generate(rawTimeSeriesImages, backgroundROI, indexOfFirstPostactivation);
+		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedFlipData;
+		FloatImage preactivationAvg = normResults.preactivationAverageImage;
+		FloatImage normalizedPostactivation = normalizedTimeSeries.getAllImages()[0];
 		
 		new DisplayTimeSeriesOp().displayImageTimeSeries(normalizedTimeSeries, "normalized images", (WindowListener)null);
 		//
 		// create a single bleach ROI by thresholding
 		//
-		double bleachThreshold = 0.80;
-		ROI bleachROI = new GenerateBleachRoiOp().generateBleachRoi(normalizedPostbleach, cellROI, bleachThreshold);
+		double activatedThreshold = 1.20;
+		ROI activatedROI = new GenerateActivationRoiOp().generateActivatedRoi(normalizedPostactivation, cellROI, activatedThreshold);
 					
+		DisplayImageOp displayActivatedROI = new DisplayImageOp();
+		displayActivatedROI.displayImage(activatedROI.getRoiImages()[0], "activated roi", null);
 		//
 		// only use bleach ROI for fitting etc.
 		//
-		ROI[] dataROIs = new ROI[] { bleachROI };
+		ROI[] dataROIs = new ROI[] { activatedROI };
 		
 		//
 		// get reduced data and errors for each ROI
 		//
 		RowColumnResultSet reducedData = new GenerateReducedROIDataOp().generateReducedData(normalizedTimeSeries, dataROIs);
 		RowColumnResultSet measurementErrors = new ComputeMeasurementErrorOp().computeNormalizedMeasurementError(
-				dataROIs, indexOfFirstPostbleach, rawTimeSeriesImages, prebleachAvg, null);
-
-		//
-		// fit 2D Gaussian to normalized data to determine center, radius and K factor of bleach (assuming exp(-exp
-		//
-		FitBleachSpotOpResults fitSpotResults = new FitBleachSpotOp().fit(bleachROI, normalizedTimeSeries.getAllImages()[0]);
-		double bleachFactorK_GaussianFit = fitSpotResults.bleachFactorK_GaussianFit;
-		double bleachRadius_GaussianFit = fitSpotResults.bleachRadius_GaussianFit;
-		double bleachRadius_ROI = fitSpotResults.bleachRadius_ROI;
-		double centerX_GaussianFit = fitSpotResults.centerX_GaussianFit;
-		double centerX_ROI = fitSpotResults.centerX_ROI;
-		double centerY_GaussianFit = fitSpotResults.centerY_GaussianFit;
-		double centerY_ROI = fitSpotResults.centerY_ROI;
+				dataROIs, indexOfFirstPostactivation, rawTimeSeriesImages, preactivationAvg, null);
 
 		//
 		// 2 parameter uniform disk model
 		//
-		OptModel uniformDisk2OptModel = new OptModelKenworthyUniformDisk2P(bleachRadius_GaussianFit);
-		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk2OptModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "Uniform Disk Model - 2 parameters", null);
-
-		//
-		// 3 parameter uniform disk model
-		//
-		OptModel uniformDisk3OptModel = new OptModelKenworthyUniformDisk3P(bleachRadius_GaussianFit);
-		OptContext uniformDisk3Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk3OptModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk3Context, dataROIs, localWorkspace, "Uniform Disk Model - 3 parameters", null);
+		Parameter tau = new Parameter("tau",0.001,30.0,1.0,0.1);
+		Parameter f_init = new Parameter("f_init",0.5,15,1.0,1.0);
+		Parameter f_final = new Parameter("f_final",0.01,15.0,1.0,0.5);
+		Parameter[] parameters = new Parameter[] {	tau, f_init, f_final };
+		
+		OptModel optModel = new OptModel("simpleFlip", parameters) {
+			
+			@Override
+			public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
+				double tau = newParams[0];
+				double max = newParams[1];
+				double offset = newParams[2];
+				
+				double[][] solution = new double[1][solutionTimePoints.length];
+				for (int i=0;i<solution[0].length;i++){
+					double t = solutionTimePoints[i];
+					solution[0][i] = offset + (max-offset)*Math.exp(-t/tau);
+				}
+				return solution;
+			}
+			
+			@Override
+			public double getPenalty(double[] parameters2) {
+				return 0;
+			}
+		};
+		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial flip", null);
 	}
 	
 	private static ImageTimeSeries<UShortImage>  generateFakeData(LocalWorkspace localWorkspace, ClientTaskStatusSupport progressListener) throws Exception{

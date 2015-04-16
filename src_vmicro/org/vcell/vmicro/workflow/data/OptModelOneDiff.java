@@ -34,33 +34,11 @@ public class OptModelOneDiff extends RefSimOptModel {
 	}
 
 	@Override
-	public double[][] getSolution(double[] newParams, double[] solutionTimePoints) {
+	public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
 
-		double diffRate;
-		double mobileFrac;
-		double bleachWhileMonitoringRate;
-
-		if (newParams.length==2){
-			if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE])){
-				diffRate = getFixedParameterValue();
-				mobileFrac = newParams[0];
-				bleachWhileMonitoringRate = newParams[1];
-			}else if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_FRACTION])){
-				diffRate = newParams[0];
-				mobileFrac = getFixedParameterValue();
-				bleachWhileMonitoringRate = newParams[1];
-			}else if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE])){
-				diffRate = newParams[0];
-				mobileFrac = newParams[1];
-				bleachWhileMonitoringRate = getFixedParameterValue();
-			}else{
-				throw new RuntimeException("unexpected fixed parameter");
-			}
-		}else{
-			diffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-			mobileFrac = newParams[INDEX_PRIMARY_FRACTION];
-			bleachWhileMonitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
-		}
+		double diffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
+		double mobileFrac = newParams[INDEX_PRIMARY_FRACTION];
+		double bleachWhileMonitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
 		
 		double[][] diffData = getValueByDiffRate(diffRate,solutionTimePoints);
 		

@@ -1,8 +1,8 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawTimeSeriesOp;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawTimeSeriesOp.GeneratedCellRoiResults;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp.GeometryRoisAndBleachTiming;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -49,8 +49,8 @@ public class GenerateCellROIsFromRawTimeSeries extends Task {
 		double cellThresholdValue = context.getData(cellThreshold);
 		
 		// do op
-		GenerateCellROIsFromRawTimeSeriesOp op = new GenerateCellROIsFromRawTimeSeriesOp();
-		GeneratedCellRoiResults results = op.generate(imageTimeSeries, cellThresholdValue);
+		GenerateCellROIsFromRawFrapTimeSeriesOp op = new GenerateCellROIsFromRawFrapTimeSeriesOp();
+		GeometryRoisAndBleachTiming results = op.generate(imageTimeSeries, cellThresholdValue);
 		
 		// set output
 		context.setData(cellROI_2D,results.cellROI_2D);
