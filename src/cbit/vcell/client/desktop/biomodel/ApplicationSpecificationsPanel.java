@@ -55,10 +55,12 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	//private MembraneConditionsPanel membraneConditionsPanel; 
 	private JTextField textField_1;
 	private static class SpecifierComponent {
+		//final String title;
 		final Specifier setter;
 		final JComponent component;
-		public SpecifierComponent(Specifier setter, JComponent component) {
+		public SpecifierComponent(String title,Specifier setter, JComponent component) {
 			super();
+			//this.title = title;
 			this.setter = setter;
 			this.component = component;
 		}
@@ -74,14 +76,76 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	}
 	
 	/**
-	 * setup tab component
-	 * @param id for looking up later 
+	 * setup tab component. Must call {@link #activate(JComponent)} to actually display
+	 * @param title title to use 
 	 * @param cmpt must implement {@link ApplicationSpecificationsPanel.Specifier}
 	 */
-	void setupTab(String title, ActiveViewID id, JComponent cmpt) {
+	void setupTab(String title, JComponent cmpt) {
 		cmpt.setBorder(GuiConstants.TAB_PANEL_BORDER);
-		tabbedPane.add(title,cmpt);
-		subPanels.add( new SpecifierComponent( (Specifier) cmpt, cmpt)  );
+		cmpt.setName(title);
+		subPanels.add( new SpecifierComponent( title, (Specifier) cmpt, cmpt)  );
+	}
+	
+	/**
+	 * @param cmpt
+	 * @return true if component active on tabbedPane 
+	 */
+	private boolean isCurrentlyOnATab(JComponent cmpt) {
+		return isCurrentlyOnATab(tabbedPane.indexOfComponent(cmpt));
+	}
+	
+	/**
+	 * @param index component index
+	 * @return true if index indicates active on a tab
+	 */
+	private static boolean isCurrentlyOnATab(int index) {
+		return index != -1;
+	}
+	
+	/**
+	 * activates tab for component in location determined by prior {@link #setupTab(String, JComponent)} calls
+	 * @param cmpt previously passed to {@link #setupTab(String, JComponent)}
+	 * @throws IllegalArgumentException if cmpt not previously setup
+	 */
+	void activate(JComponent cmpt) {
+		if (!isCurrentlyOnATab(cmpt)) {
+			final int UNSET = -1;
+			//find component idx 
+			int idx = UNSET;
+			final int nSubpanels = subPanels.size( );
+			for (int i = 0; i < nSubpanels; i++) {
+				SpecifierComponent sc =  subPanels.get(i);
+				if (sc.component == cmpt) {
+					idx = i + 1; //index of Next tab
+					break;
+					
+				}
+			}
+			if (idx != UNSET) {
+				//find active follow on panel; insert at that position
+				for (;idx < nSubpanels;idx++) {
+					final JComponent candidate = subPanels.get(idx).component;
+					final int current = tabbedPane.indexOfComponent(candidate);
+					if (isCurrentlyOnATab(current)) {
+						tabbedPane.add(cmpt,current);
+						return;
+					}
+				}
+				//not follow active, add to end
+				tabbedPane.add(cmpt);
+				return;
+			}
+			//idx UNSET, cmpt not valid see setupTab( )
+			throw new IllegalArgumentException("Component " + cmpt + " not setup( )");
+		}
+	}
+	
+	/**
+	 * deactivates tab for component
+	 * @param cmpt
+	 */
+	void deactivate(JComponent cmpt) {
+		tabbedPane.remove(cmpt);
 	}
 
 	@Override
@@ -92,11 +156,17 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		networkConstraintsPanel = new NetworkConstraintsPanel();
 		MembraneConditionsPanel membraneConditionsPanel = new MembraneConditionsPanel();
 		
-		setupTab("Species",ActiveViewID.species_settings,initialConditionsPanel);
-		setupTab("Reaction",ActiveViewID.reaction_setting,reactionSpecsPanel);
-		setupTab("Membrane",ActiveViewID.membrane_setting,membraneConditionsPanel);
-		setupTab("Network",ActiveViewID.network_setting,networkConstraintsPanel);
+		//order of calls determines display order
+		setupTab("Species",initialConditionsPanel);
+		setupTab("Reaction",reactionSpecsPanel);
+		setupTab("Membrane",membraneConditionsPanel);
+		setupTab("Network",networkConstraintsPanel);
 		
+		activate(initialConditionsPanel);
+		activate(reactionSpecsPanel);
+		if (System.getProperty("showMembrane") != null) {
+			activate(membraneConditionsPanel);
+		}
 		
 		JPanel searchPanel = new JPanel();
 		GridBagLayout gbl_searchPanel = new GridBagLayout();
@@ -146,7 +216,6 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			}
 		});
 		
-		networkConstraintsPanel.setVisible(false);
 	}
 	
 	private void searchTable() {		
@@ -167,10 +236,11 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 			spc.setter.setSimulationContext(newValue);
 		}
 		if(simulationContext.isRuleBased()) {
-			networkConstraintsPanel.setVisible(false);
+			deactivate(networkConstraintsPanel);
 		} else {	// this panel only for flattened rule based applications
+			activate(networkConstraintsPanel);
+			
 			final int indexOfNetworkTab = tabbedPane.indexOfComponent(networkConstraintsPanel);
-			networkConstraintsPanel.setVisible(true);
 			 if(simulationContext.getModel().getRbmModelContainer().isEmpty()) {
 				 // TODO: here is should be initialized to false if rbm model container is empty...
 				 // but we should monitor the container and enable the panel as soon as a molecular type is created
