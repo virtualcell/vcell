@@ -51,9 +51,9 @@ public class ExportRawTimeSeriesToVFrap extends Task {
 			}
 			usImages[i] = (UShortImage)images[i];
 		}
-		
+		ImageTimeSeries<UShortImage> ushortImageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,usImages,imageTimeSeries.getImageTimeStamps(),imageTimeSeries.getSizeZ());
 		ExportRawTimeSeriesToVFrapOp op = new ExportRawTimeSeriesToVFrapOp();
-		op.exportToVFRAP(outputFile, usImages, imageTimeSeries.getImageTimeStamps(), imageTimeSeries.getSizeZ(), clientTaskStatusSupport);
+		op.exportToVFRAP(outputFile, ushortImageTimeSeries, clientTaskStatusSupport);
 
 		// write output (just boolean "done" flag)
 		context.setData(written, true);

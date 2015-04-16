@@ -29,25 +29,9 @@ public class OptModelUniformDisc extends OptModel {
 	}
 
 	@Override
-	public double[][] getSolution(double[] newParams, double[] solutionTimePoints) {
-		double discRadius = 0;
-		double diffusionRate = 0;
-
-		if (newParams.length==1){
-			if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_DISC_RADIUS]))
-			{
-				discRadius = getFixedParameterValue();
-				diffusionRate = newParams[INDEX_DIFF_RATE - 1];
-			}
-			else if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_DIFF_RATE]))
-			{
-				discRadius = newParams[INDEX_DISC_RADIUS];
-				diffusionRate = getFixedParameterValue();
-			}
-		}else{
-			discRadius = newParams[INDEX_DISC_RADIUS];
-			diffusionRate = newParams[INDEX_DIFF_RATE];
-		}
+	public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
+		double discRadius = newParams[INDEX_DISC_RADIUS];
+		double diffusionRate = newParams[INDEX_DIFF_RATE];
 		
 		double tau = discRadius*discRadius/(4*diffusionRate);
 

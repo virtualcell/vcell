@@ -59,7 +59,6 @@ displayInteractiveModel2 = DisplayInteractiveModel()
 generateUniformDiskModel3 = GenerateKenworthyOptModel()
 	generateUniformDiskModel3.bleachRadius = fitBleachSpot.bleachRadius_GaussianFit
 	generateUniformDiskModel3.modelType = uniformDisk3ModelName	
-	generateUniformDiskModel3.prebleachFluor = prebleachFluor
 
 generate2DOptContextUniformDisk3 = Generate2DOptContext()
 	generate2DOptContextUniformDisk3.optModel = generateUniformDiskModel3.optModel
