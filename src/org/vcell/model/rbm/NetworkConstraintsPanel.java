@@ -715,5 +715,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		// TODO Auto-generated method stub
 		return false;
 	}
+	@Override		// for testing/debugging purposes
+	public void setVisible(boolean bVisible) {
+		super.setVisible(bVisible);
+	}
 
 }
