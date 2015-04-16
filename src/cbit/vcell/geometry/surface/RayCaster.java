@@ -11,7 +11,6 @@
 package cbit.vcell.geometry.surface;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +69,6 @@ public class RayCaster {
 	}
 	
 	public static void show(SurfaceCollection surfaceCollection, RayCastResults rayCastResults_double, RayCastResultsRational rayCastResults_rational, RationalNumber[] samplesX_rational, RationalNumber[] samplesY_rational, RationalNumber[] samplesZ_rational,  double[] samplesX_double, double[] samplesY_double, double[] samplesZ_double, int numX, int numY, int numZ){
-		long t2 = System.currentTimeMillis();
 		
 		long unionOfMasks = 0L;
 		for(int i=0; i<surfaceCollection.getSurfaceCount(); i++)
@@ -556,7 +554,7 @@ public class RayCaster {
 			VCImageUncompressed vcImage = new VCImageUncompressed(null,pixels,extent,numX,numY,numZ);
 			return vcImage;
 		}		
-		
+
 		VolumeSamples volumeSamples = volumeSampleSurface(surfaceCollection, sampleSize, origin, extent, bCellCentered);
 		// for each mask bit, find union of masks which contain that bit ... iterate until no change.
 		HashSet<Long> uniqueMasks = volumeSamples.getUniqueMasks();
@@ -579,9 +577,11 @@ public class RayCaster {
 //				}
 //			}
 //		}
+		/*
 		for (Long l : consensusMaskArray) {
 			System.out.println("++++++++++++++++++++++++++++++++ final mask "+Long.toBinaryString(l));
 		}
+		*/
 		HashSet<Long> consensusSet = new HashSet<Long>(consensusMaskArray);
 		byte[] pixels = new byte[numX*numY*numZ];
 		setSurfaceMasks(geometry.getGeometrySurfaceDescription().getSurfaceCollection());
@@ -594,8 +594,7 @@ public class RayCaster {
 			byte pixelValue = (byte)subvolume.getHandle();
 			
 			for (int i=0;i<volumeSamples.getNumXYZ();i++){
-				long sampleMask = volumeSamples.getMask(i);
-				if ((sampleMask & mask) != 0){
+				if ((volumeSamples.getMask(i) & mask) != 0){
 					pixels[i] = (byte)pixelValue;
 				}
 			}
@@ -1665,11 +1664,3 @@ System.out.println("++++++++++++++++++ +++++++++++++++ ++++++++++++++++++ consen
 	}
 	
 }
-
-//for (int i=0;i<volumeSamples.getNumXYZ();i++){
-//	long sampleMask = volumeSamples.getMask(i);
-//	if ((sampleMask == mask) || ((sampleMask & mask) != 0)){
-//		pixels[i] = (byte)pixelValue;
-//	}
-//}
-

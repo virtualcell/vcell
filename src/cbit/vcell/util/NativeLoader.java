@@ -80,7 +80,7 @@ public class NativeLoader {
 	 * file separator for os (see {@link NativeGroup} )
 	 */
 	
-	final static String FILESEP = System.getProperty("file.separator");
+	final static String FILESEP = "/" ;
 	
 	/**
 	 * set native library directory for this OS

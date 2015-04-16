@@ -10,14 +10,20 @@
 
 package cbit.image;
 
-import java.io.*;
-import java.util.zip.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.InflaterInputStream;
+
+import org.apache.log4j.Logger;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class VCImageCompressed extends VCImage {
 	private byte compressedPixels[] = null;
 	private transient byte uncompressed[] = null;
+	private static Logger lg = Logger.getLogger(VCImageCompressed.class);
 /**
  * This method was created in VisualAge.
  * @param vcimage cbit.image.VCImage
@@ -50,7 +56,7 @@ public void nullifyUncompressedPixels(){
 public byte[] getPixels() throws ImageException {
 	try {
 		if (uncompressed == null){
-	System.out.println("VCImageCompressed.getPixels()  <<<<<<UNCOMPRESSING>>>>>>");
+			lg.trace("VCImageCompressed.getPixels()  <<<<<<UNCOMPRESSING>>>>>>");
 			ByteArrayInputStream bis = new ByteArrayInputStream(compressedPixels);
 			InflaterInputStream iis = new InflaterInputStream(bis);
 			int temp;
@@ -66,7 +72,7 @@ public byte[] getPixels() throws ImageException {
 		}
 		return uncompressed;
 	} catch (IOException e){
-		e.printStackTrace(System.out);
+		lg.debug("getPixels( )",e);
 		throw new ImageException(e.getMessage());
 	}
 }

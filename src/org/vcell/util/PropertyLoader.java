@@ -12,6 +12,7 @@ package org.vcell.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -237,6 +238,8 @@ public class PropertyLoader {
 		return in;
 	}
 
+	public static final String USE_CURRENT_WORKING_DIRECTORY = "cwd";
+
 	public PropertyLoader() throws Exception {
 		loadProperties();
 	}
@@ -337,6 +340,22 @@ public class PropertyLoader {
 		}
 	}
 	
+	/**
+	 * return file from property. If property value is {@value #USE_CURRENT_WORKING_DIRECTORY}, return current working directory
+	 * @param propertyName
+	 * @return File object
+	 * @throws ConfigurationException
+	 */
+	public final static File getRequiredDirectory(String propertyName) throws ConfigurationException {
+		String directoryString = getRequiredProperty(propertyName);
+		if (!directoryString.toLowerCase().equals(USE_CURRENT_WORKING_DIRECTORY) ) {
+			return new File(directoryString);
+		}
+		File cwd = Paths.get("").toAbsolutePath().toFile();
+		if (!cwd.isDirectory()) {
+			throw new ConfigurationException("PropertyLoader::getRequiredDirectory failed to read directory from current working directory " + cwd);
+		}
+		return cwd;	}
 	/**
 	 * This method was created in VisualAge.
 	 * @return java.lang.String
@@ -505,7 +524,7 @@ public class PropertyLoader {
 		case DIR:
 		{
 			File f = new File(value);
-			if (!f.isDirectory()) {
+			if (!f.isDirectory() && !value.toLowerCase( ).equals(USE_CURRENT_WORKING_DIRECTORY)) {
 				report.append(name + " value " + value + fromFile(fileSet) + " is not a directory\n");
 			}
 			return;

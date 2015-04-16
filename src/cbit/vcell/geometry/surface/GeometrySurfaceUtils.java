@@ -12,15 +12,13 @@ package cbit.vcell.geometry.surface;
 
 //import org.vcell.util.ISize;
 //import progress.message.client.EExclusiveQueueOpen;
+import org.apache.log4j.Logger;
 import org.vcell.util.VCellThreadChecker;
 
-import cbit.image.ImageException;
-import cbit.image.VCImage;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryUnitSystem;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
 
 /**
  * Insert the type's description here.
@@ -28,6 +26,7 @@ import cbit.vcell.units.VCUnitSystem;
  * @author: Jim Schaff
  */ 
 public class GeometrySurfaceUtils {
+	private static Logger lg = Logger.getLogger(GeometrySurfaceUtils.class);
 /**
  * Insert the method's description here.
  * Creation date: (6/28/2004 3:09:13 PM)
@@ -75,13 +74,12 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 	int numY = regionImage.getNumY();
 	int numZ = regionImage.getNumZ();
 	int numXY = numX*numY;
-	int numXYZ = numX*numY*numZ;
 	
-	java.util.Vector regionList = new java.util.Vector();
+	java.util.Vector<GeometricRegion> regionList = new java.util.Vector<GeometricRegion>();
 	cbit.vcell.geometry.RegionImage.RegionInfo regionInfos[] = regionImage.getRegionInfos();
 	for (int i = 0; i < regionInfos.length; i++){
 		cbit.vcell.geometry.RegionImage.RegionInfo regionInfo = regionInfos[i];
-		System.out.println(regionInfo);
+		lg.info(regionInfo);
 		cbit.vcell.geometry.SubVolume subVolume = geometrySpec.getSubVolume(regionInfo.getPixelValue());
 		String name = subVolume.getName()+regionInfo.getRegionIndex();
 		int numPixels = regionInfo.getNumPixels();
@@ -143,13 +141,11 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 			}
 			case 3: {
 				int numOctantsToRemove = 0;
-				int yOffsetLastLine = (numY-1)*numX;
-				int zOffsetLastSlice = (numZ-1)*numXY;
 				for (int zIndex = 0; zIndex < numZ; zIndex++){
 					for (int yIndex = 0; yIndex < numY; yIndex++){
 						// -x side (including attached edges and corners)
 						int totalOctants = 4; // already on face of boundary (removing half)
-						//System.out.println("-x side including edges and corners");
+						//lg.info("-x side including edges and corners");
 						if (regionInfo.isIndexInRegion(yIndex * numX + zIndex * numXY)){ // (regionImage.getRegionIndex(0,yIndex,zIndex) == regionIndex){
 							if (yIndex==0 || yIndex==numY-1){
 								totalOctants /= 2;
@@ -159,7 +155,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 							}
 							numOctantsToRemove += (8-totalOctants);
 						}
-						//System.out.println("+x side including edges and corners");
+						//lg.info("+x side including edges and corners");
 						// +x side (including attached edges and corners)
 						totalOctants = 4; // already on face of boundary (removing half)
 						if (regionInfo.isIndexInRegion(numX - 1 + yIndex * numX + zIndex * numXY)){ // (regionImage.getRegionIndex(numX-1,yIndex,zIndex) == regionIndex){
@@ -174,7 +170,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 					}
 					for (int xIndex = 1; xIndex < numX-1; xIndex++){
 						// -y side (including attached edges along x axis, excluding corners)
-						//System.out.println("-y side including edges");
+						//lg.info("-y side including edges");
 						int totalOctants = 4; // already on face of boundary (removing half)
 						if (regionInfo.isIndexInRegion(xIndex + zIndex * numXY)){ // (regionImage.getRegionIndex(xIndex,0,zIndex) == regionIndex){
 							if (zIndex==0 || zIndex==numZ-1){
@@ -182,7 +178,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 							}
 							numOctantsToRemove += (8-totalOctants);
 						}
-						//System.out.println("+y side including edges");
+						//lg.info("+y side including edges");
 						// +y side (including attached edges along x axis, excluding corners)
 						totalOctants = 4; // already on face of boundary (removing half)
 						if (regionInfo.isIndexInRegion(xIndex + (numY-1) * numX + zIndex * numXY)){ // (regionImage.getRegionIndex(xIndex,numY-1,zIndex) == regionIndex){
@@ -199,12 +195,12 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 					for (int xIndex = 1; xIndex < numX-1; xIndex++){
 						int totalOctants = 4; // already on face of boundary (removing half)
 						// -z side (excluding all attached edges and corners)
-						//System.out.println("-z side including nothing");
+						//lg.info("-z side including nothing");
 						if (regionInfo.isIndexInRegion(xIndex + yIndex * numX)){ // (regionImage.getRegionIndex(xIndex,yIndex,0) == regionIndex){
 							numOctantsToRemove += (8-totalOctants);
 						}
 						// +z side (excluding all attached edges and corners)
-						//System.out.println("+z side including nothing");
+						//lg.info("+z side including nothing");
 						if (regionInfo.isIndexInRegion(xIndex + yIndex * numX + (numZ - 1) * numXY)){ // (regionImage.getRegionIndex(xIndex,yIndex,numZ-1) == regionIndex){
 							numOctantsToRemove += (8-totalOctants);
 						}
@@ -212,14 +208,18 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 				}
 				
 				size -= sizeOfPixel*0.125*numOctantsToRemove;
-				System.out.println("size=" + size);
+				if (lg.isInfoEnabled()) {
+					lg.info("size=" + size);
+				}
 				break;
 			}
 		}
 		
 		VolumeGeometricRegion volumeRegion = new VolumeGeometricRegion(name,size,volumeUnit,subVolume,regionInfo.getRegionIndex());
 		regionList.add(volumeRegion);
-		System.out.println("added volumeRegion("+volumeRegion.getName()+")");
+		if (lg.isInfoEnabled()) {
+			lg.info("added volumeRegion("+volumeRegion.getName()+")");
+		}
 	}
 	//
 	// parse surfaceCollection into ResolvedMembraneLocations
@@ -245,7 +245,7 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 		//
 		VolumeGeometricRegion exteriorVolumeRegion = null;
 		for (int j = 0; j < regionList.size(); j++){
-			GeometricRegion region = (GeometricRegion)regionList.elementAt(j);
+			GeometricRegion region = regionList.elementAt(j);
 			if (region instanceof VolumeGeometricRegion && region.getName().equals(surfaceExteriorSubvolume.getName()+exteriorRegionIndex)){
 				exteriorVolumeRegion = (VolumeGeometricRegion)region;
 			}
@@ -255,17 +255,19 @@ public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescri
 
 		VolumeGeometricRegion interiorVolumeRegion = null;
 		for (int j = 0; j < regionList.size(); j++){
-			GeometricRegion region = (GeometricRegion)regionList.elementAt(j);
+			GeometricRegion region = regionList.elementAt(j);
 			if (region instanceof VolumeGeometricRegion && region.getName().equals(surfaceInteriorSubvolume.getName()+interiorRegionIndex)){
 				interiorVolumeRegion = (VolumeGeometricRegion)region;
 			}
 		}
 		surfaceRegion.addAdjacentGeometricRegion(interiorVolumeRegion);
 		interiorVolumeRegion.addAdjacentGeometricRegion(surfaceRegion);
-		System.out.println("added surfaceRegion("+surfaceRegion.getName()+")");
+		if (lg.isInfoEnabled()) {
+			lg.info("added surfaceRegion("+surfaceRegion.getName()+")");
+		}
 	}
-
-	return (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+	
+	return org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
 }
 
 

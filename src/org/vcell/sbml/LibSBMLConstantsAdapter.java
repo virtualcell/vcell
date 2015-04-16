@@ -62,6 +62,14 @@ public class LibSBMLConstantsAdapter {
 		String msg = "SBML Error " + lookup(i);
 		lg.warn(msg);
 	}
+	
+	/**
+	 * @param code
+	 * @return code = = {@link libsbmlConstants#LIBSBML_OPERATION_SUCCESS}  
+	 */
+	public static boolean validReturn(int code) {
+		return code == libsbmlConstants.LIBSBML_OPERATION_SUCCESS;
+	}
 
 	/**
 	 * if i != {@link libsbmlConstants#LIBSBML_OPERATION_SUCCESS}  throw exception
@@ -70,7 +78,7 @@ public class LibSBMLConstantsAdapter {
 	 * @throws SbmlException 
 	 */
 	public static void throwIfError(int i) throws SbmlException {
-		if (i == libsbmlConstants.LIBSBML_OPERATION_SUCCESS) {
+		if (validReturn(i)) {
 			return;
 		}
 		String msg = "SBML Error " + lookup(i);

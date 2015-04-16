@@ -30,8 +30,6 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.util.xml.VCLogger;
-import cbit.util.xml.VCLogger.ErrorType;
-import cbit.util.xml.VCLogger.Priority;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
@@ -47,8 +45,8 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
+import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XmlHelper;
 
@@ -142,28 +140,28 @@ public void importSbml(String bngSbmlStr) {
 		DialogUtils.showErrorDialog(getBngOutputPanel(), "Units are required for import into Virtual Cell.");
 	}
 
-	String modifiedSbmlStr = SBMLUnitTranslator.addUnitDefinitionsToSbmlModel(bngSbmlStr, forcedModelUnitSystem);
-	
-	// Create a default VCLogger - SBMLImporter needs it
-    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-    	
-        @Override
-		public void sendMessage(Priority p, ErrorType et, String message)
-				throws Exception {
-            System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
-            if (p == VCLogger.Priority.HighPriority) {
-            	throw new RuntimeException("Import failed : " + message);
-            }
-        }
-        public void sendAllMessages() {
-        }
-        public boolean hasMessages() {
-            return false;
-        }
-    };
-    
-    // import sbml String into VCell biomodel
 	try {
+		String modifiedSbmlStr = SBMLUnitTranslator.addUnitDefinitionsToSbmlModel(bngSbmlStr, forcedModelUnitSystem);
+
+		// Create a default VCLogger - SBMLImporter needs it
+		cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
+
+			@Override
+			public void sendMessage(Priority p, ErrorType et, String message)
+					throws Exception {
+				System.err.println("LOGGER: msgLevel="+p+", msgType="+et+", "+message);
+				if (p == VCLogger.Priority.HighPriority) {
+					throw new RuntimeException("Import failed : " + message);
+				}
+			}
+			public void sendAllMessages() {
+			}
+			public boolean hasMessages() {
+				return false;
+			}
+		};
+
+    // import sbml String into VCell biomodel
 		File sbmlFile = File.createTempFile("temp", ".xml");
 		sbmlFile.deleteOnExit();
 		XmlUtil.writeXMLStringToFile(modifiedSbmlStr, sbmlFile.getAbsolutePath(), true);

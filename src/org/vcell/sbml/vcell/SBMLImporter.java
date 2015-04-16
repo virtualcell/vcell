@@ -2093,7 +2093,7 @@ public class SBMLImporter {
 		@SuppressWarnings("serial")
 		VCUnitSystem tempVCUnitSystem = new VCUnitSystem() {
 		};
-		HashMap<String, VCUnitDefinition> sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
+		sbmlUnitIdentifierHash = new HashMap<String, VCUnitDefinition>();
 		// add base SI unit identifiers (as defined in SBML spec) to hash
 		sbmlUnitIdentifierHash.put("ampere", tempVCUnitSystem.getInstance("A"));
 		sbmlUnitIdentifierHash.put("avogadro",
@@ -3115,8 +3115,8 @@ public class SBMLImporter {
 						if (kineticsParameter != null) {
 							kinetics.setParameterValue(kineticsParameter,
 									new Expression(param.getValue()));
-							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash
-									.get(param.getUnits());
+							String unitString = param.getUnits();
+							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash.get(unitString);
 							if (paramUnit == null) {
 								paramUnit = vcModelUnitSystem.getInstance_TBD();
 							}
