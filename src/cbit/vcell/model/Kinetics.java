@@ -20,6 +20,8 @@ import java.util.List;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -70,8 +72,6 @@ java.io.Serializable, IssueSource
 	public static String GTK_AssumedCompartmentSize_oldname = "assumed compartment size";
 	public static String GTK_ReactionRate_oldname = "reaction rate";
 	public static String GTK_CurrentDensity_oldname = "inward current density";
-
-	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
 	public static final int ROLE_NotARole		= -1;
 //	public static final int ROLE_Kcat			= -2;
@@ -232,6 +232,8 @@ java.io.Serializable, IssueSource
 		// not used
 		null,	// valence
 	};
+	
+	private static final Logger lg = Logger.getLogger(Kinetics.class);
 
 
 	public class KineticsParameter extends Parameter implements ExpressionContainer, IssueSource {
@@ -2042,10 +2044,10 @@ public void resolveUndefinedUnits() {
 					//System.out.println("successfully completed Kinetics.resolveUndefinedUnits() for ReactionStep '"+getReactionStep()+"'");
 				}
 			}
-		}catch (ExpressionBindingException e){
-			System.out.println("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
 		}catch (Exception e){
-			System.out.println("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
+			if (lg.isEnabledFor(Level.WARN)) {
+				lg.warn("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
+			}
 		}finally{
 			bResolvingUnits = false;
 		}

@@ -1,9 +1,8 @@
 package cbit.vcell.model;
 
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,12 +10,7 @@ import java.util.List;
 import javax.help.UnsupportedOperationException;
 
 import org.junit.Test;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.PropertyLoader;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.logging.Logging;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
@@ -24,35 +18,34 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.solver.Simulation;
 
-public class HybridBioModelVisitor implements VCMultiBioVisitor { 
+public class HybridBioModelVisitor extends VisitorAdapter implements VCMultiBioVisitor { 
 	/**
 	 * user key to use for tests
 	 */
-	private final static String USER_KEY = "gerardw" ;
+	final static String USER_KEY = "gerardw" ;
 	//private final static String USER_KEY = VCDatabaseScanner.ALL_USERS;
 	/**
 	 * output file name
 	 */
-	private final static String OUTPUT = "regen.txt";
+	final static String OUTPUT = "regen.txt";
 	
-	private BioModel currentModel = null;
 	private List<SimulationContext> applications = new ArrayList<SimulationContext>();
 	private int currentAppIndex;
 	private SpeciesContextSpec[] currentSpeciesContext;
 	private boolean[] toggledForceContinuous;
 	private boolean moreStates;
+	private BioModel currentModel;
 	
 	
-	/**
-	 * return true if major version == 5
-	 */
-	public boolean filterBioModel(BioModelInfo bioModelInfo) {
-		VCellSoftwareVersion sv = bioModelInfo.getSoftwareVersion();
-		final boolean recentEnough = ( sv.getMajorVersion() == 5 ); 
-		if (!recentEnough) {
-			System.out.println("skipping old (v" + sv.getMajorVersion() + ")" + bioModelInfo.toString());
-		}
-		return recentEnough;
+	@Override
+	protected int minimumModelVersion() {
+		return 5;
+	}
+
+	@Override
+	protected void scan(VCDatabaseScanner scanner, User[] users) throws Exception {
+		PrintWriter pw = new PrintWriter(OUTPUT);
+		scanner.multiScanBioModels(this, pw, users, false);		// TODO Auto-generated method stub
 	}
 
 	/**
@@ -144,6 +137,10 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		return new Changer(); 
 	}
 	
+	@Test
+	public void tryit() throws IOException {
+		super.setupScan(USER_KEY);
+	}
 	/**
 	 * implement an iterator which cycles through all states <i>except</i> the first one.
 	 * states are defined by a setting of SpeciesContextSpec force continuous
@@ -172,38 +169,6 @@ public class HybridBioModelVisitor implements VCMultiBioVisitor {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-	}
-
-	@SuppressWarnings("unused")
-	@Test
-	public void tryit( ) throws IOException {
-		Logging.init();
-		PropertyLoader.loadProperties();
-		//String args[] = {USER_KEY,OUTPUT};
-		HybridBioModelVisitor visitor = new HybridBioModelVisitor();
-		boolean bAbortOnDataAccessException = false;
-		try{
-			VCDatabaseScanner scanner = new VCDatabaseScanner(new NullSessionLog()); 
-			Writer w = new FileWriter(OUTPUT);
-			User[] users = null; 
-			if (USER_KEY != VCDatabaseScanner.ALL_USERS) { 
-				User u = scanner.getUser(USER_KEY);
-				if (u == null) {
-					throw new IllegalArgumentException("Can't find user " + USER_KEY + " in database");
-				}
-				users =  new User[1];
-				users[0] = u;
-			}
-			else {
-				users = scanner.getAllUsers();
-			}
-			scanner.multiScanBioModels(visitor, w, users, bAbortOnDataAccessException);
-		}catch(Exception e){
-			e.printStackTrace(System.err);
-		}finally{
-			System.err.flush();
-		}
-		
 	}
 
 }

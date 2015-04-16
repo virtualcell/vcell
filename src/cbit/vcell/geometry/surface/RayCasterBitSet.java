@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
+
+import org.apache.log4j.Logger;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -33,6 +35,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.parser.ExpressionException;
 
 public class RayCasterBitSet {
+	private static Logger lg = Logger.getLogger(RayCasterBitSet.class);
 	
 	public static Geometry createGeometryFromSTL(GeometryThumbnailImageFactory geometryThumbnailImageFactory, File stlFile, int numSamples) throws ImageException, PropertyVetoException, GeometryException, ExpressionException, IOException{
 		SurfaceCollection surfaceCollection = StlReader.readStl(stlFile);
@@ -73,10 +76,13 @@ public class RayCasterBitSet {
 		double samplesX[] = new double[numX];
 		double samplesY[] = new double[numY];
 		double samplesZ[] = new double[numZ];
+		long t1 = 0, t2 = 0, t3 = 0, t4 = 0; //debug
 		
 		sampleXYZCoordinates(sampleSize, origin, extent, samplesX, samplesY, samplesZ, bCellCentered);
 
-		long t1 = System.currentTimeMillis();
+		if (lg.isDebugEnabled()) {
+			t1 = System.currentTimeMillis();
+		}
 
 		if (surfaceCollection.getSurfaceCount()>32){
 			throw new RuntimeException("Number of masks exceeds max allowed. The image contains too many distinct geometric objects. " +
@@ -87,7 +93,9 @@ public class RayCasterBitSet {
 		
 		RayCastResults rayCastResults = rayCastXYZ(surfaceCollection, samplesX, samplesY, samplesZ);
 
-		long t2 = System.currentTimeMillis();
+		if (lg.isDebugEnabled()) {
+			t2 = System.currentTimeMillis();
+		}
 
 		VolumeSamplesBitSet volumeSamples = new VolumeSamplesBitSet(numX*numY*numZ);
 		
@@ -133,7 +141,9 @@ public class RayCasterBitSet {
 			}
 		}
 		}
-		long t3 = System.currentTimeMillis();
+		if (lg.isDebugEnabled()) {
+			t3 = System.currentTimeMillis();
+		}
 		
 		int count = 0;
 		while (volumeSamples.hasZeros() && count < 100){
@@ -190,9 +200,10 @@ public class RayCasterBitSet {
 			}
 			count++;
 		}		
-		long t4 = System.currentTimeMillis();
-		
-		System.out.println("\n\n\nray trace triangles from 3 orthogonal directions ("+(t2-t1)+"ms), volume sample hit lists ("+(t3-t2)+"ms), "+count+" passes resolving zeros ("+(t4-t3)+"ms)\n\n\n");
+		if (lg.isDebugEnabled()) {
+			t4 = System.currentTimeMillis();
+			lg.debug("\n\n\nray trace triangles from 3 orthogonal directions ("+(t2-t1)+"ms), volume sample hit lists ("+(t3-t2)+"ms), "+count+" passes resolving zeros ("+(t4-t3)+"ms)\n\n\n");
+		}
 		return volumeSamples;
 	}
 
