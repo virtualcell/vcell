@@ -15,7 +15,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.workflow.TaskContext;
 
 import cbit.image.SourceDataInfo;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -38,13 +37,13 @@ import edu.northwestern.at.utils.math.randomnumbers.RandomVariable;
 public class RunFakeSimOp {
 	
 
-	public ImageTimeSeries<UShortImage> runRefSimulation(TaskContext context, Simulation simulation, double max_intensity, double bleachBlackoutStartTime, double bleachBlackoutStopTime, boolean hasNoise, ClientTaskStatusSupport progressListener) throws Exception
+	public ImageTimeSeries<UShortImage> runRefSimulation(LocalWorkspace localWorkspace, Simulation simulation, double max_intensity, double bleachBlackoutStartTime, double bleachBlackoutStopTime, boolean hasNoise, ClientTaskStatusSupport progressListener) throws Exception
 	{
 		User owner = LocalWorkspace.getDefaultOwner();
 		KeyValue simKey = LocalWorkspace.createNewKeyValue();
 		
 		runFVSolverStandalone(
-			new File(context.getLocalWorkspace().getDefaultSimDataDirectory()),
+			new File(localWorkspace.getDefaultSimDataDirectory()),
 			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			simulation,
 			progressListener);
@@ -52,12 +51,12 @@ public class RunFakeSimOp {
 		Extent extent = simulation.getMathDescription().getGeometry().getExtent();
 		Origin origin = simulation.getMathDescription().getGeometry().getOrigin();
 		VCDataIdentifier vcDataIdentifier = new VCSimulationDataIdentifier(new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner()),0);
-		CartesianMesh mesh = context.getLocalWorkspace().getDataSetControllerImpl().getMesh(vcDataIdentifier);
+		CartesianMesh mesh = localWorkspace.getDataSetControllerImpl().getMesh(vcDataIdentifier);
 		ISize isize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
 		
-		double[] dataTimes = context.getLocalWorkspace().getDataSetControllerImpl().getDataSetTimes(vcDataIdentifier);
+		double[] dataTimes = localWorkspace.getDataSetControllerImpl().getDataSetTimes(vcDataIdentifier);
 
-		DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataProcessingOutputDataValues)context.getLocalWorkspace().getDataSetControllerImpl().doDataOperation(new DataProcessingOutputDataValuesOP(
+		DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataProcessingOutputDataValues)localWorkspace.getDataSetControllerImpl().doDataOperation(new DataProcessingOutputDataValuesOP(
 				vcDataIdentifier, 
 				SimulationContext.FLUOR_DATA_NAME,
 				TimePointHelper.createAllTimeTimePointHelper(),

@@ -57,7 +57,7 @@ public class RunFakeSim extends Task {
 
 		// do op
 		RunFakeSimOp op = new RunFakeSimOp();
-		ImageTimeSeries<UShortImage> solution = op.runRefSimulation(context, sim, max_intensity, bleachLockingBegin, bleachLockoutEnd, hasNoise, clientTaskStatusSupport);
+		ImageTimeSeries<UShortImage> solution = op.runRefSimulation(context.getLocalWorkspace(), sim, max_intensity, bleachLockingBegin, bleachLockoutEnd, hasNoise, clientTaskStatusSupport);
 		
 		// set output
 		context.setData(simTimeSeries,solution);

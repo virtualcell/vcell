@@ -9,15 +9,15 @@ import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
-public class GenerateCellROIsFromRawTimeSeriesOp {
+public class GenerateCellROIsFromRawFrapTimeSeriesOp {
 	
-	public static class GeneratedCellRoiResults {
+	public static class GeometryRoisAndBleachTiming {
 		public ROI cellROI_2D;
 		public ROI backgroundROI_2D;
 		public int indexOfFirstPostbleach;
 	}
 
-	public GeneratedCellRoiResults generate(ImageTimeSeries rawTimeSeriesImages, double cellThreshold) throws Exception {
+	public GeometryRoisAndBleachTiming generate(ImageTimeSeries rawTimeSeriesImages, double cellThreshold) throws Exception {
 		
 		Image[] allImages = rawTimeSeriesImages.getAllImages();
 		int numPixels = allImages[0].getNumXYZ();
@@ -89,7 +89,7 @@ public class GenerateCellROIsFromRawTimeSeriesOp {
 		ROI cellROI = new ROI(cellImage,"cellROI");
 		ROI backgroundROI = new ROI(backgroundImage,"backgroundROI");
 		
-		GeneratedCellRoiResults results = new GeneratedCellRoiResults();
+		GeometryRoisAndBleachTiming results = new GeometryRoisAndBleachTiming();
 		results.cellROI_2D = cellROI;
 		results.backgroundROI_2D = backgroundROI;
 		results.indexOfFirstPostbleach = indexPostbleach;

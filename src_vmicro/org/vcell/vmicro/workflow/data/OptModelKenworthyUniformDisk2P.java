@@ -46,25 +46,10 @@ public class OptModelKenworthyUniformDisk2P extends OptModel {
 	 * returns the expected fluorescence under the bleaching area for a uniform disk
 	 */
 	@Override
-	public double[][] getSolution(double[] newParams, double[] solutionTimePoints) {
+	public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
 
-		double diffusionRate;
-		double bleachAmplitude; // 0 to 1 (1 means complete bleaching)
-
-		if (newParams.length==1){
-			if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_DIFFUSION_RATE])){
-				diffusionRate = getFixedParameterValue();
-				bleachAmplitude = newParams[0];
-			}else if (isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_AMPLITUDE])){
-				diffusionRate = newParams[0];
-				bleachAmplitude = getFixedParameterValue();
-			}else{
-				throw new RuntimeException("unexpected fixed parameter");
-			}
-		}else{
-			diffusionRate = newParams[INDEX_DIFFUSION_RATE];
-			bleachAmplitude = newParams[INDEX_BLEACH_AMPLITUDE];
-		}
+		double diffusionRate = newParams[INDEX_DIFFUSION_RATE];
+		double bleachAmplitude = newParams[INDEX_BLEACH_AMPLITUDE];   // 0 to 1 (1 means complete bleaching)
 		
 		double[][] solutionData = new double[1][solutionTimePoints.length];
 		

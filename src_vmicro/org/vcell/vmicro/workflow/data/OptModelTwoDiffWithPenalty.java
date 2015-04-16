@@ -41,7 +41,7 @@ public class OptModelTwoDiffWithPenalty extends RefSimOptModel {
 	}
 	
 	@Override
-	public double[][] getSolution(double[] newParams, double[] solutionTimePoints) {
+	public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
 
 		double primaryDiffRate = 0;
 		double primaryMobileFraction = 0;
@@ -49,54 +49,11 @@ public class OptModelTwoDiffWithPenalty extends RefSimOptModel {
 		double secondaryDiffRate = 0;
 		double secondaryMobileFraction = 0;
 
-		if (newParams.length==4){
-			if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_DIFF_RATE]))
-			{
-				primaryDiffRate = getFixedParameterValue();
-				primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION - 1];
-				monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE - 1];
-				secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE - 1];
-				secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION - 1];
-			}
-			else if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_PRIMARY_MOBILE_FRACTION]))
-			{
-				primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-				primaryMobileFraction = getFixedParameterValue();
-				monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE - 1];
-				secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE - 1];
-				secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION - 1];
-			}
-			else if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE]))
-			{
-				primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-				primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION];
-				monitoringRate = getFixedParameterValue(); 
-				secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE - 1];
-				secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION - 1];
-			} 
-			else if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_DIFF_RATE]))
-			{
-				primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-				primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION];
-				monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
-				secondaryDiffRate = getFixedParameterValue();
-				secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION - 1];
-			}
-			else if(isFixedParameter(MODEL_PARAMETER_NAMES[INDEX_SECONDARY_MOBILE_FRACTION]))
-			{
-				primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-				primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION];
-				monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
-				secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE];
-				secondaryMobileFraction = getFixedParameterValue();
-			}
-		}else{
-			primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
-			primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION];
-			monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
-			secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE];
-			secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION];
-		}
+		primaryDiffRate = newParams[INDEX_PRIMARY_DIFF_RATE];
+		primaryMobileFraction = newParams[INDEX_PRIMARY_MOBILE_FRACTION];
+		monitoringRate = newParams[INDEX_BLEACH_MONITOR_RATE];
+		secondaryDiffRate = newParams[INDEX_SECONDARY_DIFF_RATE];
+		secondaryMobileFraction = newParams[INDEX_SECONDARY_MOBILE_FRACTION];
 		
 		double[][] fastData = getValueByDiffRate(primaryDiffRate,solutionTimePoints);
 
