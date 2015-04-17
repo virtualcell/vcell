@@ -32,11 +32,15 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
@@ -46,7 +50,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.CreateBNGOutputSpec;
 import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
-import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
@@ -86,7 +89,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //	private EditorScrollTable molecularTypeTable = null;
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
-//	private JButton viewNetworkButton;
+	private JButton createModelButton;
 	
 	private int currentIterationSpecies = 0;
 	private int previousIterationSpecies = 0;
@@ -104,8 +107,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				viewGeneratedReactions();
 			} else if(e.getSource() == getRefreshMathButton()) {
 				runBioNetGen();
-//			} else if(e.getSource() == getViewNetworkButton()) {
-//				viewNetwork();
+			} else if(e.getSource() == getCreateModelButton()) {
+				createModel();
 			}
 		}
 
@@ -181,13 +184,13 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		}
 		return refreshMathButton;
 	}
-//	private JButton getViewNetworkButton() {
-//		if (viewNetworkButton == null) {
-//			viewNetworkButton = new javax.swing.JButton(" View Network ");
-//			viewNetworkButton.setName("ViewNetworkButton");
-//		}
-//		return viewNetworkButton;
-//	}
+	private JButton getCreateModelButton() {
+		if (createModelButton == null) {
+			createModelButton = new javax.swing.JButton(" Create Model ");
+			createModelButton.setName("CreateModelButton");
+		}
+		return createModelButton;
+	}
 
 	private void initialize() {
 		netGenConsoleText = new JTextPane();
@@ -206,7 +209,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		getViewGeneratedSpeciesButton().addActionListener(eventHandler);
 		getViewGeneratedReactionsButton().addActionListener(eventHandler);
 		getRefreshMathButton().addActionListener(eventHandler);
-//		getViewNetworkButton().addActionListener(eventHandler);
+		getCreateModelButton().addActionListener(eventHandler);
 		
 		netGenConsoleText.addFocusListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
@@ -401,12 +404,12 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(getViewGeneratedReactionsButton(), gbc);
 		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(5, 4, 4, 10);
-//		top.add(getViewNetworkButton(), gbc);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 4, 4, 10);
+		top.add(getCreateModelButton(), gbc);
 
 		bottom.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
@@ -625,7 +628,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			viewGeneratedSpeciesButton.setEnabled(false);
 			viewGeneratedReactionsButton.setEnabled(false);
 			refreshMathButton.setEnabled(false);
-//			viewNetworkButton.setEnabled(false);
+			createModelButton.setEnabled(false);
 			netGenConsoleText.setText("");
 		} else {
 			if(outputSpec!= null && outputSpec.getBNGSpecies().length > 0) {
@@ -639,7 +642,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				viewGeneratedReactionsButton.setEnabled(false);
 			}
 			refreshMathButton.setEnabled(true);
-//			viewNetworkButton.setEnabled(true);
+			createModelButton.setEnabled(true);
 		}
 	}
 	
@@ -695,20 +698,30 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		panel.setPreferredSize(new Dimension(800,550));
 		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
 	}
-	private void viewNetwork() {
+	private void createModel() {
 		try {
-			ReactionCartoonEditorPanel reactionCartoonEditorPanel;
-			reactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
-			reactionCartoonEditorPanel.setSize(300, 100);
+		DocumentWindow dw = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
+		BioModelWindowManager bmwm = (BioModelWindowManager)(dw.getTopLevelWindowManager());
+		RequestManager rm = dw.getTopLevelWindowManager().getRequestManager();
 			
-			MathMapping mm = fieldSimulationContext.getMostRecentlyCreatedMathMapping();
-			reactionCartoonEditorPanel.setModel(mm.getSimulationContext().getModel());
+		ClientRequestManager.updateMath(bmwm.getComponent(), fieldSimulationContext, false, NetworkGenerationRequirements.ComputeFullNetwork);
+//		MathMapping mm = fieldSimulationContext.createNewMathMapping(null, NetworkGenerationRequirements.ComputeFullNetwork);
+//		fieldSimulationContext.setMathDescription(mm.getMathDescription());
 			
-			DialogUtils.showComponentCloseDialog(this, reactionCartoonEditorPanel, "Flattened reaction diagram.");
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred viewing Network");
-			exception.printStackTrace(System.out);
+		MathMapping mm = fieldSimulationContext.getMostRecentlyCreatedMathMapping();
+		if(mm == null) {
+			String message = "Math Mapping missing.\nPlease go to the Simulations / Generated Math panel and refresh math.";
+			throw new RuntimeException(message);
 		}
+			
+		SimulationContext sc = mm.getSimulationContext();
+//		BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitOrigin.DEFAULT);
+			
+		rm.createBioModelFromApplication(bmwm, "Test", sc);
+		} catch(RuntimeException e) {
+			DialogUtils.showErrorDialog(this, e.getMessage(), e);
+		}
+
 	}
 	@Override
 	public boolean isInterrupted() {

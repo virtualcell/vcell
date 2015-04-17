@@ -100,6 +100,7 @@ void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientSer
  * @param documentType int
  */
 void createMathModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext);
+void createBioModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext);
 
 
 /**
