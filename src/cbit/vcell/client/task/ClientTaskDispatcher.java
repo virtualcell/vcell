@@ -190,12 +190,12 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				if (shouldRun) {
 					try {
 						if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-							currentTask.run(hash);
+							runTask(currentTask,hash);
 						} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 							SwingUtilities.invokeAndWait(new Runnable() {
 								public void run() {
 									try {
-										currentTask.run(hash);
+										runTask(currentTask,hash);
 									} catch (Throwable exc) {
 										recordException(exc, hash);
 									}
@@ -205,7 +205,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 							SwingUtilities.invokeLater(new Runnable() {
 								public void run() {
 									try {
-										currentTask.run(hash);
+										runTask(currentTask,hash);
 									} catch (Throwable exc) {
 										recordException(exc, hash);
 									}
@@ -225,6 +225,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			}
 			return hash;
 		}
+		
 		public void finished() {
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
 			if (pp != null) {
@@ -341,6 +342,31 @@ private static void setSwingWorkerThreadName(SwingWorker sw, String name) {
 		return;
 	}
 	throw new IllegalArgumentException("name may not be null");
+}
+
+/**
+ * call currentTask.run(hash) with log4j logging
+ * @param currentTask not null
+ * @param hash not null
+ * @throws Exception
+ */
+private static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash) throws Exception {
+	if (lg.isDebugEnabled()) {
+		String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
+		if (lg.isTraceEnabled()) {
+			Object obj = hash.get(STACK_TRACE_ARRAY);
+			StackTraceElement ste[] = BeanUtils.downcast(StackTraceElement[].class, obj);
+			if (ste != null) {
+				msg += '\n' + StringUtils.join(ste,'\n');
+			}
+			lg.trace(msg);
+		}
+		else {
+			lg.debug(msg);
+		}
+	}
+	
+	currentTask.run(hash);
 }
 
 }
