@@ -16,11 +16,12 @@ import cbit.image.DisplayPreferences;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private double duration;
 	private boolean overlayMode;
 	private DisplayPreferences[] displayPreferences;
-	private int encodingFormat;
+	private ExportFormat encodingFormat;
 	private int mirroringType;
 	private int volVarMembrOutlineThickness;
 	private int imageScaling;
@@ -40,13 +41,13 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  * @param encoding int
  * @param mirroring int
  */
-public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, int encodingFormat,
+public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, ExportFormat format,
 		int mirroringType, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR,int particleMode) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
-	this.encodingFormat = encodingFormat;
+	this.encodingFormat = format;
 	this.mirroringType = mirroringType;
 	this.volVarMembrOutlineThickness = volVarMembrOutlineThickness;
 	this.imageScaling = imageScaling;
@@ -122,7 +123,7 @@ public double getDuration() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getEncodingFormat() {
+public ExportFormat getEncodingFormat() {
 	return encodingFormat;
 }
 /**

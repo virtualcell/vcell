@@ -16,9 +16,10 @@ import cbit.image.DisplayPreferences;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private DisplayPreferences[] displayPreferences;
-	private int format;
+	private ExportFormat format;
 	private int compression;
 	private int mirroringType;
 	private double duration;
@@ -34,18 +35,18 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
  * Insert the method's description here.
  * Creation date: (3/1/2001 12:13:46 PM)
  * @param displayPreferences cbit.vcell.simdata.gui.DisplayPreferences[]
- * @param format int
+ * @param mediaType int
  * @param compression int
  * @param mirroringType int
  * @param duration double
  * @param loopingMode int
  */
-public ImageSpecs(DisplayPreferences[] displayPreferences, int format,
+public ImageSpecs(DisplayPreferences[] displayPreferences, ExportFormat mediaType,
 		int compression, int mirroringType,
 		double duration, int loopingMode, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay,int particleMode) {
 	this.displayPreferences = displayPreferences;
-	this.format = format;
+	this.format = mediaType;
 	this.compression = compression;
 	this.mirroringType = mirroringType;
 	this.duration = duration;
@@ -125,7 +126,7 @@ public double getDuration() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getFormat() {
+public ExportFormat getFormat() {
 	return format;
 }
 /**

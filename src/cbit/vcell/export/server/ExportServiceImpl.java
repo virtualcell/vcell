@@ -184,20 +184,20 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	log.print("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
 	String fileFormat = null;
 	switch (exportSpecs.getFormat()) {
-		case FORMAT_CSV:
+		case CSV:
 			fileFormat = "CSV";
 			break;
-		case FORMAT_QUICKTIME:
+		case QUICKTIME:
 			fileFormat = "MOV";
 			break;
-		case FORMAT_GIF:
-		case FORMAT_ANIMATED_GIF:
+		case GIF:
+		case ANIMATED_GIF:
 			fileFormat = "GIF";
 			break;
 		case FORMAT_JPEG:
 			fileFormat = "JPEG";
 			break;
-		case FORMAT_NRRD:
+		case NRRD:
 			fileFormat = "NRRD";
 			break;
 	}
@@ -247,13 +247,13 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		try{
 			ExportOutput[] exportOutputs = null;
 			switch (exportSpecs.getFormat()) {
-				case FORMAT_CSV:
+				case CSV:
 					exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
-				case FORMAT_QUICKTIME:
-				case FORMAT_GIF:
+				case QUICKTIME:
+				case GIF:
 				case FORMAT_JPEG:
-				case FORMAT_ANIMATED_GIF:
+				case ANIMATED_GIF:
 					exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport,fileDataContainerManager);
 					boolean bOverrideZip = exportOutputs.length == 1;
 					if(bSaveAsZip && !bOverrideZip){
@@ -261,16 +261,16 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					}else{
 						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 					}
-				case FORMAT_NRRD:
+				case NRRD:
 					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
-				case FORMAT_UCD:
+				case UCD:
 					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
-				case FORMAT_VTK_IMAGE:
+				case VTK_IMAGE:
 					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
-				case FORMAT_VTK_UNSTRUCT:
+				case VTK_UNSTRUCT:
 					exportOutputs = rrExporter.makeVTKUnstructuredData0(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				default:

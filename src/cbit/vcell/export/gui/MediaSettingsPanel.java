@@ -43,12 +43,14 @@ import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
 import cbit.image.gui.ImagePaneModel;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.ImageSpecs;
 import cbit.vcell.export.server.MovieSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.solvers.CartesianMesh;
 
+@SuppressWarnings("serial")
 public class MediaSettingsPanel extends JPanel {
 	private JTextField movieDurationTextField;
 	private JRadioButton encodeFormatJPG;
@@ -58,8 +60,8 @@ public class MediaSettingsPanel extends JPanel {
 	private JRadioButton compositionCombined;
 	private JRadioButton qtFormatRegular;
 	private JRadioButton qtFormatQTVR;
-	private JComboBox mirrorComboBox;
-	private JComboBox scalingCombobox;
+	private JComboBox<String> mirrorComboBox;
+	private JComboBox<String> scalingCombobox;
 	private JLabel membrVarThicknessLabel;
 	private JLabel lblMirroring;
 	private JLabel lblImageScale;
@@ -234,7 +236,7 @@ public class MediaSettingsPanel extends JPanel {
 		gbc_lblMirroring.gridy = 5;
 		add(lblMirroring, gbc_lblMirroring);
 		
-		mirrorComboBox = new JComboBox();
+		mirrorComboBox = new JComboBox<String>();
 		GridBagConstraints gbc_mirrorComboBox = new GridBagConstraints();
 		gbc_mirrorComboBox.insets = new Insets(0, 0, 5, 0);
 		gbc_mirrorComboBox.fill = GridBagConstraints.HORIZONTAL;
@@ -250,7 +252,7 @@ public class MediaSettingsPanel extends JPanel {
 		gbc_lblImageScale.gridy = 6;
 		add(lblImageScale, gbc_lblImageScale);
 		
-		scalingCombobox = new JComboBox();
+		scalingCombobox = new JComboBox<String>();
 		GridBagConstraints gbc_scalingCombobox = new GridBagConstraints();
 		gbc_scalingCombobox.insets = new Insets(0, 0, 5, 0);
 		gbc_scalingCombobox.fill = GridBagConstraints.HORIZONTAL;
@@ -361,7 +363,6 @@ public class MediaSettingsPanel extends JPanel {
 	private ButtonGroup encodeFormatButtonGroup = new ButtonGroup();
 	private ButtonGroup compositionButtonGroup = new ButtonGroup();
 	private ButtonGroup qtFormatButtonGroup = new ButtonGroup();
-	private ButtonGroup membrOutlineButtonGroup = new ButtonGroup();
 	private ButtonGroup particleButtonGroup = new ButtonGroup();
 	private double duration;
 	ActionListener buttonActionListener = new ActionListener() {
@@ -407,7 +408,7 @@ public class MediaSettingsPanel extends JPanel {
 					}
 				}
 				String encodingFormat = null;
-				if(mediaType == ExportConstants.FORMAT_ANIMATED_GIF || mediaType == ExportConstants.FORMAT_GIF){
+				if(mediaType == ExportFormat.ANIMATED_GIF || mediaType == ExportFormat.GIF){
 					encodingFormat = "GIF";
 				}else{
 					encodingFormat = "JPG";
@@ -415,17 +416,17 @@ public class MediaSettingsPanel extends JPanel {
 				String mediaDescription = null;
 				boolean bLossLess = true;
 				switch(mediaType){
-					case ExportConstants.FORMAT_GIF:
+					case GIF:
 						mediaDescription = "GIF Image";
 						break;
-					case ExportConstants.FORMAT_JPEG:
+					case FORMAT_JPEG:
 						mediaDescription = "JPEG Image";
 						bLossLess = compressionSlider.getValue() == compressionSlider.getMaximum();
 						break;
-					case ExportConstants.FORMAT_ANIMATED_GIF:
+					case ANIMATED_GIF:
 						mediaDescription = "Animated GIF";
 						break;
-					case ExportConstants.FORMAT_QUICKTIME:
+					case QUICKTIME:
 						mediaDescription = "QuickTime "+(bQTVR?"VR ":"")+"Movie";
 						bLossLess = compressionSlider.getValue() == compressionSlider.getMaximum();
 						break;
@@ -546,7 +547,7 @@ public class MediaSettingsPanel extends JPanel {
 		mirrorComboBox.addItem("Mirror right");
 		mirrorComboBox.addItem("Mirror bottom");
 
-		scalingCombobox.setModel(new DefaultComboBoxModel(new String[] {MESH_MODE_TEXT,"1","2","3","4","5","6","7","8","9","10"}));
+		scalingCombobox.setModel(new DefaultComboBoxModel<String>(new String[] {MESH_MODE_TEXT,"1","2","3","4","5","6","7","8","9","10"}));
 
 		compressionSlider.setValue(10);
 		compressionSlider.setMajorTickSpacing(1);
@@ -613,6 +614,7 @@ public class MediaSettingsPanel extends JPanel {
 
 	private static void jSliderEnable(boolean bEnable,JSlider jslider){
 		jslider.setEnabled(bEnable);
+		@SuppressWarnings("unchecked") //JSlider uses non-generic legacy interface.
 		Dictionary<Integer, JLabel> labeltable = jslider.getLabelTable();
 		if(labeltable != null){
 			Enumeration<JLabel> jLabelEnum = labeltable.elements();
@@ -623,29 +625,29 @@ public class MediaSettingsPanel extends JPanel {
 		jslider.repaint();
 	}
 
-	private int mediaType;
+	private ExportFormat mediaType;
 	private boolean selectionHasVolumeVars;
 	private boolean selectionHasMembraneVars;
 	private boolean bMovie;
-	public void configure(int mediaType,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars){
+	public void configure(ExportFormat mediaType,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars){
 		this.mediaType = mediaType;
 		this.selectionHasVolumeVars = selectionHasVolumeVars;
 		this.selectionHasMembraneVars = selectionHasMembraneVars;
 		configureGUI();
 	}
 	private void configureGUI(){
-		bMovie = mediaType == ExportConstants.FORMAT_QUICKTIME || mediaType == ExportConstants.FORMAT_ANIMATED_GIF;
-		jSliderEnable(mediaType == ExportConstants.FORMAT_QUICKTIME || mediaType == ExportConstants.FORMAT_JPEG,compressionSlider);
+		bMovie = mediaType == ExportFormat.QUICKTIME || mediaType == ExportFormat.ANIMATED_GIF;
+		jSliderEnable(mediaType == ExportFormat.QUICKTIME || mediaType == ExportFormat.FORMAT_JPEG,compressionSlider);
 		compressionLabel.setEnabled(compressionSlider.isEnabled());
 		
-		encodeFormatGIF.setEnabled(mediaType == ExportConstants.FORMAT_GIF || mediaType == ExportConstants.FORMAT_ANIMATED_GIF);
-		encodeFormatJPG.setEnabled(mediaType == ExportConstants.FORMAT_JPEG || mediaType == ExportConstants.FORMAT_QUICKTIME);
+		encodeFormatGIF.setEnabled(mediaType == ExportFormat.GIF || mediaType == ExportFormat.ANIMATED_GIF);
+		encodeFormatJPG.setEnabled(mediaType == ExportFormat.FORMAT_JPEG || mediaType == ExportFormat.QUICKTIME);
 		encodeFormatGIF.setSelected(encodeFormatGIF.isEnabled());
 		encodeFormatJPG.setSelected(encodeFormatJPG.isEnabled());
 		
-		qtFormatRegular.setEnabled(mediaType == ExportConstants.FORMAT_QUICKTIME);
-		qtFormatQTVR.setEnabled(mediaType == ExportConstants.FORMAT_QUICKTIME);
-		qtLabel.setEnabled(mediaType == ExportConstants.FORMAT_QUICKTIME);
+		qtFormatRegular.setEnabled(mediaType == ExportFormat.QUICKTIME);
+		qtFormatQTVR.setEnabled(mediaType == ExportFormat.QUICKTIME);
+		qtLabel.setEnabled(mediaType == ExportFormat.QUICKTIME);
 		
 		jSliderEnable(selectionHasVolumeVars, volVarMembrOutlineThicknessSlider);
 		volvarMembrOutlineLabel.setEnabled(selectionHasVolumeVars);
@@ -747,12 +749,12 @@ public class MediaSettingsPanel extends JPanel {
 		int particleMode =
 			(isSmoldyn && !particleCountsRadiobutton.isSelected()?FormatSpecificSpecs.PARTICLE_SELECT:FormatSpecificSpecs.PARTICLE_NONE);
 		
-		if(mediaType == ExportConstants.FORMAT_QUICKTIME){
+		if(mediaType == ExportFormat.QUICKTIME){
 			return new MovieSpecs(
 				duration,
 				bOverLay,
 				displayPreferences,
-				(encodeFormatGIF.isSelected()?ExportConstants.FORMAT_GIF:ExportConstants.FORMAT_JPEG),
+				(encodeFormatGIF.isSelected()?ExportFormat.GIF:ExportFormat.FORMAT_JPEG),
 				mirrorComboBox.getSelectedIndex(),
 				volVarMembrOutlineThickness,
 				imageScaling,

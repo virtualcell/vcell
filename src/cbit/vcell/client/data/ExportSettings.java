@@ -17,6 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.VCAssert;
 
 import cbit.vcell.export.gui.ASCIISettingsPanel;
 import cbit.vcell.export.gui.ASCIISettingsPanelListener;
@@ -24,6 +25,7 @@ import cbit.vcell.export.gui.MediaSettingsPanel;
 import cbit.vcell.export.gui.RasterSettingsPanel;
 import cbit.vcell.export.gui.RasterSettingsPanelListener;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.solvers.CartesianMesh;
@@ -35,7 +37,7 @@ import cbit.vcell.solvers.CartesianMesh;
 public class ExportSettings implements ASCIISettingsPanelListener, RasterSettingsPanelListener, ExportConstants, java.beans.PropertyChangeListener {
 	private ASCIISettingsPanel ivjASCIISettingsPanel1 = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private int fieldSelectedFormat = 0;
+	private ExportFormat fieldSelectedFormat;
 	private cbit.vcell.export.server.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
 	private int fieldSimDataType = 0;
 	private JPanel ivjJDialogContentPane = null;
@@ -329,7 +331,7 @@ private javax.swing.JPanel getJDialogContentPane3() {
  * @return javax.swing.JDialog
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getJDialogMediaSettings(Frame reference,int mediaType,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars,String descriptor) {
+private javax.swing.JDialog getJDialogMediaSettings(Frame reference,ExportFormat mediaType,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars,String descriptor) {
 	if (ivjJDialogMediaSettings == null) {
 		try {
 			ivjJDialogMediaSettings = new javax.swing.JDialog(reference);
@@ -436,7 +438,7 @@ private RasterSettingsPanel getRasterSettingsPanel1() {
  * @return The selectedFormat property value.
  * @see #setSelectedFormat
  */
-public int getSelectedFormat() {
+public ExportFormat getSelectedFormat() {
 	return fieldSelectedFormat;
 }
 
@@ -619,10 +621,10 @@ public void setFormatSpecificSpecs(cbit.vcell.export.server.FormatSpecificSpecs 
  * @param selectedFormat The new value for the property.
  * @see #getSelectedFormat
  */
-public void setSelectedFormat(int selectedFormat) {
-	int oldValue = fieldSelectedFormat;
+public void setSelectedFormat(ExportFormat selectedFormat) {
+	ExportFormat oldValue = fieldSelectedFormat;
 	fieldSelectedFormat = selectedFormat;
-	firePropertyChange("selectedFormat", new Integer(oldValue), new Integer(selectedFormat));
+	firePropertyChange("selectedFormat", oldValue, selectedFormat);
 }
 
 
@@ -655,37 +657,27 @@ public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelec
 /**
  * Comment
  */
+@SuppressWarnings("incomplete-switch")
 public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolumeVars,boolean selectionHasMembraneVars) {
 	JDialog dialogToShow = null;
 	setClosedOK(false);
-	final int format = getSelectedFormat();
+	ExportFormat format = getSelectedFormat();
+	VCAssert.assertFalse(format.requiresFollowOn(),"Follow on dialog required");
 	switch (format) {
-		case FORMAT_CSV:
+		case CSV:
 			dialogToShow = getJDialogASCIISettings(reference);
 			break;
-		case FORMAT_QUICKTIME:
-		case FORMAT_ANIMATED_GIF:
+		case QUICKTIME:
+		case ANIMATED_GIF:
 			dialogToShow = getJDialogMediaSettings(reference,getSelectedFormat(),selectionHasVolumeVars,selectionHasMembraneVars,"Movie");
 			break;
-		case FORMAT_GIF:
+		case GIF:
 		case FORMAT_JPEG:
 			dialogToShow = getJDialogMediaSettings(reference,getSelectedFormat(),selectionHasVolumeVars,selectionHasMembraneVars,"Image");
 			break;
-		case FORMAT_NRRD:
+		case NRRD:
 			dialogToShow = getJDialogRasterSettings(reference);
 			break;
-		case FORMAT_UCD:
-		case FORMAT_VTK_UNSTRUCT:
-		case FORMAT_VTK_IMAGE:
-			//ensure consistent with requiresFollowOnDialog
-			if (requiresFollowOnDialog(format)) {
-				throw new RuntimeException("Follow on dialog required");
-			}
-			
-			return true;
-
-//			dialogToShow = getJDialogRasterSettings();
-//			break;
 	}
 	dialogToShow.pack();
 	BeanUtils.centerOnComponent(dialogToShow, reference);
@@ -697,7 +689,8 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
  * @param format should be FORMAT constant from {@link ExportConstants} 
  * @return true if selecting requires an options Dialog 
  */
-public static boolean requiresFollowOnDialog(int format) {
+/*
+public static boolean requiresFollowOnDialog(ExportFormat format) {
 	switch (format) {
 	case FORMAT_UCD:
 	case FORMAT_VTK_UNSTRUCT:
@@ -707,4 +700,5 @@ public static boolean requiresFollowOnDialog(int format) {
 		return true;
 	}
 }
+*/
 }
