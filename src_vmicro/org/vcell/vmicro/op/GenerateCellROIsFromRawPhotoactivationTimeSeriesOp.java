@@ -9,7 +9,7 @@ import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
-public class GenerateCellROIsFromRawFlipTimeSeriesOp {
+public class GenerateCellROIsFromRawPhotoactivationTimeSeriesOp {
 	
 	public static class GeometryRoisAndActivationTiming {
 		public ROI cellROI_2D;

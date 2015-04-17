@@ -8,10 +8,10 @@ import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 
-public class GenerateNormalizedFlipDataOp {
+public class GenerateNormalizedPhotoactivationDataOp {
 
-	public static class NormalizedFlipDataResults {
-		public ImageTimeSeries<FloatImage> normalizedFlipData;
+	public static class NormalizedPhotoactivationDataResults {
+		public ImageTimeSeries<FloatImage> normalizedPhotoactivationData;
 		public FloatImage preactivationAverageImage;
 		public FloatImage normalizedPostactivationImage;
 	}	
@@ -34,7 +34,7 @@ public class GenerateNormalizedFlipDataOp {
 		return intensityVal/numPixelsInMask;
 	}
 
-	public NormalizedFlipDataResults generate(ImageTimeSeries<UShortImage> rawImageTimeSeries, ROI backgroundROI_2D, Integer indexPostactivation) throws Exception {
+	public NormalizedPhotoactivationDataResults generate(ImageTimeSeries<UShortImage> rawImageTimeSeries, ROI backgroundROI_2D, Integer indexPostactivation) throws Exception {
 		
 		UShortImage preactivationImage = rawImageTimeSeries.getAllImages()[0];
 		ISize isize = preactivationImage.getISize();
@@ -96,9 +96,9 @@ public class GenerateNormalizedFlipDataOp {
 		}
 		ImageTimeSeries<FloatImage> normalizedData = new ImageTimeSeries<FloatImage>(FloatImage.class, normalizedImages, postactivationTimeStamps, nZ);
 		
-		NormalizedFlipDataResults results = new NormalizedFlipDataResults();
+		NormalizedPhotoactivationDataResults results = new NormalizedPhotoactivationDataResults();
 		
-		results.normalizedFlipData = normalizedData;
+		results.normalizedPhotoactivationData = normalizedData;
 		results.preactivationAverageImage = preactivationAverageImage;
 		results.normalizedPostactivationImage = normalizedData.getAllImages()[0];
 		
