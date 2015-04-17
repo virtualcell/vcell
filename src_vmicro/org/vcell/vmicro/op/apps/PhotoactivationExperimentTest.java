@@ -13,10 +13,10 @@ import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.GeneratedModelResults;
 import org.vcell.vmicro.op.Generate2DExpModel_GaussianBleachOp;
 import org.vcell.vmicro.op.Generate2DOptContextOp;
 import org.vcell.vmicro.op.GenerateActivationRoiOp;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawFlipTimeSeriesOp;
-import org.vcell.vmicro.op.GenerateCellROIsFromRawFlipTimeSeriesOp.GeometryRoisAndActivationTiming;
-import org.vcell.vmicro.op.GenerateNormalizedFlipDataOp;
-import org.vcell.vmicro.op.GenerateNormalizedFlipDataOp.NormalizedFlipDataResults;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawPhotoactivationTimeSeriesOp;
+import org.vcell.vmicro.op.GenerateCellROIsFromRawPhotoactivationTimeSeriesOp.GeometryRoisAndActivationTiming;
+import org.vcell.vmicro.op.GenerateNormalizedPhotoactivationDataOp;
+import org.vcell.vmicro.op.GenerateNormalizedPhotoactivationDataOp.NormalizedPhotoactivationDataResults;
 import org.vcell.vmicro.op.GenerateReducedROIDataOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
@@ -37,7 +37,7 @@ import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.Simulation;
 
-public class FlipExperimentTest {
+public class PhotoactivationExperimentTest {
 
 	public static void main(String[] args) {
 		try {
@@ -94,7 +94,7 @@ public class FlipExperimentTest {
 			//File vfrapFile = new File(baseDir, "vfrapPaper/photoactivation/Actin.vfrap");
 			File vfrapFile = new File(baseDir, "vfrapPaper/photoactivation/Actin_binding_protein.vfrap");
 			ImageTimeSeries<UShortImage> fluorTimeSeriesImages = new ImportRawTimeSeriesFromVFrapOp().importRawTimeSeriesFromVFrap(vfrapFile);
-			analyzeFlip(fluorTimeSeriesImages, localWorkspace);
+			analyzePhotoactivation(fluorTimeSeriesImages, localWorkspace);
 			
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -109,7 +109,7 @@ public class FlipExperimentTest {
 	 * @param localWorkspace
 	 * @throws Exception
 	 */
-	private static void analyzeFlip(ImageTimeSeries<UShortImage> rawTimeSeriesImages, LocalWorkspace localWorkspace) throws Exception {
+	private static void analyzePhotoactivation(ImageTimeSeries<UShortImage> rawTimeSeriesImages, LocalWorkspace localWorkspace) throws Exception {
 
 		//
 		// correct the timestamps (1 per second).
@@ -127,13 +127,13 @@ public class FlipExperimentTest {
 		
 		
 		double cellThreshold = 0.4;
-		GeometryRoisAndActivationTiming cellROIresults = new GenerateCellROIsFromRawFlipTimeSeriesOp().generate(blurredRaw, cellThreshold);
+		GeometryRoisAndActivationTiming cellROIresults = new GenerateCellROIsFromRawPhotoactivationTimeSeriesOp().generate(blurredRaw, cellThreshold);
 		ROI backgroundROI = cellROIresults.backgroundROI_2D;
 		ROI cellROI = cellROIresults.cellROI_2D;
 		int indexOfFirstPostactivation = cellROIresults.indexOfFirstPostactivation;
 		
-		NormalizedFlipDataResults normResults = new GenerateNormalizedFlipDataOp().generate(blurredRaw, backgroundROI, indexOfFirstPostactivation);
-		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedFlipData;
+		NormalizedPhotoactivationDataResults normResults = new GenerateNormalizedPhotoactivationDataOp().generate(blurredRaw, backgroundROI, indexOfFirstPostactivation);
+		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedPhotoactivationData;
 		FloatImage preactivationAvg = normResults.preactivationAverageImage;
 		FloatImage normalizedPostactivation = normalizedTimeSeries.getAllImages()[0];
 		
@@ -177,7 +177,7 @@ public class FlipExperimentTest {
 		Parameter f_final = new Parameter("f_final",0.01,15.0,1.0,0.5);
 		Parameter[] parameters = new Parameter[] {	tau, f_init, f_final };
 		
-		OptModel optModel = new OptModel("simpleFlip", parameters) {
+		OptModel optModel = new OptModel("simplePhotoactivation", parameters) {
 			
 			@Override
 			public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
@@ -199,7 +199,7 @@ public class FlipExperimentTest {
 			}
 		};
 		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial flip - activated ROI only", null);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial photoactivation - activated ROI only", null);
 		}
 		
 		{
@@ -230,7 +230,7 @@ public class FlipExperimentTest {
 		Parameter tau_cell = new Parameter("tau_cell",0.00001,200,1.0,1);
 		Parameter[] parameters = new Parameter[] {	tau_active, f_active_init, f_active_final, tau_cell, f_cell_init, f_cell_final  };
 		
-		OptModel optModel = new OptModel("simpleFlip", parameters) {
+		OptModel optModel = new OptModel("simplePhotoactivation", parameters) {
 			
 			@Override
 			public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
@@ -261,7 +261,7 @@ public class FlipExperimentTest {
 			}
 		};
 		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial flip - activated and cell ROIs", null);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial photoactivation - activated and cell ROIs", null);
 		}
 		
 	}
