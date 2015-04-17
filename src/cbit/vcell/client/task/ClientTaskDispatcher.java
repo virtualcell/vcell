@@ -20,6 +20,8 @@ import java.util.Hashtable;
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
@@ -43,6 +45,10 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_ERROR = "abort";
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
+	/**
+	 * hash key to store stack trace if {@link #lg} enabled for {@link Level#INFO}
+	 */
+	private static final String STACK_TRACE_ARRAY = "clientTaskDispatcherStackTraceArray";
 	private static final Logger lg = Logger.getLogger(ClientTaskDispatcher.class);
 	/**
 	 * used to count / generate thread names
@@ -88,6 +94,9 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 //	if (bInProgress) {
 //		Thread.dumpStack();
 //	}
+	if (lg.isInfoEnabled()) {
+		hash.put(STACK_TRACE_ARRAY, Thread.currentThread().getStackTrace()); 
+	}
 	if (bShowProgressPopup && requester == null) {
 		System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 		Thread.dumpStack();
@@ -236,6 +245,18 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 					Thread.dumpStack();
 				}
+				if (lg.isInfoEnabled()) {
+					Object obj = hash.get(STACK_TRACE_ARRAY);
+					StackTraceElement ste[] = BeanUtils.downcast(StackTraceElement[].class, obj);
+					if (ste != null) {
+						String stackTraceString = StringUtils.join(ste,'\n');
+						lg.info(stackTraceString,e);
+					}
+					else {
+						lg.info("Unexpected " + STACK_TRACE_ARRAY + " obj " + obj);
+					}
+				}
+				
 				PopupGenerator.showErrorDialog(requester, msg, e);
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job
