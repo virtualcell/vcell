@@ -23,10 +23,10 @@ import org.jdom.DataConversionException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.inversepde.SpatialBasisFunctions;
 import org.vcell.inversepde.InverseProblem;
 import org.vcell.inversepde.LinearResponseModel;
 import org.vcell.inversepde.MembraneBasis;
+import org.vcell.inversepde.SpatialBasisFunctions;
 import org.vcell.inversepde.VolumeBasis;
 import org.vcell.inversepde.microscopy.ROIImage.ROIImageComponent;
 import org.vcell.util.CommentStringTokenizer;
@@ -37,6 +37,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.image.ImageException;
 import cbit.util.xml.XmlUtil;
@@ -98,7 +99,7 @@ public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(Fil
 	ExternalDataInfo roiExtDataInfo = null;
 	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
 	if (bioModelElement!=null){
-		BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
+		BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement,VCellSoftwareVersion.fromSystemProperty());
 		if(bioModel != null){
 			simulationKeyValue = bioModel.getSimulations()[0].getKey();
 		}
@@ -466,7 +467,7 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 	frapStudy.setDescription(param.getChildText(XMLTags.AnnotationTag));
 	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
 	if (bioModelElement!=null){
-		frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement));
+		frapStudy.setBioModel(vcellXMLReader.getBioModel(bioModelElement,VCellSoftwareVersion.fromSystemProperty()));
 	}
 	Element frapDataElement = param.getChild(InverseProblemXMLTags.FRAPDataTag);
 	if (frapDataElement!=null){
@@ -513,7 +514,7 @@ public InverseProblem getInverseProblem(Element param,DataSetControllerImpl.Prog
 		}else{
 			Element bioModelElement = nonlinearModelElement.getChild(XMLTags.BioModelTag);
 			if (bioModelElement!=null){
-				inverseProblem.setNonlinearModel(vcellXMLReader.getBioModel(bioModelElement));
+				inverseProblem.setNonlinearModel(vcellXMLReader.getBioModel(bioModelElement,VCellSoftwareVersion.fromSystemProperty()));
 			}
 		}
 	}

@@ -34,7 +34,7 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
-import cbit.vcell.client.data.OutputContext;
+import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
@@ -42,23 +42,24 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.JumpCondition;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.OutputFunctionContext;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -229,7 +230,7 @@ public class SpatialBasisFunctions implements Matchable {
 		if (!mathDesc.isValid()){
 			throw new RuntimeException("math is not valid, problem: "+mathDesc.getWarning());
 		}
-		Simulation sim = mathModel.addNewSimulation();
+		Simulation sim = mathModel.addNewSimulation("mysim");
 		sim.getSolverTaskDescription().setTimeStep(new TimeStep(1,1,1));
 		int keepEvery = 1;
 		sim.getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec(keepEvery));
@@ -359,7 +360,7 @@ public class SpatialBasisFunctions implements Matchable {
 		MathModel mathModel = createFieldMathModel(mathModelName,inverseProblem);
 		System.out.println(mathModel.getMathDescription().getVCML_database());
 		MathModel savedMathModel = documentManager.save(mathModel, null);
-		Simulation sim = savedMathModel.getSimulations()[0];
+		final Simulation sim = savedMathModel.getSimulations()[0];
 		OutputFunctionContext outputFunctionContext = savedMathModel.getOutputFunctionContext();
 		OutputContext outputContext = new OutputContext(outputFunctionContext.getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
 		final VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(),inversePdeRequestManager.getUser());
@@ -367,14 +368,14 @@ public class SpatialBasisFunctions implements Matchable {
 			public void run() {
 				try {
 					System.out.println("starting simulation");
-					inversePdeRequestManager.startSimulation(vcSimID);
+					inversePdeRequestManager.startSimulation(vcSimID,sim.getMathOverrides().getScanCount());
 				} catch (DataAccessException e) {
 					e.printStackTrace();
 				}
 			}
 		});
 		thread.start();
-		SimulationJobStatus status = null;
+		SimulationJobStatusPersistent status = null;
 		do {
 			try {
 				Thread.sleep(5000);
@@ -383,12 +384,12 @@ public class SpatialBasisFunctions implements Matchable {
 			//status = clientServerManager.getJobManager().getServerSimulationStatus(vcSimID).getJobStatus(0);
 			status = inversePdeRequestManager.getSimulationStatus(sim.getVersion().getVersionKey()).getJobStatus(0);
 			System.out.println("polling simulation, status = "+status.getSimulationExecutionStatus());
-		} while (!status.isDone());
+		} while (!status.getSchedulerStatus().isDone());
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
 		}
-		if (status.isFailed()){
+		if (status.getSchedulerStatus().isFailed()){
 			throw new RuntimeException("solverFailed: "+status.getSimulationMessage().getDisplayMessage());
 		}
 		//
@@ -471,15 +472,15 @@ public class SpatialBasisFunctions implements Matchable {
 			}
 			data = newData;
 			
-			
-			float[] originalImage = new float[data.length];
-			for (int j = 0; j < originalImage.length; j++) {
-				originalImage[j] = (float)data[j];
+			float[] floatPixels = new float[data.length];
+			for (int j = 0; j < floatPixels.length; j++) {
+				floatPixels[j] = (float)data[j];
 			}
+			FloatImage originalImage = new FloatImage(floatPixels,mesh.getOrigin(),mesh.getExtent(),numX,numY,numZ);
 			try {
-				int[] segmentation = new int[originalImage.length];
+				int[] segmentation = new int[originalImage.getPixels().length];
 				Arrays.fill(segmentation, -1);
-				BasisGenerator seg = new BasisGenerator(originalImage,numX,numY,numZ,percent,levels);
+				BasisGenerator seg = new BasisGenerator(originalImage,percent,levels);
 				segmentation = seg.isoVolumesDetection();
 				BasisGenerator.Medoid[] allSegmentCenters = seg.findMedoids(segmentation,Medoid.Euclidian);
 				
@@ -488,7 +489,7 @@ public class SpatialBasisFunctions implements Matchable {
 				//
 				ArrayList<BasisGenerator.Medoid> segmentCenterArray = new ArrayList<BasisGenerator.Medoid>();
 				for (int j = 0; j < allSegmentCenters.length; j++) {
-					if ((allSegmentCenters[j].compartmentId == segmentation[allSegmentCenters[j].index]) && (originalImage[allSegmentCenters[j].index]!=0)){
+					if ((allSegmentCenters[j].compartmentId == segmentation[allSegmentCenters[j].index]) && (originalImage.getPixels()[allSegmentCenters[j].index]!=0)){
 						segmentCenterArray.add(allSegmentCenters[j]);
 					}
 				}
@@ -500,7 +501,7 @@ public class SpatialBasisFunctions implements Matchable {
 					int mediod_compartment = segmentCenterArray.get(k).compartmentId;
 					int globalImageValue = k + globalSegmentationOffset;
 					for (int j = 0; j < segmentation.length; j++) {
-						if (originalImage[j]!=0.0f && segmentation[j]==mediod_compartment){
+						if (originalImage.getPixels()[j]!=0.0f && segmentation[j]==mediod_compartment){
 							globalSegmentation[j] = globalImageValue;
 						}
 					}

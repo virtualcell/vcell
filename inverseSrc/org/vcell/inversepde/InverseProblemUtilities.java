@@ -11,10 +11,8 @@ package org.vcell.inversepde;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -27,15 +25,8 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
-import loci.formats.FormatException;
-import loci.formats.gui.AWTImageTools;
-import loci.formats.gui.BufferedImageWriter;
-import loci.formats.out.TiffWriter;
-
 import org.vcell.inversepde.BasisGenerator.Medoid;
-import org.vcell.inversepde.gui.InverseProblemPanel;
 import org.vcell.inversepde.microscopy.AnnotatedImageDataset_inv;
-import org.vcell.inversepde.microscopy.FRAPStudy;
 import org.vcell.inversepde.microscopy.FRAPStudy;
 import org.vcell.inversepde.microscopy.ImageUtils;
 import org.vcell.inversepde.microscopy.InverseProblemXmlproducer;
@@ -51,49 +42,55 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DialogUtils;
 
 import ucar.ma2.ArrayDouble;
 import ucar.nc2.NetcdfFile;
 import cbit.image.ImageException;
-import cbit.image.TiffException;
 import cbit.image.VCImageUncompressed;
 import cbit.image.VCPixelClass;
+import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.field.db.FieldDataDBOperationResults;
+import cbit.vcell.field.db.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.ROIMultiPaintManager;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
-import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.OutputFunctionContext;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperationResults;
+import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.DataProcessingOutput;
+import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.solvers.CartesianMesh;
 
 import com.jmatio.io.MatFileWriter;
@@ -150,6 +147,8 @@ public class InverseProblemUtilities {
 		int levels = 1;
 					
 		ISize size = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getISize();
+		Origin origin = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getAllImages()[0].getOrigin();
+		Extent extent = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getExtent();
 		int numX = size.getX();
 		int numY = size.getY();
 		int numZ = size.getZ();
@@ -171,14 +170,15 @@ public class InverseProblemUtilities {
 		}
 		for (int i = 0; i < rois.length; i++) {
 			short[] data = rois[i].getPixelsXYZ();
-			float[] originalImage = new float[data.length];
-			for (int j = 0; j < originalImage.length; j++) {
-				originalImage[j] = (float)data[j];
+			float[] floatPixels = new float[data.length];
+			for (int j = 0; j < floatPixels.length; j++) {
+				floatPixels[j] = (float)data[j];
 			}
+			FloatImage originalImage = new FloatImage(floatPixels,origin,extent,numX,numY,numZ);
 			try {
-				int[] segmentation = new int[originalImage.length];
+				int[] segmentation = new int[originalImage.getPixels().length];
 				Arrays.fill(segmentation, -1);
-				BasisGenerator seg = new BasisGenerator(originalImage,numX,numY,numZ,percent,levels);
+				BasisGenerator seg = new BasisGenerator(originalImage,percent,levels);
 				segmentation = seg.isoVolumesDetection();
 				BasisGenerator.Medoid[] allSegmentCenters = seg.findMedoids(segmentation,Medoid.Euclidian);
 				
@@ -187,7 +187,7 @@ public class InverseProblemUtilities {
 				//
 				ArrayList<BasisGenerator.Medoid> segmentCenterArray = new ArrayList<BasisGenerator.Medoid>();
 				for (int j = 0; j < allSegmentCenters.length; j++) {
-					if ((allSegmentCenters[j].compartmentId == segmentation[allSegmentCenters[j].index]) && (originalImage[allSegmentCenters[j].index]!=0)){
+					if ((allSegmentCenters[j].compartmentId == segmentation[allSegmentCenters[j].index]) && (originalImage.getPixels()[allSegmentCenters[j].index]!=0)){
 						segmentCenterArray.add(allSegmentCenters[j]);
 					}
 				}
@@ -197,7 +197,7 @@ public class InverseProblemUtilities {
 				for (int k = 0; k < segmentCenterArray.size(); k++) {
 					int mediod_compartment = segmentCenterArray.get(k).compartmentId;
 					for (int j = 0; j < segmentation.length; j++) {
-						if (originalImage[j]!=0.0f && segmentation[j]==mediod_compartment){
+						if (originalImage.getPixels()[j]!=0.0f && segmentation[j]==mediod_compartment){
 							globalSegmentation[j] = k + globalSegmentationOffset;
 						}
 					}
@@ -417,13 +417,13 @@ public class InverseProblemUtilities {
 		//
 		// construct/save/run a custom math model to construct scalar fields used in 3D basis determination (e.g. in Segmentation3D_)
 		//
-		Simulation sim = mathModel.getSimulations()[0];
+		final Simulation sim = mathModel.getSimulations()[0];
 		final VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(),inversePDERequestManager.getUser());
 		Thread thread = new Thread(new Runnable() {
 			public void run() {
 				try {
 					System.out.println("submitting simulation "+mathModel.getName()+":"+vcSimID.getID()+" ... ");
-					inversePDERequestManager.startSimulation(vcSimID);
+					inversePDERequestManager.startSimulation(vcSimID,sim.getMathOverrides().getScanCount());
 					System.out.println("submitted simulation "+mathModel.getName()+":"+vcSimID.getID()+" ... ");
 				} catch (DataAccessException e) {
 					e.printStackTrace();
@@ -443,7 +443,7 @@ public class InverseProblemUtilities {
 		//
 		final Simulation sim = mathModel.getSimulations()[0];
 		final VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(),inversePDERequestManager.getUser());
-		SimulationStatus simStatus = inversePDERequestManager.getSimulationStatus(sim.getVersion().getVersionKey());
+		SimulationStatusPersistent simStatus = inversePDERequestManager.getSimulationStatus(sim.getVersion().getVersionKey());
 		int scanCount = sim.getScanCount();
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("status for referenceSimulation "+mathModel.getName()+":"+vcSimID.getID()+" - with "+scanCount+" jobs\n");
@@ -544,67 +544,6 @@ public class InverseProblemUtilities {
 		return externalDataID;
 	}
 
-	public static void exportTimeSeriesImageData(InverseProblem inverseProblem, InversePDERequestManager inversePDERequestManager, String baseName) throws TiffException, IOException, FormatException {
-		if (inverseProblem==null){
-			throw new RuntimeException("inverse problem is null");
-		}
-		if (inverseProblem.getMicroscopyData().getTimeSeriesImageData()==null){
-			throw new RuntimeException("time series image data is null");
-		}
-		File directory = inversePDERequestManager.getWorkingDirectory();
-		UShortImage[] timeSeriesImages = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getAllImages();
-	
-		int maxValue = -100000;
-		for (int i = 0; i < timeSeriesImages.length; i++) {
-			short[] pixels = timeSeriesImages[i].getPixels();
-			for (int j = 0; j < pixels.length; j++) {
-				int pixValue = ((int)pixels[j])&0xffff;
-				maxValue = Math.max(maxValue,pixValue);
-			}
-		}
-		
-		Extent extent = timeSeriesImages[0].getExtent();
-		Origin origin = timeSeriesImages[0].getOrigin();
-		ISize isize = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getISize();
-		double[] timesArray = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getImageTimeStamps();
-		for (int i = 0; i < timeSeriesImages.length; i++) {
-			short[] shortPixels = timeSeriesImages[i].getPixels();
-			String filename = new File(directory,baseName+String.format("%1$03d",i)+".tif").getAbsolutePath();
-			System.out.println("writing file "+filename);
-			TiffWriter tifWriter = new TiffWriter();
-			tifWriter.setId(filename);
-			tifWriter.setCompression("Uncompressed");
-			BufferedImage timePointBufferedImage =
-				AWTImageTools.makeImage(shortPixels, isize.getX(), isize.getY(), false);
-			BufferedImageWriter bufferedImageWriter = BufferedImageWriter.makeBufferedImageWriter(tifWriter);
-			bufferedImageWriter.saveImage(timePointBufferedImage, true);
-			tifWriter.close();
-			
-//			BufferedImage bufferedImage = ImageTools.makeImage(bytePixels, isize.getX(), isize.getY());
-//			TiffWriter tiffWriter = new TiffWriter();
-//			tiffWriter.setId(filename);
-//			tiffWriter.saveImage(bufferedImage, true);
-//			tiffWriter.close();
-			
-//			TiffImage tiffImage = new TiffImage(isize.getX(),isize.getY(),1,bytePixels);
-//			tiffImage.write(filename, ByteOrder.PC);
-//			tiffImage.close();
-		}
-		File metadataFile = new File(directory,baseName+"_metadata.txt");
-		System.out.println("writing metadata to "+metadataFile.getAbsolutePath());
-		FileWriter fw = new FileWriter(metadataFile);
-		fw.write("extent: "+extent+"\n");
-		fw.write("origin: "+origin+"\n");
-		fw.write("times:\n");
-		for (int i = 0; i < timesArray.length; i++) {
-			fw.write("     "+timesArray[i]+"\n");
-		}
-		fw.flush();
-		fw.close();
-		System.out.println("finished");
-	}
-
-	
 
 	public static void exportVFRAPData(InverseProblem inverseProblem, File outputFile) throws Exception {
 		if (inverseProblem==null){
@@ -697,10 +636,10 @@ public class InverseProblemUtilities {
 		if (originalNumRows < maxNumRows) {
 			return refData;
 		}
-		cbit.vcell.util.RowColumnResultSet rc = new cbit.vcell.util.RowColumnResultSet();
+		RowColumnResultSet rc = new RowColumnResultSet();
 		String[] columnNames = refData.getColumnNames();
 		for (int i = 0; i < columnNames.length; i++){
-			rc.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(columnNames[i]));
+			rc.addDataColumn(new ODESolverResultSetColumnDescription(columnNames[i]));
 		}
 		for (int i = 0; i < refData.getNumDataRows(); i++){
 			rc.addRow((double[])refData.getDataByRow(i).clone());
@@ -1125,247 +1064,247 @@ public class InverseProblemUtilities {
 	}
 	
 	public static void readRefData(InversePDERequestManager inversePDERequestManager, InverseProblem inverseProblem, String matlabFileName) throws ImageException, DataAccessException, RemoteException, IOException {
-		//
-		//Get grid spatial index "center point" for each sample group (region index collection) 
-		//
-		LinearResponseModel linearResponseModel = inverseProblem.getLinearResponseModel();
-		if (linearResponseModel.getBasisFunctions().getVolumeBases()==null){
-			throw new RuntimeException("volume bases not found");
-		}
-	
-		//
-		// get 2d ROI image to average Convolved data (at the focal plane).
-		//
-		UShortImage roiMaskImage2D = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getROIImage(ROIImage.ROIIMAGE_IMAGEROIS).getMaskImage();
-		int[] roiMaskImage2DPixels = new int[roiMaskImage2D.getNumXYZ()];
-		for (int i = 0; i < roiMaskImage2DPixels.length; i++) {
-			roiMaskImage2DPixels[i] = roiMaskImage2D.getPixels()[i];
-		}
-		VCImageUncompressed vcImage = new VCImageUncompressed(null,roiMaskImage2DPixels,new Extent(1,1,1),roiMaskImage2D.getNumX(),roiMaskImage2D.getNumY(),1);
-		int[] uniquePixelValues = vcImage.getUniquePixelValues();
-		Arrays.sort(uniquePixelValues);
-		
-		if (linearResponseModel.getRefVolumeSimMathModel()==null){
-			throw new RuntimeException("refMathModel not found");
-		}
-		if (linearResponseModel.getRefVolumeSimMathModel().getSimulations()==null || linearResponseModel.getRefVolumeSimMathModel().getSimulations()[0].getVersion()==null){
-			throw new RuntimeException("refMathModel has no saved simulations");
-		}
-	
-		Simulation volumeSimulation = linearResponseModel.getRefVolumeSimMathModel().getSimulations(0);
-		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(volumeSimulation,0);
-		String refSimsVarName = InverseProblemContants.VOL_VAR_NAME;
-		String refSimsConvolvedVarName = InverseProblemContants.VOL_VAR_NAME+"_Convolved";
-	
-		double scale;
-		try {
-			scale = ((Constant)simulationSymbolTable.getVariable("S")).getConstantValue();
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to read variable 'scale' from simulation");
-		}
-		double deltaT;
-		try {
-			deltaT = ((Constant)simulationSymbolTable.getVariable(InverseProblemContants.DELTA_T_NAME)).getConstantValue();
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to read variable 'deltaT' from simulation");
-		}		
-		System.out.println("done reading ... writing out to matlab");
-		
-		int scanCount = volumeSimulation.getScanCount();
-
-		ArrayList<MLArray> list = new ArrayList<MLArray>();
-
-		MLCell refSolutionCells = new MLCell("basisResponses",new int[] { 1, scanCount });
-		MLCell refImageCells = new MLCell("basisResponses2DConv",new int[] { 1, scanCount });
-		MLCell refTimesCells = new MLCell("basisTimes",new int[] { 1, scanCount });
-		
-		ImageDataset timeSeriesImageDataset = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset();
-		double[] experimentalTimes = timeSeriesImageDataset.getImageTimeStamps();
-
-		MLDouble expTimes = new MLDouble("expTimes",new double[][] {experimentalTimes});
-		list.add(expTimes);
-
-		VCDocument nonlinearModel = inverseProblem.getNonlinearModel();
-		if (nonlinearModel==null){
-			throw new RuntimeException("nonlinear model is missing");
-		}
-		if (inverseProblem.getExactSolutionEDI()!=null){
-			DataProcessingOutput dpo = inversePDERequestManager.getDataProcessingOutput(inverseProblem.getExactSolutionEDI());
-			if (dpo != null){
-				MathDescription mathDescription = null;
-				if (nonlinearModel instanceof BioModel){
-					mathDescription = ((BioModel)nonlinearModel).getSimulations()[0].getMathDescription();
-				}else if (nonlinearModel instanceof MathModel){
-					mathDescription = ((MathModel)nonlinearModel).getSimulations()[0].getMathDescription();
-				}
-				ArrayList<VolVariable> volVarList = new ArrayList<VolVariable>();
-				Enumeration<Variable> enumVar = mathDescription.getVariables();
-				while (enumVar.hasMoreElements()) {
-					Variable variable = (Variable) enumVar.nextElement();
-					if (variable instanceof VolVariable){
-						volVarList.add((VolVariable)variable);
-					}
-				}
-				double[] exactTimes = inversePDERequestManager.getDataSetTimes(inverseProblem.getExactSolutionEDI());
-				MLDouble exactTimesVector = new MLDouble("exactTimes",new double[][] { exactTimes });
-				
-				MLCell exactSolutionCells = new MLCell("exactSolution",new int[] { 1, volVarList.size() });
-				byte[] nc_content = dpo.toBytes();
-				try {				
-					NetcdfFile ncfile = NetcdfFile.openInMemory("temp.inmemory", nc_content);
-					
-					for (int varIndex = 0; varIndex < volVarList.size(); varIndex++) {
-						String varName = volVarList.get(varIndex).getName();
-						ucar.nc2.Variable volVar = ncfile.findVariable(varName);
-						int[] shape = volVar.getShape();
-						int[] origin = new int[2];
-						int[] size = new int[] {shape[0], shape[1]};
-						double[][] result_volVar = new double[shape[0]][shape[1]];
-						
-						ArrayDouble.D2 data = null;
-						try{
-							data = (ArrayDouble.D2)volVar.read(origin, size);
-						}catch(Exception e){
-							e.printStackTrace(System.err);
-							throw new IOException("Can not read volVar data.");
-						}
-						for(int i=0;i<shape[0];i++)
-						{
-							for(int j=0;j<shape[1];j++)
-							{
-								result_volVar[i][j]= data.get(i,j);
-							}
-						}
-						MLDouble exactSolution = new MLDouble(varName,result_volVar);
-						exactSolutionCells.set(exactSolution, 0, varIndex);
-					}
-					
-				} catch (IOException e1) {			
-					e1.printStackTrace();
-				}
-				
-				list.add(exactTimesVector);
-				list.add(exactSolutionCells);
-			}
-		}				
-		ROIImageComponent[] imageROIs = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getROIImage(ROIImage.ROIIMAGE_IMAGEROIS).getROIs();
-		double[][] expData = new double[experimentalTimes.length][uniquePixelValues.length];
-		UShortImage[] timeSeriesImages = timeSeriesImageDataset.getAllImages();
-		for (int i = 0; i < timeSeriesImages.length; i++) {
-			short[] imageData = timeSeriesImages[i].getPixels();
-			for (int j = 0; j < imageROIs.length; j++) {
-				int[] indices = imageROIs[j].getIndices();
-				double sum = 0;
-				for (int k = 0; k < indices.length; k++) {
-					sum += ((int)imageData[indices[k]])&0xffff;
-				}
-				if (indices.length>0){
-					expData[i][j] = sum/indices.length;
-				}
-			}
-		}
-		MLDouble expDataMatrix = new MLDouble("expData", expData );
-		list.add(expDataMatrix);
-		
-		for (int scanIndex = 0; scanIndex < scanCount; scanIndex++) {
-			VCSimulationDataIdentifier vcdataID = new VCSimulationDataIdentifier(volumeSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),scanIndex);
-			System.out.println("reading data for scan job "+scanIndex);
-			DataProcessingOutput dpo = inversePDERequestManager.getDataProcessingOutput(vcdataID);
-			byte[] nc_content = dpo.toBytes();
-			try {				
-				NetcdfFile ncfile = NetcdfFile.openInMemory("temp.inmemory", nc_content);
-				
-				// time
-				{
-					ucar.nc2.Variable time = ncfile.findVariable("t");
-					int[] shape = time.getShape();
-					double[] timePoints = new double[shape[0]];
-					ArrayDouble.D1 time_data = null;
-					try{
-						time_data = (ArrayDouble.D1)time.read();
-					}catch(IOException ioe){
-						ioe.printStackTrace(System.err);
-						throw new IOException("Can not read time points from the model.");
-					}
-					for(int i=0; i<shape[0]; i++)
-					{
-						timePoints[i] = time_data.get(i);
-					}
-					double[] correctedTimes = InverseProblemUtilities.correctTimes(timePoints, scale, deltaT);
-					MLDouble refTimes = new MLDouble("t_"+scanIndex,new double[][] {correctedTimes});
-					refTimesCells.set(refTimes, 0, scanIndex);
-				}
-				
-				{
-					ucar.nc2.Variable volVar = ncfile.findVariable(refSimsVarName);
-					int[] shape = volVar.getShape();
-					int[] origin = new int[2];
-					int[] size = new int[] {shape[0], shape[1]};
-					double[][] result_volVar = new double[shape[0]][shape[1]];
-					
-					ArrayDouble.D2 data = null;
-					try{
-						data = (ArrayDouble.D2)volVar.read(origin, size);
-					}catch(Exception e){
-						e.printStackTrace(System.err);
-						throw new IOException("Can not read volVar data.");
-					}
-					for(int i=0;i<shape[0];i++)
-					{
-						for(int j=0;j<shape[1];j++)
-						{
-							result_volVar[i][j]= data.get(i,j);
-						}
-					}
-					MLDouble refSolution = new MLDouble(refSimsVarName+"_"+scanIndex,result_volVar);
-					refSolutionCells.set(refSolution, 0, scanIndex);
-				}
-				
-				{
-					ucar.nc2.Variable volVar_Convolved = ncfile.findVariable(refSimsConvolvedVarName);
-					int[] shape = volVar_Convolved.getShape();
-					int[] origin = new int[2];
-					int[] size = new int[] {shape[0], shape[1]};
-					double[][] result_Convolved = new double[shape[0]][shape[1]];
-					
-					ArrayDouble.D2 data_Convolved = null;
-					try{
-						data_Convolved = (ArrayDouble.D2)volVar_Convolved.read(origin, size);
-					}catch(Exception e){
-						e.printStackTrace(System.err);
-						throw new IOException("Can not read convolved data.");
-					}
-					for(int i=0;i<shape[0];i++)
-					{
-						for(int j=0;j<shape[1];j++)
-						{
-							result_Convolved[i][j]= data_Convolved.get(i,j);
-						}
-					}
-					MLDouble refImage = new MLDouble(refSimsVarName+"_"+scanIndex,result_Convolved);
-					refImageCells.set(refImage, 0, scanIndex);
-				}
-				
-			} catch (IOException e1) {			
-				e1.printStackTrace();
-			}			
-		}
-		list.add(refTimesCells);
-		list.add(refSolutionCells);
-		list.add(refImageCells);
-		
-		//
-		// add experimental data for image
-		//
-		// add exact solution at control points
-		//
-		//
-		System.out.println("writing matlab file to "+matlabFileName);
-		MatFileWriter writer = new MatFileWriter();
-		writer.write(matlabFileName, list );
-		
-		inverseProblem.setMatlabDataFileName(matlabFileName);
+//		//
+//		//Get grid spatial index "center point" for each sample group (region index collection) 
+//		//
+//		LinearResponseModel linearResponseModel = inverseProblem.getLinearResponseModel();
+//		if (linearResponseModel.getBasisFunctions().getVolumeBases()==null){
+//			throw new RuntimeException("volume bases not found");
+//		}
+//	
+//		//
+//		// get 2d ROI image to average Convolved data (at the focal plane).
+//		//
+//		UShortImage roiMaskImage2D = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getROIImage(ROIImage.ROIIMAGE_IMAGEROIS).getMaskImage();
+//		int[] roiMaskImage2DPixels = new int[roiMaskImage2D.getNumXYZ()];
+//		for (int i = 0; i < roiMaskImage2DPixels.length; i++) {
+//			roiMaskImage2DPixels[i] = roiMaskImage2D.getPixels()[i];
+//		}
+//		VCImageUncompressed vcImage = new VCImageUncompressed(null,roiMaskImage2DPixels,new Extent(1,1,1),roiMaskImage2D.getNumX(),roiMaskImage2D.getNumY(),1);
+//		int[] uniquePixelValues = vcImage.getUniquePixelValues();
+//		Arrays.sort(uniquePixelValues);
+//		
+//		if (linearResponseModel.getRefVolumeSimMathModel()==null){
+//			throw new RuntimeException("refMathModel not found");
+//		}
+//		if (linearResponseModel.getRefVolumeSimMathModel().getSimulations()==null || linearResponseModel.getRefVolumeSimMathModel().getSimulations()[0].getVersion()==null){
+//			throw new RuntimeException("refMathModel has no saved simulations");
+//		}
+//	
+//		Simulation volumeSimulation = linearResponseModel.getRefVolumeSimMathModel().getSimulations(0);
+//		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(volumeSimulation,0);
+//		String refSimsVarName = InverseProblemContants.VOL_VAR_NAME;
+//		String refSimsConvolvedVarName = InverseProblemContants.VOL_VAR_NAME+"_Convolved";
+//	
+//		double scale;
+//		try {
+//			scale = ((Constant)simulationSymbolTable.getVariable("S")).getConstantValue();
+//		} catch (ExpressionException e) {
+//			e.printStackTrace();
+//			throw new RuntimeException("failed to read variable 'scale' from simulation");
+//		}
+//		double deltaT;
+//		try {
+//			deltaT = ((Constant)simulationSymbolTable.getVariable(InverseProblemContants.DELTA_T_NAME)).getConstantValue();
+//		} catch (ExpressionException e) {
+//			e.printStackTrace();
+//			throw new RuntimeException("failed to read variable 'deltaT' from simulation");
+//		}		
+//		System.out.println("done reading ... writing out to matlab");
+//		
+//		int scanCount = volumeSimulation.getScanCount();
+//
+//		ArrayList<MLArray> list = new ArrayList<MLArray>();
+//
+//		MLCell refSolutionCells = new MLCell("basisResponses",new int[] { 1, scanCount });
+//		MLCell refImageCells = new MLCell("basisResponses2DConv",new int[] { 1, scanCount });
+//		MLCell refTimesCells = new MLCell("basisTimes",new int[] { 1, scanCount });
+//		
+//		ImageDataset timeSeriesImageDataset = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset();
+//		double[] experimentalTimes = timeSeriesImageDataset.getImageTimeStamps();
+//
+//		MLDouble expTimes = new MLDouble("expTimes",new double[][] {experimentalTimes});
+//		list.add(expTimes);
+//
+//		VCDocument nonlinearModel = inverseProblem.getNonlinearModel();
+//		if (nonlinearModel==null){
+//			throw new RuntimeException("nonlinear model is missing");
+//		}
+//		if (inverseProblem.getExactSolutionEDI()!=null){
+//			DataProcessingOutput dpo = inversePDERequestManager.getDataProcessingOutput(inverseProblem.getExactSolutionEDI());
+//			if (dpo != null){
+//				MathDescription mathDescription = null;
+//				if (nonlinearModel instanceof BioModel){
+//					mathDescription = ((BioModel)nonlinearModel).getSimulations()[0].getMathDescription();
+//				}else if (nonlinearModel instanceof MathModel){
+//					mathDescription = ((MathModel)nonlinearModel).getSimulations()[0].getMathDescription();
+//				}
+//				ArrayList<VolVariable> volVarList = new ArrayList<VolVariable>();
+//				Enumeration<Variable> enumVar = mathDescription.getVariables();
+//				while (enumVar.hasMoreElements()) {
+//					Variable variable = (Variable) enumVar.nextElement();
+//					if (variable instanceof VolVariable){
+//						volVarList.add((VolVariable)variable);
+//					}
+//				}
+//				double[] exactTimes = inversePDERequestManager.getDataSetTimes(inverseProblem.getExactSolutionEDI());
+//				MLDouble exactTimesVector = new MLDouble("exactTimes",new double[][] { exactTimes });
+//				
+//				MLCell exactSolutionCells = new MLCell("exactSolution",new int[] { 1, volVarList.size() });
+//				byte[] nc_content = dpo.toBytes();
+//				try {				
+//					NetcdfFile ncfile = NetcdfFile.openInMemory("temp.inmemory", nc_content);
+//					
+//					for (int varIndex = 0; varIndex < volVarList.size(); varIndex++) {
+//						String varName = volVarList.get(varIndex).getName();
+//						ucar.nc2.Variable volVar = ncfile.findVariable(varName);
+//						int[] shape = volVar.getShape();
+//						int[] origin = new int[2];
+//						int[] size = new int[] {shape[0], shape[1]};
+//						double[][] result_volVar = new double[shape[0]][shape[1]];
+//						
+//						ArrayDouble.D2 data = null;
+//						try{
+//							data = (ArrayDouble.D2)volVar.read(origin, size);
+//						}catch(Exception e){
+//							e.printStackTrace(System.err);
+//							throw new IOException("Can not read volVar data.");
+//						}
+//						for(int i=0;i<shape[0];i++)
+//						{
+//							for(int j=0;j<shape[1];j++)
+//							{
+//								result_volVar[i][j]= data.get(i,j);
+//							}
+//						}
+//						MLDouble exactSolution = new MLDouble(varName,result_volVar);
+//						exactSolutionCells.set(exactSolution, 0, varIndex);
+//					}
+//					
+//				} catch (IOException e1) {			
+//					e1.printStackTrace();
+//				}
+//				
+//				list.add(exactTimesVector);
+//				list.add(exactSolutionCells);
+//			}
+//		}				
+//		ROIImageComponent[] imageROIs = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getROIImage(ROIImage.ROIIMAGE_IMAGEROIS).getROIs();
+//		double[][] expData = new double[experimentalTimes.length][uniquePixelValues.length];
+//		UShortImage[] timeSeriesImages = timeSeriesImageDataset.getAllImages();
+//		for (int i = 0; i < timeSeriesImages.length; i++) {
+//			short[] imageData = timeSeriesImages[i].getPixels();
+//			for (int j = 0; j < imageROIs.length; j++) {
+//				int[] indices = imageROIs[j].getIndices();
+//				double sum = 0;
+//				for (int k = 0; k < indices.length; k++) {
+//					sum += ((int)imageData[indices[k]])&0xffff;
+//				}
+//				if (indices.length>0){
+//					expData[i][j] = sum/indices.length;
+//				}
+//			}
+//		}
+//		MLDouble expDataMatrix = new MLDouble("expData", expData );
+//		list.add(expDataMatrix);
+//		
+//		for (int scanIndex = 0; scanIndex < scanCount; scanIndex++) {
+//			VCSimulationDataIdentifier vcdataID = new VCSimulationDataIdentifier(volumeSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),scanIndex);
+//			System.out.println("reading data for scan job "+scanIndex);
+//			DataProcessingOutput dpo = inversePDERequestManager.getDataProcessingOutput(vcdataID);
+//			byte[] nc_content = dpo.toBytes();
+//			try {				
+//				NetcdfFile ncfile = NetcdfFile.openInMemory("temp.inmemory", nc_content);
+//				
+//				// time
+//				{
+//					ucar.nc2.Variable time = ncfile.findVariable("t");
+//					int[] shape = time.getShape();
+//					double[] timePoints = new double[shape[0]];
+//					ArrayDouble.D1 time_data = null;
+//					try{
+//						time_data = (ArrayDouble.D1)time.read();
+//					}catch(IOException ioe){
+//						ioe.printStackTrace(System.err);
+//						throw new IOException("Can not read time points from the model.");
+//					}
+//					for(int i=0; i<shape[0]; i++)
+//					{
+//						timePoints[i] = time_data.get(i);
+//					}
+//					double[] correctedTimes = InverseProblemUtilities.correctTimes(timePoints, scale, deltaT);
+//					MLDouble refTimes = new MLDouble("t_"+scanIndex,new double[][] {correctedTimes});
+//					refTimesCells.set(refTimes, 0, scanIndex);
+//				}
+//				
+//				{
+//					ucar.nc2.Variable volVar = ncfile.findVariable(refSimsVarName);
+//					int[] shape = volVar.getShape();
+//					int[] origin = new int[2];
+//					int[] size = new int[] {shape[0], shape[1]};
+//					double[][] result_volVar = new double[shape[0]][shape[1]];
+//					
+//					ArrayDouble.D2 data = null;
+//					try{
+//						data = (ArrayDouble.D2)volVar.read(origin, size);
+//					}catch(Exception e){
+//						e.printStackTrace(System.err);
+//						throw new IOException("Can not read volVar data.");
+//					}
+//					for(int i=0;i<shape[0];i++)
+//					{
+//						for(int j=0;j<shape[1];j++)
+//						{
+//							result_volVar[i][j]= data.get(i,j);
+//						}
+//					}
+//					MLDouble refSolution = new MLDouble(refSimsVarName+"_"+scanIndex,result_volVar);
+//					refSolutionCells.set(refSolution, 0, scanIndex);
+//				}
+//				
+//				{
+//					ucar.nc2.Variable volVar_Convolved = ncfile.findVariable(refSimsConvolvedVarName);
+//					int[] shape = volVar_Convolved.getShape();
+//					int[] origin = new int[2];
+//					int[] size = new int[] {shape[0], shape[1]};
+//					double[][] result_Convolved = new double[shape[0]][shape[1]];
+//					
+//					ArrayDouble.D2 data_Convolved = null;
+//					try{
+//						data_Convolved = (ArrayDouble.D2)volVar_Convolved.read(origin, size);
+//					}catch(Exception e){
+//						e.printStackTrace(System.err);
+//						throw new IOException("Can not read convolved data.");
+//					}
+//					for(int i=0;i<shape[0];i++)
+//					{
+//						for(int j=0;j<shape[1];j++)
+//						{
+//							result_Convolved[i][j]= data_Convolved.get(i,j);
+//						}
+//					}
+//					MLDouble refImage = new MLDouble(refSimsVarName+"_"+scanIndex,result_Convolved);
+//					refImageCells.set(refImage, 0, scanIndex);
+//				}
+//				
+//			} catch (IOException e1) {			
+//				e1.printStackTrace();
+//			}			
+//		}
+//		list.add(refTimesCells);
+//		list.add(refSolutionCells);
+//		list.add(refImageCells);
+//		
+//		//
+//		// add experimental data for image
+//		//
+//		// add exact solution at control points
+//		//
+//		//
+//		System.out.println("writing matlab file to "+matlabFileName);
+//		MatFileWriter writer = new MatFileWriter();
+//		writer.write(matlabFileName, list );
+//		
+//		inverseProblem.setMatlabDataFileName(matlabFileName);
 	}
 }
