@@ -9,10 +9,10 @@
  */
 package org.vcell.inversepde.gui;
 
-import org.vcell.inversepde.SpatialBasisFunctions;
 import org.vcell.inversepde.InverseProblem;
 import org.vcell.inversepde.LinearResponseModel;
 import org.vcell.inversepde.MembraneBasis;
+import org.vcell.inversepde.SpatialBasisFunctions;
 import org.vcell.inversepde.VolumeBasis;
 import org.vcell.inversepde.microscopy.AnnotatedImageDataset_inv;
 import org.vcell.inversepde.microscopy.MicroscopyData;

@@ -23,16 +23,15 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.solver.DataProcessingOutput;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class InversePDERequestManager {
@@ -85,11 +84,11 @@ public class InversePDERequestManager {
 		return clientServerManager.getUser();
 	}
 
-	public void startSimulation(VCSimulationIdentifier vcSimID) throws DataAccessException {
-		clientServerManager.getJobManager().startSimulation(vcSimID);
+	public void startSimulation(VCSimulationIdentifier vcSimID, int numScanJobs) throws DataAccessException {
+		clientServerManager.getJobManager().startSimulation(vcSimID, numScanJobs);
 	}
 
-	public SimulationStatus getSimulationStatus(KeyValue versionKey) throws ObjectNotFoundException, RemoteException, DataAccessException {
+	public SimulationStatusPersistent getSimulationStatus(KeyValue versionKey) throws ObjectNotFoundException, RemoteException, DataAccessException {
 		return clientServerManager.getUserMetaDbServer().getSimulationStatus(versionKey);
 	}
 
@@ -107,10 +106,6 @@ public class InversePDERequestManager {
 	
 	public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcDataId) throws RemoteException, DataAccessException {
 		return clientServerManager.getDataSetController().getDataIdentifiers(outputContext, vcDataId);
-	}
-
-	public DataProcessingOutput getDataProcessingOutput(VCDataIdentifier vcDataId) throws RemoteException, DataAccessException{
-		return clientServerManager.getDataSetController().getDataProcessingOutput(vcDataId);
 	}
 
 	public DataSetControllerProvider getDataSetControllerProvider() {

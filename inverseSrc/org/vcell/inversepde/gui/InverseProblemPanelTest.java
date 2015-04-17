@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 
 import org.vcell.inversepde.InverseProblem;
 import org.vcell.inversepde.services.InversePDERequestManager;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
@@ -64,7 +65,9 @@ public class InverseProblemPanelTest {
 			});
 			frame.setSize(800,900);
 			ClientServerManager clientServerManager = mainInit(args, "InverseProblemPanelTest");
-			ipPanel.setInversePDERequestManager(new InversePDERequestManager(clientServerManager, directory));
+//			InversePDERequestManager inversePDERequestManager = new InversePDERequestManager(clientServerManager, directory);
+			InversePDERequestManager inversePDERequestManager = null;
+			ipPanel.setInversePDERequestManager(inversePDERequestManager );
 			ipPanel.setInverseProblem(inverseProblem);
 			System.setOut(new TextAreaPrintStream(ipPanel.getTextArea()));
 			frame.setVisible(true);
@@ -77,9 +80,9 @@ public class InverseProblemPanelTest {
 		ClientServerInfo csInfo = null;
 		if (args.length >= 3) {
 			if (args[0].equalsIgnoreCase("-local")) {
-				csInfo = ClientServerInfo.createLocalServerInfo(args[1], args[2]);
+				csInfo = ClientServerInfo.createLocalServerInfo(args[1], new DigestedPassword(args[2]));
 			} else {
-				csInfo = ClientServerInfo.createRemoteServerInfo(new String[] {args[0]}, args[1], args[2]);
+				csInfo = ClientServerInfo.createRemoteServerInfo(new String[] {args[0]}, args[1], new DigestedPassword(args[2]));
 			}
 		}else{
 			System.err.println("usage: " + programName + " -local userid password");

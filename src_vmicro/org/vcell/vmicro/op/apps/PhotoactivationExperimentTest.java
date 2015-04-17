@@ -132,10 +132,13 @@ public class PhotoactivationExperimentTest {
 		ROI cellROI = cellROIresults.cellROI_2D;
 		int indexOfFirstPostactivation = cellROIresults.indexOfFirstPostactivation;
 		
-		NormalizedPhotoactivationDataResults normResults = new GenerateNormalizedPhotoactivationDataOp().generate(blurredRaw, backgroundROI, indexOfFirstPostactivation);
+		boolean backgroundSubtract = false;
+		boolean normalizeByPreActivation = false;
+		NormalizedPhotoactivationDataResults normResults = new GenerateNormalizedPhotoactivationDataOp().generate(rawTimeSeriesImages, backgroundROI, indexOfFirstPostactivation, backgroundSubtract, normalizeByPreActivation);
 		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedPhotoactivationData;
 		FloatImage preactivationAvg = normResults.preactivationAverageImage;
 		FloatImage normalizedPostactivation = normalizedTimeSeries.getAllImages()[0];
+		
 		
 		new DisplayTimeSeriesOp().displayImageTimeSeries(normalizedTimeSeries, "normalized images", (WindowListener)null);
 		//
@@ -173,11 +176,11 @@ public class PhotoactivationExperimentTest {
 		// 2 parameter uniform disk model
 		//
 		Parameter tau = new Parameter("tau",0.001,200.0,1.0,0.1);
-		Parameter f_init = new Parameter("f_init",0.5,15,1.0,1.0);
-		Parameter f_final = new Parameter("f_final",0.01,15.0,1.0,0.5);
+		Parameter f_init = new Parameter("f_init",0.5,4000,1.0,1.0);
+		Parameter f_final = new Parameter("f_final",0.01,4000,1.0,0.5);
 		Parameter[] parameters = new Parameter[] {	tau, f_init, f_final };
 		
-		OptModel optModel = new OptModel("simplePhotoactivation", parameters) {
+		OptModel optModel = new OptModel("photoactivation (activated roi)", parameters) {
 			
 			@Override
 			public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
@@ -223,23 +226,23 @@ public class PhotoactivationExperimentTest {
 		// 2 parameter uniform disk model
 		//
 		Parameter tau_active = new Parameter("tau_active",0.001,200.0,1.0,0.1);
-		Parameter f_active_init = new Parameter("f_active_init",0.5,15,1.0,1.0);
-		Parameter f_active_final = new Parameter("f_active_final",0.01,15.0,1.0,0.5);
-		Parameter f_cell_init = new Parameter("f_cell_init",0.01,15,1.0,0.1);
-		Parameter f_cell_final = new Parameter("f_cell_final",0.01,3.0,1.0,0.1);
+		Parameter f_active_init = new Parameter("f_active_init",0.5,4000,1.0,1.0);
+		Parameter f_active_amplitude = new Parameter("f_active_amplitude",0.01,4000,1.0,0.5);
+		Parameter f_cell_init = new Parameter("f_cell_init",0.01,4000,1.0,0.1);
+		Parameter f_cell_amplitude = new Parameter("f_cell_amplitude",0.01,4000,1.0,0.1);
 		Parameter tau_cell = new Parameter("tau_cell",0.00001,200,1.0,1);
-		Parameter[] parameters = new Parameter[] {	tau_active, f_active_init, f_active_final, tau_cell, f_cell_init, f_cell_final  };
+		Parameter[] parameters = new Parameter[] {	tau_active, f_active_init, f_active_amplitude, tau_cell, f_cell_init, f_cell_amplitude  };
 		
-		OptModel optModel = new OptModel("simplePhotoactivation", parameters) {
+		OptModel optModel = new OptModel("photoactivation (activated and cell rois)", parameters) {
 			
 			@Override
 			public double[][] getSolution0(double[] newParams, double[] solutionTimePoints) {
 				double tau_active = newParams[0];
 				double max_active = newParams[1];
-				double final_active = newParams[2];
+				double amplitude_active = newParams[2];
 				double tau_cell = newParams[3];
 				double max_cell = newParams[4];
-				double final_cell = newParams[5];
+				double amplitude_cell = newParams[5];
 				
 				final int ACTIVE_ROI = 0;
 				final int CELL_ROI = 1;
@@ -248,8 +251,8 @@ public class PhotoactivationExperimentTest {
 				double[][] solution = new double[NUM_ROIS][solutionTimePoints.length];
 				for (int i=0;i<solution[0].length;i++){
 					double t = solutionTimePoints[i];
-					solution[ACTIVE_ROI][i] = final_active + (max_active-final_active)*Math.exp(-t/tau_active)*Math.exp(-t/tau_cell);
-					solution[CELL_ROI][i] = final_cell + (max_cell-final_cell)*Math.exp(-t/tau_cell);
+					solution[ACTIVE_ROI][i] = (max_active-amplitude_active) + (amplitude_active)*Math.exp(-t/tau_active)*Math.exp(-t/tau_cell);
+					solution[CELL_ROI][i] = (max_cell-amplitude_cell) + (amplitude_cell)*Math.exp(-t/tau_cell);
 				}
 				
 				return solution;
