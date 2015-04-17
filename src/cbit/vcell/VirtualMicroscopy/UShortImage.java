@@ -476,6 +476,37 @@ public UShortImage crop(Rectangle rect) throws ImageException{
 	return (UShortImage)Image.crop(this, rect);
 }
 
+public void blur() throws ImageException{
+	if (getNumZ()!=1){
+		throw new RuntimeException("not yet implemented");
+	}
+	int numY = getNumY();
+	int numX = getNumX();
+	short[] blurred = new short[numX*numY];
+	int pixelIndex = 0;
+	for (int j=0;j<numY;j++){
+		for (int i=0;i<numX;i++){
+			int count = 0;
+			int sum = 0;
+			for (int ii=-1;ii<2;ii++){
+				int iIndex = i + ii;
+				if (iIndex>=0 && iIndex<numX){
+					for (int jj=-1;jj<2;jj++){
+						int jIndex = j+jj;
+						if (jIndex>=0 && jIndex<numY){
+							sum +=  this.pixels[iIndex + numX*jIndex];
+							count++;
+						}
+					}
+				}
+			}
+			blurred[pixelIndex] = ((short)(0xffff & (sum/count)));
+			pixelIndex++;
+		}
+	}
+	pixels = blurred;
+}
+
 public static KernelJAI createCircularBinaryKernel(int radius){
 	int enclosingBoxSideLength = radius*2+1;
 	float[] kernalData = new float[enclosingBoxSideLength*enclosingBoxSideLength];
