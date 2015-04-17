@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.JOptionPane;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.jdom.Document;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
@@ -47,7 +48,6 @@ public class VCellClientTest {
 	public static VCellClient getVCellClient() {
 		return vcellClient;
 	}
-	
 	
 	
 /**
@@ -128,8 +128,8 @@ public static void main(java.lang.String[] args) {
 	try {
 		String propertyFile = PropertyLoader.getProperty(PropertyLoader.propertyFileProperty, "");
 		if (propertyFile.length()>0){
+			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES,REQUIRED_LOCAL_PROPERTIES) );
 			try {
-				PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
 				VCMongoMessage.enabled = true;
 				VCMongoMessage.serviceStartup(ServiceName.client,null,null);
 				PropertyLoader.sendErrorsToMongo();
@@ -164,5 +164,23 @@ public static void main(java.lang.String[] args) {
 private static final String REQUIRED_CLIENT_PROPERTIES[] = {
 	PropertyLoader.installationRoot,
 	PropertyLoader.vcellSoftwareVersion,
+};
+
+/**
+ * array of properties required for correct local operation
+ */
+private static final String REQUIRED_LOCAL_PROPERTIES[] = {
+	PropertyLoader.primarySimDataDirProperty,
+	PropertyLoader.secondarySimDataDirProperty,
+	PropertyLoader.dbPassword,
+	PropertyLoader.dbUserid,
+	PropertyLoader.dbDriverName,
+	PropertyLoader.dbConnectURL,
+	PropertyLoader.vcellServerIDProperty,
+	PropertyLoader.mongodbDatabase,
+	PropertyLoader.mongodbHost,
+	PropertyLoader.mongodbLoggingCollection,
+	PropertyLoader.mongodbPort
+	
 };
 }
