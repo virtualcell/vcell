@@ -18,10 +18,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Arrays;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -39,43 +37,34 @@ import org.vcell.inversepde.microscopy.InverseProblemXmlReader;
 import org.vcell.inversepde.microscopy.InverseProblemXmlproducer;
 import org.vcell.inversepde.microscopy.ROIImage;
 import org.vcell.inversepde.services.InversePDERequestManager;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.vmicro.op.ExportRawTimeSeriesToVFrapOp;
+import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.DataViewerManager;
 import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.SimStatusEvent;
-import cbit.vcell.client.data.NewClientPDEDataContext;
-import cbit.vcell.client.data.OutputContext;
 import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.DataSetControllerProvider;
-import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.server.DataSetController;
-import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataListener;
 import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.PDEDataManager;
+import cbit.vcell.simdata.VCDataManager;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.xml.XmlHelper;
 
 public class InverseProblemPanel extends JPanel {
@@ -510,7 +499,7 @@ public class InverseProblemPanel extends JPanel {
 					DataSetControllerProvider dataSetControllerProvider = inversePDERequestManager.getDataSetControllerProvider();
 					VCDataManager vcDataManager = new VCDataManager(dataSetControllerProvider);
 					PDEDataManager pdeDataManager = new PDEDataManager(outputContext,vcDataManager,inverseProblem.getExactSolutionEDI());
-					PDEDataContext pdeDataContext = new NewClientPDEDataContext(pdeDataManager);
+					NewClientPDEDataContext pdeDataContext = new NewClientPDEDataContext(pdeDataManager);
 					pdeDataViewer.setPdeDataContext(pdeDataContext);
 					DialogUtils.showComponentCloseDialog(InverseProblemPanel.this, pdeDataViewer, "simulation data");
 				}catch (Exception ex){
@@ -839,15 +828,18 @@ public class InverseProblemPanel extends JPanel {
 				try {
 					FileFilter fileFilter = new FileFilter() {
 						public boolean accept(File f) {
-							return f.isDirectory() || f.getName().endsWith(".tif");
+							return f.isDirectory() || f.getName().endsWith(".vfrap");
 						}
 						public String getDescription() {
-							return "tiff files";
+							return "vfrap files";
 						}
 				    };
-				    File selectedFile = inversePDERequestManager.getSelectedSaveFile(InverseProblemPanel.this, fileFilter, "save time series as TIFF images");
-					String baseName = selectedFile.getName();
-					InverseProblemUtilities.exportTimeSeriesImageData(inverseProblem, inversePDERequestManager, baseName);
+				    File selectedFile = inversePDERequestManager.getSelectedSaveFile(InverseProblemPanel.this, fileFilter, "save time series as VFRAP file");
+				    UShortImage[] ushortImages = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getAllImages();
+				    double[] timestamps = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getImageTimeStamps();
+				    int numZ = inverseProblem.getMicroscopyData().getTimeSeriesImageData().getImageDataset().getSizeZ();
+				    ImageTimeSeries<UShortImage> imageTimeSeries = new ImageTimeSeries<UShortImage>(UShortImage.class,ushortImages,timestamps,numZ);
+					new ExportRawTimeSeriesToVFrapOp().exportToVFRAP(selectedFile, imageTimeSeries, null);
 					System.out.println("done");
 				}catch (Exception ex){
 					ex.printStackTrace(System.out);

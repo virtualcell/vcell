@@ -28,8 +28,6 @@ import javax.media.jai.operator.ErodeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
 import javax.media.jai.operator.LookupDescriptor;
 
-import loci.formats.gui.AWTImageTools;
-
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 
@@ -55,10 +53,6 @@ public class ImageUtils {
 		return new KernelJAI(enclosingBoxSideLength,enclosingBoxSideLength,radius,radius,kernalData);
 	}
 
-	public static PlanarImage binarize(UShortImage source){
-		return binarize(AWTImageTools.makeImage(source.getPixels(), source.getNumX(), source.getNumY(), false));
-	}
-
 	public static PlanarImage binarize(BufferedImage source){
 		PlanarImage planarSource = PlanarImage.wrapRenderedImage(source);
 		double[][] minmaxArr = (double[][])ExtremaDescriptor.create(planarSource, null, 1, 1, false, 1,null).getProperty("extrema");
@@ -78,7 +72,7 @@ public class ImageUtils {
 	public static UShortImage erodeDilate(UShortImage source,KernelJAI dilateErodeKernel,UShortImage mask,boolean bErode) throws ImageException{
 			PlanarImage completedImage = null;
 			PlanarImage operatedImage = null;
-			PlanarImage planarSource = binarize(source);
+			PlanarImage planarSource = UShortImage.binarize(source);
 			Integer borderPad = dilateErodeKernel.getWidth()/2;
 			planarSource = 
 				BorderDescriptor.create(planarSource,
@@ -99,7 +93,7 @@ public class ImageUtils {
 	    			new Float(source.getNumX()), new Float(source.getNumY()), null);
 	    	operatedImage = binarize(operatedImage.getAsBufferedImage());
 			if (mask != null) {
-				RenderedOp andDescriptor = AndDescriptor.create(operatedImage,binarize(mask), null);
+				RenderedOp andDescriptor = AndDescriptor.create(operatedImage,UShortImage.binarize(mask), null);
 				completedImage = andDescriptor.createInstance();
 			}else{
 				completedImage = operatedImage;

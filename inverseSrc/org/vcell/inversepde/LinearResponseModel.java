@@ -13,14 +13,11 @@ import java.beans.PropertyVetoException;
 import java.util.Arrays;
 
 import org.vcell.inversepde.microscopy.ROIImage;
-import org.vcell.inversepde.services.InversePDERequestManager;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.MathModelInfo;
 
 import cbit.image.VCImage;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -39,12 +36,12 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -226,7 +223,7 @@ public class LinearResponseModel  implements Matchable {
 		if (!mathDesc.isValid()){
 			throw new RuntimeException("generated math is not valid, problem: "+mathDesc.getWarning());
 		}
-		Simulation sim = mathModel.addNewSimulation();
+		Simulation sim = mathModel.addNewSimulation("mysim");
 		sim.getSolverTaskDescription().setTimeStep(new TimeStep(1,deltaTValue,1));
 		
 		// setup parameter scan
@@ -398,7 +395,7 @@ public class LinearResponseModel  implements Matchable {
 		if (!mathDesc.isValid()){
 			throw new RuntimeException("generated math is not valid, problem: "+mathDesc.getWarning());
 		}
-		Simulation sim = mathModel.addNewSimulation();
+		Simulation sim = mathModel.addNewSimulation("mysim");
 		sim.getSolverTaskDescription().setTimeStep(new TimeStep(1,deltaTValue,1));
 		
 		// setup parameter scan

@@ -16,7 +16,7 @@ import org.vcell.util.Origin;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 
@@ -32,10 +32,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 		private float percentile = 0.03F; 	// (user input/100) energy level per compartment (ex each compartment has 3% of total energy)
 		private int levels = 4; 			// number of segments; more separate regions may belong to same segment
 
-		private float[] pixels = null;		// the original image
-		private int xDimension;
-		private int yDimension;
-		private int zDimension;
+		private final FloatImage originalImage;		// the original image
 		private float globalMin, globalMax;
 		
 		// highest compartmentId in use; any newly generated id must be higher
@@ -43,11 +40,8 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
     	private int maxCompartmentId;		
     	private int numCompartments;		// number of compartments
 		
-		public BasisGenerator (float[] originalImage, int imageX, int imageY, int imageZ, float perc, int lev) {
-			pixels = originalImage;		// note that we modify the original image
-			xDimension = imageX;
-			yDimension = imageY;
-			zDimension = imageZ;
+		public BasisGenerator (FloatImage originalImage, float perc, int lev) {
+			this.originalImage = originalImage;
 			percentile = perc;
 			levels = lev;
 			dataRestoration();
@@ -59,6 +53,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 		// correct against rogue negative pixels - sometimes a common occurence
 		// pixels of value 0 are masked out, we assign to negative pixels a minimal non-zero value
 		private void dataRestoration() {
+			float[] pixels = originalImage.getPixels();
 			for(int i=0; i<pixels.length; i++) {
 				if(pixels[i] < 0) {
 					pixels[i] = Float.MIN_VALUE;
@@ -66,6 +61,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 			}
 		}
 		private void computeStatistics() {
+			float[] pixels = originalImage.getPixels();
 			globalMin = pixels[0];
 			globalMax = pixels[0];
 			for(int i=1; i<pixels.length; i++) {
@@ -98,6 +94,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 			threshold[levels-1] += Float.MIN_VALUE;
 
 			// separate image in segments (isosurfaces) based on the thresholding levels
+			float[] pixels = originalImage.getPixels();
 			byte[] values = new byte[pixels.length];
 			for(int i=0; i<pixels.length; i++) {
 				for (int j=0; j<levels; j++) {
@@ -112,9 +109,9 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 			try {
 				// separate segments with discontinuities into regions
 				// we can have more than 1 regions for the same segment
-				vcImage = new VCImageUncompressed(null,values,new Extent(1,1,1),xDimension,yDimension,zDimension);
+				vcImage = new VCImageUncompressed(null,values,new Extent(1,1,1),originalImage.getNumX(),originalImage.getNumY(),originalImage.getNumZ());
 				int numDimensions;
-				switch(zDimension) {
+				switch(originalImage.getNumZ()) {
 				case 0:
 				case 1:
 					numDimensions = 2;
@@ -206,17 +203,17 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 				
 					for(int radius =2; radius<100; radius++) {	// we look around the seed on a progressively wider radius
 						for(k = -radius; k <= radius && pixelsInCompartment < projectedCompartmentPixels; k++) {
-							if((seedX + k) < 0 || (seedX + k) >= xDimension)
+							if((seedX + k) < 0 || (seedX + k) >= originalImage.getNumX())
 								continue;		// out of image bounds
 							x = seedX + k;
 
 							for(l = -radius; l <= radius && pixelsInCompartment < projectedCompartmentPixels; l++) {
-								if((seedY + l) < 0 || (seedY + l) >= yDimension)
+								if((seedY + l) < 0 || (seedY + l) >= originalImage.getNumY())
 									continue;	// out of image bounds
 								y = seedY + l;
 								
 								for(m = -radius; m <= radius && pixelsInCompartment < projectedCompartmentPixels; m++) {
-									if((seedZ + m) < 0 || (seedZ + m) >= zDimension)
+									if((seedZ + m) < 0 || (seedZ + m) >= originalImage.getNumZ())
 										continue;	// out of image bounds
 									z = seedZ + m;
 								
@@ -271,7 +268,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 						throw new RuntimeException("Coordinates incompatible with index.");
 					}
 					int closestCompartmentIndex = 0;				// index of closest centroid
-					int distanceToClosest = xDimension*xDimension + yDimension*yDimension + zDimension*zDimension;	// computing distance to closest centroid
+					int distanceToClosest = originalImage.getNumX()*originalImage.getNumX() + originalImage.getNumY()*originalImage.getNumY() + originalImage.getNumZ()*originalImage.getNumZ();	// computing distance to closest centroid
 					for(int c=0; c<regionStatistics[currRegion].numActualCompartments; c++ ) {
 						int xC = getX(regionStatistics[currRegion].compartments[c].centroidIndex);
 						int yC = getY(regionStatistics[currRegion].compartments[c].centroidIndex);
@@ -403,10 +400,10 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 			}
 			// separate compartments with discontinuities into separate compartments
 			try {
-				vcImage = new VCImageUncompressed(null,cValues, new Extent(1,1,1), xDimension,yDimension,zDimension);
+				vcImage = new VCImageUncompressed(null,cValues, new Extent(1,1,1), originalImage.getNumX(),originalImage.getNumY(),originalImage.getNumZ());
 
 				int numDimensions;
-				switch(zDimension) {
+				switch(originalImage.getNumZ()) {
 				case 0:
 				case 1:
 					numDimensions = 2;
@@ -423,6 +420,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			float[] pixels = originalImage.getPixels();
 			for(int i=0; i<cValues.length; i++) {
 				RegionImage.RegionInfo regionInfo = regionImage.getRegionInfoFromOffset(i);
 				int regionIndex = 1+regionInfo.getRegionIndex();	// 0 is reserved
@@ -442,6 +440,7 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 		// looking for pixels which are part of the field but have compartmentId of 0
 		// ideally there shouldn't be any
 		private void orphanDetection(int[] cValues) {
+			float[] pixels = originalImage.getPixels();
 			int orphansFound = 0;
 			for(int i=0; i<cValues.length; i++) {
 				if((cValues[i] == 0) && (pixels[i] > 0)) {
@@ -571,22 +570,22 @@ import cbit.vcell.geometry.RegionImage.RegionInfo;
 		}
 
 		private int getX(int position) {
-			return (int)(position % xDimension);
+			return (int)(position % originalImage.getNumX());
 		}
 		private int getY(int position) {
-			return (int)((position % (xDimension*yDimension)) / xDimension);
+			return (int)((position % (originalImage.getNumX()*originalImage.getNumY())) / originalImage.getNumX());
 		}
 		private int getZ(int position) {
-			return (int)(position / (xDimension * yDimension));
+			return (int)(position / (originalImage.getNumX() * originalImage.getNumY()));
 		}
 		private int coord (int x, int y, int z) {
 			if(x<0 || y<0 || z<0) {
 				return -1;		// out of bounds
 			}
-			if((x>=xDimension) || (y>=yDimension) || ((z>=zDimension) && (zDimension>0))) {
+			if((x>=originalImage.getNumX()) || (y>=originalImage.getNumY()) || ((z>=originalImage.getNumZ()) && (originalImage.getNumZ()>0))) {
 				return -1;		// out of bounds
 			}
-			return ((y*xDimension) + (x) + (z*xDimension*yDimension));
+			return ((y*originalImage.getNumX()) + (x) + (z*originalImage.getNumX()*originalImage.getNumY()));
 		}
 		private int getNextSeed(byte[] values) {
 			for(int i=1; i<values.length; i++) {	// we avoid the pixel at 0.0 as seed

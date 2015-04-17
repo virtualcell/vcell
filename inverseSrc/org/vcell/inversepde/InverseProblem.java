@@ -19,7 +19,6 @@ import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mathmodel.MathModel;
 
 public class InverseProblem implements Matchable {
 	private String name = null;

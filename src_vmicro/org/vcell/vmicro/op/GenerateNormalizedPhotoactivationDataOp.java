@@ -34,7 +34,7 @@ public class GenerateNormalizedPhotoactivationDataOp {
 		return intensityVal/numPixelsInMask;
 	}
 
-	public NormalizedPhotoactivationDataResults generate(ImageTimeSeries<UShortImage> rawImageTimeSeries, ROI backgroundROI_2D, Integer indexPostactivation) throws Exception {
+	public NormalizedPhotoactivationDataResults generate(ImageTimeSeries<UShortImage> rawImageTimeSeries, ROI backgroundROI_2D, Integer indexPostactivation, boolean backgroundSubtract, boolean normalizedByPreactivation) throws Exception {
 		
 		UShortImage preactivationImage = rawImageTimeSeries.getAllImages()[0];
 		ISize isize = preactivationImage.getISize();
@@ -89,8 +89,17 @@ public class GenerateNormalizedPhotoactivationDataOp {
 			short[] uncorrectedPixels = rawImageTimeSeries.getAllImages()[i+indexPostactivation].getPixels();
 			for (int j=0;j<isize.getXYZ();j++){
 				int intUncorrectedPixel = 0x0000ffff & ((int)uncorrectedPixels[j]);
-				int intPreactivationAvgPixel = 0x0000ffff & ((int)preactivationAveragePixels[j]);
-				normalizedPixels[j] = (intUncorrectedPixel - avgBackground)/(Math.max(1, intPreactivationAvgPixel - avgBackground));
+		
+				float background = 0;
+				if (backgroundSubtract){
+					background = avgBackground;
+				}
+				if (normalizedByPreactivation){
+					int intPreactivationAvgPixel = 0x0000ffff & ((int)preactivationAveragePixels[j]);
+					normalizedPixels[j] = (intUncorrectedPixel - background)/(Math.max(1, intPreactivationAvgPixel - background));
+				}else{
+					normalizedPixels[j] = (intUncorrectedPixel - background);
+				}
 			}
 			normalizedImages[i] = new FloatImage(normalizedPixels,origin,extent,nX,nY,nZ);
 		}
