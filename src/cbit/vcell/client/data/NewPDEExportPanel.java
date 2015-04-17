@@ -22,7 +22,6 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.TreeSet;
 
@@ -69,6 +68,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
@@ -105,7 +105,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JRadioButton volVarRadioButton;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private JButton ivjJButtonExport = null;
-	private JComboBox<String> ivjJComboBox1 = null;
+	private JComboBox<ExportFormat> ivjJComboBox1 = null;
 	private JLabel ivjJLabelFormat = null;
 	private JPanel ivjJPanelExport = null;
 	private ExportSettings ivjExportSettings1 = null;
@@ -148,6 +148,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private SpatialSelection[] spatialSelectionsMembrane = null;
 	private int viewZoom;
 	
+	/*
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
 	private static final String EXPORT_GIF_IMAGES = "GIF89a image files (*.gif)";
 	private static final String EXPORT_JPEG_IMAGES = "JPEG image files (*.jpg)";
@@ -156,6 +157,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private static final String EXPORT_UCD = "UCD (*.ucd)";
 	private static final String EXPORT_VTK_IMAGE = "VTK Image (*.vtk)";
 	private static final String EXPORT_VTK_UNSTRUCT = "VTK Unstructured (*.vtu)";
+	*/
 	/**
 	 * base text of Export Button ... dynamically updated depending on selection
 	 */
@@ -796,7 +798,7 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getExportSettings1().setSelectedFormat(getJComboBox1().getSelectedIndex());
+		getExportSettings1().setSelectedFormat(getSelectedFormat());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -805,6 +807,16 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * @return format selected in combobox
+ */
+private ExportFormat getSelectedFormat( ) {
+	JComboBox<ExportFormat> cb = getJComboBox1();
+	//because getSelectedItem( ) returns object; see http://stackoverflow.com/questions/7026230/why-isnt-getselecteditem-on-jcombobox-generic
+	return cb.getItemAt(cb.getSelectedIndex());
+}
+
 
 
 /**
@@ -1247,10 +1259,10 @@ private javax.swing.JButton getJButtonExport() {
  * @return javax.swing.JComboBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox<String> getJComboBox1() {
+private javax.swing.JComboBox<ExportFormat> getJComboBox1() {
 	if (ivjJComboBox1 == null) {
 		try {
-			ivjJComboBox1 = new javax.swing.JComboBox<String>();
+			ivjJComboBox1 = new javax.swing.JComboBox<>();
 			ivjJComboBox1.setName("JComboBox1");
 			// user code begin {1}
 			// user code end
@@ -2089,19 +2101,16 @@ private void initFormatChoices_0(/*boolean bMembrane*/){
 	getJComboBox1().removeItemListener(ivjEventHandler);
 	Object currentSelection = getJComboBox1().getSelectedItem();
 	getJComboBox1().removeAllItems();
-	getJComboBox1().addItem("Comma delimited ASCII files (*.csv)");
-	getJComboBox1().addItem(EXPORT_QT_MOVIE);
-	getJComboBox1().addItem(EXPORT_GIF_IMAGES);
-	getJComboBox1().addItem(EXPORT_GIF_ANIM);
-	getJComboBox1().addItem(EXPORT_JPEG_IMAGES);
-	getJComboBox1().addItem(EXPORT_NRRD);
-	
-	getJComboBox1().addItem(EXPORT_UCD);
-	
-	getJComboBox1().addItem(EXPORT_VTK_UNSTRUCT);
-
+	getJComboBox1().addItem(ExportFormat.CSV);
+	getJComboBox1().addItem(ExportFormat.QUICKTIME);
+	getJComboBox1().addItem(ExportFormat.GIF);
+	getJComboBox1().addItem(ExportFormat.ANIMATED_GIF);
+	getJComboBox1().addItem(ExportFormat.FORMAT_JPEG);
+	getJComboBox1().addItem(ExportFormat.NRRD);
+	getJComboBox1().addItem(ExportFormat.UCD);
+	getJComboBox1().addItem(ExportFormat.VTK_UNSTRUCT);
 	if(getVolVarRadioButton().isSelected()){
-		getJComboBox1().addItem(EXPORT_VTK_IMAGE);
+		getJComboBox1().addItem(ExportFormat.VTK_IMAGE);
 	}
 	if(currentSelection != null){
 		getJComboBox1().setSelectedItem(currentSelection);
@@ -2381,12 +2390,13 @@ public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider)
 private boolean isSmoldyn = false;
 public void setIsSmoldyn(boolean isSmoldyn){
 	this.isSmoldyn = isSmoldyn;
+	
 }
 /**
  * Comment
  */
 private void startExport() {
-	if(getExportSettings1().getSelectedFormat() == ExportConstants.FORMAT_QUICKTIME &&
+	if(getExportSettings1().getSelectedFormat() == ExportFormat.QUICKTIME &&
 		getJSlider1().getValue() == getJSlider2().getValue()){
 		DialogUtils.showWarningDialog(this, "User selected 'begin' and 'end' export times are the same.  'Movie' export format 'begin' and 'end' times must be different");
 		return;
@@ -2397,10 +2407,10 @@ private void startExport() {
 	boolean selectionHasVolumeVariables = false;
 	boolean selectionHasMembraneVariables = false;
 	switch (getExportSettings1().getSelectedFormat()) {
-		case ExportConstants.FORMAT_QUICKTIME:
-		case ExportConstants.FORMAT_GIF:
-		case ExportConstants.FORMAT_JPEG:
-		case ExportConstants.FORMAT_ANIMATED_GIF: {
+		case QUICKTIME:
+		case GIF:
+		case FORMAT_JPEG:
+		case ANIMATED_GIF: {
 			
 			displayPreferences = new DisplayPreferences[variableSelections.length];
 			
@@ -2450,7 +2460,7 @@ private void startExport() {
 		}
 		
 		
-		case ExportConstants.FORMAT_CSV: {
+		case CSV: {
 			// check for membrane variables... warn for 3D geometry...
 			// one gets the whole nine yards by index, not generally useful... except for a few people like Boris :)
 			boolean mbVars = false;
@@ -2474,6 +2484,14 @@ private void startExport() {
 			getExportSettings1().setSimulationSelector(createSimulationSelector());
 			break;
 		}
+	case NRRD:
+	case UCD:
+	case VTK_IMAGE:
+	case VTK_UNSTRUCT:
+	case PARTICLE:
+		break;
+	default:
+		break;
 	};
 	if (getJRadioButtonSelection().isSelected() && getJListSelections().getSelectedIndex() == -1) {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
@@ -2608,14 +2626,7 @@ private void updateAllChoices(PDEDataContext pdeDataContext) {
 
 private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 	if (pdeDataContext != null && pdeDataContext.getDataIdentifiers() != null &&pdeDataContext.getDataIdentifiers().length > 0) {
-		TreeSet<String> dataIdentifierTreeSet =
-			new TreeSet<String>(new Comparator<String>(){
-				public int compare(String o1, String o2) {
-					if(o1.compareToIgnoreCase(o2) == 0){
-						return o1.compareTo(o2);
-					}
-					return o1.compareToIgnoreCase(o2);
-				}});
+		TreeSet<String> dataIdentifierTreeSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 		DataIdentifier[] dataIDArr = pdeDataContext.getDataIdentifiers();
 		for (int i = 0; i < dataIDArr.length; i++) {
@@ -2656,33 +2667,33 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 /**
  * Comment
  */
-private void updateExportFormat(int exportFormat) {
+private void updateExportFormat(ExportFormat exportFormat) {
 	getJRadioButtonSlice().setEnabled(true);
 	switch (exportFormat) {
-		case ExportConstants.FORMAT_CSV: {
+		case CSV: {
 			BeanUtils.enableComponents(getJPanelSelections(), true);
 			getJRadioButtonFull().setEnabled(false);
 			getJRadioButtonSelection().setSelected(true);
 			break;
 		}
-		case ExportConstants.FORMAT_QUICKTIME:
-		case ExportConstants.FORMAT_GIF:
-		case ExportConstants.FORMAT_JPEG:
-		case ExportConstants.FORMAT_ANIMATED_GIF: {
+		case QUICKTIME:
+		case GIF:
+		case FORMAT_JPEG:
+		case ANIMATED_GIF: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(true);
 			getJRadioButtonFull().setEnabled(true);
 			break;
 		}
-		case ExportConstants.FORMAT_NRRD: {
+		case NRRD: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonFull().setSelected(true);
 			getJRadioButtonFull().setEnabled(true);			
 			break;
 		}
-		case ExportConstants.FORMAT_UCD:
-		case ExportConstants.FORMAT_VTK_UNSTRUCT:
-		case ExportConstants.FORMAT_VTK_IMAGE: {
+		case UCD:
+		case VTK_UNSTRUCT:
+		case VTK_IMAGE: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonSlice().setSelected(false);
 			getJRadioButtonSlice().setEnabled(false);
@@ -2690,13 +2701,17 @@ private void updateExportFormat(int exportFormat) {
 			getJRadioButtonFull().setEnabled(true);			
 			break;
 		}
+	case PARTICLE:
+		//GCW to do
+		break;
+	default:
+		break;
 	};
-	if (ExportSettings.requiresFollowOnDialog(exportFormat)) {
-		getJButtonExport().setText(BTN_EXPORT_TEXT + " ...");
+	String bText = BTN_EXPORT_TEXT;
+	if (exportFormat.requiresFollowOn()) {
+		bText += " ...";
 	}
-	else {
-		getJButtonExport().setText(BTN_EXPORT_TEXT);
-	}
+	getJButtonExport().setText(bText);
 	
 }
 
@@ -2758,6 +2773,40 @@ private void updateInterface() {
 	getBothVarRadioButton().setEnabled(true);
 	getVolVarRadioButton().setEnabled(true);
 	getMembVarRadioButton().setEnabled(true);
+	switch (getSelectedFormat()) {
+	case QUICKTIME:
+	case GIF:
+	case ANIMATED_GIF:
+	case FORMAT_JPEG:
+		if(!getBothVarRadioButton().isSelected()){
+			getBothVarRadioButton().doClick();
+		}
+		getVolVarRadioButton().setEnabled(false);
+		break;
+	case NRRD:
+		if(getBothVarRadioButton().isSelected()){
+			getVolVarRadioButton().doClick();
+		}
+		getBothVarRadioButton().setEnabled(false);
+		break;
+	case VTK_IMAGE:
+		if(!getVolVarRadioButton().isSelected()){
+			getVolVarRadioButton().doClick();
+		}
+		getBothVarRadioButton().setEnabled(false);
+		break;
+	case CSV:
+	case UCD:
+	case VTK_UNSTRUCT:
+		//no operation?
+		break;
+	case PARTICLE:
+		//GCW to do
+		break;
+	default:
+		break;
+	}
+	/*
 	if(getJComboBox1().getSelectedItem().equals(EXPORT_QT_MOVIE) ||
 			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_IMAGES) ||
 			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_ANIM) ||
@@ -2781,6 +2830,7 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		getMembVarRadioButton().setEnabled(false);
 	}
+	*/
 	
 
 }

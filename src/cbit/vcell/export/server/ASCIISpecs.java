@@ -16,8 +16,9 @@ import org.vcell.util.Compare;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
-	private int format;
+	private ExportFormat format;
 	private int dataType;
 	private boolean switchRowsColumns;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
@@ -25,7 +26,7 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(int format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
+public ASCIISpecs(ExportFormat format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
 	this.format = format;
 	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
@@ -70,7 +71,7 @@ public int getDataType() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getFormat() {
+public ExportFormat getFormat() {
 	return format;
 }
 /**

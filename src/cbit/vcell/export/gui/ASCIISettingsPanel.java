@@ -21,10 +21,12 @@ import javax.swing.JCheckBox;
 
 import cbit.vcell.export.server.ASCIISpecs;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ASCIISettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 	private javax.swing.JButton ivjJButtonOK = null;
 	private javax.swing.ButtonGroup ivjButtonGroup1 = null;
@@ -239,7 +241,7 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  * @return The asciiSpecs property value.
  */
 public ASCIISpecs getAsciiSpecs() {
-	return new ASCIISpecs(FORMAT_CSV, getExportDataType(), getSwitchRowsColumns(),
+	return new ASCIISpecs(ExportFormat.CSV, getExportDataType(), getSwitchRowsColumns(),
 			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()));
 }
 /**

@@ -79,6 +79,7 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.GeometrySpecs;
@@ -1369,7 +1370,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				PDEDataManager dataManager = new PDEDataManager(null, getLocalWorkspace().getVCDataManager(),vcDataId);
 				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 						
-				int format = ExportConstants.FORMAT_QUICKTIME;
+				ExportFormat format = ExportFormat.QUICKTIME;
 				String[] variableNames = new String[]{NORM_FLUOR_VAR, NORM_SIM_VAR};
 				VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
 						
@@ -1390,7 +1391,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				MovieSpecs mSpec = new MovieSpecs(duration,
 												 true,
 												 displayPref,
-												 ExportConstants.RAW_RGB,
+												 ExportFormat.QUICKTIME,
 												 ExportConstants.NO_MIRRORING,
 												 volVarMemOutlineThickness,
 												 imageScale,
