@@ -176,15 +176,15 @@ public class NetworkTransformer implements SimContextTransformer {
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 		
-//		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
-//		if(outputSpec.getBNGSpecies().length > speciesLimit) {
-//			message = getSpeciesLimitExceededMessage(outputSpec) + message;
-//			throw new RuntimeException(message);
-//		}
-//		if(outputSpec.getBNGReactions().length > reactionsLimit) {
-//			message = getReactionsLimitExceededMessage(outputSpec) + message;
-//			throw new RuntimeException(message);
-//		}
+		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
+		if(outputSpec.getBNGSpecies().length > speciesLimit) {
+			message = getSpeciesLimitExceededMessage(outputSpec) + message;
+			throw new RuntimeException(message);
+		}
+		if(outputSpec.getBNGReactions().length > reactionsLimit) {
+			message = getReactionsLimitExceededMessage(outputSpec) + message;
+			throw new RuntimeException(message);
+		}
 		
 //		System.out.println("new hash: " + md5hash);
 //		System.out.println("old hash: " + simContext.getMd5hash());
