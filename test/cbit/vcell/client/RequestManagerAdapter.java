@@ -50,6 +50,8 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void createMathModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext) {}
 	@Override
+	public void createBioModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext) {}
+	@Override
 	public void curateDocument(VCDocumentInfo vcDocInfo, int curateType, TopLevelWindowManager requester) {}
 	@Override
 	public void updateUserRegistration(DocumentWindowManager docWindowManager, boolean bNewUser) { }
