@@ -11,13 +11,13 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 
 public class GenerateCellROIsFromRawFlipTimeSeriesOp {
 	
-	public static class GeometryRoisAndBleachTiming {
+	public static class GeometryRoisAndActivationTiming {
 		public ROI cellROI_2D;
 		public ROI backgroundROI_2D;
 		public int indexOfFirstPostactivation;
 	}
 
-	public GeometryRoisAndBleachTiming generate(ImageTimeSeries rawTimeSeriesImages, double cellThreshold) throws Exception {
+	public GeometryRoisAndActivationTiming generate(ImageTimeSeries rawTimeSeriesImages, double cellThreshold) throws Exception {
 		
 		Image[] allImages = rawTimeSeriesImages.getAllImages();
 		int numPixels = allImages[0].getNumXYZ();
@@ -66,30 +66,33 @@ public class GenerateCellROIsFromRawFlipTimeSeriesOp {
 				allImages[0].getExtent(),
 				allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
 		UShortImage backgroundImage =
-				new UShortImage(
-						scaledBackgoundDataShort,
-						allImages[0].getOrigin(),
-						allImages[0].getExtent(),
-						allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
+			new UShortImage(
+				scaledBackgoundDataShort,
+				allImages[0].getOrigin(),
+				allImages[0].getExtent(),
+				allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
 		
 		
 		Arrays.fill(wholeDomainDataShort, (short)1);
 		UShortImage wholeDomainImage = 
-				new UShortImage(
-					wholeDomainDataShort,
-					allImages[0].getOrigin(),
-					allImages[0].getExtent(),
-					allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
+			new UShortImage(
+				wholeDomainDataShort,
+				allImages[0].getOrigin(),
+				allImages[0].getExtent(),
+				allImages[0].getNumX(),allImages[0].getNumY(),allImages[0].getNumZ());
 		
-		UShortImage reverseCell = UShortImage.fastDilate(cellImage, 15, wholeDomainImage);
+		UShortImage reverseCell = UShortImage.fastDilate(cellImage, 10, wholeDomainImage);
 		reverseCell.reverse();
 		reverseCell.and(backgroundImage);
 		backgroundImage = reverseCell;
 		
+		cellImage = new UShortImage(backgroundImage);
+		cellImage.reverse();
+		
 		ROI cellROI = new ROI(cellImage,"cellROI");
 		ROI backgroundROI = new ROI(backgroundImage,"backgroundROI");
 		
-		GeometryRoisAndBleachTiming results = new GeometryRoisAndBleachTiming();
+		GeometryRoisAndActivationTiming results = new GeometryRoisAndActivationTiming();
 		results.cellROI_2D = cellROI;
 		results.backgroundROI_2D = backgroundROI;
 		results.indexOfFirstPostactivation = indexPostactivation;
