@@ -20,9 +20,10 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ExportSpecs implements Serializable {
 	private org.vcell.util.document.VCDataIdentifier vcDataIdentifier = null;
-	private int format;
+	private ExportFormat format;
 	private TimeSpecs timeSpecs;
 	private VariableSpecs variableSpecs;
 	private GeometrySpecs geometrySpecs;
@@ -129,7 +130,7 @@ public class ExportSpecs implements Serializable {
 /**
  * This method was created in VisualAge.
  */
-public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, int format,
+public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, ExportFormat format,
 		VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 		GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
 		String simulationName,String contextName) {
@@ -178,7 +179,7 @@ public boolean equals(Object object) {
  * This method was created in VisualAge.
  * @return cbit.vcell.export.server.VariableSpecs
  */
-public int getFormat() {
+public ExportFormat getFormat() {
 	return format;
 }
 

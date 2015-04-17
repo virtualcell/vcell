@@ -136,9 +136,9 @@ public static void main(String [] args) throws Exception{
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors());
 	MovieSpecs movieSpecs = new MovieSpecs(
-		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportConstants.FORMAT_JPEG, 0, 1, 1, 1,///
+		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportFormat.FORMAT_JPEG, 0, 1, 1, 1,///
 		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
-	ExportSpecs exportSpecs = new ExportSpecs(vcdID, 1, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest",null);
+	ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.QUICKTIME, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest",null);
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
 }
 
@@ -601,9 +601,9 @@ private static String create3DigitNumber(int number){
 }
 private static String createDataID(ExportSpecs exportSpecs,int sliceNumber,String varName,int timeIndex){
 	int sliceNormalAxis = exportSpecs.getGeometrySpecs().getAxis();
-	if(exportSpecs.getFormat() == ExportConstants.FORMAT_ANIMATED_GIF){
+	if(exportSpecs.getFormat() == ExportFormat.ANIMATED_GIF){
 		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName + "_animated";
-	}else if (exportSpecs.getFormat() == ExportConstants.FORMAT_QUICKTIME){
+	}else if (exportSpecs.getFormat() == ExportFormat.QUICKTIME){
 		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName;
 	}else{
 		return "_" + Coordinate.getNormalAxisPlaneName(sliceNormalAxis) + "_" + create3DigitNumber(sliceNumber) + "_" + varName +"_" + create4DigitNumber(timeIndex);		
@@ -648,7 +648,7 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		}
 	}
 	FormatSpecificSpecs formatSpecificSpecs = exportSpecs.getFormatSpecificSpecs();
-	if(exportSpecs.getFormat() == ExportConstants.FORMAT_GIF && 
+	if(exportSpecs.getFormat() == ExportFormat.GIF && 
 		formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.GIF*/){
 		ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
 		GIFOutputStream gifOut = new GIFOutputStream(bytesOut);
@@ -659,14 +659,14 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 		ExportOutput exportOutput = new ExportOutput(true, ".gif", vcdID.getID(), dataID, fileDataContainerManager);
 		fileDataContainerManager.append(exportOutput.getFileDataContainerID(), data);
 		exportOutputV.add(exportOutput);
-	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_JPEG && 
+	}else if(exportSpecs.getFormat() == ExportFormat.FORMAT_JPEG && 
 			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.JPEG*/){
 		VideoMediaSample jpegEncodedVideoMediaSample = 
 			FormatSpecificSpecs.getVideoMediaSample(mirrorWidth, mirrorHeight, 1, isGrayScale,FormatSpecificSpecs.CODEC_JPEG, ((ImageSpecs)formatSpecificSpecs).getcompressionQuality(), pixels);
 		ExportOutput exportOutput = new ExportOutput(true, ".jpg", vcdID.getID(), dataID, fileDataContainerManager);
 		fileDataContainerManager.append(exportOutput.getFileDataContainerID(), jpegEncodedVideoMediaSample.getDataBytes());
 		exportOutputV.add(exportOutput);
-	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_ANIMATED_GIF && 
+	}else if(exportSpecs.getFormat() == ExportFormat.ANIMATED_GIF && 
 			formatSpecificSpecs instanceof ImageSpecs/* && ((ImageSpecs)formatSpecificSpecs).getFormat() == ExportConstants.ANIMATED_GIF*/){
 		int imageDuration = (int)Math.ceil((movieHolder.getSampleDurationSeconds()*100));//1/100's of a second
 		if (bEndTime && (((ImageSpecs)formatSpecificSpecs).getLoopingMode() != 0 || bSingleTimePoint)) {
@@ -691,7 +691,7 @@ private static void createMedia(Vector<ExportOutput> exportOutputV,VCDataIdentif
 			exportOutputV.add(exportOutput);
 		}
 
-	}else if(exportSpecs.getFormat() == ExportConstants.FORMAT_QUICKTIME && 
+	}else if(exportSpecs.getFormat() == ExportFormat.QUICKTIME && 
 			formatSpecificSpecs instanceof MovieSpecs){
 		String VIDEOMEDIACHUNKID = (varNameArr.length==1?varNameArr[0]:"OVERLAY");
 		final int TIMESCALE = 1000;//number of units per second in movie
