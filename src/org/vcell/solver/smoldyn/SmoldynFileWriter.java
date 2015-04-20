@@ -654,11 +654,8 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 			int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
 			if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isSaveParticleLocations()){
-				final String ext = SimDataConstants.PARTICLE_DATA_EXTENSION;
-				VCAssert.assertTrue(ext.indexOf('.') == 0, ext + " should start with .");
-				String particleFileName = baseFileName + ext;
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + particleFileName);
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + particleFileName); 
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
+				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
 			}
 	
 			// DON'T CHANGE THE ORDER HERE.
