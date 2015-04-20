@@ -132,6 +132,8 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 		setTabPlacement(TOP);
 		addTab("Kinetics", kpp);
 		addTab("Editor", epp);
+		
+		setSelectedComponent(epp);
 	}
 	
 	private void handleException(java.lang.Throwable exception) {

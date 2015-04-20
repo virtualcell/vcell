@@ -104,8 +104,6 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModelEditorPathwayDiagramPanel bioModelEditorPathwayDiagramPanel = null;
 	
 	private ReactionRulePropertiesPanel reactionRulePropertiesPanel = null;
-	private ReactionRuleKineticsPropertiesPanel reactionRuleKineticsPropertiesPanel = null;
-	private ReactionRulePropertiesPanel reactionRuleEditorPropertiesPanel = null;
 	private ReactionPropertiesPanel reactionStepPropertiesPanel = null;
 	private SpeciesPropertiesPanel speciesPropertiesPanel = null;
 	private MolecularTypePropertiesPanel molecularTypePropertiesPanel = null;
