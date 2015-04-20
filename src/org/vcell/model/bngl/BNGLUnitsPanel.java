@@ -129,15 +129,15 @@ public class BNGLUnitsPanel extends JPanel {
 	private void initialize(){
 		
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose category of units ");
+		TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose substance units ");
 		titleTop.setTitleJustification(TitledBorder.LEFT);
 		titleTop.setTitlePosition(TitledBorder.TOP);
 
-		TitledBorder titleConcentrations = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose units for concentrations ");
+		TitledBorder titleConcentrations = BorderFactory.createTitledBorder(loweredEtchedBorder, " Specify concentration and time units ");
 		titleConcentrations.setTitleJustification(TitledBorder.LEFT);
 		titleConcentrations.setTitlePosition(TitledBorder.TOP);
 
-		TitledBorder titleMolecules = BorderFactory.createTitledBorder(loweredEtchedBorder, " Choose units for molecules ");
+		TitledBorder titleMolecules = BorderFactory.createTitledBorder(loweredEtchedBorder, " Specify volume and time units ");
 		titleMolecules.setTitleJustification(TitledBorder.LEFT);
 		titleMolecules.setTitlePosition(TitledBorder.TOP);
 
