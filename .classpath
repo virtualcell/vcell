@@ -24,7 +24,11 @@
 	<classpathentry kind="lib" path="lib/jgraphx_2.2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/colt_1.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/libthrift-0.9.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/proper/commons-io/javadocs/api-2.4"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="https://commons.apache.org/proper/commons-lang/javadocs/api-3.3/"/>
