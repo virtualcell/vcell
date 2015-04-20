@@ -11,14 +11,18 @@
 package cbit.vcell.solver;
 
 import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.Historical;
+
 import org.vcell.util.document.SimResampleInfoProvider;
 
 
 /**
  * Temporary, to help SimulationData to deal with multiple simulation job datasets.
  * Should be removed after making SimulationData smarter in file handling for compatibility with old stuff.
- * @deprecated
  */
+@SuppressWarnings("serial")
+@Historical
 public class VCSimulationDataIdentifierOldStyle
 	implements
 		java.io.Serializable, org.vcell.util.document.VCDataIdentifier,

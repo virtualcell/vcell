@@ -11,7 +11,7 @@ import java.lang.annotation.ElementType;
  *  of virtual cell
  */
 @Documented
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD,ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Historical {
 
