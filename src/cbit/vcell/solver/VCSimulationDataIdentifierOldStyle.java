@@ -54,8 +54,8 @@ private VCSimulationDataIdentifierOldStyle(VCSimulationDataIdentifier vcSimDataI
  * Creation date: (10/18/2005 3:28:49 PM)
  * @return cbit.vcell.solver.VCSimulationDataIdentifierOldStyle
  * @param vcSimDataID cbit.vcell.solver.VCSimulationDataIdentifier
- * @deprecated
  */
+@Historical
 public static VCSimulationDataIdentifierOldStyle createVCSimulationDataIdentifierOldStyle(VCSimulationDataIdentifier vcSimDataID) {
 	return new VCSimulationDataIdentifierOldStyle(vcSimDataID);
 }
@@ -66,8 +66,8 @@ public static VCSimulationDataIdentifierOldStyle createVCSimulationDataIdentifie
  * Creation date: (8/24/2004 10:56:16 AM)
  * @return boolean
  * @param object java.lang.Object
- * @deprecated
  */
+@Historical
 public boolean equals(Object object) {
 	if (object instanceof VCSimulationDataIdentifierOldStyle){
 		if (((VCSimulationDataIdentifierOldStyle)object).getID().equals(getID())){
@@ -82,8 +82,8 @@ public boolean equals(Object object) {
  * Insert the method's description here.
  * Creation date: (8/24/2004 2:07:52 PM)
  * @return java.lang.String
- * @deprecated
  */
+@Historical
 public java.lang.String getID() {
 	return Simulation.createSimulationID(vcSimID.getSimulationKey());
 }
@@ -92,13 +92,12 @@ public int getJobIndex() {
 	return 0;
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (8/24/2004 11:12:39 AM)
  * @return cbit.vcell.server.User
- * @deprecated
  */
+@Historical
 public org.vcell.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
@@ -108,8 +107,8 @@ public org.vcell.util.document.User getOwner() {
  * Insert the method's description here.
  * Creation date: (1/25/01 12:28:06 PM)
  * @return int
- * @deprecated
  */
+@Historical
 public int hashCode() {
 	return toString().hashCode();
 }
@@ -119,8 +118,8 @@ public int hashCode() {
  * Insert the method's description here.
  * Creation date: (8/24/2004 1:12:48 PM)
  * @return java.lang.String
- * @deprecated
  */
+@Historical
 public String toString() {
 	return "VCSimulationIdentifierOldStyle["+vcSimID.getSimulationKey()+","+getOwner()+"]";
 }
