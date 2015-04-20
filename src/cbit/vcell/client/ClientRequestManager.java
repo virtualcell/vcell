@@ -2908,7 +2908,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			
 			if(!(bngUnitSystem.getOrigin() == BngUnitOrigin.PARSER)) {
 				BNGLUnitsPanel panel = new BNGLUnitsPanel(bngUnitSystem);
-				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Units Picker", null, false);
+				int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, " Bngl Units Selector", null, false);
 				if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {
 					return;		// TODO: or do nothing and continue with default values?
 				} else {
