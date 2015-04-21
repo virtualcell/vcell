@@ -11,7 +11,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 public class GenerateNormalizedFrapDataOp {
 
 	public static class NormalizedFrapDataResults {
-		public ImageTimeSeries normalizedFrapData;
+		public ImageTimeSeries<FloatImage> normalizedFrapData;
 		public FloatImage prebleachAverage;
 	}	
 

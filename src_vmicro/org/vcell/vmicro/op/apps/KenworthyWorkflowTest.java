@@ -12,7 +12,6 @@ import org.vcell.vmicro.op.FitBleachSpotOp;
 import org.vcell.vmicro.op.FitBleachSpotOp.FitBleachSpotOpResults;
 import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.Context;
 import org.vcell.vmicro.op.Generate2DExpModelOpAbstract.GeneratedModelResults;
-import org.vcell.vmicro.op.ExportRawTimeSeriesToVFrapOp;
 import org.vcell.vmicro.op.Generate2DExpModel_GaussianBleachOp;
 import org.vcell.vmicro.op.Generate2DOptContextOp;
 import org.vcell.vmicro.op.GenerateBleachRoiOp;
@@ -25,10 +24,14 @@ import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
+import org.vcell.vmicro.workflow.data.ErrorFunction;
+import org.vcell.vmicro.workflow.data.ErrorFunctionKenworthy;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.ErrorFunctionInverseTimeL1;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
+import org.vcell.vmicro.workflow.data.OptModelKenworthyGaussian;
 import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk2P;
 import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk3P;
 
@@ -156,19 +159,34 @@ public class KenworthyWorkflowTest {
 		double centerY_GaussianFit = fitSpotResults.centerY_GaussianFit;
 		double centerY_ROI = fitSpotResults.centerY_ROI;
 
+		ErrorFunction errorFunction = new ErrorFunctionKenworthy(reducedData);
+
 		//
 		// 2 parameter uniform disk model
 		//
-		OptModel uniformDisk2OptModel = new OptModelKenworthyUniformDisk2P(bleachRadius_GaussianFit);
-		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk2OptModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "Uniform Disk Model - 2 parameters", null);
+		OptModel uniformDisk2OptModel = new OptModelKenworthyUniformDisk2P(bleachRadius_ROI);
+		String title_u2 = "Uniform Disk Model - 2 parameters, (Rn="+bleachRadius_ROI+")";
+		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk2OptModel, reducedData, measurementErrors, errorFunction);
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, title_u2, null);
 
 		//
 		// 3 parameter uniform disk model
 		//
-		OptModel uniformDisk3OptModel = new OptModelKenworthyUniformDisk3P(bleachRadius_GaussianFit);
-		OptContext uniformDisk3Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk3OptModel, reducedData, measurementErrors);
-		new DisplayInteractiveModelOp().displayOptModel(uniformDisk3Context, dataROIs, localWorkspace, "Uniform Disk Model - 3 parameters", null);
+		OptModel uniformDisk3OptModel = new OptModelKenworthyUniformDisk3P(bleachRadius_ROI);		
+		OptContext uniformDisk3Context = new Generate2DOptContextOp().generate2DOptContext(uniformDisk3OptModel, reducedData, measurementErrors, errorFunction);
+		String title_u3 = "Uniform Disk Model - 3 parameters, (Rn="+bleachRadius_ROI+")";
+		new DisplayInteractiveModelOp().displayOptModel(uniformDisk3Context, dataROIs, localWorkspace, title_u3, null);
+
+		//
+		// GaussianFit parameter uniform disk model
+		//
+		FloatImage prebleachBleachAreaImage = new FloatImage(prebleachAvg);
+		prebleachBleachAreaImage.and(bleachROI.getRoiImages()[0]); // mask-out all but the bleach area
+		double prebleachAvgInROI = prebleachBleachAreaImage.getImageStatistics().meanValue;
+		OptModel gaussian2OptModel = new OptModelKenworthyGaussian(prebleachAvgInROI, bleachFactorK_GaussianFit, bleachRadius_GaussianFit, bleachRadius_ROI);		
+		OptContext gaussianDisk2Context = new Generate2DOptContextOp().generate2DOptContext(gaussian2OptModel, reducedData, measurementErrors, errorFunction);
+		String title_g2 = "Gaussian Disk Model - 2 parameters (prebleach="+prebleachAvgInROI+",K="+bleachFactorK_GaussianFit+",Re="+bleachRadius_GaussianFit+",Rnom="+bleachRadius_ROI+")";
+		new DisplayInteractiveModelOp().displayOptModel(gaussianDisk2Context, dataROIs, localWorkspace, title_g2, null);
 	}
 	
 	private static ImageTimeSeries<UShortImage>  generateFakeData(LocalWorkspace localWorkspace, ClientTaskStatusSupport progressListener) throws Exception{
