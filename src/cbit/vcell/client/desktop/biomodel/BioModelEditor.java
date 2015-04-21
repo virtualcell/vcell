@@ -116,6 +116,8 @@ public class BioModelEditor extends DocumentEditor {
 	private SpeciesContextSpecPanel speciesContextSpecPanel = null;
 	private KineticsTypeTemplatePanel kineticsTypeTemplatePanel = null;
 	private SimulationSummaryPanel simulationSummaryPanel = null;
+	private SimulationConsolePanel simulationConsolePanel = null;
+	
 	private EventPanel eventPanel = null;
 	private DataSymbolsSpecPanel dataSymbolsSpecPanel = null;
 	private BioModelEditorApplicationPanel bioModelEditorApplicationPanel = null;
@@ -453,6 +455,17 @@ private SimulationSummaryPanel getSimulationSummaryPanel() {
 		}
 	}
 	return simulationSummaryPanel;
+}
+private SimulationConsolePanel getSimulationConsolePanel() {
+	if (simulationConsolePanel == null) {
+		try {
+			simulationConsolePanel = new SimulationConsolePanel();
+			simulationConsolePanel.setName("SimulationConsolePanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return simulationConsolePanel;
 }
 private ApplicationPropertiesPanel getApplicationPropertiesPanel() {
 	if (applicationPropertiesPanel == null) {
@@ -823,7 +836,22 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	if (rightTopComponent != newTopPanel) {		
 		rightSplitPane.setTopComponent(newTopPanel);
 	}
-	rightSplitPane.setDividerLocation(dividerLocation);	
+	rightSplitPane.setDividerLocation(dividerLocation);
+	
+	getSimulationConsolePanel().setSimulationContext(simulationContext);
+	if(simulationContext == null) {
+		rightBottomTabbedPane.remove(getSimulationConsolePanel());
+	} else {
+		if(simulationContext.isRuleBased() || simulationContext.isStoch()) {
+			rightBottomTabbedPane.remove(getSimulationConsolePanel());
+			return;
+		}
+		if(simulationContext.getModel().getRbmModelContainer().getMolecularTypeList().size() == 0) {
+			rightBottomTabbedPane.remove(getSimulationConsolePanel());
+			return;
+		}
+		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
+	}
 }
 
 private BioModelEditorApplicationsPanel getBioModelEditorApplicationsPanel() {
