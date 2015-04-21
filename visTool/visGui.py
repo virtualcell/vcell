@@ -191,6 +191,12 @@ class VCellPysideApp(QtGui.QMainWindow):
 
         gridLayout.addWidget(frame, 0, 0, 1, 1)
 
+        self._showPostProcessingDataButton = QtGui.QPushButton(frame)
+        self._showPostProcessingDataButton.setObjectName("showPostProcessingDataButton")
+        self._showPostProcessingDataButton.setText("Show Post Processing Statistics")
+        self._showPostProcessingDataButton.setVisible(True)
+        gridLayout_3.addWidget(self._showPostProcessingDataButton, 4, 0, 1 , 1)
+
         self.setCentralWidget(centralwidget)
 
         menuBar = QtGui.QMenuBar();
@@ -264,6 +270,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._queryControl.getSetMouseoverPickModeCheckBox().stateChanged.connect(self._onSetMouseoverPickModeCheckBoxStateChanged)
         self._queryControl.getClearPicksButton().clicked.connect(self._onClearPicksButtonPressed)
 
+        self._showPostProcessingDataButton.clicked.connect(self._onShowPostProcessingDataButtonPressed)
+
         self._mouseEventFilter = MouseEventFilter(self._vis)
         self._mouseEventFilter.pressed.connect(self._onMouseButtonPressedForPick)
         print("About to install mouse filter")
@@ -296,7 +304,27 @@ class VCellPysideApp(QtGui.QMainWindow):
 
     def _showStatusMessage(self, message):
         self._getStatusBar().showMessage(str(message))
-     
+    
+    def _onShowPostProcessingDataButtonPressed(self):
+        print("in _onShowPostProcessingDataButtonPressed")
+        sim = self._visDataContext.getCurrentDataSet()
+        if (sim == None):
+            return
+        print(str(sim))
+
+        vcellProxy2 = vcellProxy.VCellProxyHandler()
+        try:
+            vcellProxy2.open()
+            vcellProxy2.getClient().displayPostProcessingDataInVCell(sim)
+        except Exception as exc:
+            print(exc.message)
+            msgBox = QMessageBox()
+            msgBox.setText("Exception occurred: "+exc.message)
+            msgBox.exec_()
+            return
+        finally:
+            vcellProxy2.close()
+
     def _showLoadFile(self):
         print('showLoadFile()')
         if visQt.isPyside():
@@ -341,7 +369,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         dialog.show()
 
 
-
+    
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
 #        domain = dialog.getSelectedDomain()
@@ -368,6 +396,8 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._visDataContext.setCurrentTimeIndex(0)
 
             self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,False)
+
+            #vcellProxy2.getClient().displayPostProcessingDataInVCell(sim)
  
         except Exception as exc:
             print(exc.message)
