@@ -1,5 +1,5 @@
 # Example developer startup from command line (adjust paths accordingly for your machine):
-# C:\Windows\system32>"C:\Program Files\LLNL\VisIt 2.8.1\visit.exe" -cli -pysideviewer -s C:\Developer\EclipseLuna\eclipse\workspace\VCell-5.4-trunk\visTool\visMainCLI.py
+# C:\Windows\system32>"C:\Program Files\LLNL\VisIt 2.9.0\visit.exe" -cli -pysideviewer -s C:\Developer\EclipseLuna\eclipse\workspace\VCell-5.4-trunk\visTool\visMainCLI.py
 # > "C:\Program Files\LLNL\VisIt 2.8.2\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_5.4_clean\visTool\visMainCLI.py
 
 import sys, os
@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(__file__))
 
 # Needed to attach to Visual Studio.  Adjust for your machine's paths.
 #sys.path.append("C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\Common7\\IDE\\Extensions\\Microsoft\\Python Tools for Visual Studio\\2.0")
-sys.path.append("C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\Common7\\IDE\\Extensions\\Microsoft\\Python Tools for Visual Studio\\2.1")
+sys.path.append("C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\Extensions\\Microsoft\\Python Tools for Visual Studio\\2.2")
 
 import visQt
 visQt.initPyside()

@@ -64,6 +64,9 @@ class DataSetChooserDialog(QtGui.QDialog):
             vcellProxy2.close()
 
         if (simList==None or len(simList)==0):
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("VCell not running or no models open")
+            msgBox.exec_()
             raise Exception("No simulations found")
             return
 

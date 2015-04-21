@@ -10,11 +10,13 @@ enum DomainType {
 }
 
 typedef int TimeIndex
-typedef double TimePoint 
+typedef double TimePoint
+typedef double Datum 
 typedef string DomainName
 typedef string FilePath
 
 typedef list<TimePoint> TimePoints
+typedef list<Datum> Data
 
 struct VariableInfo{
    1: required string variableVtuName;
@@ -32,21 +34,37 @@ struct SimulationDataSetRef {
    3: required string modelId;
    4: required string username;
    5: required string userkey;
+   6: required int jobIndex;
+   7: required bool isMathModel;
+   8: required string simulationContextName;
 }
-
 typedef list<SimulationDataSetRef> SimulationDataSetRefList
 
-exception DataAccessException {
+struct PlotData {
+	1: required TimePoints timePoints;
+	2: required Data data;
+}
+
+struct PostProcessingData {
+	1: required VariableList variableList;
+	2: required list<PlotData> plotData ;
+}
+
+exception ThriftDataAccessException {
    1: required string message;
 }
 
 service VCellProxy {
 
-    FilePath getDataSetFileOfDomainAtTimeIndex(1:SimulationDataSetRef simulationDataSetRef, 2:DomainName domainName, 3:TimeIndex timeIndex) throws (1:DataAccessException dataAccessException)
+    FilePath getDataSetFileOfDomainAtTimeIndex(1:SimulationDataSetRef simulationDataSetRef, 2:DomainName domainName, 3:TimeIndex timeIndex) throws (1:ThriftDataAccessException dataAccessException)
     
-    SimulationDataSetRefList getSimsFromOpenModels() throws (1: DataAccessException dataAccessException);
+    SimulationDataSetRefList getSimsFromOpenModels() throws (1: ThriftDataAccessException dataAccessException);
     
-    TimePoints getTimePoints(1: SimulationDataSetRef simulationDataSetRef) throws (1:DataAccessException dataAccessException);    
+    TimePoints getTimePoints(1: SimulationDataSetRef simulationDataSetRef) throws (1:ThriftDataAccessException dataAccessException);    
     
-    VariableList getVariableList(1: SimulationDataSetRef simulationDataSetRef) throws (1: DataAccessException dataAccessException);
+    VariableList getVariableList(1: SimulationDataSetRef simulationDataSetRef) throws (1: ThriftDataAccessException dataAccessException);
+    
+    PostProcessingData getPostProcessingData(1: SimulationDataSetRef simulationDataSetRef) throws (1: ThriftDataAccessException dataAccessException);
+    
+    void displayPostProcessingDataInVCell(1: SimulationDataSetRef simulationDataSetRef) throws (1: ThriftDataAccessException dataAccessException);
 }

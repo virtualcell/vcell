@@ -19,6 +19,7 @@ class AsynchClientTaskManager(object):
             print("Checking Tasks.  There are "+str(len(self._asynchClientTaskList))+" tasks in the list now")
             QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
         else:
+            pass
             QApplication.restoreOverrideCursor()
         for task in self._asynchClientTaskList:
             try:
