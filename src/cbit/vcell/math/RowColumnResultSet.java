@@ -10,11 +10,15 @@
 
 package cbit.vcell.math;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.python.google.common.collect.ImmutableList;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Variable.Domain;
@@ -41,7 +45,7 @@ import cbit.vcell.util.ColumnDescription;
 public class RowColumnResultSet implements java.io.Serializable {
 	private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<ColumnDescription>();
 	private Vector<ColumnDescription> fieldFunctionColumnDescriptions = new Vector<ColumnDescription>();
-	private Vector<double[]> fieldValues = new Vector<double[]> ();  // vector of rows (each row is a double[])
+	private ArrayList<double[]> fieldValues = new ArrayList<double[]> ();  // vector of rows (each row is a double[])
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ColumnDescription[] fieldColumnDescriptions = null;
 	
@@ -57,7 +61,7 @@ public RowColumnResultSet() {
 public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet) {
 	this.fieldDataColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
 	this.fieldFunctionColumnDescriptions = new Vector<ColumnDescription>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
-	this.fieldValues = new Vector<double[]>(copyThisRowColumnResultSet.fieldValues);
+	this.fieldValues = new ArrayList<double[]>(copyThisRowColumnResultSet.fieldValues);
 }
 
 /**
@@ -145,8 +149,8 @@ public synchronized void addRow (double[] values) {
 	if (values.length != getDataColumnCount()) {
 		throw new RuntimeException("number of values in row is not equal to number of columns");
 	}
-	for (int c = 0; c < getDataColumnCount(); c++) v[c] = values[c];
-	fieldValues.addElement(v);
+	System.arraycopy(values,0,v,0,getDataColumnCount());
+	fieldValues.add(v);
 }
 
 
@@ -415,7 +419,11 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param row int
  */
 public double[] getRow(int row) {
-	return (double []) fieldValues.elementAt(row);
+	return (double []) fieldValues.get(row);
+}
+
+public List<double[]> getRows(){
+	return Collections.unmodifiableList(this.fieldValues);
 }
 
 
@@ -471,7 +479,7 @@ private boolean isCorner(int t, double a[], double b[], double c[], double scale
  * getVariableNames method comment.
  */
 public void removeAllRows() {
-	fieldValues.removeAllElements();
+	fieldValues.clear();
 }
 
 
@@ -520,7 +528,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * getData method comment.
  */
 public void setValue(int r, int c, double value) {
-	double[] values = (double []) fieldValues.elementAt(r);
+	double[] values = fieldValues.get(r);
 	values[c] = value;
 }
 
@@ -549,7 +557,7 @@ public synchronized void trimRows(int maxRowCount) {
 		max[i] = -Double.MAX_VALUE;
 	}
 	for (int i = 0; i < getRowCount()-2; i++){
-		double values[] = (double[])fieldValues.elementAt(i);
+		double values[] = fieldValues.get(i);
 		for (int j = 0; j < getDataColumnCount(); j++){
 			min[j] = Math.min(min[j],values[j]);
 			max[j] = Math.max(max[j],values[j]);
@@ -604,7 +612,7 @@ public synchronized void trimRows(int maxRowCount) {
 	if (linkedList.size()>maxRowCount){
 		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
 	}
-	Vector<double[]> values = new Vector<double[]>(linkedList);
+	ArrayList<double[]> values = new ArrayList<double[]>(linkedList);
 	fieldValues = values;
 }
 

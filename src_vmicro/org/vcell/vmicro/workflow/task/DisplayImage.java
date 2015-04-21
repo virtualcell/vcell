@@ -1,20 +1,12 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.awt.event.WindowListener;
-
-import javax.swing.JFrame;
-
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Range;
 import org.vcell.vmicro.op.display.DisplayImageOp;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
-import cbit.image.DisplayAdapterService;
-import cbit.image.SourceDataInfo;
-import cbit.image.gui.ImagePlaneManagerPanel;
 import cbit.vcell.VirtualMicroscopy.Image;
 
 public class DisplayImage extends Task {

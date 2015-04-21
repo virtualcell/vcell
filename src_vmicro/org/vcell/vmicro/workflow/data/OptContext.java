@@ -9,12 +9,14 @@ import cbit.vcell.opt.Parameter;
 
 public class OptContext {
 	private OptModel optModel = null;
+	private ErrorFunction errorFunction = null;
 	private double[][] expData = null;
 	private double[][] measurementErrors = null;
 	private double[] expTimePoints = null;
 
-	public OptContext(OptModel optModel, double[][] expData, double[] expTimePoints, double[][] measurementErrors) {
+	public OptContext(OptModel optModel, double[][] expData, double[] expTimePoints, double[][] measurementErrors, ErrorFunction errorFunction) {
 		this.optModel = optModel;
+		this.errorFunction = errorFunction;
 		this.expData = expData;
 		this.expTimePoints = expTimePoints;
 		this.measurementErrors = measurementErrors;
@@ -36,18 +38,9 @@ public class OptContext {
 
 		double[][] solution = optModel.getSolution(parameters, expTimePoints);
 		
-		double error = 0.0;
-		for (int i = 0; i < expData.length; i++) {
-			for (int j = 0; j < expTimePoints.length; j++) {
-				double difference = expData[i][j] - solution[i][j];
-				if (measurementErrors != null) {
-					difference = difference	/ measurementErrors[i][j];
-				}
-				error = error + difference * difference;
-			}
-		}
+		double fittingError = errorFunction.getFittingErrorMetric(solution, measurementErrors, expData, expTimePoints);
 		
-		error = error + optModel.getPenalty(parameters);
+		double error = fittingError + optModel.getPenalty(parameters);
 //StringBuffer buffer = new StringBuffer("parameters (");
 //for (double p : parameters){
 //	buffer.append(p+",");
@@ -101,5 +94,5 @@ public class OptContext {
 		}
 		return results;
 	}
-
+	
 }

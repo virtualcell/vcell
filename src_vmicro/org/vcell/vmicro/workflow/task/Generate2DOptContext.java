@@ -2,6 +2,7 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.Generate2DOptContextOp;
+import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
 import org.vcell.workflow.DataInput;
@@ -20,6 +21,7 @@ public class Generate2DOptContext extends Task {
 	public final DataInput<OptModel> optModel;
 	public final DataInput<RowColumnResultSet> normExpData;
 	public final DataInput<RowColumnResultSet> normalizedMeasurementErrors;
+	public final DataInput<ErrorFunction> errorFunction;
 	//
 	// outputs
 	//
@@ -30,6 +32,7 @@ public class Generate2DOptContext extends Task {
 		optModel = new DataInput<OptModel>(OptModel.class,"optModel",this);
 		normExpData = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normExpData",this);
 		normalizedMeasurementErrors = new DataInput<RowColumnResultSet>(RowColumnResultSet.class,"normalizedMeasurementErrors",this);
+		errorFunction = new DataInput<ErrorFunction>(ErrorFunction.class,"errorFunction",this);
 		optContext = new DataOutput<OptContext>(OptContext.class,"optContext",this);
 		addInput(optModel);
 		addInput(normExpData);
@@ -46,7 +49,8 @@ public class Generate2DOptContext extends Task {
 		
 		// do op
 		Generate2DOptContextOp op = new Generate2DOptContextOp();
-		OptContext optcontext = op.generate2DOptContext(optmodel, normExpDataset, measurementErrorDataset);
+		ErrorFunction errorFunction = context.getData(this.errorFunction);
+		OptContext optcontext = op.generate2DOptContext(optmodel, normExpDataset, measurementErrorDataset, errorFunction);
 		
 		// set output
 		context.setData(optContext,optcontext);

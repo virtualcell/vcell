@@ -24,8 +24,10 @@ import org.vcell.vmicro.op.display.DisplayImageOp;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.op.display.DisplayPlotOp;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
+import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.workflow.data.ErrorFunctionNoiseWeightedL2;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
 
@@ -201,7 +203,8 @@ public class PhotoactivationExperimentTest {
 				return 0;
 			}
 		};
-		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors);
+		ErrorFunction errorFunction = new ErrorFunctionNoiseWeightedL2();
+		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors, errorFunction);
 		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial photoactivation - activated ROI only", null);
 		}
 		
@@ -263,12 +266,14 @@ public class PhotoactivationExperimentTest {
 				return 0;
 			}
 		};
-		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors);
+				
+		ErrorFunctionNoiseWeightedL2 errorFunction = new ErrorFunctionNoiseWeightedL2();
+		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors, errorFunction);
 		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial photoactivation - activated and cell ROIs", null);
 		}
 		
 	}
-
+	
 	private static ImageTimeSeries<UShortImage> blurTimeSeries(ImageTimeSeries<UShortImage> rawTimeSeriesImages) throws ImageException {
 		UShortImage[] blurredImages = new UShortImage[rawTimeSeriesImages.getAllImages().length];
 		for (int i=0;i<blurredImages.length;i++){
