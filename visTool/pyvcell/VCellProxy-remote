@@ -28,6 +28,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  SimulationDataSetRefList getSimsFromOpenModels()')
   print('  TimePoints getTimePoints(SimulationDataSetRef simulationDataSetRef)')
   print('  VariableList getVariableList(SimulationDataSetRef simulationDataSetRef)')
+  print('  PostProcessingData getPostProcessingData(SimulationDataSetRef simulationDataSetRef)')
+  print('  void displayPostProcessingDataInVCell(SimulationDataSetRef simulationDataSetRef)')
   print('')
   sys.exit(0)
 
@@ -107,6 +109,18 @@ elif cmd == 'getVariableList':
     print('getVariableList requires 1 args')
     sys.exit(1)
   pp.pprint(client.getVariableList(eval(args[0]),))
+
+elif cmd == 'getPostProcessingData':
+  if len(args) != 1:
+    print('getPostProcessingData requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getPostProcessingData(eval(args[0]),))
+
+elif cmd == 'displayPostProcessingDataInVCell':
+  if len(args) != 1:
+    print('displayPostProcessingDataInVCell requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.displayPostProcessingDataInVCell(eval(args[0]),))
 
 else:
   print('Unrecognized method %s' % cmd)
