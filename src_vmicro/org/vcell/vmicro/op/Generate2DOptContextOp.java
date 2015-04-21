@@ -1,5 +1,6 @@
 package org.vcell.vmicro.op;
 
+import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
 
@@ -8,7 +9,7 @@ import cbit.vcell.parser.ExpressionException;
 
 public class Generate2DOptContextOp {
 	
-	public OptContext generate2DOptContext(OptModel optModel, RowColumnResultSet normExpDataset, RowColumnResultSet measurementErrorDataset) throws ExpressionException {
+	public OptContext generate2DOptContext(OptModel optModel, RowColumnResultSet normExpDataset, RowColumnResultSet measurementErrorDataset, ErrorFunction errorFunction) throws ExpressionException {
 		
 		double[] normExpTimePoints = normExpDataset.extractColumn(0);
 
@@ -30,7 +31,7 @@ public class Generate2DOptContextOp {
 			}
 		}
 		
-		return new OptContext(optModel,normExpData,normExpTimePoints,measurementErrors);
+		return new OptContext(optModel,normExpData,normExpTimePoints,measurementErrors,errorFunction);
 	}
 	
 }

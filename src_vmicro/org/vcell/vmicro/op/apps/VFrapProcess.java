@@ -22,8 +22,10 @@ import org.vcell.vmicro.op.display.DisplayDependentROIsOp;
 import org.vcell.vmicro.op.display.DisplayImageOp;
 import org.vcell.vmicro.op.display.DisplayProfileLikelihoodPlotsOp;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
+import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
+import org.vcell.vmicro.workflow.data.ErrorFunctionNoiseWeightedL2;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
@@ -184,10 +186,12 @@ public class VFrapProcess {
 				refSimData[roi][t] = roiData[t];
 			}
 		}
+
+		ErrorFunction errorFunction = new ErrorFunctionNoiseWeightedL2();
 		
 		OptModelOneDiff optModelOneDiff = new OptModelOneDiff(refSimData, refSimTimePoints, refDiffusionRate);
 		Generate2DOptContextOp generate2DOptContextOne = new Generate2DOptContextOp();
-		OptContext optContextOneDiff = generate2DOptContextOne.generate2DOptContext(optModelOneDiff, reducedData, measurementError);
+		OptContext optContextOneDiff = generate2DOptContextOne.generate2DOptContext(optModelOneDiff, reducedData, measurementError, errorFunction);
 		RunProfileLikelihoodGeneralOp runProfileLikelihoodOne = new RunProfileLikelihoodGeneralOp();
 		ProfileData[] profileDataOne = runProfileLikelihoodOne.runProfileLikihood(optContextOneDiff, clientTaskStatusSupport);
 		
@@ -199,7 +203,7 @@ public class VFrapProcess {
 		
 		OptModelTwoDiffWithPenalty optModelTwoDiffWithPenalty = new OptModelTwoDiffWithPenalty(refSimData, refSimTimePoints, refDiffusionRate);
 		Generate2DOptContextOp generate2DOptContextTwoWithPenalty = new Generate2DOptContextOp();
-		OptContext optContextTwoDiffWithPenalty = generate2DOptContextTwoWithPenalty.generate2DOptContext(optModelTwoDiffWithPenalty, reducedData, measurementError);
+		OptContext optContextTwoDiffWithPenalty = generate2DOptContextTwoWithPenalty.generate2DOptContext(optModelTwoDiffWithPenalty, reducedData, measurementError, errorFunction);
 		RunProfileLikelihoodGeneralOp runProfileLikelihoodTwoWithPenalty = new RunProfileLikelihoodGeneralOp();
 		ProfileData[] profileDataTwoWithPenalty = runProfileLikelihoodTwoWithPenalty.runProfileLikihood(optContextTwoDiffWithPenalty, clientTaskStatusSupport);
 
