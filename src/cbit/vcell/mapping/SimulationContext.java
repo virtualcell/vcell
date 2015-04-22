@@ -2430,6 +2430,10 @@ public void setMostRecentlyCreatedOutputSpec(BNGOutputSpec mostRecentlyCreatedOu
 public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
+public void appendToConsole(TaskCallbackMessage message) {
+	firePropertyChange("appendToConsole", "", message);
+}
+
 
 @Override
 public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
