@@ -26,7 +26,6 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -93,7 +92,6 @@ import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.CartesianMesh;
@@ -101,7 +99,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class NewPDEExportPanel extends JPanel implements ExportConstants {
+public class PDEExportDataPanel extends JPanel implements ExportConstants {
 	private JRadioButton bothVarRadioButton;
 	private JLabel defineExportDataLabel;
 	private JLabel selectVariablesLabel;
@@ -153,7 +151,6 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private int viewZoom;
 	
 	private boolean isSmoldyn = false;
-	private boolean isSmoldynParticle = false;
 	
 	/*
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
@@ -174,50 +171,50 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField1()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJTextField1()) 
 				connEtoC5(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField2()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJTextField2()) 
 				connEtoC6(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJButtonExport()) 
 				connEtoM1(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJButtonExport()) 
 				connEtoC9(e);
 //			if (e.getSource() == NewPDEExportPanel.this.getJButtonAdd()) 
 //				connEtoM4(e);
 //			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove()) 
 //				connEtoM5(e);
-			if (e.getSource() == NewPDEExportPanel.this.getVolVarRadioButton()){
+			if (e.getSource() == PDEExportDataPanel.this.getVolVarRadioButton()){
 				vol_memb_both_change();
 			}
-			if (e.getSource() == NewPDEExportPanel.this.getMembVarRadioButton()){
+			if (e.getSource() == PDEExportDataPanel.this.getMembVarRadioButton()){
 				vol_memb_both_change();
 			}
-			if (e.getSource() == NewPDEExportPanel.this.getBothVarRadioButton()){
+			if (e.getSource() == PDEExportDataPanel.this.getBothVarRadioButton()){
 				vol_memb_both_change();
 			}
 
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == PDEExportDataPanel.this.getDefaultListModelCivilizedSelections()) 
 				connEtoC17();
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField1()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJTextField1()) 
 				connEtoC7(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField2()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJTextField2()) 
 				connEtoC8(e);
 		};
 		public void intervalAdded(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == PDEExportDataPanel.this.getDefaultListModelCivilizedSelections()) 
 				connEtoC17();
 		};
 		public void intervalRemoved(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == PDEExportDataPanel.this.getDefaultListModelCivilizedSelections()) 
 				connEtoC17();
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getFormatComboBox()){
+			if (e.getSource() == PDEExportDataPanel.this.getFormatComboBox()){
 				connEtoM6(e);
 				updateChoiceVariableType(getPdeDataContext());
 				updateChoiceROI();
@@ -227,33 +224,33 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
 //				connEtoC10(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("slice"))) 
+			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("slice"))) 
 				connEtoC11(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
+			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
 				connEtoC12(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat"))) 
+			if (evt.getSource() == PDEExportDataPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat"))) 
 				connEtoC13(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
+			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
 				connPtoP3SetTarget();
-			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints"))) 
+			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints"))) 
 				connEtoC14(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection"))) 
+			if (evt.getSource() == PDEExportDataPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection"))) 
 				connEtoC16(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
+			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
 				connEtoC18(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
 				connEtoC20(evt);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJSlider1()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJSlider1()) 
 				connEtoC3(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJSlider2()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJSlider2()) 
 				connEtoC4(e);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJListVariables()) 
+			if (e.getSource() == PDEExportDataPanel.this.getJListVariables()) 
 				connEtoC15(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJListSelections()) 
+			if (e.getSource() == PDEExportDataPanel.this.getROISelections()) 
 				connEtoC19(e);
 		};
 	};
@@ -262,7 +259,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
  * Constructor
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public NewPDEExportPanel() {
+public PDEExportDataPanel() {
 	super();
 	initialize();
 }
@@ -727,7 +724,7 @@ private void connEtoM3() {
 	try {
 		// user code begin {1}
 		// user code end
-		getButtonGroupCivilized1().add(getJRadioButtonSelection());
+		getButtonGroupCivilized1().add(getJRadioButtonROI());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -871,7 +868,7 @@ private void connPtoP1SetTarget() {
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
-		getJListSelections().setModel(getDefaultListModelCivilizedSelections());
+		getROISelections().setModel(getDefaultListModelCivilizedSelections());
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1076,7 +1073,7 @@ private ExportSpecs getExportSpecs() {
 	} else if (getJRadioButtonFull().isSelected()) {
 		geoMode = ExportConstants.GEOMETRY_FULL;
 	}
-	Object[] selectionsArr = getJListSelections().getSelectedValuesList().toArray();
+	Object[] selectionsArr = getROISelections().getSelectedValuesList().toArray();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
@@ -1136,7 +1133,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 		
 				try{
 					int[] choices = DialogUtils.showComponentOKCancelTableList(
-							NewPDEExportPanel.this, "Choose Sims to export together",
+							PDEExportDataPanel.this, "Choose Sims to export together",
 							new String[] {"Simulation","Mesh x,y,z","NumTimePoints","EndTime","Output Descr."},
 							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if (choices != null) {
@@ -1163,7 +1160,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 				}
 				try{
 					int[] choices = DialogUtils.showComponentOKCancelTableList(
-							NewPDEExportPanel.this, "Choose ParameterScans to export together",
+							PDEExportDataPanel.this, "Choose ParameterScans to export together",
 							currentSimNameSimDataID.getExportParamScanInfo().getParamScanConstantNames(),
 							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if(choices != null && choices.length > 0){
@@ -1426,7 +1423,7 @@ private javax.swing.JLabel getJLabelTime() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList<Object> getJListSelections() {
+private javax.swing.JList<Object> getROISelections() {
 	if (ivjJListSelections == null) {
 		try {
 			ivjJListSelections = new javax.swing.JList<Object>();
@@ -1590,7 +1587,7 @@ private javax.swing.JPanel getJPanelSelections() {
 			constraintsJRadioButtonSelection.anchor = GridBagConstraints.WEST;
 			constraintsJRadioButtonSelection.gridx = 0; constraintsJRadioButtonSelection.gridy = 0;
 			constraintsJRadioButtonSelection.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelSelections().add(getJRadioButtonSelection(), constraintsJRadioButtonSelection);
+			getJPanelSelections().add(getJRadioButtonROI(), constraintsJRadioButtonSelection);
 
 			java.awt.GridBagConstraints constraintsJScrollPane2 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane2.fill = GridBagConstraints.BOTH;
@@ -1799,7 +1796,7 @@ private javax.swing.JRadioButton getJRadioButtonFull() {
  * @return javax.swing.JRadioButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JRadioButton getJRadioButtonSelection() {
+private javax.swing.JRadioButton getJRadioButtonROI() {
 	if (ivjJRadioButtonSelection == null) {
 		try {
 			ivjJRadioButtonSelection = new javax.swing.JRadioButton();
@@ -1883,7 +1880,7 @@ private javax.swing.JScrollPane getJScrollPane2() {
 		try {
 			ivjJScrollPane2 = new javax.swing.JScrollPane();
 			ivjJScrollPane2.setName("JScrollPane2");
-			getJScrollPane2().setViewportView(getJListSelections());
+			getJScrollPane2().setViewportView(getROISelections());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2096,7 +2093,7 @@ private void initConnections() throws java.lang.Exception {
 	getJListVariables().addListSelectionListener(ivjEventHandler);
 	getButtonGroupCivilized1().addPropertyChangeListener(ivjEventHandler);
 	getDefaultListModelCivilizedSelections().addListDataListener(ivjEventHandler);
-	getJListSelections().addListSelectionListener(ivjEventHandler);
+	getROISelections().addListSelectionListener(ivjEventHandler);
 	connPtoP2SetTarget();
 	connPtoP1SetTarget();
 	connPtoP3SetTarget();
@@ -2119,9 +2116,6 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.VTK_UNSTRUCT);
 		if(getVolVarRadioButton().isSelected()){
 			cb.addItem(ExportFormat.VTK_IMAGE);
-		}
-		if (isSmoldynParticle) {
-			cb.addItem(ExportFormat.PARTICLE);
 		}
 		if(currentSelection != null){
 			cb.setSelectedItem(currentSelection);
@@ -2205,8 +2199,8 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		JFrame frame = new javax.swing.JFrame();
-		NewPDEExportPanel aNewPDEExportPanel;
-		aNewPDEExportPanel = new NewPDEExportPanel();
+		PDEExportDataPanel aNewPDEExportPanel;
+		aNewPDEExportPanel = new PDEExportDataPanel();
 		frame.setContentPane(aNewPDEExportPanel);
 		frame.setSize(aNewPDEExportPanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -2495,12 +2489,11 @@ private void startExport() {
 	case UCD:
 	case VTK_IMAGE:
 	case VTK_UNSTRUCT:
-	case PARTICLE:
 		break;
 	default:
 		break;
 	};
-	if (getJRadioButtonSelection().isSelected() && getJListSelections().getSelectedIndex() == -1) {
+	if (getJRadioButtonROI().isSelected() && getROISelections().getSelectedIndex() == -1) {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 
@@ -2572,12 +2565,12 @@ private void startExport() {
 				File sourceFile = (File)hashTable.get(SOURCE_FILE_KEY);
 				JFileChooser jFileChooser = new JFileChooser();
 				jFileChooser.setSelectedFile(new File(sourceFile.getName()));
-				if(jFileChooser.showSaveDialog(NewPDEExportPanel.this) == JFileChooser.APPROVE_OPTION){
+				if(jFileChooser.showSaveDialog(PDEExportDataPanel.this) == JFileChooser.APPROVE_OPTION){
 					File destinationFile = jFileChooser.getSelectedFile();
 					if(destinationFile.exists()){
 						final String OVERWRITE = "Overwrite";
 						final String CANCEL = "Cancel";
-						String response = DialogUtils.showWarningDialog(NewPDEExportPanel.this, "OK to Overwrite "+destinationFile.getAbsolutePath()+"?", new String[] {OVERWRITE,CANCEL},OVERWRITE);
+						String response = DialogUtils.showWarningDialog(PDEExportDataPanel.this, "OK to Overwrite "+destinationFile.getAbsolutePath()+"?", new String[] {OVERWRITE,CANCEL},OVERWRITE);
 						if(response == null || !response.equals(OVERWRITE)){
 							return;
 						}
@@ -2680,7 +2673,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
 		case CSV: {
 			BeanUtils.enableComponents(getJPanelSelections(), true);
 			getJRadioButtonFull().setEnabled(false);
-			getJRadioButtonSelection().setSelected(true);
+			getJRadioButtonROI().setSelected(true);
 			break;
 		}
 		case QUICKTIME:
@@ -2708,13 +2701,6 @@ private void updateExportFormat(ExportFormat exportFormat) {
 			getJRadioButtonFull().setEnabled(true);			
 			break;
 		}
-	case PARTICLE:
-		getJRadioButtonSlice().setSelected(false);
-		getJRadioButtonSlice().setEnabled(false);
-		getJRadioButtonFull().setSelected(true);
-		getJRadioButtonFull().setEnabled(true);			
-		//GCW to do
-		break;
 	default:
 		break;
 	};
@@ -2733,15 +2719,15 @@ private void updateExportFormat(ExportFormat exportFormat) {
 private void updateInterface() {
 	setFormatChoices_0();
 	//
-	if(!getJRadioButtonSelection().isSelected()){
-		getJListSelections().clearSelection();
+	if(!getJRadioButtonROI().isSelected()){
+		getROISelections().clearSelection();
 	}
 	//
 	boolean startExportEnabled =
 		(getJListVariables().getSelectedIndex() != -1)
 		&&
 		(
-		(getJRadioButtonSelection().isSelected() && getJListSelections().getSelectedIndex() != -1)
+		(getJRadioButtonROI().isSelected() && getROISelections().getSelectedIndex() != -1)
 		||
 		(getJRadioButtonSlice().isSelected())
 		||
@@ -2778,7 +2764,7 @@ private void updateInterface() {
 //		(getJListSelections().getSelectedIndex() != -1);
 //	//
 	
-	getJListSelections().setEnabled(getJRadioButtonSelection().isSelected());
+	getROISelections().setEnabled(getJRadioButtonROI().isSelected());
 
 	
 	getBothVarRadioButton().setEnabled(true);
@@ -2807,43 +2793,17 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		break;
 	case CSV:
+		if (getJRadioButtonROI().isSelected() && getROISelections().getModel( ).getSize() == 0) {
+			getJRadioButtonSlice().setSelected(true);
+		}
+		break;
 	case UCD:
 	case VTK_UNSTRUCT:
 		//no operation?
 		break;
-	case PARTICLE:
-		//GCW to do
-		break;
 	default:
 		break;
 	}
-	/*
-	if(getJComboBox1().getSelectedItem().equals(EXPORT_QT_MOVIE) ||
-			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_IMAGES) ||
-			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_ANIM) ||
-			getJComboBox1().getSelectedItem().equals(EXPORT_JPEG_IMAGES)){
-		
-		if(!getBothVarRadioButton().isSelected()){
-			getBothVarRadioButton().doClick();
-		}
-		getVolVarRadioButton().setEnabled(false);
-		getMembVarRadioButton().setEnabled(false);
-	}else if(getJComboBox1().getSelectedItem().equals(EXPORT_NRRD)){
-		if(getBothVarRadioButton().isSelected()){
-			getVolVarRadioButton().doClick();
-		}
-		getBothVarRadioButton().setEnabled(false);
-	}
-	else if(getJComboBox1().getSelectedItem().equals(EXPORT_VTK_IMAGE)){
-		if(!getVolVarRadioButton().isSelected()){
-			getVolVarRadioButton().doClick();
-		}
-		getBothVarRadioButton().setEnabled(false);
-		getMembVarRadioButton().setEnabled(false);
-	}
-	*/
-	
-
 }
 
 
@@ -2957,11 +2917,6 @@ private void updateTimes(double[] times) {
 	}
 
 	public void setSolverTaskDescription(SolverTaskDescription solverDescription) {
-		isSmoldynParticle = false; 
 		isSmoldyn = solverDescription.getSolverDescription().equals(SolverDescription.Smoldyn);
-		if (isSmoldyn) {
-			SmoldynSimulationOptions sss = solverDescription.getSmoldynSimulationOptions();
-			isSmoldynParticle = sss.isSaveParticleLocations();
-		}
 	}
 }
