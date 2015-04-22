@@ -300,7 +300,7 @@ public class PDEDataViewer extends DataViewer {
 	private JPanel ivjJPanelButtons = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private JPanel ivjViewData = null;
-	private NewPDEExportPanel ivjPDEExportPanel1 = null;
+	private PDEExportDataPanel ivjPDEExportPanel1 = null;
 	private ExportMonitorPanel ivjExportMonitorPanel1 = null;
 	private BitSet volumeSnapshotROI;
 	private String volumeSnapshotROIDescription;
@@ -2167,10 +2167,10 @@ private PDEDataContextPanel getPDEDataContextPanel1() {
  * @return cbit.vcell.client.data.NewPDEExportPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private NewPDEExportPanel getPDEExportPanel1() {
+private PDEExportDataPanel getPDEExportPanel1() {
 	if (ivjPDEExportPanel1 == null) {
 		try {
-			ivjPDEExportPanel1 = new NewPDEExportPanel();
+			ivjPDEExportPanel1 = new PDEExportDataPanel();
 			ivjPDEExportPanel1.setName("PDEExportPanel1");
 			// user code begin {1}
 			// user code end

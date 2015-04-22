@@ -15,7 +15,6 @@ public enum ExportFormat {
 	UCD("UCD (*.ucd)", false),
 	VTK_UNSTRUCT("VTK Unstructured (*.vtu)", false),
 	VTK_IMAGE("VTK Image (*.vtk)", false),
-	PARTICLE("Particle data (*.csv)",false),
 	; 
 	ExportFormat(String label, boolean requiresFollowOn ) {
 		this.label = label;
