@@ -18,7 +18,6 @@ import java.util.ListIterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.python.google.common.collect.ImmutableList;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Variable.Domain;
