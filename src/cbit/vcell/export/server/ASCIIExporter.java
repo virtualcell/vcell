@@ -9,15 +9,22 @@
  */
 
 package cbit.vcell.export.server;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
+import org.vcell.solver.smoldyn.SmoldynVCellMapper;
+import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
@@ -27,12 +34,13 @@ import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.ParticleData;
+import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.ode.ODESimData;
+import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
  * Creation date: (4/27/2004 1:38:59 PM)
@@ -54,20 +62,20 @@ public ASCIIExporter(ExportServiceImpl exportServiceImpl) {
  * @throws IOException 
  * @deprecated
  */
-private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private List<ExportOutput> exportODEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 	String simID = vcdID.getID();
 	String dataType = ".csv";
 	String dataID = "_";
-	//StringBuffer data = new StringBuffer();
+	//StringBuilder data = new StringBuilder();
 	ExportOutput exportOutput = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
-	SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl,vcdID,true);
+	SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl,vcdID,true, null);
 	fileDataContainerManager.append(exportOutput.getFileDataContainerID(),simulationDescription.getHeader(dataType));
 	fileDataContainerManager.append(exportOutput.getFileDataContainerID(),getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 	dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
-	return new ExportOutput[] {exportOutput};	
+	return Arrays.asList(exportOutput);
 }
  
-
+private static final SmoldynKeyword[] SMOLDYN_KEYWORDS_USED = {SmoldynVCellMapper.MAP_PARTICLE_TO_MEMBRANE, SmoldynKeyword.solution};
 /**
  * Insert the method's description here.
  * Creation date: (1/12/00 5:00:28 PM)
@@ -75,97 +83,125 @@ private ExportOutput[] exportODEData(OutputContext outputContext,long jobID, Use
  * @param dsc cbit.vcell.server.DataSetController
  * @param timeSpecs cbit.vcell.export.server.TimeSpecs
  * @throws IOException 
- * @deprecated
  */
-private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, TimeSpecs timeSpecs, ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
+private List<ExportOutput> exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,  
+		ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 
+	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
+	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
+	final int N_PARTICLE_PIECES = 3;
 	String simID = vcdID.getID();
 	String dataType = ".csv";
-	String dataID = "_Particles";
 
 	// get parameters
 	boolean switchRowsColumns = asciiSpecs.getSwitchRowsColumns();
 	double[] allTimes = timeSpecs.getAllTimes();
 	int beginIndex = timeSpecs.getBeginTimeIndex();
 	int endIndex = timeSpecs.getEndTimeIndex();
-	ParticleData[] particleData = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[beginIndex]).getParticleData();
-	int numberOfParticles = particleData.length;
-	int numberOfTimes = endIndex - beginIndex + 1;
+	ParticleDataBlock particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[beginIndex]);
+	VariableSpecs vs = exportSpecs.getVariableSpecs();
+	VCAssert.assertValid(vs);
+	String[] vnames = vs.getVariableNames();
+	if (vnames.length == 0) {
+		throw new IllegalArgumentException("No variables selected");
+	}
+	//need array for SimulationDescription, later
+	final String currentVariableName[] = new String[1];
+	
+	ArrayList<ExportOutput> rval = new ArrayList<>(vnames.length);
+	Set<String> species = particleDataBlk.getSpecies();
+	for (String vcellName : vnames) {
+		String smoldynSpecies = null;
+		for (int i = 0; smoldynSpecies == null && i < SMOLDYN_KEYWORDS_USED.length;i++) { 
+			SmoldynKeyword kw = SMOLDYN_KEYWORDS_USED[i];
+			String smoldynName = SmoldynVCellMapper.vcellToSmoldyn(vcellName, kw);
+			if (species.contains(smoldynName)) {
+				smoldynSpecies = smoldynName; 
+			}
+		}
+		if (smoldynSpecies == null) {
+			throw new DataAccessException("Unable to find match for variable name " + vcellName
+					+ " in " + StringUtils.join(species,", ") );
+		}
+		
 
-	// now make csv formatted data
-	StringBuffer header = new StringBuffer();
-	FileDataContainerID[] dataLines = null;
-	if (switchRowsColumns) {
-		dataLines = new FileDataContainerID[numberOfParticles * 5];
-		for (int j=0;j<dataLines.length;j++){
-			dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
-		}
-		for (int i=0;i<numberOfParticles;i++) {
-			fileDataContainerManager.append(dataLines[5 * i],"x," + i + ",");
-			fileDataContainerManager.append (dataLines[5 * i + 1],"y,,");
-			fileDataContainerManager.append (dataLines[5 * i + 2],"z,,");
-			fileDataContainerManager.append (dataLines[5 * i + 3],"state,,");
-			fileDataContainerManager.append (dataLines[5 * i + 4],"context,,");
-		}
-	} else {
-		dataLines = new FileDataContainerID[numberOfTimes];
-		for (int j=0;j<dataLines.length;j++){
-			dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
-		}
-	}
-	SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
-	header.append(simulationDescription.getHeader(dataType));
-	if (switchRowsColumns) {
-		header.append(",Particle #\n");
-		header.append("Time,,");
-		for (int i=beginIndex;i<=endIndex;i++) {
-			header.append(allTimes[i] + ",");
-		}
-	} else {
-		header.append(",Time\n");
-		header.append("Particle #,,");
-		for (int k=0;k<numberOfParticles;k++) {
-			header.append(k + ",,,,,");
-		}
-		header.append("\n,,");
-		for (int k=0;k<numberOfParticles;k++) {
-			header.append("x,y,z,state,context,");
-		}
-	}
-	double progress = 0.0;
-	for (int i=beginIndex;i<=endIndex;i++) {
-		progress = (double)(i - beginIndex) / numberOfTimes;
-		exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-		particleData = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]).getParticleData();
+		List<Coordinate> particles = particleDataBlk.getCoordinates(smoldynSpecies);
+		int numberOfParticles = particles.size(); 
+		int numberOfTimes = endIndex - beginIndex + 1;
+
+		// now make csv formatted data
+		StringBuilder header = new StringBuilder();
+		FileDataContainerID[] dataLines = null;
 		if (switchRowsColumns) {
-			for (int j=0;j<numberOfParticles;j++) {
-				Coordinate coordinate = particleData[j].getCoordinate();
-				fileDataContainerManager.append(dataLines[5 * j],coordinate.getX() + ",");
-				fileDataContainerManager.append(dataLines[5 * j + 1],coordinate.getY() + ",");
-				fileDataContainerManager.append(dataLines[5 * j + 2],coordinate.getZ() + ",");
-				fileDataContainerManager.append(dataLines[5 * j + 3],particleData[j].getState() + ",");
-				fileDataContainerManager.append(dataLines[5 * j + 4],particleData[j].getContext() + ",");
+			dataLines = new FileDataContainerID[numberOfParticles * N_PARTICLE_PIECES];
+			for (int j=0;j<dataLines.length;j++){
+				dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
+			}
+			for (int i=0;i<numberOfParticles;i++) {
+				fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * i],"x," + i + ",");
+				fileDataContainerManager.append (dataLines[N_PARTICLE_PIECES * i + 1],"y,,");
+				fileDataContainerManager.append (dataLines[N_PARTICLE_PIECES * i + 2],"z,,");
 			}
 		} else {
-			fileDataContainerManager.append(dataLines[i - beginIndex],"," + allTimes[i] + ",");
-			for (int j=0;j<numberOfParticles;j++) {
-				Coordinate coordinate = particleData[j].getCoordinate();
-				fileDataContainerManager.append(dataLines[i - beginIndex],coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getZ() + ",");
-				fileDataContainerManager.append(dataLines[i - beginIndex],particleData[j].getState() + ",");
-				fileDataContainerManager.append(dataLines[i - beginIndex],particleData[j].getContext() + ",");
+			dataLines = new FileDataContainerID[numberOfTimes];
+			for (int j=0;j<dataLines.length;j++){
+				dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
 			}
 		}
+		currentVariableName[0] = vcellName;
+		SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false, currentVariableName);
+		header.append(simulationDescription.getHeader(dataType));
+		if (switchRowsColumns) {
+			header.append(",Particle #\n");
+			header.append("Time,,");
+			for (int i=beginIndex;i<=endIndex;i++) {
+				header.append(allTimes[i] + ",");
+			}
+		} else {
+			header.append(",Time\n");
+			header.append("Particle #,,");
+			for (int k=0;k<numberOfParticles;k++) {
+				header.append(k + StringUtils.repeat(',', N_PARTICLE_PIECES)  );
+			}
+			header.append("\n,,");
+			for (int k=0;k<numberOfParticles;k++) {
+				header.append("x,y,z,");
+			}
+		}
+		double progress = 0.0;
+		for (int i=beginIndex;i<=endIndex;i++) {
+			progress = (double)(i - beginIndex) / numberOfTimes;
+			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
+			particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]);
+			particles = particleDataBlk.getCoordinates(smoldynSpecies);
+
+			if (switchRowsColumns) {
+				for (int j=0;j<numberOfParticles;j++) {
+					Coordinate coordinate = particles.get(j);
+					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j],coordinate.getX() + ",");
+					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j + 1],coordinate.getY() + ",");
+					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j + 2],coordinate.getZ() + ",");
+				}
+			} else {
+				fileDataContainerManager.append(dataLines[i - beginIndex],"," + allTimes[i] + ",");
+				for (int j=0;j<numberOfParticles;j++) {
+					Coordinate coordinate = particles.get(j) ;
+					fileDataContainerManager.append(dataLines[i - beginIndex],coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getZ() + ",");
+				}
+			}
+		}
+		final String dataID = vcellName + "_Particles";
+		ExportOutput exportOutputCSV = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
+		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),header.toString());
+		for (int i=0;i<dataLines.length;i++) {
+			progress = (double)i / dataLines.length;
+			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
+			fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),"\n");
+			fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),dataLines[i]);
+		}
+		rval.add(exportOutputCSV);
 	}
-	ExportOutput exportOutputCSV = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
-	fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),header.toString());
-	for (int i=0;i<dataLines.length;i++) {
-		progress = (double)i / dataLines.length;
-		exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),"\n");
-		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),dataLines[i]);
-	}
-	
-	return new ExportOutput[] {exportOutputCSV};    
+	return rval; 
 }
 
 
@@ -173,7 +209,7 @@ private ExportOutput[] exportParticleData(OutputContext outputContext,long jobID
  * This method was created in VisualAge.
  * @throws IOException 
  */
-private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
+private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
 		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager) 
 						throws DataAccessException, IOException {
@@ -217,7 +253,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 			String simID = vcdID.getID();							
 			String dataType = ".csv";
 			FileDataContainerID fileDataContainerID_header = fileDataContainerManager.getNewFileDataContainerID();
-			SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false);
+			SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false, null);
 			fileDataContainerManager.append(fileDataContainerID_header,"\""+"Model: '"+contextName+"'\"\n\"Simulation: '"+simNameSimDataIDs[v].getSimulationName()+"' ("+paramScanInfo+")\"\n"+simulationDescription.getHeader(dataType));
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_SELECTIONS: {
@@ -230,7 +266,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					Vector<ExportOutput> outputV = new Vector<ExportOutput>();
 					if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
 						String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
-						//StringBuffer data1 = new StringBuffer(data.toString());
+						//StringBuilder data1 = new StringBuilder(data.toString());
 						ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 						
@@ -245,7 +281,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					}
 					if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
 						String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
-						//StringBuffer data1 = new StringBuffer(data.toString());
+						//StringBuilder data1 = new StringBuilder(data.toString());
 						ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 						for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
@@ -268,7 +304,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
 					for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
 						for (int i=0;i<TIME_COUNT;i++) {
-							StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
+							StringBuilder inset = new StringBuilder(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
 								inset.reverse();
 								inset.append("000");
 								inset.setLength(4);
@@ -299,19 +335,20 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 	}
 	
 	if(exportOutputV.size() == 1){
-		return exportOutputV.elementAt(0);
+		return Arrays.asList(exportOutputV.elementAt(0) );
 	}
 	
-	ExportOutput[] combinedExportOutput = new ExportOutput[exportOutputV.elementAt(0).length];
-	for (int i = 0; i < combinedExportOutput.length; i++) {
+	ArrayList<ExportOutput> combinedExportOutput = new ArrayList<>(exportOutputV.elementAt(0).length);
+	for (int i = 0; i < combinedExportOutput.size( ); i++) {
 		String DATATYPE = exportOutputV.elementAt(0)[i].getDataType();
 		String DATAID = exportOutputV.elementAt(0)[i].getDataID();
-		combinedExportOutput[i] = new ExportOutput(true, DATATYPE, "MultiSimulation", DATAID, fileDataContainerManager);
+		ExportOutput eo = new ExportOutput(true, DATATYPE, "MultiSimulation", DATAID, fileDataContainerManager);
 		//FileDataContainer container = fileDataContainerManager.getFileDataContainer(combinedExportOutput[i].getFileDataContainerID());
 		for (int j = 0; j < exportOutputV.size(); j++) {
-			fileDataContainerManager.append(combinedExportOutput[i].getFileDataContainerID(),exportOutputV.elementAt(j)[i].getFileDataContainerID()); 
-			fileDataContainerManager.append(combinedExportOutput[i].getFileDataContainerID(),"\n");
+			fileDataContainerManager.append(eo.getFileDataContainerID(),exportOutputV.elementAt(j)[i].getFileDataContainerID()); 
+			fileDataContainerManager.append(eo.getFileDataContainerID(),"\n");
 		}
+		combinedExportOutput.add(eo);
 	}
 	return combinedExportOutput;
 
@@ -593,7 +630,7 @@ private FileDataContainerID getSlice(OutputContext outputContext,User user, Data
 	FileDataContainerID fileDataContainerID = fileDataContainerManager.getNewFileDataContainerID();
 
 	
-//	StringBuffer buffer = new StringBuffer();
+//	StringBuilder buffer = new StringBuilder();
 
 	if (simDataBlock.getVariableType().equals(VariableType.VOLUME) || simDataBlock.getVariableType().equals(VariableType.POSTPROCESSING)) {
 		//
@@ -688,49 +725,52 @@ private FileDataContainerID getSlice(OutputContext outputContext,User user, Data
  * This method was created in VisualAge.
  * @throws IOException 
  */
-public ExportOutput[] makeASCIIData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) 
-						throws DataAccessException, IOException {
-							
-	switch (((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).getDataType()) {
+public Collection<ExportOutput >makeASCIIData(OutputContext outputContext,JobRequest jobRequest, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,FileDataContainerManager fileDataContainerManager) 
+		throws DataAccessException, IOException {
+	FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
+	ASCIISpecs asciiSpecs = BeanUtils.downcast(ASCIISpecs.class, formatSpecs);
+	if (asciiSpecs != null) {
+		switch (asciiSpecs.getDataType()) {
 		case PDE_VARIABLE_DATA:
 			return exportPDEData(
 					outputContext,
-				jobRequest.getJobID(),
-				user,
-				dataServerImpl,
-				exportSpecs.getVCDataIdentifier(),
-				exportSpecs.getVariableSpecs(),
-				exportSpecs.getTimeSpecs(),
-				exportSpecs.getGeometrySpecs(),
-				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs(),
-				exportSpecs.getContextName(),
-				fileDataContainerManager
-			);
+					jobRequest.getJobID(),
+					user,
+					dataServerImpl,
+					exportSpecs.getVCDataIdentifier(),
+					exportSpecs.getVariableSpecs(),
+					exportSpecs.getTimeSpecs(),
+					exportSpecs.getGeometrySpecs(),
+					asciiSpecs,
+					exportSpecs.getContextName(),
+					fileDataContainerManager
+					);
 		case ODE_VARIABLE_DATA:
 			return exportODEData(
 					outputContext,
-				jobRequest.getJobID(),
-				user,
-				dataServerImpl,
-				exportSpecs.getVCDataIdentifier(),
-				exportSpecs.getVariableSpecs(),
-				exportSpecs.getTimeSpecs(),
-				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs(),
-				fileDataContainerManager
-			);
+					jobRequest.getJobID(),
+					user,
+					dataServerImpl,
+					exportSpecs.getVCDataIdentifier(),
+					exportSpecs.getVariableSpecs(),
+					exportSpecs.getTimeSpecs(),
+					asciiSpecs,
+					fileDataContainerManager
+					);
 		case PDE_PARTICLE_DATA:
 			return exportParticleData(
 					outputContext,
-				jobRequest.getJobID(),
-				user,
-				dataServerImpl,
-				exportSpecs.getVCDataIdentifier(),
-				exportSpecs.getTimeSpecs(),
-				(ASCIISpecs)exportSpecs.getFormatSpecificSpecs(),
-				fileDataContainerManager
-			);
+					jobRequest.getJobID(),
+					user,
+					dataServerImpl,
+					exportSpecs,
+					asciiSpecs,
+					fileDataContainerManager
+					);
 		default:
-			return new ExportOutput[] {new ExportOutput(false, null, null, null, fileDataContainerManager)};
+			return Arrays.asList(new ExportOutput(false, null, null, null, fileDataContainerManager));
+		}
 	}
+	throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 }
 }

@@ -66,6 +66,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
@@ -178,6 +179,7 @@ import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
@@ -415,15 +417,8 @@ public class PDEDataViewer extends DataViewer {
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("simulation"))) {
 					//set Smoldyn flag for exports to create "particle" media
-					boolean isSmoldyn = false;
-					if(getSimulation() != null &&
-						getSimulation().getSolverTaskDescription() != null &&
-						getSimulation().getSolverTaskDescription().getSolverDescription() != null){
-						SolverDescription solverDescription =
-							getSimulation().getSolverTaskDescription().getSolverDescription();
-						isSmoldyn = solverDescription.equals(SolverDescription.Smoldyn);
-					}
-					getPDEExportPanel1().setIsSmoldyn(isSmoldyn);
+					SolverTaskDescription solverDescription = getSimulation().getSolverTaskDescription();
+					getPDEExportPanel1().setSolverTaskDescription(solverDescription);
 				}
 //				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) {
 //					setPdeDataContext(getPDEDataContextPanel1().getPdeDataContext());
@@ -1056,11 +1051,12 @@ private void roiAction(){
 									dataBitSet.set(roiIndexes[j], true);
 								}
 							}else if (auxInfo instanceof Entry){
+								Entry<Integer, Integer> entry = (Entry<Integer,Integer>) auxInfo;
 								if(isVolume){
-									int volumeRegionID = (Integer)((Entry<Integer, Integer>)auxInfo).getKey();
+									int volumeRegionID = entry.getKey();
 									dataBitSet.or(cartesianMesh.getVolumeROIFromVolumeRegionID(volumeRegionID));
 								}else{
-									int membraneRegionID = (Integer)((Entry<Integer, int[]>)auxInfo).getKey();
+									int membraneRegionID = entry.getKey();
 									dataBitSet.or(cartesianMesh.getMembraneROIFromMembraneRegionID(membraneRegionID));
 								}
 							}else if(auxInfo instanceof BitSet){

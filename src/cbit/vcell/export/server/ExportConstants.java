@@ -51,9 +51,11 @@ public interface ExportConstants {
 	public static final int REMOTE_ZIPFILE = 1;
 
 	// exportable data types
-	public static final int ODE_VARIABLE_DATA = 1;
-	public static final int PDE_VARIABLE_DATA = 2;
-	public static final int PDE_PARTICLE_DATA = 3;
+	enum DataType {
+		ODE_VARIABLE_DATA,
+		PDE_VARIABLE_DATA,
+		PDE_PARTICLE_DATA
+	} 
 
 	// simulation data types
 	public static final int NO_DATA_AVAILABLE = 0;

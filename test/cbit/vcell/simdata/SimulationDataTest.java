@@ -10,7 +10,10 @@
 
 package cbit.vcell.simdata;
 
-import org.vcell.util.PropertyLoader;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.util.AmplistorUtils;
 
@@ -20,6 +23,36 @@ import cbit.vcell.util.AmplistorUtils;
  * @author: Jim Schaff
  */
 public class SimulationDataTest {
+	@SuppressWarnings("unused")
+	private static int jIndexes[] = {0,2,4,7,16,32,64};
+	
+	/*
+	@Test
+	public void nameTest( ) {
+		KeyValue kv = new KeyValue("8675904");
+		for (int j : jIndexes) {
+			for (int i = 1; i < 10000; i++) {
+				String old = SimulationData.createCanonicalSmoldynOutputFileNameOld(kv, j, i);
+				String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, j, i);
+				if (!old.equals(now)) {
+					System.err.println(old + " and " + now);
+				}
+				assertTrue(old.equals(now));
+			}
+		}
+	}
+	*/
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void noZero(  ) {
+		KeyValue kv = new KeyValue("8675904");
+		String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, 0, 0);
+		System.out.println("never see " + now);
+	}
+	
+	
+	
+	
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2004 11:13:56 AM)

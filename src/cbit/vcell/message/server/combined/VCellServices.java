@@ -162,7 +162,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		}
 
 		try {
-			PropertyLoader.loadProperties();
+			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 			CommandService.bQuiet = true;
 			String libDir = System.getProperty(NATIVE_LIB_PROPERTY);
 			if (libDir == null) {
@@ -283,6 +283,12 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			}
 		}
 	}
+	
+	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
+		PropertyLoader.primarySimDataDirProperty,
+		PropertyLoader.secondarySimDataDirProperty,
+		PropertyLoader.htcUser
+	};
 
 
 }

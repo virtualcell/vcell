@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
+import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
@@ -166,122 +167,6 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private boolean bGraphicOpenGL = false;
 	private HashMap<MembraneSubDomain, ArrayList<TrianglePanel> > membraneSubdomainTriangleMap = null;
 	private ArrayList<ClosestTriangle> closestTriangles = null;
-	enum SmoldynKeyword {
-		max_species,
-		species,
-		difc,
-		drift,
-		
-		graphics,
-		opengl,
-		opengl_good,
-		color,
-		display_size,
-		grid_color,
-		background_color,
-		grid_thickness,
-		frame_color,
-		frame_thickness,
-		text_display,
-		text_color,
-		time,
-		
-		time_start,
-		time_stop,
-		time_step,
-		
-		dim,
-		max_compartment,
-		max_surface,
-		boundaries,
-		low_wall,
-		high_wall,
-		r,
-		a,
-		p,
-		
-		start_surface,
-		end_surface,
-		action,
-		front,
-		back,
-		both,
-		all,
-		reflect,
-		absorb,
-		max_panels,
-		panel,
-		rect,
-		tri,
-		neighbors,
-		
-		start_compartment,
-		end_compartment,
-		surface,
-		point,
-		polygon,
-		edge,
-		face,
-		
-		reaction,
-		reaction_cmpt,
-		reaction_surface,
-		//The rate constant for transitions from state1 to state2 of molecules at surface;
-		//The membrane reaction with reactants and products all in volume, use 'rate' instead of using 'reaction' keyword.
-		rate,
-		//The binding radius is used for bimolecular membrane reaction(two reactants all on membrane)
-		binding_radius,
-		
-		max_mol,
-		compartment_mol,
-		surface_mol,
-		mol,
-	
-//		the possible molecular states
-		up,
-		down,
-		solution,
-//		front,
-//		back,
-		fsoln,
-		bsoln,
-//		all,
-				
-		output_files,
-		
-		cmd,
-		B,
-		E,
-		N,
-//		one line of display is printed to the listed file, giving the time and the number 
-//		of molecules for each molecular species. Molecule states are ignored. 
-//		The ordering used is the same as was given in the species command.
-		molcount,
-//		This prints out the identity, state, and location of every molecule in the
-//		system to the listed file name, using a separate line of text for each
-//		molecule.		
-		listmols,
-//		This is very similar to listmols but has a slightly different output format.
-//		Each line of text is preceded by the "time counter", which is an integer
-//		that starts at 1 and is incremented each time the routine is called. Also, the
-//		names and states of molecules are not printed, but instead the identity and
-//		state numbers are printed.
-		listmols2,
-		killmoloutsidesystem,
-		warnescapee,
-		output_file_number,		
-		incrementfile,
-		killmolincmpt, 
-		killmol,
-		
-		accuracy,
-		boxsize,
-		gauss_table_size,
-		rand_seed,
-		
-		end_file,
-	}
-
 	enum VCellSmoldynKeyword {
 		bounding_wall_surface_X,
 		bounding_wall_surface_Y,
@@ -426,7 +311,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSimulationTimes();
 	writeRuntimeCommands();
 	writeSimulationSettings();
-	printWriter.println(SmoldynKeyword.end_file);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 }
 
@@ -530,7 +415,7 @@ private void writeHighResVolumeSamples() throws SolverException {
 
 private void writeRandomSeed() {
 	printWriter.println("# Random Seed");
-	printWriter.println(SmoldynKeyword.rand_seed + " " + randomSeed);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.rand_seed + " " + randomSeed);
 	printWriter.println();
 }
 
@@ -538,8 +423,8 @@ private void writeRandomSeed() {
 private void writeSimulationSettings() {
 	printWriter.println("# simulation settings");
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
-	printWriter.println(SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
-	printWriter.println(SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
 	
 	printWriter.println();
 }
@@ -551,20 +436,20 @@ private void writeGraphicsOpenGL() throws MathException {
 	printWriter.println("# graphics command");
 	//uncomment for debug
 	//writeGraphicsLegend(); 
-	printWriter.println(SmoldynKeyword.graphics + " " + SmoldynKeyword.opengl);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.graphics + " " + SmoldynVCellMapper.SmoldynKeyword.opengl);
 	
-	printWriter.println(SmoldynKeyword.frame_thickness + " 3");
-	printWriter.println(SmoldynKeyword.frame_color + " 0.8 0.9 0.0");
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.frame_thickness + " 3");
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.frame_color + " 0.8 0.9 0.0");
 //	printWriter.println(SmoldynKeyword.grid_thickness + " 1");
 //	printWriter.println(SmoldynKeyword.grid_color + " 0 0 0");
-	printWriter.println(SmoldynKeyword.text_display + " " + SmoldynKeyword.time);
-	printWriter.println(SmoldynKeyword.text_color + " 1 1 1");
-	printWriter.println(SmoldynKeyword.background_color + " " + bg.getRed()/255.0 + " " + bg.getGreen()/255.0 + " " + bg.getBlue()/255.0);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.text_display + " " + SmoldynVCellMapper.SmoldynKeyword.time);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.text_color + " 1 1 1");
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.background_color + " " + bg.getRed()/255.0 + " " + bg.getGreen()/255.0 + " " + bg.getBlue()/255.0);
 	for (int i = 0; i < particleVariableList.size(); i ++) {
 		Color c = colors[i];
 		String variableName = getVariableName(particleVariableList.get(i),null);
-		printWriter.println(SmoldynKeyword.color + " " + variableName + "(" + SmoldynKeyword.all + ") " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
-		printWriter.println(SmoldynKeyword.display_size + " " + variableName  + "(" + SmoldynKeyword.all + ") 3");
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " + variableName + "(" + SmoldynVCellMapper.SmoldynKeyword.all + ") " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.display_size + " " + variableName  + "(" + SmoldynVCellMapper.SmoldynKeyword.all + ") 3");
 	}
 	printWriter.println();
 }
@@ -600,7 +485,7 @@ private void writeGraphicsOpenGL() throws MathException {
 }*/
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
-	printWriter.println("# " + SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
+	printWriter.println("# " + SmoldynVCellMapper.SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
 	
 	for (ParticleVariable pv : particleVariableList) {
 		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
@@ -629,7 +514,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			while (subDomainEnumeration.hasMoreElements()) {
 				SubDomain subDomain = subDomainEnumeration.nextElement();
 				if (subDomain instanceof CompartmentSubDomain && varDomain != subDomain) {
-					printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynKeyword.all + ") " + subDomain.getName());
+					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + SmoldynVCellMapper.SmoldynKeyword.killmolincmpt + " " + pv.getName() + "(" + SmoldynVCellMapper.SmoldynKeyword.all + ") " + subDomain.getName());
 				}
 			}
 		}
@@ -645,26 +530,26 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 	printWriter.println();
 	
 	printWriter.println("# runtime command");
-	printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
 	if (outputFile != null && cartesianMesh != null) {
 		OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
 		if (ots.isUniform()) {			
-			printWriter.println(SmoldynKeyword.output_files + " " + outputFile.getName());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.output_files + " " + outputFile.getName());
 			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 			int n = (int)Math.round(((UniformOutputTimeSpec)ots).getOutputTimeStep()/timeStep.getDefaultTimeStep());
 			if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isSaveParticleLocations()){
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.incrementfile + " " + outputFile.getName());
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + SmoldynKeyword.listmols + " " + outputFile.getName());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.incrementfile + " " + outputFile.getName());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.listmols + " " + outputFile.getName());
 			}
 	
 			// DON'T CHANGE THE ORDER HERE.
 			// DataProcess must be before vcellWriteOutput
 			writeDataProcessor();
 
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " begin");
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.dimension + " " + dimension);
-			printWriter.print(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.sampleSize + " " + sampleSize.getX());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " begin");
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.dimension + " " + dimension);
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.sampleSize + " " + sampleSize.getX());
 			if (dimension > 1) {				
 				printWriter.print(" " + sampleSize.getY());
 				if (dimension > 2) {
@@ -672,12 +557,12 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 				}
 			}
 			printWriter.println();
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.numMembraneElements + " " + cartesianMesh.getNumMembraneElements());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.numMembraneElements + " " + cartesianMesh.getNumMembraneElements());
 			for (ParticleVariable pv : particleVariableList) {
 				String type = pv instanceof MembraneParticleVariable ? VCellSmoldynKeyword.membrane.name() : VCellSmoldynKeyword.volume.name();
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.variable + " " + pv.getName() + " " + type + " " + pv.getDomain().getName());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.variable + " " + pv.getName() + " " + type + " " + pv.getDomain().getName());
 			}
-			printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " end");
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " end");
 		} else {
 			throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 		}
@@ -689,8 +574,8 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 	Simulation simulation = simTask.getSimulation();
 	DataProcessingInstructions dpi = simulation.getDataProcessingInstructions();
 	if (dpi == null) {
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + DataProcessingInstructions.ROI_TIME_SERIES);
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + DataProcessingInstructions.ROI_TIME_SERIES);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
 	} else {
 		FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
 		if (fdis == null) {
@@ -718,16 +603,16 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 				new VariableType[]{simDataBlock.getVariableType()},
 				new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ()),
 				new double[][]{origData});
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + dpi.getScriptName());
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + dpi.getScriptName());
 		StringTokenizer st = new StringTokenizer(dpi.getScriptInput(), "\n\r");
 		while (st.hasMoreTokens()) {
 			String str = st.nextToken();
 			if (str.trim().length() > 0) {
-				printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " " + str);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " " + str);
 			}
 		}
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
-		printWriter.println(SmoldynKeyword.cmd + " " + SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " SampleImageFile " + fdis.getFieldFuncArgs().getVariableName() + " " + fdis.getFieldFuncArgs().getTime().infix() + " " + fdatFile);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
 	}
 }
 
@@ -794,17 +679,17 @@ private void writeReactions() throws ExpressionException, MathException {
 				//0th order reaction, product limited to one and we'll let the reaction know where it happens
 				if(reactants.size() == 0 && products.size() == 1)
 				{
-					printWriter.print(SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_cmpt + " " + subdomain.getName() + " " + pjp.getName() + " ");
 				}
 				else{
-					printWriter.print(SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
+					printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction + " "/* + subdomain.getName() + " "*/ + pjp.getName() + " ");
 				}
 				writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 			} else if (subdomain instanceof MembraneSubDomain){
 				//0th order reaction, product limited to one and it can be on mem or in vol
 				if(reactants.size() == 0 && products.size() == 1)
 				{
-					printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+					printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 					writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 				}
 				//consuming of a species to nothing, limited to one reactant
@@ -812,7 +697,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				{
 					if(getMembraneVariableCount(reactants) == 1)//consuming a mem species in mem reaction
 					{
-						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					//consuming a vol spcies in mem reaction
@@ -821,7 +706,7 @@ private void writeReactions() throws ExpressionException, MathException {
 					{
 						writeRateTransitionCommand(reactants, products, subdomain, rateDefinitionStr);
 						String speciesName = reactants.get(0).getName();
-						String killMolCmd = "cmd " + SmoldynKeyword.E + " " + SmoldynKeyword.killmol + " " + speciesName + "(up)";
+						String killMolCmd = "cmd " + SmoldynVCellMapper.SmoldynKeyword.E + " " + SmoldynVCellMapper.SmoldynKeyword.killmol + " " + speciesName + "(up)";
 						killMolCommands.add(killMolCmd);
 					}
 				}
@@ -832,7 +717,7 @@ private void writeReactions() throws ExpressionException, MathException {
 					//Membrane reaction (1 react to 1 product).
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
 					{
-						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					else//Other single molecular reactions
@@ -844,20 +729,20 @@ private void writeReactions() throws ExpressionException, MathException {
 				{
 					if((getMembraneVariableCount(reactants) == 1)) // membrane reaction has one membrane bound reactant
 					{
-						printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+						printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 						writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 					}
 					else if(getMembraneVariableCount(reactants) == 2)  // bimolecular membrane reaction
 					{
 						if(jprd instanceof InteractionRadius)
 						{
-							printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+							printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 							writeReactionByInteractionRadius(reactants, products, subdomain, rateDefinitionStr, pjp.getName());
 						}
 						else
 						{
 							// throw new MathException("Error with reaction: " + pjp.getName() + ".\nVCell Spatial stochastic modeling requires macroscopic or microscopic kinetics for bimolecular membrane reactions.");
-							printWriter.print(SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
+							printWriter.print(SmoldynVCellMapper.SmoldynKeyword.reaction_surface + " " + subdomain.getName() + " " + pjp.getName() + " ");
 							writeReactionCommand(reactants, products, subdomain, rateDefinitionStr);
 						}
 					}
@@ -923,14 +808,14 @@ private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variab
 	//not rate constant is printed. go to next line.			
 	printWriter.println();
 	//print binding radius to override smoldyn auto-calculated radius.
-	printWriter.println(SmoldynKeyword.binding_radius + " " + reactionName + " " + interactionRadius);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.binding_radius + " " + reactionName + " " + interactionRadius);
 }
 
 //used to write molecule transition rate command when it interacts with surface, the possible states can be 
 //reflection, transmission, adsorption, desorption  
 private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstantStr) throws MathException
 {
-	printWriter.print(SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynKeyword.rate + " ");
+	printWriter.print(SmoldynVCellMapper.SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.rate + " ");
 	
 	//Transmission. Membrane reaction/flux with species in inside and outside membrane solutions
 	//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c",
@@ -938,13 +823,13 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	{	
 		
 		printWriter.print(reacts.get(0).getName() + " ");
-		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.fsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.bsoln + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.fsoln + " " + SmoldynVCellMapper.SmoldynKeyword.bsoln + " ");
 		}
-		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.bsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.fsoln + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.bsoln + " " + SmoldynVCellMapper.SmoldynKeyword.fsoln + " ");
 		}
 		printWriter.print(rateConstantStr + " ");
 		printWriter.println(prods.get(0).getName());
@@ -954,13 +839,13 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	else if(getVolumeVariableCount(prods) == 1 && getMembraneVariableCount(reacts) == 1)
 	{
 		printWriter.print(reacts.get(0).getName() + " ");
-		if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.fsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.fsoln + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.up + " " + SmoldynVCellMapper.SmoldynKeyword.fsoln + " ");
 		}
-		else if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		else if(getVariableName(prods.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.bsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.up + " " + SmoldynKeyword.bsoln + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.up + " " + SmoldynVCellMapper.SmoldynKeyword.bsoln + " ");
 		}
 		printWriter.print(rateConstantStr + " ");
 		printWriter.println(prods.get(0).getName());
@@ -970,13 +855,13 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 	else if((getVolumeVariableCount(reacts) == 1) && ((getMembraneVariableCount(prods) == 1) || (prods.size() == 0)))
 	{
 		printWriter.print(reacts.get(0).getName() + " ");
-		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.fsoln.name()) > -1)
+		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.fsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.fsoln + " " + SmoldynKeyword.up + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.fsoln + " " + SmoldynVCellMapper.SmoldynKeyword.up + " ");
 		}
-		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynKeyword.bsoln.name()) > -1)
+		else if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.bsoln.name()) > -1)
 		{
-			printWriter.print(SmoldynKeyword.bsoln + " " + SmoldynKeyword.up + " ");
+			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.bsoln + " " + SmoldynVCellMapper.SmoldynKeyword.up + " ");
 		}
 		printWriter.print(rateConstantStr + " ");
 		if(prods.size() == 1)
@@ -1017,19 +902,20 @@ private int getVolumeVariableCount(List<Variable> variables)
 }
 
 private String getVariableName(Variable var, SubDomain subdomain) throws MathException {
+	String name = var.getName( );
 	if (subdomain instanceof MembraneSubDomain){
 		MembraneSubDomain membrane = (MembraneSubDomain)subdomain;
 		if (var.getDomain().getName().equals(membrane.getName())){
-			return var.getName()+"("+SmoldynKeyword.front+")"; //front tells Smoldyn to put particles on membrane when using "surface_mol"
+			return SmoldynVCellMapper.vcellToSmoldyn(name, SmoldynVCellMapper.MAP_PARTICLE_TO_MEMBRANE);
 		}else if (membrane.getInsideCompartment().getName().equals(var.getDomain().getName())){
-			return var.getName()+"("+SmoldynKeyword.bsoln+")";
+			return SmoldynVCellMapper.vcellToSmoldyn(name, SmoldynKeyword.bsoln);
 		}else if (membrane.getOutsideCompartment().getName().equals(var.getDomain().getName())){
-			return var.getName()+"("+SmoldynKeyword.fsoln+")";
+			return SmoldynVCellMapper.vcellToSmoldyn(name, SmoldynKeyword.fsoln);
 		}else{
 			throw new MathException("variable "+var.getQualifiedName()+" cannot be in a reaction on non-adjacent membrane "+subdomain.getName());
 		}
 	}else{
-		return var.getName();
+		return name; 
 	} 
 }
 
@@ -1116,7 +1002,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 						continue;
 					}
 					totalCount += count;
-					localsb.append(SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
+					localsb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
 					if (dimension > 1) {
 						localsb.append(" " + loy + "-" + hiy);
 					
@@ -1133,7 +1019,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		//otherwise we append the distributed molecules in different small boxes
 		try{
 			subsituteFlattenToConstant(disExpression);
-			sb.append(SmoldynKeyword.compartment_mol);
+			sb.append(SmoldynVCellMapper.SmoldynKeyword.compartment_mol);
 			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + "\n");
 		}
 		catch(Exception e)//can not be evaluated to a constant
@@ -1183,16 +1069,16 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 				continue;
 			}
 			totalCount += count;
-			localsb.append(SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
-					+ SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
+			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
+					+ SmoldynVCellMapper.SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
 		}
 		
 		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
 		//otherwise we append the distributed molecules in different small boxes
 		try{
 			subsituteFlattenToConstant(disExpression);
-			sb.append(SmoldynKeyword.surface_mol); 
-			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
+			sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
+			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
 		}
 		catch(Exception e)//can not be evaluated to a constant
 		{
@@ -1221,15 +1107,15 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 		if (initialCount.isUniform()) {
 			// here count has to split between all compartments
 			if (isCompartment) {
-				sb.append(SmoldynKeyword.compartment_mol);
+				sb.append(SmoldynVCellMapper.SmoldynKeyword.compartment_mol);
 				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + "\n");
 			} else if (subDomain instanceof MembraneSubDomain) {
-				sb.append(SmoldynKeyword.surface_mol); 
-				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynKeyword.all + " " + SmoldynKeyword.all + "\n");
+				sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
+				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
 			}
 		} else {
 			if (isCompartment) {
-				sb.append(SmoldynKeyword.mol + " " + intcount + " " + variableName);
+				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + intcount + " " + variableName);
 				try {
 					if (initialCount.isXUniform()) {
 						sb.append(" " + initialCount.getLocationX().infix());					
@@ -1265,7 +1151,7 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 					if (ct.picc == initialCount) {
 						VCAssert.assertTrue(ct.membrane == subDomain, "wrong subdomain");
 						final char space = ' ';
-						sb.append(SmoldynKeyword.surface_mol); 
+						sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
 						sb.append(space);
 						sb.append(intcount);
 						sb.append(space);
@@ -1322,7 +1208,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 	
 	printWriter.println("# molecules");
 	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(50000, max_mol * 10));
-	printWriter.println(SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
 	printWriter.println(sb);
 }
 
@@ -1331,9 +1217,9 @@ private void writeSimulationTimes() {
 	TimeBounds timeBounds = simulation.getSolverTaskDescription().getTimeBounds();
 	TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
 	printWriter.println("# simulation times");	
-	printWriter.println(SmoldynKeyword.time_start + " " + timeBounds.getStartingTime());
-	printWriter.println(SmoldynKeyword.time_stop + " " + timeBounds.getEndingTime());
-	printWriter.println(SmoldynKeyword.time_step + " " + timeStep.getDefaultTimeStep());
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_start + " " + timeBounds.getStartingTime());
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_stop + " " + timeBounds.getEndingTime());
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_step + " " + timeStep.getDefaultTimeStep());
 	printWriter.println();
 }
 
@@ -1387,12 +1273,12 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 		}
 	}
 	printWriter.println("# geometry");
-	printWriter.println(SmoldynKeyword.dim + " " + dimension);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.dim + " " + dimension);
 	if (bHasNoSurface) {
-		printWriter.println(SmoldynKeyword.max_compartment + " " + surfaceGeometrySubVolumes.length);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_compartment + " " + surfaceGeometrySubVolumes.length);
 	} else {
-		printWriter.println(SmoldynKeyword.max_compartment + " " + (surfaceGeometrySubVolumes.length + 1));
-		printWriter.println(SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_compartment + " " + (surfaceGeometrySubVolumes.length + 1));
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_surface + " " + (surfaceClasses.length + dimension)); // plus the surface which are bounding walls
 	}
 	printWriter.println();
 
@@ -1540,18 +1426,18 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 				
 			}
 			
-			printWriter.println(SmoldynKeyword.start_surface + " " + surfaceClass.getName());
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.all + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + surfaceClass.getName());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + "(" + SmoldynVCellMapper.SmoldynKeyword.all + ") " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.reflect);
 //			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
 			Color c = colors[sci+particleVariableList.size()]; //get color after species
-			printWriter.println(SmoldynKeyword.color + " " +  SmoldynKeyword.both + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0 + " 0.1");
-			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.front + " " + SmoldynKeyword.edge);
-			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.back + " " + SmoldynKeyword.edge);
-			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.tri + " " + triList.size());			
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " +  SmoldynVCellMapper.SmoldynKeyword.both + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0 + " 0.1");
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.front + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.back + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.tri + " " + triList.size());			
 			
 			for (TrianglePanel trianglePanel : triList) {
 				Triangle triangle = trianglePanel.triangle;
-				printWriter.print(SmoldynKeyword.panel + " " + SmoldynKeyword.tri);
+				printWriter.print(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.tri);
 				switch (dimension) {
 				case 1:
 					printWriter.print(" " + triangle.getNodes(0).getX());
@@ -1597,7 +1483,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					if(count%maxNeighborCount == 0)
 					{
 						printWriter.println();
-						printWriter.print(SmoldynKeyword.neighbors + " " + triPanel.name);
+						printWriter.print(SmoldynVCellMapper.SmoldynKeyword.neighbors + " " + triPanel.name);
 					}
 					printWriter.print(" "+ neigh);
 					count++;
@@ -1605,7 +1491,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 				
 			}
 			printWriter.println();
-			printWriter.println(SmoldynKeyword.end_surface);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 			printWriter.println();
 		}
 		
@@ -1642,22 +1528,22 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 	printWriter.println("# compartments");
 	resampledGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 	for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {		
-		printWriter.println(SmoldynKeyword.start_compartment + " " + subVolume.getName());		
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_compartment + " " + subVolume.getName());		
 		for (SurfaceClass sc : resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
 			if (sc.getAdjacentSubvolumes().contains(subVolume)) {
-				printWriter.println(SmoldynKeyword.surface + " " + sc.getName());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + sc.getName());
 			}
 		}
 		if (boundaryXSubVolumes.contains(subVolume)) {
-			printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
 		}
 		if (dimension > 1) {
 			if (boundaryYSubVolumes.contains(subVolume)) {			
-				printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
 			}
 			if (dimension > 2) {
 				if (boundaryZSubVolumes.contains(subVolume)) {
-					printWriter.println(SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
 				}				
 			}
 		}
@@ -1747,7 +1633,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 				if (bPrint) {
 					int midi = (thisPoint.starti + thisPoint.endi) / 2;
 					double coordX = origin.getX() + dx * midi;
-					printWriter.print(SmoldynKeyword.point + " " + coordX);
+					printWriter.print(SmoldynVCellMapper.SmoldynKeyword.point + " " + coordX);
 					if (dimension > 1) {
 						double coordY = origin.getY() + dy * thisPoint.j;
 						printWriter.print(" " + coordY);
@@ -1761,7 +1647,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 			}
 		} // end for (GeometricRegion
 		
-		printWriter.println(SmoldynKeyword.end_compartment);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_compartment);
 		printWriter.println();
 	} // end for (SubVolume
 }
@@ -1797,40 +1683,40 @@ private void writeWallSurfaces() throws SolverException {
 		compartSubDomain0 = (CompartmentSubDomain)subDomain0;
 		// x
 		if (compartSubDomain0.getBoundaryConditionXm().isPERIODIC()) {
-			printWriter.println(SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX() + " " + SmoldynKeyword.p);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
 		} else {
-			printWriter.println(SmoldynKeyword.low_wall + " 0 " + lowWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
-			printWriter.println(SmoldynKeyword.high_wall + " 0 " + highWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 0 " + lowWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 0 " + highWall.getX() + " " + (compartSubDomain0.getBoundaryConditionXp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 		}
 		if (dimension > 1) {
 			// y
 			if (compartSubDomain0.getBoundaryConditionYm().isPERIODIC()) {
-				printWriter.println(SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY() + " " + SmoldynKeyword.p);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
 			} else {
-				printWriter.println(SmoldynKeyword.low_wall + " 1 " + lowWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
-				printWriter.println(SmoldynKeyword.high_wall + " 1 " + highWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 1 " + lowWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 1 " + highWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 			}
 			
 			if (dimension > 2) {
 				// z
 				if (compartSubDomain0.getBoundaryConditionZm().isPERIODIC()) {
-					printWriter.println(SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ() + " " + SmoldynKeyword.p);
+					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ() + " " + SmoldynVCellMapper.SmoldynKeyword.p);
 				} else {
-					printWriter.println(SmoldynKeyword.low_wall + " 2 " + lowWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
-					printWriter.println(SmoldynKeyword.high_wall + " 2 " + highWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynKeyword.r : SmoldynKeyword.a));
+					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 2 " + lowWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
+					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 2 " + highWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 				}				
 			}
 		}
 		printWriter.println();
 	} else {	
 		// x 
-		printWriter.println(SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
 		if (dimension > 1) {
 			// y	
-			printWriter.println(SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
 			if (dimension > 2) {
 				// z
-				printWriter.println(SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 2 " + lowWall.getZ() + " " + highWall.getZ());
 			}
 		}
 		printWriter.println();
@@ -1941,7 +1827,7 @@ private void writeWallSurfaces() throws SolverException {
 						if (computedBct[i].isPERIODIC()) {
 							throw new SolverException("Models with both surfaces and periodic boundary conditions are not supported yet.");
 						}
-						smoldynBct[i] = computedBct[i].isDIRICHLET() ? SmoldynKeyword.absorb.name() : SmoldynKeyword.reflect.name();
+						smoldynBct[i] = computedBct[i].isDIRICHLET() ? SmoldynVCellMapper.SmoldynKeyword.absorb.name() : SmoldynVCellMapper.SmoldynKeyword.reflect.name();
 					}
 				} else {
 					for (int i = 0; i < dimension * 2; i ++) {
@@ -1955,67 +1841,67 @@ private void writeWallSurfaces() throws SolverException {
 		
 		printWriter.println("# bounding wall surface");
 		// X walls
-		printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[0]);
-		printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[1]);
-		printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
-		printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
-		printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + "(" + SmoldynVCellMapper.SmoldynKeyword.up + ") " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.reflect);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.front + " " + smoldynBct[0]);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.back + " " + smoldynBct[1]);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " + SmoldynVCellMapper.SmoldynKeyword.both + " 1 1 1");
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " 2");
 		// yz walls
 		switch (dimension) {
 		case 1:
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX());
 			break;
 		case 2:
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getY());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + extent.getY());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getY());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + extent.getY());
 			break;
 		case 3:
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
-			printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +0 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -0 " + highWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getY() + " " + extent.getZ());
 			break;
 		}
-		printWriter.println(SmoldynKeyword.end_surface);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 		printWriter.println();
 		
 		if (dimension > 1) {
 			// Y walls
-			printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[2]);
-			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[3]);
-			printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
-			printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
-			printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + "(" + SmoldynVCellMapper.SmoldynKeyword.up + ") " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.reflect);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.front + " " + smoldynBct[2]);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.back + " " + smoldynBct[3]);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " + SmoldynVCellMapper.SmoldynKeyword.both + " 1 1 1");
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " 2");
 			// xz walls
 			switch (dimension) {
 			case 2:
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());		
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());		
 				break;
 			case 3:
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());		
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());		
 				break;
 			}
-			printWriter.println(SmoldynKeyword.end_surface);
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 			printWriter.println();
 			
 			if (dimension > 2) {
 				// Z walls
-				printWriter.println(SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
-				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.front + " " + smoldynBct[4]);
-				printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + " " + SmoldynKeyword.back + " " + smoldynBct[5]);
-				printWriter.println(SmoldynKeyword.color + " " + SmoldynKeyword.both + " 1 1 1");
-				printWriter.println(SmoldynKeyword.polygon + " " + SmoldynKeyword.both + " " + SmoldynKeyword.edge);
-				printWriter.println(SmoldynKeyword.max_panels + " " + SmoldynKeyword.rect + " 2");
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + "(" + SmoldynVCellMapper.SmoldynKeyword.up + ") " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.reflect);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.front + " " + smoldynBct[4]);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.back + " " + smoldynBct[5]);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " + SmoldynVCellMapper.SmoldynKeyword.both + " 1 1 1");
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " 2");
 				// xy walls
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
-				printWriter.println(SmoldynKeyword.panel + " " + SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());			
-				printWriter.println(SmoldynKeyword.end_surface);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());			
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 				printWriter.println();
 			}
 		}
@@ -2058,7 +1944,7 @@ private void writeDiffusions() throws ExpressionBindingException,
 			}
 			try {
 				double diffConstant = subsituteFlattenToConstant(pp.getDiffusion());
-				printWriter.println(SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
 			} catch (NotAConstantException ex) {
 				throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
 			}
@@ -2101,7 +1987,7 @@ for (ParticleProperties pp : particlePropertiesList) {
 			driftZ = subsituteFlattenToConstant(pp.getDriftZ());
 		}
 		
-		printWriter.println(SmoldynKeyword.drift + " " + variableName + " " + driftX + " " + driftY + " " + driftZ);
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.drift + " " + variableName + " " + driftX + " " + driftY + " " + driftZ);
 	} catch (NotAConstantException ex) {
 		throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
 	}
@@ -2113,8 +1999,8 @@ printWriter.println();
 private void writeSpecies() throws MathException {
 	// write species
 	printWriter.println("# species declarations");
-	printWriter.println(SmoldynKeyword.max_species + " " + (particleVariableList.size() + 1));
-	printWriter.print(SmoldynKeyword.species);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_species + " " + (particleVariableList.size() + 1));
+	printWriter.print(SmoldynVCellMapper.SmoldynKeyword.species);
 	for (ParticleVariable pv : particleVariableList) {
 		printWriter.print(" " + getVariableName(pv,null));
 	}

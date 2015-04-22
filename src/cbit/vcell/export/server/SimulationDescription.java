@@ -41,8 +41,10 @@ public class SimulationDescription {
 
 /**
  * SimulationInfo constructor comment. 
+ * @param variableNames TODO
  */
-public SimulationDescription(OutputContext outputContext,User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, boolean isODEData) throws DataAccessException, RemoteException {
+public SimulationDescription(OutputContext outputContext,User user, DataServerImpl dataServerImpl, 
+		VCDataIdentifier vcdID, boolean isODEData, String[] variableNames) throws DataAccessException, RemoteException {
 	super();
 
 	String dataID = vcdID.getID();
@@ -83,10 +85,15 @@ public SimulationDescription(OutputContext outputContext,User user, DataServerIm
 		this.dataType = "PDE Simulation";
 		this.times = dataServerImpl.getDataSetTimes(user, vcdID);
 		this.timeNumber = times.length;
-		DataIdentifier dataIdentifiers[] = dataServerImpl.getDataIdentifiers(outputContext,user, vcdID);
-		this.variables = new String[dataIdentifiers.length];
-		for (int i = 0; i < variables.length; i++){
-			variables[i] = dataIdentifiers[i].getName();
+		if (variableNames == null) {
+			DataIdentifier dataIdentifiers[] = dataServerImpl.getDataIdentifiers(outputContext,user, vcdID);
+			this.variables = new String[dataIdentifiers.length];
+			for (int i = 0; i < variables.length; i++){
+				variables[i] = dataIdentifiers[i].getName();
+			}
+		}
+		else {
+			this.variables = variableNames;
 		}
 		this.variableNumber = variables.length;
 	}

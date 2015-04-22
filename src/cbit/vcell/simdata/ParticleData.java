@@ -33,9 +33,11 @@ public ParticleData(Coordinate coordinate, int state, int context) {
  * This method was created in VisualAge.
  * @return int
  */
+/*
 public int getContext() {
 	return context;
 }
+*/
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Coordinate
@@ -47,7 +49,9 @@ public Coordinate getCoordinate() {
  * This method was created in VisualAge.
  * @return int
  */
+/*
 public int getState() {
 	return state;
 }
+*/
 }
