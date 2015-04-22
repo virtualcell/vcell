@@ -296,12 +296,12 @@ private void startPrivate(final boolean bKeepOnTop) {
 		public void runSwing() {
 			// start timer for auto progress
 			if (! knowsProgress) {
-				AsynchProgressPopup.super.start();
+//				AsynchProgressPopup.super.start();
 			}			
 			if(bKeepOnTop){
 				DialogUtils.showModalJDialogOnTop(getDialog(), requester);
 			}else{
-				getDialog().setVisible(true);
+				getDialog().setToVisible();
 			}
 //			BeanUtils.setCursorThroughout(getDialog(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		}

@@ -3945,6 +3945,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 	// check to see if cached version is compatible with current data
 	//
 	if (vcData==null){
+		System.out.println("getVCData " + vcdID);
 		if (vcdID instanceof MergedDataInfo) {
 			try {
 				User user = vcdID.getOwner();

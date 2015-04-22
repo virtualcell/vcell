@@ -11,22 +11,27 @@ public class IndefiniteProgressTest implements ProgressDialogListener {
 		private IndefiniteProgressDialog progDialog; 
 
 	public static void main(String[] args)  {
-		new IndefiniteProgressTest();
+		try {
+			new IndefiniteProgressTest();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public IndefiniteProgressTest( ) {
+	public IndefiniteProgressTest( ) throws InterruptedException {
 		progDialog = new IndefiniteProgressDialog(null);
 		//progDialog = new DefaultProgressDialog(null);
 //		progDialog.addProgressDialogListener(this);
 		progDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 //		progDialog.getCancelButton();
 		progDialog.setProgressBarString("Working");
-		progDialog.setMessage("Something long and slow and important but slow and hopefully useful is happening here");
-		//progDialog.setMessage("Hi!");
+		//progDialog.setMessage("Something long and slow and important but slow and hopefully useful is happening here");
+		progDialog.setMessage("Hi!");
 		progDialog.setModal(true);
 		progDialog.pack();
 		new Update(progDialog).start( );
-		progDialog.setVisible(true);
+		progDialog.setToVisible();
+		Thread.sleep(20000);
 		progDialog.dispose(); //do this to get the AWT thread to exit
 	}
 	
@@ -50,8 +55,7 @@ public class IndefiniteProgressTest implements ProgressDialogListener {
 		public void run() {
 			try {
 				Thread.sleep(7000);
-		ipd.setMessage("Something long and slow and important but slow and hopefully useful is happening here");
-		ipd.setMessage("Hi");
+				ipd.setMessage("Something long and slow and important but slow and hopefully useful is happening here");
 			//	ipd.setMessage("Time has passed");
 			} catch (Exception e) {
 				

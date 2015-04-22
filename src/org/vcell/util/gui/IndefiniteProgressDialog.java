@@ -29,12 +29,14 @@ import org.vcell.util.BeanUtils;
 
 @SuppressWarnings("serial")
 
-public class IndefiniteProgressDialog extends ProgressDialog {
+public class IndefiniteProgressDialog extends ProgressDialog implements ActionListener {
 	private final static int GRAPHIC_SIZE = 60;					// size of rotating "wait" image panel
 	private final static int INITIAL_UPDATE_TIME_MILLIS = 60; 	// update time, milliseconds
+	private final static int SHOW_DELAY_TIME_MILLIS = 1000; 
 
 	private JLabel lblMessage;
-	private Timer swingTimer;
+	private Timer displayTimer;
+	private Timer workingPanelTimer;
 
 	public IndefiniteProgressDialog(Frame owner) {
 		super(owner);
@@ -42,8 +44,9 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		setContentPane(new JPanel( ));
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 		
-		swingTimer = new Timer(INITIAL_UPDATE_TIME_MILLIS, null);
-		JPanel graphicPanel = new WorkingPanel(swingTimer);
+		displayTimer = new Timer(SHOW_DELAY_TIME_MILLIS, this);
+		workingPanelTimer = new Timer(INITIAL_UPDATE_TIME_MILLIS, null);
+		JPanel graphicPanel = new WorkingPanel(workingPanelTimer);
 		Dimension ps = new Dimension(GRAPHIC_SIZE, GRAPHIC_SIZE);
 		graphicPanel.setPreferredSize(ps);
 		graphicPanel.setBackground(Color.WHITE);
@@ -73,8 +76,31 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 	}
 	
 	@Override
+	public void setToVisible( )  {
+		if (!isVisible()) {
+			displayTimer.start();
+		}
+		System.err.println("vad " + System.currentTimeMillis());
+	}
+	
+	@Override
+	public void setVisible(boolean b) {
+		displayTimer.stop( );
+		super.setVisible(b);
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (!isVisible()) {
+			System.err.println("ap  " + System.currentTimeMillis());
+			displayTimer.stop( );
+			super.setVisible(true);
+		}
+	}
+
+	@Override
 	public void dispose( ) {
-		swingTimer.stop();
+		workingPanelTimer.stop();
 		super.dispose( );
 	}
 	/**
@@ -204,7 +230,7 @@ public class IndefiniteProgressDialog extends ProgressDialog {
 		public void componentResized(ComponentEvent arg0) {
 			width = getWidth();
 			height = getHeight();
-			System.out.println(width + ", " + height);
+			//System.out.println(width + ", " + height);
 		}
 		@Override
 		public void componentShown(ComponentEvent arg0) {

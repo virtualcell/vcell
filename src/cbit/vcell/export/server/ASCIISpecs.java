@@ -10,7 +10,7 @@
 
 package cbit.vcell.export.server;
 
-import java.io.*;
+import java.io.Serializable;
 
 import org.vcell.util.Compare;
 /**
@@ -19,16 +19,16 @@ import org.vcell.util.Compare;
 @SuppressWarnings("serial")
 public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	private ExportFormat format;
-	private int dataType;
+	private ExportConstants.DataType dataType;
 	private boolean switchRowsColumns;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
 	private int[] exportMultipleParamScans;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(ExportFormat format, int dataType, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
+public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
 	this.format = format;
-	this.dataType = dataType;
+	this.dataType = dataType2;
 	this.switchRowsColumns = switchRowsColumns;
 	this.simNameSimDataIDs = simNameSimDataIDs;
 	this.exportMultipleParamScans = exportMultipleParamScans;
@@ -64,7 +64,7 @@ public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
  * This method was created in VisualAge.
  * @return int
  */
-public int getDataType() {
+public ExportConstants.DataType getDataType() {
 	return dataType;
 }
 /**

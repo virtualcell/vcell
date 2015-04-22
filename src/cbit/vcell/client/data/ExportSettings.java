@@ -662,7 +662,7 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 	JDialog dialogToShow = null;
 	setClosedOK(false);
 	ExportFormat format = getSelectedFormat();
-	VCAssert.assertFalse(format.requiresFollowOn(),"Follow on dialog required");
+	VCAssert.assertTrue(format.requiresFollowOn(),"Follow on dialog required");
 	switch (format) {
 		case CSV:
 			dialogToShow = getJDialogASCIISettings(reference);

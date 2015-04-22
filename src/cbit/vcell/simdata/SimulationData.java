@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -27,6 +28,8 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -34,11 +37,14 @@ import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgrammingException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCKeyDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
@@ -291,6 +297,15 @@ public class SimulationData extends VCData {
 	private double dataTimes[] = null;
 	private String dataFilenames[] = null;
 	private String zipFilenames[] = null;
+	/**
+	 * index times to indexes in {@link #dataFilenames} array
+	 */
+	private Map<Double,Integer> pdeDataMap = null;
+	/**
+	 * Smoldyn particle file names
+	 */
+	private String particleFilenames[] = null;
+	
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 	
@@ -312,6 +327,8 @@ public class SimulationData extends VCData {
 	private int odeKeepMost = 0;
 	private String odeIdentifier = null;
 	
+
+	private static Logger lg = Logger.getLogger(SimulationData.class);
 	public static class SimDataAmplistorInfo {
 		private String amplistorVCellUsersRootPath;
 		private AmplistorCredential amplistorCredential;
@@ -326,7 +343,6 @@ public class SimulationData extends VCData {
 			return amplistorCredential;
 		}
 	}
-
 /**
  * SimResults constructor comment.
  */
@@ -916,13 +932,8 @@ public synchronized ParticleDataBlock getParticleDataBlock(double time) throws D
 	}
 	
 	ParticleDataBlock particleDataBlock = new ParticleDataBlock(vcDataId.getOwner(), vcDataId.getID(), time, particleFile, zipFile);
-	if (particleDataBlock.getParticleData() != null) {
 		return particleDataBlock;
-	} else {
-		return null;
 	}
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -940,6 +951,16 @@ public synchronized boolean getParticleDataExists() throws DataAccessException {
  * @param time double
  */
 private synchronized File getParticleDataFile(double time) throws DataAccessException {
+	Integer index = pdeDataMap.get(time);
+	if (index != null) {
+		String pfName = particleFilenames[index];
+		File particleFile = amplistorHelper.getLocalFilePath(pfName);
+		if (particleFile.exists()){
+			return particleFile;
+		}
+	}
+	return null;
+	/*
 	File simFile = getPDEDataFile(time);
 	File particleFile = amplistorHelper.getLocalFilePath(simFile.getName() + PARTICLE_DATA_EXTENSION);
 	if (particleFile.exists()){
@@ -947,6 +968,34 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 	}else{
 		return null;
 	}
+	*/
+}
+
+/**
+ * build {@link #pdeDataMap}
+ * @throws DataAccessException
+ */
+private synchronized void indexPDEdataTimes( ) throws DataAccessException {
+	VCAssert.assertFalse(isODEData, "PDE only");
+	final int dataLength = dataFilenames.length;
+	if (dataTimes.length != dataLength){
+		throw new DataAccessException("dataTime array and dataFilename Array are corrupted");
+	}
+	pdeDataMap = new HashMap<Double, Integer>(dataTimes.length);
+	for (int i=0;i<dataTimes.length;i++){
+		pdeDataMap.put(dataTimes[i], i);
+	}
+	KeyValue kv = amplistorHelper.getsimulationKey();
+	int jobIndex = amplistorHelper.getJobIndex();
+	String firstParticleFile = createCanonicalSmoldynOutputFileName(kv, jobIndex, 1);
+	File f = amplistorHelper.getFile(firstParticleFile);
+	if (f != null) {
+		particleFilenames = new String[dataLength];
+		for (int i = 0; i < dataLength; i++) { 
+			final int smoldynIndex = i + 1; //smoldyn one-indexed
+			particleFilenames[i] = createCanonicalSmoldynOutputFileName(kv, jobIndex, smoldynIndex);
+		}
+}
 }
 
 /**
@@ -958,28 +1007,11 @@ private synchronized File getPDEDataFile(double time) throws DataAccessException
 	//
 	// take a snapshot in time
 	//
-	double times[] = getDataTimes();
-	
-	if (times == null){
-		return null;
-	}
-	if (times.length != dataFilenames.length){
-		throw new DataAccessException("dataTime array and dataFilename Array are corrupted");
-	}	
-	for (int i=0;i<times.length;i++){
-		if (times[i] == time){
-			String dataFileName = dataFilenames[i];
-			int index = dataFileName.lastIndexOf("\\");
-			if (index>=0){
-				dataFileName = dataFileName.substring(index + 1);
-			}
-			index = dataFileName.lastIndexOf("/");
-			if (index>=0){
-				dataFileName = dataFileName.substring(index + 1);
-			}
+	Integer index = pdeDataMap.get(time);
+	if (index != null) {
+		String dataFileName = FilenameUtils.getName( dataFilenames[index]);
 			return amplistorHelper.getLocalFilePath(dataFileName);
 		}
-	}
 	throw new DataAccessException("data at time="+time+" not found");
 }
 
@@ -1040,17 +1072,9 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	if (zipFilenames == null || times.length != zipFilenames.length){
 		return null;
 	}	
-	for (int i=0;i<times.length;i++){
-		if (times[i] == time){
-			String zipFileName = zipFilenames[i];
-			int index = zipFileName.lastIndexOf("\\");
-			if (index>=0){
-				zipFileName = zipFileName.substring(index + 1);
-			}
-			index = zipFileName.lastIndexOf("/");
-			if (index>=0){
-				zipFileName = zipFileName.substring(index + 1);
-			}
+	Integer index = pdeDataMap.get(time);
+	if (index != null) {
+		String zipFileName = FilenameUtils.getName(zipFilenames[index]);
 			File zipFile = amplistorHelper.getFile(zipFileName);//new File(userDirectory,zipFileName);
 			if (zipFile.exists()) {
 				return zipFile;
@@ -1058,7 +1082,6 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 				return null;
 			}
 		}
-	}
 	return null;
 }
 
@@ -1541,12 +1564,9 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	// read log file and check whether ODE or PDE data
 	//
 	StringBuffer stringBuffer = new StringBuffer();
-	FileInputStream is = null;
-	BufferedReader br = null;
-	try {
-		is = new FileInputStream(logFile);
+	try ( FileInputStream is = new FileInputStream(logFile); 
 		InputStreamReader reader = new InputStreamReader(is);
-		br = new BufferedReader(reader);
+		BufferedReader br = new BufferedReader(reader)) {
 		char charArray[] = new char[10000];
 		while (true) {
 			int numRead = br.read(charArray, 0, charArray.length);
@@ -1556,19 +1576,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 				break;
 			}
 		}
-	}finally{
-		if (is != null){
-			is.close();
 		}
-		if (br != null)
-		{
-			try {
-				br.close();
-			} catch (IOException ex) {
-				// ignore
-			}
-		}
-	}
 	VCMongoMessage.sendTrace("SimulationData.readLog() log file read into string buffer");
 	String logfileContent = stringBuffer.toString();
 	if (logfileContent.length() != logFileLength){
@@ -1583,6 +1591,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		//memorize format
 		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
 		
+		@SuppressWarnings("unused")
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
 		if (lineTokenizer.hasMoreTokens()) {
@@ -1602,6 +1611,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		//memorize format
 		st.nextToken();
 		odeIdentifier = NFSIM_DATA_IDENTIFIER;
+		@SuppressWarnings("unused")
 		String s2 = st.nextToken();
 		String filename = st.nextToken();
 		System.out.println("filename: " + filename);
@@ -1612,20 +1622,25 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		// PDE, so parse into 'dataFilenames' and 'dataTimes' arrays
 		isODEData = false;
-		if (!( (bZipFormat2 && st.countTokens()%4 == 0) || (!bZipFormat2 && st.countTokens()%3 == 0))) {
 			dataTimes = null;
 			chomboFileIterationIndices = null;
 			dataFilenames = null;
 			zipFilenames = null;
-			throw new DataAccessException("SimResults.readLog(), tokens should be factor of 3 or 4, bad parsing");
+		int tokensPerFile;
+		if (bZipFormat2) {
+			tokensPerFile = 4;
+		}
+		else {
+			tokensPerFile = 3;
+		}
+		final int numTokens = st.countTokens();
+		if (numTokens%tokensPerFile != 0) {
+			throw new DataAccessException("SimResults.readLog(), zipped = " + bZipFormat2 + ", should have multiple of " + tokensPerFile + " tokens, bad parse");
 		}
 
-		int numFiles = st.countTokens()/3;
+		int numFiles = numTokens / tokensPerFile; 
 		if (bZipFormat2) {
-			numFiles = st.countTokens()/4;
 			zipFilenames = new String[numFiles];
-		}else{
-			zipFilenames = null;
 		}
 		chomboFileIterationIndices = new int[numFiles];
 		dataTimes = new double[numFiles];
@@ -1638,29 +1653,25 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			String time = null;
 			if (bZipFormat2) {
 				String zipname = st.nextToken();
-				time = st.nextToken();
 				zipFilenames[index] = (new File(zipname)).getName();
-			} else {
-				time = st.nextToken();
 			}
+				time = st.nextToken();
 			chomboFileIterationIndices[index] = Integer.parseInt(iteration);
 			dataTimes[index] = (new Double(time)).doubleValue();
 			dataFilenames[index] = (new File(filename)).getName();
 			index++;
 		}
+		indexPDEdataTimes( );
 		VCMongoMessage.sendTrace("SimulationData.readLog() parsing zip files and times from log <<END>>");
 		// now check if .particle files also exist
 		try {
+			particleDataExists = false;
 			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<BEGIN>>");
 			File firstFile = getParticleDataFile(dataTimes[0]);
 			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<END>>");
-			if (firstFile!=null){
-				particleDataExists = true;
-			}else{
-				particleDataExists = false;
-			}
+			particleDataExists = ( firstFile != null ); 
 		} catch (Exception exc) {
-			particleDataExists = false;
+			lg.warn("checking particle data", exc);
 		}
 	}
 	VCMongoMessage.sendTrace("SimulationData.readLog() <<EXIT>>");
@@ -1902,13 +1913,13 @@ public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int job
 	SimDataConstants.LOGFILE_EXTENSION;
 }
 public static String createCanonicalSmoldynOutputFileName(KeyValue fieldDataKey,int jobIndex,int timeIndex){
-	if(timeIndex == 0){
-		throw new IllegalArgumentException("smoldyn does not have a 0 time index");
+	if (timeIndex > 0) {
+		String rval = createSimIDWithJobIndex(fieldDataKey,jobIndex,false) + String.format("_%03d",timeIndex) 
+			+ SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION;
+		return rval;
 	}
-	return
-	createSimIDWithJobIndex(fieldDataKey,jobIndex,false)+
-	"_"+(timeIndex<10?"0":"")+(timeIndex<100?"0":"")+timeIndex+
-	SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION;
+	throw new IllegalArgumentException("smoldyn output index must be > 0"); 
+	
 }
 
 public static String createCanonicalPostProcessFileName(VCDataIdentifier vcdID){

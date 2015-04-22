@@ -20,7 +20,7 @@ import org.vcell.util.Matchable;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class ExternalDataIdentifier implements SimResampleInfoProvider,java.io.Serializable,VCDataIdentifier,Matchable{
+public class ExternalDataIdentifier implements SimResampleInfoProvider,java.io.Serializable,VCKeyDataIdentifier,Matchable{
 	private org.vcell.util.document.KeyValue key;
 	private org.vcell.util.document.User owner;
 	private String name;
