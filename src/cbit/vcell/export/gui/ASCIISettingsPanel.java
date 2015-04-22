@@ -38,7 +38,7 @@ public class ASCIISettingsPanel extends javax.swing.JPanel implements ExportCons
 	private javax.swing.JLabel ivjJLabelAdditional = null;
 	private boolean fieldSwitchRowsColumns = false;
 	private int fieldSimDataType = 0;
-	private int fieldExportDataType = 0;
+	private DataType fieldExportDataType;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 /**
@@ -289,7 +289,7 @@ private javax.swing.JButton getCancelJButton() {
  * @return The exportDataType property value.
  * @see #setExportDataType
  */
-private int getExportDataType() {
+private ExportConstants.DataType getExportDataType() {
 	return fieldExportDataType;
 }
 /**
@@ -617,13 +617,13 @@ public void removeASCIISettingsPanelListener(cbit.vcell.export.gui.ASCIISettings
 }
 /**
  * Sets the exportDataType property (int) value.
- * @param exportDataType The new value for the property.
+ * @param odeVariableData The new value for the property.
  * @see #getExportDataType
  */
-public void setExportDataType(int exportDataType) {
-	int oldValue = fieldExportDataType;
-	fieldExportDataType = exportDataType;
-	firePropertyChange("exportDataType", new Integer(oldValue), new Integer(exportDataType));
+public void setExportDataType(DataType odeVariableData) {
+	DataType oldValue = fieldExportDataType;
+	fieldExportDataType = odeVariableData;
+	firePropertyChange("exportDataType", oldValue, odeVariableData);
 }
 /**
  * Sets the simDataType property (int) value.
@@ -666,17 +666,17 @@ private void updateChoices(int dataType) {
 		case ODE_SIMULATION:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(ODE_VARIABLE_DATA);
+			setExportDataType(ExportConstants.DataType.ODE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_NO_PARTICLES:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(PDE_VARIABLE_DATA);
+			setExportDataType(ExportConstants.DataType.PDE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_WITH_PARTICLES:
 			getJRadioButtonParticles().setEnabled(true);
 			getJRadioButtonParticles().setSelected(true);
-			setExportDataType(PDE_PARTICLE_DATA);
+			setExportDataType(ExportConstants.DataType.PDE_PARTICLE_DATA);
 			break;
 	}
 	return;
@@ -685,8 +685,8 @@ private void updateChoices(int dataType) {
  * Comment
  */
 private void updateExportDataType() {
-	if (getJRadioButtonVariables().isSelected()) setExportDataType(PDE_VARIABLE_DATA);
-	if (getJRadioButtonParticles().isSelected()) setExportDataType(PDE_PARTICLE_DATA);
+	if (getJRadioButtonVariables().isSelected()) setExportDataType(ExportConstants.DataType.PDE_VARIABLE_DATA);
+	if (getJRadioButtonParticles().isSelected()) setExportDataType(ExportConstants.DataType.PDE_PARTICLE_DATA);
 	return;
 }
 

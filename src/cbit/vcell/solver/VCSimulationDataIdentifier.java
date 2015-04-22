@@ -20,7 +20,7 @@ import org.vcell.util.document.SimResampleInfoProvider;
 public class VCSimulationDataIdentifier
 	implements
 		java.io.Serializable,
-		org.vcell.util.document.VCDataIdentifier,
+		org.vcell.util.document.VCKeyDataIdentifier,
 		SimResampleInfoProvider{
 
 
@@ -88,6 +88,7 @@ public org.vcell.util.document.User getOwner() {
  * Creation date: (8/24/2004 10:59:23 AM)
  * @return cbit.sql.KeyValue
  */
+@Override
 public org.vcell.util.document.KeyValue getSimulationKey() {
 	return vcSimID.getSimulationKey();
 }

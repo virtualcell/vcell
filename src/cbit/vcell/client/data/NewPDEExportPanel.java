@@ -26,6 +26,7 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -92,6 +93,9 @@ import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SmoldynSimulationOptions;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
@@ -147,6 +151,9 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private SpatialSelection[] spatialSelectionsVolume = null;
 	private SpatialSelection[] spatialSelectionsMembrane = null;
 	private int viewZoom;
+	
+	private boolean isSmoldyn = false;
+	private boolean isSmoldynParticle = false;
 	
 	/*
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
@@ -210,7 +217,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC17();
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJComboBox1()){
+			if (e.getSource() == NewPDEExportPanel.this.getFormatComboBox()){
 				connEtoM6(e);
 				updateChoiceVariableType(getPdeDataContext());
 				updateChoiceROI();
@@ -501,7 +508,7 @@ private void connEtoC2() {
 	try {
 		// user code begin {1}
 		// user code end
-		this.initFormatChoices_0();
+		this.setFormatChoices_0();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -812,7 +819,7 @@ private void connEtoM6(java.awt.event.ItemEvent arg1) {
  * @return format selected in combobox
  */
 private ExportFormat getSelectedFormat( ) {
-	JComboBox<ExportFormat> cb = getJComboBox1();
+	JComboBox<ExportFormat> cb = getFormatComboBox();
 	//because getSelectedItem( ) returns object; see http://stackoverflow.com/questions/7026230/why-isnt-getselecteditem-on-jcombobox-generic
 	return cb.getItemAt(cb.getSelectedIndex());
 }
@@ -1259,7 +1266,7 @@ private javax.swing.JButton getJButtonExport() {
  * @return javax.swing.JComboBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox<ExportFormat> getJComboBox1() {
+private javax.swing.JComboBox<ExportFormat> getFormatComboBox() {
 	if (ivjJComboBox1 == null) {
 		try {
 			ivjJComboBox1 = new javax.swing.JComboBox<>();
@@ -1502,7 +1509,7 @@ private javax.swing.JPanel getJPanelExport() {
 			constraintsJComboBox1.gridx = 1; constraintsJComboBox1.gridy = 0;
 			constraintsJComboBox1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJComboBox1.weightx = 1.0;
-			getJPanelExport().add(getJComboBox1(), constraintsJComboBox1);
+			getJPanelExport().add(getFormatComboBox(), constraintsJComboBox1);
 
 			java.awt.GridBagConstraints constraintsJLabelFormat = new java.awt.GridBagConstraints();
 			constraintsJLabelFormat.insets = new Insets(4, 4, 4, 4);
@@ -2076,7 +2083,7 @@ private void initConnections() throws java.lang.Exception {
 	getMembVarRadioButton().addActionListener(ivjEventHandler);
 	getBothVarRadioButton().addActionListener(ivjEventHandler);
 	
-	getJComboBox1().addItemListener(ivjEventHandler);
+	getFormatComboBox().addItemListener(ivjEventHandler);
 	getJSlider1().addChangeListener(ivjEventHandler);
 	getJSlider2().addChangeListener(ivjEventHandler);
 	getJTextField1().addActionListener(ivjEventHandler);
@@ -2096,30 +2103,34 @@ private void initConnections() throws java.lang.Exception {
 }
 
 
-private void initFormatChoices_0(/*boolean bMembrane*/){
+private void setFormatChoices_0(/*boolean bMembrane*/){
+	JComboBox<ExportFormat> cb = getFormatComboBox();
 	try{
-	getJComboBox1().removeItemListener(ivjEventHandler);
-	Object currentSelection = getJComboBox1().getSelectedItem();
-	getJComboBox1().removeAllItems();
-	getJComboBox1().addItem(ExportFormat.CSV);
-	getJComboBox1().addItem(ExportFormat.QUICKTIME);
-	getJComboBox1().addItem(ExportFormat.GIF);
-	getJComboBox1().addItem(ExportFormat.ANIMATED_GIF);
-	getJComboBox1().addItem(ExportFormat.FORMAT_JPEG);
-	getJComboBox1().addItem(ExportFormat.NRRD);
-	getJComboBox1().addItem(ExportFormat.UCD);
-	getJComboBox1().addItem(ExportFormat.VTK_UNSTRUCT);
-	if(getVolVarRadioButton().isSelected()){
-		getJComboBox1().addItem(ExportFormat.VTK_IMAGE);
+		cb.removeItemListener(ivjEventHandler);
+		Object currentSelection = cb.getSelectedItem();
+		cb.removeAllItems();
+		cb.addItem(ExportFormat.CSV);
+		cb.addItem(ExportFormat.QUICKTIME);
+		cb.addItem(ExportFormat.GIF);
+		cb.addItem(ExportFormat.ANIMATED_GIF);
+		cb.addItem(ExportFormat.FORMAT_JPEG);
+		cb.addItem(ExportFormat.NRRD);
+		cb.addItem(ExportFormat.UCD);
+		cb.addItem(ExportFormat.VTK_UNSTRUCT);
+		if(getVolVarRadioButton().isSelected()){
+			cb.addItem(ExportFormat.VTK_IMAGE);
+		}
+		if (isSmoldynParticle) {
+			cb.addItem(ExportFormat.PARTICLE);
+		}
+		if(currentSelection != null){
+			cb.setSelectedItem(currentSelection);
+		}else{
+			cb.setSelectedIndex(0);
+		}
+	}finally{
+		cb.addItemListener(ivjEventHandler);
 	}
-	if(currentSelection != null){
-		getJComboBox1().setSelectedItem(currentSelection);
-	}else{
-		getJComboBox1().setSelectedIndex(0);
-	}
-}finally{
-	getJComboBox1().addItemListener(ivjEventHandler);
-}
 
 }
 /**
@@ -2179,6 +2190,7 @@ private void initialize() {
 		connEtoM2();
 		connEtoM7();
 		connEtoM3();
+		getExportSettings1().setSelectedFormat(getSelectedFormat());
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -2386,11 +2398,6 @@ private void setTimeFromTextField(JTextField textField, JSlider slider) {
 private PDEDataViewer.DataInfoProvider dataInfoProvider;
 public void setDataInfoProvider(PDEDataViewer.DataInfoProvider dataInfoProvider){
 	this.dataInfoProvider = dataInfoProvider;
-}
-private boolean isSmoldyn = false;
-public void setIsSmoldyn(boolean isSmoldyn){
-	this.isSmoldyn = isSmoldyn;
-	
 }
 /**
  * Comment
@@ -2702,6 +2709,10 @@ private void updateExportFormat(ExportFormat exportFormat) {
 			break;
 		}
 	case PARTICLE:
+		getJRadioButtonSlice().setSelected(false);
+		getJRadioButtonSlice().setEnabled(false);
+		getJRadioButtonFull().setSelected(true);
+		getJRadioButtonFull().setEnabled(true);			
 		//GCW to do
 		break;
 	default:
@@ -2720,7 +2731,7 @@ private void updateExportFormat(ExportFormat exportFormat) {
  * Comment
  */
 private void updateInterface() {
-	initFormatChoices_0();
+	setFormatChoices_0();
 	//
 	if(!getJRadioButtonSelection().isSelected()){
 		getJListSelections().clearSelection();
@@ -2943,5 +2954,14 @@ private void updateTimes(double[] times) {
 			bothVarRadioButton.setText("Vol/Membr Data");
 		}
 		return bothVarRadioButton;
+	}
+
+	public void setSolverTaskDescription(SolverTaskDescription solverDescription) {
+		isSmoldynParticle = false; 
+		isSmoldyn = solverDescription.getSolverDescription().equals(SolverDescription.Smoldyn);
+		if (isSmoldyn) {
+			SmoldynSimulationOptions sss = solverDescription.getSmoldynSimulationOptions();
+			isSmoldynParticle = sss.isSaveParticleLocations();
+		}
 	}
 }

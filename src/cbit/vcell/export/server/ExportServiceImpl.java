@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
@@ -248,7 +249,8 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			ExportOutput[] exportOutputs = null;
 			switch (exportSpecs.getFormat()) {
 				case CSV:
-					exportOutputs = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					Collection<ExportOutput> asciiOut = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					exportOutputs = asciiOut.toArray(new ExportOutput[asciiOut.size()]);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case QUICKTIME:
 				case GIF:

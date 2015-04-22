@@ -44,6 +44,10 @@ public ProgressDialog(Frame owner) {
 	});
 }
 
+public void setToVisible( ) {
+	setVisible(true);
+}
+
 
 /**
  * 

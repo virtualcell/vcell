@@ -14,11 +14,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.OperatingSystemInfo;
 
 public class PropertyLoader {
 	
@@ -81,7 +88,7 @@ public class PropertyLoader {
 	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",ValueType.GEN);
 
 	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",ValueType.GEN);
-	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",ValueType.GEN);
+	public static final String exportBaseDirProperty		= record("vcell.export.baseDir",ValueType.DIR);
 	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",ValueType.INT);
 
 	public static final String dbDriverName					= record("vcell.server.dbDriverName",ValueType.GEN);
@@ -146,6 +153,7 @@ public class PropertyLoader {
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", ValueType.BOOL);
 	
 	private static File systemTemporaryDirectory = null;
+	private static Logger lg = Logger.getLogger(PropertyLoader.class);
 
 	private enum ValueType {
 		/**
@@ -444,10 +452,63 @@ public class PropertyLoader {
 					System.out.println("Property " + key + " property value "  + value + " overridden by system value " + existingValue);
 				}
 			}
+			lookForMagic(propertyFile);
 		}
 		// display new properties
 		//System.getProperties().list(System.out);
 		System.out.println("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
+	}
+	
+	/**
+	 * keyword for property substitution
+	 */
+	private static final String MAGIC_KEYWORD = "magic";
+	private static void lookForMagic(File pfile) {
+		try {
+			List<String> lines = org.apache.commons.io.FileUtils.readLines(pfile);
+			for (String line: lines) {
+				if (line.indexOf('#') == 0 && StringUtils.containsIgnoreCase(line, MAGIC_KEYWORD) ) {
+					StringTokenizer st = new StringTokenizer(line);
+					while (st.hasMoreTokens()) {
+						String token = st.nextToken().toLowerCase();
+						if (!token.endsWith(MAGIC_KEYWORD)) {
+							continue;
+						}
+						try {
+							String os = st.nextToken();
+							String from = st.nextToken();
+							String to = st.nextToken();
+							executeSubstitution(ValueType.DIR, os, from, to);
+						} catch (NoSuchElementException e) {
+							lg.warn("Unable to parse magic line " + line,e);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			lg.warn("failure looking for magic",e);
+		}
+	}
+	
+	private static void executeSubstitution(ValueType type, String os, String from, String to) {
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+		if (os.contains( osi.getOsnamePrefix() ) ) {
+			for (Entry<String, MetaProp> es: propMap.entrySet()) {
+				MetaProp mp = es.getValue();
+				if (mp.valueType == type) {
+					String key = es.getKey();
+					String current = System.getProperty(key);
+					if (current!= null && current.contains(from)) {
+						String substitute = current.replace(from, to);
+						System.setProperty(key, substitute);
+						if (lg.isInfoEnabled()) {
+							lg.info("replaced " + key + " value " + current + " with " + substitute);
+						}
+						
+					}
+				}
+			}
+		}
 	}
 
 	/**

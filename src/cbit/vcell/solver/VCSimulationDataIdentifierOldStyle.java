@@ -25,10 +25,11 @@ import org.vcell.util.document.SimResampleInfoProvider;
 @Historical
 public class VCSimulationDataIdentifierOldStyle
 	implements
-		java.io.Serializable, org.vcell.util.document.VCDataIdentifier,
+		java.io.Serializable, org.vcell.util.document.VCKeyDataIdentifier,
 		SimResampleInfoProvider{
 
 
+	@Override
 	public KeyValue getSimulationKey() {
 		return vcSimID.getSimulationKey();
 	}
