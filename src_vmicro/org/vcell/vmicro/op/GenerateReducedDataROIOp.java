@@ -6,7 +6,7 @@ import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 
-public class GenerateReducedROIDataOp {
+public class GenerateReducedDataROIOp {
 	
 	public RowColumnResultSet generateReducedData(ImageTimeSeries<? extends Image> imageTimeSeries, ROI[] rois) throws Exception {
 		int numROIs = rois.length;

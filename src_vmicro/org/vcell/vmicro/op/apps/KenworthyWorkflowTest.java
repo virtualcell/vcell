@@ -19,7 +19,7 @@ import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp;
 import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp.GeometryRoisAndBleachTiming;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResults;
-import org.vcell.vmicro.op.GenerateReducedROIDataOp;
+import org.vcell.vmicro.op.GenerateReducedDataROIOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
@@ -143,7 +143,7 @@ public class KenworthyWorkflowTest {
 		//
 		// get reduced data and errors for each ROI
 		//
-		RowColumnResultSet reducedData = new GenerateReducedROIDataOp().generateReducedData(normalizedTimeSeries, dataROIs);
+		RowColumnResultSet reducedData = new GenerateReducedDataROIOp().generateReducedData(normalizedTimeSeries, dataROIs);
 		RowColumnResultSet measurementErrors = new ComputeMeasurementErrorOp().computeNormalizedMeasurementError(
 				dataROIs, indexOfFirstPostbleach, rawTimeSeriesImages, prebleachAvg, null);
 
