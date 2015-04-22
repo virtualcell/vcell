@@ -267,9 +267,7 @@ public double[] getDoublePixels() {
 @Override
 public float[] getFloatPixels() {
 	float[] floatPixels = new float[pixels.length];
-	for (int i=0;i<floatPixels.length;i++){
-		floatPixels[i] = pixels[i];
-	}
+	System.arraycopy(pixels, 0, floatPixels, 0, pixels.length);
 	return floatPixels;
 }
 

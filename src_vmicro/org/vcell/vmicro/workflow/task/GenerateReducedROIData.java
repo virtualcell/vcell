@@ -1,7 +1,7 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.op.GenerateReducedROIDataOp;
+import org.vcell.vmicro.op.GenerateReducedDataROIOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
@@ -42,7 +42,7 @@ public class GenerateReducedROIData extends Task {
 		ImageTimeSeries<? extends Image> simData = (ImageTimeSeries<? extends Image>)context.getData(imageTimeSeries);
 		
 		// do op
-		GenerateReducedROIDataOp op = new GenerateReducedROIDataOp();
+		GenerateReducedDataROIOp op = new GenerateReducedDataROIOp();
 		RowColumnResultSet reducedData = op.generateReducedData(simData, rois);
 		
 		// set output

@@ -13,7 +13,7 @@ import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp.GeometryRoisA
 import org.vcell.vmicro.op.GenerateDependentImageROIsOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResults;
-import org.vcell.vmicro.op.GenerateReducedROIDataOp;
+import org.vcell.vmicro.op.GenerateReducedDataROIOp;
 import org.vcell.vmicro.op.GenerateTrivial2DPsfOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunProfileLikelihoodGeneralOp;
@@ -157,7 +157,7 @@ public class VFrapProcess {
 		ROI[] dataROIs = generateDependentROIs.generate(geometryAndTiming.cellROI_2D, bleachROI);
 		
 		
-		GenerateReducedROIDataOp generateReducedNormalizedData = new GenerateReducedROIDataOp();
+		GenerateReducedDataROIOp generateReducedNormalizedData = new GenerateReducedDataROIOp();
 		RowColumnResultSet reducedData = generateReducedNormalizedData.generateReducedData(normalizedFrapResults.normalizedFrapData, dataROIs);
 		
 		
