@@ -30,7 +30,6 @@ import org.vcell.util.BeanUtils;
 @SuppressWarnings("serial")
 
 public class IndefiniteProgressDialog extends ProgressDialog implements ActionListener {
-	private final static int GRAPHIC_SIZE = 60;					// size of rotating "wait" image panel
 	private final static int INITIAL_UPDATE_TIME_MILLIS = 60; 	// update time, milliseconds
 	private final static int SHOW_DELAY_TIME_MILLIS = 1000; 
 
@@ -54,7 +53,7 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 		
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-		ps = new Dimension(250, GRAPHIC_SIZE);
+		ps = new Dimension(DialogWidth, GRAPHIC_SIZE);
 		rightPanel.setPreferredSize(ps);
 		getContentPane().add(rightPanel);
 		
@@ -116,10 +115,13 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	}
 	@Override
 	public void setMessage(String s) {
-		final int MaxLen = 40;
-		final int TruncTailLen = 3;
-		final int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
 		
+//		DocumentWindow dw = getMainFrame();
+//		if(dw != null) {
+//			Runnable r = new StatusBarMessageThread(dw, s);
+//			new Thread(r).start();
+//		}
+
 		int len = s.length();
 		if(len > MaxLen) {
 			s = s.substring(0,TruncHeaderLen) + ".." + s.substring(len-TruncTailLen, len);
