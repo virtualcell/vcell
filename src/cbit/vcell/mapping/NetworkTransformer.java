@@ -23,6 +23,7 @@ import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
@@ -179,10 +180,14 @@ public class NetworkTransformer implements SimContextTransformer {
 		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
 		if(outputSpec.getBNGSpecies().length > speciesLimit) {
 			message = getSpeciesLimitExceededMessage(outputSpec) + message;
+			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
+			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
 		}
 		if(outputSpec.getBNGReactions().length > reactionsLimit) {
 			message = getReactionsLimitExceededMessage(outputSpec) + message;
+			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
+			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
 		}
 		
@@ -206,6 +211,9 @@ public class NetworkTransformer implements SimContextTransformer {
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
 		mathMappingCallback.setMessage("generating network: flattening...");
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, "generating network: flattening...");
+		simContext.appendToConsole(tcm);
+		
 		long startTime = System.currentTimeMillis();
 		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
 		BNGOutputSpec outputSpec = generateNetwork(simContext, mathMappingCallback, networkGenerationRequirements);
