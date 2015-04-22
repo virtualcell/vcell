@@ -13,6 +13,7 @@ package cbit.vcell.simdata;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ParticleDataInfo extends DataInfo {
 /**
  * ParticleDataInfo constructor comment.
