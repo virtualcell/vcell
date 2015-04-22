@@ -7,6 +7,7 @@ public class TaskCallbackMessage {
 		TaskEnd,
 		TaskStopped,
 		Detail,
+		Error,
 		Other;
 	}
 
