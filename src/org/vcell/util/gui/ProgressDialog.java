@@ -9,14 +9,18 @@
  */
 
 package org.vcell.util.gui;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
 import org.vcell.util.ProgressDialogListener;
+
+import cbit.vcell.client.desktop.DocumentWindow;
 /**
  * Insert the type's description here.
  * Creation date: (5/18/2004 1:14:29 AM)
@@ -24,10 +28,54 @@ import org.vcell.util.ProgressDialogListener;
  */
 @SuppressWarnings("serial")
 public abstract class ProgressDialog extends JDialog {
+	
+	protected final static int GRAPHIC_SIZE = 60;			// size of rotating "wait" image panel
+	protected final static int DialogWidth = 350;
+	protected final static int MaxLen = 50;					// message truncation if too long
+	protected final static int TruncTailLen = 0;
+	protected final static int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
+	
 	protected JProgressBar progressBar = null;
 	protected transient ProgressDialogListener fieldProgressDialogListenerEventMulticaster = null;
 	private JButton cancelButton = null;
 
+	// the thread will display a message on the status bar and then delete it after a few seconds
+	protected static class StatusBarMessageThread implements Runnable {
+
+		private final Object lock = new Object();
+		private static volatile int instanceCount = 0;
+		private final DocumentWindow dw;
+		private final String s;
+		
+		public StatusBarMessageThread(DocumentWindow dw, String s) {
+			synchronized(lock) {
+				instanceCount++;
+			}
+			this.dw = dw;
+			this.s = s;
+		}
+		public void run() {
+			try {
+				JLabel warningBar = dw.getWarningBar();
+				warningBar.setText(s);
+				Thread.sleep(4000);
+				synchronized(lock) {
+					if(instanceCount == 1) {
+						warningBar.setText("");
+					} else {
+//						System.out.println("skipping");
+					}
+				}
+			} catch ( Throwable th ) {
+				throw new RuntimeException(th);
+			} finally {
+				synchronized(lock) {
+					instanceCount--;
+				}
+			}
+		}
+	}
+	
 /**
  * Insert the method's description here.
  * Creation date: (5/19/2004 6:08:36 PM)
@@ -137,6 +185,21 @@ protected javax.swing.JButton getCancelButton() {
  */
 public void setCancelButtonVisible(boolean arg1) {
 	getCancelButton().setVisible(arg1);
+}
+
+protected DocumentWindow getMainFrame() {
+	Container previousParent = null;
+	Container parent = getParent();
+	while(parent != null) {
+		previousParent = parent;
+		parent = parent.getParent();
+	}
+	if(previousParent != null && previousParent instanceof DocumentWindow) {
+		DocumentWindow mainFrame = (DocumentWindow)previousParent;
+		return mainFrame;
+	} else {
+		return null;
+	}
 }
 
 }
