@@ -2,7 +2,6 @@ package org.vcell.util.gui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
@@ -10,7 +9,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -18,21 +16,16 @@ import java.awt.event.ComponentListener;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 
-import javax.help.UnsupportedOperationException;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
-
-import org.vcell.util.BeanUtils;
 
 @SuppressWarnings("serial")
 
 public class DefiniteProgressDialog extends ProgressDialog {
-	private final static int GRAPHIC_SIZE = 60;					// size of rotating "wait" image panel
-
+	
 	private JLabel lblMessage;
 	private WorkingPanel graphicPanel;
 
@@ -49,7 +42,7 @@ public class DefiniteProgressDialog extends ProgressDialog {
 		
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-		ps = new Dimension(250, GRAPHIC_SIZE);
+		ps = new Dimension(DialogWidth, GRAPHIC_SIZE);
 		rightPanel.setPreferredSize(ps);
 		getContentPane().add(rightPanel);
 		
@@ -70,12 +63,9 @@ public class DefiniteProgressDialog extends ProgressDialog {
 		pack( );
 	}
 	
-	/**
-	 * @throws UnsupportedOperationException (always)
-	 */
 	@Override
 	public void setProgress(int progress) {
-		System.out.println(" ===== " + progress);
+//		System.out.println("progress " + progress);
 		graphicPanel.setAngle(progress);
 		graphicPanel.repaint();
 	}
@@ -85,9 +75,12 @@ public class DefiniteProgressDialog extends ProgressDialog {
 	}
 	@Override
 	public void setMessage(String s) {
-		final int MaxLen = 40;
-		final int TruncTailLen = 3;
-		final int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
+		
+//		DocumentWindow dw = getMainFrame();
+//		if(dw != null) {
+//			Runnable r = new StatusBarMessageThread(dw, s);
+//			new Thread(r).start();
+//		}
 		
 		int len = s.length();
 		if(len > MaxLen) {
