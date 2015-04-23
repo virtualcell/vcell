@@ -406,10 +406,10 @@ public class RbmUtils {
 				if (molecularComponent == null) {
 					if(stopOnError) {
 						throw new RuntimeException(MolecularComponent.typeName + " '" + name + "' doesn't exist in " + MolecularType.typeName + " '" 
-									+ ((MolecularType) data).getDisplayName() + "'!");
+									+ ((MolecularTypePattern) data).getDisplayName() + "'!");
 					} else {
 						System.out.println(MolecularComponent.typeName + " '" + name + "' doesn't exist in " + MolecularType.typeName + " '" 
-									+ ((MolecularType) data).getDisplayName() + "'! Creating it.");
+									+ ((MolecularTypePattern) data).getDisplayName() + "'! Creating it.");
 					}
 					molecularComponent = new MolecularComponent(name);
 					molecularType.addMolecularComponent(molecularComponent);
