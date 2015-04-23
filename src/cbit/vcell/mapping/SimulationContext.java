@@ -51,6 +51,7 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -300,6 +301,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// warning: we don't verify the validity of the mostRecentlyCreatedMathMapping,
 	// use it only when certain that it's still valid!
 	private transient MathMapping mostRecentlyCreatedMathMapping;
+	private transient ArrayList<TaskCallbackMessage> consoleNotificationList = new ArrayList<TaskCallbackMessage>();
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -2431,7 +2433,19 @@ public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
 public void appendToConsole(TaskCallbackMessage message) {
+	if(message.getStatus() == TaskCallbackStatus.TaskStart) {
+		consoleNotificationList.clear();	// clear console notification list when we start a new task
+	}
+	consoleNotificationList.add(message);	// add them all to the list as they come
 	firePropertyChange("appendToConsole", "", message);
+}
+public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
+	return consoleNotificationList;
+}
+public void playConsoleNotificationList() {
+	for(TaskCallbackMessage message : consoleNotificationList) {
+		firePropertyChange("appendToConsole", "", message);
+	}
 }
 
 
