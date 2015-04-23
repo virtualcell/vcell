@@ -7,6 +7,9 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Window;
@@ -16,6 +19,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 
 import javax.help.UnsupportedOperationException;
 import javax.swing.BoxLayout;
@@ -157,28 +161,34 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 
 			Graphics2D g2d = (Graphics2D)g;
 			Stroke oldStroke = g2d.getStroke();
+			Paint oldPaint = g2d.getPaint();
 			g2d.clearRect(0, 0, width, height);
 			
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 			
-//			Point2D center = new Point2D.Float(x, y);
-//			float rr = 40f;
-//			Point2D focus = new Point2D.Float(x, y);
-//			float[] dist = {0.1f, 1.0f};
-//			Color[] colors = {Color.blue, Color.lightGray};
-//			RadialGradientPaint paint = new RadialGradientPaint(center, rr, focus, dist, colors, CycleMethod.REFLECT);
-
 			final float StrokeWidth = 7.0f;
 			final int circleOffset = 15;
-			final double extent = 30;
+			final double extent = 70;
+			
 			BasicStroke bs = new BasicStroke(StrokeWidth);
 			g2d.setStroke(bs);				// background ring
 			g2d.setPaint(Color.lightGray);
 			Arc2D a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, 0, 360, Arc2D.OPEN);
 			g2d.draw(a2d);
 			
-			g2d.setPaint(Color.gray);		// moving indicator
+			double r =  (width-circleOffset*2) / 2;
+			float y = (float)(width/2 + r * Math.cos(radians));
+			float x = (float)(width/2 + r * Math.sin(radians));
+			Point2D center = new Point2D.Float(x, y);
+			float rr = 55;
+			Point2D focus = new Point2D.Float(x, y);
+			float[] dist = {0.1f, 0.75f};
+			Color[] colors = {Color.green, Color.lightGray};
+			RadialGradientPaint paint = new RadialGradientPaint(center, rr, focus, dist, colors, CycleMethod.NO_CYCLE);
+			g2d.setPaint(paint);
+
+//			g2d.setPaint(Color.gray);		// moving indicator
 			bs = new BasicStroke(StrokeWidth-2);
 			g2d.setStroke(bs);
 			a2d = new Arc2D.Double(circleOffset, circleOffset, width-circleOffset*2, width-circleOffset*2, Math.toDegrees(radians), extent, Arc2D.OPEN);
@@ -190,7 +200,8 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 			g2d.draw(c1);
 			Ellipse2D.Double c2 = new Ellipse2D.Double(circleOffset+3, circleOffset+3, width-(circleOffset+3)*2, width-(circleOffset+3)*2); 
 			g2d.draw(c2);
-
+			
+			g2d.setPaint(oldPaint);
 		}
 		
 		@Override
