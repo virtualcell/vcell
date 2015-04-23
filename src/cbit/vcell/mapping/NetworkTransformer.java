@@ -150,7 +150,10 @@ public class NetworkTransformer implements SimContextTransformer {
 
 		String md5hash = MD5.md5(input);
 		if(isBngHashValid(input, md5hash, simContext)) {
-			System.out.println("Saved outputSpec is up-to-date, retrieving.");
+			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
+			System.out.println(s);
+			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
+			simContext.appendToConsole(tcm);
 			return simContext.getMostRecentlyCreatedOutputSpec();
 		}
 		
@@ -173,6 +176,10 @@ public class NetworkTransformer implements SimContextTransformer {
 			ex.printStackTrace(System.out);
 			throw new RuntimeException(ex.getMessage());
 		}
+		String bngConsoleString = bngOutput.getConsoleOutput();
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Detail, bngConsoleString);
+		simContext.appendToConsole(tcm);
+
 		String bngNetString = bngOutput.getNetFileContent();
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
@@ -180,13 +187,13 @@ public class NetworkTransformer implements SimContextTransformer {
 		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
 		if(outputSpec.getBNGSpecies().length > speciesLimit) {
 			message = getSpeciesLimitExceededMessage(outputSpec) + message;
-			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
 		}
 		if(outputSpec.getBNGReactions().length > reactionsLimit) {
 			message = getReactionsLimitExceededMessage(outputSpec) + message;
-			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
 		}
@@ -210,15 +217,19 @@ public class NetworkTransformer implements SimContextTransformer {
 	
 	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
-		mathMappingCallback.setMessage("generating network: flattening...");
-		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, "generating network: flattening...");
+		String msg = "Generating network: flattening...";
+		mathMappingCallback.setMessage(msg);
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, msg);
 		simContext.appendToConsole(tcm);
 		
 		long startTime = System.currentTimeMillis();
 		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
 		BNGOutputSpec outputSpec = generateNetwork(simContext, mathMappingCallback, networkGenerationRequirements);
 		if (mathMappingCallback.isInterrupted()){
-			throw new UserCancelException("Canceled by user.");
+			msg = "Canceled by user.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, msg);
+			simContext.appendToConsole(tcm);
+			throw new UserCancelException(msg);
 		}
 		long endTime = System.currentTimeMillis();
 		long elapsedTime = endTime - startTime;
@@ -227,8 +238,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		Model model = transformedSimulationContext.getModel();
 		ReactionContext reactionContext = transformedSimulationContext.getReactionContext();
 		try {
+			// ---- Parameters -----------------------------------------------------------------------------------------------
 		startTime = System.currentTimeMillis();
-		System.out.println("\nParameters :");
 		for (int i = 0; i < outputSpec.getBNGParams().length; i++){
 			BNGParameter p = outputSpec.getBNGParams()[i];
 //			System.out.println(i+1 + ":\t\t"+ p.toString());
@@ -246,7 +257,10 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
-		System.out.println("     " + elapsedTime + " milliseconds");
+		msg = "Adding " + outputSpec.getBNGParams().length + " parameters to model, " + elapsedTime + " ms";
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
+		simContext.appendToConsole(tcm);
+		System.out.println(msg);
 		
 		// ---- Species ------------------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding species...");
@@ -346,7 +360,10 @@ public class NetworkTransformer implements SimContextTransformer {
 //				countGenerated++;
 //			}
 			if (mathMappingCallback.isInterrupted()){
-				throw new UserCancelException("Canceled by user.");
+				msg = "Canceled by user.";
+				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, msg);
+				simContext.appendToConsole(tcm);
+				throw new UserCancelException(msg);
 			}
 //			if(i%50 == 0) {
 //				System.out.println(i+"");
@@ -420,8 +437,12 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
-		System.out.println("     " + elapsedTime + " milliseconds");
+		msg = "Adding " + outputSpec.getBNGSpecies().length + " species to model, " + elapsedTime + " ms";
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
+		simContext.appendToConsole(tcm);
+		System.out.println(msg);
 		
+		// ---- Reactions -----------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding reactions...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f*3.0f);
 		startTime = System.currentTimeMillis();
@@ -479,12 +500,19 @@ public class NetworkTransformer implements SimContextTransformer {
 		reactionStepMap.values().toArray(reactionSteps); 
 		model.setReactionSteps(reactionSteps);
 		if (mathMappingCallback.isInterrupted()){
-			throw new UserCancelException("Canceled by user.");
+			msg = "Canceled by user.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, msg);
+			simContext.appendToConsole(tcm);
+			throw new UserCancelException(msg);
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
-		System.out.println("     " + elapsedTime + " milliseconds");
+		msg = "Adding " + outputSpec.getBNGReactions().length + " reactions to model, " + elapsedTime + " ms";
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
+		simContext.appendToConsole(tcm);
+		System.out.println(msg);
 
+		// ---- Observables -------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding observables...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/8.0f*7.0f);
 		startTime = System.currentTimeMillis();
@@ -515,11 +543,17 @@ public class NetworkTransformer implements SimContextTransformer {
 			entityMappings.add(em);
 		}
 		if (mathMappingCallback.isInterrupted()){
-			throw new UserCancelException("Canceled by user.");
+			msg = "Canceled by user.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, msg);
+			simContext.appendToConsole(tcm);
+			throw new UserCancelException(msg);
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
-		System.out.println("     " + elapsedTime + " milliseconds");
+		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
+		simContext.appendToConsole(tcm);
+		System.out.println(msg);
 
 		} catch (PropertyVetoException ex) {
 			ex.printStackTrace(System.out);
@@ -534,8 +568,13 @@ public class NetworkTransformer implements SimContextTransformer {
 			ex.printStackTrace(System.out);
 			throw new RuntimeException(ex.getMessage());
 		}
-		System.out.println("Done transforming");
-		mathMappingCallback.setMessage("generating math...");
+		
+		System.out.println("Done transforming");		
+		msg = "Generating math...";
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
+		simContext.appendToConsole(tcm);
+		System.out.println(msg);
+		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
 	}
 

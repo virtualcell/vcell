@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -42,6 +44,9 @@ public class SimulationConsolePanel extends JPanel {
 	
 	private JTextPane netGenConsoleText;
 	
+	private int currentIterationSpecies = 0;
+	private int previousIterationSpecies = 0;
+
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
@@ -81,6 +86,7 @@ public class SimulationConsolePanel extends JPanel {
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+		setBorder(loweredEtchedBorder);
 
 		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
 		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -103,6 +109,7 @@ public class SimulationConsolePanel extends JPanel {
 		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
 		netGenConsoleText.setEditable(false);
 	}
+	
 	public SimulationContext getSimulationContext() {
 		return fieldSimulationContext;
 	}
@@ -127,21 +134,41 @@ public class SimulationConsolePanel extends JPanel {
 		SimpleAttributeSet keyWord = new SimpleAttributeSet();
 		try {
 		switch(status) {
-		case TaskStart:
+		case TaskStart:			// clean console, display initialization message
+			previousIterationSpecies = 0;
+			currentIterationSpecies = 0;
 			netGenConsoleText.setText("");
-//			netGenConsoleText.append(string + "\n");
 			doc.insertString(doc.getLength(), string + "\n", null);
 			break;
-		case TaskEnd:
+		case TaskEnd:			// normal end
 
 			break;
-		case TaskStopped:
+		case TaskStopped:		// stopped by user
 
 			break;
-		case Detail:
-
+		case Notification:		// normal notification, just display the string
+			doc.insertString(doc.getLength(), string + "\n", null);
 			break;
-		case Error:
+		case Detail:			// specific details, string will be processed, details extracted, formatted, etc
+			String split[];
+			split = string.split("\\n");
+			for(String s : split) {
+				if(s.startsWith("CPU TIME: total"))  {
+					doc.insertString(doc.getLength(), "  " + s + "\n", null);
+				} else if (s.startsWith("Iteration")) {
+					String species = "species";
+					s = "    " + s.substring(0, s.indexOf("species") + species.length());
+					doc.insertString(doc.getLength(), s + "\n", null);
+					checkMaxIterationConsistency(s);
+				}
+			}
+			if(previousIterationSpecies != currentIterationSpecies) {
+				StyleConstants.setForeground(keyWord, Color.RED);
+				String s = "Warning: Max Iterations number may be insufficient.";
+				doc.insertString(doc.getLength(), s + "\n", keyWord);
+			}
+			break;
+		case Error:			// display this in red
 			StyleConstants.setForeground(keyWord, Color.RED);
 			doc.insertString(doc.getLength(), string + "\n", keyWord);
 			break;
@@ -152,17 +179,32 @@ public class SimulationConsolePanel extends JPanel {
 			System.out.println(e);
 		}
 	}
+	private void checkMaxIterationConsistency(String s) {
+		Pattern pattern = Pattern.compile("\\w+");
+		Matcher matcher = pattern.matcher(s);
+		try {
+		for(int i=0; matcher.find(); i++) {
+			if(i==2) {
+				previousIterationSpecies = currentIterationSpecies;
+				currentIterationSpecies = Integer.parseInt(matcher.group());
+			}
+		}
+		} catch(NumberFormatException nfe) {
+			
+		}
+	}
 	
 	private void refreshInterface() {
-		String text1 = null;
-		text1 = "Simulation Console for ";
 		
+		String text1 = "Simulation Console for: ";
 		if(fieldSimulationContext == null) {
 			netGenConsoleText.setText(text1 + "no simulation");
 		} else {
 			netGenConsoleText.setText(text1 + fieldSimulationContext.getName());
 		}
+		if(fieldSimulationContext != null) {
+			fieldSimulationContext.playConsoleNotificationList();
+		}
 	}
-
 
 }
