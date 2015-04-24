@@ -2428,13 +2428,14 @@ public BNGOutputSpec getMostRecentlyCreatedOutputSpec() {
 }
 public void setMostRecentlyCreatedOutputSpec(BNGOutputSpec mostRecentlyCreatedOutputSpec) {
 	this.mostRecentlyCreatedOutputSpec = mostRecentlyCreatedOutputSpec;
+	firePropertyChange("bngOutputChanged", "", "NA");
 }
 public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
 public void appendToConsole(TaskCallbackMessage message) {
-	if(message.getStatus() == TaskCallbackStatus.TaskStart) {
-		consoleNotificationList.clear();	// clear console notification list when we start a new task
+	if(message.getStatus() == TaskCallbackStatus.Clean) {
+		consoleNotificationList.clear();	// clear console notification list
 	}
 	consoleNotificationList.add(message);	// add them all to the list as they come
 	firePropertyChange("appendToConsole", "", message);
