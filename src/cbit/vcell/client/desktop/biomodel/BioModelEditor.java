@@ -456,7 +456,7 @@ private SimulationSummaryPanel getSimulationSummaryPanel() {
 	}
 	return simulationSummaryPanel;
 }
-private SimulationConsolePanel getSimulationConsolePanel() {
+public SimulationConsolePanel getSimulationConsolePanel() {
 	if (simulationConsolePanel == null) {
 		try {
 			simulationConsolePanel = new SimulationConsolePanel();
@@ -842,7 +842,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	if(simulationContext == null) {
 		rightBottomTabbedPane.remove(getSimulationConsolePanel());
 	} else {
-		if(simulationContext.isRuleBased() || simulationContext.isStoch()) {
+//		if(simulationContext.isRuleBased() || simulationContext.isStoch()) {
+		if(simulationContext.isStoch()) {
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
@@ -850,7 +851,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
-		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
+//		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
+		rightBottomTabbedPane.addTab("Network Console", getSimulationConsolePanel());
 	}
 }
 

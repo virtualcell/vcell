@@ -45,12 +45,14 @@ import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
+import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.CreateBNGOutputSpec;
 import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.MD5;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
@@ -68,7 +70,7 @@ import cbit.vcell.solvers.ApplicationMessage;
 // can choose absolute layout and place everything exactly as we see fit
 @SuppressWarnings("serial")
 public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback, ApplicationSpecificationsPanel.Specifier {
-	BNGOutputSpec outputSpec = null;
+//	BNGOutputSpec outputSpec = null;
 	
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
@@ -85,14 +87,14 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private JButton viewGeneratedSpeciesButton;
 	private JButton viewGeneratedReactionsButton;
 	
-	private JTextPane netGenConsoleText;
+//	private JTextPane netGenConsoleText;
 //	private EditorScrollTable molecularTypeTable = null;
 //	private ApplicationMolecularTypeTableModel molecularTypeTableModel = null;
 	private JButton refreshMathButton;
 	private JButton createModelButton;
 	
-	private int currentIterationSpecies = 0;
-	private int previousIterationSpecies = 0;
+//	private int currentIterationSpecies = 0;
+//	private int previousIterationSpecies = 0;
 	
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
@@ -124,6 +126,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
+				refreshInterface();
+			} else if(event.getSource() instanceof SimulationContext && event.getPropertyName().equals("bngOutputChanged")) {
 				refreshInterface();
 			}
 		}
@@ -193,7 +197,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 
 	private void initialize() {
-		netGenConsoleText = new JTextPane();
+//		netGenConsoleText = new JTextPane();
 		maxIterationTextField = new JTextField();
 		maxMolTextField = new JTextField();
 		seedSpeciesLabel = new JLabel();
@@ -211,7 +215,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		getRefreshMathButton().addActionListener(eventHandler);
 		getCreateModelButton().addActionListener(eventHandler);
 		
-		netGenConsoleText.addFocusListener(eventHandler);
+//		netGenConsoleText.addFocusListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
 		maxMolTextField.addFocusListener(eventHandler);
 		
@@ -340,12 +344,12 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		bottom = new JPanel();
 		
 		// we use a scroll pane whose viewing area is the JTextArea - to provide the vertical scroll bar
-		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
-		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		TitledBorder titleConsole = BorderFactory.createTitledBorder(loweredBevelBorder, " BioNetGen Console ");
-		titleConsole.setTitleJustification(TitledBorder.LEFT);
-		titleConsole.setTitlePosition(TitledBorder.ABOVE_TOP);
-		netGenConsoleScrollPane.setBorder(titleConsole);
+//		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
+//		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+//		TitledBorder titleConsole = BorderFactory.createTitledBorder(loweredBevelBorder, " BioNetGen Console ");
+//		titleConsole.setTitleJustification(TitledBorder.LEFT);
+//		titleConsole.setTitlePosition(TitledBorder.ABOVE_TOP);
+//		netGenConsoleScrollPane.setBorder(titleConsole);
 		
 		rightPanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
@@ -411,18 +415,18 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(getCreateModelButton(), gbc);
 
-		bottom.setLayout(new GridBagLayout());		// --- bottom
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = gbc.weighty = 1.0;			// get all the available space
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(20, 4, 4, 10);
-		bottom.add(netGenConsoleScrollPane, gbc);
-		
-		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
-		netGenConsoleText.setEditable(false);
+//		bottom.setLayout(new GridBagLayout());		// --- bottom
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.weightx = gbc.weighty = 1.0;			// get all the available space
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.anchor = GridBagConstraints.NORTHWEST;
+//		gbc.insets = new Insets(20, 4, 4, 10);
+//		bottom.add(netGenConsoleScrollPane, gbc);
+//		
+//		netGenConsoleText.setFont(new Font("monospaced", Font.PLAIN, 11));
+//		netGenConsoleText.setEditable(false);
 	}
 	
 	/*
@@ -466,20 +470,22 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	
 	@Override
 	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
-		this.outputSpec = outputSpec;
-		refreshInterface();
+		synchronized (this) {
+			fieldSimulationContext.setMd5hash(null);
+			fieldSimulationContext.setMostRecentlyCreatedOutputSpec(outputSpec);
+		}
+//		refreshInterface();
 		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
 			return;
 		}
-		if(outputSpec.getBNGSpecies().length > NetworkTransformer.speciesLimit) {
-			String message = NetworkTransformer.getSpeciesLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
+			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
-		if(outputSpec.getBNGReactions().length > NetworkTransformer.reactionsLimit) {
-			String message = NetworkTransformer.getReactionsLimitExceededMessage(outputSpec);
+		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
+			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
 			appendToConsole(message);
 		}
-
 	}
 	@Override
 	public void setNewCallbackMessage(final TaskCallbackMessage newCallbackMessage) {
@@ -498,85 +504,94 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	
 	private void appendToConsole(String string) {
-		StyledDocument doc = netGenConsoleText.getStyledDocument();
-		SimpleAttributeSet keyWord = new SimpleAttributeSet();
-		StyleConstants.setForeground(keyWord, Color.RED);
-		try {
-		doc.insertString(doc.getLength(), string + "\n", keyWord);
-		} catch(Exception e) {
-			System.out.println(e);
-		}
+		
+		TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
+		fieldSimulationContext.appendToConsole(newCallbackMessage);
+		
+		
+//		StyledDocument doc = netGenConsoleText.getStyledDocument();
+//		SimpleAttributeSet keyWord = new SimpleAttributeSet();
+//		StyleConstants.setForeground(keyWord, Color.RED);
+//		try {
+//		doc.insertString(doc.getLength(), string + "\n", keyWord);
+//		} catch(Exception e) {
+//			System.out.println(e);
+//		}
 	}
 	private void appendToConsole(TaskCallbackMessage newCallbackMessage) {
-		TaskCallbackStatus status = newCallbackMessage.getStatus();
-		String string = newCallbackMessage.getText();
-		StyledDocument doc = netGenConsoleText.getStyledDocument();
-		try {
-		switch(status) {
-		case TaskStart:
-//			netGenConsoleText.append(string + "\n");
-			doc.insertString(doc.getLength(), string + "\n", null);
-			break;
-		case TaskEnd:
-//			netGenConsoleText.append(string + "\n");
-			doc.insertString(doc.getLength(), string + "\n", null);
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
-				String s = "Warning: Max Iterations number may be insufficient.";
-//				netGenConsoleText.append(s + "\n");
-				SimpleAttributeSet keyWord = new SimpleAttributeSet();
-				StyleConstants.setForeground(keyWord, Color.RED);
-				doc.insertString(doc.getLength(), s + "\n", keyWord);
-			}
-			break;
-		case TaskStopped:
-//			netGenConsoleText.append("  " + string + "\n");
-			SimpleAttributeSet keyWord = new SimpleAttributeSet();
-			StyleConstants.setForeground(keyWord, Color.RED);
-//			StyleConstants.setBackground(keyWord, Color.YELLOW);
-			StyleConstants.setBold(keyWord, true);
-			doc.insertString(doc.getLength(), "  " + string + "\n", keyWord);
-			
-			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
-			currentIterationSpecies = 0;
-			break;
-		case Detail:
-			String split[];
-			split = string.split("\\n");
-			for(String s : split) {
-				if(s.startsWith("CPU TIME: total"))  {
-//					netGenConsoleText.append("  " + s + "\n");
-					doc.insertString(doc.getLength(), "  " + s + "\n", null);
-				} else if (s.startsWith("Iteration")) {
-					String species = "species";
-					s = "    " + s.substring(0, s.indexOf("species") + species.length());
-//					netGenConsoleText.append(s + "\n");
-					doc.insertString(doc.getLength(), s + "\n", null);
-					checkMaxIterationConsistency(s);
-				}
-			}
-			break;
-		default:
-			break;
-		}
-		} catch(Exception e) {
-			System.out.println(e);
-		}
+		
+		fieldSimulationContext.appendToConsole(newCallbackMessage);
+		
+		
+//		TaskCallbackStatus status = newCallbackMessage.getStatus();
+//		String string = newCallbackMessage.getText();
+//		StyledDocument doc = netGenConsoleText.getStyledDocument();
+//		try {
+//		switch(status) {
+//		case TaskStart:
+////			netGenConsoleText.append(string + "\n");
+//			doc.insertString(doc.getLength(), string + "\n", null);
+//			break;
+//		case TaskEnd:
+////			netGenConsoleText.append(string + "\n");
+//			doc.insertString(doc.getLength(), string + "\n", null);
+//			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+//				String s = "Warning: Max Iterations number may be insufficient.";
+////				netGenConsoleText.append(s + "\n");
+//				SimpleAttributeSet keyWord = new SimpleAttributeSet();
+//				StyleConstants.setForeground(keyWord, Color.RED);
+//				doc.insertString(doc.getLength(), s + "\n", keyWord);
+//			}
+//			break;
+//		case TaskStopped:
+////			netGenConsoleText.append("  " + string + "\n");
+//			SimpleAttributeSet keyWord = new SimpleAttributeSet();
+//			StyleConstants.setForeground(keyWord, Color.RED);
+////			StyleConstants.setBackground(keyWord, Color.YELLOW);
+//			StyleConstants.setBold(keyWord, true);
+//			doc.insertString(doc.getLength(), "  " + string + "\n", keyWord);
+//			
+//			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
+//			currentIterationSpecies = 0;
+//			break;
+//		case Detail:
+//			String split[];
+//			split = string.split("\\n");
+//			for(String s : split) {
+//				if(s.startsWith("CPU TIME: total"))  {
+////					netGenConsoleText.append("  " + s + "\n");
+//					doc.insertString(doc.getLength(), "  " + s + "\n", null);
+//				} else if (s.startsWith("Iteration")) {
+//					String species = "species";
+//					s = "    " + s.substring(0, s.indexOf("species") + species.length());
+////					netGenConsoleText.append(s + "\n");
+//					doc.insertString(doc.getLength(), s + "\n", null);
+//					checkMaxIterationConsistency(s);
+//				}
+//			}
+//			break;
+//		default:
+//			break;
+//		}
+//		} catch(Exception e) {
+//			System.out.println(e);
+//		}
 	}
-	private void checkMaxIterationConsistency(String s) {
-		Pattern pattern = Pattern.compile("\\w+");
-		Matcher matcher = pattern.matcher(s);
-		try {
-		for(int i=0; matcher.find(); i++) {
-			if(i==2) {
-				previousIterationSpecies = currentIterationSpecies;
-				currentIterationSpecies = Integer.parseInt(matcher.group());
-			}
-		}
-		} catch(NumberFormatException nfe) {
-			
-		}
-
-	}
+//	private void checkMaxIterationConsistency(String s) {
+//		Pattern pattern = Pattern.compile("\\w+");
+//		Matcher matcher = pattern.matcher(s);
+//		try {
+//		for(int i=0; matcher.find(); i++) {
+//			if(i==2) {
+//				previousIterationSpecies = currentIterationSpecies;
+//				currentIterationSpecies = Integer.parseInt(matcher.group());
+//			}
+//		}
+//		} catch(NumberFormatException nfe) {
+//			
+//		}
+//
+//	}
 	
 	private void refreshInterface() {
 		String text1 = null;
@@ -592,7 +607,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		String text4 = null;
 		String text5 = null;
 		String text6 = null;
-		if(outputSpec != null) {
+		if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec() != null) {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
 			int numReactions = fieldSimulationContext.getModel().getNumReactions();
 			numReactions += fieldSimulationContext.getModel().getRbmModelContainer().getReactionRuleList().size();
@@ -601,8 +616,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				text4 = "N/A (rule based model needed)";
 				text6 = "N/A (rule based model needed)";
 			} else {
-				text4 = outputSpec.getBNGSpecies().length + "";
-				text6 = outputSpec.getBNGReactions().length + "";
+				text4 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies().length + "";
+				text6 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions().length + "";
 			}
 		} else {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
@@ -629,14 +644,15 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			viewGeneratedReactionsButton.setEnabled(false);
 			refreshMathButton.setEnabled(false);
 			createModelButton.setEnabled(false);
-			netGenConsoleText.setText("");
+			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
+			fieldSimulationContext.appendToConsole(tcm);
 		} else {
-			if(outputSpec!= null && outputSpec.getBNGSpecies().length > 0) {
+			if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec()!= null && fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies().length > 0) {
 				viewGeneratedSpeciesButton.setEnabled(true);
 			} else {
 				viewGeneratedSpeciesButton.setEnabled(false);
 			}
-			if(outputSpec!= null && outputSpec.getBNGReactions().length > 0) {
+			if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec()!= null && fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions().length > 0) {
 				viewGeneratedReactionsButton.setEnabled(true);
 			} else {
 				viewGeneratedReactionsButton.setEnabled(false);
@@ -647,11 +663,17 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	
 	private void runBioNetGen() {
-		currentIterationSpecies = 0;
-		previousIterationSpecies = 0;
-		outputSpec = null;
+//		currentIterationSpecies = 0;
+//		previousIterationSpecies = 0;
+		synchronized (this) {
+			fieldSimulationContext.setMd5hash(null);
+			fieldSimulationContext.setMostRecentlyCreatedOutputSpec(null);
+		}
 		refreshInterface();
-		netGenConsoleText.setText("");
+//		netGenConsoleText.setText("");
+// no need to do this here because we do it below   			
+//		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
+//		fieldSimulationContext.appendToConsole(tcm);
 
 		NetworkTransformer transformer = new NetworkTransformer();
 		MathMappingCallback dummyCallback = new MathMappingCallback() {
@@ -666,6 +688,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
+		TaskCallbackMessage message = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
+		fieldSimulationContext.appendToConsole(message);
 		tasksArray[0] = new RunBioNetGen(bngService);
 		tasksArray[1] = new CreateBNGOutputSpec(bngService);
 		tasksArray[2] = new ReturnBNGOutput(bngService);
@@ -687,14 +711,14 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private void viewGeneratedSpecies() {
 		System.out.println("viewGeneratedSpecies button pressed");
 		ViewGeneratedSpeciesPanel panel = new ViewGeneratedSpeciesPanel(this);
-		panel.setSpecies(outputSpec.getBNGSpecies());
+		panel.setSpecies(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies());
 		panel.setPreferredSize(new Dimension(800,550));
 		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Species");
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
 		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel(this);
-		panel.setReactions(outputSpec.getBNGReactions());
+		panel.setReactions(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions());
 		panel.setPreferredSize(new Dimension(800,550));
 		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
 	}
