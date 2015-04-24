@@ -34,7 +34,7 @@ import org.vcell.util.BeanUtils;
 @SuppressWarnings("serial")
 
 public class IndefiniteProgressDialog extends ProgressDialog implements ActionListener {
-	private final static int INITIAL_UPDATE_TIME_MILLIS = 60; 	// update time, milliseconds
+	private final static int INITIAL_UPDATE_TIME_MILLIS = 40; 	// update time, milliseconds
 	private final static int SHOW_DELAY_TIME_MILLIS = 1000; 
 
 	private JLabel lblMessage;
@@ -136,7 +136,7 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	private class WorkingPanel extends JPanel implements ComponentListener, ActionListener {
 
 		final Timer swingTimer;
-		static final double INCREMENT = Math.PI / 8;	// step angle
+		static final double INCREMENT = Math.PI / 12;	// step angle
 
 		int width;			// of panel
 		int height;
