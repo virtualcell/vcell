@@ -3,6 +3,7 @@ package cbit.vcell.message.server.console;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.UserLoginInfo;
@@ -20,6 +21,7 @@ public class LoginChecker {
 	private static final String DOMAIN = "rmi-SITE.cam.uchc.edu";
 	private static final String SERVICE = "/VCellBootstrapServer";
 	private static final boolean VERBOSE = System.getProperty("LOGINCHECK_VERBOSE") != null;
+	private static final long SOCKET_TIMEOUT_MINUTES = 1;
 	private static class SiteInfo {
 		final String name;
 		final String host;
@@ -70,6 +72,9 @@ public class LoginChecker {
 			System.out.println("Usage: site username password");
 			System.exit(99);
 		}
+		final long timeOut = TimeUnit.MINUTES.toMillis(SOCKET_TIMEOUT_MINUTES);
+		final String timeOutString = Long.toString(timeOut);
+		System.setProperty("sun.rmi.transport.tcp.responseTimeout",timeOutString); 
 		//redirect standard error to standard out, easier for scripts to deal with
 		System.setErr(System.out);
 		String site = args[0];
@@ -94,8 +99,22 @@ public class LoginChecker {
 		}
 	}
 	
+	/**
+	 * @param start
+	 * @return time between now and start in seconds
+	 */
+	private static double elapsed(long start) {
+		double now = System.currentTimeMillis();
+		return (now -start) / 1000;
+	}
+	
+	
 	private static boolean attemptLogin(SiteInfo si, String user, String password) {
+		long start = 0;
 		try {
+			if (VERBOSE) {
+				start = System.currentTimeMillis();
+			}
 			String url = si.bootStrapUrl();
 			VCellBootstrap vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(url);
 			DigestedPassword dp = new UserLoginInfo.DigestedPassword(password);
@@ -103,7 +122,7 @@ public class LoginChecker {
 			VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(uli);
 			if (vcellConnection==null){
 				if (VERBOSE) {
-					System.out.println("no connection on " + si);
+					System.out.println("no connection on " + si + " in " + elapsed(start) + " seconds");
 				}
 				return false;
 			}
@@ -111,13 +130,16 @@ public class LoginChecker {
 			@SuppressWarnings("unused")
 			BioModelInfo[] bmi = dataServer.getBioModelInfos(false);
 			if (VERBOSE) {
-				System.out.println("success on " + si);
+				System.out.println("success on " + si + " in " + elapsed(start) + " seconds");
 			}
 			return true;
 		} catch (MalformedURLException e) { 
 			e.printStackTrace();
 			throw new Error("bad code");
 		} catch (Exception e) {
+			if (VERBOSE) {
+				System.out.println("failed in " + elapsed(start) + " seconds");
+			}
 			e.printStackTrace();
 			return false;
 		}
