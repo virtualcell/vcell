@@ -813,6 +813,11 @@ public void updateConnectionStatus(ConnectionStatus newValue) {
 	}
 }
 public SelectionManager getSelectionManager() { return selectionManager; }
+
+public final JTabbedPane getRightBottomTabbedPane() {
+	return rightBottomTabbedPane;
+}
+
 }
 
 //

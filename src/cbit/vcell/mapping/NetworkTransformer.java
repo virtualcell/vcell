@@ -21,6 +21,7 @@ import cbit.vcell.bionetgen.BNGParameter;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
+import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
@@ -121,15 +122,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		return bngl;
 	}
 	
-	public final static int speciesLimit = 800;
-	public final static int reactionsLimit = 2000;
-	public static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length;
-	}
-	public static String getReactionsLimitExceededMessage(BNGOutputSpec outputSpec) {
-		return "Reactions limit exceeded: max allowed number: " + reactionsLimit + ", actual number: " + outputSpec.getBNGReactions().length;
-	}
-	
 	private boolean isBngHashValid(String input, String hash, SimulationContext simContext) {
 		if(input == null || input.length() == 0) {
 			return false;
@@ -177,22 +169,27 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(ex.getMessage());
 		}
 		String bngConsoleString = bngOutput.getConsoleOutput();
-		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Detail, bngConsoleString);
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.DetailBatch, bngConsoleString);
 		simContext.appendToConsole(tcm);
 
 		String bngNetString = bngOutput.getNetFileContent();
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
 //		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
-		
-		String message = "\nPlease go to the Specifications / Network panel and reduce the number of Iterations.";
-		if(outputSpec.getBNGSpecies().length > speciesLimit) {
-			message = getSpeciesLimitExceededMessage(outputSpec) + message;
+
+		if (mathMappingCallback.isInterrupted()){
+			String msg = "Canceled by user.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, msg);
+			simContext.appendToConsole(tcm);
+			throw new UserCancelException(msg);
+		}
+		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
+			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
 		}
-		if(outputSpec.getBNGReactions().length > reactionsLimit) {
-			message = getReactionsLimitExceededMessage(outputSpec) + message;
+		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
+			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			throw new RuntimeException(message);
@@ -219,7 +216,9 @@ public class NetworkTransformer implements SimContextTransformer {
 
 		String msg = "Generating network: flattening...";
 		mathMappingCallback.setMessage(msg);
-		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, msg);
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
+		simContext.appendToConsole(tcm);
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, msg);
 		simContext.appendToConsole(tcm);
 		
 		long startTime = System.currentTimeMillis();

@@ -3,10 +3,12 @@ package cbit.vcell.mapping;
 public class TaskCallbackMessage {
 	
 	public enum TaskCallbackStatus {
+		Clean,
 		TaskStart,
 		TaskEnd,
 		TaskStopped,
 		Notification,
+		DetailBatch,
 		Detail,
 		Error,
 		Other;
