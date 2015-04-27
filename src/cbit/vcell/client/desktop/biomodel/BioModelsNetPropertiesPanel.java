@@ -54,9 +54,9 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		public void mouseClicked(MouseEvent e) {
 			if (e.getClickCount() == 2) {
 				if (e.getSource() == linkLabel) {
-					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open " + bioModelsNetModelInfo.getLink(), false);
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open " + bioModelsNetModelInfo.getLink());
 				} else if (e.getSource() == urlLabel) {
-					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BIOMODELS_DATABASE_URL, "Failed to open " + BIOMODELS_DATABASE_URL, false);
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BIOMODELS_DATABASE_URL, "Failed to open " + BIOMODELS_DATABASE_URL);
 				}
 			}
 		}

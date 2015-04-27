@@ -169,8 +169,7 @@ public BNGOutputPanel(boolean isDoubleBuffered) {
  */
 private void bngHelpAbout() {
 	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/index.html", 
-								   "For Help using BioNetGen, please visit : http://vcell.org/bionetgen/index.html", 
-								   false);
+								   "For Help using BioNetGen, please visit : http://vcell.org/bionetgen/index.html");
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -180,8 +179,7 @@ private void bngHelpAbout() {
  */
 private void bngHelpFAQ() {
 	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/faq.html", 
-								   "please visit : http://vcell.org/bionetgen/faq.html", 
-								   false);
+								   "please visit : http://vcell.org/bionetgen/faq.html");
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -191,8 +189,7 @@ private void bngHelpFAQ() {
  */
 private void bngHelpManual() {
 	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/tutorial.html", 
-								   "please visit : http://vcell.org/bionetgen/tutorial.html", 
-								   false);
+								   "please visit : http://vcell.org/bionetgen/tutorial.html");
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -202,8 +199,7 @@ private void bngHelpManual() {
  */
 private void bngHelpSamples() {
 	PopupGenerator.browserLauncher(this, "http://vcell.org/bionetgen/samples.html", 
-								   "please visit : http://vcell.org/bionetgen/samples.html", 
-								   false);
+								   "please visit : http://vcell.org/bionetgen/samples.html");
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 

@@ -275,7 +275,7 @@ public abstract class DocumentEditor extends JPanel {
 				if (node instanceof LinkNode) {
 					String link = ((LinkNode)node).getLink();
 					if (link != null) {
-						DialogUtils.browserLauncher(documentEditorTree, link, "failed to launch", false);
+						DialogUtils.browserLauncher(documentEditorTree, link, "failed to launch");
 					}
 				}
 			}

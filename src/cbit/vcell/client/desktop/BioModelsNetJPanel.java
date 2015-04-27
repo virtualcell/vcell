@@ -105,7 +105,7 @@ public class BioModelsNetJPanel extends JPanel {
 		final JButton httpbiomodelsnetLabel = new JButton();
 		httpbiomodelsnetLabel.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL, false);
+				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BIOMODELS_DATABASE_URL,BIOMODELS_DATABASE_URL);
 			}
 		});
 		httpbiomodelsnetLabel.setText(BIOMODELS_DATABASE_URL);
