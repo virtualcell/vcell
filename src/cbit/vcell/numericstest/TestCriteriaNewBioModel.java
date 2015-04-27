@@ -10,14 +10,16 @@
 
 package cbit.vcell.numericstest;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.Version;
 
-import cbit.vcell.solver.test.*;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.
  * Creation date: (11/11/2004 1:32:38 PM)
  * @author: Frank Morgan
  */
+@SuppressWarnings("serial")
 public class TestCriteriaNewBioModel extends TestCriteriaNew {
 
 	private BioModelInfo regrBioModelInfo;
@@ -78,6 +80,27 @@ public BioModelInfo getRegressionBioModelInfo() {
 
 @Override
 public String describe() {
-	return regrBioModelInfo.getVersion().getName() + getSimInfo().getName();
+	StringBuilder sb = new StringBuilder();
+	if ( regrBioModelInfo != null) {
+	Version v = regrBioModelInfo.getVersion();
+	if (v != null) {
+		sb.append(v.getName());
+		sb.append(' ');
+	}
+	else {
+		sb.append("unversioned ");
+	}
+	}
+	else {
+		sb.append("no model info");
+	}
+	SimulationInfo si = getSimInfo( );
+	if (si != null) {
+		sb.append(si.getName());
+	}
+	else {
+		sb.append("no simulation");
+	}
+	return sb.toString();
 }
 }
