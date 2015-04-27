@@ -18,7 +18,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -30,6 +30,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import org.vcell.optimization.CopasiOptimizationMethodsDescription;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.HyperLinkLabel;
 
 import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
@@ -45,6 +46,7 @@ import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
  * Created in Sept. 2011
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class CopasiOptimizationMethodsHelpPanel extends JPanel
 {
 	private JPanel messagePanel = null;
@@ -70,16 +72,15 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 		}
 		public void hyperlinkUpdate(HyperlinkEvent e) 
 		{
-			try {
 				HyperlinkEvent.EventType type = e.getEventType();
 				if(type == HyperlinkEvent.EventType.ACTIVATED)
 				{
-					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + e.getURL());
+					URL url = e.getURL();
+					if (url != null) {
+						String urlString = url.toExternalForm();
+						DialogUtils.browserLauncher(CopasiOptimizationMethodsHelpPanel.this,urlString,null,null);
+					}
 				}
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
 		}
 	}
 	

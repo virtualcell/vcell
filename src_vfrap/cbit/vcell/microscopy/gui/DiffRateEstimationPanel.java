@@ -125,12 +125,8 @@ public class DiffRateEstimationPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				try {
-					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25");
-				} catch (IOException e1) {
-					e1.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(DiffRateEstimationPanel.this, "Web browser isn't working.");
-				}
+				final String url = "http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25";
+				DialogUtils.browserLauncher(DiffRateEstimationPanel.this, url, null,null);
 			}
 		});
 		searchWebButton.setText("Search Web");
