@@ -328,7 +328,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		if (pathway != null) {
 			String url = PATHWAY_QUERY_URL + pathway.primaryId();
 			if (url != null) {
-				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url, false);
+				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url);
 			}
 		}
 	}

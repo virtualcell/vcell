@@ -506,7 +506,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 				showCopasiMethodHelp();
 			} else if (e.getSource() == copasiLinkLabel){
 				final String url = "http://www.copasi.org/tiki-view_articles.php";
-				DialogUtils.browserLauncher(ParameterEstimationRunTaskPanel.this, url,"COPASI web site is not able to be connected.",null);
+				DialogUtils.browserLauncher(ParameterEstimationRunTaskPanel.this, url,"COPASI web site is not able to be connected.");
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {

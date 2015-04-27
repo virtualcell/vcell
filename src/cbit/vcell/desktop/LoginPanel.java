@@ -405,7 +405,7 @@ private void updateFields() {
 		        @Override
 		        public void hyperlinkUpdate(HyperlinkEvent e) {
 		            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-		            	DialogUtils.browserLauncher(LoginPanel.this, e.getURL().toString(), "Please visit "+"http://vcell.org"+" for Online Help", false);
+		            	DialogUtils.browserLauncher(LoginPanel.this, e.getURL().toString(), "Please visit "+"http://vcell.org"+" for Online Help");
 		            }
 		        }
 		    });

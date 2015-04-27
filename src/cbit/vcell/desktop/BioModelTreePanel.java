@@ -1246,7 +1246,7 @@ private JTree getJTree2() {
 						if (node instanceof LinkNode) {
 							String link = ((LinkNode)node).getLink();
 							if (link != null) {
-								DialogUtils.browserLauncher(ivjJTree2, link, "failed to launch", false);
+								DialogUtils.browserLauncher(ivjJTree2, link, "failed to launch");
 							}
 						}
 					}

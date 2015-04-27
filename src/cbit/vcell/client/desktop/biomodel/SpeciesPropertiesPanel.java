@@ -269,7 +269,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 			if (e.getEventType() == EventType.ACTIVATED) {
 				URL link = e.getURL();
 				if (link != null) {
-					DialogUtils.browserLauncher(SpeciesPropertiesPanel.this, link.toExternalForm(), "failed to launch", false);
+					DialogUtils.browserLauncher(SpeciesPropertiesPanel.this, link.toExternalForm(), "failed to launch");
 				}
 			}
 		}

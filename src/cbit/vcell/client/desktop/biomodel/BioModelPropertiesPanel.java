@@ -355,7 +355,7 @@ private void updateInterface() {
 				}				
 				public void mouseClicked(MouseEvent e) {
 					if (e.getClickCount() == 2) {
-						DialogUtils.browserLauncher(BioModelPropertiesPanel.this, link, "failed to open " + link, false);
+						DialogUtils.browserLauncher(BioModelPropertiesPanel.this, link, "failed to open " + link);
 					}
 				}
 			});
