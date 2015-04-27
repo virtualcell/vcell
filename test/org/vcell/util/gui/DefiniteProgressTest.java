@@ -7,6 +7,9 @@ import javax.swing.JDialog;
 import org.vcell.util.ProgressDialogListener;
 
 
+/**
+ * test {@link DefiniteProgressDialog}
+ */
 public class DefiniteProgressTest implements ProgressDialogListener {
 	/**
 	 * seconds, percent
@@ -34,12 +37,8 @@ public class DefiniteProgressTest implements ProgressDialogListener {
 	
 	public DefiniteProgressTest( ) throws InterruptedException {
 		progDialog = new DefiniteProgressDialog(null);
-		//progDialog = new DefaultProgressDialog(null);
-//		progDialog.addProgressDialogListener(this);
 		progDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-//		progDialog.getCancelButton();
 		progDialog.setProgressBarString("Working");
-		//progDialog.setMessage("Something long and slow and important but slow and hopefully useful is happening here");
 		progDialog.setMessage("Hi!");
 		progDialog.setModal(true);
 		progDialog.pack();
@@ -79,7 +78,7 @@ public class DefiniteProgressTest implements ProgressDialogListener {
 						final long now = System.currentTimeMillis();
 						long endTime = start + seconds * 1000;
 						long waitTime = endTime - now;
-						if (waitTime > 0 ) {
+						if (waitTime > 0 ) { //depending on Thread startup time, this can be negative
 							Thread.sleep(waitTime);
 						}
 						progressDialog.setMessage(Integer.toString(percent) + " percent");
