@@ -10,13 +10,16 @@
 
 package cbit.vcell.export.nrrd;
 
-import org.vcell.util.document.VCDataIdentifier;
+import java.awt.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.RasterExporter;
-import cbit.vcell.export.server.RasterSpecs;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
-import cbit.vcell.simdata.SimDataConstants;
 
 /**
  * Insert the type's description here.
@@ -54,7 +57,10 @@ public class NrrdInfo {
 	private boolean hasData = false;
 	private FileDataContainerID headerFileID = null;
 	private String canonicalFileName;
-
+	
+	public static enum NRRDAxisNames {X,Y,Z,T,V};
+	private HashMap<NRRDAxisNames, Integer> axisToSizeIndexMap;
+	
 /**
  * Insert the method's description here.
  * Creation date: (4/26/2004 10:46:51 AM)
@@ -74,7 +80,7 @@ private NrrdInfo() {
  * @param encoding java.lang.String
  * @exception java.lang.IllegalArgumentException The exception description.
  */
-public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String type, String encoding) throws IllegalArgumentException {
+public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String type, String encoding,HashMap<NRRDAxisNames, Integer> axisToSizeIndexMap) throws IllegalArgumentException {
 	if (dimension < 1) throw new IllegalArgumentException("NRRD dimension must be greater than 0");
 	if (sizes == null || sizes.length != dimension) throw new IllegalArgumentException("NRRD size array not same length with dimension");
 	if (!org.vcell.util.BeanUtils.arrayContains(types, type)) throw new IllegalArgumentException("Unsupported NRRD type");
@@ -84,16 +90,66 @@ public static NrrdInfo createBasicNrrdInfo(int dimension, int[] sizes, String ty
 	info.setSizes(sizes);
 	info.setType(type);
 	info.setEncoding(encoding);
+	info.axisToSizeIndexMap = axisToSizeIndexMap;
 	return info;
 }
 
+public static HashMap<NRRDAxisNames, Integer> createXYZTVMap(){
+	HashMap<NRRDAxisNames, Integer> xyztvMap = new HashMap<>();
+	xyztvMap.put(NRRDAxisNames.X,0);
+	xyztvMap.put(NRRDAxisNames.Y,1);
+	xyztvMap.put(NRRDAxisNames.Z,2);
+	xyztvMap.put(NRRDAxisNames.T,3);
+	xyztvMap.put(NRRDAxisNames.V,4);
+	return xyztvMap;
+}
+public static HashMap<NRRDAxisNames, Integer> createXYZVMap(){
+	HashMap<NRRDAxisNames, Integer> xyztvMap = new HashMap<>();
+	xyztvMap.put(NRRDAxisNames.X,0);
+	xyztvMap.put(NRRDAxisNames.Y,1);
+	xyztvMap.put(NRRDAxisNames.Z,2);
+	xyztvMap.put(NRRDAxisNames.V,3);
+	return xyztvMap;
+}
+public static HashMap<NRRDAxisNames, Integer> createXYZTMap(){
+	HashMap<NRRDAxisNames, Integer> xyztvMap = new HashMap<>();
+	xyztvMap.put(NRRDAxisNames.X,0);
+	xyztvMap.put(NRRDAxisNames.Y,1);
+	xyztvMap.put(NRRDAxisNames.Z,2);
+	xyztvMap.put(NRRDAxisNames.T,3);
+	return xyztvMap;
+}
 public void setCanonicalFileNamePrefix(String canonicalfileanme){
 	this.canonicalFileName = canonicalfileanme;
+}
+
+public int getAxisSize(NRRDAxisNames axisName){
+	return sizes[axisToSizeIndexMap.get(axisName)];
 }
 public String getCanonicalFilename(boolean bHeader){
 	return canonicalFileName+(bHeader?"_header":"_data")+".nrrd";
 }
 
+public HashMap<NRRDAxisNames, Integer> getAxisToSizeInexMap(){
+	return axisToSizeIndexMap;
+}
+
+public String getDimensionDescription(){
+	StringBuffer sb = new StringBuffer();
+	sb.append(getDimension()+"D(");
+	ArrayList<Map.Entry<NRRDAxisNames,Integer>> axisList = new ArrayList<Map.Entry<NRRDAxisNames,Integer>>(axisToSizeIndexMap.entrySet());
+	Collections.sort(axisList,  new Comparator<Entry<NRRDAxisNames, Integer>>() {
+		@Override
+		public int compare(Entry<NRRDAxisNames, Integer> o1, Entry<NRRDAxisNames, Integer> o2) {
+			return o1.getValue() - o2.getValue();
+		}
+	});
+	for(Entry<NRRDAxisNames, Integer> entry:axisList){
+		sb.append(entry.getKey().toString()+(entry != axisList.get(axisList.size()-1)?",":""));
+	}
+	sb.append(")");
+	return sb.toString();
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/26/2004 2:25:02 PM)
