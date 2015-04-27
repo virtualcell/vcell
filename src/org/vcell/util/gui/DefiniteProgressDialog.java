@@ -26,6 +26,8 @@ import javax.swing.SwingConstants;
 
 public class DefiniteProgressDialog extends ProgressDialog {
 	
+	private static final Font fontPercent = new Font("Tahoma", Font.PLAIN, 10);
+
 	private JLabel lblMessage;
 	private WorkingPanel graphicPanel;
 
@@ -141,20 +143,20 @@ public class DefiniteProgressDialog extends ProgressDialog {
 			g2d.draw(c1);
 			Ellipse2D.Double c2 = new Ellipse2D.Double(circleOffset+3, circleOffset+3, width-(circleOffset+3)*2, width-(circleOffset+3)*2); 
 			g2d.draw(c2);
-			
-			
+						
 			g2d.setStroke(oldStroke);
-			float size = fontOld.getSize();
-			Font font = fontOld.deriveFont(size-1);
-			g2d.setFont(font);
+//			float size = fontOld.getSize();
+//			Font f = fontOld.deriveFont(size-1);
+			g2d.setFont(fontPercent);
 			g2d.setColor(Color.black);
-			System.out.println("w: " + width + ", h: " + height);
+//			System.out.println("w: " + width + ", h: " + height);
 			int x = width/3+2;
 			if(progress < 10) {
 				x += 4;
+			} else if(progress == 100 && x > 2) {
+				x -= 2;
 			}
 			g2d.drawString(progress+"%", x, height/2+2);
-
 			
 			g2d.setFont(fontOld);
 			g2d.setColor(colorOld);

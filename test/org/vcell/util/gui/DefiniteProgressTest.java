@@ -1,5 +1,6 @@
 package org.vcell.util.gui;
 
+import java.awt.Font;
 import java.util.EventObject;
 
 import javax.swing.JDialog;
@@ -14,15 +15,33 @@ public class DefiniteProgressTest implements ProgressDialogListener {
 	/**
 	 * seconds, percent
 	 */
+	private static final Font font = new Font("Dialog", Font.PLAIN, 12);
 	private static int UPDATE_SCHEDULE[][] = {
-			{1,5},
-			{2,50},
-			{3,95},
-			{4,96},
-			{5,97},
-			{6,98},
-			{7,99},
-			{8,100},
+		{1,1},
+		{2,1},
+		{3,1},
+		{4,1},
+		{5,1},
+		{6,1},
+		{7,1},
+		{8,1},
+		{9,1},
+		{10,2},
+		{11,5},
+		{12,10},
+		{13,20},
+		{14,50},
+		{15,90},
+		{16,91},
+		{17,92},
+		{18,93},
+		{19,94},
+		{20,95},
+		{21,96},
+		{22,97},
+		{23,98},
+		{24,99},
+		{25,100},
 	};
 	
 	private DefiniteProgressDialog progDialog; 
@@ -37,6 +56,7 @@ public class DefiniteProgressTest implements ProgressDialogListener {
 	
 	public DefiniteProgressTest( ) throws InterruptedException {
 		progDialog = new DefiniteProgressDialog(null);
+		progDialog.setFont(font);
 		progDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 		progDialog.setProgressBarString("Working");
 		progDialog.setMessage("Hi!");
@@ -44,7 +64,7 @@ public class DefiniteProgressTest implements ProgressDialogListener {
 		progDialog.pack();
 		new Update(progDialog).start( );
 		progDialog.setToVisible();
-		Thread.sleep(20000);
+		Thread.sleep(30000);
 		progDialog.dispose(); //do this to get the AWT thread to exit
 	}
 	
