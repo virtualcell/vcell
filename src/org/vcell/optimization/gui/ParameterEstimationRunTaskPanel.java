@@ -19,7 +19,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -506,12 +505,8 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			}else if (e.getSource() == helpButton) {
 				showCopasiMethodHelp();
 			} else if (e.getSource() == copasiLinkLabel){
-				try {
-					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + "http://www.copasi.org/tiki-view_articles.php");
-				} catch (IOException e1) {
-					e1.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(ParameterEstimationRunTaskPanel.this, "COPASI web site is not able to be connected.");
-				}
+				final String url = "http://www.copasi.org/tiki-view_articles.php";
+				DialogUtils.browserLauncher(ParameterEstimationRunTaskPanel.this, url,"COPASI web site is not able to be connected.",null);
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
