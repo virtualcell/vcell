@@ -257,7 +257,7 @@ public class MIRIAMAnnotationEditor extends JPanel{
 	private void showBrowseToLink(LinkNode linkNode){
 		String link = linkNode.getLink();
 		if (link != null) {
-			DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch", false);
+			DialogUtils.browserLauncher(jTreeMIRIAM, link, "failed to launch");
 		}else{
 			DialogUtils.showWarningDialog(this, "No Web-site link available");
 		}

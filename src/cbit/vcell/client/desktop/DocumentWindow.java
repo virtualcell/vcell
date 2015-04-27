@@ -2350,8 +2350,7 @@ private void initialize() {
 private void invokeOnlineHelp() {
 	
 	PopupGenerator.browserLauncher(this, "http://vcell.org",
-		"Please visit "+"http://vcell.org"+" for Online Help",
-		getTopLevelWindowManager().isApplet());
+		"Please visit "+"http://vcell.org"+" for Online Help");
 }
 
 

@@ -199,7 +199,7 @@ public class DiffRateHelpPanel extends JPanel
 			public void actionPerformed(final ActionEvent e) 
 			{
 				final String url = "http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25";
-				DialogUtils.browserLauncher(DiffRateHelpPanel.this, url, null,null); 
+				DialogUtils.browserLauncher(DiffRateHelpPanel.this, url, null); 
 			}
 		});
 		searchWebButton.setText("Search Web");

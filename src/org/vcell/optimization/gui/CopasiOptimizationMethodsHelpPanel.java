@@ -78,7 +78,7 @@ public class CopasiOptimizationMethodsHelpPanel extends JPanel
 					URL url = e.getURL();
 					if (url != null) {
 						String urlString = url.toExternalForm();
-						DialogUtils.browserLauncher(CopasiOptimizationMethodsHelpPanel.this,urlString,null,null);
+						DialogUtils.browserLauncher(CopasiOptimizationMethodsHelpPanel.this,urlString,null);
 					}
 				}
 		}

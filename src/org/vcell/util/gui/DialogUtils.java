@@ -250,7 +250,7 @@ public class DialogUtils {
 	 * @param url to open
 	 * @param messageToUserIfFail message for error dialog if required, may be null
 	 */
-	public static void browserLauncher(final Component requester, final String url,final String messageToUserIfFail,final Boolean unused) {
+	public static void browserLauncher(final Component requester, final String url,final String messageToUserIfFail) {
 		assert url != null;
 		try {
 			boolean opened = false;
