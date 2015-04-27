@@ -161,12 +161,12 @@ public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) thr
 	} catch (RemoteException rexc) {
 		handleRemoteException(rexc);
 		// once more before we fail
-		try {
-			getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
-		} catch (RemoteException rexc2) {
-			handleRemoteException(rexc2);
-			throw new DataAccessException("Start export for '"+exportSpecs.getVCDataIdentifier()+"' failed\n"+rexc2.getMessage());
-		}
+//		try {
+//			getClientServerManager().getExportController().startExport(outputContext,exportSpecs);
+//		} catch (RemoteException rexc2) {
+//			handleRemoteException(rexc2);
+//			throw new DataAccessException("Start export for '"+exportSpecs.getVCDataIdentifier()+"' failed\n"+rexc2.getMessage());
+//		}
 	}
 }
 
