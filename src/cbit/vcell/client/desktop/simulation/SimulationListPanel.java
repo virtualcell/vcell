@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.simulation;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
@@ -42,8 +43,10 @@ import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
@@ -755,6 +758,8 @@ private void runSimulations() {
 		simList.add(sim);
 	}
 	if (simList.size() > 0) {
+		activateConsole();
+		
 		Simulation[] toRun = simList.toArray(new Simulation[0]);
 		getSimulationWorkspace().runSimulations(toRun, this);
 	}
@@ -872,7 +877,34 @@ private void stopSimulations() {
 		if (row < 0) {
 			return;
 		}
+		activateConsole();
+		
 		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
 		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim);
 	}
+
+	public void activateConsole() {
+		boolean found = false;
+		Container parent = getParent();
+		while(parent != null) {
+			parent = parent.getParent();
+			if(parent instanceof BioModelEditor) {
+				found = true;
+				break;
+			}
+		}
+		if(found) {
+			System.out.println("Parent Found");
+			BioModelEditor e = (BioModelEditor)parent;
+//			e.getRightBottomTabbedPane().setSelectedComponent(e.getSimulationConsolePanel());
+			Component[] cList = e.getRightBottomTabbedPane().getComponents();
+			for(Component c : cList) {
+				if(c instanceof SimulationConsolePanel) {
+					e.getRightBottomTabbedPane().setSelectedComponent(c);
+					break;
+				}
+			}
+		}
+	}
+	
 }  //  @jve:decl-index=0:visual-constraint="10,10"
