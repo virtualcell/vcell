@@ -16,6 +16,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.PropertyConstants;
 
+@SuppressWarnings("serial")
 public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
 	IssueSource, Displayable
 {
