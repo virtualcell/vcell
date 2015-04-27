@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.Desktop.Action;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
@@ -22,7 +23,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -59,6 +59,8 @@ import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.server.VCellConnection;
+
+import com.centerkey.utils.BareBonesBrowserLaunch;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)
@@ -243,42 +245,35 @@ public class DialogUtils {
 		return objectToString(obj);
 	}
 
-	
-	public static void openURLWithExternalBrowser(String url) throws Exception {
-		Desktop.getDesktop().browse(new URL(url).toURI());
+	/**
+	 * @param requester parent for error dialog if required, may be null
+	 * @param url to open
+	 * @param messageToUserIfFail message for error dialog if required, may be null
+	 */
+	public static void browserLauncher(final Component requester, final String url,final String messageToUserIfFail,final Boolean unused) {
+		assert url != null;
+		try {
+			boolean opened = false;
+			if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Action.BROWSE)) {
+				try {
+					Desktop.getDesktop().browse(java.net.URI.create(url));
+					opened = true;
+				}
+				catch (Exception e) {}
+			}
+			if (!opened) {
+				BareBonesBrowserLaunch.openURL(url);
+			}
+		}
+		catch (Exception e) {
+			String msg = "Sorry, your local WWW Browser could not be automatically launched.\n" + 
+							"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'";
+			if (messageToUserIfFail != null) {
+				msg = messageToUserIfFail + "\n\n" + msg;
+			}
+			showErrorDialog(requester, msg,e); 
+		}
 	}
-	
-	
-/**
- * Insert the method's description here.
- * Creation date: (8/26/2005 3:26:35 PM)
- */
-public static void browserLauncher(final Component requester, final String targetURL,final String messageToUserIfFail,final boolean isApplet) {
-	
-	
-	//(messageToUserIfFail)
-	//  Should provide the user with the URL they can
-	//  manually navigate to for the information requested
-
-	try {
-		openURLWithExternalBrowser(targetURL);
-	}catch(Throwable e){
-		browserLauncherError(requester, e,messageToUserIfFail);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/26/2005 3:31:31 PM)
- * @param e java.lang.Throwable
- * @param userMessage java.lang.String
- */
-private static void browserLauncherError(Component requester, Throwable e, String userMessage) {
-	showErrorDialog(requester, userMessage + "\n\n" +
-			"Sorry, your local WWW Browser could not be automatically launched.\n" + 
-			"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'", e);
-}
 
 
 @SuppressWarnings("serial")

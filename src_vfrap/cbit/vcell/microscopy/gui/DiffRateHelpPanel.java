@@ -11,14 +11,13 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -31,7 +30,6 @@ import javax.swing.event.DocumentListener;
 
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
-
 
 import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.parser.Expression;
@@ -200,12 +198,8 @@ public class DiffRateHelpPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				try {
-					Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25");
-				} catch (IOException e1) {
-					e1.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(DiffRateHelpPanel.this, "Web browser isn't working.");
-				}
+				final String url = "http://bionumbers.hms.harvard.edu/search.aspx?log=y&task=searchbytrmorg&trm=diffusion+rate&org=%25";
+				DialogUtils.browserLauncher(DiffRateHelpPanel.this, url, null,null); 
 			}
 		});
 		searchWebButton.setText("Search Web");
