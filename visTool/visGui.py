@@ -401,6 +401,9 @@ class VCellPysideApp(QtGui.QMainWindow):
  
         except Exception as exc:
             print(exc.message)
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Exception occurred while retrieving data\n"+exc.message)
+            msgBox.exec_()
             return
         finally:
             vcellProxy2.close()
