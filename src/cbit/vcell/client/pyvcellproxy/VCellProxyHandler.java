@@ -228,7 +228,7 @@ private VtuFileContainer getVtuFileContainer(SimulationDataSetRef simulationData
 		double time = times.get(timeIndex);
 		VtuFileContainer vtuFileContainer = pdeDataManager.getVtuMeshFiles(time);
 		return vtuFileContainer;
-	}catch (org.vcell.util.DataAccessException e){
+	}catch (Exception e){
 		e.printStackTrace();
 		throw new ThriftDataAccessException("failed to get data for simulation "+simulationDataSetRef+" at time index "+timeIndex+": "+e.getMessage());
 	}
