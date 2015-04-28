@@ -231,13 +231,25 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			break;
 	}
 	for (int v = 0; v < SIM_COUNT; v++) {
+		int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
+		VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
+		if(SIM_COUNT > 1){
+			//check times are the same
+			double[] currentTimes = dataServerImpl.getDataSetTimes(user, vcdID);
+			if(currentTimes.length != timeSpecs.getAllTimes().length){
+				throw new DataAccessException("time sets are different length");
+			}
+			for(int i=0;i<currentTimes.length;i++){
+				if(timeSpecs.getAllTimes()[i] != currentTimes[i]){
+					throw new DataAccessException("time sets have different values");
+				}
+			}
+		}
 		//3 states for parameter scan
 		//1. simNameSimDataIDs[v].getExportParamScanInfo() == null, not a parameter scan
 		//2. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() == null, parameter scan use simNameSimDataIDs[v].getDefaultVCDataIdentifier()
 		//3. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() != null, parameter scan use simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes() loop through
 		for (int ps = 0; ps < PARAMSCAN_COUNT; ps++) {
-			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
-			VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
 			if(asciiSpecs.getExportMultipleParamScans() != null){
 				simJobIndex = simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes()[asciiSpecs.getExportMultipleParamScans()[ps]];
 				vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
@@ -275,7 +287,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 								getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 							progressCounter++;
-							exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+							exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
 						}
 						outputV.add(exportOutput1);
 					}
@@ -290,7 +302,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 									fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 									fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 									progressCounter++;
-									exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+									exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
 								}
 							}
 						}
@@ -318,7 +330,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 							output[j * TIME_COUNT + i] = exportOutput1;
 							
 							progressCounter++;
-							exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
+							exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
 							//data1.cleanup();
 						//data2.cleanup();
 						}
@@ -334,12 +346,13 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 		}
 	}
 	
-	if(exportOutputV.size() == 1){
+	if(exportOutputV.size() == 1){//geometry_slice
 		return Arrays.asList(exportOutputV.elementAt(0) );
 	}
 	
-	ArrayList<ExportOutput> combinedExportOutput = new ArrayList<>(exportOutputV.elementAt(0).length);
-	for (int i = 0; i < combinedExportOutput.size( ); i++) {
+	//geometry_selections (all are same length as first element)
+	ArrayList<ExportOutput> combinedExportOutput = new ArrayList<>();
+	for (int i = 0; i < exportOutputV.elementAt(0).length; i++) {
 		String DATATYPE = exportOutputV.elementAt(0)[i].getDataType();
 		String DATAID = exportOutputV.elementAt(0)[i].getDataID();
 		ExportOutput eo = new ExportOutput(true, DATATYPE, "MultiSimulation", DATAID, fileDataContainerManager);
