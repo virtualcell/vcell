@@ -9,6 +9,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+@SuppressWarnings("serial")
 public class NetworkConstraints extends RbmElementAbstract implements Matchable {
 	public static final String PROPERTY_NAME_MAX_STOICHIOMETRY = "maxStoichiometry";
 	public static final String PROPERTY_NAME_MAX_ITERATION = "maxIteration";
@@ -17,7 +18,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable 
 	private int maxIteration = 3;
 	private int maxMoleculesPerSpecies = 10;
 	private Map<MolecularType, Integer> maxStoichiometryMap = new HashMap<MolecularType, Integer>();
-	
+		
 	public NetworkConstraints() {		
 	}
 
@@ -61,7 +62,7 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable 
 	
 	public void clear() {
 		maxStoichiometryMap.clear();
-		maxIteration = 10;
+		maxIteration = 3;
 		maxMoleculesPerSpecies = 10;
 	}
 	
