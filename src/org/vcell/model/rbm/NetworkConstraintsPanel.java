@@ -18,11 +18,14 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
@@ -192,8 +195,10 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		reactionRulesLabel = new JLabel();
 		generatedSpeciesLabel = new JLabel();
 		generatedReactionsLabel = new JLabel();
+		
 		molecularTypeTable = new EditorScrollTable();
 		molecularTypeTableModel = new ApplicationNetworkConstraintsTableModel(molecularTypeTable);
+		molecularTypeTable.setModel(molecularTypeTableModel);
 		
 		maxIterationTextField.addActionListener(eventHandler);
 		maxMolTextField.addActionListener(eventHandler);
@@ -316,6 +321,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		top.add(maxMolTextField, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
+		JScrollPane p = new JScrollPane(molecularTypeTable);
+		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		p.setBorder(loweredBevelBorder);
 		bottom.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -324,7 +332,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.insets = new Insets(20, 4, 4, 10);
-		bottom.add(molecularTypeTable, gbc);
+		bottom.add(p, gbc);
 		
 		// ------------------------------------------- Populating the right group box ------------
 		top = new JPanel();
@@ -393,6 +401,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(getCreateModelButton(), gbc);
+		
+		molecularTypeTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
@@ -411,6 +421,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			m.addPropertyChangeListener(eventHandler);
 		}
 		networkConstraints = simulationContext.getModel().getRbmModelContainer().getNetworkConstraints();
+		molecularTypeTableModel.setSimulationContext(simulationContext);
 		refreshInterface();
 	}
 	public SimulationContext getSimulationContext() {
