@@ -8,7 +8,7 @@ package org.vcell.util.logging;
  */
 @NoLogging
 public class WatchLogging {
-	private static long INITIAL = -1;
+	private static final long INITIAL = -1;
 	
 	static long WATCH_LOGGING_DELAY_MILLIS = INITIAL;
 	
