@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.model.rbm.common.RbmStoichiometry;
 import org.vcell.pathway.Entity;
@@ -51,16 +52,27 @@ public class NetworkConstraintsTableModel extends VCellSortTableModel<NetworkCon
 	protected ArrayList<NetworkConstraintsEntity> computeData() {
 		ArrayList<NetworkConstraintsEntity> nceList = new ArrayList<NetworkConstraintsEntity>();
 
-		NetworkConstraintsEntity nce = new NetworkConstraintsEntity("MaxIterations","value","3");
-		nceList.add(nce);
-		
 		Model model = simContext.getModel();
 		RbmModelContainer mc = model.getRbmModelContainer();
 		if(mc == null) {
 			return nceList;
 		}
+		String s1, s2;
+		NetworkConstraintsEntity nce;
+		NetworkConstraints networkConstraints = mc.getNetworkConstraints();
+		if (networkConstraints != null) {
+			s1 = networkConstraints.getMaxIteration() + "";
+			s2 = networkConstraints.getMaxMoleculesPerSpecies() + "";
+		} else {
+			s1 = "?";
+			s2 = "?";
+		}
+		nce = new NetworkConstraintsEntity("Max Iterations", "value", s1);
+		nceList.add(nce);
+		nce = new NetworkConstraintsEntity("Max Molecules / Species", "value", s2);
+		nceList.add(nce);
 		for(MolecularType mt : mc.getMolecularTypeList()) {
-			nce = new NetworkConstraintsEntity(mt.getDisplayName(),"stoichiometry","1");
+			nce = new NetworkConstraintsEntity(mt.getDisplayName(), "max stoichiometry", "10");
 			nceList.add(nce);
 		}		
 		return nceList;
@@ -82,6 +94,9 @@ public class NetworkConstraintsTableModel extends VCellSortTableModel<NetworkCon
 		return Object.class;
 	}
 	public boolean isCellEditable(int row, int column) {
+		if(column == iColValue && row < 2 ) {
+			return true;
+		}
 		return false;
 	}
 
@@ -113,8 +128,33 @@ public class NetworkConstraintsTableModel extends VCellSortTableModel<NetworkCon
 		if (simContext == null || value == null) {
 			return;
 		}
-		NetworkConstraintsEntity nce = getValueAt(row);
+		String text = (String)value;
+		if (text == null || text.trim().length() == 0) {
+			return;
+		}
+		Model model = simContext.getModel();
+		RbmModelContainer mc = model.getRbmModelContainer();
+		NetworkConstraints networkConstraints = mc.getNetworkConstraints();
+		if(row == 0) {
+			networkConstraints.setMaxIteration(Integer.valueOf(text));
+		} else if(row == 1) {
+			networkConstraints.setMaxMoleculesPerSpecies(Integer.valueOf(text));
+		}
 		return;
+	}
+	public String checkInputValue(String inputValue, int row, int column) {
+		String errMsg = null;
+		if (simContext == null) {
+			errMsg = "Simulation Context Missing.";
+			return errMsg;
+		}
+		NetworkConstraintsEntity nce = getValueAt(row);
+		
+		switch (column) {
+		case iColValue:
+			return null;
+		}
+		return null;
 	}
 
 	@Override
