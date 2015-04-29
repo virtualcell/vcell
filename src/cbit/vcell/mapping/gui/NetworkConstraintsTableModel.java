@@ -21,7 +21,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
 
 @SuppressWarnings("serial")
-public class ApplicationNetworkConstraintsTableModel extends VCellSortTableModel<NetworkConstraintsEntity> implements java.beans.PropertyChangeListener {
+public class NetworkConstraintsTableModel extends VCellSortTableModel<NetworkConstraintsEntity> implements java.beans.PropertyChangeListener {
 
 	public static final int colCount = 3;
 	public static final int iColName = 0;
@@ -34,7 +34,7 @@ public class ApplicationNetworkConstraintsTableModel extends VCellSortTableModel
 
 
 	
-	public ApplicationNetworkConstraintsTableModel(EditorScrollTable table) {
+	public NetworkConstraintsTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
 	}

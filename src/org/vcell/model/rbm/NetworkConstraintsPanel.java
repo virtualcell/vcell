@@ -56,7 +56,7 @@ import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.mapping.gui.ApplicationNetworkConstraintsTableModel;
+import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
@@ -83,8 +83,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private JButton viewGeneratedSpeciesButton;
 	private JButton viewGeneratedReactionsButton;
 	
-	private EditorScrollTable molecularTypeTable = null;
-	private ApplicationNetworkConstraintsTableModel molecularTypeTableModel = null;
+	private EditorScrollTable networkConstraintsTable = null;
+	private NetworkConstraintsTableModel networkConstraintsTableModel = null;
 	private JButton refreshMathButton;
 	private JButton createModelButton;
 	
@@ -196,9 +196,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		generatedSpeciesLabel = new JLabel();
 		generatedReactionsLabel = new JLabel();
 		
-		molecularTypeTable = new EditorScrollTable();
-		molecularTypeTableModel = new ApplicationNetworkConstraintsTableModel(molecularTypeTable);
-		molecularTypeTable.setModel(molecularTypeTableModel);
+		networkConstraintsTable = new EditorScrollTable();
+		networkConstraintsTableModel = new NetworkConstraintsTableModel(networkConstraintsTable);
+		networkConstraintsTable.setModel(networkConstraintsTableModel);
 		
 		maxIterationTextField.addActionListener(eventHandler);
 		maxMolTextField.addActionListener(eventHandler);
@@ -321,7 +321,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		top.add(maxMolTextField, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
-		JScrollPane p = new JScrollPane(molecularTypeTable);
+		JScrollPane p = new JScrollPane(networkConstraintsTable);
 		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		p.setBorder(loweredBevelBorder);
 		bottom.setLayout(new GridBagLayout());		// --- bottom
@@ -402,7 +402,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(getCreateModelButton(), gbc);
 		
-		molecularTypeTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
+		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
@@ -421,7 +421,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			m.addPropertyChangeListener(eventHandler);
 		}
 		networkConstraints = simulationContext.getModel().getRbmModelContainer().getNetworkConstraints();
-		molecularTypeTableModel.setSimulationContext(simulationContext);
+		networkConstraintsTableModel.setSimulationContext(simulationContext);
 		refreshInterface();
 	}
 	public SimulationContext getSimulationContext() {
