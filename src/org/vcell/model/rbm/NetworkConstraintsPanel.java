@@ -175,14 +175,14 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	private JButton getRefreshMathButton() {
 		if (refreshMathButton == null) {
-			refreshMathButton = new javax.swing.JButton(" Run BioNetGen ");
+			refreshMathButton = new javax.swing.JButton(" Test Run BioNetGen ");
 			refreshMathButton.setName("RefreshMathButton");
 		}
 		return refreshMathButton;
 	}
 	private JButton getCreateModelButton() {
 		if (createModelButton == null) {
-			createModelButton = new javax.swing.JButton(" Create Model ");
+			createModelButton = new javax.swing.JButton(" Create Model from Network ");
 			createModelButton.setName("CreateModelButton");
 		}
 		return createModelButton;
@@ -213,21 +213,21 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
 		JPanel leftPanel = new JPanel();
-		JPanel rightPanel = new JPanel();
+//		JPanel rightPanel = new JPanel();
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
 
-		TitledBorder titleLeft = BorderFactory.createTitledBorder(loweredEtchedBorder, " Rules ");
-		titleLeft.setTitleJustification(TitledBorder.LEFT);
-		titleLeft.setTitlePosition(TitledBorder.TOP);
+		TitledBorder titleTop = BorderFactory.createTitledBorder(loweredEtchedBorder, " Network Constraints ");
+		titleTop.setTitleJustification(TitledBorder.LEFT);
+		titleTop.setTitlePosition(TitledBorder.TOP);
 
-		TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Networking ");
-		titleRight.setTitleJustification(TitledBorder.LEFT);
-		titleRight.setTitlePosition(TitledBorder.TOP);
+		TitledBorder titleBottom = BorderFactory.createTitledBorder(loweredEtchedBorder, " Generated Network ");
+		titleBottom.setTitleJustification(TitledBorder.LEFT);
+		titleBottom.setTitlePosition(TitledBorder.TOP);
 		
-		leftPanel.setBorder(titleLeft);
-		rightPanel.setBorder(titleRight);
+//		leftPanel.setBorder(titleLeft);
+//		rightPanel.setBorder(titleRight);
 
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -239,24 +239,28 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 3, 2, 1);
 		add(leftPanel, gbc);
 		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1;
-		gbc.weighty = 1;
-		gbc.fill = GridBagConstraints.BOTH;
-		gbc.insets = new Insets(5, 1, 2, 3);	//  top, left, bottom, right 
-		add(rightPanel, gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = 0;
+//		gbc.weightx = 1;
+//		gbc.weighty = 1;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		gbc.insets = new Insets(5, 1, 2, 3);	//  top, left, bottom, right 
+//		add(rightPanel, gbc);
 
 		// ------------------------------------------- Populating the left group box ---------------
 		JPanel top = new JPanel();
 		JPanel bottom = new JPanel();
 		
+		top.setBorder(titleTop);
+		bottom.setBorder(titleBottom);
+		
 		leftPanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
 		leftPanel.add(top, gbc);
 		
 		gbc = new GridBagConstraints();
@@ -264,67 +268,71 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.gridy = 1;
 		gbc.weightx = 1;
 		gbc.weighty = 1;
-		gbc.fill = GridBagConstraints.BOTH;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
 		leftPanel.add(bottom, gbc);
 		
-		top.setLayout(new GridBagLayout());		// --- top
-		int gridy = 0;
-		gbc = new GridBagConstraints();
-		
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(15, 10, 4, 4);
-		top.add(seedSpeciesLabel, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 0;
-		gbc.weightx = 1.0;
-		gbc.anchor = GridBagConstraints.NORTHEAST;
-		gbc.insets = new Insets(15, 4, 4, 10);
-		top.add(reactionRulesLabel, gbc);
-		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(12, 10, 4, 4);
-		top.add(new JLabel("Max Iteration"), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(12, 4, 4, 10);
-		top.add(maxIterationTextField, gbc);
-		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(5, 10, 4, 4);
-		gbc.anchor = GridBagConstraints.LINE_START;
-		top.add(new JLabel("Max Molecules/Species"), gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.insets = new Insets(5, 4, 4, 10);
-		top.add(maxMolTextField, gbc);
+//		top.setLayout(new GridBagLayout());		// --- top
+//		int gridy = 0;
+//		gbc = new GridBagConstraints();
+//		
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.weightx = 1.0;
+//		gbc.anchor = GridBagConstraints.NORTHWEST;
+//		gbc.insets = new Insets(15, 10, 4, 4);
+//		top.add(seedSpeciesLabel, gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = 0;
+//		gbc.weightx = 1.0;
+//		gbc.anchor = GridBagConstraints.NORTHEAST;
+//		gbc.insets = new Insets(15, 4, 4, 10);
+//		top.add(reactionRulesLabel, gbc);
+//		
+//		gridy++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.insets = new Insets(12, 10, 4, 4);
+//		top.add(new JLabel("Max Iteration"), gbc);
+//		
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		gbc.insets = new Insets(12, 4, 4, 10);
+//		top.add(maxIterationTextField, gbc);
+//		
+//		gridy++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(5, 10, 4, 4);
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		top.add(new JLabel("Max Molecules/Species"), gbc);
+//		
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		gbc.insets = new Insets(5, 4, 4, 10);
+//		top.add(maxMolTextField, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
 		JScrollPane p = new JScrollPane(networkConstraintsTable);
 		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		p.setBorder(loweredBevelBorder);
-		bottom.setLayout(new GridBagLayout());		// --- bottom
+//		TitledBorder ttt = BorderFactory.createTitledBorder(loweredBevelBorder, " Network Constraints ");
+//		ttt.setTitleJustification(TitledBorder.LEFT);
+//		ttt.setTitlePosition(TitledBorder.TOP);
+//		p.setBorder(ttt);
+		top.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -332,36 +340,36 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.insets = new Insets(20, 4, 4, 10);
-		bottom.add(p, gbc);
+		top.add(p, gbc);
 		
 		// ------------------------------------------- Populating the right group box ------------
-		top = new JPanel();
-		bottom = new JPanel();
+//		top = new JPanel();
+//		bottom = new JPanel();
+//		
+//		rightPanel.setLayout(new GridBagLayout());
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		rightPanel.add(top, gbc);
+//		
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 1;
+//		gbc.weightx = 1;
+//		gbc.weighty = 1;
+//		gbc.fill = GridBagConstraints.BOTH;
+//		rightPanel.add(bottom, gbc);
 		
-		rightPanel.setLayout(new GridBagLayout());
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		rightPanel.add(top, gbc);
-		
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1;
-		gbc.weighty = 1;
-		gbc.fill = GridBagConstraints.BOTH;
-		rightPanel.add(bottom, gbc);
-		
-		top.setLayout(new GridBagLayout());		// --- top
-		gridy = 0;
+		bottom.setLayout(new GridBagLayout());		// --- top
+		int gridy = 0;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(10, 4, 4, 10);
-		top.add(generatedSpeciesLabel, gbc);
+		bottom.add(generatedSpeciesLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -369,7 +377,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(10, 4, 4, 10);
-		top.add(getViewGeneratedSpeciesButton(), gbc);
+		bottom.add(getViewGeneratedSpeciesButton(), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -377,7 +385,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(10, 4, 4, 10);
-		top.add(getRefreshMathButton(), gbc);
+		bottom.add(getRefreshMathButton(), gbc);
 
 		gridy++;
 		gbc = new GridBagConstraints();
@@ -386,21 +394,21 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 4, 4, 10);
-		top.add(generatedReactionsLabel, gbc);
+		bottom.add(generatedReactionsLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 4, 4, 10);
-		top.add(getViewGeneratedReactionsButton(), gbc);
+		bottom.add(getViewGeneratedReactionsButton(), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 4, 4, 10);
-		top.add(getCreateModelButton(), gbc);
+		bottom.add(getCreateModelButton(), gbc);
 		
 		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 	}
