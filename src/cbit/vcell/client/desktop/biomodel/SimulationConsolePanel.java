@@ -108,10 +108,10 @@ public class SimulationConsolePanel extends JPanel {
 		// we use a scroll pane whose viewing area is the JTextArea - to provide the vertical scroll bar
 		JScrollPane netGenConsoleScrollPane = new JScrollPane(netGenConsoleText);
 		netGenConsoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		TitledBorder titleConsole = BorderFactory.createTitledBorder(loweredBevelBorder, " BioNetGen Console ");
-		titleConsole.setTitleJustification(TitledBorder.LEFT);
-		titleConsole.setTitlePosition(TitledBorder.ABOVE_TOP);
-		netGenConsoleScrollPane.setBorder(titleConsole);
+//		TitledBorder titleConsole = BorderFactory.createTitledBorder(loweredBevelBorder, " BioNetGen Console ");
+//		titleConsole.setTitleJustification(TitledBorder.LEFT);
+//		titleConsole.setTitlePosition(TitledBorder.ABOVE_TOP);
+		netGenConsoleScrollPane.setBorder(loweredBevelBorder);
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		setLayout(new GridBagLayout());		// --- bottom
