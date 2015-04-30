@@ -273,7 +273,13 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 					SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
 					cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 					for (int i = 0; i < spatialSelections.length; i ++) {
-						spatialSelections[i].setMesh(mesh);
+						if(spatialSelections[i].getMesh() == null){
+							spatialSelections[i].setMesh(mesh);
+						}else if(!spatialSelections[i].getMesh().getISize().compareEqual(mesh.getISize()) ||
+							spatialSelections[i].getMesh().getNumMembraneElements() != mesh.getNumMembraneElements()){//check just sizes not areas,normals,etc...
+							//This will throw fail message
+							spatialSelections[i].setMesh(mesh);
+						}
 					}
 					Vector<ExportOutput> outputV = new Vector<ExportOutput>();
 					if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
