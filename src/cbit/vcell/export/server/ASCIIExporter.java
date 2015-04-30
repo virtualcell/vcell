@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -77,6 +76,19 @@ private List<ExportOutput> exportODEData(OutputContext outputContext,long jobID,
  
 private static final SmoldynKeyword[] SMOLDYN_KEYWORDS_USED = {SmoldynVCellMapper.MAP_PARTICLE_TO_MEMBRANE, SmoldynKeyword.solution};
 /**
+ * enum to model first few rows of switched particle CSV data; ordinals correspond to line index of element
+ */
+private enum SwitchedRowsHeading {
+	TIME,
+	PARTICLE,
+	XYZ,
+	/**
+	 * first line actual data goes on
+	 */
+	DATA
+}
+
+/**
  * Insert the method's description here.
  * Creation date: (1/12/00 5:00:28 PM)
  * @return cbit.vcell.export.server.ExportOutput[]
@@ -84,14 +96,15 @@ private static final SmoldynKeyword[] SMOLDYN_KEYWORDS_USED = {SmoldynVCellMappe
  * @param timeSpecs cbit.vcell.export.server.TimeSpecs
  * @throws IOException 
  */
+
 private List<ExportOutput> exportParticleData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs,  
 		ASCIISpecs asciiSpecs,FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException {
 
 	VCDataIdentifier vcdID = exportSpecs.getVCDataIdentifier();
 	TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
-	final int N_PARTICLE_PIECES = 3;
 	String simID = vcdID.getID();
 	String dataType = ".csv";
+	final int N_PARTICLE_PIECES = 1; //in switched format, how many rows for each particle
 
 	// get parameters
 	boolean switchRowsColumns = asciiSpecs.getSwitchRowsColumns();
@@ -132,15 +145,20 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		// now make csv formatted data
 		StringBuilder header = new StringBuilder();
 		FileDataContainerID[] dataLines = null;
+		final int NUMBER_HEADING_LINES = SwitchedRowsHeading.DATA.ordinal();
 		if (switchRowsColumns) {
-			dataLines = new FileDataContainerID[numberOfParticles * N_PARTICLE_PIECES];
+			dataLines = new FileDataContainerID[numberOfParticles * N_PARTICLE_PIECES + NUMBER_HEADING_LINES]; 
 			for (int j=0;j<dataLines.length;j++){
 				dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
 			}
+			
+			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.TIME.ordinal()],"Time,");
+			final String particleLine = "Particle" + StringUtils.repeat(",x,y,z",numberOfTimes);
+			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.PARTICLE.ordinal()],particleLine);
+			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.XYZ.ordinal()],"#,");
+			final int FDL = SwitchedRowsHeading.DATA.ordinal(); //"first data line"
 			for (int i=0;i<numberOfParticles;i++) {
-				fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * i],"x," + i + ",");
-				fileDataContainerManager.append (dataLines[N_PARTICLE_PIECES * i + 1],"y,,");
-				fileDataContainerManager.append (dataLines[N_PARTICLE_PIECES * i + 2],"z,,");
+				fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * i],Integer.toString(i) + ",");
 			}
 		} else {
 			dataLines = new FileDataContainerID[numberOfTimes];
@@ -152,11 +170,7 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false, currentVariableName);
 		header.append(simulationDescription.getHeader(dataType));
 		if (switchRowsColumns) {
-			header.append(",Particle #\n");
-			header.append("Time,,");
-			for (int i=beginIndex;i<=endIndex;i++) {
-				header.append(allTimes[i] + ",");
-			}
+			//implemented using first few data lines
 		} else {
 			header.append(",Time\n");
 			header.append("Particle #,,");
@@ -176,11 +190,20 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 			particles = particleDataBlk.getCoordinates(smoldynSpecies);
 
 			if (switchRowsColumns) {
+				final int FDL = SwitchedRowsHeading.DATA.ordinal(); //"first data line"
+				fileDataContainerManager.append(dataLines[SwitchedRowsHeading.TIME.ordinal()],Double.toString(allTimes[i]) +",,,");
+				StringBuilder sb = new StringBuilder();
+				final char COMMA  = ',';
 				for (int j=0;j<numberOfParticles;j++) {
 					Coordinate coordinate = particles.get(j);
-					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j],coordinate.getX() + ",");
-					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j + 1],coordinate.getY() + ",");
-					fileDataContainerManager.append(dataLines[N_PARTICLE_PIECES * j + 2],coordinate.getZ() + ",");
+					sb.setLength(0);
+					sb.append(coordinate.getX());
+					sb.append(COMMA);
+					sb.append(coordinate.getY());
+					sb.append(COMMA);
+					sb.append(coordinate.getZ());
+					sb.append(COMMA);
+					fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * j],coordinate.getX() + sb.toString());
 				}
 			} else {
 				fileDataContainerManager.append(dataLines[i - beginIndex],"," + allTimes[i] + ",");
