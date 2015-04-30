@@ -51,10 +51,11 @@ import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
+import org.vcell.util.gui.NoEventRadioButton;
+import org.vcell.util.gui.PropertyChangeButtonGroup;
 import org.vcell.util.gui.TitledBorderBean;
 
 import cbit.image.DisplayAdapterService;
@@ -128,7 +129,7 @@ public class PDEExportDataPanel extends JPanel implements ExportConstants {
 //	private cbit.vcell.simdata.gui.SpatialSelection fieldSelectedRegion = null;
 	private int fieldSlice = -1;
 	private int fieldNormalAxis = -1;
-	private ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private PropertyChangeButtonGroup ivjButtonGroupCivilized1 = null;
 	private JPanel ivjJPanelRegion = null;
 	private JPanel ivjJPanelTime = null;
 	private JPanel ivjJPanelVariables = null;
@@ -958,10 +959,10 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ButtonGroupCivilized getButtonGroupCivilized1() {
+private PropertyChangeButtonGroup getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new PropertyChangeButtonGroup(); 
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1799,7 +1800,7 @@ private javax.swing.JRadioButton getJRadioButtonFull() {
 private javax.swing.JRadioButton getJRadioButtonROI() {
 	if (ivjJRadioButtonSelection == null) {
 		try {
-			ivjJRadioButtonSelection = new javax.swing.JRadioButton();
+			ivjJRadioButtonSelection = new NoEventRadioButton(); 
 			ivjJRadioButtonSelection.setName("JRadioButtonSelection");
 			ivjJRadioButtonSelection.setSelected(true);
 			ivjJRadioButtonSelection.setText("User ROI from \"View Data\" (select 1 or more)");
@@ -1823,7 +1824,7 @@ private javax.swing.JRadioButton getJRadioButtonROI() {
 private javax.swing.JRadioButton getJRadioButtonSlice() {
 	if (ivjJRadioButtonSlice == null) {
 		try {
-			ivjJRadioButtonSlice = new javax.swing.JRadioButton();
+			ivjJRadioButtonSlice = new NoEventRadioButton(); 
 			ivjJRadioButtonSlice.setName("JRadioButtonSlice");
 			ivjJRadioButtonSlice.setText("Current Slice from \"View Data\"");
 			// user code begin {1}
@@ -2793,7 +2794,7 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		break;
 	case CSV:
-		if (getJRadioButtonROI().isSelected() && getROISelections().getModel( ).getSize() == 0 && !getJRadioButtonSlice().isSelected()) {
+		if (getJRadioButtonROI().isSelected() && getROISelections().getModel( ).getSize() == 0) {
 			getJRadioButtonSlice().setSelected(true);
 		}
 		break;
