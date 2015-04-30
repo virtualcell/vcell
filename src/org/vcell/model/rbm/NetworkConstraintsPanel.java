@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -27,8 +28,10 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -40,7 +43,9 @@ import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
+import cbit.vcell.client.desktop.biomodel.RbmTableRenderer;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -58,6 +63,7 @@ import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
@@ -410,7 +416,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 4, 4, 10);
 		bottom.add(getCreateModelButton(), gbc);
 		
-		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
+		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 	}
 	
 	public void setSimulationContext(SimulationContext simulationContext) {
