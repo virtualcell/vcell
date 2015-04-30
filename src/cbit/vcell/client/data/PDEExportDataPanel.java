@@ -2793,7 +2793,7 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		break;
 	case CSV:
-		if (getJRadioButtonROI().isSelected() && getROISelections().getModel( ).getSize() == 0) {
+		if (getJRadioButtonROI().isSelected() && getROISelections().getModel( ).getSize() == 0 && !getJRadioButtonSlice().isSelected()) {
 			getJRadioButtonSlice().setSelected(true);
 		}
 		break;
