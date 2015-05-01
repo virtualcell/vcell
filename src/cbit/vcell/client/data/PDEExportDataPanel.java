@@ -2484,6 +2484,7 @@ private void startExport() {
 				}
 			}
 			getExportSettings1().setSimulationSelector(createSimulationSelector());
+			getExportSettings1().setIsCSVExport(true);
 			break;
 		}
 	case NRRD:

@@ -242,7 +242,8 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  */
 public ASCIISpecs getAsciiSpecs() {
 	return new ASCIISpecs(ExportFormat.CSV, getExportDataType(), getSwitchRowsColumns(),
-			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()));
+			(simulationSelector==null?null:simulationSelector.getSelectedSimDataInfo()),(simulationSelector==null?null:simulationSelector.getselectedParamScanIndexes()),
+			(isCSVExport && getTimeSimVarChkBox().isSelected()?ASCIISpecs.csvRoiLayout.time_sim_var:ASCIISpecs.csvRoiLayout.var_time_val));
 }
 /**
  * Return the ButtonGroup1 property value.
@@ -553,20 +554,25 @@ private void initialize() {
 		gbc_simSelectorButton.gridx = 0;
 		gbc_simSelectorButton.gridy = 6;
 		add(getSimSelectorButton(), gbc_simSelectorButton);
+		GridBagConstraints gbc_timeSimVarChkBox = new GridBagConstraints();
+		gbc_timeSimVarChkBox.insets = new Insets(0, 0, 5, 0);
+		gbc_timeSimVarChkBox.gridx = 0;
+		gbc_timeSimVarChkBox.gridy = 7;
+		add(getTimeSimVarChkBox(), gbc_timeSimVarChkBox);
 		GridBagConstraints gbc_chckbxExportMultiParamScan = new GridBagConstraints();
 		gbc_chckbxExportMultiParamScan.anchor = GridBagConstraints.WEST;
 		gbc_chckbxExportMultiParamScan.insets = new Insets(0, 5, 5, 0);
 		gbc_chckbxExportMultiParamScan.gridx = 0;
-		gbc_chckbxExportMultiParamScan.gridy = 7;
+		gbc_chckbxExportMultiParamScan.gridy = 8;
 		add(getChckbxExportMultiParamScan(), gbc_chckbxExportMultiParamScan);
 		GridBagConstraints gbc_paramScanSelectorButton = new GridBagConstraints();
 		gbc_paramScanSelectorButton.insets = new Insets(0, 0, 5, 0);
 		gbc_paramScanSelectorButton.gridx = 0;
-		gbc_paramScanSelectorButton.gridy = 8;
+		gbc_paramScanSelectorButton.gridy = 9;
 		add(getParamScanSelectorButton(), gbc_paramScanSelectorButton);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 9;
+		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 10;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -607,20 +613,20 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	// user code begin {2}
 	// user code end
 }
-/**
- * 
- * @param newListener cbit.vcell.export.ASCIISettingsPanelListener
- */
-public void removeASCIISettingsPanelListener(cbit.vcell.export.gui.ASCIISettingsPanelListener newListener) {
-	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.ASCIISettingsPanelListenerEventMulticaster.remove(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
-	return;
-}
+///**
+// * 
+// * @param newListener cbit.vcell.export.ASCIISettingsPanelListener
+// */
+//public void removeASCIISettingsPanelListener(cbit.vcell.export.gui.ASCIISettingsPanelListener newListener) {
+//	fieldASCIISettingsPanelListenerEventMulticaster = cbit.vcell.export.gui.ASCIISettingsPanelListenerEventMulticaster.remove(fieldASCIISettingsPanelListenerEventMulticaster, newListener);
+//	return;
+//}
 /**
  * Sets the exportDataType property (int) value.
  * @param odeVariableData The new value for the property.
  * @see #getExportDataType
  */
-public void setExportDataType(DataType odeVariableData) {
+private void setExportDataType(DataType odeVariableData) {
 	DataType oldValue = fieldExportDataType;
 	fieldExportDataType = odeVariableData;
 	firePropertyChange("exportDataType", oldValue, odeVariableData);
@@ -640,10 +646,15 @@ public void setSimDataType(int simDataType) {
  * @param switchRowsColumns The new value for the property.
  * @see #getSwitchRowsColumns
  */
-public void setSwitchRowsColumns(boolean switchRowsColumns) {
+private void setSwitchRowsColumns(boolean switchRowsColumns) {
 	boolean oldValue = fieldSwitchRowsColumns;
 	fieldSwitchRowsColumns = switchRowsColumns;
 	firePropertyChange("switchRowsColumns", new Boolean(oldValue), new Boolean(switchRowsColumns));
+}
+
+private boolean isCSVExport = false;
+public void setIsCSVExport(boolean isCSVExport){
+	this.isCSVExport = isCSVExport;
 }
 /**
  * Method to handle events for the ChangeListener interface.
@@ -696,6 +707,7 @@ private void updateExportDataType() {
 	private JCheckBox chckbxExportMultipleSimulations;
 	private JCheckBox chckbxExportMultiParamScan;
 	private JButton paramScanSelectorButton;
+	private JCheckBox timeSimVarChkBox;
 	public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
 		this.simulationSelector = simulationSelector;
 		getChckbxExportMultipleSimulations().setEnabled(simulationSelector != null && simulationSelector.getNumAvailableSimulations()>1);
@@ -730,6 +742,7 @@ private void updateExportDataType() {
 			chckbxExportMultipleSimulations.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					getSimSelectorButton().setEnabled(getChckbxExportMultipleSimulations().isSelected());
+					getTimeSimVarChkBox().setEnabled(getChckbxExportMultipleSimulations().isSelected() && isCSVExport);
 				}
 			});
 		}
@@ -758,5 +771,12 @@ private void updateExportDataType() {
 			});
 		}
 		return paramScanSelectorButton;
+	}
+	private JCheckBox getTimeSimVarChkBox() {
+		if (timeSimVarChkBox == null) {
+			timeSimVarChkBox = new JCheckBox("CSV Time-Sim-Var Layout");
+			timeSimVarChkBox.setEnabled(false);
+		}
+		return timeSimVarChkBox;
 	}
 }

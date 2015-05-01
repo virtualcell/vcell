@@ -13,22 +13,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.geometry.Space;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.NumberUtils;
 import org.vcell.util.VCAssert;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.CurveSelectionCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataServerImpl;
@@ -39,6 +47,7 @@ import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solvers.CartesianMesh;
 import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
@@ -227,7 +236,164 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 	return rval; 
 }
 
+private int[] getallSampleIndexes(GeometrySpecs geometrySpecs,CartesianMesh mesh) throws DataAccessException{
+	ArrayList<Integer> sampleIndexes = new ArrayList<>();
+	SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
+	for (int i = 0; i < spatialSelections.length; i++) {
+		spatialSelections[i].setMesh(mesh);
+	}
+	//Add points
+	if(geometrySpecs.getPointIndexes().length > 0){
+		for(int i =0;i<geometrySpecs.getPointIndexes().length;i++){
+			sampleIndexes.add(geometrySpecs.getPointIndexes()[i]);
+		}
+	}
+	//Add curves
+	if(geometrySpecs.getCurves().length != 0){
+		for(int i =0;i<geometrySpecs.getCurves().length;i++){
+			SpatialSelection curve = geometrySpecs.getCurves()[i];
+			curve.setMesh(mesh);
+			if (curve instanceof SpatialSelectionVolume){
+				SpatialSelection.SSHelper ssh = ((SpatialSelectionVolume)curve).getIndexSamples(0.0,1.0);
+				for(int j=0;j<ssh.getSampledIndexes().length;j++){
+					sampleIndexes.add(ssh.getSampledIndexes()[j]);
+				}
+//				numSamplePoints+= ssh.getSampledIndexes().length;
+//				pointIndexes = ssh.getSampledIndexes();
+//				distances = ssh.getWorldCoordinateLengths();
+//				crossingMembraneIndexes = ssh.getMembraneIndexesInOut();
+			}else if(curve instanceof SpatialSelectionMembrane){
+				SpatialSelection.SSHelper ssh = ((SpatialSelectionMembrane)curve).getIndexSamples();
+				if(((SpatialSelectionMembrane)curve).getSelectionSource() instanceof SinglePoint){
+					sampleIndexes.add(ssh.getSampledIndexes()[0]);
+//					numSamplePoints++;
+//					pointIndexes = new int[] {ssh.getSampledIndexes()[0]};
+//					distances = new double[] {0};
+				}else{
+					for(int j=0;j<ssh.getSampledIndexes().length;j++){
+						sampleIndexes.add(ssh.getSampledIndexes()[j]);
+					}
+//					numSamplePoints+= ssh.getSampledIndexes().length;
+//					pointIndexes = ssh.getSampledIndexes();
+//					distances = ssh.getWorldCoordinateLengths();
+				}
+			}
+		}
+	}
+	if(sampleIndexes.size() > 0){
+		int[] allSampleIndexes = new int[sampleIndexes.size()];
+		for(int i=0;i<allSampleIndexes.length;i++){
+			allSampleIndexes[i] = sampleIndexes.get(i);
+		}
+		return allSampleIndexes;
+	}
+	return null;
+}
 
+private ExportOutput sofyaFormat(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
+		final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
+		GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs,String contextName,FileDataContainerManager fileDataContainerManager) throws DataAccessException,IOException{
+	ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+	CartesianMesh mesh = dataServerImpl.getMesh(user, orig_vcdID);//use mesh to calulate indexes
+	final int SIM_COUNT = simNameSimDataIDs.length;
+	final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null?asciiSpecs.getExportMultipleParamScans().length:1);
+	final int TIME_COUNT = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
+	if(PARAMSCAN_COUNT > 1 || geometrySpecs.getModeID() != GEOMETRY_SELECTIONS/* || geometrySpecs.getCurves().length != 0*/){
+		throw new DataAccessException("Alternate csv format cannot have parameter scans and must be 'point selection' type");
+	}
+	final long MESSAGE_LIMIT = 5000;//millisecodns
+	final long MAX_DATA = 10000000;
+	long totalPoints = SIM_COUNT*TIME_COUNT*variableSpecs.getVariableNames().length*geometrySpecs.getPointCount();
+	if(totalPoints > MAX_DATA){
+		throw new DataAccessException("Too much data, select fewer (sims or times or variables or samplepoints).  Exceeded limit by "+NumberUtils.formatNumber(100*(((double)totalPoints/(double)MAX_DATA)-1.0), 6)+"%");
+	}
+	ExportOutput exportOutput1 = new ExportOutput(true, ".csv",SIM_COUNT+"_multisims_", variableSpecs.getVariableNames().length+"_Vars_"+TIME_COUNT+"_times", fileDataContainerManager);
+	fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\"Model:'"+contextName+"'\"\n\n");
+	
+	int[] sampleIndexes = getallSampleIndexes(geometrySpecs,mesh);
+	int[][] indexes = new int[variableSpecs.getVariableNames().length][];
+	HashMap<Integer, TSJobResultsNoStats> simData = new HashMap<>();
+	long lastTime = 0;
+	double progressCounter = 0;
+	for(int t=0;t<TIME_COUNT;t++){
+		fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "Time,"+timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()+t]+"\n");
+		for (int simIndex = 0; simIndex < SIM_COUNT; simIndex++) {
+			progressCounter++;
+			if((System.currentTimeMillis()-lastTime)>MESSAGE_LIMIT){
+				lastTime = System.currentTimeMillis();
+				exportServiceImpl.fireExportProgress(jobID, orig_vcdID, "multisim-point", progressCounter/(SIM_COUNT*TIME_COUNT));
+			}
+			int simJobIndex = simNameSimDataIDs[simIndex].getDefaultJobIndex();
+			VCDataIdentifier vcdID = simNameSimDataIDs[simIndex].getVCDataIdentifier(simJobIndex);
+			if(SIM_COUNT > 1){
+				//check times are the same
+				double[] currentTimes = dataServerImpl.getDataSetTimes(user, vcdID);
+				if(currentTimes.length != timeSpecs.getAllTimes().length){
+					throw new DataAccessException("time sets are different length");
+				}
+				for(int i=0;i<currentTimes.length;i++){
+					if(timeSpecs.getAllTimes()[i] != currentTimes[i]){
+						throw new DataAccessException("time sets have different values");
+					}
+				}
+			}
+			SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
+			 mesh = dataServerImpl.getMesh(user, vcdID);
+			for (int i = 0; i < spatialSelections.length; i ++) {
+				if(spatialSelections[i].getMesh() == null){
+					spatialSelections[i].setMesh(mesh);
+				}else if(!spatialSelections[i].getMesh().getISize().compareEqual(mesh.getISize()) ||
+					spatialSelections[i].getMesh().getNumMembraneElements() != mesh.getNumMembraneElements()){//check just sizes not areas,normals,etc...
+					//This will throw fail message
+					spatialSelections[i].setMesh(mesh);
+				}
+			}
+			if(simIndex == 0){
+				fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "Variables-->,");
+				for(int v=0;v<variableSpecs.getVariableNames().length;v++){
+					fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\""+variableSpecs.getVariableNames()[v]+"\"");
+					for(int p=0;p<sampleIndexes.length;p++){
+						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), ",");
+					}
+				}
+				fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n\"Simulation Name : (point/line)Index-->\",");
+				for(int v=0;v<variableSpecs.getVariableNames().length;v++){
+					indexes[v] = sampleIndexes;
+					for(int p=0;p<sampleIndexes.length;p++){
+						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), sampleIndexes[p]+",");
+					}					
+				}
+				fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
+			}
+			fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\""+simNameSimDataIDs[simIndex].getSimulationName()+"\"");
+			TSJobResultsNoStats timeSeriesJobResults = simData.get(simIndex);
+			if(timeSeriesJobResults == null){
+				TimeSeriesJobSpec timeSeriesJobSpec =
+				new TimeSeriesJobSpec(
+					variableSpecs.getVariableNames(),indexes,
+					null,timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()],1,timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()],
+					VCDataJobID.createVCDataJobID(user, false));
+				timeSeriesJobResults = (TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(outputContext,user, vcdID, timeSeriesJobSpec);
+				simData.put(simIndex, timeSeriesJobResults);
+			}
+			// variableValues[0] is time array
+			// variableValues[1] is values for 1st spatial point.
+			// variableValues[2] is values for 2nd spatial point.
+			// variableValues[n] (n>=1) is values for nth spatial point.
+			// the length of variableValues should always be 1 + pointIndexes.length
+			// the length of variableValues[n] is allTimes.length
+			for(int v=0;v<variableSpecs.getVariableNames().length;v++){
+				final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableSpecs.getVariableNames()[v]);
+				for(int p=0;p<sampleIndexes.length;p++){
+					fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), ","+variableValues[p+1][t]);
+				}
+			}
+			fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
+		}
+		fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), "\n");
+	}
+	return exportOutput1;
+}
 /**
  * This method was created in VisualAge.
  * @throws IOException 
@@ -253,6 +419,9 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 			TOTAL_EXPORTS_OPS = SIM_COUNT*PARAMSCAN_COUNT*variableSpecs.getVariableNames().length*TIME_COUNT;
 			break;
 	}
+	if(asciiSpecs.getCSVRoiLayout() == ASCIISpecs.csvRoiLayout.time_sim_var){
+		exportOutputV.add(new ExportOutput[] {sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
+	}else{
 	for (int v = 0; v < SIM_COUNT; v++) {
 		int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
 		VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
@@ -294,7 +463,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 				case GEOMETRY_SELECTIONS: {
 					// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
 					SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
-					cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+					CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
 					for (int i = 0; i < spatialSelections.length; i ++) {
 						if(spatialSelections[i].getMesh() == null){
 							spatialSelections[i].setMesh(mesh);
@@ -373,6 +542,7 @@ private List<ExportOutput> exportPDEData(OutputContext outputContext,long jobID,
 				}
 			}
 		}
+	}
 	}
 	
 	if(exportOutputV.size() == 1){//geometry_slice
