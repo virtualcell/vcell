@@ -14,11 +14,12 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
 @SuppressWarnings("serial")
 public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
-	IssueSource, Displayable
+	IssueSource, Identifiable, Displayable
 {
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
 	
