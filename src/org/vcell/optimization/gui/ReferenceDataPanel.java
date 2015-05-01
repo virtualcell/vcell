@@ -16,9 +16,9 @@ import javax.swing.JScrollPane;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.math.CSV;

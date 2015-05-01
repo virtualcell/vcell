@@ -464,6 +464,11 @@ public final class BeanUtils {
 		return array;
 	}
 
+	/**
+	 * obsolete as of 1.6 or later.<br>
+	 * use List<T>.asArray(new T[list.size( ))
+	 */
+	@Deprecated
 	public static <T> T[] getArray(List<?> list, Class<T> elementType) {
 		@SuppressWarnings("unchecked") 
 		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));

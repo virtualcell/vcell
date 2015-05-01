@@ -308,8 +308,8 @@ public void saveBNGLFile(String bngl) throws IOException {
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 
 	// set default file filter
-	fileChooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
-	fileChooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.addChoosableFileFilter(org.vcell.util.gui.exporter.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.setFileFilter(org.vcell.util.gui.exporter.FileFilters.FILE_FILTER_BNGL);
 
 	// Set file chooser dialog title
 	fileChooser.setDialogTitle("Save BNG file ...");
@@ -319,7 +319,7 @@ public void saveBNGLFile(String bngl) throws IOException {
 		File selectedFile = fileChooser.getSelectedFile();
 		String path = selectedFile.getAbsolutePath();
 		if (path.indexOf('.') == -1) {
-			path += org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL.getPrimaryExtension();
+			path += org.vcell.util.gui.exporter.FileFilters.FILE_FILTER_BNGL.getPrimaryExtension();
 			selectedFile = new File(path);
 		}
 		if (selectedFile.exists()) {
@@ -349,8 +349,8 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 
 	// set default file filter
-	fileChooser.addChoosableFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
-	fileChooser.setFileFilter(org.vcell.util.gui.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.addChoosableFileFilter(org.vcell.util.gui.exporter.FileFilters.FILE_FILTER_BNGL);
+	fileChooser.setFileFilter(org.vcell.util.gui.exporter.FileFilters.FILE_FILTER_BNGL);
 
 	// Set file chooser dialog title
 	fileChooser.setDialogTitle("Upload Selected BNG file ...");

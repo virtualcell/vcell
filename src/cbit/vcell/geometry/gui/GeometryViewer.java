@@ -51,7 +51,7 @@ import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.ExportToXML;
+import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
@@ -216,7 +216,7 @@ private void exportGeometry(/*String exportType*/){
 	AsynchClientTask[] tasks = new AsynchClientTask[] {
 		new ChooseFile(),
 		computeSurface,
-		new ExportToXML()
+		new ExportDocument()
 	};
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
