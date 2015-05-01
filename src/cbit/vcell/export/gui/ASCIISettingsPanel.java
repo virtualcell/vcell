@@ -506,7 +506,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MovieSettingsPanel");
-		setPreferredSize(new Dimension(213, 281));
+		setPreferredSize(new Dimension(215, 310));
 		setLayout(new java.awt.GridBagLayout());
 		setSize(188, 206);
 
@@ -572,6 +572,7 @@ private void initialize() {
 		add(getParamScanSelectorButton(), gbc_paramScanSelectorButton);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+		constraintsJPanel1.weighty = 1.0;
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 10;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanel1.weightx = 1.0;
