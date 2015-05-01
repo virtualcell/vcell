@@ -33,9 +33,9 @@ public static class ImageStatistics {
 	public double minValue;
 	public double maxValue;
 	public double meanValue;
-	public double sigma;
-	public double sum;
-	public double variance;
+	public Double sigma;
+	public Double sum;
+	public Double variance;
 	public String toString(){
 		return "min="+minValue+", max="+maxValue+", mean="+meanValue+", sigma="+sigma+", sum="+sum+", variance="+variance;
 	}

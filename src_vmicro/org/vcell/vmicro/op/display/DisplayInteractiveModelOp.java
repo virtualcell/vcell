@@ -6,14 +6,14 @@ import javax.swing.JFrame;
 
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.gui.OptModelParamPanel;
 
-import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.parser.ExpressionException;
 
 public class DisplayInteractiveModelOp {
 	
-	public void displayOptModel(OptContext optContext, ROI[] rois, LocalWorkspace localWorkspace, String title, WindowListener listener) throws ExpressionException {
+	public void displayOptModel(OptContext optContext, NormalizedSampleFunction[] rois, LocalWorkspace localWorkspace, String title, WindowListener listener) throws ExpressionException {
 		JFrame frame = new javax.swing.JFrame();
 		
 		OptModelParamPanel optModelParamPanel = new OptModelParamPanel();

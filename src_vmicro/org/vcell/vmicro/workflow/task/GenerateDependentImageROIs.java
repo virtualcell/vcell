@@ -2,6 +2,7 @@ package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.GenerateDependentImageROIsOp;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;

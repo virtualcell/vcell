@@ -3,6 +3,7 @@ package org.vcell.vmicro.workflow.task;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.workflow.data.OptContext;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
@@ -16,7 +17,7 @@ public class DisplayInteractiveModel extends Task {
 	// inputs
 	//
 	public final DataInput<OptContext> optContext;
-	public final DataInput<ROI[]> rois;
+	public final DataInput<NormalizedSampleFunction[]> rois;
 	public final DataInput<String> title;
 	
 	//
@@ -28,7 +29,7 @@ public class DisplayInteractiveModel extends Task {
 	public DisplayInteractiveModel(String id){
 		super(id);
 		optContext = new DataInput<OptContext>(OptContext.class,"optContext", this);
-		rois = new DataInput<ROI[]>(ROI[].class,"rois", this);
+		rois = new DataInput<NormalizedSampleFunction[]>(NormalizedSampleFunction[].class,"rois", this);
 		title = new DataInput<String>(String.class,"title",this,true);
 		displayed = new DataOutput<Boolean>(Boolean.class,"displayed",this);
 		addInput(optContext);
@@ -42,7 +43,7 @@ public class DisplayInteractiveModel extends Task {
 		// get input
 		String titleString = context.getDataWithDefault(title, "no title - not connected");
 		OptContext optcontext = context.getData(optContext);
-		ROI[] roiArray = context.getData(rois);
+		NormalizedSampleFunction[] roiArray = context.getData(rois);
 		
 		DisplayInteractiveModelOp op = new DisplayInteractiveModelOp();
 		op.displayOptModel(optcontext, roiArray, context.getLocalWorkspace(), titleString, null);

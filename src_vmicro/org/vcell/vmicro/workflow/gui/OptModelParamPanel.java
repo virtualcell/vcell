@@ -36,6 +36,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptContextSolver;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.task.DisplayProfileLikelihoodPlots;
 import org.vcell.vmicro.workflow.task.RunProfileLikelihoodGeneral;
 import org.vcell.workflow.MemoryRepository;
@@ -63,7 +64,7 @@ public class OptModelParamPanel extends JPanel
 	private final ArrayList<JTextField> parameterValueTextFields;
 	private final ArrayList<JButton> parameterValueSetButtons;
 	private OptContext optContext;
-	private ROI[] fittedROIs;
+	private NormalizedSampleFunction[] fittedROIs;
 	private LocalWorkspace localWorkspace;
 	private final JPanel parameterPanel = new JPanel();
 	private final MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
@@ -230,7 +231,7 @@ public class OptModelParamPanel extends JPanel
 	
 	
 	
-	public void init(OptContext optContext, ROI[] fittedROIs, LocalWorkspace localWorkspace){
+	public void init(OptContext optContext, NormalizedSampleFunction[] fittedROIs, LocalWorkspace localWorkspace){
 		this.optContext = optContext;
 		this.fittedROIs = fittedROIs;
 		this.localWorkspace = localWorkspace;

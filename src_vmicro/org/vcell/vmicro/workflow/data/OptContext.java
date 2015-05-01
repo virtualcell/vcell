@@ -58,12 +58,12 @@ public class OptContext {
 		return optModel.getName();
 	}
 
-	public RowColumnResultSet computeSolution(double[] parameterValues, ROI[] rois, double[] times) {
+	public RowColumnResultSet computeSolution(double[] parameterValues, NormalizedSampleFunction[] rois, double[] times) {
 		double[][] simData = optModel.getSolution(parameterValues, times);
 		ArrayList<String> colNames = new ArrayList<String>();
 		colNames.add("t");
-		for (ROI roi : rois){
-			colNames.add(roi.getROIName());
+		for (NormalizedSampleFunction roi : rois){
+			colNames.add(roi.getName());
 		}
 		RowColumnResultSet results = new RowColumnResultSet(colNames.toArray(new String[0]));
 		for (int i=0;i<times.length;i++){
@@ -77,11 +77,11 @@ public class OptContext {
 		return results;
 	}
 
-	public RowColumnResultSet getExperimentalData(ROI[] rois) {
+	public RowColumnResultSet getExperimentalData(NormalizedSampleFunction[] rois) {
 		ArrayList<String> colNames = new ArrayList<String>();
 		colNames.add("t");
-		for (ROI roi : rois){
-			colNames.add(roi.getROIName());
+		for (NormalizedSampleFunction roi : rois){
+			colNames.add(roi.getName());
 		}
 		RowColumnResultSet results = new RowColumnResultSet(colNames.toArray(new String[0]));
 		for (int i=0;i<expTimePoints.length;i++){

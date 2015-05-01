@@ -1,8 +1,11 @@
 package org.vcell.vmicro.workflow.task;
 
+import java.util.ArrayList;
+
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.ComputeMeasurementErrorOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
@@ -49,9 +52,15 @@ public class ComputeMeasurementError extends Task {
 		ImageTimeSeries<UShortImage> rawImageDataset = context.getData(rawImageTimeSeries);
 		FloatImage prebleachAvgImage = context.getData(prebleachAverage);
 		
+		ArrayList<NormalizedSampleFunction> roiSampleFunctions = new ArrayList<NormalizedSampleFunction>();
+		for (int i=0;i<rois.length;i++){
+			roiSampleFunctions.add(NormalizedSampleFunction.fromROI(rois[i]));
+		}
+		
 		// do op
 		ComputeMeasurementErrorOp op = new ComputeMeasurementErrorOp();
-		RowColumnResultSet rowColumnResultSet = op.computeNormalizedMeasurementError(rois, indexPostbleach, rawImageDataset, prebleachAvgImage, clientTaskStatusSupport);
+		NormalizedSampleFunction[] roiSampleFunctionArray = roiSampleFunctions.toArray(new NormalizedSampleFunction[0]);
+		RowColumnResultSet rowColumnResultSet = op.computeNormalizedMeasurementError(roiSampleFunctionArray, indexPostbleach, rawImageDataset, prebleachAvgImage, clientTaskStatusSupport);
 		
 		// set output
 		context.setData(normalizedMeasurementError,rowColumnResultSet);

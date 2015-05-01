@@ -4,6 +4,7 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.op.FitBleachSpotOp;
 import org.vcell.vmicro.op.FitBleachSpotOp.FitBleachSpotOpResults;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
@@ -18,7 +19,7 @@ public class FitBleachSpot extends Task {
 	// inputs
 	//
 	public final DataInput<ImageTimeSeries> normalizedImages;
-	public final DataInput<ROI> bleachROI;
+	public final DataInput<NormalizedSampleFunction> bleachROI;
 	//
 	// outputs
 	//
@@ -34,7 +35,7 @@ public class FitBleachSpot extends Task {
 	public FitBleachSpot(String id){
 		super(id);
 		normalizedImages = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"normalizedImages", this);
-		bleachROI = new DataInput<ROI>(ROI.class,"bleachROI", this);
+		bleachROI = new DataInput<NormalizedSampleFunction>(NormalizedSampleFunction.class,"bleachROI", this);
 		addInput(normalizedImages);
 		addInput(bleachROI);
 
@@ -57,7 +58,7 @@ public class FitBleachSpot extends Task {
 	@Override
 	protected void compute0(TaskContext context, final ClientTaskStatusSupport clientTaskStatusSupport) throws Exception {
 		// get inputs
-		ROI bleach_roi = context.getData(bleachROI);
+		NormalizedSampleFunction bleach_roi = context.getData(bleachROI);
 		FloatImage normImage = (FloatImage)context.getData(normalizedImages).getAllImages()[0];
 		
 		// do operation
