@@ -23,15 +23,21 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	private boolean switchRowsColumns;
 	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
 	private int[] exportMultipleParamScans;
+	public static enum csvRoiLayout {var_time_val,time_sim_var}
+	private csvRoiLayout csvLayout;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans) {
+public ASCIISpecs(ExportFormat format, ExportConstants.DataType dataType2, boolean switchRowsColumns,ExportSpecs.SimNameSimDataID[] simNameSimDataIDs,int[] exportMultipleParamScans,csvRoiLayout csvLayout) {
 	this.format = format;
 	this.dataType = dataType2;
 	this.switchRowsColumns = switchRowsColumns;
 	this.simNameSimDataIDs = simNameSimDataIDs;
 	this.exportMultipleParamScans = exportMultipleParamScans;
+	this.csvLayout = csvLayout;
+}
+public csvRoiLayout getCSVRoiLayout(){
+	return csvLayout;
 }
 /**
  * Insert the method's description here.
