@@ -119,7 +119,7 @@ public class BiomodelsDB_TestSuite {
 			File outDir = null;
 			boolean isDetailed;
 
-			{ //scope for commmand line processing
+			{ //scope for command line processing
 
 				Options commandOptions = new Options();
 				Option help = new Option("help",false,"show help");
