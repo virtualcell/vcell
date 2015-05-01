@@ -654,6 +654,9 @@ public void setIsSmoldyn(boolean isSmoldyn){
 public void setSimulationSelector(ExportSpecs.SimulationSelector simulationSelector){
 	getASCIISettingsPanel1().setSimulationSelector(simulationSelector);
 }
+public void setIsCSVExport(boolean isCSVExport){
+	getASCIISettingsPanel1().setIsCSVExport(isCSVExport);
+}
 /**
  * Comment
  */
