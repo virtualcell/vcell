@@ -32,6 +32,9 @@ public class ROI implements Matchable {
 	// This specifies the region of interest in an image/stack - contains all the images in the stack
 	// Hence storing it in FloatImage. The extent/numX, numY, numZ will be smaller than the original image.
 	// UShortImage used as 2D here, with Z slices in the array. (not related to T, which imageDataset has to store)
+	//
+	// nonzero pixel values are considered part of the ROI, zero pixels are not.
+	//
 	private UShortImage[] roiImages = null;
 	private String roiName;
 	

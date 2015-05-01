@@ -1,12 +1,38 @@
 package org.vcell.vmicro.op;
 
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction.SampleStatistics;
 
 import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 
-public class GenerateReducedDataROIOp {
+public class GenerateReducedDataOp {
+	
+	public RowColumnResultSet generateReducedData(ImageTimeSeries<? extends Image> imageTimeSeries, NormalizedSampleFunction[] rois) throws Exception {
+		int numROIs = rois.length;
+		
+		int numTimes = imageTimeSeries.getSizeT();
+		
+		String[] roiNames = new String[numROIs+1];
+		roiNames[0] = "t";
+		for (int i=0; i<numROIs; i++){
+			roiNames[i+1] = rois[i].getName();
+		}
+		RowColumnResultSet reducedData = new RowColumnResultSet(roiNames);
+		
+		for (int t=0;t<numTimes;t++){
+			double[] row = new double[numROIs+1];
+			row[0] = imageTimeSeries.getImageTimeStamps()[t];
+			for (int r=0; r<numROIs; r++){
+				SampleStatistics result = rois[r].sample(imageTimeSeries.getAllImages()[t]);
+				row[r+1] = result.weightedMean;
+			}
+			reducedData.addRow(row);
+		}
+		return reducedData;
+	}
 	
 	public RowColumnResultSet generateReducedData(ImageTimeSeries<? extends Image> imageTimeSeries, ROI[] rois) throws Exception {
 		int numROIs = rois.length;

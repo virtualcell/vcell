@@ -3,9 +3,11 @@ package org.vcell.vmicro.op.display;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -94,66 +96,85 @@ public class DisplayTimeSeriesOp {
 		
 	}
 		
-	public void displayImageTimeSeries(final ImageTimeSeries<? extends Image> imageTimeSeries, String title, WindowListener windowListener) throws ImageException, IOException {
+	public void displayImageTimeSeries(final ImageTimeSeries<? extends Image> imageTimeSeries, final String title, final WindowListener windowListener) throws ImageException, IOException {
 		
-		PDEDataViewer pdeDataViewer = new PDEDataViewer();
-
-		DataSetControllerProvider dataSetControllerProvider = getDataSetControllerProvider(imageTimeSeries,pdeDataViewer);
-		VCDataManager vcDataManager = new VCDataManager(dataSetControllerProvider);
-		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-		final VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
-			public User getOwner() {	return new User("nouser",null);		}
-			public String getID()  {	return "mydata";					}
-		};
-		PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);
-		NewClientPDEDataContext myPdeDataContext = new NewClientPDEDataContext(pdeDataManager);
-		
-		JFrame jframe = new TopLevelFrame();
-		jframe.setTitle(title);
-		jframe.getContentPane().add(pdeDataViewer);
-		jframe.setSize(1000,600);
-		jframe.setVisible(true);
-		if (windowListener!=null){
-			jframe.addWindowListener(windowListener);
-		}
-		
-		final RequestManager requestManager = new RequestManagerAdapter(){
-			
-		};
-		
-		DataViewerManager dataViewerManager = new DataViewerManager() {
-			public void dataJobMessage(DataJobEvent event){
-			}
-			public void exportMessage(ExportEvent event){
-			}
-			public void addDataListener(DataListener newListener){
-			}
-			public UserPreferences getUserPreferences(){
-				return null; // getRequestManager().getUserPreferences();
-			}
-			public void removeDataListener(DataListener newListener){
-			}
-			public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
-				//getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
-			}
-			public void simStatusChanged(SimStatusEvent simStatusEvent) {
-			}
-			public User getUser() {
-				return new User("dummy", new KeyValue("123"));
-//				return getRequestManager().getDocumentManager().getUser();
-			}
-			public RequestManager getRequestManager() {
-				return requestManager;
-			}
-		};
-
 		try {
-			pdeDataViewer.setDataViewerManager(dataViewerManager);
-		} catch (PropertyVetoException e) {
+			System.out.println("starting to prepare data for time series viewing");
+			final PDEDataViewer pdeDataViewer = new PDEDataViewer();
+			DataSetControllerProvider dataSetControllerProvider;
+			try {
+				dataSetControllerProvider = getDataSetControllerProvider(imageTimeSeries,pdeDataViewer);
+			} catch (ImageException | IOException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException(e1.getMessage(),e1);
+			}
+			VCDataManager vcDataManager = new VCDataManager(dataSetControllerProvider);
+			OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+			final VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
+				public User getOwner() {	return new User("nouser",null);		}
+				public String getID()  {	return "mydata";					}
+			};
+			PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);
+			final NewClientPDEDataContext myPdeDataContext = new NewClientPDEDataContext(pdeDataManager);
+
+			final RequestManager requestManager = new RequestManagerAdapter(){
+				
+			};
+
+			final DataViewerManager dataViewerManager = new DataViewerManager() {
+				public void dataJobMessage(DataJobEvent event){
+				}
+				public void exportMessage(ExportEvent event){
+				}
+				public void addDataListener(DataListener newListener){
+				}
+				public UserPreferences getUserPreferences(){
+					return null; // getRequestManager().getUserPreferences();
+				}
+				public void removeDataListener(DataListener newListener){
+				}
+				public void startExport(OutputContext outputContext,ExportSpecs exportSpecs){
+					//getLocalRequestManager().startExport(outputContext, FieldDataWindowManager.this, exportSpecs);
+				}
+				public void simStatusChanged(SimStatusEvent simStatusEvent) {
+				}
+				public User getUser() {
+					return new User("dummy", new KeyValue("123"));
+//				return getRequestManager().getDocumentManager().getUser();
+				}
+				public RequestManager getRequestManager() {
+					return requestManager;
+				}
+			};
+
+			System.out.println("ready to display time series");
+			
+			SwingUtilities.invokeAndWait(new Runnable() {
+				
+				@Override
+				public void run() {
+					JFrame jframe = new TopLevelFrame();
+					jframe.setTitle(title);
+					jframe.getContentPane().add(pdeDataViewer);
+					jframe.setSize(1000,600);
+					jframe.setVisible(true);
+					if (windowListener!=null){
+						jframe.addWindowListener(windowListener);
+					}
+
+					try {
+						pdeDataViewer.setDataViewerManager(dataViewerManager);
+					} catch (PropertyVetoException e) {
+						e.printStackTrace();
+					}
+					
+					pdeDataViewer.setPdeDataContext(myPdeDataContext);
+				}
+			});
+		} catch (InvocationTargetException | InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		pdeDataViewer.setPdeDataContext(myPdeDataContext);
 	}
 	
 	
