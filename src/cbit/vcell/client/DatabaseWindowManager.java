@@ -47,8 +47,8 @@ import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.ACLEditor;

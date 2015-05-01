@@ -15,40 +15,27 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Hashtable;
 
-import javax.swing.filechooser.FileFilter;
-
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
-import org.vcell.model.rbm.RbmNetworkGenerator;
-import org.vcell.sedml.SEDMLExporter;
-import org.vcell.solver.nfsim.NFsimXMLWriter;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
-import org.vcell.util.FileUtils;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.exporter.FileFilters;
+import org.vcell.util.gui.exporter.SelectorExtensionFilter;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.Node;
 import cbit.vcell.geometry.surface.Quadrilateral;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
@@ -58,10 +45,10 @@ import cbit.vcell.xml.XmlHelper;
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
-public class ExportToXML extends AsynchClientTask {
+public class ExportDocument extends ExportTask {
 	
-	public ExportToXML() {
-		super("Exporting document to XML", TASKTYPE_NONSWING_BLOCKING);
+	public ExportDocument() {
+		super("Exporting document", TASKTYPE_NONSWING_BLOCKING);
 	}
 /**
  * Insert the method's description here.
@@ -92,17 +79,22 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
-	File exportFile = (File)hashTable.get("exportFile");
-	FileFilter fileFilter = (FileFilter)hashTable.get("fileFilter");
-	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+	File exportFile = fetch(hashTable,EXPORT_FILE,File.class, true);
+	SelectorExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,SelectorExtensionFilter.class, true);
+	
+	DocumentManager documentManager = fetch(hashTable,DocumentManager.IDENT,DocumentManager.class,true);
 	String resultString = null;
 	if (documentToExport instanceof BioModel) {
 		BioModel bioModel = (BioModel)documentToExport;
+		SimulationContext chosenSimContext = fetch(hashTable,SIM_CONTEXT,SimulationContext.class, false);
+		fileFilter.writeBioModel(documentManager, bioModel, exportFile, chosenSimContext); 
+/*		DELETE this after finishing validation testing
+		
 		// check format requested
 		if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
 			// matlab from application; get application
-			Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
-			SimulationContext chosenSimContext = bioModel.getSimulationContext(chosenSimContextIndex.intValue());
+	
+			SimulationContext chosenSimContext = fetch(hashTable,SIM_CONTEXT,SimulationContext.class, true);
 			// regenerate a fresh MathDescription
 			MathMapping mathMapping = chosenSimContext.createNewMathMapping();
 			MathDescription mathDesc = mathMapping.getMathDescription();
@@ -281,7 +273,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 				return;
 			}
-		}
+		}*/
 	} else if (documentToExport instanceof MathModel) {
 		MathModel mathModel = (MathModel)documentToExport;
 		// check format requested

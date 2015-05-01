@@ -13,7 +13,12 @@ package cbit.vcell.client.task;
 import java.util.Hashtable;
 
 
+
+
+
+
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
 /**
  * Insert the type's description here.
@@ -65,6 +70,32 @@ public abstract class AsynchClientTask {
 	public ClientTaskStatusSupport getClientTaskStatusSupport() {
 		return clientTaskStatusSupport;
 	}
+	
+	/**
+	 * fetch and type convert object from hash
+	 * @param hashTable not null
+	 * @param key name (not null)
+	 * @param clzz required type, not null
+	 * @param required throw exception if required and not present 
+	 * @return object cast to correct type or possibly null if !required
+	 * @throws ProgrammingException if key not of required type 
+	 * @throws ProgrammingException required is true and key not present 
+	 */
+	@SuppressWarnings("unchecked")
+	protected <T> T fetch(Hashtable<String, Object> hashTable, String key, Class<T> clzz, boolean required) {
+		Object obj = hashTable.get(key);
+		if (obj != null) {
+			Class<? extends Object> oclzz = obj.getClass();
+			if (clzz.isAssignableFrom(oclzz)) {
+				return (T) obj;
+			}
+			throw new ProgrammingException("object " + obj + " of type " + oclzz.getName() + " not instance of " + clzz.getName());
+		}
+		if (required) {
+			throw new ProgrammingException("key " + key + " not found in async hashtable");
+		}
+		return null;
+	}
 
 	/**
 	 * Insert the method's description here.
@@ -98,4 +129,6 @@ public abstract class AsynchClientTask {
 //	public void setFollowupTasks(AsynchClientTask[] followupTasks) {
 //		this.followupTasks = followupTasks;
 //	}
+	
+	
 }

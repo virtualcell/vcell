@@ -30,6 +30,10 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Ion Moraru
  */
 public class DocumentToExport extends AsynchClientTask {
+	/**
+	 * key for hashtable
+	 */
+	public static final String EXPORT_DOCUMENT = "documentToExport";
 	public DocumentToExport() {
 		super("Fetching document to be exported", TASKTYPE_NONSWING_BLOCKING);
 	}
@@ -70,7 +74,7 @@ public class DocumentToExport extends AsynchClientTask {
 			}
 		}
 		if (doc != null) {
-			hashTable.put("documentToExport", doc);
+			hashTable.put(EXPORT_DOCUMENT, doc);
 		} else {
 			throw new UnsupportedOperationException(
 					"TopLevelWindowManager subclass "

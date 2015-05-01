@@ -21,7 +21,7 @@ import cbit.vcell.client.TopLevelWindowManager;
  * Creation date: (5/31/2004 6:03:16 PM)
  * @author: Ion Moraru
  */
-public class FinishExport extends AsynchClientTask {
+public class FinishExport extends ExportTask {
 	
 	public FinishExport() {
 		super("Updating the workspace", TASKTYPE_SWING_BLOCKING, false, false);
@@ -36,7 +36,7 @@ public class FinishExport extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	MDIManager mdiManager= (MDIManager)hashTable.get("mdiManager");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
-		Object obj = hashTable.get(ChooseFile.RENAME_KEY);
+		Object obj = hashTable.get(RENAME_KEY);
 		if (obj != null) {
 			String fn = obj.toString();
 			DialogUtils.showInfoDialog(topLevelWindowManager.getComponent(),"Export saved as  " + fn);

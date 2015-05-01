@@ -1,11 +1,15 @@
 package org.vcell.util;
 
+
 /**
  * runtime assertion facility that throws exception instead of errors
  * @author gweatherby
- *
  */
 public class VCAssert {
+	/**
+	 * prefix for {@link ProgrammingException} messages
+	 */
+	private static final String MSG_PREFIX = "Programming error:  ";
 	
 	/**
 	 * @param condition
@@ -16,7 +20,7 @@ public class VCAssert {
 		if (condition) {
 			return;
 		}
-		throw new ProgrammingException(message);
+		throw new ProgrammingException(MSG_PREFIX + message);
 	}
 	
 	/**
@@ -28,7 +32,7 @@ public class VCAssert {
 		if (!condition) {
 			return;
 		}
-		throw new ProgrammingException(message);
+		throw new ProgrammingException(MSG_PREFIX + message);
 	}
 	/**
 	 * object not null
@@ -40,6 +44,18 @@ public class VCAssert {
 			throw new NullPointerException();
 		}
 	}
+	
+	/**
+	 * validate object is of specified type
+	 * @param fileFilter; not null
+	 * @param clzz required type; non null
+	 */
+	public static <T> void ofType(Object obj, Class<T> clzz) {
+		if (!clzz.isAssignableFrom(obj.getClass())) {
+			throw new ProgrammingException(MSG_PREFIX + "Object of type " + obj.getClass().getName() 
+					+ " not instance of type " + clzz.getName() );
+		}
+	}
 
 	/**
 	 * prevent objects
@@ -47,5 +63,6 @@ public class VCAssert {
 	private VCAssert() {
 		//make this class an interface in Java 8
 	}
+
 
 }
