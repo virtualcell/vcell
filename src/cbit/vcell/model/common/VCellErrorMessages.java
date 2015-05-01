@@ -89,6 +89,7 @@ public class VCellErrorMessages {
 	public static final String TripleClickOrRightClick = "<br><font color=blue>Triple click to edit an element, Right click for more options.</font>";
 
 	public static final String SpecifyMolecularTypes = "Specify " + MolecularType.typeName;
+	public static final String AddMolecularTypes = "Add " + MolecularType.typeName;
 
 	
 	// ========== BioModel end =======================//
