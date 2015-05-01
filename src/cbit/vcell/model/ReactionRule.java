@@ -31,6 +31,7 @@ import org.vcell.util.Matchable;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.Displayable;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -43,7 +44,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
 public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener,
-	IssueSource, Displayable
+	IssueSource, Identifiable, Displayable
 	{
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();

@@ -10,8 +10,16 @@
 
 package cbit.vcell.model;
 
+import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.Identifiable;
-
+/*
+ * used in  relationship objects (mapping between BioModel object and BioPax entity)
+ * 
+ * RelationshipObject implements Identifiable{
+ *   private BioPaxObject biopaxObject = null;
+ *   private BioModelEntityObject bioModelObject
+ *   ...
+ */
 public interface BioModelEntityObject extends Identifiable{
 	String getName();
 	String getTypeLabel();

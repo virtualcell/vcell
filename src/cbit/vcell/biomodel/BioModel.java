@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.relationship.RelationshipModel;
@@ -49,6 +50,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -976,7 +979,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
-	
 	TokenMangler.checkNameProperty(this, "BioModel", evt);
 }
 
@@ -1022,6 +1024,20 @@ public Identifiable getIdentifiableObject(VCID vcid) {
 		String localName = vcid.getLocalName();
 		return getModel().getReactionStep(localName);
 	}
+
+	if (vcid.getClassName().equals(VCID.CLASS_MOLECULE)){
+		String localName = vcid.getLocalName();
+		return getModel().getRbmModelContainer().getMolecularType(localName);
+	}
+	if (vcid.getClassName().equals(VCID.CLASS_REACTION_RULE)){
+		String localName = vcid.getLocalName();
+		return getModel().getRbmModelContainer().getReactionRule(localName);
+	}
+	if (vcid.getClassName().equals(VCID.CLASS_OBSERVABLE)){
+		String localName = vcid.getLocalName();
+		return getModel().getRbmModelContainer().getObservable(localName);
+	}
+
 //	if (vcid.getClassName().equals("Application")){
 //		String localName = vcid.getLocalName();
 //		return getSimulationContexts(localName);
@@ -1056,12 +1072,20 @@ public VCID getVCID(Identifiable identifiable) {
 	}else if (identifiable instanceof BioPaxObject){
 		localName = ((BioPaxObject)identifiable).getID();
 		className = "BioPaxObject";
+		
+	}else if (identifiable instanceof MolecularType){
+		localName = ((MolecularType)identifiable).getName();
+		className = "MolecularType";
+	}else if (identifiable instanceof ReactionRule){
+		localName = ((ReactionRule)identifiable).getName();
+		className = "ReactionRule";
+	}else if (identifiable instanceof RbmObservable){
+		localName = ((RbmObservable)identifiable).getName();
+		className = "RbmObservable";
 	}else{
 		throw new RuntimeException("unsupported Identifiable class");
 	}
-	
 	localName = TokenMangler.mangleVCId(localName);
-		
 	VCID vcid;
 	try {
 		vcid = VCID.fromString(className+"("+localName+")");
@@ -1069,7 +1093,6 @@ public VCID getVCID(Identifiable identifiable) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}
-
 	return vcid;
 }
 
@@ -1081,6 +1104,10 @@ public Set<Identifiable> getAllIdentifiables() {
 //	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
 	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
 	allIdenfiables.addAll(biopaxObjects);
+	
+	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getMolecularTypeList());
+	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getReactionRuleList());
+	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getObservableList());
 	allIdenfiables.add(this);
 	return allIdenfiables;
 }

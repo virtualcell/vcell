@@ -27,6 +27,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.Displayable;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.parser.Expression;
@@ -36,7 +37,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class RbmObservable implements Serializable, Matchable, SymbolTableEntry, PropertyChangeListener,
-	IssueSource, Displayable
+	IssueSource, Identifiable, Displayable
 {
 	public static enum ObservableType {
 		Molecules,
