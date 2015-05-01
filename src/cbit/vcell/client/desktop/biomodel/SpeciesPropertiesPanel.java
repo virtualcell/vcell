@@ -245,6 +245,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private class EventHandler extends MouseAdapter implements java.awt.event.ActionListener, HyperlinkListener, FocusListener, PropertyChangeListener, TreeSelectionListener,
 	TreeWillExpandListener
 	{
+		@Override
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			Object source = e.getSource();
 			if (source == nameTextField) {
@@ -273,8 +274,10 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			}
 		}
+		@Override
 		public void focusGained(FocusEvent e) {
 		}
+		@Override
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
@@ -282,6 +285,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 				changeName();
 			} 
 		}
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSpeciesContext) {
 				updateInterface();
