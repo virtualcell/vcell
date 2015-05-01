@@ -169,7 +169,7 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 			
 			final float StrokeWidth = 7.0f;
 			final int circleOffset = 15;
-			final double extent = 70;
+			final double extent = 80;
 			
 			BasicStroke bs = new BasicStroke(StrokeWidth);
 			g2d.setStroke(bs);				// background ring
@@ -183,8 +183,8 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 			Point2D center = new Point2D.Float(x, y);
 			float rr = 55;
 			Point2D focus = new Point2D.Float(x, y);
-			float[] dist = {0.1f, 0.75f};
-			Color[] colors = {Color.green, Color.lightGray};
+			float[] dist = {0.1f, 0.2f, 0.7f};
+			Color[] colors = {Color.green, Color.green, Color.lightGray};
 			RadialGradientPaint paint = new RadialGradientPaint(center, rr, focus, dist, colors, CycleMethod.NO_CYCLE);
 			g2d.setPaint(paint);
 
