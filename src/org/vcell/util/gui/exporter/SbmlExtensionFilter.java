@@ -30,22 +30,17 @@ import cbit.vcell.xml.XmlHelper;
 @SuppressWarnings("serial")
 public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	private final static String FNAMES[] = {".xml" ,".sbml"};
-	/*
-	public static final FileFilter FILE_FILTER_SBML_12	= new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_21	= new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_22	= new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version2>  (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_23	= new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version3>  (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_24	= new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version4>  (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_31_CORE = new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level3,Version1> Core (.xml .sbml)",SelectorExtensionFilter.Selector.NONSPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	public static final FileFilter FILE_FILTER_SBML_31_SPATIAL = new SelectorExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level3,Version1> Spatial <Version1> (.xml .sbml)",SelectorExtensionFilter.Selector.SPATIAL,SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SBML);
-	*/
 	
 	private final int sbmlLevel;
 	private final int sbmlVersion;
 
 	private final boolean isSpatial;
 
-	private Simulation selectedSim;
+	/**
+	 * selected sim Whose Overrides Should Be Exported;
+	 * optional; may be null
+	 */
+	private Simulation selectedSimWOSBE;
 	private SimulationContext selectedSimContext;
 	
 	private static String makeDescription(int level, int version, boolean spatial) {
@@ -101,40 +96,40 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	@Override
 	public void askUser(ChooseContext c) throws UserCancelException {
 		BioModel bioModel = c.chosenContext.getBioModel();
-		SimulationContext[] applicableSimContexts = new SimulationContext[1];
-		applicableSimContexts[0] = c.chosenContext;
 		JFrame currentWindow = c.currentWindow;
 		
-		selectedSim  = null;
+		selectedSimWOSBE  = null;
 		selectedSimContext = c.chosenContext;
 		
 		// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
 		Structure[] structures = bioModel.getModel().getStructures();
 		// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
 		// This is needed in ApplnSelectionAndStructureSizeInputPanel
-		
-		
-		
 
 		String strucName = null;
 		double structSize = 1.0;
 		int structSelection = -1;
 		int option = JOptionPane.CANCEL_OPTION;
-		Simulation chosenSimulation = null;
 
 		ApplnSelectionAndStructureSizeInputPanel applnStructInputPanel = null;
 		while (structSelection < 0) {
 			applnStructInputPanel = new ApplnSelectionAndStructureSizeInputPanel();
-			applnStructInputPanel.setSimContexts(applicableSimContexts);
+			applnStructInputPanel.setSimContext(c.chosenContext);
 			applnStructInputPanel.setStructures(structures);
-			applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
-			applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
-			option = DialogUtils.showComponentOKCancelDialog(currentWindow, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
-			structSelection = applnStructInputPanel.getStructSelectionIndex();
-			if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-				break;
-			} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-				DialogUtils.showErrorDialog(currentWindow, "Please select a structure and set its size");
+			if (applnStructInputPanel.isNeedStructureSizes()) {
+				applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
+				applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
+				option = DialogUtils.showComponentOKCancelDialog(currentWindow, applnStructInputPanel, "Specify Structure Size to Export:");
+				structSelection = applnStructInputPanel.getStructSelectionIndex();
+				if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+					break;
+				} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
+					DialogUtils.showErrorDialog(currentWindow, "Please select a structure and set its size");
+				}
+			}
+			else {
+				structSelection = 0;  //adapt to legacy logic ...
+				option = JOptionPane.OK_OPTION;
 			}
 		}
 
@@ -142,9 +137,6 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			applnStructInputPanel.applyStructureNameAndSizeValues();
 			strucName = applnStructInputPanel.getSelectedStructureName();
 			selectedSimContext = applnStructInputPanel.getSelectedSimContext();
-			
-//CARRY			hashTable.put("selectedSimContext", chosenSimContext);
-
 			GeometryContext geoContext = selectedSimContext.getGeometryContext();
 			if (!isSpatial) {
 				// calculate structure Sizes only if appln is not spatial
@@ -197,7 +189,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 				simSelectionPanel.setSimulations(overriddenSims);
 				int simOption = DialogUtils.showComponentOKCancelDialog(currentWindow, simSelectionPanel, "Select Simulation whose overrides should be exported:");
 				if (simOption == JOptionPane.OK_OPTION) {
-					selectedSim = chosenSimulation = simSelectionPanel.getSelectedSimulation();
+					selectedSimWOSBE = simSelectionPanel.getSelectedSimulation();
 //					if (chosenSimulation != null) {
 //CARRY						hashTable.put("selectedSimulation", chosenSimulation);
 //					}
@@ -215,13 +207,13 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			throw UserCancelException.CANCEL_XML_TRANSLATION;
 		}
 
-		if (chosenSimulation != null) {
+		if (selectedSimWOSBE != null) {
 			String selectedFileName = c.filename;
 		// rename file to contain exported simulation.
 			String ext = FilenameUtils.getExtension(selectedFileName);
 			String base = FilenameUtils.getBaseName(selectedFileName);
 			String path = FilenameUtils.getPath(selectedFileName);
-			base += "_"  + TokenMangler.mangleToSName(chosenSimulation.getName());
+			base += "_"  + TokenMangler.mangleToSName(selectedSimWOSBE.getName());
 			selectedFileName = path + base + ext; 
 			c.selectedFile.renameTo(new File(selectedFileName));
 		}
@@ -231,13 +223,13 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception {
 		VCAssert.assertValid(selectedSimContext);
 		final int sbmlPkgVersion = 0;
-		if (selectedSim == null) {
+		if (selectedSimWOSBE == null) {
 			String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, null);
 			XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 			return;
 		} else {
-			for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
-				SimulationJob simJob = new SimulationJob(selectedSim, sc, null);
+			for (int sc = 0; sc < selectedSimWOSBE.getScanCount(); sc++) {
+				SimulationJob simJob = new SimulationJob(selectedSimWOSBE, sc, null);
 				String resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, simJob);
 				// Need to export each parameter scan into a separate file 
 				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
