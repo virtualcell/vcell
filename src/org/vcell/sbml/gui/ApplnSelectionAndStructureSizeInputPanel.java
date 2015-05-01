@@ -10,6 +10,9 @@
 
 package org.vcell.sbml.gui;
 
+import org.vcell.util.ProgrammingException;
+import org.vcell.util.VCAssert;
+
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Structure;
@@ -20,32 +23,36 @@ import cbit.vcell.model.Structure;
  * Creation date: (11/13/2006 12:51:07 PM)
  * @author: Anuradha Lakshminarayana
  */
+@SuppressWarnings("serial")
 public class ApplnSelectionAndStructureSizeInputPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjApplnListPanel = null;
 	private javax.swing.JPanel ivjStructSizePanel = null;
 	private javax.swing.JScrollPane ivjApplnNamesScrollPane = null;
-	private javax.swing.JList ivjApplnNamesList = null;
+	private javax.swing.JList<String> ivjApplnNamesList = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private javax.swing.DefaultListModel ivjApplnNamesListModel = null;
+	private javax.swing.DefaultListModel<String> ivjApplnNamesListModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JLabel ivjSizeInfoLabel = null;
 	private javax.swing.JLabel ivjSizeLabel = null;
 	private javax.swing.JTextField ivjSizeTextField = null;
-	private javax.swing.JList ivjStructuresList = null;
-	private javax.swing.DefaultListModel ivjStructuresListModel = null;
+	private javax.swing.JList<String> ivjStructuresList = null;
+	private javax.swing.DefaultListModel<String> ivjStructuresListModel = null;
 	private javax.swing.ListSelectionModel ivjstructuresListSelectionModel = null;
 	private javax.swing.JLabel ivjUnitsLabel = null;
 	private Structure[] fieldStructures = null;
 	private java.lang.String fieldSelectedStructureName = null;
 	private double fieldStructureSize = 0;
-	private SimulationContext[] fieldSimContexts = null;
-	private SimulationContext fieldSelectedSimContext = null;
+	private SimulationContext fieldSimContext = null;
 	private String sizeInfoLabelText = "<html>Compartments in the Virtual Cell are specified in terms of relative " +
 			"measurements (i.e., surface_to_volume ratio and volumeFraction). SBML requires absolute sizes for " +
 			"compartments. Using the relative sizes of the compartments and the size of one compartment, all " +
 			"compartment sizes will be automatically computed. <br><br>Please specify size for one of the " +
 			"following comparments: </html>";
+	/**
+	 * does user need to set structure sizes?
+	 */
+	private boolean needStructureSizes;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -53,8 +60,6 @@ class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.
 				connPtoP3SetTarget();
 			if (evt.getSource() == ApplnSelectionAndStructureSizeInputPanel.this && (evt.getPropertyName().equals("structures"))) 
 				connEtoC4(evt);
-			if (evt.getSource() == ApplnSelectionAndStructureSizeInputPanel.this && (evt.getPropertyName().equals("simContexts"))) 
-				connEtoC2(evt);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == ApplnSelectionAndStructureSizeInputPanel.this.getstructuresListSelectionModel()) 
@@ -80,25 +85,9 @@ public ApplnSelectionAndStructureSizeInputPanel(java.awt.LayoutManager layout) {
 	super(layout);
 }
 
-
-/**
- * ApplnSelectionAndStructureSizeInputPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public ApplnSelectionAndStructureSizeInputPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
+public boolean isNeedStructureSizes() {
+	return needStructureSizes;
 }
-
-
-/**
- * ApplnSelectionAndStructureSizeInputPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public ApplnSelectionAndStructureSizeInputPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
 
 /**
  * Comment
@@ -109,24 +98,6 @@ public void applyStructureNameAndSizeValues() {
 	setStructureSize(Double.parseDouble(getSizeTextField().getText()));
 }
 
-
-/**
- * connEtoC2:  (ApplnSelectionAndStructureSizeInputPanel.applicationNames --> ApplnSelectionAndStructureSizeInputPanel.fillApplicationNamesList([Ljava.lang.String;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.fillApplicationNamesList(this.getSimContexts());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC3:  (structuresListSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> ApplnSelectionAndStructureSizeInputPanel.listSelectionUnit()V)
@@ -241,33 +212,6 @@ private void connPtoP3SetTarget() {
 	}
 }
 
-
-/**
- * Comment
- */
-private void fillApplicationNamesList(cbit.vcell.mapping.SimulationContext[] applications) {
-	if (getSimContexts() == null) {
-		throw new RuntimeException("ApplicationNames is null, no names to populate list.");
-	}
-
-	// Fill the Jlist with the application names
-	for (int i = 0; i < applications.length; i++){
-		getApplnNamesListModel().addElement(applications[i].getName());
-	}
-
-	// select the first name as default selection
-	getApplnNamesList().setSelectedIndex(0);
-	// if this simContext  has its sizes set, disable the structureSizePanel
-	if (applications[0].getGeometryContext().isAllSizeSpecifiedPositive()) {
-		// disable structureSizePanel
-		enableStructureSizePanel(false);
-	} else {
-		// structure sizes not set, enable the panel
-		enableStructureSizePanel(true);
-	}
-}
-
-
 /**
  * Comment
  */
@@ -332,10 +276,10 @@ private javax.swing.JPanel getApplnListPanel() {
  * Return the JList1 property value.
  * @return javax.swing.JList
  */
-private javax.swing.JList getApplnNamesList() {
+private javax.swing.JList<String> getApplnNamesList() {
 	if (ivjApplnNamesList == null) {
 		try {
-			ivjApplnNamesList = new javax.swing.JList();
+			ivjApplnNamesList = new javax.swing.JList<>();
 			ivjApplnNamesList.setName("ApplnNamesList");
 			ivjApplnNamesList.setBounds(0, 0, 160, 120);
 			ivjApplnNamesList.setSelectedIndex(0);
@@ -351,10 +295,10 @@ private javax.swing.JList getApplnNamesList() {
  * Return the defaultListModel1 property value.
  * @return javax.swing.DefaultListModel
  */
-private javax.swing.DefaultListModel getApplnNamesListModel() {
+private javax.swing.DefaultListModel<String> getApplnNamesListModel() {
 	if (ivjApplnNamesListModel == null) {
 		try {
-			ivjApplnNamesListModel = new javax.swing.DefaultListModel();
+			ivjApplnNamesListModel = new javax.swing.DefaultListModel<>();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -403,7 +347,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @see #setSelectedSimContext
  */
 public cbit.vcell.mapping.SimulationContext getSelectedSimContext() {
-	return fieldSelectedSimContext;
+	return fieldSimContext;
 }
 
 
@@ -415,28 +359,6 @@ public cbit.vcell.mapping.SimulationContext getSelectedSimContext() {
 public java.lang.String getSelectedStructureName() {
 	return fieldSelectedStructureName;
 }
-
-
-/**
- * Gets the simContexts property (cbit.vcell.mapping.SimulationContext[]) value.
- * @return The simContexts property value.
- * @see #setSimContexts
- */
-public cbit.vcell.mapping.SimulationContext[] getSimContexts() {
-	return fieldSimContexts;
-}
-
-
-/**
- * Gets the simContexts index property (cbit.vcell.mapping.SimulationContext) value.
- * @return The simContexts property value.
- * @param index The index value into the property array.
- * @see #setSimContexts
- */
-public cbit.vcell.mapping.SimulationContext getSimContexts(int index) {
-	return getSimContexts()[index];
-}
-
 
 /**
  * Return the SizeInfoLabel property value.
@@ -599,10 +521,10 @@ public double getStructureSize() {
  * Return the StructuresList property value.
  * @return javax.swing.JList
  */
-private javax.swing.JList getStructuresList() {
+private javax.swing.JList<String> getStructuresList() {
 	if (ivjStructuresList == null) {
 		try {
-			ivjStructuresList = new javax.swing.JList();
+			ivjStructuresList = new javax.swing.JList<>();
 			ivjStructuresList.setName("StructuresList");
 			ivjStructuresList.setBounds(0, 0, 160, 120);
 			ivjStructuresList.setSelectedIndex(0);
@@ -618,10 +540,10 @@ private javax.swing.JList getStructuresList() {
  * Return the StructuresListModel property value.
  * @return javax.swing.DefaultListModel
  */
-private javax.swing.DefaultListModel getStructuresListModel() {
+private javax.swing.DefaultListModel<String> getStructuresListModel() {
 	if (ivjStructuresListModel == null) {
 		try {
-			ivjStructuresListModel = new javax.swing.DefaultListModel();
+			ivjStructuresListModel = new javax.swing.DefaultListModel<>();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -757,26 +679,15 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 private void setSelectedSimContextAndEnableStructureSizePanel() {
-	int index = getApplnNamesList().getSelectedIndex();
-	if (index < 0 || index > getSimContexts().length) {
-		throw new RuntimeException("Not a valid application selection; Select a valid application.");
-	}
-	boolean bIsSpatial = (getSimContexts(index).getGeometry().getDimension() > 0) ? true : false;
-	if (!bIsSpatial) {
+	boolean nonSpatial = fieldSimContext.getGeometry().getDimension() == 0;
+	if (nonSpatial) {
 		// Check if selected application has its structure sizes set; if so, disable the structureSize panel
-		if (getSimContexts(index).getGeometryContext().isAllSizeSpecifiedPositive()) {
-			// disable structureSizePanel
-			enableStructureSizePanel(false);
-		} else {
-			// structure sizes not set, enable the panel
-			enableStructureSizePanel(true);
-		}
-	} else {
-		// the structureSize panel should not be visible if application is spatial - no need to set sizes in spatial
-		getStructSizePanel().setVisible(false);
+		needStructureSizes = !fieldSimContext.getGeometryContext().isAllSizeSpecifiedPositive();
+		enableStructureSizePanel(needStructureSizes);
+	} 
+	else {
+		needStructureSizes = false;
 	}
-	
-	setSelectedSimContext(getSimContexts(index));
 }
 
 private void enableStructureSizePanel(boolean bEnable) {
@@ -799,12 +710,19 @@ private void enableStructureSizePanel(boolean bEnable) {
 /**
  * Sets the selectedSimContext property (cbit.vcell.mapping.SimulationContext) value.
  * @param selectedSimContext The new value for the property.
- * @see #getSelectedSimContext
  */
-public void setSelectedSimContext(cbit.vcell.mapping.SimulationContext selectedSimContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSelectedSimContext;
-	fieldSelectedSimContext = selectedSimContext;
-	firePropertyChange("selectedSimContext", oldValue, selectedSimContext);
+public void setSimContext(cbit.vcell.mapping.SimulationContext application) {
+	fieldSimContext = application;
+	VCAssert.assertValid(application);
+
+	getApplnNamesListModel().addElement(application.getName());
+
+	// select the first name as default selection
+	getApplnNamesList().setSelectedIndex(0);
+	// if this simContext  has its sizes set, disable the structureSizePanel
+	boolean allSet = application.getGeometryContext().isAllSizeSpecifiedPositive();
+	// disable structureSizePanel
+	enableStructureSizePanel(!allSet);
 }
 
 
@@ -818,34 +736,6 @@ public void setSelectedStructureName(java.lang.String selectedStructureName) {
 	fieldSelectedStructureName = selectedStructureName;
 	firePropertyChange("selectedStructureName", oldValue, selectedStructureName);
 }
-
-
-/**
- * Sets the simContexts property (cbit.vcell.mapping.SimulationContext[]) value.
- * @param simContexts The new value for the property.
- * @see #getSimContexts
- */
-public void setSimContexts(cbit.vcell.mapping.SimulationContext[] simContexts) {
-	cbit.vcell.mapping.SimulationContext[] oldValue = fieldSimContexts;
-	fieldSimContexts = simContexts;
-	firePropertyChange("simContexts", oldValue, simContexts);
-}
-
-
-/**
- * Sets the simContexts index property (cbit.vcell.mapping.SimulationContext[]) value.
- * @param index The index value into the property array.
- * @param simContexts The new value for the property.
- * @see #getSimContexts
- */
-public void setSimContexts(int index, cbit.vcell.mapping.SimulationContext simContexts) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimContexts[index];
-	fieldSimContexts[index] = simContexts;
-	if (oldValue != null && !oldValue.equals(simContexts)) {
-		firePropertyChange("simContexts", null, fieldSimContexts);
-	};
-}
-
 
 /**
  * Insert the method's description here.
