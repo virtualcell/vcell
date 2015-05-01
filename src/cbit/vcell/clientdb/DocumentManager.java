@@ -58,6 +58,11 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * @author: 
  */
 public interface DocumentManager {
+	
+	/**
+	 * identifying string, for hashtable passing, et. al
+	 */
+	public static final String IDENT = "documentManager";
 
 /**
  * 

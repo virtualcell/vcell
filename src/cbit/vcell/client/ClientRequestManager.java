@@ -97,11 +97,11 @@ import org.vcell.util.document.VersionableType;
 import org.vcell.util.document.VersionableTypeVersion;
 import org.vcell.util.gui.AsynchGuiUpdater;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ExtensionFilter;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.ExtensionFilter;
+import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.gui.ImageResizePanel;
@@ -140,7 +140,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValid;
-import cbit.vcell.client.task.ExportToXML;
+import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.client.task.FinishExport;
 import cbit.vcell.client.task.FinishSave;
 import cbit.vcell.client.task.NewName;
@@ -2251,7 +2251,7 @@ public void exportDocument(TopLevelWindowManager manager,FileFilter forceFilefil
 	/* prepare hashtable for tasks */
 	Hashtable<String,Object> hash = new Hashtable<String,Object>();
 	hash.put("mdiManager", getMdiManager());
-	hash.put("documentManager", getDocumentManager());
+	hash.put(DocumentManager.IDENT, getDocumentManager());
 	hash.put("topLevelWindowManager", manager);
 	hash.put("currentWindow", currentWindow);
 	hash.put("userPreferences", getUserPreferences());
@@ -2264,7 +2264,7 @@ public void exportDocument(TopLevelWindowManager manager,FileFilter forceFilefil
 	// get file
 	AsynchClientTask chooseFile = new ChooseFile();
 	// export it
-	AsynchClientTask exportDocument = new ExportToXML();
+	AsynchClientTask exportDocument = new ExportDocument();
 	// clean-up
 	AsynchClientTask finishExport = new FinishExport();
 	// assemble array
@@ -3380,7 +3380,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	/* prepare hashtable for tasks */
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
-	hash.put("documentManager", getDocumentManager());
+	hash.put(DocumentManager.IDENT, getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("clientSimManager", clientSimManager);
@@ -3490,7 +3490,7 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 	/* prepare hashtable for tasks */
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
-	hash.put("documentManager", getDocumentManager());
+	hash.put(DocumentManager.IDENT, getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("requestManager", this);
@@ -3554,7 +3554,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 	/* prepare hashtable for tasks */
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
-	hash.put("documentManager", getDocumentManager());
+	hash.put(DocumentManager.IDENT, getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("requestManager", this);

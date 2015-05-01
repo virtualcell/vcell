@@ -86,11 +86,11 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.vis.io.VtuFileContainer;
 
 import cbit.image.DisplayAdapterService;

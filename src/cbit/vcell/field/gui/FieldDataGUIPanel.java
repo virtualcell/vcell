@@ -53,7 +53,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.exporter.FileFilters;
 
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.client.ClientRequestManager;

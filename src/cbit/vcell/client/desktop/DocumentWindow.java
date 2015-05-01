@@ -47,9 +47,9 @@ import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ExecutableFinderDialog;
-import org.vcell.util.gui.FileFilters;
 import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.util.xml.XmlUtil;
