@@ -17,7 +17,7 @@ import org.vcell.vmicro.op.GenerateCellROIsFromRawPhotoactivationTimeSeriesOp;
 import org.vcell.vmicro.op.GenerateCellROIsFromRawPhotoactivationTimeSeriesOp.GeometryRoisAndActivationTiming;
 import org.vcell.vmicro.op.GenerateNormalizedPhotoactivationDataOp;
 import org.vcell.vmicro.op.GenerateNormalizedPhotoactivationDataOp.NormalizedPhotoactivationDataResults;
-import org.vcell.vmicro.op.GenerateReducedDataROIOp;
+import org.vcell.vmicro.op.GenerateReducedDataOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
 import org.vcell.vmicro.op.display.DisplayImageOp;
@@ -28,6 +28,7 @@ import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.ErrorFunctionNoiseWeightedL2;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModel;
 
@@ -159,12 +160,12 @@ public class PhotoactivationExperimentTest {
 		//
 		// only use bleach ROI for fitting etc.
 		//
-		ROI[] dataROIs = new ROI[] { activatedROI };
+		NormalizedSampleFunction[] dataROIs = new NormalizedSampleFunction[] { NormalizedSampleFunction.fromROI(activatedROI) };
 		
 		//
 		// get reduced data and errors for each ROI
 		//
-		RowColumnResultSet reducedData = new GenerateReducedDataROIOp().generateReducedData(normalizedTimeSeries, dataROIs);
+		RowColumnResultSet reducedData = new GenerateReducedDataOp().generateReducedData(normalizedTimeSeries, dataROIs);
 		RowColumnResultSet measurementErrors = new ComputeMeasurementErrorOp().computeNormalizedMeasurementError(
 				dataROIs, indexOfFirstPostactivation, rawTimeSeriesImages, preactivationAvg, null);
 
@@ -212,12 +213,15 @@ public class PhotoactivationExperimentTest {
 		//
 		// only activation ROI for chemistry, cellROI for bleaching
 		//
-		ROI[] dataROIs = new ROI[] { activatedROI, cellROI };
+		NormalizedSampleFunction[] dataROIs = new NormalizedSampleFunction[] { 
+				NormalizedSampleFunction.fromROI(activatedROI), 
+				NormalizedSampleFunction.fromROI(cellROI)
+		};
 		
 		//
 		// get reduced data and errors for each ROI
 		//
-		RowColumnResultSet reducedData = new GenerateReducedDataROIOp().generateReducedData(normalizedTimeSeries, dataROIs);
+		RowColumnResultSet reducedData = new GenerateReducedDataOp().generateReducedData(normalizedTimeSeries, dataROIs);
 		RowColumnResultSet measurementErrors = new ComputeMeasurementErrorOp().computeNormalizedMeasurementError(
 				dataROIs, indexOfFirstPostactivation, rawTimeSeriesImages, preactivationAvg, null);
 
@@ -271,6 +275,7 @@ public class PhotoactivationExperimentTest {
 		OptContext uniformDisk2Context = new Generate2DOptContextOp().generate2DOptContext(optModel, reducedData, measurementErrors, errorFunction);
 		new DisplayInteractiveModelOp().displayOptModel(uniformDisk2Context, dataROIs, localWorkspace, "nonspatial photoactivation - activated and cell ROIs", null);
 		}
+		
 		
 	}
 	

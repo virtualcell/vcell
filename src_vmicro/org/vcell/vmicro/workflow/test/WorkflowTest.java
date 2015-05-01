@@ -3,6 +3,7 @@ package org.vcell.vmicro.workflow.test;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
@@ -15,7 +16,7 @@ import org.vcell.vmicro.workflow.task.GenerateBleachROI;
 import org.vcell.vmicro.workflow.task.GenerateCellROIsFromRawTimeSeries;
 import org.vcell.vmicro.workflow.task.GenerateDependentImageROIs;
 import org.vcell.vmicro.workflow.task.GenerateNormalizedFrapData;
-import org.vcell.vmicro.workflow.task.GenerateReducedROIData;
+import org.vcell.vmicro.workflow.task.GenerateReducedData;
 import org.vcell.vmicro.workflow.task.GenerateRefSimOptModel;
 import org.vcell.vmicro.workflow.task.GenerateTrivial2DPsf;
 import org.vcell.vmicro.workflow.task.ImportRawTimeSeriesFromVFrap;
@@ -48,12 +49,12 @@ public class WorkflowTest {
 			LocalWorkspace localWorkspace = new LocalWorkspace(workingDirectory);
 			Repository repository = new MemoryRepository();
 
-//			String workflowLanguageText = BeanUtils.readBytesFromFile(new File(args[1]), null);
-//			Workflow workflow = Workflow.parse(localWorkspace, workflowLanguageText);
+			String workflowLanguageText = BeanUtils.readBytesFromFile(new File(args[1]), null);
+			Workflow workflow = Workflow.parse(repository, localWorkspace, workflowLanguageText);
 
 			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> using hard-coded example instead <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-			File vfrapFile = new File("D:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_vmicro\\3D_FRAP_2_ZProjection_Simulation1.vfrap");
-			Workflow workflow = getVFrapSimpleExample(workingDirectory, vfrapFile);
+//			File vfrapFile = new File("D:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_vmicro\\3D_FRAP_2_ZProjection_Simulation1.vfrap");
+//			Workflow workflow = getVFrapSimpleExample(workingDirectory, vfrapFile);
 			
 			TaskContext taskContext = new TaskContext(workflow,repository,localWorkspace);
 
@@ -162,7 +163,7 @@ public class WorkflowTest {
 		workflow.connectParameter(displayROITitle, displayDependentROIs.title);
 		workflow.addTask(displayDependentROIs);
 				
-		GenerateReducedROIData generateReducedNormalizedData = new GenerateReducedROIData("generateReducedNormalizedData");
+		GenerateReducedData generateReducedNormalizedData = new GenerateReducedData("generateReducedNormalizedData");
 		workflow.connect2(generateNormalizedFrapData.normalizedFrapData, generateReducedNormalizedData.imageTimeSeries);
 		workflow.connect2(generateDependentROIs.imageDataROIs, generateReducedNormalizedData.imageDataROIs);		
 		workflow.addTask(generateReducedNormalizedData);

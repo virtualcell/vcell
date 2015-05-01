@@ -13,7 +13,7 @@ import org.vcell.vmicro.op.GenerateCellROIsFromRawFrapTimeSeriesOp.GeometryRoisA
 import org.vcell.vmicro.op.GenerateDependentImageROIsOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp;
 import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResults;
-import org.vcell.vmicro.op.GenerateReducedDataROIOp;
+import org.vcell.vmicro.op.GenerateReducedDataOp;
 import org.vcell.vmicro.op.GenerateTrivial2DPsfOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunProfileLikelihoodGeneralOp;
@@ -26,6 +26,7 @@ import org.vcell.vmicro.workflow.data.ErrorFunction;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 import org.vcell.vmicro.workflow.data.ErrorFunctionNoiseWeightedL2;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.vmicro.workflow.data.OptContext;
 import org.vcell.vmicro.workflow.data.OptModelOneDiff;
 import org.vcell.vmicro.workflow.data.OptModelTwoDiffWithPenalty;
@@ -156,13 +157,18 @@ public class VFrapProcess {
 		GenerateDependentImageROIsOp generateDependentROIs = new GenerateDependentImageROIsOp();
 		ROI[] dataROIs = generateDependentROIs.generate(geometryAndTiming.cellROI_2D, bleachROI);
 		
+		NormalizedSampleFunction[] roiSampleFunctions = new NormalizedSampleFunction[dataROIs.length];
+		for (int i=0;i<dataROIs.length;i++){
+			roiSampleFunctions[i] = NormalizedSampleFunction.fromROI(dataROIs[i]);
+		}
 		
-		GenerateReducedDataROIOp generateReducedNormalizedData = new GenerateReducedDataROIOp();
-		RowColumnResultSet reducedData = generateReducedNormalizedData.generateReducedData(normalizedFrapResults.normalizedFrapData, dataROIs);
+		
+		GenerateReducedDataOp generateReducedNormalizedData = new GenerateReducedDataOp();
+		RowColumnResultSet reducedData = generateReducedNormalizedData.generateReducedData(normalizedFrapResults.normalizedFrapData, roiSampleFunctions);
 		
 		
 		ComputeMeasurementErrorOp computeMeasurementError = new ComputeMeasurementErrorOp();
-		RowColumnResultSet measurementError = computeMeasurementError.computeNormalizedMeasurementError(dataROIs, geometryAndTiming.indexOfFirstPostbleach, rawTimeSeriesImages, normalizedFrapResults.prebleachAverage, clientTaskStatusSupport);
+		RowColumnResultSet measurementError = computeMeasurementError.computeNormalizedMeasurementError(roiSampleFunctions, geometryAndTiming.indexOfFirstPostbleach, rawTimeSeriesImages, normalizedFrapResults.prebleachAverage, clientTaskStatusSupport);
 		
 		
 		GenerateTrivial2DPsfOp psf_2D = new GenerateTrivial2DPsfOp();

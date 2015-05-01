@@ -245,12 +245,13 @@ public ImageStatistics getImageStatistics() {
 	stats.minValue = pixels[0];
 	stats.maxValue = pixels[0];
 	stats.meanValue = 0.0;
+	stats.sum = 0.0;
 	for (int i = 0; i < pixels.length; i++) {
 		stats.minValue = Math.min(stats.minValue,pixels[i]);
 		stats.maxValue = Math.max(stats.maxValue,pixels[i]);
-		stats.meanValue += pixels[i];
+		stats.sum += pixels[i];
 	}
-	stats.meanValue = stats.meanValue/pixels.length;
+	stats.meanValue = stats.sum/pixels.length;
 	
 	return stats;
 }

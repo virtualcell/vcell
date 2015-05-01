@@ -45,7 +45,7 @@ public class VFrapProcess extends WorkflowTask {
 	private final GenerateNormalizedFrapData generateNormalizedFrapData = new GenerateNormalizedFrapData("v_generateNormalizedFrapData");
 	private final GenerateBleachROI generateROIs = new GenerateBleachROI("v_generateROIs");
 	private final GenerateDependentImageROIs generateDependentROIs = new GenerateDependentImageROIs("v_generateDependentImageROIs");
-	private final GenerateReducedROIData generateReducedNormalizedData = new GenerateReducedROIData("v_generateReducedNormalizedData");
+	private final GenerateReducedData generateReducedNormalizedData = new GenerateReducedData("v_generateReducedNormalizedData");
 	private final ComputeMeasurementError computeMeasurementError = new ComputeMeasurementError("v_computeMeasurementError");
 	private final GenerateTrivial2DPsf psf_2D = new GenerateTrivial2DPsf("v_generateTrivial2DPsf");
 

@@ -1,8 +1,9 @@
 package org.vcell.vmicro.workflow.task;
 
 import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.vmicro.op.GenerateReducedDataROIOp;
+import org.vcell.vmicro.op.GenerateReducedDataOp;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 import org.vcell.workflow.DataInput;
 import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
@@ -12,7 +13,7 @@ import cbit.vcell.VirtualMicroscopy.Image;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.math.RowColumnResultSet;
 
-public class GenerateReducedROIData extends Task {
+public class GenerateReducedData extends Task {
 	
 	//
 	// inputs
@@ -25,7 +26,7 @@ public class GenerateReducedROIData extends Task {
 	public final DataOutput<RowColumnResultSet> reducedROIData;
 	
 
-	public GenerateReducedROIData(String id){
+	public GenerateReducedData(String id){
 		super(id);
 		imageTimeSeries = new DataInput<ImageTimeSeries>(ImageTimeSeries.class,"imageTimeSeries", this);
 		imageDataROIs = new DataInput<ROI[]>(ROI[].class,"imageDataROIs", this);
@@ -42,7 +43,7 @@ public class GenerateReducedROIData extends Task {
 		ImageTimeSeries<? extends Image> simData = (ImageTimeSeries<? extends Image>)context.getData(imageTimeSeries);
 		
 		// do op
-		GenerateReducedDataROIOp op = new GenerateReducedDataROIOp();
+		GenerateReducedDataOp op = new GenerateReducedDataOp();
 		RowColumnResultSet reducedData = op.generateReducedData(simData, rois);
 		
 		// set output

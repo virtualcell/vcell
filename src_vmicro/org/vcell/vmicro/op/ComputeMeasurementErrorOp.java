@@ -2,7 +2,9 @@ package org.vcell.vmicro.op;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 
+import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
@@ -10,7 +12,7 @@ import cbit.vcell.math.RowColumnResultSet;
 
 public class ComputeMeasurementErrorOp {
 	
-	public RowColumnResultSet computeNormalizedMeasurementError(ROI[] rois, int indexPostbleach, ImageTimeSeries<UShortImage> rawImageDataset, FloatImage prebleachAvgImage, final ClientTaskStatusSupport clientTaskStatusSupport) {
+	public RowColumnResultSet computeNormalizedMeasurementError(NormalizedSampleFunction[] rois, int indexPostbleach, ImageTimeSeries<UShortImage> rawImageDataset, FloatImage prebleachAvgImage, final ClientTaskStatusSupport clientTaskStatusSupport) throws ImageException {
 		
 		UShortImage[] rawImages = rawImageDataset.getAllImages();
 		double[] timeStamps = rawImageDataset.getImageTimeStamps();
@@ -19,7 +21,7 @@ public class ComputeMeasurementErrorOp {
 		String[] columnNames = new String[rois.length+1];
 		columnNames[0] = "t";
 		for (int i=0; i<rois.length; i++){
-			columnNames[i+1] = rois[i].getROIName();
+			columnNames[i+1] = rois[i].getName();
 		}
 		RowColumnResultSet rowColumnResultSet = new RowColumnResultSet(columnNames);
 		double[] allTimePoints = timeStamps;
@@ -41,7 +43,7 @@ public class ComputeMeasurementErrorOp {
 	 * The first dimension is ROI rings(according to the Enum in FRAPData)
 	 * The second dimension is time points (from starting index to the end) 
 	 */
-	double[][] refreshNormalizedMeasurementError(UShortImage[] rawImages, double[] timeStamps, FloatImage prebleachAverage, ROI[] rois, int indexFirstPostbleach) {
+	double[][] refreshNormalizedMeasurementError(UShortImage[] rawImages, double[] timeStamps, FloatImage prebleachAverage, NormalizedSampleFunction[] rois, int indexFirstPostbleach) throws ImageException {
 		int startIndexRecovery = indexFirstPostbleach;
 		int roiLen = rois.length;
 		double[][] sigma = new double[roiLen][timeStamps.length - startIndexRecovery];
@@ -49,8 +51,8 @@ public class ComputeMeasurementErrorOp {
 		
 		for(int roiIdx=0; roiIdx<roiLen; roiIdx++)
 		{
-			ROI roi = rois[roiIdx];
-			short[] roiData = roi.getPixelsXYZ();
+			NormalizedSampleFunction roi = rois[roiIdx];
+			short[] roiData = roi.toROI(1e-5).getPixelsXYZ();
 			for(int timeIdx = startIndexRecovery; timeIdx < timeStamps.length; timeIdx++)
 			{
 				double[] rawTimeData = rawImages[timeIdx].getDoublePixels();
@@ -83,13 +85,6 @@ public class ComputeMeasurementErrorOp {
 				}
 			}
 		}
-		//for debug purpose
-//		for(int timeIdx = startIndexRecovery; timeIdx < timeStamp.length; timeIdx++)
-//		{
-//			String value = sigma[FRAPData.VFRAP_ROI_ENUM.ROI_CELL.ordinal()][timeIdx-startIndexRecovery]+"\t"+
-//			sigma[FRAPData.VFRAP_ROI_ENUM.ROI_BLEACHED.ordinal()][timeIdx-startIndexRecovery];
-//			System.out.println(value);
-//		}
 		return sigma;
 	}
 	

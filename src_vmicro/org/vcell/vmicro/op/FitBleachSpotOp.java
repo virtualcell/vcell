@@ -11,6 +11,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
 import cbit.vcell.VirtualMicroscopy.ROI;
@@ -27,19 +28,18 @@ public class FitBleachSpotOp  {
 		public double centerY_GaussianFit;
 	}	
 
-	public FitBleachSpotOpResults fit(ROI bleachROI, FloatImage normImage) {
+	public FitBleachSpotOpResults fit(NormalizedSampleFunction bleachROI, FloatImage normImage) {
 		//
 		// find initial guess by centroid from bleach ROI and total area of bleach ROI (assuming a circle of radius R)
 		//
-		int nonzeroPixelsCount = bleachROI.getNonzeroPixelsCount();
 		ISize size = bleachROI.getISize();
 		if (size.getZ()>1){
 			throw new RuntimeException("expecting 2D bleach region ROI");
 		}
 		
-		short[] pixels = bleachROI.getBinaryPixelsXYZ(1);
+		short[] pixels = bleachROI.toROI(1e-5).getBinaryPixelsXYZ(1);
 		long numPixelsInROI = 0;
-		Extent extent = bleachROI.getRoiImages()[0].getExtent();
+		Extent extent = bleachROI.getExtent();
 		double totalX_um = 0.0;
 		double totalY_um = 0.0;
 		double total_I = 0.0;
@@ -59,7 +59,7 @@ public class FitBleachSpotOp  {
 				pixelIndex++;
 			}
 		}
-		Origin origin = bleachROI.getRoiImages()[0].getOrigin();
+		Origin origin = bleachROI.getOrigin();
 		double roiCenterX_um = origin.getX() + totalX_um/numPixelsInROI;
 		double roiCenterY_um = origin.getY() + totalY_um/numPixelsInROI;
 		double roiCenterI_pixelscale = total_I/numPixelsInROI;
