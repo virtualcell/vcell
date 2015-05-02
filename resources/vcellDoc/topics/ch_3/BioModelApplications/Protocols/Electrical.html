@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>Electrical Mapping</title>
+</head><body>
+<p><h2>Electrical Mapping</h2></p>
+<p><p><b>Electrical Mapping</b> in the Virtual Cell allows the user to model cell electrophysiology. 
+	Electrical Mapping specifies the Membrane Potential Options and Electrical Stimulus that can be applied to flux reactions.
+	Electrical Mapping is available in both spatial and compartmental models. In compartmental models one cannot specify electrode clamp.
+	</p>
+</p>
+<p><br><br>
+<img align=left src="../../../image/Electrical.png" width="617" height="399">
+</p>
+<p><p><b>Viewing/Editing Electrical Mapping</b></p>
+<p>
+	Electrical mapping can be accessed by choosing the 'Protocols' item in any application in the 'Navigation' panel tree structure. This opens the 'Protocols' tab in the 'View' panel on the right.
+	In this tab, choosing the <b>Electrical</b> tab allows the user to view/edit electrical mapping parameters for the application. 
+	</p>
+<p>
+	The <b>Membrane Potential Options</b> table lists the membranes in the BioModel. 
+	The user has the option of specifying the initial voltage (<b>V initial</b>) and the <b>Specific Capacitance</b> of each membrane. 
+	By default the checkbox for calculating the voltage is checked.
+	The user can choose between four options from the drop-down menu for <b>electrical Stimulus</b>: no clamp, voltage clamp total current clamp or current density clamp. 
+	If the user wishes to switch from the voltage/current clamp to any other clamp options, a warning message will be displayed indicating that the present clamp settings will be lost.
+	</p>
+<br><br>
+<img align=left src="../../../image/ElectricalWarning.png" width="413" height="133">
+<p>
+	When 'Voltage' or 'Current' clamps (stimuli) is chosen, the required attributes that can be specified are displayed in a table. The available electrical stimulus options are:
+	</p>
+<ul><li><p><b>No Clamp</b></p>
+<p>
+		There is no stimulus applied across the membrane, so no clamp device is displayed. The 'Patch Electrode', 'Ground Electrode', 'Preview Electrical Stimulus' button are disabled for this option.
+		</p>
+</li>
+<li><p><b>Voltage Clamp</b></p>
+<p>
+		A voltage clamp or stimulus is applied across the membrane. 
+		When the 'Voltage Clamp' radio button is selected, the required attributes for the voltage clamp device, i.e., the features of the probe (patch) and ground electrodes, and the voltage expression (in 'milliVolts') can be specified. 
+		</p>
+</li>
+<li><p><b>Total Current Clamp</b></p>
+<p>
+		A current clamp or stimulus is applied across the membrane. 
+		When the 'Current Clamp' radio button is selected, the required attributes for the current clamp device, i.e., the features of the probe (patch) and ground electrodes, and the current expression (in 'picoAmperes') can be specified. 
+		</p>
+</li>
+<li><p><b>Current Density Clamp</b></p>
+<p>
+		A current density clamp or stimulus is applied across membrane. 
+		When the 'Current Density Clamp' radio button is selected, the required attributes for the current clamp device, i.e., the features of the probe (patch) and ground electrodes, and the current expression (in picoAmperes-2) can be specified. 
+		</p>
+</li>
+</ul>
+<p>
+	The <b>Patch Electrode</b> and <b>Ground Electrode</b> can be specified for the different applied electrical stimulus options. 
+	These are features (volumetric compartments) present in the model. Clicking the <b>Set</b> button pops up a dialog that lists the features in the model. 
+	Choosing a feature from the list and clicking <b>OK</b> will set the electrode (Patch or Ground) to that feature.
+	</p>
+<br><br>
+<img align=left src="../../../image/ElectricalSetElectrode.png" width="229" height="159">
+<p>
+	The <b>Preview Electrical Stimulus</b> button can be used to preview the chosen electrical stimulus. It displays the stimulus as a time plot. 
+	The user can change the <b>Time Function</b>, <b>Time Begin</b>, <b>Time Step</b> and <b>Step Count</b> in the text fields provided. 
+	Clicking <b>Refresh Plot</b> button will refresh the display to reflect the modified 'Time Function'.
+	</p>
+<br><br>
+<img align=left src="../../../image/PreviewElectricalStim.png" width="557" height="319">
+</p>
+</body>
+</html>

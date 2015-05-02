@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>Launch BioNetGen</title>
+</head><body>
+<p><h2>Launch BioNetGen</h2></p>
+<p><p>
+	A <b>BioNetGen@VCell</b> automatically generates a biochemical reaction network from user-specified rules 
+	for biomolecular interactions. 
+	BioNetGen@VCell provides all capabilities of BioNetGen stand-alone. For the full list of capabilities, 
+	check http://vcell.org/bionetgen or http://bionetgen.org. Additionally, BioNetGen@VCell provides:
+		<ul><li> Generation of compartmental Virtual Cell BioModels from the BioNetGen-generated reaction network.</li>
+<li> A convenient interface to view results.</li>
+<li> Different results export options.</li>
+</ul>
+
+		
+	BioNetGen runs locally on your computer, so performance depends on your machine performance.
+	No jobs are sent to the Virtual Cell server and no model is uploaded to the Virtual Cell Database Server unless specifically requested. 
+	</p>
+<p><b>Rule-based Modeling With BioNetGen</b></p>
+<p>
+	Rules are specified in the BioNetGen language (BNGL).
+	A user can explicitly indicate the parts of proteins involved in an interaction, the conditions upon 
+	which an interaction depends, the connectivity of proteins in a complex, and other aspects of protein-protein interactions.
+	BioNetGen is useful when one needs to account for effects of combinatorial complexity, when 
+	a small number of interactions generates a much larger number of chemical species and reactions. 
+	For example, a receptor that contains N sites at which phosphate can be added or removed can occupy 2^N different states. 
+	</p>
+</p>
+<p><br><br>
+<img align=left src="../image/BNGRulesEditor.PNG" width="501" height="503">
+</p>
+<p> 
+	Clicking the Launch BioNetGen menu item invokes a window with 4 tabs: 
+	<ul><li><a href="BioNetGenRulesEditor.html">Rules editor</a> - editor to write a set of rules in BioNetGen Language.  
+	  </li>
+<li><a href="BioNetGenMessages.html">Messages</a> - view detailed information about BioNetGen network generation and simulation.  
+	  </li>
+<li><a href="BioNetGenOutput.html">Output</a> - view and save generated model and simulation results, create VCell BioModel.  
+	  </li>
+<li><a href="BioNetGenHelp.html">Help</a> - links to web resources about BioNetGen.  
+	  </li>
+</ul>
+</p>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<html>
+<head>
+<title>Events</title>
+</head><body>
+<p><h2>Events</h2></p>
+<p><p><b>Events</b> can be created within non-spatial deterministic models such that a variable or time-dependent expression can trigger a predefined reset or change in the value of other variables during simulation. 
+	Essentially, an event can be used to describe anything that is discontinuous. This can be convenient to specify protocols (e.g. to open a channel from time t1 to time t2). 
+	</p>
+<p>
+	An Event in the Virtual Cell is used to define 'when' an event can occur, 'what' variables (species, global parameters) are affected, 'how' the variables are affected and optionally, the delay in the effect of the event after the occurrence of the condition that triggers it. 
+	The two required parts of an event specification are a <b>trigger</b> conditional expression and at least one <b>event assignment</b> for a variable (speciesContext or global parameter). 
+	The event specification can also contain an optional <b>delay</b> expression.
+	</p>
+<p>
+	The <b>trigger</b> expression must evaluate to a Boolean value. The event is fired at the time point when the trigger expression evaluates to "true" (transition from "false" to "true") during a simulation. 
+	An event can be fired multiple times during a simulation (whenever the trigger expression transitions from "false" to "true").
+	</p>
+<p>
+	The optional <b>delay</b> expression represents the time duration between the firing of the event and the execution of the event assignments. 
+	The delay expression is evaluated at the instant the event is fired (when the trigger expression transitions from "false" to "true"). 
+	The delay expression, if present, has the unit of time (seconds in VCell).
+	</p>
+<p>
+	An event has at least one <b>event assignment</b>. Each event assignment is an expression assigned to a variable in the model (typically a species or global parameter). 
+	The assignment of the expression to the variable happens at the instant the event is executed (at the end of the delay duration following the instant the event is triggered or fired). 
+	The unit if each event assignment is the same as the variable it represents (uM for species, units of the global parameter if event assignment is for a global parameter).
+	</p>
+<p><b>Note:</b> Currently, events can be added only to non-spatial deterministic applications.
+	</p>
+</p>
+<p><br><br>
+<img align=left src="../../image/Events.GIF" width="439" height="408">
+</p>
+<p><p><b>Viewing Events</b></p>
+<p>
+	In the Virtual Cell, an event can be specified in the <b>Protocols</b> section of an application. 
+	This can be accessed by selecting the 'Protocols' item under the application node in the Navigation panel tree structure.
+	This displays the application in the <b>View</b> panel on the right, with the <b>Protocols</b> tab selected. 
+	Selecting the <b>Events</b> tab in the 'Protocols' tab displays the events in the application. 
+	If events exist in the application, the summary of the events (name, trigger and delay expressions, variables that have event assignments) are listed in a table in the 'View' panel. 
+	In this table, the <b>Name</b> column is editable, all other columns in the events summary table cannot be edited or sorted. 
+	</p>
+<p><b>Adding/Deleting Events</b></p>
+<p>
+	Events can be added by clicking on the <b>(add new here)</b> row of the summary table. This creates a new default event. 
+	Alternately, clicking the <b>Add New</b> button adds a new default event to the table.
+	To delete an existing event, select the event to be deleted and click the <b>Delete Selected</b> button.  
+	(Note: If a pulse is required, a second event must be included to switch the variable/parameter back to its original state.)
+	</p>
+<p><b>Editing Events</b></p>
+<p>
+	Clicking an individual event in the summary table displays the selected event in the lower <b>Properties Panel</b>. 
+	The <b>Trigger</b> expression and <b>Delay</b> expression are displayed in editable text fields. 
+	The trigger expression cannot be blank and there must be at least one <b>Event assignment</b> for an event to be valid. 
+	The checkbox <b>Use Values at Trigger Time</b> is a flag that indicates the time at which the event assignments of the event have to be evaluated. 
+	If the checkbox is checked, the event assignments are computed at the instant the event is triggered/fired, not after the delay duration (if delay is defined). 
+	If the checkbox is not checked, the assignment expressions are evaluated after the delay duration, i.e., at the instant the event is executed. 
+	Note that if no delay expression is specified, the checkbox has to be checked. 
+	</p>
+<p>
+	The <b>Event assignments</b> for the selected event are displayed in a table (showing variable name, expression and units) in the 'Properties Panel'. 
+	Event assignments can be added using the <b>Add Variable</b> button that pops up a dialog where the user is asked to select a variable name from a drop-down list of allowed variable names and provide an assignment expression for the variable. 
+	The 'Add Variable' dialog is shown in the figure below. An existing event assignment can be deleted by selecting the variable in the table and clicking the <b>Delete Variable</b> button.  
+	</p>
+<br><br>
+<img align=left src="../../image/EventAssgnAdd.GIF" width="287" height="140">
+</p>
+</body>
+</html>

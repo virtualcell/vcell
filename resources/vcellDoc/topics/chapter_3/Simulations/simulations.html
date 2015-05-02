@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>Simulations</title>
+</head><body>
+<p><h2>Simulations</h2></p>
+<p>
+	You can run a simulation once you have defined your physiology and created an Application in a BioModel The model will be automatically saved upon running a simulation.
+	
+	<p>The Virtual Cell automatically converts the biological description defined in a 
+	BioModel into a corresponding mathematical system of math equations (e.g. ordinary and/or partial differential).
+	The Virtual Cell will then solve the equations by applying numerical solvers to perform and analyze simulations. Afterwards Results can be displayed and analyzed on-line 
+	or downloaded to the user’s computer in a variety of formats.
+	</p>
+<p>The Virtual Cell supports 5 categories of simulations.</p>
+<ul><li>Deterministic non-spatial</li>
+<li>Stochastic non-spatial</li>
+<li>Deterministic spatial</li>
+<li>Stochastic spatial</li>
+<li>Hybrid stochastic spatial</li>
+</ul>
+
+	
+	The appropriate solver will automatically be chosen when a simulation is created. 
+	For more details about numerics solvers used in these simulations, refer to <a href="numerical_solvers.html">Numerical Solvers</a>.
+ 	</p>
+<p><br><br>
+<img align=left src="../../image/sim_simulationTab.gif" width="520" height="317">
+</p>
+<p>
+	On the Simulation panel, you create, edit and run your simulations as well as view the results. 
+	Simulations that have been created are listed in the table. In this table, one can view some
+	of the simulation parameters among which some can be changed in place.
+	<ul><li><b>Name:</b>  Simulation name must be unique throughout the BioModel. In another words, different applications in the same BioModel can not have simulations with the same name.
+	Double click on the Name field to change the name.</li>
+<li><b>End Time:</b>  This displays the duration of simulation in seconds.</li>
+<li><b>Output Option:</b>  	Output Options determine how the simulation results are saved. Currently the Virtual Cell supports 3 output options: Keep every, Uniform and Explicit.</li>
+<li><b>Solver:</b>  This displays the numerical solver that has been chosen for current simulation. This can not be changed in the table.</li>
+<li><b>Running Status:</b>  This displays status (not saved, submitted, initializing, completed, etc) and progress of simulation.</li>
+<li><b>Results:</b>  Yes, results are available OR No, results are not available</li>
+</ul>
+	
+	
+	Once a simulation is selected in the table, the properties of the selected simulation is displayed in the "Object Properties" Pane at the bottom.	
+	This provides a quick review of simulation settings. Most parameters can be changed by editing the simulation.
+	
+	<ul><li><b>Annotation:</b>  Enter descriptive comments pertaining to the simulation directly in the Comments text field.</li>
+<li><b>Settings:</b>  This includes (max) time step, output option, relative tolerances, absolute tolerance, etc. Note different simulations and solvers have different settings. 
+	For example, sensitivity analysis parameter is only available for non spatial simulations.</li>
+<li><b>Mesh/Geometry Size:</b>  Spatial models are simulated within a geometric mesh. The mesh specifies the number of points used to sample the geometry. 
+	The geometry size is the domain size based on the geometry created or imported in the application. (see <a href="../../Appendix/Definitions.html#def_Mesh">
+<i>Mesh</i></a>)</li>
+<li><b>Parameters with values changed from default:</b>  the simulation panel allows you to modify parameter values in your simulation without modifying your model directly. If changes are made
+	they are indicated in red in this section of the simulation summary.</li>
+</ul>
+<br><br>
+<img align=left src="../../image/simulations_toolbar.jpg" width="529" height="85">
+<p>Here is the simulation tool bar. On the left are the controls that create/edit/delete the simulations. on the right are the controls that run/stop simulations and view the results.
+	Note most of buttons are only enabled when one or more simulations are selected.  One can edit the name of a simulation by double-clicking on the Name field to select for editing.  Pressing enter commits any edits to the simulation name.
+	</p>
+<p>On the left:</p>
+<ul><li>New &nbsp;<img align=left src="../../image/sim_new.png" width="20" height="20">&nbsp;
+ Creates a new simulation.</li>
+<li>Copy &nbsp;<img align=left src="../../image/sim_copy.png" width="20" height="20">&nbsp;
+ Makes a copy of selected simulation.</li>
+<li>Edit &nbsp;<img align=left src="../../image/sim_edit.png" width="21" height="21">&nbsp;
+ Opens the <a href="simulationEditor.html">Simulation Editor</a> 
+			with additional runtime features required to complete a simulation: Parameters, Mesh, and Advanced tabs.</li>
+<li>Delete &nbsp;<img align=left src="../../image/sim_del.png" width="20" height="20">&nbsp;
+	Deletes a selected simulation. </li>
+</ul>
+<p>On the Right:</p>
+<ul><li>Run &nbsp;<img align=left src="../../image/sim_run.png" width="20" height="20">&nbsp;
+ Starts the simulation. Note the BioModel will be saved automatically 
+			upon running a simulation.</li>
+<li>Stop &nbsp;<img align=left src="../../image/sim_stop.png" width="20" height="20">&nbsp;
+ Terminates the simulation.</li>
+<li>Results &nbsp;<img align=left src="../../image/sim_results.png" width="19" height="20">&nbsp;
+ Once a simulation has started and/or is complete, press the 
+			Results button to view the simulation results.</li>
+<li>Status Details &nbsp;<img align=left src="../../image/sim_status_details.png" width="20" height="20">&nbsp;
+ This shows more detailed simulation status, 
+			including submit date, start date, end date, etc. It’s more useful when the simulation has parameter scans, where it will 
+			show the status of all the sub simulations.</li>
+<li>Quick Run &nbsp;<img align=left src="../../image/ode_quick_run.png" width="22" height="22">&nbsp;
+ Allows user to run completely on local.</li>
+</ul>
+</p>
+</body>
+</html>
