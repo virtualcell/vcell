@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>Region of Interest Tools, Data Plots and Statistics</title>
+</head><body>
+<p><h2>Region of Interest Tools, Data Plots and Statistics</h2></p>
+<p>
+Drawing and selection tools are available for spatial simulation results to create regions of interest>
+</p>
+<p><ul><p>
+Drawing Tools:
+<br><br>
+<img align=left src="../../../../image/SimResultsDrawingTools.png" width="162" height="83">
+</p>
+<p><b>Selecting/Creating Regions of Interest (ROI):</b>
+Choose tool type from 
+<br><br>
+<img align=left src="../../../../image/roi_selection_tool.png" width="35" height="35">
+<b>selection</b>,
+<br><br>
+<img align=left src="../../../../image/roi_point_tool.png" width="35" height="35">
+<b>point</b>, 
+<br><br>
+<img align=left src="../../../../image/roi_line_tool.png" width="35" height="35">
+<b>line</b>, 
+<br><br>
+<img align=left src="../../../../image/roi_spline_tool.png" width="35" height="35">
+<b>spline/curve</b>,
+<br><br>
+<img align=left src="../../../../image/roi_controlpoint_tool.png" width="35" height="35">
+<b>add line/spline control point</b> .  
+User created ROI line and points are gray when deselected; control nodes and points are white when selected.  
+Use the point, line or spline tools to create a ROI by clicking to add single points or extend line segmentsand.  
+An enclosed region ROI can be created with the line tool by overlapping the end point with the start point.
+For data associated with ROI, see <b>Statistics</b> (below).
+</p>
+<p><br><br>
+<img align=left src="../../../../image/roi_line_tool.png" width="35" height="35">
+ Line tool -- Enables show spatial plot button which displays values of the selected variable along the line created with two successive clicks of the line tool.
+</p>
+<p><br><br>
+<img align=left src="../../../../image/roi_spline_tool.png" width="35" height="35">
+ Spline/Curve tool -- Creates a region of interest along the line and enables show spatial plot button. which displays values of the selected variable parametrically by distance along a spline curve defined by two or more successive clicks of the curve tool.
+</p>
+<p>
+Deleting Points, Lines, or Curves</p>
+<p>
+Use the selection tool <br><br>
+<img align=left src="../../../../image/roi_selection_tool.png" width="35" height="35">
+ to select the item and then use either Backspace or the Delete key to delete it.
+</p>
+<p>Select the <br><br>
+<img align=left src="../../../../image/roi_zoom_tool.png" width="35" height="35">
+ Image Zoom: <b>image magnification</b> tool and drag the mouse across the image to
+increase and decrease the image zoom.
+</p>
+<p><br><br>
+<img align=left src="../../../../image/roi_pan_tool.png" width="35" height="35">
+ Pan Tool: 
+Use the pan tool, while the image is zoomed up, to move across the image. With the Hand icon depressed, hold down the left mouse button and drag the mouse across the image to move it.
+</p>
+<p>Slice
+View 3-D data sets by using the Plus (+1/10) and Minus (-1/10) buttons to step through the series.</p>
+<p>
+Axis
+The Axis is provided as an additional means of viewing your 3-D image data.</p>
+<p><br><br>
+<img align=left src="../../../../image/SimResultsAxisTools.png" width="235" height="106">
+</p>
+</ul>
+<p><b>Statistics</b></p>
+<p><b>Spatial Plot:</b> The Plot->Spatial menu item is enabled once you use the line or spline tools to define a region.  
+Select the created line or spline, select Plot->Spatial to display a plot of the data along the line or spline.  
+The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
+    </p>
+<p>
+Toggle Plot/Values Display: Once plots are generated the results can be displayed as graphs or a table of data values (see <a href="../Nonspatial/SimCompartmentResults.html">compartment results viewer</a>).
+</p>
+<p><b>Time Plot:</b> The Plot->Time menu item is enabled once you use the point tool to define a point or series of points.  
+Select Plot->Time to view a line graph of currently selected simulation data variable at each timepoint over time.  
+Point coordinates are listed in the top left corner of the Time Plot frame.  
+Use the 'Y Axis' list to select 1 or more variables to plot.
+</p>
+<p>
+Toggle Plot/Values Display:Once plots are generated the results can be displayed as graphs or a table of data values (see <a href="../Nonspatial/SimCompartmentResults.html">compartment results viewer</a>).
+</p>
+<p>
+Kymograph: The <a href="SimResultsKymograph.html"> kymograph tab </a>, which displays line scans over time,
+will become active on the results panel once a line is
+drawn over the image data. 
+</p>
+<p>
+Export Data: Export feature for data. See <a href="ExportingSpatialSimResults.html"> Export</a> for more information.
+</p>
+<p><a href="SimResultsSpatialSurfaceView.html"> 3D Membrane Surface Viewer: </a> The 3D Membrane Surface Viewer allows users to view, manipulate and pick values interactively from the membrane data of 3D spatial simulation results. The 3D Membrane Surface Viewer allows views of the data from any viewpoint around an X,Y,Z coordinate system. The view can be changed easily using the mouse (See Changing views below).
+</p>
+</p>
+</body>
+</html>

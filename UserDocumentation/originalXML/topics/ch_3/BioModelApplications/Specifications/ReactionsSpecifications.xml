@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Reactions Specifications">
+
+	
+	<introduction>
+	There is often a wide range of time scales in interrelated cellular processes that pose a problem when computing numerical solutions. 
+	The Virtual Cell software has been designed based on the separation of fast and slow kinetics. 
+	The user can specify the subset of reactions that have fast kinetics and the fast system will automatically be generated and integrated into the mathematical description by selecting or deselecting the option.
+	This is done in the <bold>Reactions Specifications</bold> panel.	
+	</introduction>
+	
+	<appearance>
+		<bold>Deterministic</bold>
+		<imgReference target = "ReactionsSpecifications_determ.png"/>  
+		<para><bold>Stochastic</bold>
+		<imgReference target = "ReactionsSpecifications_stoch.png"/> 
+		</para>
+	</appearance>
+		
+	<operations>
+	<para> <bold>Viewing/Editing Reactions Specifications</bold></para>
+	<para>
+	<bold>Specifications</bold> can be accessed by selecting the 'Specifications' item under the application node in the 'Navigation' panel tree structure.
+	This displays the application in the <bold>View</bold> panel on the right, with the <bold>Specifications</bold> tab selected. This view has 2 sub-tabs - one for 'Species' and another for 'Reactions'.
+	Selecting the <bold>Reactions</bold> tab in the 'Specifications' tab displays a table of the reactions in the model.
+	The table displays  reaction name, type (flux or reaction), a checkbox indicating whether a reaction is <bold>Enabled</bold> or not, and a checkbox indicating if the reaction is <bold>fast</bold> or not. 
+	The user can choose to enable different reactions in different applications (rt-click menu also allows 'Enabled' to be checked/unchecked). By default, all reactions are enabled. 
+	By default, all reactions are not fast. The user can choose to make one or all reactions 'fast' reactions. 
+	</para>
+	  
+	<para>
+	Selecting any reaction in the table will display the <link target="PP_Reactions">Reactions Properties Pane</link> in the <bold>Properties Panel below</bold>. This table is not editable.
+	</para>
+	</operations>
+	
+</page>
+
+</vcelldoc>

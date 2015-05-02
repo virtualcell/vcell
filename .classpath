@@ -40,7 +40,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="src" path="UserDocumentation"/>
+	<classpathentry excluding="originalXML/topics/Introduction/" kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap"/>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>

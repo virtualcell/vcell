@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Pathway Links">
+
+	<introduction> Objects in Physiology (species and reactions) and pathway entities in Pathway Model can be linked.
+	The linked objects are marked with a letter 'L'.
+	</introduction>
+	
+	<appearance>
+	<imgReference target = "ShowPathwayLinks.png"> </imgReference>	
+	</appearance>
+	
+	<operations>
+	<para>
+	Selecting a single species or a single reaction in a Reaction Diagram, Reactions Table View or 
+	Species Table view enables <bold>Pathway Links</bold> button.
+	</para><para> 
+	If a species or reaction is already linked to a pathway object, 
+	there are multiple ways to see <bold>Linked pathways objects</bold>.
+	<list>
+	<item>double click on blue underlined link that appears in the <bold>Link</bold> columns in <bold>Reactions</bold> 
+	and <bold>Species</bold> table views, under <bold>Linked Pathway Objects</bold> in <bold>Reaction Diagram</bold> view
+	Annotations and Pathway in Reaction and Species <bold>Object Properties</bold>. </item>
+	<item>Select <bold>Show Linked Pathway Objects</bold> under <bold>Pathway Links</bold>menu</item>
+	</list>
+	As a result, the user will be transfered to <link target = "PathwayDiagramView">Pathway Diagram</link> view where
+	linked objects will be shown in red. 
+	<imgReference target = "LinkedPathwayObject.png"> </imgReference>
+	</para>
+	<para>
+	
+	<bold>Editing Pathway Links.</bold> The user can link/unlink every species and reaction to an 
+	every physical entity and interaction in Pathway model.
+Selecting <bold>Pathway Links -> Edit Pathway Links...</bold> will start a dialog box with the list of 
+all objects that can be linked
+(physical entities for a species or interactions for a reaction). The user can create new links or deleted existing links by checking/unchecking 
+checkboxes in the dialog. As usual, Search field is provided for easy filtering.
+		<imgReference target = "PathwayEditLinks.png"></imgReference>	
+		</para>
+	</operations>
+	
+</page>
+
+</vcelldoc>
