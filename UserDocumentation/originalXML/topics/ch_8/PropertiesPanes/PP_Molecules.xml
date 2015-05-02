@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Molecules Properties Pane" target="PP_Molecules">
+
+	<introduction>
+	The molecules properties tree on a left allows editing of the molecule name, 
+	adding/editing/deleting sites and site states. Right pane is uneditable and provides real-time updates 
+	of the molecule composition. 
+	</introduction>
+	
+	<appearance>
+	<imgReference target = "PP_BNG_Molecules.png"/>
+	</appearance>
+	
+	<operations>
+	<list>
+	<item>Molecule name: Right click to Rename/Add Site.</item>
+	<item>Molecule site: Right click to Delete/Rename/Add State.</item>
+	<item>Site state: Right click to rename/delete.</item>
+	</list>
+	</operations>	
+
+</page>
+
+</vcelldoc>

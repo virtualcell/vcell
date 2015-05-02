@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Generated Math">
+
+	<introduction>The Virtual Cell automatically converts the biological description defined in a BioModel into a 
+	corresponding mathematical system of equations (e.g. ordinary and/or partial differential equations).
+	Once an application is created in a biomodel, The Virtual Cell automatically generates the Math Description upon saving a model or running a simulation.
+	</introduction>
+	
+	<appearance>  </appearance>
+	
+	<operations> 	
+	<list>
+	<item>Choose View - Math Equations</item>
+	<para>The Equation Viewer displays all the equations generated from the geometric mapping of the
+	model. It is displayed in a tree-structured directory so you can view the math description's defined
+	constants, functions, volume domains, and membrane domains. 
+	</para>
+	<para>
+	Use the name/value radio buttons to display parameters in an equation as a name or as a value.
+	</para>
+	<imgReference target = "generated_math_main.PNG"/>
+	<para></para>	
+	<item>Choose View - Math Description Language</item>
+	<para>The Math Description Language view displays the math used in the simulation. A search
+	tool is available at the bottom.
+	</para>
+	<imgReference target = "generated_math_lang.PNG"/>
+	<item>Refresh Math</item>
+		<para>
+		The math is not constantly updated as you create your model therefore if you wish to view a current math you
+		need to use the "Refresh Math" button.
+		</para>
+	<para></para>
+	<item>Create Math Model</item>
+		<para>
+		Click on "Create Math Model" button to create a math model by using the math description generated in a biomodel application.
+		A new window will be opened to load the newly created math model. In the new window, further changes can be made, which 
+		are completely independent of the BioModel application where the math model is created from.
+		</para>	 	
+	</list>		 
+	</operations>
+	
+	<comments>Please note that both Math Equations View and Math Description Language View 
+		are for viewing purposes only. Nothing can be changed or edited in either view. </comments>
+
+</page>
+
+</vcelldoc>

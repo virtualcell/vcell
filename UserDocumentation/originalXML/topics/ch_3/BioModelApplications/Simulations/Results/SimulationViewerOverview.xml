@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vcelldoc>
+<page title="Simulation Results">
+
+	
+	<introduction> 
+	Results from simulations are automatically stored on the remote database server. The Results button becomes 
+	active once results are available for a newly run simulation or when a previously run simulation is selected. 
+	The results may be reviewed immediately by pressing the Results button on the Simulation panel of the Application 
+	dialog. This activates the Simulation Results Viewer. The viewer for results differ for non-spatial and spatial 
+	models.
+	</introduction>
+
+	<appearance>  
+	<imgReference target = "AccessingSimResults.png"/>
+	</appearance>
+
+	<operations>
+	<para><imgReference target = "SimResultsButton.png"/> <bold>Simulation Results Button.</bold></para>
+	A list of simulations, both run, failed, in progress and never ran are visible and 
+	labeled accordingly.  If a simulation with results is selected, the simulation results button becomes enabled.
+	
+	<para><bold>View</bold> simulation results by selecting a simulation and pressing the simulation results button. 
+	A different results viewer appears for <link target = "SimResSpatialSliceView">Spatial</link> and 
+	<link target = "SimCompartmentResults">Non-spatial</link>(compartmental) results.
+	</para>
+	</operations>
+	
+</page>
+
+</vcelldoc>

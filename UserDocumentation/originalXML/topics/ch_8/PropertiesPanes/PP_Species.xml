@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Species Properties Pane" target="PP_Species">
+
+	<introduction>
+	The species properties pane allows editing of the species name and free text annotations.
+	</introduction>
+	
+	<appearance>
+	</appearance>
+	
+	<operations>
+	<bold>Species Properties</bold>
+	<imgReference target = "PP_Species.png"/>
+	<list>
+	<item>species name: Name of selected species in the model.</item>
+	<item>Linked Pathway Object(s): List of items linked to selected species. (See <link target="PathwayOverview">Pathway overview</link>)</item>
+	<item>annotation: User notes associated with selected species.</item>
+	</list>
+	</operations>	
+
+</page>
+
+</vcelldoc>

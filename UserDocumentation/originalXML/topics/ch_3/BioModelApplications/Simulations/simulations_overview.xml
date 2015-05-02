@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	<link target = "target"> put your link here </link>
+	<imgReference target = "target"/>
+	<def target = "target"> put your link here </def>
+    
+    NOTE: introduction is required. 
+          Please save your file as ".xml" in to VCell/UserDocumentation/your chapter name.
+          Please be noted no space and special chars are allowed in the file name. 
+          Please name your target as the file name(you are linking to) without extension. (e.g to set a link to Phys_Struct.html, you write target = "Phys_Struct"). 
+          Before you commit, please try it out in browser first.
+-->
+<vcelldoc>
+<page title="Simulations Overview">
+
+	
+	<introduction>
+	You can <link target="simulations">run a simulation</link>, <link target="output_functions">define an output function</link> and 
+	<link target="generated_math">view generated math</link> once an application is created in a BioModel.
+ 	</introduction>
+	
+	<appearance><imgReference target="sim_overview.gif"/></appearance>
+	
+	<operations>
+	There are three sub-tabs under "Simulations" tab:
+	<list>
+	<item>
+	Click <link target="simulations">Simulations</link> tab to create and run a simulation.
+	</item>
+	<item>
+	Click <link target="output_functions">Output Functions</link> tab to define an output function.
+	</item>
+	<item>
+	Click <link target="generated_math">Generated Math</link> tab to view generated math.
+	</item>
+	</list>
+	<para></para>
+	<para>
+	<bold>Right-clicking</bold> on a simulation row will reveal a drop down submenu providing a way to edit End Time and Output Option (frequency of saved data points).
+	<imgReference target="SimulationsMenuRightClick.PNG"/>
+	</para>
+	 </operations>
+	
+	<comments> 
+	</comments>
+
+</page>
+
+</vcelldoc>
