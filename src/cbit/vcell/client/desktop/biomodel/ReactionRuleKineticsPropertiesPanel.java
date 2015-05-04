@@ -43,6 +43,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -164,20 +166,28 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			setLayout(new java.awt.GridBagLayout());
 			
 			Border border = BorderFactory.createLineBorder(Color.gray);
+			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+
+			TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation ");
+			annotationBorder.setTitleJustification(TitledBorder.LEFT);
+			annotationBorder.setTitlePosition(TitledBorder.TOP);
+			annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
+			
 			Dimension d = new Dimension(50, 500);
 			
 			JPanel generalPanel = new JPanel();		// annotation
-			generalPanel.setBorder(border);
+			generalPanel.setBorder(annotationBorder);
 			generalPanel.setLayout(new GridBagLayout());
 			generalPanel.setPreferredSize(d);
 			
 			int gridy = 0;
-			GridBagConstraints gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; 
-			gbc.gridy = gridy;
-			gbc.insets = new Insets(9, 8, 4, 6);
-			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-			generalPanel.add(new JLabel("Annotation "), gbc);
+//			GridBagConstraints gbc = new java.awt.GridBagConstraints();
+//			gbc.gridx = 0; 
+//			gbc.gridy = gridy;
+//			gbc.insets = new Insets(9, 8, 4, 6);
+//			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+//			generalPanel.add(new JLabel("Annotation "), gbc);
 
 			annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 			annotationTextArea.setLineWrap(true);
@@ -186,10 +196,10 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			annotationTextArea.setEditable(false);
 			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 			
-			gbc = new java.awt.GridBagConstraints();
+			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.weightx = 1.0;
 			gbc.weighty = 0.1;
-			gbc.gridx = 1; 
+			gbc.gridx = 0; 
 			gbc.gridy = gridy;
 			gbc.anchor = GridBagConstraints.LINE_START;
 			gbc.fill = java.awt.GridBagConstraints.BOTH;
