@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
@@ -59,6 +60,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
@@ -381,6 +383,7 @@ private void initConnections() throws java.lang.Exception {
  */
 private void initialize() {
 	try {
+		Border border = BorderFactory.createLineBorder(Color.gray);
 		shapePanel = new JPanel() {		// glyph (shape) panel
 			@Override
 			public void paintComponent(Graphics g) {
@@ -390,6 +393,7 @@ private void initialize() {
 				}
 			}
 		};
+		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);		
 //		Dimension ms = new Dimension(350, 80);
 //		shapePanel.setMinimumSize(ms);
@@ -435,8 +439,6 @@ private void initialize() {
 		speciesPropertiesTree.addMouseListener(eventHandler);
 		speciesPropertiesTree.setLargeModel(true);
 		speciesPropertiesTree.setRootVisible(true);
-		
-		
 		
 		JPanel generalPanel = new JPanel();
 		generalPanel.setLayout(new GridBagLayout());
