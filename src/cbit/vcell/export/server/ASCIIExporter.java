@@ -14,13 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.geometry.Space;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
@@ -35,8 +33,6 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
-import cbit.vcell.geometry.Curve;
-import cbit.vcell.geometry.CurveSelectionCurve;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataServerImpl;
@@ -212,7 +208,7 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 					sb.append(COMMA);
 					sb.append(coordinate.getZ());
 					sb.append(COMMA);
-					fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * j],coordinate.getX() + sb.toString());
+					fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * j],sb.toString());
 				}
 			} else {
 				fileDataContainerManager.append(dataLines[i - beginIndex],"," + allTimes[i] + ",");
