@@ -193,6 +193,7 @@ private void initialize() {
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
 		annotationTextArea.setEditable(false);
 
 		int gridy = 0;
@@ -332,9 +333,9 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.insets = new Insets(9, 8, 4, 6);
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		add(new JLabel("Annotation"), gbc);
+		add(new JLabel("Annotation "), gbc);
 
 		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 		

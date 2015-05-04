@@ -175,13 +175,14 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			GridBagConstraints gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.insets = new Insets(9, 8, 4, 6);
 			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-			generalPanel.add(new JLabel("Annotation"), gbc);
+			generalPanel.add(new JLabel("Annotation "), gbc);
 
 			annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 			annotationTextArea.setLineWrap(true);
 			annotationTextArea.setWrapStyleWord(true);
+			annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
 			annotationTextArea.setEditable(false);
 			javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
 			
