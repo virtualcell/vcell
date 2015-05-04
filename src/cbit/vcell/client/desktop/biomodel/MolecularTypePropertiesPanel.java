@@ -21,6 +21,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -31,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -42,8 +45,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
+import javax.swing.border.Border;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -60,6 +65,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 import org.vcell.util.document.PropertyConstants;
@@ -68,6 +74,8 @@ import org.vcell.util.gui.DialogUtils;
 import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
@@ -77,9 +85,9 @@ import cbit.vcell.model.common.VCellErrorMessages;
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
-		TreeWillExpandListener
+		TreeWillExpandListener, FocusListener
 	{
-
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == molecularType) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
@@ -87,7 +95,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				}
 			}
 		}
-
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == getDeleteMenuItem()) {
@@ -98,29 +106,33 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				addNew();
 			}			
 		}
-
+		@Override
 		public void mouseClicked(MouseEvent e) {			
 		}
-
+		@Override
 		public void mousePressed(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == molecularTypeTree) {
 				showPopupMenu(e);
 			}
 		}
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == molecularTypeTree) {
 				showPopupMenu(e);
 			}			
 		}
+		@Override
 		public void mouseEntered(MouseEvent e) {
 		}
-
+		@Override
 		public void mouseExited(MouseEvent e) {
+			if(e.getSource() == annotationTextArea){
+				changeFreeTextAnnotation();
+			}
 		}
-
+		@Override
 		public void valueChanged(TreeSelectionEvent e) {
 		}
-
 		@Override
 		public void treeWillExpand(TreeExpansionEvent e) throws ExpandVetoException {
 			boolean veto = false;
@@ -135,12 +147,23 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				throw new ExpandVetoException(e);
 			}
 		}
+		@Override
+		public void focusGained(FocusEvent e) {
+		}
+		@Override
+		public void focusLost(FocusEvent e) {
+			if (e.getSource() == annotationTextArea) {
+				changeFreeTextAnnotation();
+			}
+		}
 	}
 	
 	private JTree molecularTypeTree = null;
 	private MolecularTypeTreeModel molecularTypeTreeModel = null;
 	private MolecularType molecularType;
 	private JLabel titleLabel = null;
+	private JTextArea annotationTextArea;
+	
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
@@ -277,27 +300,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	}
 
 	private void initialize() {
+		
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new GridBagLayout());
-		leftPanel.setBackground(Color.white);		
-		JPanel rightPanel = new JPanel() {
-			@Override
-			public void paintComponent(Graphics g) {
-				super.paintComponent(g);
-//				g.drawString("This is my custom Panel!", 10, 20);
-				for(LargeShape stls : molecularTypeShapeList) {
-					stls.paintSelf(g);
-				}
-			}
-		};
-		rightPanel.setLayout(new GridBagLayout());
-		rightPanel.setBackground(Color.white);		
-		
-		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(240);
-		splitPane.setResizeWeight(0.1);
-		splitPane.setLeftComponent(leftPanel);
-		splitPane.setRightComponent(rightPanel);
+		leftPanel.setBackground(Color.white);
 		
 		molecularTypeTree = new BioModelNodeEditableTree();
 		molecularTypeTreeModel = new MolecularTypeTreeModel(molecularTypeTree);
@@ -341,15 +347,96 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		leftPanel.add(new JScrollPane(molecularTypeTree), gbc);
 		
+		// ------------------------------------------------------------------------------
+		JPanel shapePanel = new JPanel() {
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+//				g.drawString("This is my custom Panel!", 10, 20);
+				for(LargeShape stls : molecularTypeShapeList) {
+					stls.paintSelf(g);
+				}
+			}
+		};
+		
+		
+		shapePanel.setBackground(Color.white);
+		
+		Border border = BorderFactory.createLineBorder(Color.gray);
+		
+		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
+		generalPanel.setBorder(border);
+		generalPanel.setLayout(new GridBagLayout());
+
+		gridy = 0;
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0; 
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(9, 8, 4, 6);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+		generalPanel.add(new JLabel("Annotation "), gbc);
+
+		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
+		annotationTextArea.setLineWrap(true);
+		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
+		annotationTextArea.setEditable(false);
+		javax.swing.JScrollPane jsp = new javax.swing.JScrollPane(annotationTextArea);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.weightx = 1.0;
+		gbc.weighty = 0.1;
+		gbc.gridx = 1; 
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.insets = new Insets(4, 4, 4, 4);
+		generalPanel.add(jsp, gbc);
+
+		JPanel rightPanel = new JPanel();			// right side of the split panel
+		rightPanel.setLayout(new GridBagLayout());
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1;
+		gbc.weighty = 0.9;
+		gbc.fill = GridBagConstraints.BOTH;
+		rightPanel.add(shapePanel, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 1;
+		gbc.weighty = 0.1;
+		gbc.fill = GridBagConstraints.BOTH;
+		rightPanel.add(generalPanel, gbc);
+
+		
+		
+		
+		// -----------------------------------------------------------------------------
+		
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(240);
+		splitPane.setResizeWeight(0.1);
+		splitPane.setLeftComponent(leftPanel);
+		splitPane.setRightComponent(rightPanel);
+		
+
+		
 		Dimension minimumSize = new Dimension(100, 150);	//provide minimum sizes for the two components in the split pane
 		splitPane.setMinimumSize(minimumSize);
 		leftPanel.setMinimumSize(minimumSize);
 		rightPanel.setMinimumSize(minimumSize);
+		
 		setName("MolecularTypePropertiesPanel");
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
 
+		annotationTextArea.addFocusListener(eventHandler);
+		annotationTextArea.addMouseListener(eventHandler);
 	}
 	
 	private JMenuItem getAddMenuItem() {
@@ -400,16 +487,45 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		molecularType = newValue;
 		molecularTypeTreeModel.setMolecularType(molecularType);
-		if (molecularType != null) {
+		updateInterface();
+	}
+	public void updateInterface() {
+		boolean bNonNullMolecularType = molecularType != null && bioModel != null;
+		annotationTextArea.setEditable(bNonNullMolecularType);
+		if (bNonNullMolecularType) {
+			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(molecularType));
+			
 			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 			molecularTypeShapeList.clear();
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
 			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(20, 20, molecularType, panelContext, molecularType);
 			molecularTypeShapeList.add(stls);
 			splitPane.getRightComponent().repaint();
+		} else {
+			annotationTextArea.setText(null);
 		}
 	}
 	
+	private void changeFreeTextAnnotation() {
+		try{
+			if (molecularType == null) {
+				return;
+			}
+			// set text from annotationTextField in free text annotation for species in vcMetaData (from model)
+			if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+				VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+				String textAreaStr = (annotationTextArea.getText() == null || annotationTextArea.getText().length()==0?null:annotationTextArea.getText());
+				if(!Compare.isEqualOrNull(vcMetaData.getFreeTextAnnotation(molecularType),textAreaStr)){
+					vcMetaData.setFreeTextAnnotation(molecularType, textAreaStr);	
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace(System.out);
+			PopupGenerator.showErrorDialog(this,"Edit Molecule Error\n"+e.getMessage(), e);
+		}
+	}
+
 	private void selectClickPath(MouseEvent e) {
 		Point mousePoint = e.getPoint();
 		TreePath clickPath = molecularTypeTree.getPathForLocation(mousePoint.x, mousePoint.y);
