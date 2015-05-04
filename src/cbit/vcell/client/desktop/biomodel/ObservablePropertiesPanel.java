@@ -50,6 +50,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -367,6 +368,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		leftPanel.add(new JScrollPane(observableTree), gbc);
 		
 // --------------------------------------------------------------------------------------------------------		
+		Border border = BorderFactory.createLineBorder(Color.gray);
+		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+
+		TitledBorder annotationBorder = BorderFactory.createTitledBorder(loweredEtchedBorder, " Annotation ");
+		annotationBorder.setTitleJustification(TitledBorder.LEFT);
+		annotationBorder.setTitlePosition(TitledBorder.TOP);
+		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 		
 //		JScrollPane p = new JScrollPane(shapePanel);
 //		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -383,21 +392,20 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				}
 			}
 		};
+		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
 		
-		Border border = BorderFactory.createLineBorder(Color.gray);
-		
 		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
-		generalPanel.setBorder(border);
+		generalPanel.setBorder(annotationBorder);
 		generalPanel.setLayout(new GridBagLayout());
 
 		gridy = 0;
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
-		gbc.gridy = gridy;
-		gbc.insets = new Insets(9, 8, 4, 6);
-		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		generalPanel.add(new JLabel("Annotation "), gbc);
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 0; 
+//		gbc.gridy = gridy;
+//		gbc.insets = new Insets(9, 8, 4, 6);
+//		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+//		generalPanel.add(new JLabel("Annotation "), gbc);
 
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
@@ -409,7 +417,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.weightx = 1.0;
 		gbc.weighty = 0.1;
-		gbc.gridx = 1; 
+		gbc.gridx = 0; 
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
