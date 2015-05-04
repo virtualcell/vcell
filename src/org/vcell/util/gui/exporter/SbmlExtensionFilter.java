@@ -63,14 +63,13 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 	}
 	
 	private static Selector[]  selectors(boolean spatial) {
-		Selector selectors[] = new Selector[3];
+		Selector selectors[] = new Selector[2];
 		selectors[0] = Selector.DETERMINISTIC;
-		selectors[1] = Selector.SBML;
 		if (spatial) {
-			selectors[2] = Selector.SPATIAL;
+			selectors[1] = Selector.SPATIAL;
 		}
 		else {
-			selectors[2] = Selector.NONSPATIAL;
+			selectors[1] = Selector.NONSPATIAL;
 		}
 		return selectors;
 	}
@@ -238,6 +237,5 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			}
 			return;
 		}
-		// TODO Auto-generated method stub
 	}
 }

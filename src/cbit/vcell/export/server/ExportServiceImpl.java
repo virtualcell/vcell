@@ -9,10 +9,8 @@
  */
 
 package cbit.vcell.export.server;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -137,7 +135,6 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
  * Creation date: (4/1/2001 11:20:45 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @param progress double
- * @deprecated
  */
 protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
 	User user = null;

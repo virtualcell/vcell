@@ -10,7 +10,6 @@
 
 package org.vcell.sbml.gui;
 
-import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 
 import cbit.vcell.client.PopupGenerator;
