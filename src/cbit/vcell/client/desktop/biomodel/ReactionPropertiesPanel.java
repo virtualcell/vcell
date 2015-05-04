@@ -13,6 +13,7 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
@@ -306,6 +307,7 @@ private void initialize() {
 		annotationTextArea = new JTextArea(2,20);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
+		annotationTextArea.setFont(new Font("monospaced", Font.PLAIN, 11));
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
@@ -519,6 +521,9 @@ private void updateKineticChoice() {
 }
 
 private void updateToggleButtonLabel(){
+	if(reactionStep.getModel() == null){
+		return;
+	}
 	if (reactionStep.getKinetics() instanceof DistributedKinetics){
 		getJToggleButton().setText("Convert to ["+reactionStep.getModel().getUnitSystem().getLumpedReactionRateUnit().getSymbolUnicode()+"]");
 		getJToggleButton().setToolTipText("convert kinetics to be in terms of molecules rather than concentration");
