@@ -158,7 +158,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	SimulationContext simContexts[] = bioModel.getSimulationContexts();
+	final SimulationContext simContexts[] = bioModel.getSimulationContexts();
 	boolean spatialDeterministicSim = false;
 	boolean nonspatialDeterministicSim = false;
 	boolean stochasticSim = false;
@@ -180,7 +180,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		List<FileFilter> dlist = FileFilters.supports(SelectorExtensionFilter.Selector.DEFAULT);
 		VCAssert.assertTrue(dlist.size( ) == 1, "Exactly one filter must be designated default");
 		defaultFileFilter = dlist.get(0);
-		Set<FileFilter> filters = new TreeSet<>();
+		Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical 
 		filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.ANY));
 		if (spatialDeterministicSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SPATIAL));
@@ -191,6 +191,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		if (stochasticSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.STOCHASTIC));
 		}
+		
 		for (FileFilter f : filters) {
 			fileChooser.addChoosableFileFilter(f);
 		}
@@ -215,7 +216,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	else {
 		defaultFileFilter = forceFileFilter;
 	}
-	// remove all selector
+	// remove all selectors
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	// Set the default file filter...
 	fileChooser.setFileFilter(defaultFileFilter);
@@ -235,6 +236,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		// no file selected (no name given)
 		throw UserCancelException.CANCEL_FILE_SELECTION;
 	} 
+	final File fileUserSpecified = selectedFile.getCanonicalFile();
 	///
 	String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
 	if (fileFilter.isValidExtension(extensionUserProvided)) {
@@ -331,12 +333,29 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		chosenSimContext =  sca.simCtx;
 	}
 	hashTable.put(SIM_CONTEXT, chosenSimContext);
-	boolean isSbml = fileFilter.supports(SelectorExtensionFilter.Selector.SBML);
+	//boolean isSbml = fileFilter.supports(SelectorExtensionFilter.Selector.SBML);
 	if (fileFilter.requiresMoreChoices()) {
 		ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,chosenSimContext,selectedFile,selectedFileName);
 		fileFilter.askUser(ctx);
 	}
+	{
+		boolean showConfirm = false;
 
+		final boolean someContextsFiltered = simContexts.length > applicableSimContext.size();
+		showConfirm = someContextsFiltered;
+		if (!showConfirm) {
+			final File fileAfterProcessing = selectedFile.getCanonicalFile();
+			if (!fileAfterProcessing.equals(fileUserSpecified)) {
+				showConfirm = true;
+			}
+		}
+		if (showConfirm) {
+			DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export" ,"TBD");
+		}
+	}
+	resetPreferredFilePath(selectedFile, userPreferences);
+	return selectedFile;
+}
 //	// Check structure sized and select a simulation to export to SBML
 //	if (isSbml) {
 //		// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
@@ -453,9 +472,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //		return selectedFile;
 //	}
 
-	resetPreferredFilePath(selectedFile, userPreferences);
-	return selectedFile;
-}
+
 
 
 /**
