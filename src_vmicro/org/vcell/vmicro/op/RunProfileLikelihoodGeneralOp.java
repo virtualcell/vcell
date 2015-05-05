@@ -180,16 +180,20 @@ public class RunProfileLikelihoodGeneralOp {
 //					incrementStep = DEFAULT_CI_STEPS[j];
 //				}
 				
-				if (clientTaskStatusSupport.isInterrupted())
+				if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted())
 				{
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 
 				lastError = error;
 				iterationCount++;
-				clientTaskStatusSupport.setProgress((int)((iterationCount*1.0/MAX_ITERATION) * 0.5 * 100));
+				if (clientTaskStatusSupport!=null){
+					clientTaskStatusSupport.setProgress((int)((iterationCount*1.0/MAX_ITERATION) * 0.5 * 100));
+				}
 			}
-			clientTaskStatusSupport.setProgress(50);//half way through evaluation of a parameter.
+			if (clientTaskStatusSupport!=null){
+				clientTaskStatusSupport.setProgress(50);//half way through evaluation of a parameter.
+			}
 			//decrease
 			iterationCount = 1;
 			paramLogVal = Math.log10(fixedParam.getInitialGuess());;
@@ -272,20 +276,26 @@ public class RunProfileLikelihoodGeneralOp {
 //					decrementStep = DEFAULT_CI_STEPS[j];
 //				}
 				
-				if (clientTaskStatusSupport.isInterrupted())
+				if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted())
 				{
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				lastError = error;
 				iterationCount++;
-				clientTaskStatusSupport.setProgress((int)(((iterationCount+MAX_ITERATION)*1.0/MAX_ITERATION) * 0.5 * 100));
+				if (clientTaskStatusSupport!=null){
+					clientTaskStatusSupport.setProgress((int)(((iterationCount+MAX_ITERATION)*1.0/MAX_ITERATION) * 0.5 * 100));
+				}
 			}
 			resultData[j] = profileData;
-			clientTaskStatusSupport.setProgress(100);//finish evaluation of a parameter
+			if (clientTaskStatusSupport!=null){
+				clientTaskStatusSupport.setProgress(100);//finish evaluation of a parameter
+			}
 		}
 		optContext.clearFixedParameter();
 		//this message is specifically set for batchrun, the message will stay in the status panel. It doesn't affect single run,which disappears quickly that user won't notice.
-		clientTaskStatusSupport.setMessage("Evaluating confidence intervals ...");
+		if (clientTaskStatusSupport!=null){
+			clientTaskStatusSupport.setMessage("Evaluating confidence intervals ...");
+		}
 //		long endTime =System.currentTimeMillis();
 //		System.out.println("total time used:" + (endTime - startTime));
 		return resultData;

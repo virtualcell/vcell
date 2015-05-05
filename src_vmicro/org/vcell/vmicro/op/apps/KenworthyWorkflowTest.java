@@ -22,6 +22,7 @@ import org.vcell.vmicro.op.GenerateNormalizedFrapDataOp.NormalizedFrapDataResult
 import org.vcell.vmicro.op.GenerateReducedDataOp;
 import org.vcell.vmicro.op.ImportRawTimeSeriesFromVFrapOp;
 import org.vcell.vmicro.op.RunFakeSimOp;
+import org.vcell.vmicro.op.display.DisplayImageOp;
 import org.vcell.vmicro.op.display.DisplayInteractiveModelOp;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
 import org.vcell.vmicro.workflow.data.ErrorFunction;
@@ -96,6 +97,7 @@ public class KenworthyWorkflowTest {
 			// analyze raw data (from file?) using Keyworthy method.
 			//
 			File vfrapFile = new File(baseDir, "vfrapPaper/rawData/sim3/workflow.txt.save");
+			//File vfrapFile = new File(baseDir, "tryit.vfrap");
 			ImageTimeSeries<UShortImage> fluorTimeSeriesImages = new ImportRawTimeSeriesFromVFrapOp().importRawTimeSeriesFromVFrap(vfrapFile);
 			analyzeKeyworthy(fluorTimeSeriesImages, localWorkspace);
 			
@@ -121,6 +123,9 @@ public class KenworthyWorkflowTest {
 		ROI backgroundROI = cellROIresults.backgroundROI_2D;
 		ROI cellROI = cellROIresults.cellROI_2D;
 		int indexOfFirstPostbleach = cellROIresults.indexOfFirstPostbleach;
+		
+		new DisplayImageOp().displayImage(backgroundROI.getRoiImages()[0], "background ROI", null);
+		new DisplayImageOp().displayImage(cellROI.getRoiImages()[0], "cell ROI", null);
 		
 		NormalizedFrapDataResults normResults = new GenerateNormalizedFrapDataOp().generate(rawTimeSeriesImages, backgroundROI, indexOfFirstPostbleach);
 		ImageTimeSeries<FloatImage> normalizedTimeSeries = normResults.normalizedFrapData;
