@@ -16,7 +16,7 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.Issue.IssueOrigin;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
@@ -34,7 +34,7 @@ import cbit.vcell.parser.ExpressionException;
  * 
  */
 @SuppressWarnings("serial")
-public class Geometry implements VCDocument, Versionable, IssueSource {
+public class Geometry implements VCDocument, Versionable, IssueOrigin {
 	private Version version = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;

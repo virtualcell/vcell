@@ -17,6 +17,8 @@ import java.awt.Desktop;
 import java.awt.Desktop.Action;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -300,8 +302,12 @@ private static JPanelWithCb createMessagePanel(final String message) {
 	// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
 	//
 	Dimension textAreaPreferredSize = textArea.getPreferredSize();
-	Dimension preferredSize = new Dimension((int)Math.min(500,Math.max(400,textAreaPreferredSize.getWidth()+20)),
-			(int)Math.min(400,Math.max(100,textAreaPreferredSize.getHeight()+20)));
+	Dimension screenSize = getScreenSize( );
+	final int horizBorderSize = 90;
+	final int vertBorderSize = 40;
+	int w = Math.min(textAreaPreferredSize.width + horizBorderSize, screenSize.width - horizBorderSize);
+	int h = Math.min(textAreaPreferredSize.height + vertBorderSize, screenSize.height - vertBorderSize);
+	Dimension preferredSize = new Dimension(w,h);
 	
 	JScrollPane scroller = new JScrollPane();
 	JPanelWithCb panel = new JPanelWithCb();
@@ -309,6 +315,18 @@ private static JPanelWithCb createMessagePanel(final String message) {
 	scroller.getViewport().setPreferredSize(preferredSize);
 	panel.add(scroller, BorderLayout.CENTER);
 	return panel;
+}
+
+/**
+ * get screensize including multi monitor environment 
+ * @return
+ */
+public static Dimension getScreenSize( ) {
+	//http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
+	GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+	int width = gd.getDisplayMode().getWidth();
+	int height = gd.getDisplayMode().getHeight();	
+	return new Dimension(width, height);
 }
 
 /**
@@ -699,6 +717,7 @@ private static String showDialog(final Component requester, String title, final 
 	final JDialog dialog = pane.createDialog(requester, title);
 	dialog.setResizable(true);
 	dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	dialog.pack();
 	try {
 		DialogUtils.showModalJDialogOnTop(dialog, requester);
 		Object selectedValue = pane.getValue();

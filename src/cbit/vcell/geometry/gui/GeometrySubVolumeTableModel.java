@@ -15,6 +15,8 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -25,9 +27,11 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.model.ModelPropertyVetoException.Category;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -215,11 +219,22 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_NAME:{
 				final String newName = (String)aValue;
+				final String oldName = subVolume.getName();
 				subVolume.setName(newName);
 				AsynchClientTask task1 = new AsynchClientTask("changing the name", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
+						GeometrySpec gs = getGeometry().getGeometrySpec();
+						if (gs != null) {
+							gs.geometryNameChanged(oldName,newName);
+						}
+						else {
+							if (lg.isEnabledFor(Level.WARN)) {
+								lg.warn(getGeometry().getDescription() + " has no GeometrySpec?");
+							}
+							
+						}
 					}
 				};
 				ClientTaskDispatcher.dispatch(ownerTable, new Hashtable<String, Object>(), new AsynchClientTask[] {task1}, false);
