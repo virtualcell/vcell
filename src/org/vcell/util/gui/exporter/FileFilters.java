@@ -50,7 +50,6 @@ public class FileFilters {
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
 	public static final FileFilter FILE_FILTER_PLY		= new ExtensionFilter(".ply", 	"Stanford Polygon Format(*.ply)");
-	public static final FileFilter FILE_FILTER_NFSIM	= new ExtensionFilter(".xml", 	"NFSim (BNGL) file (*.xml)");
 	public static final FileFilter FILE_FILTER_GEOMIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip"},"images (.gif .tif .tiff .zip)");
 	public static final FileFilter FILE_FILTER_FIELDIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip", ".lsm"},"images/datasets (.gif .tif .tiff .zip .lsm)");
 	
@@ -76,6 +75,7 @@ public class FileFilters {
 	public static final FileFilter FILE_FILTER_SEDML    = new SedmlExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_CELLML	= new CellMLExtensionFilter(); 
 	public static final FileFilter FILE_FILTER_SMOLDYN_INPUT = new SmoldynExtensionFilter(); 
+	public static final FileFilter FILE_FILTER_NFSIM = new NfsimExtensionFilter(); 
 	public static final ExtensionFilter FILE_FILTER_BNGL = new BnglExtensionFilter(); 
 	
 	static void register(SelectorExtensionFilter f) {
