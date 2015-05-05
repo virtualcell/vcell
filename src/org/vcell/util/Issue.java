@@ -44,6 +44,10 @@ public class Issue implements java.io.Serializable, Matchable {
 		
 	}
 	
+	public interface IssueOrigin extends IssueSource {
+		public String getDescription( );
+	}
+	
 	public enum IssueCategory {
 		Units,
 		Identifiers,

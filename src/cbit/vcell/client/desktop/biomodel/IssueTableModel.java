@@ -17,12 +17,13 @@ import java.util.List;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueOrigin;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -47,11 +48,11 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
-import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
@@ -178,9 +179,16 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 	}
 	
 	private String getSourceObjectPathDescription(VCDocument vcDocument, Issue issue) {
+		VCAssert.assertValid(issue);
+		Object source = issue.getSource();
+		{
+			IssueOrigin io = BeanUtils.downcast(IssueOrigin.class, source);
+			if (io != null) {
+				return io.getDescription();
+			}
+		}
 		if (vcDocument instanceof BioModel){
 			BioModel bioModel = (BioModel)vcDocument;
-			Object source = issue.getSource();
 			String description = "";
 			if (source instanceof SymbolTableEntry) {
 				if (source instanceof SpeciesContext) {
@@ -270,13 +278,12 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			}
 			return description;
 		}else if (vcDocument instanceof MathModel){
-			Object object = issue.getSource();
-			if (object instanceof Geometry) {
+			if (source instanceof Geometry) {
 				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_GEOMETRY;
-			} else if (object instanceof OutputFunctionIssueSource) {
+			} else if (source instanceof OutputFunctionIssueSource) {
 				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_OUTPUTFUNCTIONS;
-			} else if (object instanceof Simulation){
-				return "Simulation("+((Simulation)object).getName()+")";
+			} else if (source instanceof Simulation){
+				return "Simulation("+((Simulation)source).getName()+")";
 			} else {
 				return GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_MATH_VCML;
 			}
@@ -348,7 +355,7 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				ReactionSpec rs = ((ReactionCombo)object).getReactionSpec();
 				description = rs.getReactionStep().getName();
 			} else if (object instanceof RbmModelContainer) {
-				RbmModelContainer mc = (RbmModelContainer)object;
+				//RbmModelContainer mc = (RbmModelContainer)object;
 				description = "Rules validator";
 			} else if (object instanceof Model) {
 				Model m = (Model)object;
