@@ -9,6 +9,7 @@ package org.vcell.util;
 public class ProgrammingException extends RuntimeException {
 
 	public ProgrammingException() {
+		super("Programming Exception");
 	}
 
 	public ProgrammingException(String paramString) {

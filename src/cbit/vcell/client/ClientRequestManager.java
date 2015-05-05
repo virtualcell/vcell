@@ -77,6 +77,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Issue;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCellThreadChecker;
@@ -2946,7 +2947,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			} else if (documentInfo instanceof ExternalDocInfo){
 				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
 				
-				if (!externalDocInfo.isXML()){ 			// not XML, look for BNGL etc.
+				if (!externalDocInfo.isXML()) { 
+						if (hashTable.containsKey(BNG_UNIT_SYSTEM)){ 			// not XML, look for BNGL etc.
 					// we use the BngUnitSystem already created during the 1st pass
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
@@ -2983,6 +2985,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					ruleBasedSimContext.refreshMathDescription(callback,networkGenerationRequirements);
 					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 					doc = bioModel;
+						}
 				}else{ // is XML
 					try (TranslationLogger transLogger = new TranslationLogger(requester)) {
 						XMLSource xmlSource = externalDocInfo.createXMLSource();
@@ -3022,6 +3025,13 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 							doc.setName(externalDocInfo.getDefaultName());
 						}
 					}
+				}
+				if (doc == null) {
+					File f = externalDocInfo.getFile();
+					if (f != null) {
+						throw new RuntimeException("Unable to determine type of file " + f.getCanonicalPath());
+					}
+					throw new ProgrammingException();
 				}
 			}
 			// create biopax objects using annotation
