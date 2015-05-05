@@ -87,7 +87,7 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 			    SimulationInfo simInfo=simulation.getSimulationInfo();
 				SimulationStatus simStatus = vcellClient.getRequestManager().getServerSimulationStatus(simInfo);
 				for (int simOwnerIndex = 0; simOwnerIndex<simOwnerCount; simOwnerIndex++){
-					for (int jobIndex = 0; jobIndex<=simulation.getScanCount(); jobIndex++){
+					for (int jobIndex = 0; jobIndex<simulation.getScanCount(); jobIndex++){
 						if (simStatus!=null && simStatus.getHasData()){
 							SimulationDataSetRef simulationDataSetReference = new SimulationDataSetRef();
 							simulationDataSetReference.setSimName(simInfo.getName());
