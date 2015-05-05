@@ -21,9 +21,8 @@ import java.util.Set;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
-import org.vcell.model.rbm.SpeciesPattern;
+import org.apache.log4j.Logger;
 import org.vcell.util.Issue;
-import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.sorttable.SortPreference;
 import org.vcell.util.gui.sorttable.SortTableModel;
@@ -31,11 +30,6 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 
 @SuppressWarnings("serial")
@@ -51,6 +45,7 @@ public abstract class VCellSortTableModel<T> extends AbstractTableModel  impleme
 	private SortPreference fieldSortPreference = new SortPreference(true, -1);
 	private List<T> visibleRows = Collections.synchronizedList(new ArrayList<T>());
 	private String columns[] = null;		
+	protected static Logger lg = Logger.getLogger(VCellSortTableModel.class);
 
 	public VCellSortTableModel() {
 		this(null, null);
