@@ -16,6 +16,7 @@ import java.util.Hashtable;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.TopLevelWindowManager;
@@ -112,6 +113,12 @@ public boolean equals(Object param) {
 
 public String getDescription() {
 	return description;
+}
+/**
+ * @return description without file extensions, as indicated by <b>(</b>
+ */
+public String getShortDescription() {
+	return StringUtils.substringBefore(description, "(" );
 }
 
 @Override
