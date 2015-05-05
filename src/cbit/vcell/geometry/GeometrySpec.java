@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.Compare;
@@ -52,6 +53,7 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 
 	public static final String PROPERTY_NAME_SAMPLED_IMAGE = "sampledImage";
 	public static final String PROPERTY_NAME_THUMBNAIL_IMAGE = "thumbnailImage";
+	public static final String PROPERTY_NAME_GEOMETRY_NAME = "geometryName";
 
 	public final static int IMAGE_SIZE_LIMIT =  4000000;
 	
@@ -1494,6 +1496,18 @@ public void vetoableChange(java.beans.PropertyChangeEvent event) throws Property
 		if (sv != null && sv != event.getSource()){
 			throw new PropertyVetoException("A subdomain with name '" + newName + "' already exists.", event);
 		}
+	}
+}
+
+
+/**
+ * fire {@link #PROPERTY_NAME_GEOMETRY_NAME} event if names different
+ * @param oldName 
+ * @param newName 
+ */
+public void geometryNameChanged(String oldName, String newName) {
+	if (!StringUtils.equals(oldName, newName)) {
+		firePropertyChange(PROPERTY_NAME_GEOMETRY_NAME, oldName, newName);
 	}
 }
 

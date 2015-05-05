@@ -48,19 +48,23 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
+import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -832,13 +836,13 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
  * @param allSimulations cbit.vcell.solver.Simulation[]
  */
 private Simulation[] extractLocalSimulations(Simulation[] allSimulations) {
-	Vector<Simulation> list = new Vector<Simulation>();
+	ArrayList<Simulation> list = new ArrayList<Simulation>();
 	for (int i = 0; i < allSimulations.length; i++){
 		if (allSimulations[i].getMathDescription()==getMathDescription()){
 			list.add(allSimulations[i]);
 		}
 	}
-	Simulation localSimulations[] = (Simulation[])BeanUtils.getArray(list,Simulation.class);
+	Simulation localSimulations[] = list.toArray(new Simulation[list.size()]);
 	return localSimulations;
 }
 
@@ -1327,12 +1331,26 @@ public boolean isRuleBased(){
  * @param event java.beans.PropertyChangeEvent
  */
 public void propertyChange(java.beans.PropertyChangeEvent event) {
-	if (event.getSource() == getGeometry().getGeometrySpec() && event.getPropertyName().equals("extent")){
-		try {
-			characteristicSize = null;
-			refreshCharacteristicSize();
-		}catch (PropertyVetoException e){
-			e.printStackTrace(System.out);
+	if (event.getSource() == getGeometry().getGeometrySpec() ) {
+		String pname = event.getPropertyName();
+		if (pname.equals("extent")) {
+			try {
+				characteristicSize = null;
+				refreshCharacteristicSize();
+			}catch (PropertyVetoException e){
+				e.printStackTrace(System.out);
+			}
+		}
+		else if (pname.equals(GeometrySpec.PROPERTY_NAME_GEOMETRY_NAME)) {
+			MathMappingCallback  mmc = new MathMappingCallbackTaskAdapter(null);
+				try {
+					setMathDescription(createNewMathMapping(mmc, null).getMathDescription());
+				} catch (PropertyVetoException | MappingException
+						| MathException | MatrixException | ExpressionException
+						| ModelException e) {
+					throw new RuntimeException("Problem updating math after name change " + event.getOldValue() + " to "
+							+ event.getNewValue());
+				}
 		}
 	}
 	if (event.getSource() == getModel() && event.getPropertyName().equals("structures")){
@@ -2049,7 +2067,6 @@ public boolean isRandomizeInitCondition() {
 public void setRandomizeInitCondition(boolean bRandomize) {
 	if(isStoch()) //do it only when it is stochastic application
 	{
-		boolean oldValue = bRandomizeInitCondition;
 		bRandomizeInitCondition = bRandomize;
 	}
 }
