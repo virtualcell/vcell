@@ -2295,60 +2295,62 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 							VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_2, Issue.SEVERITY_ERROR);
 					issueList.add(issue);
 				}
-				for (int i = 0; i < regions.length; i++){
-					if (regions[i] instanceof SurfaceGeometricRegion){
-						SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[i];
-						SubVolume subVolume1 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume();
-						CompartmentSubDomain compartment1 = getCompartmentSubDomain(subVolume1.getName());
-						if(compartment1 == null){
-							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
-						}
-						SubVolume subVolume2 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
-						CompartmentSubDomain compartment2 = getCompartmentSubDomain(subVolume2.getName());
-						if(compartment2 == null){
-							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
-						}
-						MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1,compartment2);
-						if (compartment2 != null && compartment1 != null && membraneSubDomain==null){
-							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
-						}
-					}
-				}
-				//
-				// Check that for each MembraneSubdomain there exists an actual surface in the geometry
-				//
-				for (int i = 0; i < subDomainList.size(); i++){
-					if (subDomainList.elementAt(i) instanceof MembraneSubDomain){
-						MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomainList.elementAt(i);
-						boolean bFoundSurfaceInGeometry = false;
-						for (int j = 0; j < regions.length; j++){
-							if (regions[j] instanceof SurfaceGeometricRegion){
-								SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[j];
-								VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0];
-								VolumeGeometricRegion volumeRegion2 = (VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1];
-								String memInsideName = membraneSubDomain.getInsideCompartment().getName();
-								String memOutsideName = membraneSubDomain.getOutsideCompartment().getName();
-								if ((memInsideName.equals(volumeRegion1.getSubVolume().getName()) && memOutsideName.equals(volumeRegion2.getSubVolume().getName()))||
-									(memInsideName.equals(volumeRegion2.getSubVolume().getName()) && memOutsideName.equals(volumeRegion1.getSubVolume().getName()))){
-									bFoundSurfaceInGeometry=true;
-									break;
-								}
+				else {
+					for (int i = 0; i < regions.length; i++){
+						if (regions[i] instanceof SurfaceGeometricRegion){
+							SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[i];
+							SubVolume subVolume1 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0]).getSubVolume();
+							CompartmentSubDomain compartment1 = getCompartmentSubDomain(subVolume1.getName());
+							if(compartment1 == null){
+								Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry,
+										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume1.getName()), Issue.SEVERITY_ERROR);
+								issueList.add(issue);
+							}
+							SubVolume subVolume2 = ((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]).getSubVolume();
+							CompartmentSubDomain compartment2 = getCompartmentSubDomain(subVolume2.getName());
+							if(compartment2 == null){
+								Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
+										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_3, getGeometry().getName(), subVolume2.getName()), Issue.SEVERITY_ERROR);
+								issueList.add(issue);
+							}
+							MembraneSubDomain membraneSubDomain = getMembraneSubDomain(compartment1,compartment2);
+							if (compartment2 != null && compartment1 != null && membraneSubDomain==null){
+								Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
+										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_4, compartment1.getName(), compartment2.getName()), Issue.SEVERITY_ERROR);
+								issueList.add(issue);
 							}
 						}
-						if (!bFoundSurfaceInGeometry){
-							Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
+					}
+					//
+					// Check that for each MembraneSubdomain there exists an actual surface in the geometry
+					//
+					for (int i = 0; i < subDomainList.size(); i++){
+						if (subDomainList.elementAt(i) instanceof MembraneSubDomain){
+							MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomainList.elementAt(i);
+							boolean bFoundSurfaceInGeometry = false;
+							for (int j = 0; j < regions.length; j++){
+								if (regions[j] instanceof SurfaceGeometricRegion){
+									SurfaceGeometricRegion surfaceRegion = (SurfaceGeometricRegion)regions[j];
+									VolumeGeometricRegion volumeRegion1 = (VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[0];
+									VolumeGeometricRegion volumeRegion2 = (VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1];
+									String memInsideName = membraneSubDomain.getInsideCompartment().getName();
+									String memOutsideName = membraneSubDomain.getOutsideCompartment().getName();
+									if ((memInsideName.equals(volumeRegion1.getSubVolume().getName()) && memOutsideName.equals(volumeRegion2.getSubVolume().getName()))||
+											(memInsideName.equals(volumeRegion2.getSubVolume().getName()) && memOutsideName.equals(volumeRegion1.getSubVolume().getName()))){
+										bFoundSurfaceInGeometry=true;
+										break;
+									}
+								}
+							}
+							if (!bFoundSurfaceInGeometry){
+								Issue issue = new Issue(geometry, issueContext, IssueCategory.MathDescription_SpatialModel_Geometry, 
+										VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_GEOMETRY_5, membraneSubDomain.getInsideCompartment().getName(), membraneSubDomain.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
+								issueList.add(issue);
+							}
 						}
 					}
 				}
-			}
+				}
 		//}catch (GeometryException e){
 			//e.printStackTrace(System.out);
 			//setWarning("error validating MathDescription: "+e.getMessage());
