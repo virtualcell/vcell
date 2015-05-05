@@ -1208,12 +1208,94 @@ public final class BeanUtils {
 	 * @param obj may be null 
 	 * @return obj as T or null if obj is null or not of type T
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T downcast(Class<T> clzz, Object obj) {
 		if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
-			return (T) obj;
+			@SuppressWarnings("unchecked")
+			T rval = (T) obj;
+			return rval;
 		}
 		return null;
 	}
+	
+	public interface CastInfo <T> {
+		/**
+		 * was cast successful?
+		 */
+		boolean isGood( );
+		/**
+		 * return type converted object 
+		 * @return non null pointer
+		 * @throws ProgrammingException if {@link #isGood()} returns false
+		 */
+		T get( );
+		/**
+		 * @return name of desired class if {@link #isGood()} returns false
+		 */
+		String requiredName( );
+		/**
+		 * @return name of provided object if {@link #isGood()} returns false
+		 */
+		String actualName( );
+	}
+	
+	
+	/**
+	 * attempt to class object to specified type
+	 * @param clzz desired type, not null
+	 * @param obj object to cast; if null returns !isGood( ) CastInfo<T> 
+	 * @return CastInfo<T> object describing results
+	 */
+	public static <T> CastInfo<T> attemptCast(Class<T> clzz, Object obj) {
+		final String rname = clzz.getName();
+		if (obj != null) {
+			final String aname = obj.getClass().getName();
+			T result = downcast(clzz, obj);
+			if (result == null) {
+				return new FailInfo<>(rname, aname);
+			}
+			return new SucceedInfo<>(result);
+		}
+		return new FailInfo<>(rname, "null");
+	}
+	
+	private static class FailInfo<T> implements CastInfo<T> {
+		final String rname;
+		final String aname;
+		
+		FailInfo(String rname, String aname) {
+			this.rname = rname;
+			this.aname = aname;
+		}
+		public boolean isGood() {
+			return false;
+		}
+		public T get() {
+			String msg = "Programming exception, cast from " + aname + " to " + rname + " failed";
+			throw new ProgrammingException(msg);
+		}
+		public String requiredName() { return rname; }
+		public String actualName() { return aname; }
+	}
+		
+	private static class SucceedInfo<T> implements CastInfo<T> {
+		final T obj;
+		
+		SucceedInfo(T obj) {
+			super();
+			this.obj = obj;
+		}
+		public boolean isGood() {
+			return true;
+		}
+		public T get() {
+			return obj;
+		}
+		public String requiredName() { return ""; }
+		public String actualName() { return ""; } 
+	}
+		
+	
+	
+	
 
 }

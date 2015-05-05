@@ -1625,6 +1625,7 @@ private void addGeometry() throws SbmlException {
 	if (bAnyAnalyticSubvolumes && !bAnyImageSubvolumes && !bAnyCSGSubvolumes){
 		AnalyticGeometry sbmlAnalyticGeomDefinition = sbmlGeometry.createAnalyticGeometry();
 		sbmlAnalyticGeomDefinition.setId(TokenMangler.mangleToSName("Analytic_"+vcGeometry.getName()));	
+		sbmlAnalyticGeomDefinition.setIsActive(true);
 		for (int i = 0; i < vcGeomClasses.length; i++) {
 			if (vcGeomClasses[i] instanceof AnalyticSubVolume) {
 				AnalyticVolume analyticVol = sbmlAnalyticGeomDefinition.createAnalyticVolume();
@@ -1665,14 +1666,16 @@ private void addGeometry() throws SbmlException {
 	//
 	// add "Segmented" and "DistanceMap" SampledField Geometries
 	//
-	if (bAnyAnalyticSubvolumes || bAnyImageSubvolumes || bAnyCSGSubvolumes){
+		final boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
+	//55if (bAnyAnalyticSubvolumes || bAnyImageSubvolumes || bAnyCSGSubvolumes){
+	if (bVCGeometryIsImage) {
 		//
 		// add "Segmented" SampledFieldGeometry
 		//
 		SampledFieldGeometry segmentedImageSampledFieldGeometry = sbmlGeometry.createSampledFieldGeometry();
 		segmentedImageSampledFieldGeometry.setId(TokenMangler.mangleToSName("SegmentedImage_"+vcGeometry.getName()));
 		segmentedImageSampledFieldGeometry.setIsActive(true);
-		boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
+		//55boolean bVCGeometryIsImage = bAnyImageSubvolumes && !bAnyAnalyticSubvolumes && !bAnyCSGSubvolumes;
 		Geometry vcImageGeometry = null;
 		{
 			if (bVCGeometryIsImage){
