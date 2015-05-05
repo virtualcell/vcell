@@ -12,19 +12,21 @@ import cbit.vcell.mapping.SimulationContext;
 public abstract class SelectorExtensionFilter extends ExtensionFilter {
 	
 	public enum Selector {
+		/**
+		 * exactly one @link {@link SelectorExtensionFilter} subclass, currently {@link VCMLExtensionFilter}, is the default
+		 */
 		DEFAULT,
-		ANY,
+		/**
+		 * exports full models with all Simulations
+		 */
+		FULL_MODEL,
 		SPATIAL,
 		NONSPATIAL,
 		DETERMINISTIC,
-		STOCHASTIC,
-		ZEROAPP,
-		SBML,
+		STOCHASTIC
 	}
 
 	protected final SelectorExtensionFilter.Selector[] selectors;
-	
-//		FileFilters.register(this);
 	
 	SelectorExtensionFilter(String arg_extension, String descr, SelectorExtensionFilter.Selector... selectors) {
 		super(arg_extension, descr);
@@ -50,8 +52,13 @@ public abstract class SelectorExtensionFilter extends ExtensionFilter {
 		
 	}
 	
-		//FileUtils.writeStringToFile(exportFile, x);
+	/**
+	 * write specified model and context (if applicable) to file
+	 * @param documentManager
+	 * @param bioModel model to write
+	 * @param exportFile destination
+	 * @param simulationContext; will be null for classes which specify {@link Selector#FULL_MODEL}
+	 * @throws Exception
+	 */
 	public abstract void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception; 
-		
-	
 }

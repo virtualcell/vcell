@@ -17,12 +17,13 @@ import cbit.vcell.mapping.SimulationContext;
 @SuppressWarnings("serial")
 public class BnglExtensionFilter extends SelectorExtensionFilter {
 	public BnglExtensionFilter() {
-		super(".bngl", 	"BioNetGen (BNGL) file (*.bngl)",Selector.SPATIAL,Selector.NONSPATIAL,Selector.STOCHASTIC,Selector.DETERMINISTIC);
+		super(".bngl", 	"BioNetGen (BNGL) file (*.bngl)",
+			Selector.SPATIAL,Selector.NONSPATIAL,Selector.STOCHASTIC,Selector.DETERMINISTIC); //specifies BNGL requires single application of any type
 	}
 
 	@Override
 	public boolean requiresMoreChoices() {
-		return true; 
+		return true;  //tells ChooseFile to call askUser
 	}
 
 	@Override
