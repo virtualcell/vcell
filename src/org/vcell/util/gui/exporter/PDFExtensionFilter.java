@@ -12,7 +12,7 @@ import cbit.vcell.mapping.SimulationContext;
 public class PDFExtensionFilter extends SelectorExtensionFilter {
 	
 	public PDFExtensionFilter() {
-		super(".pdf",	"Report (*.pdf)",SelectorExtensionFilter.Selector.ANY);
+		super(".pdf",	"Report (*.pdf)",SelectorExtensionFilter.Selector.FULL_MODEL);
 		
 	}
 

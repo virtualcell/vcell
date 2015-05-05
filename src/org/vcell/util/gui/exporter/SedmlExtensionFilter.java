@@ -15,7 +15,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 	private static final String FNAMES[] = {".xml",".sedml","sedx"};
 	
 	public SedmlExtensionFilter() {
-		super(FNAMES,"SEDML format <Level1,Version2>  (.xml .sedml .sedx(archive))",SelectorExtensionFilter.Selector.ANY);
+		super(FNAMES,"SEDML format <Level1,Version2>  (.xml .sedml .sedx(archive))",SelectorExtensionFilter.Selector.FULL_MODEL);
 	}
 
 	@Override

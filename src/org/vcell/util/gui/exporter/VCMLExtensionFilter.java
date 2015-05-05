@@ -13,7 +13,7 @@ import cbit.vcell.xml.XmlHelper;
 public class VCMLExtensionFilter extends SelectorExtensionFilter {
 	
 	public VCMLExtensionFilter() {
-		super(".vcml","VCML format (.vcml)",SelectorExtensionFilter.Selector.ANY,SelectorExtensionFilter.Selector.DEFAULT);
+		super(".vcml","VCML format (.vcml)",SelectorExtensionFilter.Selector.FULL_MODEL,SelectorExtensionFilter.Selector.DEFAULT);
 	}
 
 	@Override

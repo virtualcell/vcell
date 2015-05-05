@@ -143,7 +143,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		if (obj != null) {
 			VCAssert.ofType(obj, SelectorExtensionFilter.class); 
 			forceFileFilter = (SelectorExtensionFilter) obj;
-			VCAssert.assertTrue(forceFileFilter.supports(Selector.ANY), "only " + Selector.ANY + " filters supported for force file filter");
+			VCAssert.assertTrue(forceFileFilter.supports(Selector.FULL_MODEL), "only " + Selector.FULL_MODEL + " filters supported for force file filter");
 		}
 	}
 	if (topLevelWindowManager == null) {
@@ -176,7 +176,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		VCAssert.assertTrue(dlist.size( ) == 1, "Exactly one filter must be designated default");
 		defaultFileFilter = dlist.get(0);
 		Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical 
-		filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.ANY));
+		filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.FULL_MODEL));
 		if (spatialDeterministicSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SPATIAL));
 		}
@@ -245,7 +245,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 	// put the filter in the hash so the export task knows what to do...
 	hashTable.put(FILE_FILTER, fileFilter);
-	if (fileFilter.supports(SelectorExtensionFilter.Selector.ANY)) {
+	if (fileFilter.supports(SelectorExtensionFilter.Selector.FULL_MODEL)) {
 		// nothing more to do in this case
 		resetPreferredFilePath(selectedFile, userPreferences);
 		return selectedFile;
