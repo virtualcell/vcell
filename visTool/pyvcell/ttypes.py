@@ -302,8 +302,6 @@ class SimulationDataSetRef:
       raise TProtocol.TProtocolException(message='Required field jobIndex is unset!')
     if self.isMathModel is None:
       raise TProtocol.TProtocolException(message='Required field isMathModel is unset!')
-    if self.simulationContextName is None:
-      raise TProtocol.TProtocolException(message='Required field simulationContextName is unset!')
     return
 
 

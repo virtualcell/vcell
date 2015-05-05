@@ -66,25 +66,27 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 		windowManager = windowManagers.nextElement();
 		Simulation[] simulations = null;
 		VCDocument modelDocument = null;
-		int simContextCount = 0;
+		int simOwnerCount = 0;
 		
 		if (windowManager instanceof BioModelWindowManager){
 			BioModelWindowManager selectedBioWindowManager = (BioModelWindowManager)windowManager;
 			BioModel bioModel = selectedBioWindowManager.getBioModel();
 			simulations = bioModel.getSimulations();
 			modelDocument = bioModel;
-			simContextCount = bioModel.getNumSimulationContexts();
+			simOwnerCount = bioModel.getNumSimulationContexts();
+			
 		}else if (windowManager instanceof MathModelWindowManager){
 			MathModelWindowManager selectedMathWindowManager = (MathModelWindowManager)windowManager; 
 			MathModel mathModel = selectedMathWindowManager.getMathModel();
 			simulations = mathModel.getSimulations();
 			modelDocument = mathModel;
+			simOwnerCount = 1;
 		}
 		if (simulations != null){
 			for (Simulation simulation : simulations){
 			    SimulationInfo simInfo=simulation.getSimulationInfo();
 				SimulationStatus simStatus = vcellClient.getRequestManager().getServerSimulationStatus(simInfo);
-				for (int simContextIndex = 0; simContextIndex<simContextCount; simContextIndex++){
+				for (int simOwnerIndex = 0; simOwnerIndex<simOwnerCount; simOwnerIndex++){
 					for (int jobIndex = 0; jobIndex<=simulation.getScanCount(); jobIndex++){
 						if (simStatus!=null && simStatus.getHasData()){
 							SimulationDataSetRef simulationDataSetReference = new SimulationDataSetRef();
@@ -102,9 +104,9 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 							simulationDataSetReference.setJobIndex(jobIndex);
 							if (modelDocument instanceof BioModel){
 								BioModel bm = (BioModel) modelDocument; 
-								simulationDataSetReference.setSimulationContextName(bm.getSimulationContext(simContextIndex).getName());
-								if (simContextIndex!=0) {
-									simName = simName + " simContext#"+String.valueOf(simContextIndex);
+								simulationDataSetReference.setSimulationContextName(bm.getSimulationContext(simOwnerIndex).getName());
+								if (simOwnerIndex!=0) {
+									simName = simName + " simContext#"+String.valueOf(simOwnerIndex);
 								}
 							}
 							simulationDataSetReference.setSimName(simInfo.getName());
