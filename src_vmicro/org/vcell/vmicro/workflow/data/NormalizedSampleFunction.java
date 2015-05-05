@@ -137,7 +137,7 @@ public class NormalizedSampleFunction {
 		if (nonzeroPixelCount == 0){
 			throw new RuntimeException("empty ROI \""+roi.getROIName()+"\"");
 		}
-		float pixelValue = 1.0f/nonzeroPixelCount;
+		float pixelValue = 1.0f;
 		for (int i=0;i<normalizedPixels.length;i++){
 			if (roi.getRoiImages()[0].getPixels()[i] > 0){
 				normalizedPixels[i] = pixelValue;

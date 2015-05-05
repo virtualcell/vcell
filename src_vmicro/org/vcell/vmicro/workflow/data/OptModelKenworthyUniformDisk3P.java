@@ -22,7 +22,7 @@ public class OptModelKenworthyUniformDisk3P extends OptModel {
 	public OptModelKenworthyUniformDisk3P(double bleachingRadius) {
 		super(NAME, new Parameter[] {
 				new Parameter(MODEL_PARAMETER_NAMES[INDEX_DIFFUSION_RATE], 0.1, 200, 1.0, 1.0),
-				new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_AMPLITUDE], 0.01, 1, 1.0, 0.5),
+				new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_AMPLITUDE], 0.01, 2, 1.0, 0.5),
 				new Parameter(MODEL_PARAMETER_NAMES[INDEX_BLEACH_MONITOR_RATE], 0.0001, 0.1, 1.0,  0.001),
 			});
 		this.bleachingRadius = bleachingRadius;
