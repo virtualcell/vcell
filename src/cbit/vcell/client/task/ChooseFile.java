@@ -12,32 +12,30 @@ package cbit.vcell.client.task;
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
-import org.vcell.sbml.gui.SimulationSelectionPanel;
-import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.util.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SimpleUserMessage;
+import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.ExtensionFilter;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.gui.exporter.SelectorExtensionFilter;
 import org.vcell.util.gui.exporter.SelectorExtensionFilter.Selector;
-import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
@@ -45,11 +43,8 @@ import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -257,7 +252,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	}
 
 	//ArrayList<String> applicableAppNameList = new ArrayList<String>();
-	ArrayList<SimulationContext> applicableSimContext = new ArrayList<>();
+	ArrayList<SimulationContext> applicableSimContexts = new ArrayList<>();
 	for (SimulationContext sc : simContexts) {
 		if (sc.getGeometry().getDimension() == 0 ) {
 			if (!fileFilter.supports(SelectorExtensionFilter.Selector.NONSPATIAL)) {
@@ -275,7 +270,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		else if (!fileFilter.supports(SelectorExtensionFilter.Selector.DETERMINISTIC)) {
 			continue;
 			}
-		applicableSimContext.add(sc);
+		applicableSimContexts.add(sc);
 	}
 	/*
 		{} else {
@@ -286,8 +281,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		}
 	 */
 	SimulationContext chosenSimContext = null;
-	if (applicableSimContext.size() == 1){
-		chosenSimContext = applicableSimContext.get(0);
+	if (applicableSimContexts.size() == 1){
+		chosenSimContext = applicableSimContexts.get(0);
 	} 
 	/*
 		else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) && 
@@ -318,12 +313,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		}	 */
 	else {
 		//String[] applicationNames = applicableAppNameList.toArray(new String[applicableAppNameList.size()]);
-		final int s = applicableSimContext.size();
-		SimContextAdapter scarray[] = new SimContextAdapter[s];
-		for (int i = 0; i < s; i++) {
-			scarray[i] = new SimContextAdapter(applicableSimContext.get(i));
-		}
-		
+		SimContextAdapter scarray[] = adapt(applicableSimContexts) ;
 		Object choice = PopupGenerator.showListDialog(topLevelWindowManager, scarray, "Please select Application");
 		if (choice == null) {
 			throw UserCancelException.CANCEL_FILE_SELECTION;
@@ -341,16 +331,50 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	{
 		boolean showConfirm = false;
 
-		final boolean someContextsFiltered = simContexts.length > applicableSimContext.size();
+		final boolean someContextsFiltered = simContexts.length > applicableSimContexts.size();
 		showConfirm = someContextsFiltered;
 		if (!showConfirm) {
 			final File fileAfterProcessing = selectedFile.getCanonicalFile();
 			if (!fileAfterProcessing.equals(fileUserSpecified)) {
-				showConfirm = true;
+				final String nameUserSpecified = fileUserSpecified.getCanonicalPath();
+				final String nameAfterProcessing = fileAfterProcessing.getCanonicalPath();
+				if (FilenameUtils.indexOfExtension(nameUserSpecified) > 0) { //have extension on user path
+					showConfirm = true;
+				}
+				else { //don't prompt if user left extension off
+					String nameAfterNoExtension = FilenameUtils.getFullPath(nameAfterProcessing) + FilenameUtils.getBaseName(nameAfterProcessing);
+					if (!nameAfterNoExtension.equals(nameUserSpecified)) {
+						showConfirm = true;
+					}
+				}
 			}
 		}
 		if (showConfirm) {
-			DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export" ,"TBD");
+			final String exportDesc = fileFilter.getShortDescription();
+			StringBuilder sb = new StringBuilder( );
+			List<SimulationContext> all = new ArrayList<>(Arrays.asList(simContexts));
+			all.removeAll(applicableSimContexts);
+			if (!all.isEmpty()) {
+				SimContextAdapter[] removed = adapt(all);
+				sb.append("The following simulations are not supported by ");
+				sb.append(exportDesc);
+				sb.append(" and have been removed: ");
+				sb.append(StringUtils.join(removed,", "));
+				sb.append(".\n\n");
+			}
+
+			SimContextAdapter[] included = adapt(applicableSimContexts);
+			sb.append("Export model with simulations ");
+			sb.append(StringUtils.join(included,", "));
+			sb.append(" to file of type ");
+			sb.append(exportDesc);
+			sb.append(' ');
+			sb.append(selectedFile.getCanonicalPath());
+			sb.append('?');
+			String reply = DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export" ,sb.toString());
+			if (!SimpleUserMessage.OPTION_OK.equals(reply)) {
+				throw UserCancelException.CANCEL_GENERIC;
+			}
 		}
 	}
 	resetPreferredFilePath(selectedFile, userPreferences);
@@ -671,8 +695,14 @@ private static class SimContextAdapter {
 	public String toString() {
 		return simCtx.getName(); 
 	}
-	
-	
 }
 
+private SimContextAdapter[] adapt(List<SimulationContext> scList)  {
+	final int s = scList.size();
+	SimContextAdapter scarray[] = new SimContextAdapter[s];
+	for (int i = 0; i < s; i++) {
+		scarray[i] = new SimContextAdapter(scList.get(i));
+	}
+	return scarray;
+}
 }
