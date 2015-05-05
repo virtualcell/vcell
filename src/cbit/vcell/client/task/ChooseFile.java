@@ -22,7 +22,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.TokenMangler;
@@ -157,6 +156,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	boolean spatialDeterministicSim = false;
 	boolean nonspatialDeterministicSim = false;
 	boolean stochasticSim = false;
+	@SuppressWarnings("unused")
+	boolean bnglSim = false; //add logic to set this 
 	for (SimulationContext sc : simContexts) {
 		if (sc.isStoch()) {
 			stochasticSim = true;
@@ -186,6 +187,11 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		if (stochasticSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.STOCHASTIC));
 		}
+		/*add BNGL selector here 
+		if (bnglSim) {
+			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.BNGL));
+		}
+		*/
 		
 		for (FileFilter f : filters) {
 			fileChooser.addChoosableFileFilter(f);
