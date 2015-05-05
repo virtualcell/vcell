@@ -4,6 +4,11 @@ import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.SBasePlugin;
 import org.sbml.libsbml.XMLNamespaces;
 import org.sbml.libsbml.libsbmlConstants;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.VCAssert;
+
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 
 
 public class SBMLHelper {
@@ -153,6 +158,34 @@ public class SBMLHelper {
 		}
 	}
 	*/
+	/**
+	 * get a type structure from a model, taking into account name mangling
+	 * @param type not null
+	 * @param source not null Model
+	 * @param name not null
+	 * @return desired structure or null
+	 */
+	public static <T extends Structure> BeanUtils.CastInfo<T> getTypedStructure(Class<T> type,Model source, String name) {
+		VCAssert.assertValid(type);
+		VCAssert.assertValid(source);
+		VCAssert.assertValid(name);
+		Structure strct = source.getStructure(name);
+		if (strct == null) {
+			String sourceMg = SBMLUtils.mangleToSName(name);
+			Structure[] structs = source.getStructures();
+			for (Structure s : structs) {
+				String sn = s.getName();
+				if (sn != null) {
+				 String mg = SBMLUtils.mangleToSName(sn);
+				 if (mg.equals(sourceMg)) {
+					 strct = s;
+					 break;
+				 }
+				}
+			}
+		}
+		return BeanUtils.attemptCast(type, strct);
+	}
 
 }
 
