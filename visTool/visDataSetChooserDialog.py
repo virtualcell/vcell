@@ -62,7 +62,7 @@ class DataSetChooserDialog(QtGui.QDialog):
             print("Exception looking for open model datasets")
         finally:
             vcellProxy2.close()
-
+        print(simList)
         if (simList==None or len(simList)==0):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("VCell not running or no models open")
