@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
@@ -107,6 +108,7 @@ import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SpatialAdapter;
 import org.vcell.sbml.vcell.SBMLImportException.Category;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -303,7 +305,7 @@ public class SBMLImporter {
 		// Using a vector here - since there can be SBML models with only
 		// features and no membranes.
 		// Hence keeping the datastructure flexible.
-		Vector<Structure> structVector = new Vector<Structure>();
+		List<Structure> structList = new ArrayList<Structure>();
 		java.util.HashMap<String, Structure> structureNameMap = new java.util.HashMap<String, Structure>();
 
 		try {
@@ -315,11 +317,11 @@ public class SBMLImporter {
 				String compartmentName = compartment.getId();
 				if (compartment.getSpatialDimensions() == 3) {
 					Feature feature = new Feature(compartmentName);
-					structVector.insertElementAt(feature, structIndx);
+					structList.add(structIndx, feature);
 					structureNameMap.put(compartmentName, feature);
 				} else if (compartment.getSpatialDimensions() == 2) {
 					Membrane membrane = new Membrane(compartmentName);
-					structVector.insertElementAt(membrane, structIndx);
+					structList.add(structIndx, membrane);
 					structureNameMap.put(compartmentName, membrane);
 				} else {
 					logger.sendMessage(VCLogger.Priority.HighPriority,
@@ -333,9 +335,9 @@ public class SBMLImporter {
 									+ " for compartments at this time");
 				}
 				structIndx++;
-				sbmlAnnotationUtil.readAnnotation(structVector.get(i),
+				sbmlAnnotationUtil.readAnnotation(structList.get(i),
 						compartment);
-				sbmlAnnotationUtil.readNotes(structVector.get(i), compartment);
+				sbmlAnnotationUtil.readNotes(structList.get(i), compartment);
 			}
 
 			// Second pass - connect the structures
@@ -374,8 +376,8 @@ public class SBMLImporter {
 			}
 
 			// set the structures in vc simContext
-			Structure[] structures = (Structure[]) BeanUtils.getArray(
-					structVector, Structure.class);
+			Structure[] structures = structList
+					.toArray(new Structure[structList.size()]);
 			model.setStructures(structures);
 
 			// Third pass thro' the list of compartments : set the sizes on the
@@ -2042,8 +2044,8 @@ public class SBMLImporter {
 
 			vcBioModel.refreshDependencies();
 
-			Issue warningIssues[] = (Issue[]) BeanUtils.getArray(
-					localIssueList, Issue.class);
+			Issue warningIssues[] = localIssueList
+					.toArray(new Issue[localIssueList.size()]);
 			if (warningIssues != null && warningIssues.length > 0) {
 				StringBuffer messageBuffer = new StringBuffer(
 						"Issues encountered during SBML Import:\n");
@@ -2915,13 +2917,17 @@ public class SBMLImporter {
 							// from the element attributes.
 							String structName = embeddedRxnElement
 									.getAttributeValue(XMLTags.StructureAttrTag);
-							Structure struct = vcModel.getStructure(structName);
-							if (!(struct instanceof Membrane)) {
+							CastInfo<Membrane> ci = SBMLHelper
+									.getTypedStructure(Membrane.class, vcModel,
+											structName);
+							if (!ci.isGood()) {
 								throw new SBMLImportException(
-										"Appears that the flux reaction is not occuring on a membrane.");
+										"Appears that the flux reaction is occuring on "
+												+ ci.actualName()
+												+ ", not a membrane.");
 							}
 							vcReactions[i] = new FluxReaction(vcModel,
-									(Membrane) struct, null, rxnName);
+									ci.get(), null, rxnName);
 							vcReactions[i].setModel(vcModel);
 							// Set the fluxOption on the flux reaction based on
 							// whether it is molecular, molecular & electrical,
@@ -3116,7 +3122,8 @@ public class SBMLImporter {
 							kinetics.setParameterValue(kineticsParameter,
 									new Expression(param.getValue()));
 							String unitString = param.getUnits();
-							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash.get(unitString);
+							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash
+									.get(unitString);
 							if (paramUnit == null) {
 								paramUnit = vcModelUnitSystem.getInstance_TBD();
 							}
@@ -3758,9 +3765,11 @@ public class SBMLImporter {
 									} // end - for x
 								} // end - for y
 							} // end - for z
-							// verify that domainType of domain and geomClass of
-							// geomRegion are the same; if so, name vcGeomReg[j]
-							// with domain name
+								// verify that domainType of domain and
+								// geomClass of
+								// geomRegion are the same; if so, name
+								// vcGeomReg[j]
+								// with domain name
 							if (nearestPtCoord != null) {
 								GeometryClass geomClassSBML = vcGeometry
 										.getGeometryClass(domainType);
@@ -3851,47 +3860,40 @@ public class SBMLImporter {
 			ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
 
 			Vector<StructureMapping> structMappingsVector = new Vector<StructureMapping>();
-			Compartment c;
 			SpatialCompartmentPlugin cplugin = null;
 			for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
-				c = sbmlModel.getCompartment(i);
-				cplugin = SBMLHelper.checkedPlugin(
-						SpatialCompartmentPlugin.class, c,
-						SBMLUtils.SBML_SPATIAL_NS_PREFIX);
-				CompartmentMapping compMapping = cplugin
-						.getCompartmentMapping();
+				Compartment c = sbmlModel.getCompartment(i);
+				String cname = c.getName();
+				cplugin = SBMLHelper.checkedPlugin( SpatialCompartmentPlugin.class, c, SBMLUtils.SBML_SPATIAL_NS_PREFIX);
+				CompartmentMapping compMapping = cplugin.getCompartmentMapping();
 				if (compMapping != null) {
-					Structure struct = vcModel
-							.getStructure(compMapping.getId());
-					String domainType = compMapping.getDomainType();
-					GeometryClass geometryClass = vcGeometry
-							.getGeometryClass(domainType);
-					double unitSize = compMapping.getUnitSize();
-					if (struct instanceof Feature) {
-						FeatureMapping featureMapping = new FeatureMapping(
-								(Feature) struct, simContext, vcModelUnitSystem);
-						featureMapping.setGeometryClass(geometryClass);
-						if (geometryClass instanceof SubVolume) {
-							featureMapping.getVolumePerUnitVolumeParameter()
-									.setExpression(new Expression(unitSize));
-						} else if (geometryClass instanceof SurfaceClass) {
-							featureMapping.getVolumePerUnitAreaParameter()
-									.setExpression(new Expression(unitSize));
+					//final String id = compMapping.getId();
+					//final String name = compMapping.getName();
+					CastInfo<Structure> ci = SBMLHelper.getTypedStructure(Structure.class, vcModel, cname);
+					if (ci.isGood()) {
+						Structure struct = ci.get(); 
+						String domainType = compMapping.getDomainType();
+						GeometryClass geometryClass = vcGeometry.getGeometryClass(domainType);
+						double unitSize = compMapping.getUnitSize();
+						Feature feat = BeanUtils.downcast(Feature.class,struct);
+						if (feat != null) {
+							FeatureMapping featureMapping = new FeatureMapping(feat, simContext, vcModelUnitSystem);
+							featureMapping.setGeometryClass(geometryClass);
+							if (geometryClass instanceof SubVolume) {
+								featureMapping.getVolumePerUnitVolumeParameter().setExpression(new Expression(unitSize));
+							} else if (geometryClass instanceof SurfaceClass) {
+								featureMapping.getVolumePerUnitAreaParameter().setExpression(new Expression(unitSize));
+							}
+							structMappingsVector.add(featureMapping);
+						} else if (struct instanceof Membrane) {
+							MembraneMapping membraneMapping = new MembraneMapping( (Membrane) struct, simContext, vcModelUnitSystem); membraneMapping.setGeometryClass(geometryClass);
+							if (geometryClass instanceof SubVolume) {
+								membraneMapping.getAreaPerUnitVolumeParameter().setExpression(new Expression(unitSize));
+							} else if (geometryClass instanceof SurfaceClass) {
+								membraneMapping.getAreaPerUnitAreaParameter().setExpression(new Expression(unitSize));
+							}
+							structMappingsVector.add(membraneMapping);
 						}
-						structMappingsVector.add(featureMapping);
-					} else if (struct instanceof Membrane) {
-						MembraneMapping membraneMapping = new MembraneMapping(
-								(Membrane) struct, simContext,
-								vcModelUnitSystem);
-						membraneMapping.setGeometryClass(geometryClass);
-						if (geometryClass instanceof SubVolume) {
-							membraneMapping.getAreaPerUnitVolumeParameter()
-									.setExpression(new Expression(unitSize));
-						} else if (geometryClass instanceof SurfaceClass) {
-							membraneMapping.getAreaPerUnitAreaParameter()
-									.setExpression(new Expression(unitSize));
-						}
-						structMappingsVector.add(membraneMapping);
 					}
 				}
 			}
