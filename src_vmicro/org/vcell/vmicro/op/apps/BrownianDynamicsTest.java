@@ -1,6 +1,7 @@
 package org.vcell.vmicro.op.apps;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import org.apache.commons.cli.BasicParser;
@@ -23,6 +24,7 @@ import org.vcell.vmicro.workflow.data.NormalizedSampleFunction;
 
 import cbit.image.ImageException;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.math.CSV;
 import cbit.vcell.math.RowColumnResultSet;
 
 public class BrownianDynamicsTest {
@@ -33,12 +35,14 @@ public class BrownianDynamicsTest {
 	private static final String OPTION_EXTENT = "extent";
 	private static final String OPTION_DISPLAY_PLOT = "displayPlot";
 	private static final String OPTION_DISPLAY_IMAGE = "displayImage";
-	private static final String OPTION_FILE = "file";
+	private static final String OPTION_IMAGEFILE = "imageFile";
+	private static final String OPTION_PLOTFILE = "plotFile";
 	private static final String OPTION_PSF = "psf";
 	private static final String OPTION_NOISE = "noise";
 	private static final String OPTION_BLEACH_RADIUS = "bleachRadius";
 	private static final String OPTION_BLEACH_DURATION = "bleachDuration";
 	private static final String OPTION_PSF_RADIUS = "psfRadius";
+	private static final String OPTION_ENDTIME = "endTime";
 	
 	private static final double DEFAULT_DIFFUSION = 2;
 	private static final double DEFAULT_BLEACH_RADIUS = 2;
@@ -47,6 +51,7 @@ public class BrownianDynamicsTest {
 	private static final int DEFAULT_IMAGE_SIZE = 50;
 	private static final double DEFAULT_PSF_RADIUS = DEFAULT_EXTENT_SCALE/DEFAULT_IMAGE_SIZE*1.2;
 	private static final int DEFAULT_NUM_PARTICLES = 40000;
+	private static final double DEFAULT_ENDTIME = 5;
 	
 
 	public static void main(String[] args) {
@@ -59,10 +64,15 @@ public class BrownianDynamicsTest {
 			Option psfOption = new Option(OPTION_PSF,false,"sampled images are convolve with microscope psf, default is to bin");
 			commandOptions.addOption(psfOption);
 			
-			Option fileOption = new Option(OPTION_FILE,true,"file to store image time series");
-			fileOption.setArgName("filename");
-			fileOption.setValueSeparator('=');
-			commandOptions.addOption(fileOption);
+			Option imageFileOption = new Option(OPTION_IMAGEFILE,true,"file to store image time series");
+			imageFileOption.setArgName("filename");
+			imageFileOption.setValueSeparator('=');
+			commandOptions.addOption(imageFileOption);
+			
+			Option plotFileOption = new Option(OPTION_PLOTFILE,true,"file to store CSV time series (reduced data for ROIs)");
+			plotFileOption.setArgName("filename");
+			plotFileOption.setValueSeparator('=');
+			commandOptions.addOption(plotFileOption);
 			
 			Option displayImageOption = new Option(OPTION_DISPLAY_IMAGE,false,"display image time series");
 			commandOptions.addOption(displayImageOption);
@@ -105,6 +115,11 @@ public class BrownianDynamicsTest {
 			bleachDurationOption.setValueSeparator('=');
 			commandOptions.addOption(bleachDurationOption);
 			
+			Option endTimeOption = new Option(OPTION_ENDTIME,true,"end time (default "+DEFAULT_ENDTIME+")");
+			endTimeOption.setArgName("time");
+			endTimeOption.setValueSeparator('=');
+			commandOptions.addOption(endTimeOption);
+			
 			CommandLine cmdLine = null;
 			try {
 				Parser parser = new BasicParser( );
@@ -117,9 +132,13 @@ public class BrownianDynamicsTest {
 			}
 			boolean bNoise = cmdLine.hasOption(OPTION_NOISE);
 			boolean bConvolve = cmdLine.hasOption(OPTION_PSF);
-			File outputFile = null;
-			if (cmdLine.hasOption(OPTION_FILE)){
-				outputFile = new File(cmdLine.getOptionValue(OPTION_FILE));
+			File imageFile = null;
+			if (cmdLine.hasOption(OPTION_IMAGEFILE)){
+				imageFile = new File(cmdLine.getOptionValue(OPTION_IMAGEFILE));
+			}
+			File plotFile = null;
+			if (cmdLine.hasOption(OPTION_PLOTFILE)){
+				plotFile = new File(cmdLine.getOptionValue(OPTION_PLOTFILE));
 			}
 			boolean bDisplayImage = cmdLine.hasOption(OPTION_DISPLAY_IMAGE);
 			boolean bDisplayPlot = cmdLine.hasOption(OPTION_DISPLAY_PLOT);
@@ -151,6 +170,10 @@ public class BrownianDynamicsTest {
 			if (cmdLine.hasOption(OPTION_BLEACH_DURATION)){
 				bleachDuration = Double.parseDouble(cmdLine.getOptionValue(OPTION_BLEACH_DURATION));
 			}
+			double endTime = DEFAULT_ENDTIME;
+			if (cmdLine.hasOption(OPTION_ENDTIME)){
+				endTime = Double.parseDouble(cmdLine.getOptionValue(OPTION_BLEACH_DURATION));
+			}
 			
 			//
 			// hard coded parameters
@@ -162,13 +185,13 @@ public class BrownianDynamicsTest {
 			double psfVar = psfRadius*psfRadius;
 
 			BrownianDynamicsTest test = new BrownianDynamicsTest();
-			ImageTimeSeries<UShortImage> rawTimeSeries = test.generateTestData(origin, extent, numX, numY, numParticles, diffusionRate, psfVar, bleachRadius*bleachRadius, bNoise, bConvolve, bleachDuration);
+			ImageTimeSeries<UShortImage> rawTimeSeries = test.generateTestData(origin, extent, numX, numY, numParticles, diffusionRate, psfVar, bleachRadius*bleachRadius, bNoise, bConvolve, bleachDuration, endTime);
 			
 			//
-			// optionally write to file
+			// optionally write images to file
 			//
-			if (outputFile!=null){
-				new ExportRawTimeSeriesToVFrapOp().exportToVFRAP(outputFile, rawTimeSeries, null);
+			if (imageFile!=null){
+				new ExportRawTimeSeriesToVFrapOp().exportToVFRAP(imageFile, rawTimeSeries, null);
 			}
 			
 			//
@@ -178,12 +201,27 @@ public class BrownianDynamicsTest {
 				new DisplayTimeSeriesOp().displayImageTimeSeries(rawTimeSeries, "time series", null);
 			}
 			
-			if (bDisplayPlot){
+			//
+			// compute reduced data if needed for plotting or saving.
+			//
+			RowColumnResultSet reducedData = null;
+			if (bDisplayPlot || plotFile!=null){
 				double muX = origin.getX()+0.5*extent.getX();
 				double muY = origin.getY()+0.5*extent.getY();
 				double sigma = Math.sqrt(psfVar);
 				NormalizedSampleFunction gaussian = NormalizedSampleFunction.fromGaussian("psf", origin, extent, new ISize(numX,numY,1), muX, muY, sigma);
-				RowColumnResultSet reducedData = new GenerateReducedDataOp().generateReducedData(rawTimeSeries, new NormalizedSampleFunction[] { gaussian });
+				reducedData = new GenerateReducedDataOp().generateReducedData(rawTimeSeries, new NormalizedSampleFunction[] { gaussian });
+			}
+			
+			//
+			// optionally write plot to file
+			//
+			if (plotFile!=null){
+				FileOutputStream fos = new FileOutputStream(plotFile);
+				new CSV().exportTo(fos, reducedData);
+			}
+			
+			if (bDisplayPlot) {
 				new DisplayPlotOp().displayPlot(reducedData, "bleached roi", null);
 			}
 		} catch (Exception e) {
@@ -191,9 +229,9 @@ public class BrownianDynamicsTest {
 		}
 	}
 	
-	private ImageTimeSeries<UShortImage> generateTestData(Origin origin, Extent extent, int numX, int numY, int numParticles, double diffusionRate, double psfVar, double bleachRadius, boolean bNoise, boolean bConvolve, double bleachDuration) throws ImageException{
+	private ImageTimeSeries<UShortImage> generateTestData(Origin origin, Extent extent, int numX, int numY, int numParticles, double diffusionRate, double psfVar, double bleachRadius, boolean bNoise, boolean bConvolve, double bleachDuration, double endTime) throws ImageException{
 		double detectorGainAndQuantumYeild = 100;
-		double totalSampleTime = 0.5;
+		double totalSampleTime = 0.2;
 		int numSampleSteps = 1;
 		int numPrebleach = 2;
 		
@@ -224,7 +262,7 @@ public class BrownianDynamicsTest {
 		
 		// sample postbleach for 10 seconds
 
-		while (solver.currentTime()<5){
+		while (solver.currentTime()<endTime){
 			double samplePsfVariance = psfVar;
 			images.add(solver.sampleImage(numX, numY, origin, extent, diffusionRate, totalSampleTime, numSampleSteps, psfVar, detectorGainAndQuantumYeild, bConvolve, bNoise));
 			times.add(solver.currentTime());
