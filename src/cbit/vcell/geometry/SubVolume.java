@@ -98,7 +98,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 /**
- * This method was created in VisualAge.
+ * apparently these are unique indexes, and should be as low as possible? gcw 5/5/2015 
  * @return int
  */
 public int getHandle() {
