@@ -40,10 +40,21 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	IssueSource, Identifiable, Displayable
 {
 	public static enum ObservableType {
-		Molecules,
-		Species;
+		Molecules	("Molecules"),
+		Species		("Species");
+		
+		private final String name;
+		private ObservableType(String s) {
+			name = s;
+		}
+		public boolean equalsName(String otherName){
+			return (otherName == null) ? false : name.equals(otherName);
+		}
+		public String toString(){
+			return name;
+		}
 	}
-
+	
 	private String name;
 	private List<SpeciesPattern> speciesPatternList; 
 	private RbmObservable.ObservableType type;
@@ -91,7 +102,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	}
 	
 	public void setType(RbmObservable.ObservableType newValue) throws PropertyVetoException {
-		RbmObservable.ObservableType oldValue = newValue;
+		RbmObservable.ObservableType oldValue = type;
 		type = newValue;
 		firePropertyChange(RbmObservable.PROPERTY_NAME_TYPE, oldValue, newValue);
 	}
