@@ -246,14 +246,16 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 		RbmObservable oldValue = observable;
 		if (oldValue != null) {
 			oldValue.removePropertyChangeListener(this);
-			SpeciesPattern speciesPattern = oldValue.getSpeciesPattern(0);
-			RbmUtils.removePropertyChangeListener(speciesPattern, this);
+			for(SpeciesPattern speciesPattern : oldValue.getSpeciesPatternList()) {
+				RbmUtils.removePropertyChangeListener(speciesPattern, this);
+			}
 		}
 		observable = newValue;
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(this);
-			SpeciesPattern speciesPattern = newValue.getSpeciesPattern(0);
-			RbmUtils.addPropertyChangeListener(speciesPattern, this);
+			for(SpeciesPattern speciesPattern : newValue.getSpeciesPatternList()) {
+				RbmUtils.addPropertyChangeListener(speciesPattern, this);
+			}
 		}
 		populateTree();
 	}

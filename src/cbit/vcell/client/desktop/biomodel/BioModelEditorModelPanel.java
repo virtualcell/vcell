@@ -1009,6 +1009,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setPreferredWidth(180);
 		
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.type.ordinal()).setCellEditor(observableTableModel.getStructureComboBoxEditor());
+		observableTableModel.updateStructureComboBox();
+		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);
 		speciesTable.addMouseListener(eventHandler);
