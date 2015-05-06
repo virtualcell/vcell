@@ -1,11 +1,18 @@
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.SwingConstants;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
@@ -16,6 +23,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -27,6 +35,8 @@ import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
 public class ObservableTableModel  extends BioModelEditorRightSideTableModel<RbmObservable> {
+
+	private DefaultScrollTableComboBoxEditor defaultScrollTableComboBoxEditor = null;
 
 	public enum Column {
 		name("Name"),
@@ -169,6 +179,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		if (o == null) {
 			return false;
 		}
+		if(col == Column.type) {
+			return true;
+		}
 		if (col == Column.depiction) {
 			return false;
 		}
@@ -228,7 +241,37 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		}
 		return String.class;
 	}
-
+	
+	protected void updateStructureComboBox() {
+		JComboBox typeComboBoxCellEditor = (JComboBox) getStructureComboBoxEditor().getComponent();
+		if (typeComboBoxCellEditor == null) {
+			typeComboBoxCellEditor = new JComboBox();
+		}
+		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+		for(RbmObservable.ObservableType ot : RbmObservable.ObservableType.values()) {
+			aModel.addElement(ot.toString());
+		}
+		DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer() {
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setHorizontalTextPosition(SwingConstants.LEFT);
+				if (value instanceof String) {
+					setText((String)value);
+				}
+				return this;
+			}
+		};
+		typeComboBoxCellEditor.setRenderer(defaultListCellRenderer);
+		typeComboBoxCellEditor.setModel(aModel);
+		typeComboBoxCellEditor.setSelectedIndex(0);
+	}
+	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
+		if (defaultScrollTableComboBoxEditor == null) {
+			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox());
+		}
+		return defaultScrollTableComboBoxEditor;
+	}
+	
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {
 		super.bioModelChange(evt);
@@ -351,6 +394,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		} else if (evt.getSource() instanceof ComponentStateDefinition) {
 			fireTableRowsUpdated(0, getRowCount() - 1);
 		}
+//		updateStructureComboBox();
 	}
 
 	public void setValueAt(Object value, int row, int columnIndex) {
@@ -418,4 +462,10 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 	public int getRowCount() {
 		return getRowCountWithAddNew();
 	}
+	
+	
+//	ownerTable.getColumnModel().getColumn(Column.type.ordinal()).setCellEditor(getStructureComboBoxEditor());
+//	updateStructureComboBox();
+
+	
 }
