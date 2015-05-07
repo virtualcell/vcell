@@ -24,6 +24,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ExecutableException;
@@ -75,6 +76,10 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public class SimulationDispatcher extends ServiceProvider {
 	public static final String METHOD_NAME_STARTSIMULATION = "startSimulation";
 	public static final String METHOD_NAME_STOPSIMULATION = "stopSimulation";
+	/**
+	 * message prepended to fail to load simluation exception message
+	 */
+	public static final String FAILED_LOAD_MESSAGE = "Unable to load simulation ";
 	/**
 	 * minutes between zombie kill runs
 	 */
@@ -200,7 +205,8 @@ public class SimulationDispatcher extends ServiceProvider {
 
 				try {
 					final SimulationJobStatus[] allActiveJobs = simulationDatabase.getActiveJobs();
-					ArrayList<KeyValue> simKeys = new ArrayList<KeyValue>();
+					//Set<KeyValue> simKeys = new LinkedHashSet<KeyValue>(); //Linked hash set maintains insertion order
+					ArrayList<KeyValue> simKeys = new ArrayList<>();
 					for (SimulationJobStatus simJobStatus : allActiveJobs){
 						KeyValue simKey = simJobStatus.getVCSimulationIdentifier().getSimulationKey();
 						if (!simKeys.contains(simKey)){
@@ -221,18 +227,31 @@ public class SimulationDispatcher extends ServiceProvider {
 						// cache is discarded after use.
 						//
 						HashMap<KeyValue,Simulation> tempSimulationMap = new HashMap<KeyValue,Simulation>();
+						if (lg.isTraceEnabled()) {
+							lg.trace(waitingJobs.length + " jobs to process");
+						}
 						for (WaitingJob waitingJob : waitingJobs){
 							SimulationJobStatus jobStatus = waitingJob.simJobStatus;
 							VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
-							KeyValue simKey = vcSimID.getSimulationKey();
-							Simulation sim = tempSimulationMap.get(simKey);
-							if (sim==null){
-								sim = simulationDatabase.getSimulation(vcSimID.getOwner(), vcSimID.getSimulationKey());
-								tempSimulationMap.put(simKey, sim);
+							try {
+								final KeyValue simKey = vcSimID.getSimulationKey();
+								Simulation sim = tempSimulationMap.get(simKey);
+								if (sim==null){
+									sim = simulationDatabase.getSimulation(vcSimID.getOwner(), simKey);
+									tempSimulationMap.put(simKey, sim);
+								}
+								if (lg.isTraceEnabled()) {
+									lg.trace("dispatching  " +  vcSimID);
+								}
+								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
+								bDispatchedAnyJobs = true;
+							} catch (Exception e) {
+								if (lg.isEnabledFor(Level.WARN)) {
+									lg.warn("failed to dispatch " + vcSimID);
+								}
+								final String failureMessage = FAILED_LOAD_MESSAGE + e.getMessage();
+								simDispatcherEngine.onSystemAbort(jobStatus, failureMessage, simulationDatabase, simMonitorThreadSession, log);
 							}
-							simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession, log);
-							bDispatchedAnyJobs = true;
-
 							Thread.yield();
 						}
 					}

@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -132,7 +133,7 @@ public SimulationJobStatusPersistent[] getActiveJobs(Connection con, VCellServer
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection con, List<KeyValue> simKeys) throws SQLException {
+public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Connection con, Collection<KeyValue> simKeys) throws SQLException {
 	ArrayList<KeyValue> simKeysRemaining = new ArrayList<KeyValue>(simKeys);
 	
 	HashMap<KeyValue,SimulationRequirements> simulationRequirementsMap = new HashMap<KeyValue,SimulationRequirements>();
