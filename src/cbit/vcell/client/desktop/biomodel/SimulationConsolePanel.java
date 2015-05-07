@@ -42,17 +42,13 @@ public class SimulationConsolePanel extends JPanel {
 	private SelectionManager fieldSelectionManager;
 
 	private SimulationContext fieldSimulationContext;
-
-	
 	private JTextPane netGenConsoleText;
 	
 	private int currentIterationSpecies = 0;
 	private int previousIterationSpecies = 0;
-
 	
-	
-	public final static int speciesLimit = 800;
-	public final static int reactionsLimit = 2000;
+	public final static int speciesLimit = 1000;
+	public final static int reactionsLimit = 3000;
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
 	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
 		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
@@ -70,13 +66,11 @@ public class SimulationConsolePanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 
 		}
-
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
 
 		}
-		
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				System.out.println("received");
@@ -89,7 +83,6 @@ public class SimulationConsolePanel extends JPanel {
 			}
 		}
 	}
-
 	
 	public SimulationConsolePanel() {
 		super();
