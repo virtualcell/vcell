@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +111,7 @@ public SimulationJobStatusPersistent[] getActiveJobs(VCellServerID serverID, boo
 	}
 }
 
-public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys, boolean bEnableRetry) throws java.sql.SQLException {
+public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Collection<KeyValue> simKeys, boolean bEnableRetry) throws java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {

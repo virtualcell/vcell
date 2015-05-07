@@ -2,6 +2,7 @@ package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -221,7 +222,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 	
 	@Override
-	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys) throws SQLException {
+	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Collection<KeyValue> simKeys) throws SQLException {
 		Map<KeyValue,SimulationRequirements> simReqMap = adminDbTopLevel.getSimulationRequirements(simKeys,true);
 		return simReqMap;
 	}

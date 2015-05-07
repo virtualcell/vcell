@@ -1,6 +1,7 @@
 package cbit.vcell.message.server.dispatcher;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,7 @@ public interface SimulationDatabase {
 
 	public SimulationJobStatus[] getActiveJobs() throws DataAccessException, SQLException;
 	
-	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(List<KeyValue> simKeys) throws SQLException;
+	public Map<KeyValue,SimulationRequirements> getSimulationRequirements(Collection<KeyValue> simKeys) throws SQLException;
 	
 	public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException;
 
