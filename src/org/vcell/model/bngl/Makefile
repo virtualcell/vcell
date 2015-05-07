@@ -1,6 +1,6 @@
-JAVACC		= java -classpath ..\..\..\..\..\lib\javacc4.0.jar javacc
-JJTREE		= java -classpath ..\..\..\..\..\lib\javacc4.0.jar jjtree
-JJDOC		= java -classpath ..\..\..\..\..\lib\javacc4.0.jar jjdoc
+JAVACC		= java -classpath ..\..\..\..\..\testlib\javacc4.0.jar javacc
+JJTREE		= java -classpath ..\..\..\..\..\testlib\javacc4.0.jar jjtree
+JJDOC		= java -classpath ..\..\..\..\..\testlib\javacc4.0.jar jjdoc
 
 .jjt.jj:
 	$(JJTREE) $<
