@@ -91,10 +91,7 @@ TOKEN : /* IDENTIFIERS */
    < RULES: "rules" > |
    < TYPES: "types" > |
    < OBSERVABLES: "observables" > |
-  < IDENTIFIER:
-		"#" <ID>
-	  | (<ID> ".")* <ID>
-  >
+   < IDENTIFIER: <ID> >
 |
   < #ID:
       <LETTER> (<LETTER>|<DIGIT>)*
