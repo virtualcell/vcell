@@ -10,10 +10,17 @@
 
 package cbit.vcell.geometry;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import org.vcell.util.ClientTaskStatusSupport;
@@ -21,6 +28,8 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ObjectReferenceWrapper;
 import org.vcell.util.Origin;
+
+import com.ibm.icu.util.GlobalizationPreferences;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -1015,11 +1024,224 @@ public void verifyQuadVertexOrdering(double maxAngleDegrees) {
 	}	
 }
 
+
+//if(idxDiff == 1)
+//{
+//	meptr[meloop].neighborMEIndex[0] = orthoIndex(meloop, idxlo,idxhi,mex,NEIGHBOR_YP_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[1] = orthoIndex(meloop, idxlo,idxhi,-mex*mey,NEIGHBOR_ZM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[2] = orthoIndex(meloop, idxlo,idxhi,-mex,NEIGHBOR_YM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[3] = orthoIndex(meloop, idxlo,idxhi,mex*mey,NEIGHBOR_ZP_BOUNDARY);
+//}
+//else if (idxDiff == mex)
+//{
+//	meptr[meloop].neighborMEIndex[0] = orthoIndex(meloop, idxlo,idxhi,1,NEIGHBOR_XP_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[1] = orthoIndex(meloop, idxlo,idxhi,-mex*mey,NEIGHBOR_ZM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[2] = orthoIndex(meloop, idxlo,idxhi,-1,NEIGHBOR_XM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[3] = orthoIndex(meloop, idxlo,idxhi,mex*mey,NEIGHBOR_ZP_BOUNDARY);
+//}
+//else if (idxDiff == (mex*mey))
+//{
+//	meptr[meloop].neighborMEIndex[0] = orthoIndex(meloop, idxlo,idxhi,mex,NEIGHBOR_YP_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[1] = orthoIndex(meloop, idxlo,idxhi,-1,NEIGHBOR_XM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[2] = orthoIndex(meloop, idxlo,idxhi,-mex,NEIGHBOR_YM_BOUNDARY);
+//	meptr[meloop].neighborMEIndex[3] = orthoIndex(meloop, idxlo,idxhi,1,NEIGHBOR_XP_BOUNDARY);
+//}
+
+public static boolean DEBUG = false;
+private class SortEdgesLikeCplusplus implements Comparator<MembraneEdgeNeighbor>{
+	private MembraneElementIdentifier.PerpendicularTo perpendicularTo;
+	private final MembraneEdgeNeighbor bne = new MembraneEdgeNeighbor(-1,-1);//Both Not unchanging in this dimension flag
+	private final MembraneEdgeNeighbor noop = new MembraneEdgeNeighbor(-1,-1);//Not used in this plane flag
+	@Override
+	public int compare(MembraneEdgeNeighbor o1, MembraneEdgeNeighbor o2) {
+		cbit.vcell.geometry.surface.Node o1BaseNode = surfaceCollection.getNodes(o1.edgeBaseNodeIndex);
+		cbit.vcell.geometry.surface.Node o1Node = surfaceCollection.getNodes(o1.edgeOtherNodeIndex);
+		cbit.vcell.geometry.surface.Node o2BaseNode = surfaceCollection.getNodes(o2.edgeBaseNodeIndex);
+		cbit.vcell.geometry.surface.Node o2Node = surfaceCollection.getNodes(o2.edgeOtherNodeIndex);
+		boolean ux1 = Math.abs(o1BaseNode.getX()-o1Node.getX()) < 1e-6;
+		boolean ux2 = Math.abs(o2BaseNode.getX()-o2Node.getX()) < 1e-6;
+		MembraneEdgeNeighbor ux = (perpendicularTo != MembraneElementIdentifier.PerpendicularTo.X?(ux1?(ux2?null:o1):(ux2?o2:bne)):noop);
+		boolean uy1 = Math.abs(o1BaseNode.getY()-o1Node.getY()) < 1e-6;
+		boolean uy2 = Math.abs(o2BaseNode.getY()-o2Node.getY()) < 1e-6;
+		MembraneEdgeNeighbor uy = (perpendicularTo != MembraneElementIdentifier.PerpendicularTo.Y?(uy1?(uy2?null:o1):(uy2?o2:bne)):noop);
+		boolean uz1 = Math.abs(o1BaseNode.getZ()-o1Node.getZ()) < 1e-6;
+		boolean uz2 = Math.abs(o2BaseNode.getZ()-o2Node.getZ()) < 1e-6;
+		MembraneEdgeNeighbor uz = (perpendicularTo != MembraneElementIdentifier.PerpendicularTo.Z?(uz1?(uz2?null:o1):(uz2?o2:bne)):noop);
+		if(perpendicularTo == MembraneElementIdentifier.PerpendicularTo.X){
+			if(DEBUG){System.out.println(o1.getMasterPolygonIndex()+" "+o1.edgeBaseNodeIndex+" "+o1BaseNode+" "+o1Node+" "+o2.getMasterPolygonIndex()+" "+o2.edgeBaseNodeIndex+" "+o2BaseNode+" "+o2Node+" ux"+(ux==bne?"bne":(ux==noop?"noop":(ux==o1?"o1":"o2")))+" uy"+(uy==bne?"bne":(uy==noop?"noop":(uy==o1?"o1":"o2")))+" uz"+(uz==bne?"bne":(uz==noop?"noop":(uz==o1?"o1":"o2"))));};
+			if(uy == null){int val=(int) -Math.signum(o1BaseNode.getY()-o2BaseNode.getY());if(DEBUG){System.out.println("type=4 sort="+val);};return val;}
+			if(uz == null){int val=(int) Math.signum(o1BaseNode.getZ()-o2BaseNode.getZ());if(DEBUG){System.out.println("type=5 sort="+val);};return val;}
+			double uyVal = surfaceCollection.getNodes(uy.edgeBaseNodeIndex).getY();
+			double uyMaxZ = Math.max(surfaceCollection.getNodes(uy.edgeBaseNodeIndex).getZ(), surfaceCollection.getNodes(uy.edgeOtherNodeIndex).getZ());
+			double uzVal = surfaceCollection.getNodes(uz.edgeBaseNodeIndex).getZ();
+			double uzMaxY = Math.max(surfaceCollection.getNodes(uz.edgeBaseNodeIndex).getY(), surfaceCollection.getNodes(uz.edgeOtherNodeIndex).getY());
+			boolean uyEqualMaxY = Math.abs((uyVal-uzMaxY)) < 1e-6;
+			boolean uzEqualMaxZ = Math.abs((uzVal-uyMaxZ)) < 1e-6;
+			if(uyEqualMaxY && !uzEqualMaxZ){int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=0 sort="+val);};return val;}
+			else if(uyEqualMaxY && uzEqualMaxZ){int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=1 sort="+val);};return val;}
+			else if(!uyEqualMaxY && !uzEqualMaxZ){int val=(uy==o1?1:-1);if(DEBUG){System.out.println("type=2 sort="+val);};return val;}
+			else {int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=3 sort="+val);};return val;}
+		}else if(perpendicularTo == MembraneElementIdentifier.PerpendicularTo.Y){
+			if(DEBUG){System.out.println(o1.getMasterPolygonIndex()+" "+o1.edgeBaseNodeIndex+" "+o1BaseNode+" "+o1Node+" "+o2.getMasterPolygonIndex()+" "+o2.edgeBaseNodeIndex+" "+o2BaseNode+" "+o2Node+" ux"+(ux==bne?"bne":(ux==noop?"noop":(ux==o1?"o1":"o2")))+" uy"+(uy==bne?"bne":(uy==noop?"noop":(uy==o1?"o1":"o2")))+" uz"+(uz==bne?"bne":(uz==noop?"noop":(uz==o1?"o1":"o2"))));};
+			if(ux == null){int val=(int) -Math.signum(o1BaseNode.getX()-o2BaseNode.getX());if(DEBUG){System.out.println("type=5 sort="+val);};return val;}
+			if(uz == null){int val=(int) Math.signum(o1BaseNode.getZ()-o2BaseNode.getZ());if(DEBUG){System.out.println("type=4 sort="+val);};return val;}
+			double uxVal = surfaceCollection.getNodes(ux.edgeBaseNodeIndex).getX();
+			double uxMaxZ = Math.max(surfaceCollection.getNodes(ux.edgeBaseNodeIndex).getZ(), surfaceCollection.getNodes(ux.edgeOtherNodeIndex).getZ());
+			double uzVal = surfaceCollection.getNodes(uz.edgeBaseNodeIndex).getZ();
+			double uzMaxX = Math.max(surfaceCollection.getNodes(uz.edgeBaseNodeIndex).getX(), surfaceCollection.getNodes(uz.edgeOtherNodeIndex).getX());
+			boolean uxEqualMaxX = Math.abs((uxVal-uzMaxX)) < 1e-6;
+			boolean uzEqualMaxZ = Math.abs((uzVal-uxMaxZ)) < 1e-6;
+			if(uzEqualMaxZ && !uxEqualMaxX){int val=(uz==o1?1:-1);if(DEBUG){System.out.println("type=0 sort="+val);};return val;}
+			else if(uzEqualMaxZ && uxEqualMaxX){int val=(uz==o1?1:-1);if(DEBUG){System.out.println("type=1 sort="+val);};return val;}
+			else if(!uzEqualMaxZ && !uxEqualMaxX){int val=(uz==o1?-1:1);if(DEBUG){System.out.println("type=2 sort="+val);};return val;}
+			else {int val=(uz==o1?1:-1);if(DEBUG){System.out.println("type=3 sort="+val);};return val;}
+		}else if(perpendicularTo == MembraneElementIdentifier.PerpendicularTo.Z){
+			if(DEBUG){System.out.println(o1.getMasterPolygonIndex()+" "+o1.edgeBaseNodeIndex+" "+o1BaseNode+" "+o1Node+" "+o2.getMasterPolygonIndex()+" "+o2.edgeBaseNodeIndex+" "+o2BaseNode+" "+o2Node+" ux"+(ux==bne?"bne":(ux==noop?"noop":(ux==o1?"o1":"o2")))+" uy"+(uy==bne?"bne":(uy==noop?"noop":(uy==o1?"o1":"o2")))+" uz"+(uz==bne?"bne":(uz==noop?"noop":(uz==o1?"o1":"o2"))));};
+			if(uy == null){int val=(int) -Math.signum(o1BaseNode.getY()-o2BaseNode.getY());if(DEBUG){System.out.println("type=4 sort="+val);};return val;}
+			if(ux == null){int val=(int) Math.signum(o1BaseNode.getX()-o2BaseNode.getX());if(DEBUG){System.out.println("type=5 sort="+val);};return val;}
+			double uyVal = surfaceCollection.getNodes(uy.edgeBaseNodeIndex).getY();
+			double uyMaxX = Math.max(surfaceCollection.getNodes(uy.edgeBaseNodeIndex).getX(), surfaceCollection.getNodes(uy.edgeOtherNodeIndex).getX());
+			double uxVal = surfaceCollection.getNodes(ux.edgeBaseNodeIndex).getX();
+			double uxMaxY = Math.max(surfaceCollection.getNodes(ux.edgeBaseNodeIndex).getY(), surfaceCollection.getNodes(ux.edgeOtherNodeIndex).getY());
+			boolean uyEqualMaxY = Math.abs((uyVal-uxMaxY)) < 1e-6;
+			boolean uxEqualMaxX = Math.abs((uxVal-uyMaxX)) < 1e-6;
+			if(uyEqualMaxY && !uxEqualMaxX){int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=0 sort="+val);};return val;}
+			else if(uyEqualMaxY && uxEqualMaxX){int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=1 sort="+val);};return val;}
+			else if(!uyEqualMaxY && !uxEqualMaxX){int val=(uy==o1?1:-1);if(DEBUG){System.out.println("type=2 sort="+val);};return val;}
+			else {int val=(uy==o1?-1:1);if(DEBUG){System.out.println("type=3 sort="+val);};return val;}
+		}
+		return 0;
+	}
+	public void setPerpendicularAxis(MembraneElementIdentifier.PerpendicularTo parallelTo){
+		this.perpendicularTo = parallelTo;
+	}
+}
+
+
+private ArrayList<MembraneEdgeNeighbor>[/*surface*/][/*membraneelement*/] membraneEdgeNeighbors;
+public ArrayList<MembraneEdgeNeighbor>[][] getMembraneEdgeNeighbors(){
+	return membraneEdgeNeighbors;
+}
+private int[][] remapQuadIndexes;
+private void calculateNeighbors(){
+	//Find neighbors
+	SortEdgesLikeCplusplus sortEdgesLikeCplusplus = new SortEdgesLikeCplusplus();
+	membraneEdgeNeighbors = new ArrayList[surfaceCollection.getSurfaceCount()][];
+	for(int surfindex = 0;surfindex<surfaceCollection.getSurfaceCount();surfindex++){
+		membraneEdgeNeighbors[surfindex] = new ArrayList[surfaceCollection.getSurfaces(surfindex).getPolygonCount()];
+		for(int wantNeighborsOfThisQuadUnRemappedIndex=0;wantNeighborsOfThisQuadUnRemappedIndex<surfaceCollection.getSurfaces(surfindex).getPolygonCount();wantNeighborsOfThisQuadUnRemappedIndex++){
+			if(DEBUG){System.out.println("neighbors surf="+surfindex+" quad="+wantNeighborsOfThisQuadUnRemappedIndex+" quadmaster="+remapQuadIndexes[surfindex][wantNeighborsOfThisQuadUnRemappedIndex]);}
+			membraneEdgeNeighbors[surfindex][wantNeighborsOfThisQuadUnRemappedIndex] = new ArrayList<>();
+			Quadrilateral wantNieghborsOfThisQuad = (Quadrilateral)surfaceCollection.getSurfaces(surfindex).getPolygons(wantNeighborsOfThisQuadUnRemappedIndex);
+			int wantQuadNodeCount = wantNieghborsOfThisQuad.getNodeCount();
+			for(int wantedQuadNodeIndex=0;wantedQuadNodeIndex<wantQuadNodeCount;wantedQuadNodeIndex++){
+				int edgeNodePoint1 = wantNieghborsOfThisQuad.getNodes()[wantedQuadNodeIndex].getGlobalIndex();
+				int edgeNodePoint2 = wantNieghborsOfThisQuad.getNodes()[(wantedQuadNodeIndex==(wantQuadNodeCount-1)?0:wantedQuadNodeIndex+1)].getGlobalIndex();
+				if(edgeNodePoint1 > edgeNodePoint2){
+					edgeNodePoint1 = edgeNodePoint2;
+					edgeNodePoint2 = wantNieghborsOfThisQuad.getNodes()[wantedQuadNodeIndex].getGlobalIndex();
+				}
+				TreeSet<MembraneElementIdentifier> neighborsSharingThisEdge = edgeMap.get(edgeNodePoint1).get(edgeNodePoint2);
+				Iterator<MembraneElementIdentifier> neighborsOfEdgeIter = neighborsSharingThisEdge.iterator();
+				boolean bEdgeHasNeighbors = false;
+				while(neighborsOfEdgeIter.hasNext()){
+					MembraneElementIdentifier neighborOfEdge = neighborsOfEdgeIter.next();
+					//add neighbors on my surface (exclude edge share from other surfaces) and exclude myself from neighbor list
+					if(neighborOfEdge.surfaceIndex == surfindex){
+						if(neighborOfEdge.nonMasterPolygonIndex != wantNeighborsOfThisQuadUnRemappedIndex){							
+							if(neighborsSharingThisEdge.size() > 2 &&(getRegionInfoFromOffset(((Quadrilateral)surfaceCollection.getSurfaces(neighborOfEdge.surfaceIndex).getPolygons(neighborOfEdge.nonMasterPolygonIndex)).getVolIndexNeighbor2()).regionIndex == getRegionInfoFromOffset(wantNieghborsOfThisQuad.getVolIndexNeighbor2()).regionIndex &&
+									((Quadrilateral)surfaceCollection.getSurfaces(neighborOfEdge.surfaceIndex).getPolygons(neighborOfEdge.nonMasterPolygonIndex)).getVolIndexNeighbor2() != wantNieghborsOfThisQuad.getVolIndexNeighbor2())){
+								//do nothing
+//								Quadrilateral q2 =
+//								(Quadrilateral)surfaceCollection.getSurfaces(surfindex).getPolygons(neighborOfEdge.nonMasterPolygonIndex);
+//								System.out.println("removed "+remapQuadIndexes[neighborOfEdge.surfaceIndex][neighborOfEdge.nonMasterPolygonIndex]+" "+q2);
+							}else{
+								bEdgeHasNeighbors = true;
+								membraneEdgeNeighbors[surfindex][wantNeighborsOfThisQuadUnRemappedIndex].add(
+									new MembraneEdgeNeighbor(neighborOfEdge,remapQuadIndexes[neighborOfEdge.surfaceIndex][neighborOfEdge.nonMasterPolygonIndex],edgeNodePoint1, edgeNodePoint2));
+							}
+						}else{
+							sortEdgesLikeCplusplus.setPerpendicularAxis(neighborOfEdge.planePerpendicularToAxis);
+						}
+					}
+				}
+				if(!bEdgeHasNeighbors){
+					//Add empty edge neighbor
+					membraneEdgeNeighbors[surfindex][wantNeighborsOfThisQuadUnRemappedIndex].add(new MembraneEdgeNeighbor(edgeNodePoint1,edgeNodePoint2));
+				}
+			}
+			
+//			//Fix ambiguous
+//			Iterator<Entry<Integer, HashMap<Integer, ArrayList<MembraneEdgeNeighbor>>>> iterator1 = foundNeighborsByEdge.entrySet().iterator();
+//			while(iterator1.hasNext()){
+//				Entry<Integer, HashMap<Integer, ArrayList<MembraneEdgeNeighbor>>> entry1 = iterator1.next();
+//				Iterator<Entry<Integer, ArrayList<MembraneEdgeNeighbor>>> iterator2 = entry1.getValue().entrySet().iterator();
+//				while(iterator2.hasNext()){
+//					Entry<Integer, ArrayList<MembraneEdgeNeighbor>> entry2 = iterator2.next();
+//					if(entry2.getValue().size() > 2){
+//						ArrayList<MembraneEdgeNeighbor> removethese = new ArrayList<>();
+//						for(int i=0;i<entry2.getValue().size();i++){
+//							MembraneEdgeNeighbor membraneEdgeNeighbor = entry2.getValue().get(i);
+//							Quadrilateral q2 =
+//								(Quadrilateral)surfaceCollection.getSurfaces(membraneEdgeNeighbor.getMembraneElementIdentifier().surfaceIndex).getPolygons(membraneEdgeNeighbor.getMembraneElementIdentifier().nonMasterPolygonIndex);
+//							if(DEBUG){
+//							System.out.println(
+//									wantNeighborsOfThisQuadUnRemappedIndex+" "+wantNieghborsOfThisQuad.getVolIndexNeighbor2()+" "+getRegionInfoFromOffset(wantNieghborsOfThisQuad.getVolIndexNeighbor2()).regionIndex+" "+
+//									membraneEdgeNeighbor.getMembraneElementIdentifier().nonMasterPolygonIndex+" q2="+
+//									q2.getVolIndexNeighbor1()+" "+getRegionInfoFromOffset(q2.getVolIndexNeighbor1()).regionIndex+" "+
+//									q2.getVolIndexNeighbor2()+" "+getRegionInfoFromOffset(q2.getVolIndexNeighbor2()).regionIndex+" "+
+//									surfaceCollection.getNodes()[membraneEdgeNeighbor.edgeBaseNodeIndex]+" "+surfaceCollection.getNodes()[membraneEdgeNeighbor.edgeOtherNodeIndex]);
+//							}
+//							if(getRegionInfoFromOffset(q2.getVolIndexNeighbor2()).regionIndex == getRegionInfoFromOffset(wantNieghborsOfThisQuad.getVolIndexNeighbor2()).regionIndex &&
+//									q2.getVolIndexNeighbor2() != wantNieghborsOfThisQuad.getVolIndexNeighbor2()){
+//								if(DEBUG){System.out.println("remove "+membraneEdgeNeighbor.getMembraneElementIdentifier().nonMasterPolygonIndex);}
+//								removethese.add(membraneEdgeNeighbor);
+//							}
+//						}
+//						for(int i=0;i<removethese.size();i++){
+//							membraneEdgeNeighbors[surfindex][wantNeighborsOfThisQuadUnRemappedIndex].remove(removethese.get(i));
+//						}
+//						if(DEBUG){System.out.println("");}
+////						System.out.println("Quad "+wantNeighborsOfThisQuadUnRemappedIndex+" has Edge "+entry1.getKey()+" "+entry2.getKey()+" with "+entry2.getValue().size()+" neighbors");
+//					}
+//				}
+//			}
+
+			Collections.sort(membraneEdgeNeighbors[surfindex][wantNeighborsOfThisQuadUnRemappedIndex], sortEdgesLikeCplusplus);
+		}
+	}
+
+}
+
+public static class MembraneEdgeNeighbor {
+	private MembraneElementIdentifier membraneElementIdentifier;
+	private int masterPolygonIndex;
+	public int edgeBaseNodeIndex;
+	public int edgeOtherNodeIndex;
+	public MembraneEdgeNeighbor(MembraneElementIdentifier membraneElementIdentifier,int masterPolygonIndex, int edgeBaseNodeIndex,int edgeOtherNodeIndex) {
+		this(edgeBaseNodeIndex,edgeOtherNodeIndex);
+		this.membraneElementIdentifier = membraneElementIdentifier;
+		this.masterPolygonIndex = masterPolygonIndex;
+	}
+	public MembraneEdgeNeighbor( int edgeBaseNodeIndex,int edgeOtherNodeIndex){
+		this.edgeBaseNodeIndex = edgeBaseNodeIndex;
+		this.edgeOtherNodeIndex = edgeOtherNodeIndex;
+		this.masterPolygonIndex = SurfaceCollection.EDGE_HAS_NO_NEIGHBOR;
+	}
+	public MembraneElementIdentifier getMembraneElementIdentifier(){
+		return membraneElementIdentifier;
+	}
+	public int getMasterPolygonIndex() {
+		return masterPolygonIndex;
+	}
+}
+
 private void generateSurfaceCollection(int numRegions,
 		VCImage vcImage,//int[] mapImageIndexToLinkRegion,int[] mapLinkRegionToDistinctRegion,
 		BitSet xSurfElements,BitSet ySurfElements,BitSet zSurfElements,
 		int dimension,Extent extent,Origin origin)
 {
+	bMembraneNeighborCalculationFailed = false;
 	int masterIndex = 0;
 	double dX = extent.getX() / (vcImage.getNumX() -1);
 	double dY = extent.getY() / (vcImage.getNumY() -1);
@@ -1121,7 +1343,7 @@ private void generateSurfaceCollection(int numRegions,
 //							masterIndex+1,mapImageIndexToRegionIndex.getValue(masterIndex+1),
 							masterIndex,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex]],
 							masterIndex+1,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex+1]],
-							nodeArr, numRegions);
+							nodeArr, numRegions,MembraneElementIdentifier.PerpendicularTo.X);
 //					surfQuad =
 //						new Quadrilateral(nodeArr,
 //								mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex]],
@@ -1202,7 +1424,7 @@ private void generateSurfaceCollection(int numRegions,
 //							masterIndex+yStep,mapImageIndexToRegionIndex.getValue(masterIndex+yStep),
 							masterIndex,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex]],
 							masterIndex+yStep,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex+yStep]],
-							nodeArr, numRegions);
+							nodeArr, numRegions,MembraneElementIdentifier.PerpendicularTo.Y);
 
 //					surfQuad =
 //						new Quadrilateral(nodeArr,
@@ -1276,7 +1498,7 @@ private void generateSurfaceCollection(int numRegions,
 //							masterIndex+zStep,mapImageIndexToRegionIndex.getValue(masterIndex+zStep),
 							masterIndex,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex]],
 							masterIndex+zStep,mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[masterIndex+zStep]],
-							nodeArr, numRegions);
+							nodeArr, numRegions,MembraneElementIdentifier.PerpendicularTo.Z);
 
 //					surfQuad =
 //						new Quadrilateral(nodeArr,
@@ -1291,12 +1513,15 @@ private void generateSurfaceCollection(int numRegions,
 			}
 		}
 	}
+	remapQuadIndexes = new int[surfQuadsV.size()][];
+	int quadCounter = 0;
 	surfaceCollection = new SurfaceCollection();
 	cbit.vcell.geometry.surface.Node[] allNodes = new cbit.vcell.geometry.surface.Node[nodeListV.size()];
 	nodeListV.copyInto(allNodes);
 	surfaceCollection.setNodes(allNodes);
 	for (int i = 0; i < surfQuadsV.size(); i++) {
 		Vector<Quadrilateral> surfV = surfQuadsV.elementAt(i);
+		remapQuadIndexes[i] = new int[surfV.size()];
 		OrigSurface surface =
 			new OrigSurface(
 //					mapImageIndexToRegionIndex.getValue(surfV.elementAt(0).getVolIndexNeighbor1()),//surfV.elementAt(0).getVolIndexNeighbor1(),
@@ -1306,8 +1531,24 @@ private void generateSurfaceCollection(int numRegions,
 				);
 		for (int j = 0; j < surfV.size(); j++) {
 			surface.addPolygon(surfV.elementAt(j));
+			remapQuadIndexes[i][j] = quadCounter++;
 		}
 		surfaceCollection.addSurface(surface);
+	}
+	
+	try{
+		if(!bMembraneNeighborCalculationFailed){
+			calculateNeighbors();
+			surfaceCollection.setMembraneEdgeNeighbors(membraneEdgeNeighbors);
+		}
+	}catch(Exception e){
+		//If MembraneNeighbors fails somewhere let Surfacecollection generate without membraneneighbors (original behavior just in case)
+		e.printStackTrace();
+		bMembraneNeighborCalculationFailed = true;
+	}finally{
+		//these aren't needed after fail or surfacecollection.set(...)
+		remapQuadIndexes = null;
+		edgeMap = null;
 	}
 	
 //	RegionImage.sortSurfaceCollection(surfaceCollection);
@@ -1325,12 +1566,26 @@ private void generateSurfaceCollection(int numRegions,
 //	}
 }
 
+private boolean bMembraneNeighborCalculationFailed = false;
+private static class MembraneElementIdentifier {
+	public enum PerpendicularTo {X,Y,Z};
+	public int surfaceIndex;
+	public int nonMasterPolygonIndex;
+	public PerpendicularTo planePerpendicularToAxis;
+	public MembraneElementIdentifier(int surfaceIndex, int nonMasterPolygonIndex,PerpendicularTo planePerpendicularToAxis) {
+		this.surfaceIndex = surfaceIndex;
+		this.nonMasterPolygonIndex = nonMasterPolygonIndex;
+		this.planePerpendicularToAxis = planePerpendicularToAxis;
+	}
+}
+private HashMap<Integer, HashMap<Integer, TreeSet<MembraneElementIdentifier>>> edgeMap = new HashMap<>();
+
 private void addQuadToSurface(
 		Vector<Vector<Quadrilateral>> surfQuadsV,
 		int[][] mapInsideOutsideToSurface,
 		int indexNeighbor1,int neighbor1,
 		int indexNeighbor2,int neighbor2,
-		cbit.vcell.geometry.surface.Node[] nodeArr,int numRegions){
+		cbit.vcell.geometry.surface.Node[] nodeArr,int numRegions,MembraneElementIdentifier.PerpendicularTo plane){
 	
 	Quadrilateral surfQuad =
 		new Quadrilateral(nodeArr,indexNeighbor1,indexNeighbor2);
@@ -1348,32 +1603,49 @@ private void addQuadToSurface(
 		mapInsideOutsideToSurface[neighbor1][neighbor2] = surfQuadsV.size();
 		surfQuadsV.add(new Vector<Quadrilateral>());
 	}
-	surfQuadsV.elementAt(mapInsideOutsideToSurface[neighbor1][neighbor2]).add(surfQuad);
+	int surfIndex = mapInsideOutsideToSurface[neighbor1][neighbor2];
+	surfQuadsV.elementAt(surfIndex).add(surfQuad);
 	
+	try{
+		if(!bMembraneNeighborCalculationFailed){
+			updateEdgeMap(nodeArr, surfIndex, surfQuadsV.elementAt(surfIndex).size()-1,plane);
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		bMembraneNeighborCalculationFailed = true;
+	}
 }
 public SurfaceCollection getSurfacecollection(){
 	return surfaceCollection;
 }
 
-//private int createSurfaceNode(
-//		Vector nodeListV,int[] mapImageIndexToNodeListIndex,
-//		int direction,int xSize,int xySize,
-//		int xIndex,int yIndex,int zIndex,
-//		double loX,double loY,double loZ,
-//		double dX,double dY,double dZ)
-//{
-//	cbit.vcell.geometry.surface.Node surfNode;
-//	if(direction == Coordinate.X_AXIS){
-//		
-//	}else if(direction == Coordinate.Y_AXIS){
-//		
-//	}else if(direction == Coordinate.Z_AXIS){
-//		
-//	}
-//	return 0;
-//}
-
-
+private Comparator<MembraneElementIdentifier> membraneElementIDComparator = new Comparator<RegionImage.MembraneElementIdentifier>() {
+	@Override
+	public int compare(MembraneElementIdentifier o1,MembraneElementIdentifier o2) {
+		return (int)(o1.surfaceIndex==o2.surfaceIndex?Math.signum(o1.nonMasterPolygonIndex-o2.nonMasterPolygonIndex):Math.signum(o1.surfaceIndex-o2.surfaceIndex));
+	}
+};
+private void updateEdgeMap(cbit.vcell.geometry.surface.Node[] polygonNodes,int surfaceIndex,int nonMasterPolygonIndex,MembraneElementIdentifier.PerpendicularTo plane){
+	for(int i=0;i<polygonNodes.length;i++){
+		int globalNodeIndex1 = polygonNodes[i].getGlobalIndex();
+		int globalNodeIndex2 = polygonNodes[(i==(polygonNodes.length-1)?0:i+1)].getGlobalIndex();
+		if(globalNodeIndex1 > globalNodeIndex2){
+			globalNodeIndex1 = globalNodeIndex2;
+			globalNodeIndex2 = polygonNodes[i].getGlobalIndex();
+		}
+		HashMap<Integer, TreeSet<MembraneElementIdentifier>> membraneElementIDHash = edgeMap.get(globalNodeIndex1);
+		if(membraneElementIDHash == null){
+			membraneElementIDHash = new HashMap<Integer, TreeSet<MembraneElementIdentifier>>();
+			edgeMap.put(globalNodeIndex1, membraneElementIDHash);
+		}
+		TreeSet<MembraneElementIdentifier> membraneElementsHavingThisEdge = membraneElementIDHash.get(globalNodeIndex2);
+		if(membraneElementsHavingThisEdge == null){
+			membraneElementsHavingThisEdge = new TreeSet<MembraneElementIdentifier>(membraneElementIDComparator);
+			membraneElementIDHash.put(globalNodeIndex2, membraneElementsHavingThisEdge);
+		}
+		membraneElementsHavingThisEdge.add(new MembraneElementIdentifier(surfaceIndex, nonMasterPolygonIndex,plane));
+	}
+}
 
 /**
  * Insert the method's description here.
