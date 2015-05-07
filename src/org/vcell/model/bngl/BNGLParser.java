@@ -1818,6 +1818,11 @@ Token t_name=null;
     finally { jj_save(9, xla); }
   }
 
+  final private boolean jj_3R_48() {
+    if (jj_scan_token(SUB)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_25() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
@@ -2175,11 +2180,6 @@ Token t_name=null;
       xsp = jj_scanpos;
       if (jj_3R_41()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_48() {
-    if (jj_scan_token(SUB)) return true;
     return false;
   }
 
