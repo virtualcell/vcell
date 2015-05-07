@@ -724,13 +724,25 @@ public static CartesianMesh createSimpleCartesianMesh(Geometry geometry, Map<Pol
 	if (surfaceCollection != null) {
 		int numMembraneElement = surfaceCollection.getTotalPolygonCount();
 		mesh.membraneElements = new MembraneElement[numMembraneElement];
-		
+		boolean bMembraneEdgeNeighborsAvailable =
+			surfaceCollection.getMembraneEdgeNeighbors() != null &&
+			surfaceCollection.getMembraneEdgeNeighbors().length == surfaceCollection.getSurfaceCount();
+			
 		int[] membraneElementMapMembraneRegion = new int[numMembraneElement];
 		mesh.meshRegionInfo.mapMembraneElementsToMembraneRegions(membraneElementMapMembraneRegion);
 		int memCount = 0;
+		int[] membraneNeighbors = new int[] {0,0,0,0};//original values when no membraneedgeneighbors
 		for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
 			Surface surface = surfaceCollection.getSurfaces(i);
+			bMembraneEdgeNeighborsAvailable = bMembraneEdgeNeighborsAvailable && surfaceCollection.getMembraneEdgeNeighbors()[i].length == surface.getPolygonCount();
 			for (int j = 0; j < surface.getPolygonCount(); j++){
+				if(bMembraneEdgeNeighborsAvailable){
+					membraneNeighbors =
+						new int[] {SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR};
+					for(int k =0;k<surfaceCollection.getMembraneEdgeNeighbors()[i][j].size();k++){
+						membraneNeighbors[k] = surfaceCollection.getMembraneEdgeNeighbors()[i][j].get(k).getMasterPolygonIndex();
+					}
+				}
 				Quadrilateral polygon = (Quadrilateral)surface.getPolygons(j);
 				int volNeighbor1Region = regionImage.getRegionInfoFromOffset(polygon.getVolIndexNeighbor1()).getRegionIndex();
 				int volNeighbor2Region = regionImage.getRegionInfoFromOffset(polygon.getVolIndexNeighbor2()).getRegionIndex();
@@ -746,7 +758,7 @@ public static CartesianMesh createSimpleCartesianMesh(Geometry geometry, Map<Pol
 					}
 				}				
 				mesh.membraneElements[memCount] = new MembraneElement(memCount, polygon.getVolIndexNeighbor1(), polygon.getVolIndexNeighbor2(),
-						0, 0, 0, 0, MembraneElement.AREA_UNDEFINED,0,0,0,0,0,0);
+						membraneNeighbors[0],membraneNeighbors[1], membraneNeighbors[2], membraneNeighbors[3], MembraneElement.AREA_UNDEFINED,0,0,0,0,0,0);
 				if (polygonMembaneElementMap != null) {
 					polygonMembaneElementMap.put(polygon, mesh.membraneElements[memCount]);
 				}

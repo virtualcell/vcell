@@ -9,6 +9,11 @@
  */
 
 package cbit.vcell.geometry.surface;
+
+import java.util.ArrayList;
+
+import cbit.vcell.geometry.RegionImage.MembraneEdgeNeighbor;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2003 12:10:26 AM)
@@ -17,6 +22,7 @@ package cbit.vcell.geometry.surface;
 public class SurfaceCollection {
 	private Node[] fieldNodes = new Node[0];
 	private java.util.Vector<Surface> fieldSurfaces = new java.util.Vector<Surface>();
+	private ArrayList<MembraneEdgeNeighbor>[][] membraneEdgeNeighbors;
 
 /**
  * BoundaryCollection constructor comment.
@@ -34,7 +40,14 @@ public SurfaceCollection(Surface surface) {
 	addSurface(surface);
 }
 
+public static final int EDGE_HAS_NO_NEIGHBOR = -1;
 
+public void setMembraneEdgeNeighbors(ArrayList<MembraneEdgeNeighbor>[][] membraneEdgeNeighbors){
+	this.membraneEdgeNeighbors = membraneEdgeNeighbors;
+}
+public ArrayList<MembraneEdgeNeighbor>[][] getMembraneEdgeNeighbors(){
+	return membraneEdgeNeighbors;
+}
 /**
  * BoundaryCollection constructor comment.
  */
