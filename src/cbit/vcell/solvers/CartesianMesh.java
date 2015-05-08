@@ -2205,7 +2205,6 @@ private static String describe(Object[] me) {
 	return "null";
 }
 
-
 private void writeMembraneElements_Connectivity_Region(PrintStream out)
 {
 	out.println("\tMembraneElements {");
@@ -2216,12 +2215,16 @@ private void writeMembraneElements_Connectivity_Region(PrintStream out)
 		lg.debug("memEl = " + describe(memEl) + ", membraneElements = " + describe(membraneElements));
 	}
 	for (int i=0;membraneElements != null && i<membraneElements.length;i++){
-		out.println("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" "+
-				memEl[i].getMembraneNeighborIndexes()[0]+" "+
-				memEl[i].getMembraneNeighborIndexes()[1]+" "+
-				memEl[i].getMembraneNeighborIndexes()[2]+" "+
-				memEl[i].getMembraneNeighborIndexes()[3]+" "+
-				meshRegionInfo.getMembraneRegionForMembraneElement(i));
+		out.print("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" ");
+		final int[] mni = memEl[i].getMembraneNeighborIndexes();
+		for (int m = 0; m < mni.length; ++m ) {
+			out.print(mni[m]);
+			out.print(' ');
+		}
+		for (int m = mni.length ; m < 4; ++m ) {
+			out.print("-1 ");
+		}
+		out.println( );
 	}
 	out.println("\t}");
 }
