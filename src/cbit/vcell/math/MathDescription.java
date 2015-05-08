@@ -2210,15 +2210,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 							issueList.add(issue);
 						}
 					}
-					if (subDomain1 instanceof CompartmentSubDomain && subDomain2 instanceof CompartmentSubDomain){
-						CompartmentSubDomain compartmentSubDomain1 = (CompartmentSubDomain)subDomain1;
-						CompartmentSubDomain compartmentSubDomain2 = (CompartmentSubDomain)subDomain2;
-						if (compartmentSubDomain1.getPriority()==compartmentSubDomain2.getPriority()){
-							Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_8, compartmentSubDomain1.getName(), compartmentSubDomain2.getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
-						}
-					}
 				}
 			}
 			
@@ -2688,10 +2679,6 @@ void makeCanonical(MathSymbolTableFactory mathSymbolTableFactory) throws MathExc
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
 		SubDomain subDomain = newMath.subDomainList.elementAt(i);
 		subDomain.trimTrivialEquations(newMath);
-		if (subDomain instanceof CompartmentSubDomain){
-			int uniquePriority = subDomain.getName().hashCode();
-			((CompartmentSubDomain)subDomain).setPriority(uniquePriority);
-		}
 	}
 
 	//
