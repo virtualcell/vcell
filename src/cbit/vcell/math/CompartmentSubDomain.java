@@ -224,6 +224,10 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 		//handle = Integer.valueOf(token).intValue();
 		return;
 	}
+	if (token.equalsIgnoreCase(VCML.Priority)){ //legacy support; just ignore this token
+		token = tokens.nextToken();
+		return;
+	}
 	if (token.equalsIgnoreCase(VCML.BoundaryXm)){
 		String type = tokens.nextToken();
 		boundaryConditionTypeXm = new BoundaryConditionType(type);
