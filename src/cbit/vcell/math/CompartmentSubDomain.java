@@ -25,8 +25,6 @@ import cbit.vcell.parser.ExpressionException;
 @SuppressWarnings("serial")
 public class CompartmentSubDomain extends SubDomain {
 	public final static int NON_SPATIAL_PRIORITY = -1;
-	//private final static int MAX_LEVELS_OF_MEMBRANE_NESTING = 100;
-	private int priority = NON_SPATIAL_PRIORITY;
 	
 	private BoundaryConditionType boundaryConditionTypeXp = BoundaryConditionType.getDIRICHLET();
 	private BoundaryConditionType boundaryConditionTypeXm = BoundaryConditionType.getDIRICHLET();
@@ -38,10 +36,10 @@ public class CompartmentSubDomain extends SubDomain {
 /**
  * This method was created by a SmartGuide.
  * @param name java.lang.String
+ * @param unused -- ignored 
  */
-public CompartmentSubDomain (String name, int argPriority) {
+public CompartmentSubDomain (String name, int unused) {
 	super(name);
-	this.priority = argPriority;
 }
 
 
@@ -70,12 +68,6 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}else{
 		csd = (CompartmentSubDomain)object;
-	}
-	//
-	// compare priority
-	//
-	if (priority!=csd.priority){
-		return false;
 	}
 	//
 	// compare boundaryConditions
@@ -156,16 +148,6 @@ public BoundaryConditionType getBoundaryConditionZp() {
 	return boundaryConditionTypeZp;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return int
- */
-public int getPriority() {
-	return priority;
-}
-
-
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String
@@ -173,9 +155,6 @@ public int getPriority() {
 public String getVCML(int spatialDimension) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCML.CompartmentSubDomain+" "+getName()+" {\n");
-	if (priority != -1){
-		buffer.append("\t"+VCML.Priority+" "+priority+"\n");
-	}	
 	if (spatialDimension>=1){
 		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
 		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");
@@ -243,11 +222,6 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 		//
 		token = tokens.nextToken();
 		//handle = Integer.valueOf(token).intValue();
-		return;
-	}
-	if (token.equalsIgnoreCase(VCML.Priority)){
-		token = tokens.nextToken();
-		priority = Integer.valueOf(token).intValue();
 		return;
 	}
 	if (token.equalsIgnoreCase(VCML.BoundaryXm)){
@@ -825,12 +799,4 @@ public void setBoundaryConditionZp(BoundaryConditionType bc) {
 	boundaryConditionTypeZp = bc;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/12/2002 4:05:51 PM)
- */
-void setPriority(int argPriority) {
-	priority = argPriority;
-}
 }
