@@ -1854,9 +1854,6 @@ private Element getXML(CompartmentSubDomain param) throws XmlParseException{
 	Element compartment = new Element(XMLTags.CompartmentSubDomainTag);
 
 	compartment.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	if (param.getPriority() != -1){
-			compartment.setAttribute(XMLTags.PriorityAttrTag, String.valueOf(param.getPriority()));
-	}
 	//Add boundatyType subelements
 	Element boundary;
 	//Xm
