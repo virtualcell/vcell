@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -37,7 +36,6 @@ import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
-import org.vcell.util.ProgrammingException;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
@@ -53,6 +51,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.MeshRegionInfo.MembraneRegionMapVolumeRegion;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 /**
@@ -61,10 +60,6 @@ import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
  */
 @SuppressWarnings("serial")
 public class CartesianMesh implements Serializable, Matchable {
-	/**
-	 * maximum / expected number of membrane neighbors
-	 */
-	private static final int MAX_MEMBRANE_NEIGHBORS = 4;
 
 	protected static class MembraneMeshMetrics {
 		public short[] regionIndexes;
@@ -89,7 +84,7 @@ public class CartesianMesh implements Serializable, Matchable {
 														
 	public final static String VERSION_1_1 = "1.1";		// added: membrane connectivity 8/30/2000
 	public final static String VERSION_1_2 = "1.2";		// added: Regions 07/02/2001
-	private static final Logger lg = Logger.getLogger(CartesianMesh.class);
+	
 
 	public class UCDInfo{
 		private Coordinate[][][] ucdGridNodes;
@@ -1052,9 +1047,6 @@ public int getGeometryDimension() {
  */
 public MembraneElement[] getMembraneElements() {
 	if (membraneElements == null) {
-		if (lg.isDebugEnabled()) {
-			lg.debug("membraneElements are null");
-		}
 		inflate();
 	}
 	return membraneElements;
@@ -1398,7 +1390,6 @@ public boolean hasRegionInfo() {
  */
 protected void inflate() {
 	if (compressedBytes == null) {
-		lg.debug("inflate: compressedBytes are null");
 		return;
 	}
 
@@ -1415,12 +1406,6 @@ protected void inflate() {
 		subdomainInfo = (SubdomainInfo)objArray[7];
 
 		compressedBytes = null;
-		if (lg.isDebugEnabled()) {
-			lg.debug("inflate: version  = " + version  + ", size = " + size + ", origin = " + origin 
-					+ ", extent = " + extent + " membraneElements = " + describe(membraneElements)
-					+ ", contourElements = " + describe(contourElements) + ", meshRegionInfo = " + meshRegionInfo
-					+ ", subdomainInfo = " + subdomainInfo);
-		}
 		
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
@@ -2199,41 +2184,19 @@ private void writeCartesianMeshHeader(PrintStream out)
 //	return TRUE;
 //}
 
-/**
- * @param me
- * @return "null" or length of array
- */
-private static String describe(Object[] me) {
-	if (me != null) {
-		return  "length " + me.length;
-	}
-	return "null";
-}
-
 private void writeMembraneElements_Connectivity_Region(PrintStream out)
 {
 	out.println("\tMembraneElements {");
 	out.println("\t"+getNumMembraneElements());
 	out.println("\t//Indx  VIn  VOut  Conn0  Conn1  Conn2  Conn3  MemRegID");
 	MembraneElement[] memEl = getMembraneElements();
-	if (lg.isDebugEnabled()) {
-		lg.debug("memEl = " + describe(memEl) + ", membraneElements = " + describe(membraneElements));
-	}
-	for (int i=0;memEl != null && i<memEl.length;i++){
-		out.print("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" ");
-		final int[] mni = memEl[i].getMembraneNeighborIndexes();
-		final int numNeighbors = mni.length;
-		if (numNeighbors > MAX_MEMBRANE_NEIGHBORS) {
-			throw new ProgrammingException("for index " + i + ", " + numNeighbors + " membrane neighors exceeds maximum of " + MAX_MEMBRANE_NEIGHBORS);
-		}
-		for (int m = 0; m < numNeighbors; ++m ) { //print index and space for neighbors present
-			out.print(mni[m]);
-			out.print(' ');
-		}
-		for (int m = numNeighbors ; m < 4; ++m ) { //fill in -1 for neighbors not present
-			out.print("-1 ");
-		}
-		out.println( );
+	for (int i=0;membraneElements != null && i<membraneElements.length;i++){
+		out.println("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" "+
+				memEl[i].getMembraneNeighborIndexes()[0]+" "+
+				memEl[i].getMembraneNeighborIndexes()[1]+" "+
+				memEl[i].getMembraneNeighborIndexes()[2]+" "+
+				memEl[i].getMembraneNeighborIndexes()[3]+" "+
+				meshRegionInfo.getMembraneRegionForMembraneElement(i));
 	}
 	out.println("\t}");
 }
@@ -2307,7 +2270,23 @@ public static CartesianMesh readFromFiles(File meshFile, File meshmetricsFile, F
 	}
 } 
 	
-public boolean isChomboMesh()
+public static void test() {
+		try {
+			CartesianMesh mesh = null;
+	
+			File meshFile = new File("users\\fgao\\SimID_28389873_0_.mesh");
+			File membraneMeshMetricsFile = new File("users\\fgao\\SimID_28389873_0_"+SimDataConstants.MESHMETRICSFILE_EXTENSION);
+			// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
+			//
+			mesh = CartesianMesh.readFromFiles(meshFile, membraneMeshMetricsFile, null);
+			System.out.println("-------------------- generated file ----------------");
+			mesh.write(System.out);
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
+	}
+
+	public boolean isChomboMesh()
 	{
 		return false;
 	}
