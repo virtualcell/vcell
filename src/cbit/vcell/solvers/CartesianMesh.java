@@ -37,6 +37,7 @@ import org.vcell.util.Hex;
 import org.vcell.util.ISize;
 import org.vcell.util.Matchable;
 import org.vcell.util.Origin;
+import org.vcell.util.ProgrammingException;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
@@ -60,6 +61,10 @@ import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
  */
 @SuppressWarnings("serial")
 public class CartesianMesh implements Serializable, Matchable {
+	/**
+	 * maximum / expected number of membrane neighbors
+	 */
+	private static final int MAX_MEMBRANE_NEIGHBORS = 4;
 
 	protected static class MembraneMeshMetrics {
 		public short[] regionIndexes;
@@ -2214,14 +2219,18 @@ private void writeMembraneElements_Connectivity_Region(PrintStream out)
 	if (lg.isDebugEnabled()) {
 		lg.debug("memEl = " + describe(memEl) + ", membraneElements = " + describe(membraneElements));
 	}
-	for (int i=0;membraneElements != null && i<membraneElements.length;i++){
+	for (int i=0;memEl != null && i<memEl.length;i++){
 		out.print("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" ");
 		final int[] mni = memEl[i].getMembraneNeighborIndexes();
-		for (int m = 0; m < mni.length; ++m ) {
+		final int numNeighbors = mni.length;
+		if (numNeighbors > MAX_MEMBRANE_NEIGHBORS) {
+			throw new ProgrammingException("for index " + i + ", " + numNeighbors + " membrane neighors exceeds maximum of " + MAX_MEMBRANE_NEIGHBORS);
+		}
+		for (int m = 0; m < numNeighbors; ++m ) { //print index and space for neighbors present
 			out.print(mni[m]);
 			out.print(' ');
 		}
-		for (int m = mni.length ; m < 4; ++m ) {
+		for (int m = numNeighbors ; m < 4; ++m ) { //fill in -1 for neighbors not present
 			out.print("-1 ");
 		}
 		out.println( );
