@@ -737,8 +737,8 @@ public static CartesianMesh createSimpleCartesianMesh(Geometry geometry, Map<Pol
 			bMembraneEdgeNeighborsAvailable = bMembraneEdgeNeighborsAvailable && surfaceCollection.getMembraneEdgeNeighbors()[i].length == surface.getPolygonCount();
 			for (int j = 0; j < surface.getPolygonCount(); j++){
 				if(bMembraneEdgeNeighborsAvailable){
-					membraneNeighbors =
-						new int[] {SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR,SurfaceCollection.EDGE_HAS_NO_NEIGHBOR};
+					membraneNeighbors = new int[MembraneElement.MAX_POSSIBLE_NEIGHBORS];
+					Arrays.fill(membraneNeighbors,MembraneElement.NEIGHBOR_UNDEFINED);
 					for(int k =0;k<surfaceCollection.getMembraneEdgeNeighbors()[i][j].size();k++){
 						membraneNeighbors[k] = surfaceCollection.getMembraneEdgeNeighbors()[i][j].get(k).getMasterPolygonIndex();
 					}
@@ -2191,12 +2191,11 @@ private void writeMembraneElements_Connectivity_Region(PrintStream out)
 	out.println("\t//Indx  VIn  VOut  Conn0  Conn1  Conn2  Conn3  MemRegID");
 	MembraneElement[] memEl = getMembraneElements();
 	for (int i=0;membraneElements != null && i<membraneElements.length;i++){
-		out.println("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" "+
-				memEl[i].getMembraneNeighborIndexes()[0]+" "+
-				memEl[i].getMembraneNeighborIndexes()[1]+" "+
-				memEl[i].getMembraneNeighborIndexes()[2]+" "+
-				memEl[i].getMembraneNeighborIndexes()[3]+" "+
-				meshRegionInfo.getMembraneRegionForMembraneElement(i));
+		out.println("\t"+i+" "+memEl[i].getInsideVolumeIndex()+" "+memEl[i].getOutsideVolumeIndex()+" ");
+		for(int j=0;j<MembraneElement.MAX_POSSIBLE_NEIGHBORS;j++){
+				out.println((j < memEl[i].getMembraneNeighborIndexes().length?memEl[i].getMembraneNeighborIndexes()[j]:MembraneElement.NEIGHBOR_UNDEFINED)+" ");
+		}
+		out.println(meshRegionInfo.getMembraneRegionForMembraneElement(i));
 	}
 	out.println("\t}");
 }
