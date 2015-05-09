@@ -46,6 +46,7 @@ import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.render.Vect3d;
+import cbit.vcell.solvers.MembraneElement;
 
 public class RegionImage implements Serializable {
 	
@@ -1148,7 +1149,7 @@ private void calculateNeighbors(){
 					MembraneElementIdentifier neighborOfEdge = neighborsOfEdgeIter.next();
 					//add neighbors on my surface (exclude edge share from other surfaces) and exclude myself from neighbor list
 					if(neighborOfEdge.surfaceIndex == surfindex){
-						if(neighborOfEdge.nonMasterPolygonIndex != wantNeighborsOfThisQuadUnRemappedIndex){							
+						if(neighborOfEdge.nonMasterPolygonIndex != wantNeighborsOfThisQuadUnRemappedIndex){
 							if(neighborsSharingThisEdge.size() > 2 &&(getRegionInfoFromOffset(((Quadrilateral)surfaceCollection.getSurfaces(neighborOfEdge.surfaceIndex).getPolygons(neighborOfEdge.nonMasterPolygonIndex)).getVolIndexNeighbor2()).regionIndex == getRegionInfoFromOffset(wantNieghborsOfThisQuad.getVolIndexNeighbor2()).regionIndex &&
 									((Quadrilateral)surfaceCollection.getSurfaces(neighborOfEdge.surfaceIndex).getPolygons(neighborOfEdge.nonMasterPolygonIndex)).getVolIndexNeighbor2() != wantNieghborsOfThisQuad.getVolIndexNeighbor2())){
 								//do nothing
@@ -1226,7 +1227,7 @@ public static class MembraneEdgeNeighbor {
 	public MembraneEdgeNeighbor( int edgeBaseNodeIndex,int edgeOtherNodeIndex){
 		this.edgeBaseNodeIndex = edgeBaseNodeIndex;
 		this.edgeOtherNodeIndex = edgeOtherNodeIndex;
-		this.masterPolygonIndex = SurfaceCollection.EDGE_HAS_NO_NEIGHBOR;
+		this.masterPolygonIndex = MembraneElement.NEIGHBOR_UNDEFINED;
 	}
 	public MembraneElementIdentifier getMembraneElementIdentifier(){
 		return membraneElementIdentifier;

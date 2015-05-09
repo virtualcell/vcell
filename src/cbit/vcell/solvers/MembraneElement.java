@@ -26,6 +26,8 @@ public class MembraneElement implements java.io.Serializable, org.vcell.util.Mat
 	float centroidX;
 	float centroidY;
 	float centroidZ;
+	public static final int MAX_POSSIBLE_NEIGHBORS = 4;
+	public static final int NEIGHBOR_UNDEFINED = -1;
 
 /**
  * MembraneElement constructor comment.

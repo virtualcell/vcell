@@ -40,8 +40,6 @@ public SurfaceCollection(Surface surface) {
 	addSurface(surface);
 }
 
-public static final int EDGE_HAS_NO_NEIGHBOR = -1;
-
 public void setMembraneEdgeNeighbors(ArrayList<MembraneEdgeNeighbor>[][] membraneEdgeNeighbors){
 	this.membraneEdgeNeighbors = membraneEdgeNeighbors;
 }
