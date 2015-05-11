@@ -10,6 +10,7 @@
 
 package cbit.vcell.math;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -32,6 +33,11 @@ public class CompartmentSubDomain extends SubDomain {
 	private BoundaryConditionType boundaryConditionTypeYm = BoundaryConditionType.getDIRICHLET();
 	private BoundaryConditionType boundaryConditionTypeZp = BoundaryConditionType.getDIRICHLET();
 	private BoundaryConditionType boundaryConditionTypeZm = BoundaryConditionType.getDIRICHLET();
+	
+	/**
+	 * use AtomicInteger to get values thread safe with minimum synchronization cost
+	 */
+	private static AtomicInteger uniquePriority = new AtomicInteger(0);
 
 /**
  * This method was created by a SmartGuide.
@@ -155,6 +161,7 @@ public BoundaryConditionType getBoundaryConditionZp() {
 public String getVCML(int spatialDimension) {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCML.CompartmentSubDomain+" "+getName()+" {\n");
+	buffer.append("\t"+VCML.Priority+" "+ uniquePriorityNumber() +" // unused, for backward compatibility only \n");
 	if (spatialDimension>=1){
 		buffer.append("\t"+VCML.BoundaryXm+"\t "+boundaryConditionTypeXm.boundaryTypeStringValue()+"\n");
 		buffer.append("\t"+VCML.BoundaryXp+"\t "+boundaryConditionTypeXp.boundaryTypeStringValue()+"\n");
@@ -801,6 +808,14 @@ public void setBoundaryConditionZp(BoundaryConditionType bc) {
 		throw new RuntimeException("Zm and Zp must both have periodic boundary condition");
 	}	
 	boundaryConditionTypeZp = bc;
+}
+
+/**
+ * return arbitrary but unique number in thread safe manner
+ * @return unique integer
+ */
+public static int uniquePriorityNumber( ) {
+	return uniquePriority.getAndIncrement();
 }
 
 }
