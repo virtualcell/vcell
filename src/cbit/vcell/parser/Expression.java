@@ -20,6 +20,7 @@ import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
@@ -436,13 +437,24 @@ public boolean hasSymbol(String symbolName) {
 	return false;
 }
 
-	public String infix() {
-		if (rootNode == null) {
-			return null;
-		} else {
-			return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT);
-		}
+public String infix() {
+	if (rootNode == null) {
+		return null;
+	} else {
+		return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT);
 	}
+}
+public String infixBng() {
+	if (rootNode == null) {
+		return null;
+	} else {	// clean useless leading and ending parenthesis if they are paired
+		String s = rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT);
+		if(RbmUtils.isParenthesisMatchBothEnds(s)) {
+			s = s.substring(1, s.length() - 1); 
+		}
+		return s;
+	}
+}
 
    /**
  * Insert the method's description here.
