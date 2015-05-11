@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -28,6 +29,7 @@ import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
@@ -240,13 +242,8 @@ public class NFsimXMLWriter {
 		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getTaskID());
 		
 		Element listOfParametersElement = getListOfParameters(mathDesc, simulationSymbolTable);
-		modelElement.addContent(listOfParametersElement);
-		
 		Element listOfMoleculeTypesElement = getListOfMoleculeTypes(mathDesc);
-		modelElement.addContent(listOfMoleculeTypesElement);
-		
 		Element listOfSpeciesElement = getListOfSpecies(mathDesc,simulationSymbolTable);
-		modelElement.addContent(listOfSpeciesElement);
 		
 		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain) mathDesc.getSubDomains().nextElement();
 		Element listOfReactionRules = new Element("ListOfReactionRules");
@@ -329,8 +326,42 @@ public class NFsimXMLWriter {
 			String rateConstantValue = null;
 			JumpProcessRateDefinition particleProbabilityRate = particleJumpProcess.getParticleRateDefinition();
 			if(particleProbabilityRate.getExpressions().length > 0) {
-				rateConstantValue = particleJumpProcess.getParticleRateDefinition().getExpressions()[0].infix();
+
+				JumpProcessRateDefinition particleRateDefinition = particleJumpProcess.getParticleRateDefinition();
+				Expression expression = null;
+				if (particleRateDefinition instanceof MacroscopicRateConstant){
+					expression = ((MacroscopicRateConstant)particleProbabilityRate).getExpression();
+				}else{
+					throw new SolverException("ParticleRateDefinition type "+particleRateDefinition.getClass().getSimpleName()+" not supported");
+				}
+				rateConstantValue = expression.infixBng();
+
+				// all rates constants are being flattened and given reserved names
+				Expression substitutedValExpr = null;
+				try {
+					substitutedValExpr = simulationSymbolTable.substituteFunctions(expression);
+				}catch (MathException | ExpressionException e){
+					e.printStackTrace(System.out);
+					throw new SolverException("ParticleJumpProcess "+particleJumpProcess.getName()+" substitution failed : exp = \""+expression.infix()+"\": "+e.getMessage());
+				}
+				Double value = null;
+				try {
+					value = substitutedValExpr.evaluateConstant();
+					Element parameterElement = new Element("Parameter");
+					String id = "K_reserved_" + reactionRuleIndex;
+					parameterElement.setAttribute("id", id);
+					if (value!=null) {
+						parameterElement.setAttribute("type","Constant");
+						parameterElement.setAttribute("value",value.toString());
+						parameterElement.addContent(new Comment(rateConstantValue));
+						rateConstantValue = id;
+						listOfParametersElement.addContent(parameterElement);
+					}
+				}catch (ExpressionException e){
+					System.out.println("ParticleJumpProcess "+particleJumpProcess.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value");
+				}
 			}
+			
 			if(isFunction(rateConstantValue, mathDesc, simulationSymbolTable)) {
 				rateLawElement.setAttribute("type", "Function");
 				rateLawElement.setAttribute("totalrate", "0");
@@ -556,17 +587,18 @@ public class NFsimXMLWriter {
 					}
 				}
 			}
-			
 			reactionRuleElement.addContent(listOfOperationsElement);
-			
 			listOfReactionRules.addContent(reactionRuleElement);
 		}
-		modelElement.addContent(listOfReactionRules);
-		
-		Element listOfObservablesElement = getListOfObservables(mathDesc);
-		modelElement.addContent(listOfObservablesElement);
 
+		Element listOfObservablesElement = getListOfObservables(mathDesc);
 		Element listOfFunctionsElement = getListOfFunctions(mathDesc, simulationSymbolTable);
+		
+		modelElement.addContent(listOfParametersElement);
+		modelElement.addContent(listOfMoleculeTypesElement);
+		modelElement.addContent(listOfSpeciesElement);
+		modelElement.addContent(listOfReactionRules);
+		modelElement.addContent(listOfObservablesElement);
 		modelElement.addContent(listOfFunctionsElement);
 
 		sbmlElement.addContent(modelElement);
