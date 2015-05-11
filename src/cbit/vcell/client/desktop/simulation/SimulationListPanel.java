@@ -15,7 +15,9 @@ import java.awt.Container;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyVetoException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -69,6 +71,8 @@ import cbit.vcell.solver.SolverTaskDescription;
  */
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
+	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
+	
 	private static final String QUICK_RUN_TOOL_TIP = "Quick Run";
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JToolBar toolBar = null;
@@ -141,6 +145,16 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 public SimulationListPanel() {
 	super();
 	initialize();
+}
+
+private static Date getFiniteVolumeMissingDataRegenerateDate(){
+	try{
+		return new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2015");
+	}catch(Exception e){
+		//never happen, but ignore if it does
+		e.printStackTrace();
+	}
+	return null;
 }
 
 /**
@@ -511,7 +525,6 @@ private Object getSimulationStatusDisplay(int row) {
 	}	
 }
 
-
 /**
  * Initializes connections
  * @exception java.lang.Exception The exception description.
@@ -541,14 +554,37 @@ private void initConnections() throws java.lang.Exception {
 			} else if (value instanceof Double) {
 				setText(value+"");
 			}
+			boolean bFinitVolumeRerun = false;
 			if (value instanceof SolverDescription) {
 				SolverDescription solverDescription = (SolverDescription) value;
+				try{
+					if(FINITEVOLUME_CUTTOFF != null && solverDescription.equals(SolverDescription.FiniteVolume)/*Compiled Solver*/){
+						SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(getSimulationListTableModel1().getValueAt(row));
+						if(simStatus.getHasData()){
+							int statusIndex = 0;
+							while(simStatus.getJobStatus(statusIndex) != null){
+								if(simStatus.getJobStatus(statusIndex).getEndDate().compareTo(FINITEVOLUME_CUTTOFF) > 0){
+									bFinitVolumeRerun = true;
+									break;
+								}
+								statusIndex++;
+							}
+						}
+					}
+				}catch(Exception e){
+					//ignore, let table cell render anyway
+					e.printStackTrace();
+				}
 				setText(solverDescription.getShortDisplayLabel());
 				setToolTipText(solverDescription.getDisplayLabel());
 			} else {
 				setToolTipText(getText());
 			}
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
+			if(bFinitVolumeRerun){
+				setText(getText()+(bFinitVolumeRerun?"(*)":""));
+				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FinitVolumeStandalone)":""));
+			}
 			return this;
 		}
 		
