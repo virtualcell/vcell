@@ -12,11 +12,11 @@
 package cbit.vcell.units;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import cbit.vcell.units.parser.UnitSymbol;
-
 import ucar.units.Unit;
 
 public abstract class VCUnitSystem implements Serializable {
@@ -46,7 +46,8 @@ public abstract class VCUnitSystem implements Serializable {
 	}
 
 	public Iterator<VCUnitDefinition> getKnownUnits() {
-		return (Iterator<VCUnitDefinition>) vcUnitDefinitionsHash.values();
+		Collection<VCUnitDefinition> v = vcUnitDefinitionsHash.values();
+		return v.iterator();
 	}
 	
 	public VCUnitDefinition getInstance_TBD() {

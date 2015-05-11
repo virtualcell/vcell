@@ -148,6 +148,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * This method was created by a SmartGuide.
  * @return boolean
  */
+@Override
 public boolean isConstant() {
 	return false;
 }

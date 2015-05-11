@@ -1,6 +1,6 @@
 package org.vcell.sbml;
 
-import java.util.AbstractCollection;
+import java.util.AbstractList;
 import java.util.Iterator;
 
 import org.sbml.libsbml.ListOf;
@@ -13,14 +13,19 @@ import org.vcell.util.VCAssert;
  *
  * @param <T>
  */
-public class ListOfAdapter<T extends SBase> extends AbstractCollection<T> {
+public class ListOfAdapter<T extends SBase> extends AbstractList<T> {
 	private ListOf list;
 
 	public ListOfAdapter(ListOf list, Class<T> clzz) {
 		super();
-		this.list = list;
-		VCAssert.assertFalse(list.size( ) > (long)Integer.MAX_VALUE, 
+		if (list != null) {
+			this.list = list;
+			VCAssert.assertFalse(list.size( ) > (long)Integer.MAX_VALUE, 
 				"SBML list size greater than " + Integer.MAX_VALUE);
+		}
+		else {
+			this.list = new EmptyList();
+		}
 	}
 
 	@Override
@@ -32,6 +37,13 @@ public class ListOfAdapter<T extends SBase> extends AbstractCollection<T> {
 	@Override
 	public int size() {
 		return (int) list.size( );
+	}
+
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public T get(int index) {
+		return (T) list.get(index);
 	}
 
 
@@ -62,5 +74,9 @@ public class ListOfAdapter<T extends SBase> extends AbstractCollection<T> {
 			throw new UnsupportedOperationException();
 
 		}
+	}
+	
+	static class EmptyList extends ListOf {
+		
 	}
 }
