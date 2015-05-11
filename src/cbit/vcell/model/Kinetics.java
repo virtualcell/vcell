@@ -1007,8 +1007,11 @@ private ArrayList<KineticsParameter> getKineticsParametersFromTokens(String kine
 	
 	
 	CommentStringTokenizer tokens = new CommentStringTokenizer(kinetics_vcmlStr);
+	@SuppressWarnings("unused")
 	String kineticsKeywordToken = tokens.nextToken();
+	@SuppressWarnings("unused")
 	String kineticsNameToken = tokens.nextToken();
+	@SuppressWarnings("unused")
 	String beginBraceToken = tokens.nextToken(); // read "{"
 	ModelUnitSystem unitSystem = reactionStep.getModel().getUnitSystem();
 	

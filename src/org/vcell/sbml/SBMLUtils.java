@@ -20,6 +20,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.Model.ReservedSymbol;
@@ -104,6 +105,21 @@ public abstract class SBMLUtils {
 			throw new SbmlException(e.getMessage());
 		}
 	}
+	
+	/**
+	 * safely convert double with zero fractional part to integer
+	 * @param in
+	 * @return in as integer
+	 * @throws ProgrammingException if in is not nn.000000
+	 */
+	public static int ignoreZeroFraction(double in) {
+		final int rval = (int) in;
+		if (rval == in) {
+			return rval;
+		}
+		throw new ProgrammingException("Value " + in + " not integer");
+	}
+	
 
 	/**
 	 * @return {@link TokenMangler#mangleToSName(String)}

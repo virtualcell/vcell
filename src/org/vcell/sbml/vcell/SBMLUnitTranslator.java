@@ -345,13 +345,19 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 				if (unit.isMole()){
 					unitKind = "mol";
 					if (unitMultiplier==1){
+						if (unitScale==0){
+							return vcUnitSystem.getInstance("mol" + unitExponent);
+						}
 						if (unitScale==-3){
 							return vcUnitSystem.getInstance("mmol" + unitExponent);
-						}else if (unitScale==-6){
+						}
+						if (unitScale==-6){
 							return vcUnitSystem.getInstance("umol" + unitExponent);
-						}else if (unitScale==-9){
+						}
+						if (unitScale==-9){
 							return vcUnitSystem.getInstance("nmol" + unitExponent);
-						}else if (unitScale==-12){
+						}
+						if (unitScale==-12){
 							return vcUnitSystem.getInstance("pmol" + unitExponent);
 						}
 					}

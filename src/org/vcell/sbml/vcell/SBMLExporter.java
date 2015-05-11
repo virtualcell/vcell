@@ -108,6 +108,7 @@ import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -577,7 +578,8 @@ protected void addReactions() throws SbmlException {
 			String[] kinParamNames = new String[vcKineticsParams.length];
 			Expression[] kinParamExprs = new Expression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
-				if ( (vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && (vcKineticsParams[j].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
+				if ( true) {
+				//if ( (vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && (vcKineticsParams[j].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
 					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule. 
 					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
 					if ( (vcKineticsParams[j].getRole() == Kinetics.ROLE_CurrentDensity && (!vcKineticsParams[j].getExpression().isZero())) || 
@@ -597,16 +599,18 @@ protected void addReactions() throws SbmlException {
 			// Second pass - Check if any of the numeric parameters is present in any of the non-numeric param expressions
 			// If so, these need to be added as global param (else the SBML doc will not be valid)
 			for (int j = 0; j < vcKineticsParams.length; j++){
-				if ( (vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && (vcKineticsParams[j].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
+				final KineticsParameter vcKParam = vcKineticsParams[j];
+				//if ( (vcKParam.getRole() != Kinetics.ROLE_ReactionRate) && (vcKParam.getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
+				if ( true ) { 
 					// if expression of kinetic param evaluates to a double, the parameter value is set
-					if ( (vcKineticsParams[j].getRole() == Kinetics.ROLE_CurrentDensity && (!vcKineticsParams[j].getExpression().isZero())) || 
-							(vcKineticsParams[j].getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKineticsParams[j].getExpression().isZero())) ) {
+					if ( (vcKParam.getRole() == Kinetics.ROLE_CurrentDensity && (!vcKParam.getExpression().isZero())) || 
+							(vcKParam.getRole() == Kinetics.ROLE_LumpedCurrent && (!vcKParam.getExpression().isZero())) ) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (vcKineticsParams[j].getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
+					if (vcKParam.getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
 						// check if it is used in other parameters that have expressions,
 						boolean bAddedParam = false;
-						String origParamName = vcKineticsParams[j].getName();
+						String origParamName = vcKParam.getName();
 						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
 						for (int k = 0; k < vcKineticsParams.length; k++){
 							if (kinParamExprs[k] != null) {
@@ -617,12 +621,13 @@ protected void addReactions() throws SbmlException {
 									if (globalParamNamesHash.get(newParamName) == null) {
 										globalParamNamesHash.put(newParamName, newParamName);
 										org.sbml.libsbml.Parameter sbmlKinParam = sbmlModel.createParameter();
-										sbmlKinParam.setId(newParamName);
-										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
-										sbmlKinParam.setConstant(vcKineticsParams[j].isConstant());
+										validate( sbmlKinParam.setId(newParamName) );
+										validate( sbmlKinParam.setValue(vcKParam.getConstantValue()) );
+										final boolean constValue = vcKParam.isConstant();
+										validate( sbmlKinParam.setConstant(true) );
 										// Set SBML units for sbmlParam using VC units from vcParam  
-										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-											sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+										if (!vcKParam.getUnitDefinition().isTBD()) {
+											sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKParam.getUnitDefinition().getSymbol()));
 										}
 										bAddedParam = true;
 									} else {
@@ -636,12 +641,13 @@ protected void addReactions() throws SbmlException {
 						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
 						if (!bAddedParam) {
 							org.sbml.libsbml.Parameter sbmlKinParam = sbmlKLaw.createParameter();
-							sbmlKinParam.setId(origParamName);
-							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
-							sbmlKinParam.setConstant(vcKineticsParams[j].isConstant());
+							validate( sbmlKinParam.setId(origParamName) );
+							validate( sbmlKinParam.setValue(vcKParam.getConstantValue()) );
+							System.out.println ("tis constant " + sbmlKinParam.getConstant());
+							//validate( sbmlKinParam.setConstant(true) ) ;
 							// Set SBML units for sbmlParam using VC units from vcParam  
-							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-								sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+							if (!vcKParam.getUnitDefinition().isTBD()) {
+								validate( sbmlKinParam.setUnits(TokenMangler.mangleToSName(vcKParam.getUnitDefinition().getSymbol())) );
 							}
 						} else {
 							// if parameter has been added to global param list, its name has been mangled, 
