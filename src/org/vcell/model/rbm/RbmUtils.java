@@ -14,6 +14,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Stack;
 
 import org.vcell.model.bngl.ASTAction;
 import org.vcell.model.bngl.ASTAddNode;
@@ -1195,7 +1196,8 @@ public class RbmUtils {
 		str += toBnglStringShort(reactionRule);
 		str += "\t\t";
 		if(reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate) != null) {
-			str += reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate).infix();
+			String str1 = reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate).infixBng();
+			str += str1;
 		} else {
 			str += "(no name)";
 		}
@@ -1203,7 +1205,8 @@ public class RbmUtils {
 			return str;
 		}
 		if (reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate) != null) {
-			str += ", " + reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate).infix();
+			String str1 = reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate).infixBng();
+			str += ", " + str1;
 		} else {
 			throw new RuntimeException("Reaction rule " + reactionRule.getName() + " (reversible) is missing the reverse rate Kr (null).");
 		}
@@ -1233,6 +1236,30 @@ public class RbmUtils {
 		String str = function.getName() + "\t\t";
 		str += "1";			// we totally ignore the expression and replace it with a '1'
 		return str;
+	}
+	
+	public static boolean isParenthesisMatchBothEnds(String str) {
+		if (!str.startsWith("(") || !str.endsWith(")")) {
+			return false;	// it's got to begin and end with matched parenthesis
+		}
+		Stack<Character> stack = new Stack<Character>();
+		char c;
+		for(int i=0; i < str.length(); i++) {
+			c = str.charAt(i);
+			if(c == '(') {
+				stack.push(c);
+			} else if(c == ')') {
+				stack.pop();
+				if(stack.empty()) {
+					if( i == str.length()-1) {
+						return true;	// found a match at the end of the string
+					} else {
+						return false;	// found a match within the string
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static void removePropertyChangeListener(SpeciesPattern speciesPattern, PropertyChangeListener propertyChangeListener) {
