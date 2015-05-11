@@ -27,6 +27,7 @@ package org.vcell.sbml.vcell;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -63,7 +64,6 @@ import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.InteriorPoint;
 import org.sbml.libsbml.KineticLaw;
 import org.sbml.libsbml.ListOf;
-import org.sbml.libsbml.ListOfAnalyticVolumes;
 import org.sbml.libsbml.ListOfCSGObjects;
 import org.sbml.libsbml.ListOfCompartments;
 import org.sbml.libsbml.ListOfCoordinateComponents;
@@ -72,7 +72,6 @@ import org.sbml.libsbml.ListOfDomains;
 import org.sbml.libsbml.ListOfEvents;
 import org.sbml.libsbml.ListOfParameters;
 import org.sbml.libsbml.ListOfReactions;
-import org.sbml.libsbml.ListOfSampledVolumes;
 import org.sbml.libsbml.ListOfSpecies;
 import org.sbml.libsbml.ModifierSpeciesReference;
 import org.sbml.libsbml.OStringStream;
@@ -150,6 +149,7 @@ import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -163,6 +163,7 @@ import cbit.vcell.model.GeneralLumpedKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Kinetics.UnresolvedParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -293,7 +294,7 @@ public class SBMLImporter {
 		this.vcBioModel = new BioModel(null);
 		this.bSpatial = isSpatial;
 	}
-
+	
 	protected void addCompartments(VCMetaData metaData) {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
@@ -874,12 +875,10 @@ public class SBMLImporter {
 						continue;
 					}
 
+					VCAssert.assertTrue(xyzCoordinates != null, "coordinates not created for spatial model");
 					// Check for Boundary condition(s)
 					BoundaryCondition bCondn = spplugin.getBoundaryCondition();
-					VCAssert.assertTrue(bCondn != null, "no boundary condition");
-					VCAssert.assertTrue(xyzCoordinates != null,
-							"coordinates not created for spatial model");
-					if (bCondn.isSetVariable()) {
+					if (bCondn != null  && bCondn.isSetVariable()) {
 						// get the var of boundaryCondn; find appropriate
 						// spContext in vcell;
 						// set the BC param of its speciesContextSpec to param
@@ -1062,11 +1061,13 @@ public class SBMLImporter {
 	 * allows the import of such reactions.
 	 *
 	 **/
-	private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn,
-			ReactionStep vcRxn) throws Exception {
+	private void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, ReactionStep vcRxn) throws Exception {
 		Model vcModel = simContext.getModel();
+		//VCReactionProxy proxy = VCReactionProxy.factory(vcRxn);
+		//VCAssert.assertTrue(vcModel == proxy.getModel(), "mismatch in Model between ReactionStep and SimulationContext" );
 
-		if (!(vcRxn instanceof FluxReaction)) {
+		//if (!(vcRxn instanceof FluxReaction)) {
+		if (true) {
 			// reactants in sbmlRxn
 			HashMap<String, Integer> sbmlReactantsHash = new HashMap<String, Integer>();
 			for (int j = 0; j < (int) sbmlRxn.getNumReactants(); j++) {
@@ -1162,9 +1163,16 @@ public class SBMLImporter {
 							+ "' not found as species in SBML model.");
 				} // end - if (spRef is species in model)
 			} // end - for reactants
+			//proxy.addReactants(sbmlReactantsHash);
 
 			// now add the reactants for the sbml reaction from
 			// sbmlReactionParticipantsHash as reactants to vcRxn
+			for (Entry<String, Integer> es : sbmlReactantsHash.entrySet()) {
+				SpeciesContext speciesContext = vcModel.getSpeciesContext(es.getKey());
+				int stoich = es.getValue(); 
+				vcRxn.addReactant(speciesContext, stoich);	
+			}
+			/*
 			Iterator<String> sbmlReactantsIter = sbmlReactantsHash.keySet()
 					.iterator();
 			while (sbmlReactantsIter.hasNext()) {
@@ -1174,20 +1182,18 @@ public class SBMLImporter {
 				int stoich = sbmlReactantsHash.get(sbmlReactantStr).intValue();
 				((SimpleReaction) vcRxn).addReactant(speciesContext, stoich);
 			}
+			*/
 
 			// products in sbmlRxn
 			HashMap<String, Integer> sbmlProductsHash = new HashMap<String, Integer>();
 			for (int j = 0; j < (int) sbmlRxn.getNumProducts(); j++) {
 				SpeciesReference spRef = sbmlRxn.getProduct(j);
 				String sbmlProductSpId = spRef.getSpecies();
-				if (sbmlModel.getSpecies(sbmlProductSpId) != null) { // check if
-																		// spRef
-																		// is in
-																		// sbml
-																		// model
-					// If stoichiometry of speciesRef is not an integer, it is
-					// not handled in the VCell at this time; no point going
-					// further
+				if (sbmlModel.getSpecies(sbmlProductSpId) != null) { 
+					/* check if spRef is in sbml model
+					If stoichiometry of speciesRef is not an integer, it is
+					not handled in the VCell at this time; no point going
+					further */
 					double stoichiometry = 0.0;
 					if (level < 3) { // for sBML models < L3, default
 										// stoichiometry is 1, if field is not
@@ -1268,6 +1274,13 @@ public class SBMLImporter {
 
 			// now add the products for the sbml reaction from sbmlProductsHash
 			// as products to vcRxn
+			for (Entry<String, Integer> es : sbmlProductsHash.entrySet()) {
+				SpeciesContext speciesContext = vcModel.getSpeciesContext(es.getKey());
+				int stoich = es.getValue(); 
+				vcRxn.addProduct(speciesContext, stoich);	
+			}
+		
+			/*
 			Iterator<String> sbmlProductsIter = sbmlProductsHash.keySet()
 					.iterator();
 			while (sbmlProductsIter.hasNext()) {
@@ -1277,6 +1290,8 @@ public class SBMLImporter {
 				int stoich = sbmlProductsHash.get(sbmlProductStr).intValue();
 				((SimpleReaction) vcRxn).addProduct(speciesContext, stoich);
 			}
+			*/
+			//proxy.addProducts(sbmlProductsHash);
 		} // end - if (vcRxn NOT FluxRxn)
 
 		// modifiers
@@ -2883,29 +2898,26 @@ public class SBMLImporter {
 		if (sbmlModel == null) {
 			throw new SBMLImportException("SBML model is NULL");
 		}
-		ListOf listofReactions = sbmlModel.getListOfReactions();
-		if (listofReactions == null) {
-			System.out.println("No Reactions");
+		ListOfAdapter<Reaction> reactions = new ListOfAdapter<>(sbmlModel.getListOfReactions(), Reaction.class);
+		final int numReactions = reactions.size(); 
+		if (numReactions == 0) {
+			lg.info("No Reactions");
 			return;
 		}
-		int numReactions = (int) sbmlModel.getNumReactions();
-		ReactionStep[] vcReactions = new ReactionStep[numReactions];
-		boolean[] fast = new boolean[numReactions];
+		ArrayList<ReactionStep> vcReactionList = new ArrayList<>(); //all reactions
+		ArrayList<ReactionStep> fastReactionList = new ArrayList<>(); //just the fast ones
 		Model vcModel = simContext.getModel();
 		ModelUnitSystem vcModelUnitSystem = vcModel.getUnitSystem();
 		SpeciesContext[] vcSpeciesContexts = vcModel.getSpeciesContexts();
 		try {
-			for (int i = 0; i < sbmlModel.getNumReactions(); i++) {
-				org.sbml.libsbml.Reaction sbmlRxn = (org.sbml.libsbml.Reaction) listofReactions
-						.get(i);
+			for (Reaction sbmlRxn: reactions) {
+				ReactionStep vcReaction = null;
 				String rxnName = sbmlRxn.getId();
 				// Check of reaction annotation is present; if so, does it have
 				// an embedded element (flux or simpleRxn).
 				// Create a fluxReaction or simpleReaction accordingly.
-				Element sbmlImportRelatedElement = sbmlAnnotationUtil
-						.readVCellSpecificAnnotation(sbmlRxn);
-				Structure reactionStructure = getReactionStructure(sbmlRxn,
-						vcSpeciesContexts, sbmlImportRelatedElement);
+				Element sbmlImportRelatedElement = sbmlAnnotationUtil.readVCellSpecificAnnotation(sbmlRxn);
+				Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts, sbmlImportRelatedElement);
 				if (sbmlImportRelatedElement != null) {
 					Element embeddedRxnElement = getEmbeddedElementInAnnotation(
 							sbmlImportRelatedElement, REACTION);
@@ -2926,9 +2938,8 @@ public class SBMLImporter {
 												+ ci.actualName()
 												+ ", not a membrane.");
 							}
-							vcReactions[i] = new FluxReaction(vcModel,
-									ci.get(), null, rxnName);
-							vcReactions[i].setModel(vcModel);
+							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnName);
+							vcReaction.setModel(vcModel);
 							// Set the fluxOption on the flux reaction based on
 							// whether it is molecular, molecular & electrical,
 							// electrical.
@@ -2936,18 +2947,18 @@ public class SBMLImporter {
 									.getAttributeValue(XMLTags.FluxOptionAttrTag);
 							if (fluxOptionStr
 									.equals(XMLTags.FluxOptionMolecularOnly)) {
-								((FluxReaction) vcReactions[i])
+								((FluxReaction) vcReaction)
 										.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
 							} else if (fluxOptionStr
 									.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
-								((FluxReaction) vcReactions[i])
+								((FluxReaction) vcReaction)
 										.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
 							} else if (fluxOptionStr
 									.equals(XMLTags.FluxOptionElectricalOnly)) {
-								((FluxReaction) vcReactions[i])
+								((FluxReaction) vcReaction)
 										.setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 							} else {
-								localIssueList.add(new Issue(vcReactions[i],
+								localIssueList.add(new Issue(vcReaction,
 										issueContext,
 										IssueCategory.SBMLImport_Reaction,
 										"Unknown FluxOption : " + fluxOptionStr
@@ -2964,40 +2975,40 @@ public class SBMLImporter {
 							// if embedded element is a simple reaction, set
 							// simple reaction's structure from element
 							// attributes
-							vcReactions[i] = new SimpleReaction(vcModel,
+							vcReaction = new SimpleReaction(vcModel,
 									reactionStructure, rxnName);
 						}
 					} else {
-						vcReactions[i] = new SimpleReaction(vcModel,
+						vcReaction = new SimpleReaction(vcModel,
 								reactionStructure, rxnName);
 					}
 				} else {
-					vcReactions[i] = new SimpleReaction(vcModel,
+					vcReaction = new SimpleReaction(vcModel,
 							reactionStructure, rxnName);
 				}
 
 				// set annotations and notes on vcReactions[i]
-				sbmlAnnotationUtil.readAnnotation(vcReactions[i], sbmlRxn);
-				sbmlAnnotationUtil.readNotes(vcReactions[i], sbmlRxn);
+				sbmlAnnotationUtil.readAnnotation(vcReaction, sbmlRxn);
+				sbmlAnnotationUtil.readNotes(vcReaction, sbmlRxn);
 				// record reaction name in annotation if it is greater than 64
 				// characters. Choosing 64, since that is (as of 12/2/08)
 				// the limit on the reactionName length.
 				if (rxnName.length() > 64) {
 					String freeTextAnnotation = metaData
-							.getFreeTextAnnotation(vcReactions[i]);
+							.getFreeTextAnnotation(vcReaction);
 					if (freeTextAnnotation == null) {
 						freeTextAnnotation = "";
 					}
 					StringBuffer oldRxnAnnotation = new StringBuffer(
 							freeTextAnnotation);
 					oldRxnAnnotation.append("\n\n" + rxnName);
-					metaData.setFreeTextAnnotation(vcReactions[i],
+					metaData.setFreeTextAnnotation(vcReaction,
 							oldRxnAnnotation.toString());
 				}
 
 				// Now add the reactants, products, modifiers as specified by
 				// the sbmlRxn
-				addReactionParticipants(sbmlRxn, vcReactions[i]);
+				addReactionParticipants(sbmlRxn, vcReaction);
 
 				KineticLaw kLaw = sbmlRxn.getKineticLaw();
 				Kinetics kinetics = null;
@@ -3025,7 +3036,7 @@ public class SBMLImporter {
 								// This means that the speciesContext is not a
 								// reactant, product or modifier : it has to be
 								// added to the VC Rxn as a catalyst
-								vcReactions[i]
+								vcReaction
 										.addCatalyst(vcSpeciesContexts[k]);
 							}
 						}
@@ -3042,17 +3053,17 @@ public class SBMLImporter {
 						// (a) the requiredElements attributes should be
 						// 'spatial'
 						if (ssrplugin != null && ssrplugin.getIsLocal()) {
-							kinetics = new GeneralKinetics(vcReactions[i]);
+							kinetics = new GeneralKinetics(vcReaction);
 						} else {
-							kinetics = new GeneralLumpedKinetics(vcReactions[i]);
+							kinetics = new GeneralLumpedKinetics(vcReaction);
 						}
 
 					} else {
-						kinetics = new GeneralLumpedKinetics(vcReactions[i]);
+						kinetics = new GeneralLumpedKinetics(vcReaction);
 					}
 
 					// set kinetics on vcReaction
-					vcReactions[i].setKinetics(kinetics);
+					vcReaction.setKinetics(kinetics);
 
 					// If the name of the rate parameter has been changed by
 					// user, or matches with global/local param,
@@ -3071,10 +3082,23 @@ public class SBMLImporter {
 					 * substance/time; bring it in (as is) as 'Lumped' kinetics.
 					 */
 
-					ListOf listofLocalParams = kLaw.getListOfParameters();
-					kinetics.setParameterValue(
-							kinetics.getAuthoritativeParameter(),
-							vcRateExpression);
+					ListOfAdapter<Parameter> localParameters = 
+							new ListOfAdapter<>(kLaw.getListOfLocalParameters(), Parameter.class);
+					for (Parameter p: localParameters) {
+						String paramName = p.getId();
+						KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
+						if (kineticsParameter == null) {
+							//add unresolved for now to prevent errors in kinetics.setParameterValue(kp,vcRateExpression) below 
+							kinetics.addUnresolvedParameter(paramName); 
+						}
+					}
+					
+					KineticsParameter kp = kinetics.getAuthoritativeParameter();
+					if (lg.isDebugEnabled()) {
+						lg.debug("Setting " + kp.getName() + ":  " + vcRateExpression.infix());
+						
+					}
+					kinetics.setParameterValue(kp, vcRateExpression);
 
 					// If there are any global parameters used in the kinetics,
 					// and if they have species,
@@ -3084,25 +3108,20 @@ public class SBMLImporter {
 							.getProxyParameters();
 					for (int j = 0; j < kpps.length; j++) {
 						if (kpps[j].getTarget() instanceof ModelParameter) {
-							ModelParameter mp = (ModelParameter) kpps[j]
-									.getTarget();
+							ModelParameter mp = (ModelParameter) kpps[j].getTarget();
 							HashSet<String> refSpeciesNameHash = new HashSet<String>();
-							getReferencedSpeciesInExpr(mp.getExpression(),
-									refSpeciesNameHash);
-							java.util.Iterator<String> refSpIterator = refSpeciesNameHash
-									.iterator();
+							getReferencedSpeciesInExpr(mp.getExpression(), refSpeciesNameHash);
+							java.util.Iterator<String> refSpIterator = refSpeciesNameHash.iterator();
 							while (refSpIterator.hasNext()) {
 								String spName = refSpIterator.next();
-								org.sbml.libsbml.Species sp = sbmlModel
-										.getSpecies(spName);
+								org.sbml.libsbml.Species sp = sbmlModel.getSpecies(spName);
 								ArrayList<ReactionParticipant> rpArray = getVCReactionParticipantsFromSymbol(
-										vcReactions[i], sp.getId());
+										vcReaction, sp.getId());
 								if (rpArray == null || rpArray.size() == 0) {
 									// This means that the speciesContext is not
 									// a reactant, product or modifier : it has
 									// to be added as a catalyst
-									vcReactions[i].addCatalyst(vcModel
-											.getSpeciesContext(sp.getId()));
+									vcReaction.addCatalyst(vcModel .getSpeciesContext(sp.getId()));
 								}
 							}
 						}
@@ -3110,44 +3129,47 @@ public class SBMLImporter {
 
 					// Introduce all remaining local parameters from the SBML
 					// model - local params cannot be defined by rules.
-					for (int j = 0; j < kLaw.getNumParameters(); j++) {
-						org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter) listofLocalParams
-								.get(j);
+					for (Parameter param : localParameters ) {
 						String paramName = param.getId();
+						Expression exp = new Expression(param.getValue());
+						String unitString = param.getUnits();
+						VCUnitDefinition paramUnit = sbmlUnitIdentifierHash.get(unitString);
+						if (paramUnit == null) {
+							paramUnit = vcModelUnitSystem.getInstance_TBD();
+						}
 						// check if sbml local param is in kinetic params list;
 						// if so, add its value.
-						KineticsParameter kineticsParameter = kinetics
-								.getKineticsParameter(paramName);
+						boolean lpSet = false;
+						KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
 						if (kineticsParameter != null) {
-							kinetics.setParameterValue(kineticsParameter,
-									new Expression(param.getValue()));
-							String unitString = param.getUnits();
-							VCUnitDefinition paramUnit = sbmlUnitIdentifierHash
-									.get(unitString);
-							if (paramUnit == null) {
-								paramUnit = vcModelUnitSystem.getInstance_TBD();
+							if (lg.isDebugEnabled()) {
+								lg.debug("Setting local " + kineticsParameter.getName() + ":  " + exp.infix());
 							}
+							kineticsParameter.setExpression(exp);
 							kineticsParameter.setUnitDefinition(paramUnit);
-						} else {
+							lpSet = true;
+						}
+						else { 
+							UnresolvedParameter ur = kinetics.getUnresolvedParameter(paramName);
+							if (ur != null) {
+								kinetics.addUserDefinedKineticsParameter(paramName,exp,paramUnit);
+								lpSet = true;
+							}
+						}
+						if (!lpSet) {
 							// check if it is a proxy parameter (specifically,
 							// speciesContext or model parameter (structureSize
 							// too)).
-							KineticsProxyParameter kpp = kinetics
-									.getProxyParameter(paramName);
+							KineticsProxyParameter kpp = kinetics.getProxyParameter(paramName);
 							// if there is a proxy param with same name as sbml
 							// kinetic local param, if proxy param
 							// is a model global parameter, change proxy param
 							// to local, set its value
 							// and units to local param values
-							if (kpp != null
-									&& kpp.getTarget() instanceof ModelParameter) {
+							if (kpp != null && kpp.getTarget() instanceof ModelParameter) {
 								kinetics.convertParameterType(kpp, false);
-								kineticsParameter = kinetics
-										.getKineticsParameter(paramName);
-								kinetics.setParameterValue(kineticsParameter,
-										new Expression(param.getValue()));
-								VCUnitDefinition paramUnit = sbmlUnitIdentifierHash
-										.get(param.getUnits());
+								kineticsParameter = kinetics.getKineticsParameter(paramName);
+								kinetics.setParameterValue(kineticsParameter,exp);
 								kineticsParameter.setUnitDefinition(paramUnit);
 							}
 						}
@@ -3155,7 +3177,7 @@ public class SBMLImporter {
 				} else {
 					// sbmlKLaw was null, so creating a GeneralKinetics with 0.0
 					// as rate.
-					kinetics = new GeneralKinetics(vcReactions[i]);
+					kinetics = new GeneralKinetics(vcReaction);
 				} // end - if-else KLaw != null
 
 				// set the reaction kinetics, and add reaction to the vcell
@@ -3163,22 +3185,19 @@ public class SBMLImporter {
 				kinetics.resolveUndefinedUnits();
 				// System.out.println("ADDED SBML REACTION : \"" + rxnName +
 				// "\" to VCModel");
+				vcReactionList.add(vcReaction);
 				if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
-					fast[i] = true;
-				} else {
-					fast[i] = false;
+					fastReactionList.add(vcReaction);
 				}
 			} // end - for vcReactions
 
-			vcModel.setReactionSteps(vcReactions);
-
-			// set 'fast' on reactionSpec in simulationContext
-			for (int j = 0; j < fast.length; j++) {
-				if (fast[j]) {
-					simContext.getReactionContext()
-							.getReactionSpec(vcReactions[j])
-							.setReactionMapping(ReactionSpec.FAST);
-				}
+			ReactionStep[] array = vcReactionList.toArray(new ReactionStep[vcReactionList.size()]);
+			vcModel.setReactionSteps( array); 
+			
+			final ReactionContext rc = simContext.getReactionContext();
+			for (ReactionStep frs: fastReactionList) {
+					final ReactionSpec rs = rc.getReactionSpec(frs);
+					rs.setReactionMapping(ReactionSpec.FAST);
 			}
 
 		} catch (ModelPropertyVetoException mpve) {
@@ -3342,8 +3361,8 @@ public class SBMLImporter {
 			double orig[] = new double[SpatialAdapter.LENGTH];
 			double extent[] = new double[SpatialAdapter.LENGTH];
 			Arrays.fill(extent, 1); // Extent ctor requires non zero values
-			ListOfAdapter<CoordinateComponent> lista = new ListOfAdapter<CoordinateComponent>(
-					listOfCoordComps, CoordinateComponent.class);
+			ListOfAdapter<CoordinateComponent> lista = 
+					new ListOfAdapter<CoordinateComponent>(listOfCoordComps, CoordinateComponent.class);
 
 			for (CoordinateComponent coordComponent : lista) {
 				SpatialAdapter sa = SpatialAdapter
@@ -3466,7 +3485,7 @@ public class SBMLImporter {
 				}
 			}
 			try {
-				System.out.println("ident " + sf.getId() + " " + sf.getName());
+				//System.out.println("ident " + sf.getId() + " " + sf.getName());
 				VCImage vcImage = null;
 				CompressionKind ck = BeanUtils.lookupEnum(
 						CompressionKind.class, sf.getCompression());
@@ -3492,20 +3511,25 @@ public class SBMLImporter {
 							+ sf.getName());
 				}
 				vcImage.setName(sf.getId());
-				ListOfSampledVolumes listOfSampledVols = sfg
-						.getListOfSampledVolumes();
-				if (listOfSampledVols == null) {
-					throw new RuntimeException(
-							"Cannot have 0 sampled volumes in sampledField (image_based) geometry");
+				ListOfAdapter<SampledVolume> sampledVolumes = new ListOfAdapter<>(sfg.getListOfSampledVolumes(), SampledVolume.class);
+				
+				final int numSampledVols = sampledVolumes.size();
+				if (numSampledVols == 0) {
+					throw new RuntimeException("Cannot have 0 sampled volumes in sampledField (image_based) geometry");
 				}
-				int numSampledVols = (int) sfg.getNumSampledVolumes();
+				//check to see if values are uniquely integer , add set up scaling if necessary
+				double scaleFactor = checkPixelScaling(sampledVolumes, 1);
+				if (scaleFactor != 1) {
+					double checkScaleFactor = checkPixelScaling(sampledVolumes, scaleFactor);
+					VCAssert.assertTrue(checkScaleFactor != scaleFactor, "Scale factor check failed");
+				}
 				VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols];
 				// get pixel classes for geometry
 				for (int i = 0; i < numSampledVols; i++) {
-					SampledVolume sVol = listOfSampledVols.get(i);
+					SampledVolume sVol = sampledVolumes.get(i);
 					// from subVolume, get pixelClass?
-					vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(),
-							(int) sVol.getSampledValue());
+					final int scaled = (int) (scaleFactor * sVol.getSampledValue());
+					vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(),scaled);
 				}
 				vcImage.setPixelClasses(vcpixelClasses);
 				// now create image geometry
@@ -3577,83 +3601,69 @@ public class SBMLImporter {
 			if (selectedGeometryDefinition == analyticGeometryDefinition) {
 				// get an analyticVol object via the listOfAnalyticVol (from
 				// AnalyticGeometry) object.
-				ListOfAnalyticVolumes listOfAnalyticVols = analyticGeometryDefinition
-						.getListOfAnalyticVolumes();
-				if (listOfAnalyticVols == null || listOfAnalyticVols.size() < 1) {
-					throw new SBMLImportException(
-							"Cannot have 0 Analytic volumes in analytic geometry");
+				ListOfAdapter<AnalyticVolume> aVolumes = 
+						new ListOfAdapter<>(analyticGeometryDefinition.getListOfAnalyticVolumes(),AnalyticVolume.class);
+				if (aVolumes.size() < 1) {
+					throw new SBMLImportException("Cannot have 0 Analytic volumes in analytic geometry");
 				}
-				for (int i = 0; i < analyticGeometryDefinition
-						.getNumAnalyticVolumes(); i++) {
+				for (AnalyticVolume analyticVol : aVolumes) { 
 					// get subVol from VC geometry using analyticVol spatialId;
 					// set its expr using analyticVol's math.
-					AnalyticVolume analyticVol = listOfAnalyticVols.get(i);
-					SubVolume vcSubvolume = vcGeometrySpec
-							.getSubVolume(analyticVol.getDomainType());
-					if (vcSubvolume == null) {
+					SubVolume vcSubvolume = vcGeometrySpec .getSubVolume(analyticVol.getDomainType());
+					CastInfo<AnalyticSubVolume> ci = BeanUtils.attemptCast(AnalyticSubVolume.class, vcSubvolume);
+					if (!ci.isGood()) {
 						throw new RuntimeException("analytic volume '"
 								+ analyticVol.getId()
 								+ "' does not map to any VC subvolume.");
 					}
+					AnalyticSubVolume asv = ci.get();
 					try {
-						Expression subVolExpr = getExpressionFromFormula(analyticVol
-								.getMath());
-						((AnalyticSubVolume) vcSubvolume)
-								.setExpression(subVolExpr);
+						
+						Expression subVolExpr = getExpressionFromFormula(analyticVol.getMath());
+						asv.setExpression(subVolExpr);
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new SBMLImportException(
 								"Unable to set expression on subVolume '"
-										+ vcSubvolume.getName() + "'. "
+										+ asv.getName() + "'. "
 										+ e.getMessage(), e);
 					}
 				}
 			}
-			if (selectedGeometryDefinition instanceof SampledFieldGeometry) {
-				SampledFieldGeometry sfg = (SampledFieldGeometry) selectedGeometryDefinition;
-				ListOfSampledVolumes listOfSampledVols = sfg
-						.getListOfSampledVolumes();
-				if (listOfSampledVols == null) {
-					throw new SBMLImportException(
-							"Cannot have 0 sampled volumes in sampledField (image_based) geometry");
+			SampledFieldGeometry sfg = BeanUtils.downcast(SampledFieldGeometry.class, selectedGeometryDefinition);
+			if (sfg != null) {
+				ListOfAdapter<SampledVolume> sampledVolumes = new ListOfAdapter<SampledVolume>(
+						sfg.getListOfSampledVolumes(),SampledVolume.class);
+				VCAssert.assertTrue(sampledVolumes.size( ) == sfg.getNumSampledVolumes(), "sanity check" );
+				
+				int numSampledVols = sampledVolumes.size(); 
+				if (numSampledVols == 0) {
+					throw new SBMLImportException("Cannot have 0 sampled volumes in sampledField (image_based) geometry");
 				}
-				int numSampledVols = (int) sfg.getNumSampledVolumes();
 				VCPixelClass[] vcpixelClasses = new VCPixelClass[numSampledVols];
+				ImageSubVolume vcImageSubVols[] = new ImageSubVolume[numSampledVols];
 				// get pixel classes for geometry
-				for (int i = 0; i < numSampledVols; i++) {
-					SampledVolume sVol = listOfSampledVols.get(i);
+				int idx = 0;
+				for (SampledVolume sVol: sampledVolumes) {
 					// from subVolume, get pixelClass?
-					vcpixelClasses[i] = new VCPixelClass(null, sVol.getId(),
-							(int) sVol.getSampledValue());
-				}
-
-				ImageSubVolume[] vcImageSubVols = new ImageSubVolume[numSampledVols];
-				for (int i = 0; i < numSampledVols; i++) {
-					SampledVolume sVol = listOfSampledVols.get(i);
-					// find the pixel class corresponding to pixel value from
-					// sVol.sampledValue.
-					VCPixelClass pixelClass = null;
-					for (int j = 0; j < vcpixelClasses.length; j++) {
-						if (vcpixelClasses[j].getPixel() == (int) sVol
-								.getSampledValue()) {
-							pixelClass = vcpixelClasses[j];
-						}
-					}
+					final String name =  sVol.getId();
+					final int pixelValue = SBMLUtils.ignoreZeroFraction( sVol.getSampledValue() );
+					VCPixelClass pc = new VCPixelClass(null, name,  pixelValue); 
+					vcpixelClasses[idx] = pc; 
 					// Create the new Image SubVolume - use index of this for
 					// loop as 'handle' for ImageSubVol?
-					vcImageSubVols[i] = new ImageSubVolume(null, pixelClass, i);
-					vcImageSubVols[i].setName(sVol.getId());
+					ImageSubVolume isv = new ImageSubVolume(null, pc, idx);
+					isv.setName(name);
+					vcImageSubVols[idx++] = isv;
 				}
 				vcGeometry.getGeometrySpec().setSubVolumes(vcImageSubVols);
 			}
 			if (selectedGeometryDefinition == csGeometry) {
-				ListOfCSGObjects listOfcsgObjs = csGeometry
-						.getListOfCsgObjects();
+				ListOfCSGObjects listOfcsgObjs = csGeometry.getListOfCsgObjects();
 				ListOfAdapter<org.sbml.libsbml.CSGObject> adapter = new ListOfAdapter<org.sbml.libsbml.CSGObject>(
 						listOfcsgObjs, org.sbml.libsbml.CSGObject.class);
 
-				ArrayList<org.sbml.libsbml.CSGObject> sbmlCSGs = new ArrayList<org.sbml.libsbml.CSGObject>(
-						adapter);
+				ArrayList<org.sbml.libsbml.CSGObject> sbmlCSGs = new ArrayList<org.sbml.libsbml.CSGObject>(adapter);
 				// we want the CSGObj with highest ordinal to be the first
 				// element in the CSG subvols array.
 				Collections.sort(sbmlCSGs,
@@ -3976,6 +3986,39 @@ public class SBMLImporter {
 					"Unable to create VC structureMappings from SBML compartment mappings : "
 							+ e.getMessage(), e);
 		}
+	}
+	
+	/**
+	 * check / find scaling factor for pixel values  in sampledVolumes (double) to map onto integers without duplicates
+	 * @param sampledVolumes not null
+	 * @param scaleFactor not null
+	 * @return scaleFactor if it works, different scale factor if possible
+	 * @throws RuntimeException if no easily calculatable scale factor present
+	 */
+	private double checkPixelScaling(Collection<SampledVolume >sampledVolumes, double scaleFactor) {
+		//check to see if values are uniquely integer , add set up scaling if necessary
+		double maxPix = Double.MIN_VALUE;
+		double minPix = Double.MAX_VALUE;
+		boolean unique = true;
+		Set<Integer> uniqSet = new HashSet<>();
+		for (SampledVolume sv : sampledVolumes) {
+			final double px  = sv.getSampledValue() * scaleFactor; 
+			maxPix = Math.max(maxPix, px);
+			minPix = Math.min(minPix, px);
+			int ipx  = (int) px;
+			unique &= uniqSet.add(ipx);
+		}	
+		if (unique) {
+			return scaleFactor;
+		}
+		final double upperScale = maxPix > 0 ? Integer.MAX_VALUE / maxPix :  Double.MAX_VALUE;
+		final double lowerScale = minPix < 0 ? Integer.MIN_VALUE / maxPix : Double.MAX_VALUE; 
+		final double rScale = Math.min(upperScale, lowerScale);
+		if (rScale == scaleFactor) {
+			throw new RuntimeException("unable to set up double to integer scale for pixel values ranging from "
+				+ minPix + " to " + maxPix);
+		}
+		return rScale;
 	}
 
 	private SurfaceGeometricRegion getAssociatedSurfaceGeometricRegion(
