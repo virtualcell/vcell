@@ -549,6 +549,7 @@ private void initConnections() throws java.lang.Exception {
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if (value instanceof OutputTimeSpec) {
 				setText(((OutputTimeSpec) value).getDescription());
 			} else if (value instanceof Double) {
@@ -580,7 +581,6 @@ private void initConnections() throws java.lang.Exception {
 			} else {
 				setToolTipText(getText());
 			}
-			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if(bFinitVolumeRerun){
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
 				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
