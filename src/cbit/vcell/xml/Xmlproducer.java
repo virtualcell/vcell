@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -1854,7 +1855,9 @@ private Element getXML(CompartmentSubDomain param) throws XmlParseException{
 	Element compartment = new Element(XMLTags.CompartmentSubDomainTag);
 
 	compartment.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	//Add boundatyType subelements
+	compartment.setAttribute(XMLTags.PriorityAttrTag,Integer.toString(CompartmentSubDomain.uniquePriorityNumber())); 
+	compartment.addContent(new Comment("priority unused; for backward compatibility only"));
+	//Add boundaryType subelements
 	Element boundary;
 	//Xm
 	boundary = new Element(XMLTags.BoundaryTypeTag);

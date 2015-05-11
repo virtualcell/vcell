@@ -128,7 +128,9 @@ public class XmlHelper {
 			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: ", e);
 		} 
-		
+		if (lg.isTraceEnabled()) {
+			lg.trace(xmlString);
+		}
 		return xmlString;
 	}
 
@@ -157,7 +159,8 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
 	    Element modifiedRoot = xmlModifiedSource.getXmlDoc().getRootElement();
 	    //Merge the Documents
 	    XmlTreeDiff merger = new XmlTreeDiff(ignoreVersionInfo);
-	    NodeInfo top = merger.merge(baselineRoot.getDocument(), modifiedRoot.getDocument(), comparisonSetting);     
+	    @SuppressWarnings("unused")
+		NodeInfo top = merger.merge(baselineRoot.getDocument(), modifiedRoot.getDocument(), comparisonSetting);     
 
 	    // Return the result
 	    return merger;                                               //return the tree-diff instead of the root node.
@@ -526,7 +529,7 @@ public static BioModel cloneBioModelWithNewUnitSystem(BioModel origBiomodel, Mod
 
 	static BioModel XMLToBioModel(XMLSource xmlSource, boolean printkeys, ModelUnitSystem forcedModelUnitSystem) throws XmlParseException {
 
-		long l0 = System.currentTimeMillis();
+		//long l0 = System.currentTimeMillis();
 		BioModel bioModel = null;
 		
 		if (xmlSource == null){
@@ -599,7 +602,7 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 	if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
 		// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
 		// Will deal with multiple children of <vcml> Element when we get to model composition.
-		java.util.List childElementList = rootElement.getChildren();
+		java.util.List<?> childElementList = rootElement.getChildren();
 		Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
 		xmlType = modelElement.getName();
 	}
@@ -872,7 +875,7 @@ public static SimulationTask XMLToSimTask(String xmlString) throws XmlParseExcep
 		int jobIndex = Integer.parseInt(root.getAttributeValue(JobIndex_attr));
 		String computeResource = root.getChildTextTrim(ComputeResource_tag, ns);
 		
-		List children = root.getChildren(FieldFunctionIdentifierSpec_tag, ns);
+		List<?> children = root.getChildren(FieldFunctionIdentifierSpec_tag, ns);
 		ArrayList<FieldDataIdentifierSpec> fdisArrayList = new ArrayList<FieldDataIdentifierSpec>();
 		for (Object child : children){
 			if (child instanceof Element){
