@@ -583,7 +583,7 @@ private void initConnections() throws java.lang.Exception {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if(bFinitVolumeRerun){
 				setText(getText()+(bFinitVolumeRerun?"(*)":""));
-				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FinitVolumeStandalone)":""));
+				setToolTipText(getToolTipText()+(bFinitVolumeRerun?" (data regenerated using FiniteVolumeStandalone)":""));
 			}
 			return this;
 		}
