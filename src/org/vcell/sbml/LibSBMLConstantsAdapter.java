@@ -2,22 +2,26 @@ package org.vcell.sbml;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.sbml.libsbml.libsbmlConstants;
 
 public class LibSBMLConstantsAdapter {
 	
-	private static Map<Integer,String> constantsMap = null; 
+	private static Map<Integer,List<String> > constantsMap = null; 
 	
 	
 	private LibSBMLConstantsAdapter() {
 	}
 	
 	private static void create( ) {
-		constantsMap = new HashMap<Integer, String>();
+		constantsMap = new HashMap<Integer, List<String> >();
 		for (Field field: libsbmlConstants.class.getDeclaredFields()) {
 			int m = field.getModifiers();
 			if (Modifier.isStatic(m) && Modifier.isFinal(m)) {
@@ -25,7 +29,11 @@ public class LibSBMLConstantsAdapter {
 						Object o = field.get(null);
 						if (o instanceof Integer) {
 							Integer i = (Integer) o;
-							constantsMap.put(i, field.getName());
+							if (!constantsMap.containsKey(i)) {
+								constantsMap.put(i, new ArrayList<String>( ));
+							}
+							constantsMap.get(i).add(field.getName());
+							System.out.println("case " + field.getName( ) + ':');
 						}
 					} catch (IllegalArgumentException | IllegalAccessException e) {
 					}
@@ -34,11 +42,11 @@ public class LibSBMLConstantsAdapter {
 	}
 	
 	/**
-	 * convert libsbml code into symbol
+	 * get matching list
 	 * @param i
-	 * @return symbol or i as String if not found
+	 * @return matching String or empty list
 	 */
-	public static String lookup(int i) {
+	private static List<String> retrieve(int i) {
 		if (constantsMap == null) {
 			create( );
 		}
@@ -46,8 +54,35 @@ public class LibSBMLConstantsAdapter {
 		if (constantsMap.containsKey(iobj)) {
 			return constantsMap.get(iobj);
 		}
-		return iobj.toString();
-		
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * convert libsbml code into symbol
+	 * @param i
+	 * @return symbol or i as String if not found
+	 */
+	public static String lookup(int i) {
+		List<String> list = retrieve(i);
+		if (!list.isEmpty()) {
+			return StringUtils.join(",", list); 
+		}
+		return Integer.toString(i);
+	}
+	/**
+	 * convert libsbml code into symbol 
+	 * @param i
+	 * @param filter substring to match, if multiple occurrences present 
+	 * @return arbitrary matching constant String or i if no match
+	 */
+	public static String lookup(int i, String filter) {
+		List<String> list = retrieve(i);
+		for (String s : list) {
+			if (s.contains(filter)) {
+				return s;
+			}
+		}
+		return Integer.toString(i);
 	}
 	
 	/**
