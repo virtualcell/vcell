@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
@@ -195,7 +196,8 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// Assemble list of all Species Patterns (from observables, reaction rules, and seed species).
 	//
-	HashSet<SpeciesPattern> speciesPatternSet = new HashSet<SpeciesPattern>();
+	
+	LinkedHashSet<SpeciesPattern> speciesPatternSet = new LinkedHashSet<SpeciesPattern>();			// linked hash set maintains insertion order
 	for (RbmObservable observable : rbmModelContainer.getObservableList()){
 		speciesPatternSet.addAll(observable.getSpeciesPatternList());
 	}
