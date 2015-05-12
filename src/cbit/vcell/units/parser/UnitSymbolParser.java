@@ -3,6 +3,9 @@ package cbit.vcell.units.parser;
 
 import cbit.vcell.units.parser.Node.UnitTextFormat;
 
+/**
+ * class generated from grammar definition; use to convert String symbol representation into {@link UnitSymbol} objects
+ */
 public class UnitSymbolParser/*@bgen(jjtree)*/implements UnitSymbolParserTreeConstants, UnitSymbolParserConstants {/*@bgen(jjtree)*/
   protected JJTUnitSymbolParserState jjtree = new JJTUnitSymbolParserState();
   public static void main(String args[]) {
@@ -52,7 +55,8 @@ public class UnitSymbolParser/*@bgen(jjtree)*/implements UnitSymbolParserTreeCon
 /*
  * Expression syntax follows.
  */
-  final public ASTUnitSymbol UnitSymbol() throws ParseException {
+  @SuppressWarnings("unused")
+final public ASTUnitSymbol UnitSymbol() throws ParseException {
  /*@bgen(jjtree) UnitSymbol */
   ASTUnitSymbol jjtn000 = new ASTUnitSymbol(JJTUNITSYMBOL);
   boolean jjtc000 = true;
@@ -113,7 +117,8 @@ public class UnitSymbolParser/*@bgen(jjtree)*/implements UnitSymbolParserTreeCon
        jjtree.closeNodeScope(jjtn000, true);
      }
     }
-    throw new Error("Missing return statement in function");
+//    throw new Error("Missing return statement in function");
+    return null;
   }
 
   final public void MultiplicativeExpression() throws ParseException {
@@ -167,7 +172,6 @@ public class UnitSymbolParser/*@bgen(jjtree)*/implements UnitSymbolParserTreeCon
             break;
           case IDENTIFIER:
           case 14:
-            PowerTerm();
             break;
           default:
             jj_la1[5] = jj_gen;
@@ -647,7 +651,7 @@ void IntegerBase() #IntegerBaseNode:
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   public boolean lookingAhead = false;
-  private boolean jj_semLA;
+//  private boolean jj_semLA;
   private int jj_gen;
   final private int[] jj_la1 = new int[12];
   static private int[] jj_la1_0;
@@ -752,7 +756,8 @@ void IntegerBase() #IntegerBaseNode:
     throw generateParseException();
   }
 
-  static private final class LookaheadSuccess extends java.lang.Error { }
+  @SuppressWarnings("serial")
+static private final class LookaheadSuccess extends java.lang.Error { }
   final private LookaheadSuccess jj_ls = new LookaheadSuccess();
   final private boolean jj_scan_token(int kind) {
     if (jj_scanpos == jj_lastpos) {
@@ -799,13 +804,15 @@ void IntegerBase() #IntegerBaseNode:
       return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
+  @SuppressWarnings("rawtypes")
+private java.util.Vector jj_expentries = new java.util.Vector<>();
   private int[] jj_expentry;
   private int jj_kind = -1;
   private int[] jj_lasttokens = new int[100];
   private int jj_endpos;
 
-  private void jj_add_error_token(int kind, int pos) {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+private void jj_add_error_token(int kind, int pos) {
     if (pos >= 100) return;
     if (pos == jj_endpos + 1) {
       jj_lasttokens[jj_endpos++] = kind;
@@ -833,7 +840,8 @@ void IntegerBase() #IntegerBaseNode:
     }
   }
 
-  public ParseException generateParseException() {
+  @SuppressWarnings("unchecked")
+public ParseException generateParseException() {
     jj_expentries.removeAllElements();
     boolean[] la1tokens = new boolean[16];
     for (int i = 0; i < 16; i++) {
