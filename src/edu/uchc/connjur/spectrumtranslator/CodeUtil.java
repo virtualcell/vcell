@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -156,88 +155,6 @@ public class CodeUtil {
                             buffer.append("null");
                         }
                         buffer.append(NEWLINE);
-                    }
-                }
-                buffer.append(NEWLINE);
-                oClass = oClass.getSuperclass();
-            }
-            return buffer.toString();
-
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    /**
-     * does string start with any of prefixes?
-     * @param stub not null 
-     * @param prefixes not null
-     * @return true if does
-     */
-    private static boolean startsWith(String stub, Collection<String> prefixes) {
-    	Objects.requireNonNull(stub);
-    	Objects.requireNonNull(prefixes);
-    	for (String p : prefixes) {
-    		if (stub.startsWith(p)) {
-    			return true;
-    		}
-    	}
-    	return false;
-    }
-    
-    /**
-     * invoke all accessible no-argument methods with return values on Object o
-     * and display the results. Warning: this may cause unwanted side-effects if
-     * class has no-arg setters
-     *
-     * @param o
-     *            Object to query
-     * @param numberParents number of superclasses in inheritance hierarchy to go up
-     * @param prefixes prefixes methods must start with 
-     * @return new line separated list of results
-     */
-    public static String callStatusMethods(Object o, int numberParents, Collection<String> prefixes) {
-        try {
-            StringBuffer buffer = new StringBuffer();
-            Class<?> oClass = o.getClass();
-            for (int p = 0; p <= numberParents && oClass != null; p++) {
-                buffer.append(oClass.getName());
-                buffer.append(" methods");
-                buffer.append(NEWLINE);
-                Method methods[];
-                methods = oClass.getDeclaredMethods();
-                for (Method m : methods) {
-                    boolean noParams = m.getParameterTypes().length == 0;
-                    int modifiers = m.getModifiers();
-                    boolean isPublic = Modifier.isPublic(modifiers);
-                    boolean isNotStatic = !Modifier.isStatic(modifiers);
-                    boolean hasReturn = m.getReturnType() != Void.TYPE; 
-                    if (isPublic && isNotStatic && noParams && hasReturn) {
-                    	final String name = m.getName();
-                    	if (startsWith(name,prefixes)) {
-                    		buffer.append(name);
-                    		buffer.append("() = ");
-                    		Object result;
-                    		try {
-                    			result = m.invoke(o, (Object[]) null);
-                    		}
-                    		catch (Exception e) {
-                    			result = e;
-                    		}
-                    		if (result != null) {
-                    			if (!result.getClass().isArray()) {
-                    				buffer.append(result.toString());
-                    			}
-                    			else {
-                    				buffer.append(prettyPrint((Object[]) result));
-                    			}
-                    		}
-                    		else {
-                    			buffer.append("null");
-                    		}
-                    		buffer.append(NEWLINE);
-                    	}
                     }
                 }
                 buffer.append(NEWLINE);
