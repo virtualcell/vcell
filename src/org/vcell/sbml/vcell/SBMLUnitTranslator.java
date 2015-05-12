@@ -29,7 +29,6 @@ import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.vcell.UnitRepresentation.Fundamental;
 import org.vcell.util.TokenMangler;
 
-import ucar.units.SI;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.units.VCUnitDefinition;
@@ -40,10 +39,7 @@ import cbit.vcell.units.VCUnitSystem;
  * Creation date: (2/28/2006 5:22:58 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class SBMLUnitTranslator extends LibSBMLClient implements libsbmlConstants {
-	/**
-	 * {@link Unit} with reasonable default values
-	 */
+public class SBMLUnitTranslator extends LibSBMLClient {
 	private static class UnitD extends Unit {
 
 		UnitD(long level, long version) throws SBMLConstructorException, SbmlException {
@@ -72,8 +68,6 @@ public class SBMLUnitTranslator extends LibSBMLClient implements libsbmlConstant
 		
 		
 	}
-	
-	 
 
 	// special units
 	public static final String DIMENSIONLESS = "dimensionless";
@@ -157,41 +151,37 @@ public class SBMLUnitTranslator extends LibSBMLClient implements libsbmlConstant
 	*/
     
 	
-static List<Unit> convert(ucar.units.Unit vcUcarUnit,  long level, long version) throws SbmlException {
+private static List<Unit> convert(ucar.units.Unit vcUcarUnit,  long level, long version) throws SbmlException {
+	ArrayList<Unit> allSbmlUnitsList = new ArrayList<>();
 	String ucarString = vcUcarUnit.toString();
 	try {
 		UnitRepresentation unitRep = UnitRepresentation.parseUcar(ucarString,ucarToSbml);
-		return convert(unitRep, level, version);
+		final int unitScale = unitRep.getScale();
+		List<Fundamental> fUnits = unitRep.getFundamentals();
+
+		//if single unit, add scale to that
+		if (fUnits.size() == 1) {
+			UnitD unit = new UnitD(fUnits.get(0), level,version);
+			unit.setScale(unitScale);
+			allSbmlUnitsList.add(unit);
+			return allSbmlUnitsList;
+
+		}
+
+		//otherwise, put scale (if present) in dimensonless unit
+		if (unitScale != 0) {
+			UnitD scaleUnit = new UnitD(level,version);
+			scaleUnit.setScale(unitScale);
+			allSbmlUnitsList.add(scaleUnit);
+		}
+		for (Fundamental f: fUnits) {
+			UnitD unit = new UnitD(f, level,version);
+			allSbmlUnitsList.add(unit);
+		}
+		return allSbmlUnitsList;
 	} catch (SBMLConstructorException ce) {
 		throw new SbmlException("unable to convert " + ucarString, ce);
 	}
-}
-
-static List<Unit> convert(UnitRepresentation unitRep, long level, long version) throws SbmlException {
-	ArrayList<Unit> allSbmlUnitsList = new ArrayList<>();
-	final int unitScale = unitRep.getScale();
-	List<Fundamental> fUnits = unitRep.getFundamentals();
-
-	//if single unit, add scale to that
-	if (fUnits.size() == 1) {
-		UnitD unit = new UnitD(fUnits.get(0), level,version);
-		unit.setScale(unitScale);
-		allSbmlUnitsList.add(unit);
-		return allSbmlUnitsList;
-
-	}
-
-	//otherwise, put scale (if present) in dimensonless unit
-	if (unitScale != 0) {
-		UnitD scaleUnit = new UnitD(level,version);
-		scaleUnit.setScale(unitScale);
-		allSbmlUnitsList.add(scaleUnit);
-	}
-	for (Fundamental f: fUnits) {
-		UnitD unit = new UnitD(f, level,version);
-		allSbmlUnitsList.add(unit);
-	}
-	return allSbmlUnitsList;
 }
 /*
  *  convertVCUnitsToSbmlUnits :
@@ -299,18 +289,6 @@ public static UnitDefinition getSBMLUnitDefinition(VCUnitDefinition vcUnitDefn, 
 	}
 
 	return sbmlUnitDefn;
-}
-
-UnitRepresentation getUnitRep(Unit sbmlU) {
-	String n = sbmlU.getName( );
-	double m = sbmlU.getMultiplier();
-	int k = sbmlU.getKind( );
-	int e = sbmlU.getExponent();
-	double offset = sbmlU.getOffset();
-	System.out.println(n + ' ' + m + ' ' + k + ' ' + e + ' ' + offset);
-	
-	return null;
-	
 }
 
 
@@ -472,90 +450,6 @@ public static String addUnitDefinitionsToSbmlModel(String sbmlStr, ModelUnitSyst
 	sbmlWriter.delete();	
 
 	return modifiedSbmlStr;
-	
-}
-
-public static ucar.units.Unit sbmlToUCar(int kind)  {
-	switch (kind) {
-	case UNIT_KIND_AMPERE:
-		return SI.AMPERE;
-	case UNIT_KIND_AVOGADRO:
-		return SI.AMOUNT_OF_SUBSTANCE_UNIT;
-	case UNIT_KIND_BECQUEREL:
-		return SI.BECQUEREL;
-	case UNIT_KIND_CANDELA:
-		return SI.CANDELA;
-	case UNIT_KIND_CELSIUS:
-		//TBD
-		break;
-	case UNIT_KIND_COULOMB:
-		return SI.COULOMB;
-	case UNIT_KIND_DIMENSIONLESS:
-		//TBDreturn SI.D;
-	case UNIT_KIND_FARAD:
-		return SI.FARAD;
-	case UNIT_KIND_GRAM:
-		return SI.GRAM;
-	case UNIT_KIND_GRAY:
-		return SI.GRAY;
-	case UNIT_KIND_HENRY:
-		return SI.HENRY;
-	case UNIT_KIND_HERTZ:
-		return SI.HERTZ;
-	case UNIT_KIND_ITEM:
-		return SI.ITEM;
-	case UNIT_KIND_JOULE:
-		return SI.JOULE;
-	case UNIT_KIND_KATAL:
-		//TBD
-		break;
-	case UNIT_KIND_KELVIN:
-		return SI.KELVIN;
-	case UNIT_KIND_KILOGRAM:
-		return SI.KILOGRAM;
-	case UNIT_KIND_LITER:
-		return SI.LITER;
-	case UNIT_KIND_LITRE:
-		return SI.LITRE;
-	case UNIT_KIND_LUMEN:
-		return SI.LUMEN;
-	case UNIT_KIND_LUX:
-		return SI.LUX;
-	case UNIT_KIND_METER:
-		return SI.METER;
-	case UNIT_KIND_METRE:
-		return SI.METER;
-	case UNIT_KIND_MOLE:
-		return SI.MOLE;
-	case UNIT_KIND_NEWTON:
-		return SI.NEWTON;
-	case UNIT_KIND_OHM:
-		return SI.OHM;
-	case UNIT_KIND_PASCAL:
-		return SI.PASCAL;
-	case UNIT_KIND_RADIAN:
-		return SI.RADIAN;
-	case UNIT_KIND_SECOND:
-		return SI.SECOND;
-	case UNIT_KIND_SIEMENS:
-		return SI.SIEMENS;
-	case UNIT_KIND_SIEVERT:
-		return SI.SIEVERT;
-	case UNIT_KIND_STERADIAN:
-		return SI.STERADIAN;
-	case UNIT_KIND_TESLA:
-		return SI.TESLA;
-	case UNIT_KIND_VOLT:
-		return SI.VOLT;
-	case UNIT_KIND_WATT:
-		return SI.WATT;
-	case UNIT_KIND_WEBER:
-	return SI.WEBER;
-	case UNIT_KIND_INVALID:
-	
-	}
-	
-	return null;
 	
 }
 

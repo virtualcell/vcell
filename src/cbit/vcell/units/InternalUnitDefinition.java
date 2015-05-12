@@ -12,7 +12,6 @@ package cbit.vcell.units;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Objects;
 
 import org.vcell.util.Matchable;
 
@@ -36,8 +35,7 @@ import ucar.units.UnitName;
 
 /**
  The wrapper around a ucar unit.
- * Somewhat historical, mostly just defines standard units VCell will use. 
- * 
+ 
  * Creation date: (3/3/2004 6:20:39 PM)
  * @author: Rashad Badrawi
  */
@@ -45,64 +43,63 @@ import ucar.units.UnitName;
 class InternalUnitDefinition implements Matchable, Serializable {
 
     public static final String TBD_SYMBOL = "tbd";
-    private static final java.text.NumberFormat numberFormatForRounding = new java.text.DecimalFormat("#0.0#E0#");
-    private static final String SYS_UNITS[] = {
-    	"s",
-    	"M",
-    	"um",
-    	"um-1",
-    	"um-1.s-1",
-    	"s-1",
-    	"um2",
-    	"um2.s-1",
-    	"um3",
-    	"uM",
-    	"uM2",
-    	"uM-1",
-    	"uM-2",
-    	"uM.s-1",
-    	"mM.s-1",
-    	"uM-1.s-1",
-    	"uM.um.s-1",
-    	"uM.um3.molecules-1.s-1",
-    	"uM.um3.molecules-1",
-    	"uM.um2.molecules-1",
-    	"molecules.um-2.uM-1",
-    	"mV",
-    	"mV.s-1",
-    	"pF",
-    	"pF.um-2",
-    	"pA",
-    	"pA.um-2",
-    	"molecules",
-    	"molecules.s-1",
-    	"molecules.um-2",
-    	"molecules.um-3",
-    	"um2.molecules-1.s-1",
-    	"um3.molecules-1.s-1",
-    	"molecules.um-2.s-1",
-    	"molecules.um-2.uM-1.s-1",
-    	"molecules.um-2.uM-2.s-1",
-    	"molecules.um-3.uM-1",
-    	"molecules.um-1.s-1",
-    	"molecules.pmol-1",
-    	"1",
-    	TBD_SYMBOL,
-    	"nS",
-    	"nS.um-2",
-    	"K",
-    	"C.mol-1",
-    	"C.nmol-1",
-    	"mV.C.K-1.mol-1",
-    	"um.s-1",
-    	"cm.s-1",
-    	"litre-1",
-    	"litre",
-    	"mol",
-    	"umol",
-	    "umol.um3.litre-1"};
+    private static final java.text.NumberFormat numberFormatForRounding =
+        new java.text.DecimalFormat("#0.0#E0#");
 
-
+    //VC standard Unit definitions
+    public static final InternalUnitDefinition UNIT_s;
+    public static final InternalUnitDefinition UNIT_M;
+    public static final InternalUnitDefinition UNIT_um;
+    public static final InternalUnitDefinition UNIT_per_um;
+    public static final InternalUnitDefinition UNIT_per_um_per_s;
+    public static final InternalUnitDefinition UNIT_per_s;
+    public static final InternalUnitDefinition UNIT_um2;
+    public static final InternalUnitDefinition UNIT_um2_per_s;
+    public static final InternalUnitDefinition UNIT_um3;
+    public static final InternalUnitDefinition UNIT_uM;
+    public static final InternalUnitDefinition UNIT_uM2;
+    public static final InternalUnitDefinition UNIT_per_uM;
+    public static final InternalUnitDefinition UNIT_per_uM2;
+    public static final InternalUnitDefinition UNIT_uM_per_s;
+    public static final InternalUnitDefinition UNIT_mM_per_s;
+    public static final InternalUnitDefinition UNIT_per_uM_per_s;
+    public static final InternalUnitDefinition UNIT_uM_um_per_s;
+    public static final InternalUnitDefinition UNIT_uM_um3_per_molecules_per_s;
+    public static final InternalUnitDefinition UNIT_uM_um3_per_molecules; // for KMOLE
+    public static final InternalUnitDefinition UNIT_uM_um2_per_molecules;
+    public static final InternalUnitDefinition UNIT_molecules_per_um2_per_uM;
+    public static final InternalUnitDefinition UNIT_mV;
+    public static final InternalUnitDefinition UNIT_mV_per_s;
+    public static final InternalUnitDefinition UNIT_pF;
+    public static final InternalUnitDefinition UNIT_pF_per_um2;
+    public static final InternalUnitDefinition UNIT_pA;
+    public static final InternalUnitDefinition UNIT_pA_per_um2;
+    public static final InternalUnitDefinition UNIT_molecules;
+    public static final InternalUnitDefinition UNIT_molecules_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_um2;
+    public static final InternalUnitDefinition UNIT_molecules_per_um3;
+    public static final InternalUnitDefinition UNIT_um2_per_molecules_per_s;
+    public static final InternalUnitDefinition UNIT_um3_per_molecules_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_um2_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_um2_per_uM_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_um2_per_uM2_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_um3_per_uM;
+    public static final InternalUnitDefinition UNIT_molecules_per_um_per_s;
+    public static final InternalUnitDefinition UNIT_molecules_per_pmol;
+    public static final InternalUnitDefinition UNIT_nS;
+    public static final InternalUnitDefinition UNIT_nS_per_um2;
+    public static final InternalUnitDefinition UNIT_K;
+    public static final InternalUnitDefinition UNIT_C_per_mol;
+    public static final InternalUnitDefinition UNIT_C_per_nmol;
+    public static final InternalUnitDefinition UNIT_mV_C_per_K_per_mol;
+    public static final InternalUnitDefinition UNIT_um_per_s;
+    public static final InternalUnitDefinition UNIT_cm_per_s;
+    public static final InternalUnitDefinition UNIT_per_L;
+    public static final InternalUnitDefinition UNIT_L;
+    public static final InternalUnitDefinition UNIT_mol;
+    public static final InternalUnitDefinition UNIT_umol;
+    
+    public static final InternalUnitDefinition UNIT_umol_um3_per_L;
     public static final InternalUnitDefinition UNIT_DIMENSIONLESS;
     public static final InternalUnitDefinition UNIT_TBD;
 
@@ -116,37 +113,190 @@ class InternalUnitDefinition implements Matchable, Serializable {
         numberFormatForRounding.setMaximumFractionDigits(12);
 
         defs = new ArrayList<InternalUnitDefinition>();
-    	//special cases
-        UNIT_DIMENSIONLESS = new InternalUnitDefinition("1");
-        UNIT_TBD =  new InternalUnitDefinition(TBD_SYMBOL);
+
+        InternalUnitDefinition unit_s = null;
+        InternalUnitDefinition unit_M = null;
+        InternalUnitDefinition unit_um = null;
+        InternalUnitDefinition unit_per_um = null;
+        InternalUnitDefinition unit_per_um_per_s = null;
+        InternalUnitDefinition unit_per_s = null;
+        InternalUnitDefinition unit_um2 = null;
+        InternalUnitDefinition unit_um2_per_s = null;
+        InternalUnitDefinition unit_um3 = null;
+        InternalUnitDefinition unit_uM = null;
+        InternalUnitDefinition unit_uM2 = null;
+        InternalUnitDefinition unit_per_uM = null;
+        InternalUnitDefinition unit_per_uM2 = null;
+        InternalUnitDefinition unit_uM_per_s = null;
+        InternalUnitDefinition unit_mM_per_s = null;
+        InternalUnitDefinition unit_per_uM_per_s = null;
+        InternalUnitDefinition unit_uM_um_per_s = null;
+        InternalUnitDefinition unit_uM_um3_per_molecules_per_s = null;
+        InternalUnitDefinition unit_uM_um3_per_molecules = null;
+        InternalUnitDefinition unit_uM_um2_per_molecules = null;
+        InternalUnitDefinition unit_molecules_per_um2_per_uM = null;
+        InternalUnitDefinition unit_mV = null;
+        InternalUnitDefinition unit_mV_per_s = null;
+        InternalUnitDefinition unit_pF = null;
+        InternalUnitDefinition unit_pF_per_um2 = null;
+        InternalUnitDefinition unit_pA = null;
+        InternalUnitDefinition unit_pA_per_um2 = null;
+        InternalUnitDefinition unit_molecules = null;
+        InternalUnitDefinition unit_molecules_per_s = null;
+        InternalUnitDefinition unit_molecules_per_um2 = null;
+        InternalUnitDefinition unit_molecules_per_um3 = null;
+        InternalUnitDefinition unit_um2_per_molecules_per_s = null;
+        InternalUnitDefinition unit_um3_per_molecules_per_s = null;
+        InternalUnitDefinition unit_molecules_per_um2_per_s = null;
+        InternalUnitDefinition unit_molecules_per_um2_per_uM_per_s = null;
+        InternalUnitDefinition unit_molecules_per_um2_per_uM2_per_s = null;
+        InternalUnitDefinition unit_molecules_per_um3_per_uM = null;
+        InternalUnitDefinition unit_molecules_per_um_per_s = null;
+        InternalUnitDefinition unit_molecules_per_pmol = null;
+        InternalUnitDefinition unit_DIMENSIONLESS = null;
+        InternalUnitDefinition unit_TBD = null;
+        InternalUnitDefinition unit_nS = null;
+        InternalUnitDefinition unit_nS_per_um2 = null;
+        InternalUnitDefinition unit_K = null;
+        InternalUnitDefinition unit_C_per_mol = null;
+        InternalUnitDefinition unit_C_per_nmol = null;
+        InternalUnitDefinition unit_mV_C_per_K_per_mol = null;
+        InternalUnitDefinition unit_um_per_s = null;
+        InternalUnitDefinition unit_cm_per_s = null;
+        InternalUnitDefinition unit_per_L = null;
+        InternalUnitDefinition unit_L = null;
+        InternalUnitDefinition unit_mol = null;
+        InternalUnitDefinition unit_umol = null;
+        InternalUnitDefinition unit_umol_um3_per_L = null;
    
         try {
-            //create units from list of Strings
-            for (String s: SYS_UNITS) {
-            	new InternalUnitDefinition(s);
-            }
-            
+            //prefixDB = ucar.units.PrefixDBManager.instance();
             ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
             unitDB.addUnit(
                 du("molar", "M", ucar.units.SI.MOLE.divideBy(ucar.units.SI.LITER)));
             //unitDB.addUnit(du("molecules", "molecules", new ScaledUnit(1, SI.ITEM)));
             unitDB.addAlias("molecules", "item", "molecules");
 
-
+            unit_s = new InternalUnitDefinition("s");
+            unit_M = new InternalUnitDefinition("M");
+            unit_um = new InternalUnitDefinition("um");
+            unit_per_um = new InternalUnitDefinition("um-1");
+            unit_per_um_per_s = new InternalUnitDefinition("um-1.s-1");
+            unit_per_s = new InternalUnitDefinition("s-1");
+            unit_um2 = new InternalUnitDefinition("um2");
+            unit_um2_per_s = new InternalUnitDefinition("um2.s-1");
+            unit_um3 = new InternalUnitDefinition("um3");
+            unit_uM = new InternalUnitDefinition("uM");
+            unit_uM2 = new InternalUnitDefinition("uM2");
+            unit_per_uM = new InternalUnitDefinition("uM-1");
+            unit_per_uM2 = new InternalUnitDefinition("uM-2");
+            unit_uM_per_s = new InternalUnitDefinition("uM.s-1");
+            unit_mM_per_s = new InternalUnitDefinition("mM.s-1");
+            unit_per_uM_per_s = new InternalUnitDefinition("uM-1.s-1");
+            unit_uM_um_per_s = new InternalUnitDefinition("uM.um.s-1");
+            unit_uM_um3_per_molecules_per_s = new InternalUnitDefinition("uM.um3.molecules-1.s-1");
+            unit_uM_um3_per_molecules = new InternalUnitDefinition("uM.um3.molecules-1");
+            unit_uM_um2_per_molecules = new InternalUnitDefinition("uM.um2.molecules-1");
+            unit_molecules_per_um2_per_uM = new InternalUnitDefinition("molecules.um-2.uM-1");
+            unit_mV = new InternalUnitDefinition("mV");
+            unit_mV_per_s = new InternalUnitDefinition("mV.s-1");
+            unit_pF = new InternalUnitDefinition("pF");
+            unit_pF_per_um2 = new InternalUnitDefinition("pF.um-2");
+            unit_pA = new InternalUnitDefinition("pA");
+            unit_pA_per_um2 = new InternalUnitDefinition("pA.um-2");
+            unit_molecules = new InternalUnitDefinition("molecules");
+            unit_molecules_per_s = new InternalUnitDefinition("molecules.s-1");
+            unit_molecules_per_um2 = new InternalUnitDefinition("molecules.um-2");
+            unit_molecules_per_um3 = new InternalUnitDefinition("molecules.um-3");
+            unit_um2_per_molecules_per_s = new InternalUnitDefinition("um2.molecules-1.s-1");
+            unit_um3_per_molecules_per_s = new InternalUnitDefinition("um3.molecules-1.s-1");
+            unit_molecules_per_um2_per_s = new InternalUnitDefinition("molecules.um-2.s-1");
+            unit_molecules_per_um2_per_uM_per_s = new InternalUnitDefinition("molecules.um-2.uM-1.s-1");
+            unit_molecules_per_um2_per_uM2_per_s = new InternalUnitDefinition("molecules.um-2.uM-2.s-1");
+            unit_molecules_per_um3_per_uM = new InternalUnitDefinition("molecules.um-3.uM-1");
+            unit_molecules_per_um_per_s = new InternalUnitDefinition("molecules.um-1.s-1");
+            unit_molecules_per_pmol = new InternalUnitDefinition("molecules.pmol-1");
+            unit_DIMENSIONLESS = new InternalUnitDefinition("1");
+            unit_TBD = new InternalUnitDefinition(TBD_SYMBOL);
+            unit_nS = new InternalUnitDefinition("nS");
+            unit_nS_per_um2 = new InternalUnitDefinition("nS.um-2");
+            unit_K = new InternalUnitDefinition("K");
+            unit_C_per_mol = new InternalUnitDefinition("C.mol-1");
+            unit_C_per_nmol = new InternalUnitDefinition("C.nmol-1");
+            unit_mV_C_per_K_per_mol = new InternalUnitDefinition("mV.C.K-1.mol-1");
+            unit_um_per_s = new InternalUnitDefinition("um.s-1");
+            unit_cm_per_s = new InternalUnitDefinition("cm.s-1");
+            unit_per_L = new InternalUnitDefinition("litre-1");
+            unit_L = new InternalUnitDefinition("litre");
+            unit_mol = new InternalUnitDefinition("mol");
+            unit_umol = new InternalUnitDefinition("umol");
+            unit_umol_um3_per_L = new InternalUnitDefinition("umol.um3.litre-1");
         } catch (Throwable e) {
             e.printStackTrace(System.out);
         }
+        UNIT_s = unit_s;
+        UNIT_M = unit_M;
+        UNIT_um = unit_um;
+        UNIT_per_um = unit_per_um;
+        UNIT_per_um_per_s = unit_per_um_per_s;
+        UNIT_per_s = unit_per_s;
+        UNIT_um2 = unit_um2;
+        UNIT_um2_per_s = unit_um2_per_s;
+        UNIT_um3 = unit_um3;
+        UNIT_uM = unit_uM;
+        UNIT_uM2 = unit_uM2;
+        UNIT_per_uM = unit_per_uM;
+        UNIT_per_uM2 = unit_per_uM2;
+        UNIT_uM_per_s = unit_uM_per_s;
+        UNIT_mM_per_s = unit_mM_per_s;
+        UNIT_per_uM_per_s = unit_per_uM_per_s;
+        UNIT_uM_um_per_s = unit_uM_um_per_s;
+        UNIT_uM_um3_per_molecules_per_s = unit_uM_um3_per_molecules_per_s;
+        UNIT_uM_um3_per_molecules = unit_uM_um3_per_molecules;
+        UNIT_uM_um2_per_molecules = unit_uM_um2_per_molecules;
+        UNIT_molecules_per_um2_per_uM = unit_molecules_per_um2_per_uM;
+        UNIT_mV = unit_mV;
+        UNIT_mV_per_s = unit_mV_per_s;
+        UNIT_pF = unit_pF;
+        UNIT_pF_per_um2 = unit_pF_per_um2;
+        UNIT_pA = unit_pA;
+        UNIT_pA_per_um2 = unit_pA_per_um2;
+        UNIT_molecules = unit_molecules;
+        UNIT_molecules_per_s = unit_molecules_per_s;
+        UNIT_molecules_per_um2 = unit_molecules_per_um2;
+        UNIT_molecules_per_um3 = unit_molecules_per_um3;
+        UNIT_um2_per_molecules_per_s = unit_um2_per_molecules_per_s;
+        UNIT_um3_per_molecules_per_s = unit_um3_per_molecules_per_s;
+        UNIT_molecules_per_um2_per_s = unit_molecules_per_um2_per_s;
+        UNIT_molecules_per_um2_per_uM_per_s = unit_molecules_per_um2_per_uM_per_s;
+        UNIT_molecules_per_um2_per_uM2_per_s = unit_molecules_per_um2_per_uM2_per_s;
+        UNIT_molecules_per_um3_per_uM = unit_molecules_per_um3_per_uM;
+        UNIT_molecules_per_um_per_s = unit_molecules_per_um_per_s;
+        UNIT_molecules_per_pmol = unit_molecules_per_pmol;
+        UNIT_DIMENSIONLESS = unit_DIMENSIONLESS;
+        UNIT_TBD = unit_TBD;
+        UNIT_nS = unit_nS;
+        UNIT_nS_per_um2 = unit_nS_per_um2;
+        UNIT_K = unit_K;
+        UNIT_C_per_mol = unit_C_per_mol;
+        UNIT_C_per_nmol = unit_C_per_nmol;
+        UNIT_mV_C_per_K_per_mol = unit_mV_C_per_K_per_mol;
+        UNIT_um_per_s = unit_um_per_s;
+        UNIT_cm_per_s = unit_cm_per_s;
+        UNIT_per_L = unit_per_L;
+        UNIT_L = unit_L;
+        UNIT_mol = unit_mol;
+        UNIT_umol = unit_umol;
+        UNIT_umol_um3_per_L = unit_umol_um3_per_L;
     }
 
 //
 // Constructor for "standard" units.
 //
-    /**
-     * create unit and add to internal hash 
-     * @param argSymbol - not null
-     */
 private InternalUnitDefinition(String argSymbol) {
-	Objects.requireNonNull(argSymbol, "symbol was null");
+	if (argSymbol == null){
+		throw new IllegalArgumentException("symbol was null");
+	}
 	Unit dUnit = null;
 	if (TBD_SYMBOL.equals(argSymbol)) {
 		dUnit = null;
