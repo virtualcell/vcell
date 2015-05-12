@@ -3,7 +3,7 @@
 #
 #
 # Java 7 / 8 switch
-JAVA_NUM=7
+JAVA_NUM=8
 if [ $JAVA_NUM -ne 8 ]; then
 	JAVA_VERSION=current
 	JDK_VERSION=currentjdk
