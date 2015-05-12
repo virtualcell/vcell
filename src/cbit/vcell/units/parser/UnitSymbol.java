@@ -9,10 +9,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.parser.Node.UnitTextFormat;
 
-/**
- * Unit symbol as displayed to end user
- */
-@SuppressWarnings("serial")
 public class UnitSymbol implements Serializable {
 
 	private ASTUnitSymbol rootNode = null;
