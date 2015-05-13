@@ -2450,6 +2450,13 @@ public void setMostRecentlyCreatedOutputSpec(BNGOutputSpec mostRecentlyCreatedOu
 public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
+
+public void setConsoleNotificationList(ArrayList<TaskCallbackMessage> consoleNotificationList) {
+	this.consoleNotificationList = consoleNotificationList;
+}
+public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
+	return consoleNotificationList;
+}
 public void appendToConsole(TaskCallbackMessage message) {
 	if(message.getStatus() == TaskCallbackStatus.Clean) {
 		consoleNotificationList.clear();	// clear console notification list
@@ -2457,15 +2464,11 @@ public void appendToConsole(TaskCallbackMessage message) {
 	consoleNotificationList.add(message);	// add them all to the list as they come
 	firePropertyChange("appendToConsole", "", message);
 }
-public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
-	return consoleNotificationList;
-}
 public void playConsoleNotificationList() {
 	for(TaskCallbackMessage message : consoleNotificationList) {
 		firePropertyChange("appendToConsole", "", message);
 	}
 }
-
 
 @Override
 public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation simulation, String overriddenConstantName) {
