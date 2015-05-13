@@ -2065,7 +2065,6 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 		printWriter.println(FVInputFileKeyword.MAX_BOX_SIZE + " " + chomboSolverSpec.getMaxBoxSize());
 		printWriter.println(FVInputFileKeyword.FILL_RATIO + " " + chomboSolverSpec.getFillRatio());
 		printWriter.println(FVInputFileKeyword.RELATIVE_TOLERANCE + " " + simulation.getSolverTaskDescription().getErrorTolerance().getRelativeErrorTolerance());
-		printWriter.println(FVInputFileKeyword.VIEW_LEVEL + " " + chomboSolverSpec.getViewLevel());
 		printWriter.println(FVInputFileKeyword.SAVE_VCELL_OUTPUT + " " + chomboSolverSpec.isSaveVCellOutput());
 		printWriter.println(FVInputFileKeyword.SAVE_CHOMBO_OUTPUT + " " + chomboSolverSpec.isSaveChomboOutput());
 		
@@ -2100,6 +2099,7 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			}
 			printWriter.println(roi.getLevel() + " " + roi.getTagsGrow() + " " + roi.getRoiExpression().infix()  + ";");
 		}
+		printWriter.println(FVInputFileKeyword.VIEW_LEVEL + " " + chomboSolverSpec.getViewLevel());
 		printWriter.println(FVInputFileKeyword.CHOMBO_SPEC_END);
 		printWriter.println();
 	}
