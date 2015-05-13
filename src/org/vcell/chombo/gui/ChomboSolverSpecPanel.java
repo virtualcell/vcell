@@ -442,7 +442,7 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		  gbc = new GridBagConstraints();
 		  gbc.gridx = gridx;
 		  gbc.gridy = 0;
-		  gbc.weightx = 0.3;
+		  gbc.weightx = 0.5;
 		  gbc.insets = new Insets(1, 2, 1, 2);
 		  gbc.fill = GridBagConstraints.HORIZONTAL;
 		  finestInfoPanel.add(finestSizeTextField, gbc);
