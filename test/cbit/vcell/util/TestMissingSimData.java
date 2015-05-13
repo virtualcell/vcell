@@ -11,12 +11,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+import javax.swing.Timer;
+
+import org.vcell.monitor.pushover.Notify;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.TokenMangler;
@@ -28,6 +36,7 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.desktop.biomodel.ApplicationSimulationsPanel.SimulationsPanelTabID;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -145,130 +154,147 @@ public class TestMissingSimData {
 //			rset.close();
 			
 			
-			checkDataExists(con,false);
-//			runSimsNew(con);
+//			checkDataExists(con,false);
+			runSimsNew(connectURL,dbSchemaUser,dbPassword);
 		}finally{
 			if(con != null){
 				con.close();
 			}
 		}
 	}
-	private static final String DB_NOTES_SIM_ERROR_CODE = "error - ";
-	private static final String DB_NOTES_SIM_RUNOK_CODE = "reran OK";
-	private static void runSimsNew(Connection con) throws Exception{
-		
-//		VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-beta.cam.uchc.edu", 40105, "VCellBootstrapServer", 12, false);
-		VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40106, "VCellBootstrapServer", 12, false);
-
-		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,missingdata.simjobsimref,vc_softwareversion.softwareversion ";
-
-		String sqlPart =
-				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion "+
-				" where "+
-				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
-//				" (vc_simulation.id in (select simref from vc_mathmodelsim)) and " +
-//				" vc_userinfo.userid='les' and "+
-				" vc_userinfo.id = vc_simulation.ownerref and "+
-				" missingdata.simjobsimref = vc_simulation.id and "+
-//				" missingdata.dataexists not like 'readable%' and "+
-				" (missingdata.dataexists = 'false') "+
-				" and missingdata.notes is not null and " +
-				" missingdata.notes like '%exceeded_maximum%' " +
-//				" and missingdata.simjobsimref = 34080002 " +
-//				" or missingdata.dataexists like 'error - %') "+
-//				" and (missingdata.notes is null ) "+
-//				" or missingdata.notes not like 'reran OK%')" +
-				" and vc_simulation.parentsimref is null and "+
-				" (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
-				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
-//				" and rownum = 1 ";
-//				" and vc_simulation.id=39116536"
-				" order by vc_userinfo.userid";
-
-//		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and
-//		(mdt.notes is null or mdt.notes not like 'reran OK%') and
-
-		Statement updateStatement = con.createStatement();
-		Statement queryStatement = con.createStatement();
-		//Get Count
-		ResultSet rset = queryStatement.executeQuery("select count(*) "+sqlPart);
-		rset.next();
-		int totalCount = rset.getInt(1);
-		rset.close();
-		//Get sims
-		rset = queryStatement.executeQuery(itemSelectSQL+sqlPart);
-		UserLoginInfo userLoginInfo = null;
-		VCellConnection vcellConnection = null;
-		int currentCount = 1;
-		while(rset.next()){
-			KeyValue simJobSimRef = new KeyValue(rset.getString("simjobsimref"));
+	
+	private static Hashtable<KeyValue, RerunMissing> threadHolder = new Hashtable<>();
+	private static boolean hasKey(VCSimulationIdentifier vcSimulationIdentifier){
+		synchronized(threadHolder){
+			return threadHolder.containsKey(vcSimulationIdentifier.getSimulationKey());
+		}
+	}
+	private static Timer printTimer = null;
+	private static void printThreadHolder(){
+		synchronized(threadHolder){
+			if(printTimer == null){
+				printTimer = new Timer(1000,null);
+				printTimer.setRepeats(false);
+			}
+			if(printTimer.isRunning()){
+				return;
+			}
+//			Iterator<RerunMissing> rerunIter = threadHolder.values().iterator();
+			RerunMissing[] rerunArr = threadHolder.values().toArray(new RerunMissing[0]);
+			Arrays.sort(rerunArr, new Comparator<RerunMissing>() {
+				@Override
+				public int compare(RerunMissing o1, RerunMissing o2) {
+					return o1.getVCSimulationIdentifier().getSimulationKey().compareTo(o2.getVCSimulationIdentifier().getSimulationKey());
+				}
+			});
+			System.out.println("-----\n-----");
+			for(int i=0;i<rerunArr.length;i++){
+				System.out.println(BeanUtils.forceStringSize(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 15, " ", true)+" "+rerunArr[i].getLastSimStatus());
+			}
+			System.out.println("-----\n-----");
+			printTimer.restart();
+		}
+	}
+	private static boolean acquireThread(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo,
+			String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
+		synchronized(threadHolder){
+			if(threadHolder.size() < 10){
+				threadHolder.put(vcSimulationIdentifier.getSimulationKey(), new RerunMissing(vcSimulationIdentifier,userLoginInfo, connectURL, dbSchemaUser, dbPassword));
+				new Thread(threadHolder.get(vcSimulationIdentifier.getSimulationKey()),"rerun_"+vcSimulationIdentifier.getID()).start();
+				return true;
+			}
+			threadHolder.wait();
+			return false;
+		}
+	}
+	private static void freeThread(VCSimulationIdentifier vcSimulationIdentifier,Statement stmt) throws Exception{
+		synchronized(threadHolder){
 			try{
-				String softwareVersion = rset.getString("softwareversion");
-				String userid = rset.getString("userid");
-				System.out.println("-----");
-				System.out.println("-----running "+currentCount+" of "+totalCount+"   user="+userid+" simjobsimref="+simJobSimRef);
-				currentCount+= 1;
-				System.out.println("-----");
+				RerunMissing rerunMissing = threadHolder.remove(vcSimulationIdentifier.getSimulationKey());
+				if(rerunMissing == null){
+					throw new Exception("Couldn't find "+vcSimulationIdentifier+" key in threadHolder");
+				}
+				if(rerunMissing.getException() == null && rerunMissing.getSuccessMessage() == null){
+					throw new Exception("Couldn't find exit status for "+vcSimulationIdentifier);	
+				}
+				if(rerunMissing.getException() != null && rerunMissing.getSuccessMessage() != null){
+					throw new Exception("Unexpected success and failure exit status for "+vcSimulationIdentifier);	
+				}
+				if(rerunMissing.getException() != null){
+					System.out.println(rerunMissing.getException().getMessage());
+		//			stmt.executeUpdate(rerunMissing.getException().getMessage());
+				}else if(rerunMissing.getSuccessMessage() != null){
+					System.out.println(rerunMissing.getSuccessMessage());
+		//			stmt.executeUpdate(rerunMissing.getSuccessMessage());
+				}
+			}finally{
+				threadHolder.notifyAll();
+			}
+		}
+	}
+	private static class RerunMissing implements Runnable {
 
-				if(!rset.wasNull() && softwareVersion != null){
-					StringTokenizer st = new StringTokenizer(softwareVersion, "_");
-					st.nextToken();//site name
-					st.nextToken();//'Version' literal string
-					String majorVersion = st.nextToken();//major version number
-					if(majorVersion.equals("5.4")){
-						throw new Exception("Alpha-5.4 sims are not being re-run using Beta-5.3 code");
+		private VCSimulationIdentifier vcSimulationIdentifier;
+		private VCellBootstrap vCellBootstrap;
+		private UserLoginInfo userLoginInfo;
+		private Exception exception;
+		private String successMessage;
+		private String connectURL;
+		private String dbSchemaUser;
+		private String dbPassword;
+		private SimulationStatusPersistent lastSimStatus;
+		public RerunMissing(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo,String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
+			this.vcSimulationIdentifier = vcSimulationIdentifier;
+//			this.vCellBootstrap = vCellBootstrap;
+			this.userLoginInfo = userLoginInfo;
+			this.connectURL = connectURL;
+			this.dbSchemaUser = dbSchemaUser;
+			this.dbPassword = dbPassword;
+//			VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-beta.cam.uchc.edu", 40105, "VCellBootstrapServer", 12, false);
+//			VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40106, "VCellBootstrapServer", 12, false);
+			this.vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40111, "VCellBootstrapServer", 12, false);//Test2
+			
+
+		}
+		public VCSimulationIdentifier getVCSimulationIdentifier(){
+			return vcSimulationIdentifier;
+		}
+		public SimulationStatusPersistent getLastSimStatus(){
+			return lastSimStatus;
+		}
+		public Exception getException(){
+			return exception;
+		}
+		public String getSuccessMessage(){
+			return successMessage;
+		}
+		@Override
+		public void run() {
+			if(!hasKey(vcSimulationIdentifier)){
+				new Exception("Sim key "+vcSimulationIdentifier.getSimulationKey()+" not found").printStackTrace();
+				System.exit(1);
+			}
+			try{
+				VCellConnection vcellConnection = vCellBootstrap.getVCellConnection(userLoginInfo);
+				vcellConnection.getMessageEvents();
+
+				long startTime = System.currentTimeMillis();
+				SimulationStatusPersistent initSimulationStatus = null;
+				while(initSimulationStatus == null){
+					initSimulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+					Thread.sleep(5000);
+					if((System.currentTimeMillis()-startTime) > 10000){
+						System.out.println("-----Couldn't get initial simulation status");
+						break;
 					}
 				}
-
-				if(userid.toLowerCase().equals("vcelltestaccount")
-//					 || userid.toLowerCase().equals("anu")
-//					 || userid.toLowerCase().equals("fgao")
-//					 || userid.toLowerCase().equals("liye")
-//					 || userid.toLowerCase().equals("schaff")
-//					 || userid.toLowerCase().equals("ignovak")
-//					 || userid.toLowerCase().equals("jditlev")
-//					 || userid.toLowerCase().equals("sensation")
-					 ){
-					continue;
-				}
-				String userkey = rset.getString("userkey");
-				if(userLoginInfo == null || !userLoginInfo.getUserName().equals(userid)){
-					userLoginInfo = new UserLoginInfo(userid,DigestedPassword.createAlreadyDigested(rset.getString("digestpw")));
-					userLoginInfo.setUser(new User(userid, new KeyValue(userkey)));
-					vcellConnection = null;
-				}
-				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, userLoginInfo.getUser());
-				try{
-					if(vcellConnection != null){
-						vcellConnection.getMessageEvents();
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-					//assume disconnected
-					vcellConnection = null;
-				}
-				if(vcellConnection == null){
-					vcellConnection = vCellBootstrap.getVCellConnection(userLoginInfo);
-					vcellConnection.getMessageEvents();
-				}
-				SimulationStatusPersistent initSimulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-				
 				System.out.println("initial status="+initSimulationStatus);
 //				if(!initSimulationStatus.isCompleted() || !initSimulationStatus.getHasData()){
-//					continue;
-//				}
-
-				
-				BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(simJobSimRef);
-				Simulation sim = XmlHelper.XMLToSim(simXML.toString());
-//				SolverDescription solverDescription = sim.getSolverTaskDescription().getSolverDescription();
-//				if(solverDescription.equals(SolverDescription.StochGibson)  || solverDescription.equals(SolverDescription.FiniteVolume)){
-//					//These 2 solvers give too much trouble so skip
-//					System.out.println("--skipping solver");
-////					notCompletedSimIDs.add(simIDAndJobID.simID.toString());
 //					return;
 //				}
-				
+
+				BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
+				Simulation sim = XmlHelper.XMLToSim(simXML.toString());				
 				
 //				if(!sim.isSpatial()){
 //					continue;
@@ -284,60 +310,400 @@ public class TestMissingSimData {
 				if(!simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().equals(vcSimulationIdentifier.getSimulationKey())){
 					throw new Exception("Unexpected authoritative and sim id are not the same");
 				}
-				vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
-				long startTime = System.currentTimeMillis();
-				while(simulationStatus == null || simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed()){
-					Thread.sleep(2000);
-					simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-					if(simulationStatus.isFailed() && !initSimulationStatus.isFailed()){
-						break;
-					}
-					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
-					if((System.currentTimeMillis()-startTime) > 30000){
-						throw new Exception("-----Sim finished too fast or took too long to start, status= "+simulationStatus);
-					}
-				System.out.println(simulationStatus);
-				}
-				SimulationStatusPersistent lastSimStatus = simulationStatus;
-				while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
-					for(int i = 0;i<3;i++){
-						MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
-						Thread.sleep(1000);
-					}
-					simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-					if(!simulationStatus.toString().equals(lastSimStatus.toString())){
-						lastSimStatus = simulationStatus;
-						System.out.println("running status="+simulationStatus);
-					}
-//					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
-//					for (int i = 0; messageEvents != null && i < messageEvents.length; i++) {
-//						System.out.println(messageEvents[i]);
-//					}
-				}
 
-				if(!lastSimStatus.isCompleted()){
-					throw new Exception("Unexpected run status: "+lastSimStatus.toString());
+			vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+			startTime = System.currentTimeMillis();
+//			SimulationStatusPersistent lastSimStatus = simulationStatus;
+			while(simulationStatus == null || simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed()){
+				for(int i = 0;i<1;i++){
+					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+					Thread.sleep(2000);
 				}
-				
-				
-				String updatestr = "update missingdata set notes='"+DB_NOTES_SIM_RUNOK_CODE+"' where simjobsimref="+simJobSimRef;
-				System.out.println(updatestr);
-				updateStatement.executeUpdate(updatestr);
-				con.commit();
+				simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+				if(simulationStatus.isFailed() && (initSimulationStatus==null || !initSimulationStatus.isFailed())){
+					break;
+				}
+				if((System.currentTimeMillis()-startTime) > 30000){
+					throw new Exception("-----Sim finished too fast or took too long to start, status= "+simulationStatus);
+				}
+				if(!simulationStatus.toString().equals((lastSimStatus==null?null:lastSimStatus.toString()))){
+					lastSimStatus = simulationStatus;
+					printThreadHolder();
+//					System.out.println("initial status="+simulationStatus);
+				}
+			}
+			lastSimStatus = simulationStatus;
+			while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
+				for(int i = 0;i<2;i++){
+					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+					Thread.sleep(2000);
+				}
+				simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+				if(!simulationStatus.toString().equals(lastSimStatus.toString())){
+					lastSimStatus = simulationStatus;
+					printThreadHolder();
+//					System.out.println("running status="+simulationStatus);
+				}
+			}
+
+			if(!lastSimStatus.isCompleted()){
+				throw new Exception("Unexpected run status: "+lastSimStatus.toString());
+			}
+			
+			String updatestr = "update missingdata set notes='"+DB_NOTES_SIM_RUNOK_CODE+"' where simjobsimref="+vcSimulationIdentifier.getSimulationKey();
+			System.out.println(vcSimulationIdentifier+" "+updatestr);
+			successMessage = updatestr;
+			exception = null;
+		}catch(Exception e){
+			e.printStackTrace();
+			String errString = TokenMangler.fixTokenStrict(DB_NOTES_SIM_ERROR_CODE+e.getClass().getSimpleName()+" "+e.getMessage());
+			if(errString.length() > 256){
+				errString = errString.substring(0, 256);
+			}
+			String updatestr = "update missingdata set notes='"+errString+"' where simjobsimref="+vcSimulationIdentifier.getSimulationKey();
+			System.out.println(vcSimulationIdentifier+" "+updatestr);
+			successMessage = null;
+			exception = new Exception(updatestr,e);
+		}finally{
+			Connection con = null;
+			Statement stmt = null;
+			try{
+				con = java.sql.DriverManager.getConnection(connectURL, dbSchemaUser, dbPassword);
+				stmt = con.createStatement();
+				freeThread(vcSimulationIdentifier,stmt);
 			}catch(Exception e){
 				e.printStackTrace();
-				String errString = TokenMangler.fixTokenStrict(DB_NOTES_SIM_ERROR_CODE+e.getClass().getSimpleName()+" "+e.getMessage());
-				if(errString.length() > 256){
-					errString = errString.substring(0, 256);
-				}
-				String updatestr = "update missingdata set notes='"+errString+"' where simjobsimref="+simJobSimRef;
-				System.out.println(updatestr);
-				updateStatement.executeUpdate(updatestr);
-				con.commit();
+				System.exit(1);
+			}finally{
+				if(stmt!=null){try{stmt.close();}catch(Exception e2){e2.printStackTrace();}}
+				if(con!=null){try{con.close();}catch(Exception e2){e2.printStackTrace();System.exit(1);}}
 			}
 		}
-
+	
+		}
 	}
+	
+	
+	
+	
+	
+	private static Hashtable<KeyValue, UserLoginInfo> doQuery(String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
+//		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref,vc_softwareversion.softwareversion ";
+		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref ";
+
+		String sqlPart =
+				" from missingdata,vc_simulation,vc_userinfo "+
+//				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion,vc_biomodelsim,vc_biomodel "+
+//				" from vc_simulation,vc_userinfo,vc_biomodelsim,vc_biomodel "+
+				" where "+
+				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
+//				" (vc_simulation.id in (select simref from vc_mathmodelsim)) and " +
+//				" vc_userinfo.userid='frm' and "+
+				" vc_userinfo.id = vc_simulation.ownerref and "+
+//				" vc_biomodelsim.simref = vc_simulation.id and" +
+//				" vc_biomodelsim.biomodelref = vc_biomodel.id and" +
+//				" vc_biomodel.name='Solver Suite alpha' and" +
+//				" to_char(vc_biomodel.versiondate,'DD-MM-YYYY')='10-05-2015' " +
+				" missingdata.simjobsimref = vc_simulation.id and "+
+				" (missingdata.dataexists = 'false') "+
+				" and missingdata.notes is not null and " +
+				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
+				" and vc_simulation.parentsimref is null "+
+//				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
+//				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
+				" order by vc_userinfo.userid";
+
+//		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and
+//		(mdt.notes is null or mdt.notes not like 'reran OK%') and
+
+		Hashtable<KeyValue, UserLoginInfo> keyUserLoginInfoHash = new Hashtable<>();
+		
+		Connection con = null;
+		try{
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = java.sql.DriverManager.getConnection(connectURL, dbSchemaUser, dbPassword);
+			con.setAutoCommit(false);
+
+			Statement queryStatement = con.createStatement();
+			//Get Count
+			ResultSet rset = queryStatement.executeQuery("select count(*) "+sqlPart);
+			rset.next();
+			int totalCount = rset.getInt(1);
+			rset.close();
+			//Get sims
+			rset = queryStatement.executeQuery(itemSelectSQL+sqlPart);
+			UserLoginInfo userLoginInfo = null;
+			int currentCount = 1;
+			while(rset.next()){
+				KeyValue simJobSimRef = new KeyValue(rset.getString("simjobsimref"));
+	
+//					String softwareVersion = rset.getString("softwareversion");
+					String userid = rset.getString("userid");
+	
+	//				if(!rset.wasNull() && softwareVersion != null){
+	//					StringTokenizer st = new StringTokenizer(softwareVersion, "_");
+	//					st.nextToken();//site name
+	//					st.nextToken();//'Version' literal string
+	//					String majorVersion = st.nextToken();//major version number
+	//					if(majorVersion.equals("5.4")){
+	//						throw new Exception("Alpha-5.4 sims are not being re-run using Beta-5.3 code");
+	//					}
+	//				}
+	
+					if(userid.toLowerCase().equals("vcelltestaccount")
+	//					 || userid.toLowerCase().equals("anu")
+	//					 || userid.toLowerCase().equals("fgao")
+	//					 || userid.toLowerCase().equals("liye")
+	//					 || userid.toLowerCase().equals("schaff")
+	//					 || userid.toLowerCase().equals("ignovak")
+	//					 || userid.toLowerCase().equals("jditlev")
+	//					 || userid.toLowerCase().equals("sensation")
+						 ){
+						continue;
+					}
+					String userkey = rset.getString("userkey");
+					if(userLoginInfo == null || !userLoginInfo.getUserName().equals(userid)){
+						userLoginInfo = new UserLoginInfo(userid,DigestedPassword.createAlreadyDigested(rset.getString("digestpw")));
+						userLoginInfo.setUser(new User(userid, new KeyValue(userkey)));
+					}
+					VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, userLoginInfo.getUser());
+					keyUserLoginInfoHash.put(vcSimulationIdentifier.getSimulationKey(), userLoginInfo);
+			}
+			return keyUserLoginInfoHash;	
+		}finally{
+			if(con!=null){try{con.close();}catch(Exception e2){e2.printStackTrace();}}
+		}
+	}
+	private static final String DB_NOTES_SIM_ERROR_CODE = "error - ";
+	private static final String DB_NOTES_SIM_RUNOK_CODE = "reran OK";
+	
+	private static void runSimsNew(String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
+		
+		Hashtable<KeyValue, UserLoginInfo> keyUserLoginInfo = doQuery(connectURL, dbSchemaUser, dbPassword);
+		Enumeration<KeyValue> keys = keyUserLoginInfo.keys();
+		int currentCount = 0;
+		while(keys.hasMoreElements()){
+			KeyValue simKey = keys.nextElement();
+			UserLoginInfo userLoginInfo = keyUserLoginInfo.get(simKey);
+			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, userLoginInfo.getUser());
+			while(acquireThread(vcSimulationIdentifier, userLoginInfo, connectURL, dbSchemaUser, dbPassword)==false){
+			}
+			System.out.println("-----");
+			System.out.println("-----running "+currentCount+" of "+keyUserLoginInfo.size()+"   user="+userLoginInfo.getUser()+" simjobsimref="+vcSimulationIdentifier.getSimulationKey());
+			currentCount+= 1;
+			System.out.println("-----");
+		}
+	}
+//	private static void runSimsNew(String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
+//		
+////		VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-beta.cam.uchc.edu", 40105, "VCellBootstrapServer", 12, false);
+////		VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40106, "VCellBootstrapServer", 12, false);
+//		VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40111, "VCellBootstrapServer", 12, false);//Test2
+//
+//		if(true){
+//			Hashtable<KeyValue, UserLoginInfo> keyUserLoginInfo = doQuery(connectURL, dbSchemaUser, dbPassword);
+//			Enumeration<KeyValue> keys = keyUserLoginInfo.keys();
+//			while(keys.hasMoreElements()){
+//				KeyValue simKey = keys.nextElement();
+//				UserLoginInfo userLoginInfo = keyUserLoginInfo.get(simKey);
+//				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, userLoginInfo.getUser());
+//				acquireThread(vcSimulationIdentifier, vCellBootstrap, userLoginInfo, connectURL, dbSchemaUser, dbPassword);
+//			}
+//			return;
+//		}
+//		
+//		
+//		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,missingdata.simjobsimref,vc_softwareversion.softwareversion ";
+//
+//		String sqlPart =
+//				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion "+
+//				" where "+
+//				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
+////				" (vc_simulation.id in (select simref from vc_mathmodelsim)) and " +
+//				" vc_userinfo.userid='fgao5' and "+
+//				" vc_userinfo.id = vc_simulation.ownerref and "+
+//				" missingdata.simjobsimref = vc_simulation.id and "+
+////				" missingdata.dataexists not like 'readable%' and "+
+//				" (missingdata.dataexists = 'false') "+
+//				" and missingdata.notes is not null and " +
+//				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
+////				" and missingdata.simjobsimref = 34080002 " +
+////				" or missingdata.dataexists like 'error - %') "+
+////				" and (missingdata.notes is null ) "+
+////				" or missingdata.notes not like 'reran OK%')" +
+//				" and vc_simulation.parentsimref is null and "+
+//				" (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
+//				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
+////				" and rownum = 1 ";
+////				" and vc_simulation.id=39116536"
+//				" order by vc_userinfo.userid";
+//
+////		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and
+////		(mdt.notes is null or mdt.notes not like 'reran OK%') and
+//
+//		//Create hash of sims and userlogininfo
+//		Hashtable<KeyValue, UserLoginInfo> simToUserLoginInfoHash = new Hashtable<>();
+//		Statement updateStatement = con.createStatement();
+//		Statement queryStatement = con.createStatement();
+//		//Get Count
+//		ResultSet rset = queryStatement.executeQuery("select count(*) "+sqlPart);
+//		rset.next();
+//		int totalCount = rset.getInt(1);
+//		rset.close();
+//		//Get sims
+//		rset = queryStatement.executeQuery(itemSelectSQL+sqlPart);
+//		UserLoginInfo userLoginInfo = null;
+//		VCellConnection vcellConnection = null;
+//		int currentCount = 1;
+//		while(rset.next()){
+//			KeyValue simJobSimRef = new KeyValue(rset.getString("simjobsimref"));
+//			try{
+//				String softwareVersion = rset.getString("softwareversion");
+//				String userid = rset.getString("userid");
+//				System.out.println("-----");
+//				System.out.println("-----running "+currentCount+" of "+totalCount+"   user="+userid+" simjobsimref="+simJobSimRef);
+//				currentCount+= 1;
+//				System.out.println("-----");
+//
+//				if(!rset.wasNull() && softwareVersion != null){
+//					StringTokenizer st = new StringTokenizer(softwareVersion, "_");
+//					st.nextToken();//site name
+//					st.nextToken();//'Version' literal string
+//					String majorVersion = st.nextToken();//major version number
+//					if(majorVersion.equals("5.4")){
+//						throw new Exception("Alpha-5.4 sims are not being re-run using Beta-5.3 code");
+//					}
+//				}
+//
+//				if(userid.toLowerCase().equals("vcelltestaccount")
+////					 || userid.toLowerCase().equals("anu")
+////					 || userid.toLowerCase().equals("fgao")
+////					 || userid.toLowerCase().equals("liye")
+////					 || userid.toLowerCase().equals("schaff")
+////					 || userid.toLowerCase().equals("ignovak")
+////					 || userid.toLowerCase().equals("jditlev")
+////					 || userid.toLowerCase().equals("sensation")
+//					 ){
+//					continue;
+//				}
+//				String userkey = rset.getString("userkey");
+//				if(userLoginInfo == null || !userLoginInfo.getUserName().equals(userid)){
+//					userLoginInfo = new UserLoginInfo(userid,DigestedPassword.createAlreadyDigested(rset.getString("digestpw")));
+//					userLoginInfo.setUser(new User(userid, new KeyValue(userkey)));
+//					vcellConnection = null;
+//				}
+//				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, userLoginInfo.getUser());
+//				
+//				
+//				//
+//				//
+//				//
+//				if(true){
+//					acquireThread(vcSimulationIdentifier, vCellBootstrap, userLoginInfo, connectURL, dbSchemaUser, dbPassword);
+//					continue;
+//				}
+//				
+//				try{
+//					if(vcellConnection != null){
+//						vcellConnection.getMessageEvents();
+//					}
+//				}catch(Exception e){
+//					e.printStackTrace();
+//					//assume disconnected
+//					vcellConnection = null;
+//				}
+//				if(vcellConnection == null){
+//					vcellConnection = vCellBootstrap.getVCellConnection(userLoginInfo);
+//					vcellConnection.getMessageEvents();
+//				}
+//				
+//				SimulationStatusPersistent initSimulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+//				
+//				System.out.println("initial status="+initSimulationStatus);
+////				if(!initSimulationStatus.isCompleted() || !initSimulationStatus.getHasData()){
+////					continue;
+////				}
+//
+//				
+//				BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(simJobSimRef);
+//				Simulation sim = XmlHelper.XMLToSim(simXML.toString());
+////				SolverDescription solverDescription = sim.getSolverTaskDescription().getSolverDescription();
+////				if(solverDescription.equals(SolverDescription.StochGibson)  || solverDescription.equals(SolverDescription.FiniteVolume)){
+////					//These 2 solvers give too much trouble so skip
+////					System.out.println("--skipping solver");
+//////					notCompletedSimIDs.add(simIDAndJobID.simID.toString());
+////					return;
+////				}
+//				
+//				
+////				if(!sim.isSpatial()){
+////					continue;
+////				}
+////				if(sim.getSolverTaskDescription().isSerialParameterScan()/* || sim.getSolverTaskDescription().getExpectedNumTimePoints() > 20*/){
+////					continue;
+////				}
+//				
+//				int scanCount = sim.getScanCount();
+////				if(true){return;}
+//				SimulationStatusPersistent simulationStatus = null;
+//				SimulationInfo simulationInfo = sim.getSimulationInfo();
+//				if(!simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().equals(vcSimulationIdentifier.getSimulationKey())){
+//					throw new Exception("Unexpected authoritative and sim id are not the same");
+//				}
+//				vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+//				long startTime = System.currentTimeMillis();
+//				while(simulationStatus == null || simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed()){
+//					Thread.sleep(2000);
+//					simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+//					if(simulationStatus.isFailed() && !initSimulationStatus.isFailed()){
+//						break;
+//					}
+//					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+//					if((System.currentTimeMillis()-startTime) > 30000){
+//						throw new Exception("-----Sim finished too fast or took too long to start, status= "+simulationStatus);
+//					}
+//				System.out.println(simulationStatus);
+//				}
+//				SimulationStatusPersistent lastSimStatus = simulationStatus;
+//				while(!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed()){
+//					for(int i = 0;i<3;i++){
+//						MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+//						Thread.sleep(1000);
+//					}
+//					simulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+//					if(!simulationStatus.toString().equals(lastSimStatus.toString())){
+//						lastSimStatus = simulationStatus;
+//						System.out.println("running status="+simulationStatus);
+//					}
+////					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
+////					for (int i = 0; messageEvents != null && i < messageEvents.length; i++) {
+////						System.out.println(messageEvents[i]);
+////					}
+//				}
+//
+//				if(!lastSimStatus.isCompleted()){
+//					throw new Exception("Unexpected run status: "+lastSimStatus.toString());
+//				}
+//				
+//				
+//				String updatestr = "update missingdata set notes='"+DB_NOTES_SIM_RUNOK_CODE+"' where simjobsimref="+simJobSimRef;
+//				System.out.println(updatestr);
+//				updateStatement.executeUpdate(updatestr);
+//				con.commit();
+//			}catch(Exception e){
+//				e.printStackTrace();
+//				String errString = TokenMangler.fixTokenStrict(DB_NOTES_SIM_ERROR_CODE+e.getClass().getSimpleName()+" "+e.getMessage());
+//				if(errString.length() > 256){
+//					errString = errString.substring(0, 256);
+//				}
+//				String updatestr = "update missingdata set notes='"+errString+"' where simjobsimref="+simJobSimRef;
+//				System.out.println(updatestr);
+//				updateStatement.executeUpdate(updatestr);
+//				con.commit();
+//			}
+//		}
+//
+//	}
 	
 	private static void /* Hashtable<KeyValue, Exception>*/ checkDataExists(Connection con,boolean bExistOnly) throws SQLException{
 		AmplistorCredential amplistorCredential = AmplistorUtilsTest.getAmplistorCredential();
