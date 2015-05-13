@@ -2365,6 +2365,14 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			updateGeometryRelatedHashes(scArr[i].getGeometry());
 		}
 		
+		// copy some transient info from the old model to the new one
+		for (SimulationContext newsc : scArr) {
+			SimulationContext oldsc = bioModel.getSimulationContext(newsc.getName());
+			newsc.setConsoleNotificationList(oldsc.getConsoleNotificationList());
+			newsc.setMostRecentlyCreatedOutputSpec(oldsc.getMostRecentlyCreatedOutputSpec());
+			newsc.setMd5hash(oldsc.getMd5hash());
+		}
+
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
 		return savedBioModel;
