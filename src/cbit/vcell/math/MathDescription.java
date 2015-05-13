@@ -39,7 +39,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.Versionable;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.SubVolume;
@@ -2169,15 +2168,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 							(memSubDomain1.getInsideCompartment()==memSubDomain2.getOutsideCompartment() && memSubDomain1.getOutsideCompartment()==memSubDomain2.getInsideCompartment())){
 							Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
 								VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_7, memSubDomain1.getInsideCompartment().getName(), memSubDomain1.getOutsideCompartment().getName()), Issue.SEVERITY_ERROR);
-							issueList.add(issue);
-						}
-					}
-					if (subDomain1 instanceof CompartmentSubDomain && subDomain2 instanceof CompartmentSubDomain){
-						CompartmentSubDomain compartmentSubDomain1 = (CompartmentSubDomain)subDomain1;
-						CompartmentSubDomain compartmentSubDomain2 = (CompartmentSubDomain)subDomain2;
-						if (compartmentSubDomain1.getPriority()==compartmentSubDomain2.getPriority()){
-							Issue issue = new Issue(subDomain1, issueContext, IssueCategory.MathDescription_SpatialModel_Subdomain, 
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.MATH_DESCRIPTION_SPATIAL_MODEL_8, compartmentSubDomain1.getName(), compartmentSubDomain2.getName()), Issue.SEVERITY_ERROR);
 							issueList.add(issue);
 						}
 					}
