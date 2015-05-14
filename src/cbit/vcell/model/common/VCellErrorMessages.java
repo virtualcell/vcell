@@ -91,7 +91,10 @@ public class VCellErrorMessages {
 	public static final String SpecifyMolecularTypes = "Specify " + MolecularType.typeName;
 	public static final String AddMolecularTypes = "Add " + MolecularType.typeName;
 
-	
+	public static final String MustBeRuleBased = "Feature available for Rule-based models only.\nPlease define a Molecule first.";
+	public static final String MustNotBeRuleBased = "Feature available for non Rule-based models only.";
+	public static final String OneStructureOnly = "Currently Rule-based modeling is only available for single structure.";
+
 	// ========== BioModel end =======================//
 	
 	
