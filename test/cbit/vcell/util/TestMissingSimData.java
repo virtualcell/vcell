@@ -173,7 +173,7 @@ public class TestMissingSimData {
 	private static void printThreadHolder(){
 		synchronized(threadHolder){
 			if(printTimer == null){
-				printTimer = new Timer(1000,null);
+				printTimer = new Timer(5000,null);
 				printTimer.setRepeats(false);
 			}
 			if(printTimer.isRunning()){
@@ -222,10 +222,10 @@ public class TestMissingSimData {
 				}
 				if(rerunMissing.getException() != null){
 					System.out.println(rerunMissing.getException().getMessage());
-		//			stmt.executeUpdate(rerunMissing.getException().getMessage());
+					stmt.executeUpdate(rerunMissing.getException().getMessage());
 				}else if(rerunMissing.getSuccessMessage() != null){
 					System.out.println(rerunMissing.getSuccessMessage());
-		//			stmt.executeUpdate(rerunMissing.getSuccessMessage());
+					stmt.executeUpdate(rerunMissing.getSuccessMessage());
 				}
 			}finally{
 				threadHolder.notifyAll();
@@ -392,25 +392,25 @@ public class TestMissingSimData {
 		String itemSelectSQL = " select vc_userinfo.userid,vc_userinfo.id userkey,vc_userinfo.digestpw,vc_simulation.id simjobsimref ";
 
 		String sqlPart =
-				" from missingdata,vc_simulation,vc_userinfo "+
+				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion "+
 //				" from missingdata,vc_simulation,vc_userinfo,vc_softwareversion,vc_biomodelsim,vc_biomodel "+
 //				" from vc_simulation,vc_userinfo,vc_biomodelsim,vc_biomodel "+
 				" where "+
-				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
+//				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
 //				" (vc_simulation.id in (select simref from vc_mathmodelsim)) and " +
-//				" vc_userinfo.userid='frm' and "+
+//				" vc_userinfo.userid='CMC' and "+
 				" vc_userinfo.id = vc_simulation.ownerref and "+
 //				" vc_biomodelsim.simref = vc_simulation.id and" +
 //				" vc_biomodelsim.biomodelref = vc_biomodel.id and" +
 //				" vc_biomodel.name='Solver Suite alpha' and" +
 //				" to_char(vc_biomodel.versiondate,'DD-MM-YYYY')='10-05-2015' " +
 				" missingdata.simjobsimref = vc_simulation.id and "+
-				" (missingdata.dataexists = 'false') "+
+				" (missingdata.dataexists='false') "+
 				" and missingdata.notes is not null and " +
 				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
 				" and vc_simulation.parentsimref is null "+
-//				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
-//				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
+				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
+				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
 				" order by vc_userinfo.userid";
 
 //		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and
