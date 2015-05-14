@@ -21,18 +21,19 @@ public abstract class MessageEvent extends java.util.EventObject {
 	private MessageData messageData = null;
 		
 	public final static int EXPORT_PROGRESS = 1004;
-	public final static int EXPORT_FAILURE = 1005;
-	public final static int EXPORT_COMPLETE = 1006;
-	public final static int EXPORT_START = 1007;
+	public final static int EXPORT_ASSEMBLING = 1005;
+	public final static int EXPORT_FAILURE = 1006;
+	public final static int EXPORT_COMPLETE = 1007;
+	public final static int EXPORT_START = 1008;
 
-	public final static int POLLING_STAT = 1008;
-	public final static int SAVING_STAT = 1009;
-	public final static int LOGON_STAT = 1010;
+	public final static int POLLING_STAT = 1009;
+	public final static int SAVING_STAT = 1010;
+	public final static int LOGON_STAT = 1011;
 
-	public final static int DATA_PROGRESS = 1011;
-	public final static int DATA_FAILURE = 1012;
-	public final static int DATA_COMPLETE = 1013;
-	public final static int DATA_START = 1014;
+	public final static int DATA_PROGRESS = 1012;
+	public final static int DATA_FAILURE = 1013;
+	public final static int DATA_COMPLETE = 1014;
+	public final static int DATA_START = 1015;
 
 
 /**

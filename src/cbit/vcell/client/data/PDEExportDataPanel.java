@@ -2504,10 +2504,14 @@ private void startExport() {
 	getExportSettings1().setSliceCount(FormatSpecificSpecs.getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
 	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());
 	getExportSettings1().setIsSmoldyn(isSmoldyn);
-	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
-			
-	if (!okToExport) {
-		return;
+	
+	ExportFormat format = getSelectedFormat();
+	if (format.requiresFollowOn()){
+		boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
+				
+		if (!okToExport) {
+			return;
+		}
 	}
 	
 	// determine of sim result is from local (quick) run or on server.

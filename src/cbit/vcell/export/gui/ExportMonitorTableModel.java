@@ -77,13 +77,17 @@ public int addExportEvent(String resultSetID, ExportEvent event) {
 			exportStatus.getProgressBar().setString(null);
 			break;
 		}
+		case cbit.rmi.event.ExportEvent.EXPORT_ASSEMBLING: {
+			exportStatus.getProgressBar().setString("Building export file...");
+			break;
+		}
 		case cbit.rmi.event.ExportEvent.EXPORT_FAILURE: {
 			exportStatus.getProgressBar().setString("Export failed!");
 			break;
 		}
 		case cbit.rmi.event.ExportEvent.EXPORT_COMPLETE: {
-			exportStatus.getProgressBar().setValue(100);
-			exportStatus.getProgressBar().setString(null);
+//			exportStatus.getProgressBar().setValue(100);
+			exportStatus.getProgressBar().setString("Complete");
 			exportStatus.setComplete(Boolean.TRUE);
 			break;
 		}
