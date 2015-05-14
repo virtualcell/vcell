@@ -68,6 +68,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.gui.KineticsTypeTemplatePanel;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
@@ -155,27 +156,36 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				Object newObject = null;
 				switch (folderClass) {
 				case REACTIONS_NODE:
+					// TODO: should add a Add New Rule menu item
 					newObject = model.createSimpleReaction(model.getStructure(0));
 					break;
 				case STRUCTURES_NODE:
+					if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+						PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
+						return;
+					}
 					newObject = model.createFeature();
 					break;
 				case SPECIES_NODE:
 					newObject = model.createSpeciesContext(model.getStructure(0));
 					break;
 				case MOLECULAR_TYPES_NODE:
-					if(model.getRbmModelContainer() != null) {
-						MolecularType mt = model.getRbmModelContainer().createMolecularType();
-						model.getRbmModelContainer().addMolecularType(mt);
-						newObject = mt;
+					if(bioModel.getModel().getStructures().length != 1) {
+						PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
+						return;
 					}
+					MolecularType mt = model.getRbmModelContainer().createMolecularType();
+					model.getRbmModelContainer().addMolecularType(mt);
+					newObject = mt;
 					break;
 				case OBSERVABLES_NODE:
-					if(model.getRbmModelContainer() != null) {
-						RbmObservable o = model.getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
-						model.getRbmModelContainer().addObservable(o);
-						newObject = o;
+					if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+						PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
+						return;
 					}
+					RbmObservable o = model.getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
+					model.getRbmModelContainer().addObservable(o);
+					newObject = o;
 					break;
 				case SIMULATIONS_NODE:
 					if (selectedSimulationContext != null) {
@@ -198,6 +208,8 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 						};
 						ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2});
 					}
+					break;
+				default:
 					break;
 				}
 				if (newObject != null) {
@@ -310,6 +322,8 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		} catch (Exception ex) {
 			DialogUtils.showErrorDialog(this, ex.getMessage());
 		}
+		break;
+	default:
 		break;
 	}
 }
