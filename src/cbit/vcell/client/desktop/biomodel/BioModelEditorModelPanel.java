@@ -78,6 +78,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -113,6 +114,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTableEntry;
 
@@ -1057,6 +1059,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		if (currentSelectedTable == speciesTable) {
 			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
 		} else if (currentSelectedTable == molecularTypeTable) {
+			if(bioModel.getModel().getStructures().length != 1) {
+				PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
+				return;
+			}
 			if(bioModel.getModel().getRbmModelContainer() != null) {
 				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
 				bioModel.getModel().getRbmModelContainer().addMolecularType(mt);
@@ -1064,12 +1070,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == observablesTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
+				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
+					return;
+				}
 				RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
 				bioModel.getModel().getRbmModelContainer().addObservable(o);
 				newObject = o;
 			}
 		} else if (currentSelectedTable == structuresTable) {
 			try {
+				if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
+					return;
+				}
 				Feature feature = bioModel.getModel().createFeature();
 				newObject = feature;
 			} catch (Exception e) {
@@ -1097,6 +1111,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == reactionsTable) {
+			if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
+				return;
+			}
 			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule();
 			if(rr != null) {
 				rr.setReversible(false);
@@ -1121,6 +1139,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == structuresTable) {
+			if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
+				return;
+			}
 			try {
 				Membrane membrane = bioModel.getModel().createMembrane();
 				newObject = membrane;

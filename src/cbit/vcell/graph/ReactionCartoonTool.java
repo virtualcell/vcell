@@ -90,6 +90,7 @@ import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.ReactionPropertiesPanel;
@@ -119,6 +120,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.StructureUtil;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -1481,6 +1483,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
+							if(!getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
+								return;
+							}
 							addStructure(false,selectedContainerDropTargetInfo);
 						}
 					});
@@ -1489,6 +1495,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
+							if(!getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
+								return;
+							}
 							addStructure(true,selectedContainerDropTargetInfo);
 						}
 					});
