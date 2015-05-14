@@ -24,11 +24,13 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.ModelProcessEquation;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.MolecularTypeTableModel.Column;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -59,6 +61,17 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
 		setColumns(columnNames);
+//		disableActions();
+	}
+	
+	@SuppressWarnings("unused")
+	private void disableActions() {
+		// example on how to disable right click batch editing on a column
+		// the Name column is excluded by default
+		if(ownerTable.getScrollTableActionManager() instanceof DefaultScrollTableActionManager) {
+			DefaultScrollTableActionManager dstam = (DefaultScrollTableActionManager)ownerTable.getScrollTableActionManager();
+			dstam.disablePopupAtColumn(COLUMN_EQUATION);
+		}
 	}
 
 	public Class<?> getColumnClass(int column) {

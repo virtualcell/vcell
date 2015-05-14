@@ -522,6 +522,9 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		}
 		this.scrollTableActionManager = scrollTableActionManager;
 	}
+	public final ScrollTableActionManager getScrollTableActionManager() {
+		return scrollTableActionManager;
+	}
 
 	private void updatePageToolBar() {
 		firstPageButton.setEnabled(vcellSortTableModel.hasPreviousPage());
