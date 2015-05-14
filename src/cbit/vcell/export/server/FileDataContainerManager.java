@@ -297,8 +297,9 @@ public class FileDataContainerManager {
 		if (isDataInFile(fileDataContainerID)){
 			try(
 					FileInputStream fis = new FileInputStream(getFileDataContainer(fileDataContainerID).getDataFile());
+					BufferedInputStream bis = new BufferedInputStream(fis);
 				){
-				IOUtils.copy(fis, outputStream);//fis buffered inside of IOUtils
+				IOUtils.copy(bis, outputStream);//fis is not buffered inside of IOUtils
 			}
 		} else{
 			/*

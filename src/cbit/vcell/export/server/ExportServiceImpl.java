@@ -94,6 +94,17 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 }
 
 
+protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
+	User user = null;
+	Object object = jobRequestIDs.get(new Long(jobID));
+	if (object != null) {
+		user = (User)object;
+	}
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null);
+	fireExportEvent(event);
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2000 11:43:22 AM)
@@ -343,11 +354,13 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  */
 private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
+			fireExportAssembling(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
 			// check outputs and package into zip file
 			File zipFile = new File(exportBaseDir + newExportJob.getJobID() + ".zip");
 			FileOutputStream fileOut = new FileOutputStream(zipFile);
-			ZipOutputStream zipOut = new ZipOutputStream(fileOut);
+			BufferedOutputStream bos = new BufferedOutputStream(fileOut);
+			ZipOutputStream zipOut = new ZipOutputStream(bos);
 			for (int i=0;i<exportOutputs.length;i++) {
 				if (exportOutputs[i].isValid()) {
 					String filename = exportOutputs[i].getSimID() + exportOutputs[i].getDataID();
@@ -356,6 +369,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 					}
 					ZipEntry zipEntry = new ZipEntry(filename);
 					zipOut.putNextEntry(zipEntry);
+					System.out.println("writing entry "+i);
 					exportOutputs[i].writeDataToOutputStream(zipOut,fileDataContainerManager);
 					//zipOut.write(exportOutputs[i].getData());
 				} else {
