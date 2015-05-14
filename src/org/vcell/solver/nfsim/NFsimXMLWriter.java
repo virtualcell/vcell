@@ -869,8 +869,11 @@ public class NFsimXMLWriter {
 			componentElement.setAttribute("name", particleMolecularComponent.getName());
 			ParticleComponentStatePattern componentStatePattern = particleMolecularComponentPattern.getComponentStatePattern();
 			ParticleComponentStateDefinition pcsd = componentStatePattern.getParticleComponentStateDefinition();
+			
+			boolean hasState = false;
 			if(pcsd != null) {
 				componentElement.setAttribute("state", pcsd.getName());
+				hasState = true;
 			}
 //			String state = "";
 //			if (componentState!=null){
@@ -921,7 +924,7 @@ public class NFsimXMLWriter {
 					break;
 				}
 			}
-			if(!ignoreFlag) {
+			if(!ignoreFlag || hasState) {
 				listOfComponentsElement.addContent(componentElement);
 			}
 		}
