@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -267,9 +268,9 @@ public class NetworkTransformer implements SimContextTransformer {
 		startTime = System.currentTimeMillis();
 		System.out.println("\nSpecies :");
 		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
-		Map<String, Species> sMap = new HashMap<String, Species>();
-		Map<String, SpeciesContext> scMap = new HashMap<String, SpeciesContext>();
-		Map<String, BNGSpecies> crossMap = new HashMap<String, BNGSpecies>();
+		LinkedHashMap<String, Species> sMap = new LinkedHashMap<String, Species>();
+		LinkedHashMap<String, SpeciesContext> scMap = new LinkedHashMap<String, SpeciesContext>();
+		LinkedHashMap<String, BNGSpecies> crossMap = new LinkedHashMap<String, BNGSpecies>();
 		List<SpeciesContext> noMapForThese = new ArrayList<SpeciesContext>();
 		
 //		int countGenerated = 0;
@@ -349,7 +350,7 @@ public class NetworkTransformer implements SimContextTransformer {
 //			SpeciesContext origSpeciesContext = simContext.getModel().getSpeciesContext(s.getName());
 //			
 //			if (origSpeciesContext!=null){
-//				// TODO: execution never goes through here because we do a "continue" early in the for look
+//				// execution never goes through here because we do a "continue" early in the for look
 //				// when we find one of the original seed species
 //				ModelEntityMapping em = new ModelEntityMapping(origSpeciesContext,speciesContext);
 //				entityMappings.add(em);
@@ -380,11 +381,10 @@ public class NetworkTransformer implements SimContextTransformer {
 //		System.out.println("------------------------ " + model.getSpecies().length + " species in the Model.");
 //		System.out.println("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");
 
-		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
-		scMap.values().toArray(sca);
 		for(SpeciesContext sc1 : model.getSpeciesContexts()) {
 			boolean found = false;
-			for(SpeciesContext sc2 : sca) {
+			for (Map.Entry<String, SpeciesContext> entry : scMap.entrySet()) {
+				SpeciesContext sc2 = entry.getValue();
 				if(sc1.getName().equals(sc2.getName())) {
 					found = true;
 //					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
@@ -399,11 +399,10 @@ public class NetworkTransformer implements SimContextTransformer {
 				noMapForThese.add(sc1);
 			}
 		}
-		Species[] sa = new Species[sMap.size()];
-		sMap.values().toArray(sa); 
 		for(Species s1 : model.getSpecies()) {
 			boolean found = false;
-			for(Species s2 : sa) {
+			for(Map.Entry<String, Species> entry : sMap.entrySet()) {
+				Species s2 = entry.getValue();
 				if(s1.getCommonName().equals(s2.getCommonName())) {
 					found = true;
 //					System.out.println("found species " + s1.getCommonName());
@@ -411,9 +410,14 @@ public class NetworkTransformer implements SimContextTransformer {
 				}
 			}
 			if(found == false) {
-				System.out.println("species " + s1.getCommonName() + " not found in the map!");
+				System.err.println("species " + s1.getCommonName() + " not found in the map!");
 			}
 		}
+		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
+		scMap.values().toArray(sca);
+		Species[] sa = new Species[sMap.size()];
+		sMap.values().toArray(sa); 
+
 		model.setSpecies(sa);
 		model.setSpeciesContexts(sca);
 		
@@ -433,6 +437,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(sc),sc);
 				entityMappings.add(em);
 			}
+		}
+		for(SpeciesContext sc : sca) {		// clean all the species patterns from the flattened species, we have no sp now
+			sc.setSpeciesPattern(null);
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
@@ -454,7 +461,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			String reactionName = null;
 			while (true) {
 				reactionName = "r" + count;	
-				if (model.getReactionStep(reactionName) == null && model.getRbmModelContainer().getReactionRule(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {
+//				if (model.getReactionStep(reactionName) == null && model.getRbmModelContainer().getReactionRule(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {
+				if (model.getReactionStep(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {	// we can reuse the reaction rule labels
 					break;
 				}	
 				count++;
@@ -494,6 +502,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
 //			model.addReactionStep(sr);
 			reactionStepMap.put(reactionName, sr);
+		}
+		for(ReactionStep rs : model.getReactionSteps()) {
+			reactionStepMap.put(rs.getName(), rs);
 		}
 		ReactionStep[] reactionSteps = new ReactionStep[reactionStepMap.size()];
 		reactionStepMap.values().toArray(reactionSteps); 
