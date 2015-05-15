@@ -105,9 +105,12 @@ public class TestMissingSimData {
 		String dbPassword = args[0];
 		java.sql.Connection con = null; 
 		try{
-			Class.forName(driverName);
-			con = java.sql.DriverManager.getConnection(connectURL, dbSchemaUser, dbPassword);
-			con.setAutoCommit(false);
+//			Class.forName(driverName);
+//			con = java.sql.DriverManager.getConnection(connectURL, dbSchemaUser, dbPassword);
+//			con.setAutoCommit(false);
+			
+			
+			
 //			Statement stmt = con.createStatement();
 ////			String sql = 
 ////					"select t1.simid,t1.jobid,vc_userinfo.id userkey,vc_userinfo.userid,vc_biomodelsim.biomodelref,vc_mathmodelsim.mathmodelref,vc_geometry.dimension,t1.taskid,t1.hasdata,t1.schedulerstatus"+
@@ -156,6 +159,8 @@ public class TestMissingSimData {
 			
 //			checkDataExists(con,false);
 			runSimsNew(connectURL,dbSchemaUser,dbPassword);
+		}catch(Exception e){
+			e.printStackTrace();
 		}finally{
 			if(con != null){
 				con.close();
@@ -251,7 +256,7 @@ public class TestMissingSimData {
 			this.dbSchemaUser = dbSchemaUser;
 			this.dbPassword = dbPassword;
 //			VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-beta.cam.uchc.edu", 40105, "VCellBootstrapServer", 12, false);
-//			VCellBootstrap vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40106, "VCellBootstrapServer", 12, false);
+//			this.vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40106, "VCellBootstrapServer", 12, false);//Alpha
 			this.vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40111, "VCellBootstrapServer", 12, false);//Test2
 			
 
@@ -398,7 +403,7 @@ public class TestMissingSimData {
 				" where "+
 //				" (vc_simulation.id in (select simref from vc_biomodelsim)) and " +
 //				" (vc_simulation.id in (select simref from vc_mathmodelsim)) and " +
-//				" vc_userinfo.userid='CMC' and "+
+//				" vc_userinfo.userid='les' and "+
 				" vc_userinfo.id = vc_simulation.ownerref and "+
 //				" vc_biomodelsim.simref = vc_simulation.id and" +
 //				" vc_biomodelsim.biomodelref = vc_biomodel.id and" +
@@ -406,11 +411,12 @@ public class TestMissingSimData {
 //				" to_char(vc_biomodel.versiondate,'DD-MM-YYYY')='10-05-2015' " +
 				" missingdata.simjobsimref = vc_simulation.id and "+
 				" (missingdata.dataexists='false') "+
-				" and missingdata.notes is not null and " +
-				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
+				" and missingdata.notes is null " +
+//				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
+//				" (missingdata.notes like '%exceeded_maximum%')" +
 				" and vc_simulation.parentsimref is null "+
-				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) and "+
-				" vc_softwareversion.versionableref (+) = vc_simulation.id " +
+				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) "+
+				" and vc_softwareversion.versionableref (+) = vc_simulation.id " +
 				" order by vc_userinfo.userid";
 
 //		(mdt.dataexists = 'false' or mdt.dataexists like 'error - %') and
