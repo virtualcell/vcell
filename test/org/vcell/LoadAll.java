@@ -56,6 +56,7 @@ public class LoadAll {
 	private static void load(String pathToJar, PrintWriter log) throws Throwable {
 		Objects.requireNonNull(pathToJar);
 		Objects.requireNonNull(log);
+		//from: http://stackoverflow.com/questions/11016092/how-to-load-classes-at-runtime-from-a-folder-or-jar
 		try (JarFile jarFile = new JarFile(pathToJar)) {
 			Enumeration<JarEntry> e = jarFile.entries();
 
