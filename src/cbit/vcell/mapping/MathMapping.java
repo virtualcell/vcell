@@ -2308,15 +2308,15 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			{ //local variable scope
 				GeometryClass gc = sm.getGeometryClass();
+				String sdName = subDomain.getName();
 				if (gc != null) {
 					String gcName = gc.getName();
-					String sdName = subDomain.getName();
 					if (!gcName.equals(sdName)) {
 						continue;
 					}
 				}
 				else {
-					 throw new MappingException("Each subdomain must be mapped to exactly one compartment.");
+					 throw new MappingException("Subdomain " + sdName + " must be mapped to exactly one compartment.");
 				}
 			}
 			SpeciesContextSpecParameter initConcParameter = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
