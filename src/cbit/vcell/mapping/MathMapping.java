@@ -1473,6 +1473,7 @@ private Expression substituteGlobalParameters(Expression exp) throws ExpressionE
 /**
  * This method was created in VisualAge.
  */
+@SuppressWarnings("deprecation")
 protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
@@ -2305,8 +2306,18 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			//
 			// if an independent volume variable, then create equation for it (if mapped to this subDomain)
 			//
-			if (!sm.getGeometryClass().getName().equals(subDomain.getName())){
-				continue;
+			{ //local variable scope
+				GeometryClass gc = sm.getGeometryClass();
+				if (gc != null) {
+					String gcName = gc.getName();
+					String sdName = subDomain.getName();
+					if (!gcName.equals(sdName)) {
+						continue;
+					}
+				}
+				else {
+					 throw new MappingException("Each subdomain must be mapped to exactly one compartment.");
+				}
 			}
 			SpeciesContextSpecParameter initConcParameter = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			if ((scm.getVariable() instanceof VolumeRegionVariable) && scm.getDependencyExpression()==null){
