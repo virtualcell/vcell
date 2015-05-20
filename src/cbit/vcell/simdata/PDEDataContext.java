@@ -69,10 +69,16 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 	//
 	protected transient PropertyChangeSupport propertyChange = null;
 	private DataIdentifier fieldDataIdentifier = null;
+	/**
+	 * support lazy retrieval of {@link #fieldParticleDataBlock}, among other things
+	 */
 	private double fieldTimePoint = -1;
 	private double[] dataValues = null;
 	private DataIdentifier[] dataIdentifiers = null;
 	private boolean particleData = false;
+	/**
+	 * lazily retrieved to avoid data transfer to VCellClient when not needed
+	 */
 	private ParticleDataBlock fieldParticleDataBlock = null;
 	private CartesianMesh cartesianMesh = null;
 //	private Range dataRange = null;
@@ -189,6 +195,13 @@ public abstract PlotData getLineScan(String variable, double time, SpatialSelect
  * @see #setParticleDataBlock
  */
 public ParticleDataBlock getParticleDataBlock() {
+	if (fieldParticleDataBlock == null) {
+		try {
+			fieldParticleDataBlock = getParticleDataBlock(fieldTimePoint);
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage(),e);
+		}
+	}
 	return fieldParticleDataBlock;
 }
 
@@ -395,7 +408,7 @@ private synchronized void refreshData(DataIdentifier selectedDataIdentifier, dou
 		ParticleDataBlock newParticleDataBlock = null;
 		SimDataBlock simdataBlock = getSimDataBlock(selectedDataIdentifier.getName(),timePoint);
 		if (hasParticleData()) {
-			newParticleDataBlock = getParticleDataBlock(timePoint);
+			newParticleDataBlock = null; 
 		}
 	
 	//	RefreshedData refreshedData = new RefreshedData(
