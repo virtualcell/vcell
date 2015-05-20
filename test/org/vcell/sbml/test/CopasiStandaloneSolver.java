@@ -20,8 +20,6 @@ import org.apache.log4j.Logger;
 import org.vcell.sbml.SBMLSolver;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.executable.ClosedInput;
@@ -31,15 +29,8 @@ import org.vcell.util.executable.LiveProcess;
 import org.vcell.util.executable.LiveProcess.LiveProcessStatus;
 import org.vcell.util.logging.Logging;
 
-import com.sun.org.apache.xpath.internal.Arg;
-
-import cbit.util.xml.VCLogger;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 
 
 /**
