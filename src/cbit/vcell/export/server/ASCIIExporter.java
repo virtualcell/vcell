@@ -94,6 +94,18 @@ private enum SwitchedRowsHeading {
 }
 
 /**
+ * @param size of array
+ * @return StringBuilder array, with empty objects
+ */
+private StringBuilder[] stringBuilderArray(int size) {
+	StringBuilder rval[] = new StringBuilder[size];
+	for (int i = 0; i < size; i++) {
+		rval[i] = new StringBuilder( );
+	}
+	return rval;
+}
+
+/**
  * Insert the method's description here.
  * Creation date: (1/12/00 5:00:28 PM)
  * @return cbit.vcell.export.server.ExportOutput[]
@@ -128,6 +140,8 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 	
 	ArrayList<ExportOutput> rval = new ArrayList<>(vnames.length);
 	Set<String> species = particleDataBlk.getSpecies();
+	ParticleProgress particleProgress = null;
+	
 	for (String vcellName : vnames) {
 		String smoldynSpecies = null;
 		for (int i = 0; smoldynSpecies == null && i < SMOLDYN_KEYWORDS_USED.length;i++) { 
@@ -146,30 +160,30 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 		List<Coordinate> particles = particleDataBlk.getCoordinates(smoldynSpecies);
 		int numberOfParticles = particles.size(); 
 		int numberOfTimes = endIndex - beginIndex + 1;
+		if (particleProgress != null) {
+			particleProgress.nextName();
+		}
+		else {
+			particleProgress = new ParticleProgress(jobID, vcdID, vnames.length, numberOfTimes,numberOfParticles);
+		}
 
 		// now make csv formatted data
 		StringBuilder header = new StringBuilder();
-		FileDataContainerID[] dataLines = null;
+		StringBuilder[] dataLines = null;
 		final int NUMBER_HEADING_LINES = SwitchedRowsHeading.DATA.ordinal();
 		if (switchRowsColumns) {
-			dataLines = new FileDataContainerID[numberOfParticles * N_PARTICLE_PIECES + NUMBER_HEADING_LINES]; 
-			for (int j=0;j<dataLines.length;j++){
-				dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
-			}
-			
-			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.TIME.ordinal()],"Time,");
+			dataLines = stringBuilderArray(numberOfParticles * N_PARTICLE_PIECES + NUMBER_HEADING_LINES); 
+			dataLines[SwitchedRowsHeading.TIME.ordinal()].append("Time,");
 			final String particleLine = "Particle" + StringUtils.repeat(",x,y,z",numberOfTimes);
-			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.PARTICLE.ordinal()],particleLine);
-			fileDataContainerManager.append(dataLines[SwitchedRowsHeading.XYZ.ordinal()],"#,");
+			dataLines[SwitchedRowsHeading.PARTICLE.ordinal()].append(particleLine);
+			dataLines[SwitchedRowsHeading.XYZ.ordinal()].append("#,");
 			final int FDL = SwitchedRowsHeading.DATA.ordinal(); //"first data line"
 			for (int i=0;i<numberOfParticles;i++) {
-				fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * i],Integer.toString(i) + ",");
+				dataLines[FDL + N_PARTICLE_PIECES * i].append(i);
+				dataLines[FDL + N_PARTICLE_PIECES * i].append(',');
 			}
 		} else {
-			dataLines = new FileDataContainerID[numberOfTimes];
-			for (int j=0;j<dataLines.length;j++){
-				dataLines[j] = fileDataContainerManager.getNewFileDataContainerID();
-			}
+			dataLines = stringBuilderArray(numberOfTimes);
 		}
 		currentVariableName[0] = vcellName;
 		SimulationDescription simulationDescription = new SimulationDescription(outputContext,user, dataServerImpl,vcdID,false, currentVariableName);
@@ -187,46 +201,65 @@ private List<ExportOutput> exportParticleData(OutputContext outputContext,long j
 				header.append("x,y,z,");
 			}
 		}
-		double progress = 0.0;
+		final char COMMA  = ',';
+		int nextTimeIndex = particleProgress.nextTimeIndex(0, false);
 		for (int i=beginIndex;i<=endIndex;i++) {
-			progress = (double)(i - beginIndex) / numberOfTimes;
-			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 			particleDataBlk = dataServerImpl.getParticleDataBlock(user, vcdID,allTimes[i]);
 			particles = particleDataBlk.getCoordinates(smoldynSpecies);
+			
+			if (i >= nextTimeIndex) {
+				nextTimeIndex = particleProgress.nextTimeIndex(i, true);
+			}
 
 			if (switchRowsColumns) {
 				final int FDL = SwitchedRowsHeading.DATA.ordinal(); //"first data line"
-				fileDataContainerManager.append(dataLines[SwitchedRowsHeading.TIME.ordinal()],Double.toString(allTimes[i]) +",,,");
-				StringBuilder sb = new StringBuilder();
-				final char COMMA  = ',';
+				StringBuilder timeSb = dataLines[SwitchedRowsHeading.TIME.ordinal()];
+				timeSb.append(allTimes[i]);
+				timeSb.append(",,,");
 				for (int j=0;j<numberOfParticles;j++) {
+					StringBuilder sb = dataLines[FDL + N_PARTICLE_PIECES * j];
 					Coordinate coordinate = particles.get(j);
-					sb.setLength(0);
 					sb.append(coordinate.getX());
 					sb.append(COMMA);
 					sb.append(coordinate.getY());
 					sb.append(COMMA);
 					sb.append(coordinate.getZ());
 					sb.append(COMMA);
-					fileDataContainerManager.append(dataLines[FDL + N_PARTICLE_PIECES * j],sb.toString());
 				}
 			} else {
-				fileDataContainerManager.append(dataLines[i - beginIndex],"," + allTimes[i] + ",");
-				for (int j=0;j<numberOfParticles;j++) {
-					Coordinate coordinate = particles.get(j) ;
-					fileDataContainerManager.append(dataLines[i - beginIndex],coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getZ() + ",");
-				}
+		 		StringBuilder particleSb = dataLines[i - beginIndex];
+		 		particleSb.append(COMMA);
+		 		particleSb.append(allTimes[i]);
+		 		particleSb.append(COMMA);
+		 		for (int j=0;j<numberOfParticles;j++) {
+		 			Coordinate coordinate = particles.get(j) ;
+		 			particleSb.append( coordinate.getX() );
+		 			particleSb.append(COMMA);
+		 			particleSb.append( coordinate.getY() );
+		 			particleSb.append(COMMA);
+		 			particleSb.append( coordinate.getZ() );
+		 		}
 			}
 		}
+		particleProgress.endOfTimes();
 		final String dataID = vcellName + "_Particles";
 		ExportOutput exportOutputCSV = new ExportOutput(true, dataType, simID, dataID, fileDataContainerManager);
 		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),header.toString());
+		
+		int nextDataIndex = particleProgress.nextDataIndex(0, false);
+		
+		StringBuilder all = new StringBuilder( );
 		for (int i=0;i<dataLines.length;i++) {
-			progress = (double)i / dataLines.length;
-			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
-			fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),"\n");
-			fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),dataLines[i]);
+			final char NEWLINE = '\n';
+			all.append(dataLines[i]);
+			dataLines[i] = null; //kill reference to allow garbage collection
+			all.append(NEWLINE);
+			
+			if (i >= nextDataIndex) {
+				nextDataIndex = particleProgress.nextDataIndex(i, true);
+			}
 		}
+		fileDataContainerManager.append(exportOutputCSV.getFileDataContainerID(),all.toString());
 		rval.add(exportOutputCSV);
 	}
 	return rval; 
@@ -981,4 +1014,118 @@ public Collection<ExportOutput >makeASCIIData(OutputContext outputContext,JobReq
 	}
 	throw new IllegalArgumentException("Export spec "  + ExecutionTrace.justClassName(formatSpecs) + " not instance of " + ExecutionTrace.justClassName(ASCIISpecs.class) );
 }
+
+/**
+ * manage sending progress percent info for {@link ASCIIExporter#exportParticleData(OutputContext, long, User, DataServerImpl, ExportSpecs, ASCIISpecs, FileDataContainerManager)
+ *
+ */
+private class ParticleProgress {				
+	final static int PROGRESS_PERCENT_INCREMENT = 5; //%
+	final static int TIMES_PERCENT = 80; //a total guess
+	final static int LINES_PERCENT = 100 - TIMES_PERCENT; 
+	final static String CSV_LABEL = "CSV";
+	
+	final long jobID;
+	final VCDataIdentifier vcdID;
+	//final int nNames;
+	//final int nTimes;
+	//final int nDataLines;
+	final double nameIncr; //relative to 1.0
+	final double timeIncr;
+	final double dataIncr;
+	final double stepIncr;
+	
+	int nameCounter;
+	double nextIncr;
+	boolean dataCalled;
+	 
+	
+	ParticleProgress(long jobID, VCDataIdentifier vcdID, int nNames, int nTimes, int nDataLines) {
+		super();
+		this.jobID = jobID;
+		this.vcdID = vcdID;
+		//this.nNames = nNames;
+		//this.nTimes = nTimes;
+		//this.nDataLines = nDataLines;
+		
+		nameIncr = 1.0 / nNames;
+		timeIncr = nameIncr * (TIMES_PERCENT / 100.0) / nTimes;
+		dataIncr = nameIncr * (LINES_PERCENT / 100.0) / nDataLines;
+		
+		nameCounter = 0;
+		nextIncr = stepIncr = PROGRESS_PERCENT_INCREMENT / 100.0;
+		dataCalled = false;
+		fire(0.00001);  //fire one just to get started
+	}
+	
+	private void fire(double increment) {
+		exportServiceImpl.fireExportProgress(jobID, vcdID, CSV_LABEL,increment);  
+		while (increment >= nextIncr) {
+			nextIncr += stepIncr;
+		}
+	}
+	
+	/**
+	 * indicate have moved to next name
+	 */
+	void nextName( ) {
+		dataCalled = false;
+		double increment = ++nameCounter * nameIncr; 
+		if (increment > nextIncr) {
+			fire(increment);
+		}
+	}
+	
+	/**
+	 * @param currentTimeStep time step currently on 
+	 * @param fireNow send progress report if past time 
+	 * @return time index to fire next notification at
+	 */
+	int nextTimeIndex(int currentTimeStep, boolean fireNow) {
+		final double current = (nameCounter * nameIncr) + (currentTimeStep * timeIncr);
+		if (fireNow  && current > nextIncr) {
+			fire(current);
+		}
+		if (!dataCalled) {
+			double distFromName = nextIncr - current; 
+			VCAssert.assertTrue(distFromName >= 0, "positive step");
+			int r = (int) (distFromName / timeIncr);
+			return r + currentTimeStep;
+		}
+		throw new IllegalStateException("nextTimeIndex( ) must come before nextDataIndex( )");
+	}
+	
+	/**
+	 * indicate particle exporter is doing processing time steps
+	 */
+	void endOfTimes( ) {
+		final double current =  (nameCounter * nameIncr)  + (TIMES_PERCENT / 100.0);
+		if (current > nextIncr) {
+			fire(current);
+		}
+	}
+	
+	/**
+	 * @param currentDataIndex data step currently on 
+	 * @param fireNow send progress report 
+	 * @return data index to fire next notification at
+	 */
+	int nextDataIndex(int currentDataIndex, boolean fireNow) {
+		dataCalled = true;
+		final double current =  (nameCounter * nameIncr)  + (TIMES_PERCENT / 100.0) + (currentDataIndex * dataIncr);
+		if (fireNow  && current > nextIncr) {
+			fire(current);
+		}
+		double distFromName = nextIncr - current; 
+		VCAssert.assertTrue(distFromName >= 0, "positive step");
+		int r = (int) (distFromName / dataIncr);
+		return r + currentDataIndex;
+	}
+	
+	
+	
+
+	
+}
+
 }
