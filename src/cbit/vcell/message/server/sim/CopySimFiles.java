@@ -14,6 +14,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import cbit.vcell.tools.PortableCommand;
 
 
@@ -34,6 +37,7 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	 * transient to avoid capture by PortableCommand
 	 */
 	private transient Exception exc = null; 
+	private static Logger lg = Logger.getLogger(CopySimFiles.class);
 
 	public CopySimFiles(String jobName, String fromDirectory, String toDirectory) {
 		this.jobName = jobName;
@@ -49,6 +53,12 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 			File toDir = new File(toDirectory);
 			if (!toDir.exists()) {
 				toDir.mkdir( );
+				if (lg.isDebugEnabled()) {
+					lg.debug("copying " + from + " to " + toDir + " (created)");
+				}
+			}
+			else if(lg.isDebugEnabled()) {
+				lg.debug("copying " + from + " to " + toDir + " (exists)");
 			}
 			Set<FileVisitOption> empty = Collections.emptySet();
 			Files.walkFileTree(from, empty, 1, this);
@@ -89,8 +99,14 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path p, BasicFileAttributes attr) throws IOException {
 		String filename = p.getFileName().toString();
+		if (lg.isEnabledFor(Level.TRACE)) {
+			lg.trace("evaluating " + filename);
+		}
 		if (filename.startsWith(jobName)) {
 			Path destination = fs.getPath(toDirectory, filename);
+			if (lg.isDebugEnabled()) {
+				lg.debug("Copying "  + p + " to " + destination);
+			}
 			Files.copy(p, destination, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
 		}
 		return FileVisitResult.CONTINUE; 
