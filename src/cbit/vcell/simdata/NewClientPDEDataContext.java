@@ -10,9 +10,6 @@
 
 package cbit.vcell.simdata;
 
-import org.vcell.util.DataAccessException;
-
-import cbit.vcell.export.server.ExportSpecs;
 /**
  * Insert the type's description here.
  * Creation date: (6/13/2004 3:36:26 PM)
@@ -25,38 +22,5 @@ public class NewClientPDEDataContext extends ClientPDEDataContext {
  */
 public NewClientPDEDataContext(PDEDataManager dataManager) {
 	super(dataManager);
-}
-
-
-/**
- * This method was created in VisualAge.
- *
- * @param exportSpec cbit.vcell.export.server.ExportSpecs
- */
-public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
-	throw new RuntimeException("should not use this method in NewClientPDEDataContext");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 5:03:43 PM)
- */
-public void refreshIdentifiers() {
-	try {
-		DataIdentifier[] newDataIdentifiers = getDataManager().getDataIdentifiers();
-		setDataIdentifiers(newDataIdentifiers);
-	} catch (DataAccessException exc) {
-		exc.printStackTrace(System.out);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/3/00 5:03:43 PM)
- */
-public void refreshTimes() throws DataAccessException {
-	setTimePoints(getDataManager().getDataSetTimes());
 }
 }

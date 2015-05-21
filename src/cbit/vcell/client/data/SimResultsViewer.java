@@ -36,7 +36,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
-import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.ODEDataManager;
@@ -374,7 +373,7 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
+				NewClientPDEDataContext currentContext = (NewClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {
 					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
 					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());

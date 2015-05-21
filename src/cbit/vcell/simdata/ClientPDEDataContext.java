@@ -26,7 +26,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * Creation date: (3/19/2004 10:42:31 AM)
  * @author: Fei Gao
  */
-public abstract class ClientPDEDataContext extends PDEDataContext implements DataListener {
+class ClientPDEDataContext extends PDEDataContext implements DataListener {
 		//
 	private PDEDataManager dataManager = null;
 
@@ -166,7 +166,7 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
+//public abstract void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException;
 
 
 /**
@@ -190,7 +190,7 @@ public void newData(DataEvent event) {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-public abstract void refreshIdentifiers();
+//public abstract void refreshIdentifiers();
 
 
 /**
@@ -217,5 +217,40 @@ public void setDataManager(PDEDataManager newDataManager) throws DataAccessExcep
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);
 	}
+}
+
+
+/**
+ * This method was created in VisualAge.
+ *
+ * @param exportSpec cbit.vcell.export.server.ExportSpecs
+ */
+@Override
+public void makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
+	throw new RuntimeException("should not use this method in NewClientPDEDataContext");
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/3/00 5:03:43 PM)
+ */
+@Override
+public void refreshIdentifiers() {
+	try {
+		DataIdentifier[] newDataIdentifiers = getDataManager().getDataIdentifiers();
+		setDataIdentifiers(newDataIdentifiers);
+	} catch (DataAccessException exc) {
+		exc.printStackTrace(System.out);
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/3/00 5:03:43 PM)
+ */
+public void refreshTimes() throws DataAccessException {
+	setTimePoints(getDataManager().getDataSetTimes());
 }
 }
