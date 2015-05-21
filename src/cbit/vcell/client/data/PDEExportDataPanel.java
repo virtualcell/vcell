@@ -83,10 +83,10 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SpatialSelection;
@@ -2515,7 +2515,7 @@ private void startExport() {
 	}
 	
 	// determine of sim result is from local (quick) run or on server.
-	final OutputContext outputContext = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext();
+	final OutputContext outputContext = ((NewClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext();
 	final ExportSpecs exportSpecs = getExportSpecs();
 	boolean isLocalSimResult = false;
 	VCDataIdentifier vcId = exportSpecs.getVCDataIdentifier();  
