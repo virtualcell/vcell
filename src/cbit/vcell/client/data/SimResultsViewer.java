@@ -37,7 +37,7 @@ import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.Simulation;
@@ -373,12 +373,12 @@ private void updateScanParamChoices(){
 		AsynchClientTask task1 = new AsynchClientTask("get pde results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				NewClientPDEDataContext currentContext = (NewClientPDEDataContext)pdeDataViewer.getPdeDataContext();
+				ClientPDEDataContext currentContext = (ClientPDEDataContext)pdeDataViewer.getPdeDataContext();
 				if (currentContext == null || currentContext.getDataIdentifier() == null) {
 					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
 					pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
 				} else {
-					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, (NewClientPDEDataContext)currentContext);					
+					PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, (ClientPDEDataContext)currentContext);					
 					currentContext.setDataManager(pdeDatamanager);
 				}
 				
