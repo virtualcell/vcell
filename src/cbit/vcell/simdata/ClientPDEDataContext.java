@@ -195,7 +195,7 @@ public void newData(DataEvent event) {
 
 /**
  * This method is called from SimResultsViewer.updateScanParamChoices(),
- * which is going to update results view upon a choice of scaned parameters.
+ * which is going to update results view upon a choice of scanned parameters.
  */
 public static final String PDE_DATA_MANAGER_CHANGED = "PDE_DATA_MANAGER_CHANGED";
 public void setDataManager(PDEDataManager newDataManager) throws DataAccessException{
