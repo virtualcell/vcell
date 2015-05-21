@@ -90,6 +90,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	private BioModel bioModel = null;
 	private ReactionRule reactionRule = null;
 	private JLabel titleLabel = null;
+	private JCheckBox isReversibleCheckBox;
 
 	private ReactionRulePropertiesTableModel tableModel = null;
 	private ScrollTable table = null;
@@ -120,7 +121,10 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			}
 		}
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent evt) {
+		if (evt.getSource() == isReversibleCheckBox) {
+			setReversible(isReversibleCheckBox.isSelected());
+			}
 		}
 		@Override
 		public void mouseClicked(MouseEvent e) {			
@@ -150,7 +154,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			} else if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
 			}
-
 		}
 	}
 	
@@ -161,6 +164,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	
 	private void initialize() {
 		try {
+
+			isReversibleCheckBox = new JCheckBox("Reversible");
+			isReversibleCheckBox.addActionListener(eventHandler);
 
 			setName("KineticsTypeTemplatePanel");
 			setLayout(new java.awt.GridBagLayout());
@@ -225,10 +231,19 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			gbc.weightx = 1.0;
-			gbc.gridwidth = 2;
+//			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			add(nameTextField, gbc);
-		
+					
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = gridy;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(2,2,0,2);
+			gbc.anchor = GridBagConstraints.EAST;
+			gbc.fill = GridBagConstraints.NONE;
+			add(isReversibleCheckBox, gbc);
+			
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -323,7 +338,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			DialogUtils.showErrorDialog(this, e1.getMessage());
 		}
 	}
-	
+	private void setReversible(boolean bReversible) {
+		reactionRule.setReversible(bReversible);
+	}
 	public void setReactionRule(ReactionRule newValue) {
 		if (reactionRule == newValue) {
 			return;
@@ -349,10 +366,12 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(reactionRule));
 			nameTextField.setEditable(true);
 			nameTextField.setText(reactionRule.getName());
+			isReversibleCheckBox.setSelected(reactionRule.isReversible());
 		} else {
 			annotationTextArea.setText(null);
 			nameTextField.setEditable(false);
 			nameTextField.setText(null);
+			isReversibleCheckBox.setSelected(false);
 		}
 	}
 
