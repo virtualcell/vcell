@@ -1059,7 +1059,7 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
 
-	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
+	File defaultPath = (File) (currentUserPreferences != null?currentUserPreferences.getCurrentDialogPath():"");
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(fileSelectMode);
 
@@ -1070,10 +1070,10 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
     if (returnval == JFileChooser.APPROVE_OPTION) {
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
-        String newPath = selectedFile.getParent();
+        File newPath = selectedFile.getParentFile();
         if (!newPath.equals(defaultPath)) {
 			if(currentUserPreferences != null){
-				currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+				currentUserPreferences.setCurrentDialogPath(newPath);
 			}
         }
         //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);

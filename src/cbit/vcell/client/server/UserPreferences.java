@@ -10,12 +10,15 @@
 
 package cbit.vcell.client.server;
 
+import java.io.File;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Preference;
+
+import cbit.vcell.resource.ResourceUtil;
 
 /**
 User preferences, for now, fall under two different categories: warning messages and general preferences. 
@@ -84,18 +87,12 @@ public class UserPreferences {
 	//a generic user preference nevertheless: Last directory used for import XML/image, export, saveImageAs
 	public final static int GENERAL_LAST_PATH_USED = 0;
 	public final static int SEND_MODEL_INFO_IN_ERROR_REPORT = 1;
+
 	
-	
-	private static final String [] genDefaults = {
-		".",		// default is current directory.
-		"true" //send model info to VCell Support
-	};
-	
-	private final static int NUM_GENERAL_PREFERENCES = genDefaults.length; 
 	
 	static {
 		assert(showWarningDefaults.length == NUM_WARNING_PREFERENCES);
-		assert(genDefaults.length == NUM_GENERAL_PREFERENCES);
+
 	}
 	
 	// user choices
@@ -122,46 +119,57 @@ public class UserPreferences {
 public UserPreferences(ClientServerManager clientServerManager) {
 	this.clientServerManager = clientServerManager;
 	lastPref = null;
+
+}
+
+public File getCurrentDialogPath() {
+	try {
+		String key = UserPreferences.GEN_PREF+UserPreferences.GENERAL_LAST_PATH_USED;
+		if (genericHash.containsKey(key)){
+			Preference preference = (Preference)genericHash.get(key);
+			//extra processing: check if the path still exists.
+			java.io.File dir = new java.io.File(preference.getValue());
+			if (dir.exists()) {
+				return new File(preference.getValue());
+			}
+
+		}
+		String homeDirPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
+		//setGenPref(GENERAL_LAST_PATH_USED, homeDirPath);
+		return new File(homeDirPath);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		return new File(ResourceUtil.getUserHomeDir().getAbsolutePath());
+	}
+}
+
+public boolean getSendModelInfoInErrorReportPreference(){
+	String prefString = null;
+	try {
+		if (genericHash.containsKey(UserPreferences.GEN_PREF+UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT)){
+			Preference preference = (Preference)genericHash.get(UserPreferences.GEN_PREF+UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT);
+			prefString =  preference.getValue();
+		} else {
+			prefString = "true";
+		}
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		prefString = "true";
+	}
+	return Boolean.valueOf(prefString);
 }
 
 
-	public String getGenPref(int prefType) {
-
-		if (prefType < 0 || prefType > (NUM_GENERAL_PREFERENCES - 1)) {
-			throw new IllegalArgumentException("Invalid params for getting the user preferences: " + prefType);
-		}
-		try {
-			if (genericHash.containsKey(UserPreferences.GEN_PREF+prefType)){
-				Preference preference = (Preference)genericHash.get(UserPreferences.GEN_PREF+prefType);
-				//extra processing: check if the path still exists.
-				if (prefType == UserPreferences.GENERAL_LAST_PATH_USED) {
-					java.io.File dir = new java.io.File(preference.getValue());
-					if (dir.exists()) {
-						return preference.getValue();
-					} else {
-						System.err.println("Warning: default user path no more exists: " + dir.getAbsolutePath());
-						return genDefaults[prefType];
-					}
-				} else {
-					return preference.getValue();
-				}
-			} else {
-				return genDefaults[prefType];
-			}
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			return null;
-			//throw e;
-		}
-	}
-	/**
-	 * return general preference as boolean
-	 * @param prefType key of general preference
-	 * @return true if present and true, false if problem
-	 */
-	public boolean getGenPrefBoolean(int prefType) {
-		return Boolean.valueOf(getGenPref(prefType)); 
-	}
+/**
+ * return general preference as boolean
+ * @param prefType key of general preference
+ * @return true if present and true, false if problem
+ */
+//public boolean getGenPrefBoolean(int prefType) {
+//	return Boolean.valueOf(getGenPref(prefType)); 
+//}
 
 
 /**
@@ -289,24 +297,37 @@ private void saveToDatabase() {
 	}
 
 
+	public void setCurrentDialogPath(File path){
+		if (path.exists() && path.isDirectory()) {
+			String newPreferredPathString = path.getAbsolutePath();
+			Preference newPreference = new Preference(UserPreferences.GEN_PREF +UserPreferences.GENERAL_LAST_PATH_USED, newPreferredPathString);
+			setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPreference);
+		}
+	}	
+	
+	public void setSendModelInfoInErrorReportPreference(boolean flag){
+		Preference newPreference = new Preference(UserPreferences.GEN_PREF+UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT, String.valueOf(flag));
+		setGenPref(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT, newPreference);
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 3:06:29 AM)
  * @return boolean
  * @param preference java.lang.String
  */
-public void setGenPref(int prefType, String preferenceString) {
-	Preference newPreference = new Preference(UserPreferences.GEN_PREF +prefType, preferenceString);
-	setGenPref(prefType, newPreference);
-}
+//public void setGenPref(int prefType, String preferenceString) {
+//	Preference newPreference = new Preference(UserPreferences.GEN_PREF +prefType, preferenceString);
+//	setGenPref(prefType, newPreference);
+//}
 /**
  * set boolean preference
  * @param prefType
  * @param boolPref new value
  */
-public void setGenPref(int prefType, boolean boolPref) { 
-	setGenPref(prefType, Boolean.toString(boolPref) );
-}
+//public void setGenPref(int prefType, boolean boolPref) { 
+//	setGenPref(prefType, Boolean.toString(boolPref) );
+//}
 
 private void setShowWarning(int warningType, Preference newPreference) {
 	

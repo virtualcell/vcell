@@ -329,11 +329,11 @@ private void updateReferenceDataFromFile() {
 		fileChooser.setFileFilter(FileFilters.FILE_FILTER_CSV);
 		// remove all selector
 		fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-		String defaultPath = null;
+		File defaultPath = null;
 		if (getUserPreferences()!=null){
-		    defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+		    defaultPath = getUserPreferences().getCurrentDialogPath();
 		    if (defaultPath!=null){
-			    fileChooser.setCurrentDirectory(new File(defaultPath));
+			    fileChooser.setCurrentDirectory(defaultPath);
 		    }
 		}
 	
@@ -348,9 +348,9 @@ private void updateReferenceDataFromFile() {
 				throw UserCancelException.CANCEL_FILE_SELECTION;
 			} else {
 				if (getUserPreferences()!=null){
-					String newPath = selectedFile.getParent();
+					File newPath = selectedFile.getParentFile();
 					if (!newPath.equals(defaultPath)) {
-						getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+						getUserPreferences().setCurrentDialogPath(newPath);
 					}
 				}
 				CSV csv = new CSV();
