@@ -74,12 +74,12 @@ public class ChooseFile extends ExportTask {
 	//reset the user preference for the default path, if needed.
 	private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
 
-		String oldPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-		String newPath = selectedFile.getParent();                 
+		File oldPath = userPreferences.getCurrentDialogPath();
+		File newPath = selectedFile.getParentFile();                  
 		if (!newPath.equals(oldPath)) {
-			userPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			userPreferences.setCurrentDialogPath(newPath);
 		}
-		System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + oldPath);
+		System.out.println("New preferred file path: " + newPath.getAbsolutePath() + ", Old preferred file path: " + oldPath.getAbsolutePath());
 	}
 	
 	/**
@@ -148,7 +148,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	if (topLevelWindowManager == null) {
 		throw new RuntimeException("toplLevelWindowManager required");
 	}
-	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = userPreferences.getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -519,7 +519,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	Component comp = (Component)hashTable.get("component");
 	comp = (comp==null?(currentWindow==null?(topLevelWindowManager==null?null:topLevelWindowManager.getComponent()):currentWindow):comp);
-	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = userPreferences.getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -589,7 +589,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	if (topLevelWindowManager == null) {
 		throw new RuntimeException("toplLevelWindowManager required");
 	}
-	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = userPreferences.getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);

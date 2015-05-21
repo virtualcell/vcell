@@ -241,7 +241,7 @@ public void runBioNetGen(BNGInput bngInput) {
 public void saveOutput(String bngOutputStr) {
 
 	// Ask user for save location
-	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = getUserPreferences().getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -300,7 +300,7 @@ private void setBngOutputPanel(BNGOutputPanel newBngOutputPanel) {
  * @throws IOException
  */
 public void saveBNGLFile(String bngl) throws IOException {
-	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = getUserPreferences().getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
@@ -341,7 +341,7 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 	// BNG input file (.bngl) contents
 	String bngInputStr = null;
 	// Ask user for upload location
-	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	File defaultPath = getUserPreferences().getCurrentDialogPath();
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);

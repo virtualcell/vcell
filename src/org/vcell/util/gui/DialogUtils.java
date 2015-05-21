@@ -840,7 +840,7 @@ public static void showErrorDialog(final Component requester, final String messa
 			final boolean goingToEmail = sendErrorReport && VCellClientTest.getVCellClient() != null;
 			JPanelWithCb panel = createMessagePanel(errMsg);
 			if (goingToEmail && haveContext) {
-				initialCheckState = errorContext.userPreferences.getGenPrefBoolean(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT);
+				initialCheckState = errorContext.userPreferences.getSendModelInfoInErrorReportPreference();
 				addModelSendInformation(panel, initialCheckState);
 			}
 			Collection<String> suggestions = ExceptionInterpreter.instance().suggestions(message);
@@ -868,7 +868,7 @@ public static void showErrorDialog(final Component requester, final String messa
 						}
 						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend, extraContext);
 						if (userSelectedSendModel != initialCheckState) {
-							errorContext.userPreferences.setGenPref(UserPreferences.SEND_MODEL_INFO_IN_ERROR_REPORT,userSelectedSendModel);
+							errorContext.userPreferences.setSendModelInfoInErrorReportPreference(userSelectedSendModel);
 						}
 					}
 					else {

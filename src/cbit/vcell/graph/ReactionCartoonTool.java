@@ -27,6 +27,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2613,7 +2614,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		final java.io.File defaultFile = new java.io.File(getModel().getName()+".jpg");
 		ClientServerManager csm = (ClientServerManager) getDocumentManager().getSessionManager();
 		UserPreferences userPref = csm.getUserPreferences();
-		String defaultPath = userPref.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+		File defaultPath = userPref.getCurrentDialogPath();
 		VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(jpgFilter);
@@ -2647,9 +2648,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				//System.out.println("Saving reactions image to file: " + selectedFile.toString());
 				getDocumentManager().generateReactionsImage(new FileOutputStream(selectedFile),this);
 				//reset the user preference for the default path, if needed.
-				String newPath = selectedFile.getParent();
+				File newPath = selectedFile.getParentFile();
 				if (!newPath.equals(defaultPath)) {
-					userPref.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED,	newPath);
+					userPref.setCurrentDialogPath(newPath);
 				}
 			}
 		} 

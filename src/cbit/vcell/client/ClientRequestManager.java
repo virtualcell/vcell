@@ -2122,7 +2122,10 @@ public static void downloadExportedData(final Component requester, final UserPre
 					defaultPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 				}
 			} else {
-				defaultPath = userPrefs.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+				defaultPath = userPrefs.getCurrentDialogPath().getAbsolutePath();
+			}
+			if (defaultPath==null || ResourceUtil.getVCellInstall().getAbsolutePath().contains(defaultPath)) {
+				defaultPath = ResourceUtil.getUserHomeDir().getAbsolutePath();
 			}
 			final VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -2177,21 +2180,21 @@ public static void downloadExportedData(final Component requester, final UserPre
 			if (selectedFile == null) {
 				return;
 			}
-			String defaultPath = null;
-			String newPath = null;
+			File defaultPath = null;
+			File newPath = null;
 			
 			if (userPrefs != null) {
-				defaultPath = userPrefs.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-				newPath = selectedFile.getParent();
+				defaultPath = userPrefs.getCurrentDialogPath();
+				newPath = selectedFile.getParentFile();
 		        if (!newPath.equals(defaultPath)) {
-		        	userPrefs.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+		        	userPrefs.setCurrentDialogPath(newPath);
 		        }
 			} else { 
 				// if export is local export, userPrefs = null
-				defaultPath = ResourceUtil.getLastUserLocalDir();
-				newPath = selectedFile.getParent();
+				defaultPath = new File(ResourceUtil.getLastUserLocalDir());
+				newPath = selectedFile.getParentFile();
 	        if (!newPath.equals(defaultPath)) {
-		        	ResourceUtil.setLastUserLocalDir(newPath);
+		        	ResourceUtil.setLastUserLocalDir(newPath.getAbsolutePath());
 		        }
 	        }
 //	        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
