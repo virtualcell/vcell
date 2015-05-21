@@ -43,6 +43,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 		SimulationContext transformedSimContext;
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
+			transformedSimContext.getModel().refreshDependencies();
+			transformedSimContext.refreshDependencies();
 			transformedSimContext.compareEqual(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
