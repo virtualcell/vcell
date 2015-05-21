@@ -1,5 +1,7 @@
 package cbit.vcell.mapping;
 
+import java.io.Serializable;
+
 import org.vcell.util.Matchable;
 
 import cbit.vcell.model.Membrane;
@@ -11,7 +13,7 @@ import cbit.vcell.parser.Expression;
  * @author GWeatherby
  *
  */
-public class MembraneSpec implements Matchable {
+public class MembraneSpec implements Matchable, Serializable {
 	
 	private Membrane membrane; 
 	private Expression  celerityX;
