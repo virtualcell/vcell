@@ -123,7 +123,7 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -1368,7 +1368,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				VCDataIdentifier vcDataId = new MergedDataInfo(LocalWorkspace.getDefaultOwner(),dataIDs, VFRAP_DS_PREFIX);
 								
 				PDEDataManager dataManager = new PDEDataManager(null, getLocalWorkspace().getVCDataManager(),vcDataId);
-				PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+				PDEDataContext pdeDataContext = new ClientPDEDataContext(dataManager);
 						
 				ExportFormat format = ExportFormat.QUICKTIME;
 				String[] variableNames = new String[]{NORM_FLUOR_VAR, NORM_SIM_VAR};
@@ -1542,7 +1542,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			outputContext = new OutputContext(func);
 							
 			dataManager = new PDEDataManager(outputContext,getLocalWorkspace().getVCDataManager(),vcDataId);
-			NewClientPDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
+			ClientPDEDataContext pdeDataContext = new ClientPDEDataContext(dataManager);
 			
 			pdeDataContext.refreshIdentifiers();
 			flourViewer.setSimulation(sim);

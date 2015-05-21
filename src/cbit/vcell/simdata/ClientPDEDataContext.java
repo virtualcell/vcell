@@ -26,7 +26,7 @@ import cbit.vcell.solvers.CartesianMesh;
  * Creation date: (3/19/2004 10:42:31 AM)
  * @author: Fei Gao
  */
-class ClientPDEDataContext extends PDEDataContext implements DataListener {
+public class ClientPDEDataContext extends PDEDataContext implements DataListener {
 		//
 	private PDEDataManager dataManager = null;
 
@@ -35,7 +35,7 @@ class ClientPDEDataContext extends PDEDataContext implements DataListener {
  * Creation date: (5/22/2001 3:18:21 PM)
  * @param simManager cbit.vcell.desktop.controls.SimulationManager
  */
-protected ClientPDEDataContext(PDEDataManager argDataManager) {
+public ClientPDEDataContext(PDEDataManager argDataManager) {
 	super();
 	if (argDataManager != null) {
 		this.dataManager = argDataManager;

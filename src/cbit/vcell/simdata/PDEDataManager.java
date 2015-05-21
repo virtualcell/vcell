@@ -27,7 +27,7 @@ import cbit.vcell.solvers.CartesianMesh;
 public class PDEDataManager implements DataManager {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
-	private NewClientPDEDataContext newClientPDEDataContext = null;
+	private ClientPDEDataContext newClientPDEDataContext = null;
 	private OutputContext outputContext = null;
 
 /**
@@ -43,7 +43,7 @@ public PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, 
 	connect();
 }
 
-private PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier, NewClientPDEDataContext argNewClientPDEDataContext) {
+private PDEDataManager(OutputContext outputContext, VCDataManager vcDataManager, VCDataIdentifier vcDataIdentifier, ClientPDEDataContext argNewClientPDEDataContext) {
 	setVcDataManager(vcDataManager);
 	setVcDataIdentifier(vcDataIdentifier);
 	setOutputContext(outputContext);
@@ -152,7 +152,7 @@ public boolean getParticleDataExists() throws DataAccessException {
  * Creation date: (6/13/2004 3:04:49 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public NewClientPDEDataContext getPDEDataContext() {	
+public ClientPDEDataContext getPDEDataContext() {	
 	return newClientPDEDataContext;
 }
 
@@ -248,7 +248,7 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 
 
 private void connect() {
-	newClientPDEDataContext = new NewClientPDEDataContext(this);	
+	newClientPDEDataContext = new ClientPDEDataContext(this);	
 }
 
 
@@ -262,7 +262,7 @@ public void setOutputContext(OutputContext outputContext) {
 }
 
 
-public PDEDataManager createNewPDEDataManager(VCDataIdentifier argVCdid, NewClientPDEDataContext argNewClientPDEDataContext) throws DataAccessException {
+public PDEDataManager createNewPDEDataManager(VCDataIdentifier argVCdid, ClientPDEDataContext argNewClientPDEDataContext) throws DataAccessException {
 	if (argNewClientPDEDataContext == null) {
 		return new PDEDataManager(getOutputContext(), getVCDataManager(), argVCdid);
 	} else {

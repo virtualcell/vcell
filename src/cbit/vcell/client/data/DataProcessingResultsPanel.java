@@ -37,7 +37,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.PDEDataContext;
 
 @SuppressWarnings("serial")
@@ -102,18 +102,18 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 
 	private PDEDataContext pdeDataContext;
 
-	private void read(NewClientPDEDataContext pdeDataContext0) throws Exception {
+	private void read(ClientPDEDataContext pdeDataContext0) throws Exception {
 		this.pdeDataContext = pdeDataContext0;
 		dataProcessingOutputInfo = null;
 		try {
-			dataProcessingOutputInfo = (DataProcessingOutputInfo)pdeDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(pdeDataContext.getVCDataIdentifier(),true,((NewClientPDEDataContext)pdeDataContext0).getDataManager().getOutputContext()));
+			dataProcessingOutputInfo = (DataProcessingOutputInfo)pdeDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(pdeDataContext.getVCDataIdentifier(),true,((ClientPDEDataContext)pdeDataContext0).getDataManager().getOutputContext()));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
 		}
 	}
 	
-	public void update(final NewClientPDEDataContext pdeDataContext) {
+	public void update(final ClientPDEDataContext pdeDataContext) {
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override

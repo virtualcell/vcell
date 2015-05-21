@@ -35,7 +35,7 @@ import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -335,7 +335,7 @@ public void displayPostProcessingDataInVCell(SimulationDataSetRef simulationData
 			e1.printStackTrace();
 			throw new ThriftDataAccessException(e1.getMessage());
 		}
-		 final NewClientPDEDataContext newClientPDEDataContext = pdeDataManager.getPDEDataContext();
+		 final ClientPDEDataContext newClientPDEDataContext = pdeDataManager.getPDEDataContext();
 		
 		Enumeration<TopLevelWindowManager> windowManagers = vcellClient.getMdiManager().getWindowManagers();
 		final Window window = FindWindow.getWindow(windowManagers.nextElement().getComponent());
