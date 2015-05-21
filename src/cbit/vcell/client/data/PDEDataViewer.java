@@ -158,7 +158,7 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -289,7 +289,7 @@ public class PDEDataViewer extends DataViewer {
 //	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
 //	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
 	//
-	private NewClientPDEDataContext fieldPdeDataContext = null;
+	private ClientPDEDataContext fieldPdeDataContext = null;
 	private PDEDataContextPanel ivjPDEDataContextPanel1 = null;
 	private PDEPlotControlPanel ivjPDEPlotControlPanel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -355,7 +355,7 @@ public class PDEDataViewer extends DataViewer {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
-				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(NewClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
+				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(ClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
 					if(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME) == getJTabbedPane1().getSelectedIndex()){
 						dataProcessingResultsPanel.update(getPdeDataContext());
 					}
@@ -1681,7 +1681,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 											if(getClientTaskStatusSupport() != null){
 												getClientTaskStatusSupport().setMessage("Creating Post Process PDEDataContext...");
 											}
-											PostProcessDataPDEDataContext postProcessDataPDEDataContext = createPostProcessPDEDataContext((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext());
+											PostProcessDataPDEDataContext postProcessDataPDEDataContext = createPostProcessPDEDataContext((ClientPDEDataContext)PDEDataViewer.this.getPdeDataContext());
 											hashTable.put(POST_PROCESS_PDEDC,postProcessDataPDEDataContext);
 										}
 									};
@@ -1729,7 +1729,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 												public void propertyChange(PropertyChangeEvent evt) {
 													if(evt.getSource() == PDEDataViewer.this.getPdeDataContext() && evt.getPropertyName().equals("dataIdentifiers")){
 														try {
-															NewClientPDEDataContext parentNewClientPDEDataContext = (NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext();
+															ClientPDEDataContext parentNewClientPDEDataContext = (ClientPDEDataContext)PDEDataViewer.this.getPdeDataContext();
 															PostProcessDataPDEDataContext postProcessPDEDataContext = (PostProcessDataPDEDataContext)postProcessPdeDataViewer.getPdeDataContext();
 															if(postProcessPDEDataContext != null){
 																postProcessPDEDataContext.reset(parentNewClientPDEDataContext.getDataManager().getOutputContext());
@@ -1811,7 +1811,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 }
 
 
-private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(final NewClientPDEDataContext parentPDEDataContext) throws Exception{
+private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(final ClientPDEDataContext parentPDEDataContext) throws Exception{
 	final DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
 			parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(parentPDEDataContext.getVCDataIdentifier(),false,parentPDEDataContext.getDataManager().getOutputContext()));
 
@@ -1950,7 +1950,7 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 
 	VCDataManager postProcessVCDataManager = new VCDataManager(dataSetControllerProvider);
 	PDEDataManager postProcessPDEDataManager =
-		new PDEDataManager(((NewClientPDEDataContext)parentPDEDataContext).getDataManager().getOutputContext(), postProcessVCDataManager, parentPDEDataContext.getVCDataIdentifier());
+		new PDEDataManager(((ClientPDEDataContext)parentPDEDataContext).getDataManager().getOutputContext(), postProcessVCDataManager, parentPDEDataContext.getVCDataIdentifier());
 	PostProcessDataPDEDataContext postProcessDataPDEDataContext = new PostProcessDataPDEDataContext(postProcessPDEDataManager/*,dataProcessingOutputInfo*/);
 
 	return postProcessDataPDEDataContext;
@@ -1969,7 +1969,7 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 //	}
 //	return selectedTimePoints;
 //}
-private static class PostProcessDataPDEDataContext extends NewClientPDEDataContext{
+private static class PostProcessDataPDEDataContext extends ClientPDEDataContext{
 	DataProcessingOutputInfo dataProcessingOutputInfo;
 	public PostProcessDataPDEDataContext(PDEDataManager pdeDataManager/*,DataProcessingOutputInfo dataProcessingOutputInfo*/) throws Exception{
 		super(pdeDataManager);
@@ -1983,7 +1983,7 @@ private static class PostProcessDataPDEDataContext extends NewClientPDEDataConte
 	}
 	public void reset(OutputContext parentOutputContext) throws Exception{
 		refreshDataProcessingOutputInfo(parentOutputContext);
-		PDEDataManager pdeDatamanager = ((PDEDataManager)getDataManager()).createNewPDEDataManager(getVCDataIdentifier(), (NewClientPDEDataContext)this);	
+		PDEDataManager pdeDatamanager = ((PDEDataManager)getDataManager()).createNewPDEDataManager(getVCDataIdentifier(), (ClientPDEDataContext)this);	
 		pdeDatamanager.setOutputContext(parentOutputContext);
 		this.setDataManager(pdeDatamanager);
 	}
@@ -2133,7 +2133,7 @@ private javax.swing.JPopupMenu getPlotPopupMenu() {
  * @return The pdeDataContext property value.
  * @see #setPdeDataContext
  */
-public NewClientPDEDataContext getPdeDataContext() {
+public ClientPDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
@@ -2316,7 +2316,7 @@ public static void main(java.lang.String[] args) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-public void setPdeDataContext(NewClientPDEDataContext pdeDataContext) {	
+public void setPdeDataContext(ClientPDEDataContext pdeDataContext) {	
 	meshRegionSurfaces = null;
 
 	PDEDataContext oldValue = fieldPdeDataContext;
@@ -2400,7 +2400,7 @@ private void showKymograph() {
 			
 			
 			
-			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((NewClientPDEDataContext)getPdeDataContext()).getDataManager(),
+			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
 				getPdeDataContext().getDataIdentifier(), getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),

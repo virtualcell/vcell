@@ -43,7 +43,7 @@ import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataInfo;
 import cbit.vcell.simdata.PDEDataManager;
@@ -216,7 +216,7 @@ public class DisplayTimeSeries extends Task {
 			public String getID()  {	return "mydata";					}
 		};
 		PDEDataManager pdeDataManager = new PDEDataManager(outputContext, vcDataManager, vcDataIdentifier);
-		NewClientPDEDataContext myPdeDataContext = new NewClientPDEDataContext(pdeDataManager);
+		ClientPDEDataContext myPdeDataContext = new ClientPDEDataContext(pdeDataManager);
 		PDEDataViewer pdeDataViewer = new PDEDataViewer();
 
 		JFrame jframe = new JFrame();
