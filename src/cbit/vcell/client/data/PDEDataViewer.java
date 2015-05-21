@@ -66,7 +66,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
@@ -150,7 +149,6 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.server.DataSetController;
-import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataOperation;
@@ -178,7 +176,6 @@ import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
@@ -358,7 +355,7 @@ public class PDEDataViewer extends DataViewer {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
-				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(ClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
+				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(NewClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
 					if(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME) == getJTabbedPane1().getSelectedIndex()){
 						dataProcessingResultsPanel.update(getPdeDataContext());
 					}
@@ -2403,7 +2400,7 @@ private void showKymograph() {
 			
 			
 			
-			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
+			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((NewClientPDEDataContext)getPdeDataContext()).getDataManager(),
 				getPdeDataContext().getDataIdentifier(), getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
