@@ -26,7 +26,7 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 public class SpeciesPatternLargeShape extends AbstractComponentShape {
 
 	public static final int yLetterOffset = 11;			// y position of Bond id and/or State name
-	public static final int separationWidth = 10;		// width between 2 molecular type patterns
+	public static final int separationWidth = 1;		// width between 2 molecular type patterns
 	
 	private int xPos = 0;
 	private int yPos = 0;
