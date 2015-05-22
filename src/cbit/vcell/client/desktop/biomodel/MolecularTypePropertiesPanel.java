@@ -168,6 +168,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
@@ -350,6 +351,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		leftPanel.add(new JScrollPane(molecularTypeTree), gbc);
 		
 		// ------------------------------------------------------------------------------
+		
+		splitPaneHorizontal.setOneTouchExpandable(true);
+		splitPaneHorizontal.setDividerLocation(120);
+		splitPaneHorizontal.setResizeWeight(0.1);
+		
 		Border border = BorderFactory.createLineBorder(Color.gray);
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -377,13 +383,6 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		generalPanel.setLayout(new GridBagLayout());
 
 		gridy = 0;
-//		gbc = new java.awt.GridBagConstraints();
-//		gbc.gridx = 0; 
-//		gbc.gridy = gridy;
-//		gbc.insets = new Insets(9, 8, 4, 6);
-//		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-//		generalPanel.add(new JLabel("Annotation "), gbc);
-
 		annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 		annotationTextArea.setLineWrap(true);
 		annotationTextArea.setWrapStyleWord(true);
@@ -401,42 +400,21 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(jsp, gbc);
 
-		JPanel rightPanel = new JPanel();			// right side of the split panel
-		rightPanel.setLayout(new GridBagLayout());
+		splitPaneHorizontal.setTopComponent(shapePanel);
+		splitPaneHorizontal.setBottomComponent(generalPanel);
 
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		gbc.weightx = 1;
-		gbc.weighty = 0.9;
-		gbc.fill = GridBagConstraints.BOTH;
-		rightPanel.add(shapePanel, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.weightx = 1;
-		gbc.weighty = 0.1;
-		gbc.fill = GridBagConstraints.BOTH;
-		rightPanel.add(generalPanel, gbc);
-
-		
-		
-		
 		// -----------------------------------------------------------------------------
 		
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(240);
 		splitPane.setResizeWeight(0.1);
 		splitPane.setLeftComponent(leftPanel);
-		splitPane.setRightComponent(rightPanel);
-		
-
+		splitPane.setRightComponent(splitPaneHorizontal);
 		
 		Dimension minimumSize = new Dimension(100, 150);	//provide minimum sizes for the two components in the split pane
 		splitPane.setMinimumSize(minimumSize);
 		leftPanel.setMinimumSize(minimumSize);
-		rightPanel.setMinimumSize(minimumSize);
+		splitPaneHorizontal.setMinimumSize(minimumSize);
 		
 		setName("MolecularTypePropertiesPanel");
 		setLayout(new BorderLayout());
