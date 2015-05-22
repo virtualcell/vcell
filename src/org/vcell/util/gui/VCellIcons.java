@@ -39,6 +39,8 @@ public abstract class VCellIcons {
 	public final static Icon rbmMolecularTypeSimpleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecule_type2.png"));
 	public final static Icon rbmSpeciesGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_green.png"));
 	public final static Icon rbmSpeciesBlueIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_species_blue.png"));
+	public final static Icon rbmReactRuleDirectIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_react_rule_direct.png"));
+	public final static Icon rbmReactRuleReversIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_react_rule_revers.png"));
 
 //	public final static Icon rbmMolecularComponentIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component.gif"));
 	public final static Icon rbmComponentGreenIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_green.gif"));
