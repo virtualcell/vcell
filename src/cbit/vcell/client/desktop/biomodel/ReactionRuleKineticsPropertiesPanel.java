@@ -92,6 +92,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	private JLabel titleLabel = null;
 	private JCheckBox isReversibleCheckBox;
 
+	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between table and annotation
 	private ReactionRulePropertiesTableModel tableModel = null;
 	private ScrollTable table = null;
 	private JTextField nameTextField = null;
@@ -168,9 +169,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			isReversibleCheckBox = new JCheckBox("Reversible");
 			isReversibleCheckBox.addActionListener(eventHandler);
 
-			setName("KineticsTypeTemplatePanel");
-			setLayout(new java.awt.GridBagLayout());
-			
 			Border border = BorderFactory.createLineBorder(Color.gray);
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 			Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -188,13 +186,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			generalPanel.setPreferredSize(d);
 			
 			int gridy = 0;
-//			GridBagConstraints gbc = new java.awt.GridBagConstraints();
-//			gbc.gridx = 0; 
-//			gbc.gridy = gridy;
-//			gbc.insets = new Insets(9, 8, 4, 6);
-//			gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-//			generalPanel.add(new JLabel("Annotation "), gbc);
-
 			annotationTextArea = new javax.swing.JTextArea("", 1, 30);
 			annotationTextArea.setLineWrap(true);
 			annotationTextArea.setWrapStyleWord(true);
@@ -218,22 +209,24 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			nameTextField.addFocusListener(eventHandler);
 			nameTextField.addActionListener(eventHandler);
 			
+			JPanel tablePanel = new JPanel();
+			tablePanel.setLayout(new GridBagLayout());
+
 			gridy = 0;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.LINE_END;
-			add(new JLabel("Reaction Name"), gbc);
+			tablePanel.add(new JLabel("Reaction Name"), gbc);
 			
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; 
 			gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			gbc.weightx = 1.0;
-//			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			add(nameTextField, gbc);
+			tablePanel.add(nameTextField, gbc);
 					
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
@@ -242,7 +235,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.insets = new Insets(2,2,0,2);
 			gbc.anchor = GridBagConstraints.EAST;
 			gbc.fill = GridBagConstraints.NONE;
-			add(isReversibleCheckBox, gbc);
+			tablePanel.add(isReversibleCheckBox, gbc);
 			
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
@@ -252,18 +245,18 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
 			gbc.gridwidth = 3;
-			add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
+			tablePanel.add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 			
-			gridy ++;
-			gbc = new java.awt.GridBagConstraints();
-			gbc.gridx = 0; 
-			gbc.gridy = gridy;
-			gbc.fill = java.awt.GridBagConstraints.BOTH;
-			gbc.weightx = 1.0;
-			gbc.weighty = 0.2;
-			gbc.gridwidth = 3;
-			add(generalPanel, gbc);
+			splitPaneHorizontal.setOneTouchExpandable(true);
+			splitPaneHorizontal.setDividerLocation(120);
+			splitPaneHorizontal.setResizeWeight(0.1);
+			splitPaneHorizontal.setTopComponent(tablePanel);
+			splitPaneHorizontal.setBottomComponent(generalPanel);
+			splitPaneHorizontal.setMinimumSize(new Dimension(100, 150));
 			
+			setName("KineticsTypeTemplatePanel");
+			setLayout(new BorderLayout());
+			add(splitPaneHorizontal, BorderLayout.CENTER);
 			setBackground(Color.white);
 			
 			annotationTextArea.addFocusListener(eventHandler);
