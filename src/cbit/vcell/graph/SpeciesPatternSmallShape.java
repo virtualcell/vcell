@@ -26,7 +26,7 @@ import cbit.vcell.graph.AbstractComponentShape.BondPair;
 
 public class SpeciesPatternSmallShape extends AbstractComponentShape {
 
-	private static final int separationWidth = 3;		// width between 2 molecular type patterns
+	private static final int separationWidth = 1;		// width between 2 molecular type patterns
 	private int xPos = 0;
 	private int yPos = 0;
 	private int width = 0;
