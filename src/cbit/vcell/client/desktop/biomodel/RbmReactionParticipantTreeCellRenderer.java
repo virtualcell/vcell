@@ -55,7 +55,7 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				ReactionRule rr = (ReactionRule) userObject;
 				text = toHtml(rr);
 				toolTip = toHtmlWithTip(rr);
-				icon = VCellIcons.rbmSpeciesBlueIcon;
+				icon = rr.isReversible() ? VCellIcons.rbmReactRuleReversIcon : VCellIcons.rbmReactRuleDirectIcon;
 			} else if (userObject instanceof ReactionRuleParticipantLocal) {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) userObject;
 				text = toHtml(rrp,true);

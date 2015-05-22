@@ -262,13 +262,13 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 	}
 	public static final String toHtml(ReactionRuleParticipantLocal rrp, boolean bShowWords) {
 		String text = rrp.speciesPattern.getSpeciesPattern().toString();
-		String htmlText = rrp.type.name() + " " + rrp.index + ": <b>" + text + "</b>";
+		String htmlText = rrp.type.toString() + " " + rrp.index + ": <b>" + text + "</b>";
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
 	}
 	public static final String toHtmlWithTip(ReactionRuleParticipantLocal rrp, boolean bShowWords) {
 		String text = rrp.speciesPattern.getSpeciesPattern().toString();
-		text =  rrp.type.name() + " " + rrp.index + ": " + text;
+		text =  rrp.type.toString() + " " + rrp.index + ": " + text;
 		String htmlText = text + VCellErrorMessages.RightClickToAddMolecules;
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;

@@ -100,9 +100,21 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public static final Object PROPERTY_NAME_KINETICLAW = "kineticLaw";
 	
 	public static enum ReactionRuleParticipantType {
-		Reactant,
-		Product,
+		Reactant ("Reactant Pattern"),
+		Product ("Product Pattern");
+		
+		private final String name;       
+		private ReactionRuleParticipantType(String s) {
+			name = s;
+		}
+		public boolean equalsName(String otherName){
+			return (otherName == null)? false:name.equals(otherName);
+		}
+		public String toString(){
+			return name;
+		}
 	}
+	
 	/**
 	 * allowable changes from reactant patterns to product patterns:
 	 * 
