@@ -88,6 +88,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
+	private JPanel shapePanel;
+	private JScrollPane scrollPane;
 	private JPanel productPanel;
 	private JPanel reactantPanel;
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -189,10 +191,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
+	private static int yDividerLocation = 100;
 	private void initialize() {
 		try {
 
-			JPanel shapePanel = new JPanel() {
+			shapePanel = new JPanel() {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
@@ -205,16 +208,20 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			};
 			shapePanel.setLayout(new GridBagLayout());
-			shapePanel.setBackground(Color.white);		
+			shapePanel.setBackground(Color.white);	
+			
+			scrollPane = new JScrollPane(shapePanel);
+			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 			
 			splitPaneHorizontal.setOneTouchExpandable(true);
-			splitPaneHorizontal.setDividerLocation(80);
+			splitPaneHorizontal.setDividerLocation(yDividerLocation);
 			splitPaneHorizontal.setResizeWeight(0.1);
 			
 			JPanel lowerPanel = new JPanel();
 			lowerPanel.setLayout(new GridBagLayout());
 
-			splitPaneHorizontal.setTopComponent(shapePanel);
+			splitPaneHorizontal.setTopComponent(scrollPane);
 			splitPaneHorizontal.setBottomComponent(lowerPanel);
 			
 			splitPaneTrees.setResizeWeight(0.5);
@@ -540,13 +547,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private void updateShape() {
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		reactantPatternShapeList.clear();
-		int xOffset = 20;
+		int xOffset = 10;
 		if(rpList != null && rpList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 10, sp, gc, reactionRule);
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
 				} else {
@@ -556,7 +563,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						sps.addEndText("->");
 					}
 				}
-				xOffset = sps.getRightEnd() + 35;
+				xOffset = sps.getRightEnd() + 35;	// distance between species patterns
 				reactantPatternShapeList.add(sps);
 			}
 		}
@@ -567,7 +574,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 10, sp, gc, reactionRule);
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
@@ -575,6 +582,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				productPatternShapeList.add(sps);
 			}
 		}
+		
+		// TODO: instead of offset +200 compute the exact width of the image
+		Dimension preferredSize = new Dimension(xOffset+200, yDividerLocation);
+		shapePanel.setPreferredSize(preferredSize);
+
 		splitPaneHorizontal.getTopComponent().repaint();
 	}
 	
