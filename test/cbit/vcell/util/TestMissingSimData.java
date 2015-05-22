@@ -194,7 +194,11 @@ public class TestMissingSimData {
 			});
 			System.out.println("-----\n-----");
 			for(int i=0;i<rerunArr.length;i++){
-				System.out.println(BeanUtils.forceStringSize(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 15, " ", true)+" "+rerunArr[i].getLastSimStatus());
+				System.out.println(
+					BeanUtils.forceStringSize(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 12, " ", true)+" "+
+					BeanUtils.forceStringSize((rerunArr[i].getSimulation()!=null?"'"+rerunArr[i].getSimulation().getVersion().getOwner().getName()+"'":"null"), 15, " ", false)+" "+
+					BeanUtils.forceStringSize((rerunArr[i].getSimulation()!=null?"scan="+rerunArr[i].getSimulation().getScanCount():"null"), 10, " ", false)+" "+
+					rerunArr[i].getLastSimStatus());
 			}
 			System.out.println("-----\n-----");
 			printTimer.restart();
@@ -203,6 +207,20 @@ public class TestMissingSimData {
 	private static boolean acquireThread(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo,
 			String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
 		synchronized(threadHolder){
+			Iterator<RerunMissing> rerunIter = threadHolder.values().iterator();
+			while(rerunIter.hasNext()){
+				RerunMissing rerunMissing = rerunIter.next();
+				if(rerunMissing.getSimulation() != null){
+					if(rerunMissing.getSimulation().getScanCount() > 1){
+						//don't proceed until scancounts are done
+						return false;
+					}
+				}else{
+					//can't get sccancount info, try back later
+					return false;
+				}
+			}
+			
 			if(threadHolder.size() < 10){
 				threadHolder.put(vcSimulationIdentifier.getSimulationKey(), new RerunMissing(vcSimulationIdentifier,userLoginInfo, connectURL, dbSchemaUser, dbPassword));
 				new Thread(threadHolder.get(vcSimulationIdentifier.getSimulationKey()),"rerun_"+vcSimulationIdentifier.getID()).start();
@@ -248,6 +266,7 @@ public class TestMissingSimData {
 		private String dbSchemaUser;
 		private String dbPassword;
 		private SimulationStatusPersistent lastSimStatus;
+		private Simulation simulation;
 		public RerunMissing(VCSimulationIdentifier vcSimulationIdentifier,UserLoginInfo userLoginInfo,String connectURL,String dbSchemaUser, String dbPassword) throws Exception{
 			this.vcSimulationIdentifier = vcSimulationIdentifier;
 //			this.vCellBootstrap = vCellBootstrap;
@@ -260,6 +279,9 @@ public class TestMissingSimData {
 			this.vCellBootstrap = getVCellBootstrap("rmi-alpha.cam.uchc.edu", 40111, "VCellBootstrapServer", 12, false);//Test2
 			
 
+		}
+		public Simulation getSimulation(){
+			return simulation;
 		}
 		public VCSimulationIdentifier getVCSimulationIdentifier(){
 			return vcSimulationIdentifier;
@@ -281,14 +303,16 @@ public class TestMissingSimData {
 			}
 			try{
 				VCellConnection vcellConnection = vCellBootstrap.getVCellConnection(userLoginInfo);
-				vcellConnection.getMessageEvents();
+				BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
+				simulation = XmlHelper.XMLToSim(simXML.toString());				
 
 				long startTime = System.currentTimeMillis();
 				SimulationStatusPersistent initSimulationStatus = null;
 				while(initSimulationStatus == null){
+					vcellConnection.getMessageEvents();
 					initSimulationStatus = vcellConnection.getUserMetaDbServer().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 					Thread.sleep(5000);
-					if((System.currentTimeMillis()-startTime) > 10000){
+					if((System.currentTimeMillis()-startTime) > 15000){
 						System.out.println("-----Couldn't get initial simulation status");
 						break;
 					}
@@ -298,8 +322,6 @@ public class TestMissingSimData {
 //					return;
 //				}
 
-				BigString simXML = vcellConnection.getUserMetaDbServer().getSimulationXML(vcSimulationIdentifier.getSimulationKey());
-				Simulation sim = XmlHelper.XMLToSim(simXML.toString());				
 				
 //				if(!sim.isSpatial()){
 //					continue;
@@ -308,10 +330,10 @@ public class TestMissingSimData {
 //					continue;
 //				}
 				
-				int scanCount = sim.getScanCount();
+				int scanCount = simulation.getScanCount();
 //				if(true){return;}
 				SimulationStatusPersistent simulationStatus = null;
-				SimulationInfo simulationInfo = sim.getSimulationInfo();
+				SimulationInfo simulationInfo = simulation.getSimulationInfo();
 				if(!simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().equals(vcSimulationIdentifier.getSimulationKey())){
 					throw new Exception("Unexpected authoritative and sim id are not the same");
 				}
@@ -412,8 +434,9 @@ public class TestMissingSimData {
 				" missingdata.simjobsimref = vc_simulation.id and "+
 				" (missingdata.dataexists='false') "+
 				" and missingdata.notes is null " +
-//				" (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
-//				" (missingdata.notes like '%exceeded_maximum%')" +
+//				" and (missingdata.notes like '%Compiled_solvers_no_longer%' or missingdata.notes like '%Connection_refused%')" +
+//				" and (missingdata.notes like '%exceeded_maximum%')" +
+//				" and (missingdata.notes like '%too_many_jobs%')" +
 				" and vc_simulation.parentsimref is null "+
 				" and (softwareversion is null or regexp_substr(softwareversion,'^((release)|(rel)|(alpha)|(beta))_version_([[:digit:]]+\\.?)+_build_([[:digit:]]+\\.?)+',1,1,'i') is not null) "+
 				" and vc_softwareversion.versionableref (+) = vc_simulation.id " +
@@ -457,11 +480,11 @@ public class TestMissingSimData {
 	//				}
 	
 					if(userid.toLowerCase().equals("vcelltestaccount")
-	//					 || userid.toLowerCase().equals("anu")
-	//					 || userid.toLowerCase().equals("fgao")
-	//					 || userid.toLowerCase().equals("liye")
-	//					 || userid.toLowerCase().equals("schaff")
-	//					 || userid.toLowerCase().equals("ignovak")
+//						 || userid.toLowerCase().equals("anu")
+//						 || userid.toLowerCase().equals("fgao")
+//						 || userid.toLowerCase().equals("liye")
+//						 || userid.toLowerCase().equals("schaff")
+//						 || userid.toLowerCase().equals("ignovak")
 	//					 || userid.toLowerCase().equals("jditlev")
 	//					 || userid.toLowerCase().equals("sensation")
 						 ){
@@ -493,6 +516,7 @@ public class TestMissingSimData {
 			UserLoginInfo userLoginInfo = keyUserLoginInfo.get(simKey);
 			VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, userLoginInfo.getUser());
 			while(acquireThread(vcSimulationIdentifier, userLoginInfo, connectURL, dbSchemaUser, dbPassword)==false){
+				Thread.sleep(2000);
 			}
 			System.out.println("-----");
 			System.out.println("-----running "+currentCount+" of "+keyUserLoginInfo.size()+"   user="+userLoginInfo.getUser()+" simjobsimref="+vcSimulationIdentifier.getSimulationKey());
