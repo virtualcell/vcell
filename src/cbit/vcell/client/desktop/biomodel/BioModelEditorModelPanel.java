@@ -912,18 +912,21 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							spssList.clear();
 							int xPos = 4;
 							for(int i = 0; i<rs.getNumReactants(); i++) {
-								spss = new SpeciesPatternSmallShape(xPos, 2, null, panelContext, rs, isSelected);
+								SpeciesPattern sp = rs.getReactant(i).getSpeciesContext().getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
 								if(i < rs.getNumReactants()-1) {
 									spss.addEndText("+");
 								} else {
 									spss.addEndText("->");
 								}
-								xPos += spss.getWidth() + 25;
+								int offset = sp != null ? 15 : 25;
+								xPos += spss.getWidth() + offset;
 								spssList.add(spss);
 							}
 							xPos+= 6;
 							for(int i = 0; i<rs.getNumProducts(); i++) {
-								spss = new SpeciesPatternSmallShape(xPos, 2, null, panelContext, rs, isSelected);
+								SpeciesPattern sp = rs.getProduct(i).getSpeciesContext().getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
 								if(i < rs.getNumProducts()-1) {
 									spss.addEndText("+");
 								}

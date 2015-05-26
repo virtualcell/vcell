@@ -474,8 +474,24 @@ public Reactant getReactant(String name) {
 	}
 	return null;
 }
-public Product getProduct(String name) {
+public Reactant getReactant(int thatIndex) {
 	if(!hasReactant()) {
+		return null;	// could throw an IndexOutOfBoundsException too
+	}
+	int thisIndex = 0;
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Reactant) {
+			if(thisIndex == thatIndex) {
+				return (Reactant)p;
+			}
+			thisIndex++;
+		}
+	}
+	return null;
+}
+public Product getProduct(String name) {
+	if(!hasProduct()) {
 		return null;
 	}
 	for(int i=0; i<getReactionParticipants().length; i++) {
@@ -487,8 +503,24 @@ public Product getProduct(String name) {
 		}
 	}
 	return null;
-	
 }
+public Product getProduct(int thatIndex) {
+	if(!hasProduct()) {
+		return null;
+	}
+	int thisIndex = 0;
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Product) {
+			if(thisIndex == thatIndex) {
+				return (Product)p;
+			}
+			thisIndex++;
+		}
+	}
+	return null;
+}
+
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Reaction
