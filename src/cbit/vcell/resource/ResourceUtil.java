@@ -588,5 +588,14 @@ public class ResourceUtil {
 		return VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 	}
 
+	/**
+	 * convert arbitrary path string to unix style
+	 * @param filePath not null
+	 * @return unix / linux style path 
+	 */
+	public static String forceUnixPath(String filePath){
+		return filePath.replace("C:","").replace("D:","").replace("\\","/");
+	}
+
 
 }

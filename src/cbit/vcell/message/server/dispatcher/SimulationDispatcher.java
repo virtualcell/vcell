@@ -330,6 +330,9 @@ public class SimulationDispatcher extends ServiceProvider {
 									}
 								}
 								if (killJob){
+									if (lg.isEnabledFor(Level.WARN)) {
+										lg.warn("killing " + jobInfo + ", " + failureMessage);
+									}
 									VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobID);
 									htcProxy.killJob(htcJobID);
 								}

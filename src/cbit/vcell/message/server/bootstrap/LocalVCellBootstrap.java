@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.bootstrap;
 
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
@@ -27,6 +28,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.StdoutSessionLogConcurrentRmi;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -82,8 +84,7 @@ public class LocalVCellBootstrap extends UnicastRemoteObject implements VCellBoo
 		}
 		@Override
 		public String getConnectedUserNames(){
-			ArrayList<String> connectedUsers = new ArrayList<String>();
-			StringBuffer userNames = new StringBuffer();
+			StringBuilder userNames = new StringBuilder();
 			User[] users = localVCellServer.getServerInfo().getConnectedUsers();
 			for (User user : users){
 				userNames.append(user.getName()+" ");
@@ -203,10 +204,11 @@ public static void main(java.lang.String[] args) {
 		//
 		// Redirect output to the logfile (append if exists)
 		//
+		OutputStream logOutputStream = null;
 		if (args[3]!=null){
 			String logdir = args[3];
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), ServiceType.RMI, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
-			ServiceProvider.initLog(serviceInstanceStatus, logdir);
+			logOutputStream = ServiceProvider.initLog(serviceInstanceStatus, logdir);
 		}
 		
 		//
@@ -218,7 +220,13 @@ public static void main(java.lang.String[] args) {
 		}
 		VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 		
-		SessionLog log = new StdoutSessionLog("local(unauthenticated)_administrator");
+		SessionLog log;
+		if (logOutputStream != null) {
+			log = new StdoutSessionLogConcurrentRmi("local(unauthenticated)_administrator",logOutputStream);
+		}
+		else {
+			log = new StdoutSessionLog("local(unauthenticated)_administrator");
+		}
 		
 		int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 		new LifeSignThread(log,lifeSignMessageInterval_MS).start();   

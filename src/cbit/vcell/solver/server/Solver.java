@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.server;
 
+import cbit.vcell.message.server.cmd.CommandServiceSsh;
 import cbit.vcell.solver.SimulationJob;
 
 /**
@@ -24,18 +25,18 @@ public interface Solver {
 	 *
 	 */
 	public void addSolverListener(SolverListener newListener);
-/**
- * Insert the method's description here.
- * Creation date: (6/28/01 2:54:56 PM)
- * @return double
- */
-double getCurrentTime();
-/**
- * Insert the method's description here.
- * Creation date: (6/28/01 2:54:39 PM)
- * @return double
- */
-double getProgress();
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/28/01 2:54:56 PM)
+	 * @return double
+	 */
+	double getCurrentTime();
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/28/01 2:54:39 PM)
+	 * @return double
+	 */
+	double getProgress();
 	public SimulationJob getSimulationJob();
 	public SolverStatus getSolverStatus();
 	/**
@@ -44,4 +45,10 @@ double getProgress();
 	public void removeSolverListener(SolverListener newListener);
 	public void startSolver();
 	public void stopSolver();
+	
+	/**
+	 * notify solver it will be executed in a unix/linux environment, if it current JRE
+	 * is not (e.g. Windows). see {@link CommandServiceSsh}
+	 */
+	public void setUnixMode( );
 }

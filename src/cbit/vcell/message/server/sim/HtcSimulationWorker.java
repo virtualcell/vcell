@@ -65,6 +65,7 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -232,9 +233,10 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	
 	File userDir = new File(rd.runDirectory);
 	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userDir, simTask, true);
+	realSolver.setUnixMode();
 	
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-	String simTaskFilePath = forceUnixPath(new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskFilePath = ResourceUtil.forceUnixPath(new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 	
 	if (clonedHtcProxy.getCommandService() instanceof CommandServiceSsh){
 		// write simTask file locally, and send it to server, and delete local copy.
@@ -275,7 +277,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(false, false, 
 				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor), 
 				simTaskFilePath, 
-				forceUnixPath(userDir.getAbsolutePath()) );
+				ResourceUtil.forceUnixPath(userDir.getAbsolutePath()) );
 		commandContainer.add(preprocessorCmd);
 		for (ExecutableCommand ec  : compiledSolver.getCommands()) {
 			if (ec.isMessaging()) {
@@ -297,7 +299,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		ExecutableCommand ec = new ExecutableCommand(false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable), 
 				simTaskFilePath,
-				forceUnixPath(userDir.getAbsolutePath())
+				ResourceUtil.forceUnixPath(userDir.getAbsolutePath())
 		);
 		commandContainer.add(ec);
 	}
@@ -308,11 +310,6 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		}
 	return jobid;
 }
-
-private static String forceUnixPath(String filePath){
-	return filePath.replace("C:","").replace("D:","").replace("\\","/");
-}
-
 
 @Override
 public void stopService(){
