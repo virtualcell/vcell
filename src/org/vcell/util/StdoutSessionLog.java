@@ -10,95 +10,43 @@
 
 package org.vcell.util;
 
-import java.rmi.server.*;
-import java.util.*;
-import java.io.*;
-
-import cbit.vcell.mongodb.VCMongoMessage;
+import java.io.PrintStream;
 /**
- * This type was created in VisualAge.
+ * Direct implementation of writing to designed output stream; use object level
+ * synchronization for concurrency control
  */
-public class StdoutSessionLog implements SessionLog {
-	private String userid = null;
-	private PrintStream out = null;
+public class StdoutSessionLog extends StdoutSessionLogA {
+	
+
+protected final PrintStream out;
+
 /**
- * StdoutSessionLog constructor comment.
+ * use System.out default
+ * @param userid
  */
 public StdoutSessionLog(String userid) {
-	this.userid = userid;
-	this.out = System.out;
+	this(userid,System.out);
 }
-/**
- * StdoutSessionLog constructor comment.
- */
+
 public StdoutSessionLog(String userid, PrintStream outStream) {
-	this.userid = userid;
-	this.out = outStream;
+	super(userid);
+	out = outStream;
 }
-/**
- * print method comment.
- */
-public synchronized void alert(String message) {
-	String host = null;
-	try {
-		host = "(remote:"+RemoteServer.getClientHost()+")";
-	}catch (Exception e){
-		host = "(localhost)";
-	}
-	String time = Calendar.getInstance().getTime().toString();
-	out.println("<<<ALERT>>> "+userid+" "+host+" "+time+" "+message);
-	return;
-}
-/**
- * print method comment.
- */
-public synchronized void exception(Throwable exception) {
-	String host = null;
-	try {
-		host = "(remote:"+RemoteServer.getClientHost()+")";
-	}catch (Exception e){
-		host = "(localhost)";
-	}
-	String time = Calendar.getInstance().getTime().toString();
 
-	//
-	// capture stack in String
-	//
-	ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	PrintWriter pw = new PrintWriter(bos);
-	exception.printStackTrace(pw);
-	pw.close();
-	String stack = bos.toString();
-
-	//
-	// parse stack string, and prefix each line with identifying info
-	//
-	StringBuffer buffer = new StringBuffer();
-	StringTokenizer tokens = new StringTokenizer(stack,"\n");
-	while (tokens.hasMoreTokens()){
-		String line = tokens.nextToken();
-		buffer.append("<<<EXCEPTION>>> "+userid+" "+host+" "+time+" "+line+"\n");
-	}
-
-	//
-	// print to log (stdout)
-	//
-	out.println(buffer.toString());
-	VCMongoMessage.sendException(stack,exception.getMessage());
-	return;
-}
 /**
- * print method comment.
+ * use {@link #remoteHostInfo()} 
  */
-public synchronized void print(String message) {
-	String host = null;
-	try {
-		host = "(remote:"+RemoteServer.getClientHost()+")";
-	}catch (Exception e){
-		host = "(localhost)";
-	}
-	String time = Calendar.getInstance().getTime().toString();
-	out.println(userid+" "+host+" "+time+" "+message);
-	return;
+@Override
+protected String hostInfo() {
+	return remoteHostInfo();
 }
+
+/**
+ * print directly to {@link StdoutSessionLogA#out}
+ */
+@Override
+protected synchronized void output(String message) {
+	out.append(message);
+}
+
 }

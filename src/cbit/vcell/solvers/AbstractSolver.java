@@ -12,8 +12,12 @@ package cbit.vcell.solvers;
 
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.vcell.util.ConfigurationException;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Constant;
@@ -64,9 +68,15 @@ public AbstractSolver(SimulationTask simTask, File directory, SessionLog session
 			throw new ConfigurationException(msg);
 		}
 	}		 
-		this.saveDirectory = directory;
-	if (!simTask.getSimulationJob().getSimulation().checkValid()) {
-		throw new SolverException(simTask.getSimulationJob().getSimulation().getWarning());
+	this.saveDirectory = directory;
+	ArrayList<Issue> issueList = new ArrayList<Issue>();
+	IssueContext issueContext = new IssueContext(ContextType.Simulation,simTask.getSimulation(),null);
+	simTask.getSimulation().getMathDescription().gatherIssues(issueContext,issueList);
+	simTask.getSimulation().gatherIssues(issueContext,issueList);
+	for (Issue issue : issueList) {
+		if (issue.getSeverity() == Issue.SEVERITY_ERROR){
+			throw new SolverException(issue.getMessage());
+		}
 	}
 }
 
@@ -357,6 +367,15 @@ protected final void setSolverStatus(SolverStatus solverStatus) {
 
 public SimulationJob getSimulationJob() {
 	return simTask.getSimulationJob();
+}
+
+
+/**
+ * no-op
+ */
+@Override
+public void setUnixMode() {
+	
 }
 
 }

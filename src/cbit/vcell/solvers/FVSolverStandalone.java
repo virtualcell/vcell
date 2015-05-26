@@ -17,8 +17,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Vector;
 
+import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
@@ -36,6 +38,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -67,6 +70,8 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	 */
 	private ExecutableCommand primaryCommand;
 	
+	private boolean unixMode = false;
+	
 	public static final int HESM_KEEP_AND_CONTINUE = 0;
 	public static final int HESM_THROW_EXCEPTION = 1;
 	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
@@ -94,6 +99,13 @@ public FVSolverStandalone (SimulationTask simTask, File dir, SessionLog sessionL
 	SolverTaskDescription sts = notNull(SolverTaskDescription.class, s.getSolverTaskDescription());
 	SolverDescription sd = notNull(SolverDescription.class,sts.getSolverDescription());
 	isChombo = sd.isChomboSolver(); 
+}
+
+
+
+@Override
+public void setUnixMode() {
+	unixMode = true;
 }
 
 
@@ -342,7 +354,11 @@ protected void initialize() throws SolverException {
  * @return full path of baseName + ".fvinput" 
  */
 private String getInputFilename() {
-	return new File(getSaveDirectory(),baseName + ".fvinput").getAbsolutePath();
+	String ipf =  new File(getSaveDirectory(),baseName + ".fvinput").getAbsolutePath();
+	if (!unixMode) {
+		return ipf;
+	}
+	return ResourceUtil.forceUnixPath(ipf);
 }
 
 @Override
@@ -395,7 +411,8 @@ private Collection<ExecutableCommand> getChomboCommands() {
 
 	String executableName = null;
 	Simulation simulation = getSimulationJob().getSimulation();
-	final boolean isParallel = simulation.getSolverTaskDescription().isParallel();
+	SolverTaskDescription sTaskDesc = simulation.getSolverTaskDescription();
+	final boolean isParallel = sTaskDesc.isParallel();
 	int dimension = simulation.getMeshSpecification().getGeometry().getDimension();
 	switch (dimension) {
 	case 2:
@@ -411,9 +428,13 @@ private Collection<ExecutableCommand> getChomboCommands() {
 	if (isParallel) {
 		String parallelName = executableName + "parallel";
 		ExecutableCommand solve = new ExecutableCommand(true, true, parallelName, inputFilename );
-		ExecutableCommand convertChomboData = new ExecutableCommand(true, false,executableName, "-ccd", inputFilename );
 		commands.add(solve);
-		commands.add(convertChomboData);
+		ChomboSolverSpec css = sTaskDesc.getChomboSolverSpec();
+		Objects.requireNonNull(css);
+		if (css.isSaveVCellOutput()) {
+			ExecutableCommand convertChomboData = new ExecutableCommand(true, false,executableName, "-ccd", inputFilename );
+			commands.add(convertChomboData);
+		}
 	}
 	else {
 		ExecutableCommand ec = new ExecutableCommand(true, false, executableName, inputFilename );

@@ -17,14 +17,12 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.ExecutableException;
-import org.vcell.util.FileUtils;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.message.server.cmd.CommandService;
-import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
 import cbit.vcell.message.server.cmd.CommandServiceSsh;
-import cbit.vcell.message.server.htc.sge.SgeJobID;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 
@@ -109,9 +107,24 @@ public abstract class HtcProxy {
 		}
 	}
 	
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	/**
+	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX} 
+	 * @return V_<i>server<i> or V_ 
+	 */
+	private static String jobNamePrefix( ){
+		String stub = "V_";
+		try {
+			String server = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty,"");
+			return stub + server + "_";
+		} catch (Error e) { //set regardless, just log error
+			lg.error(e);
+		}
+		return stub; 
+	}
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
+	
 
 	
 	public HtcProxy(CommandService commandService, String htcUser){
