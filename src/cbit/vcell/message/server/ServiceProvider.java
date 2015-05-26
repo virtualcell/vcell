@@ -13,6 +13,7 @@ package cbit.vcell.message.server;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -160,7 +161,13 @@ public void stopService() {
 	}
 }
 
-public static void initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
+/**
+ * @param serviceInstanceStatus
+ * @param logDirectory, if null, use stdout
+ * @return {@link OutputStream} created or null
+ * @throws FileNotFoundException
+ */
+public static OutputStream initLog(ServiceInstanceStatus serviceInstanceStatus, String logDirectory) throws FileNotFoundException {
 	if (serviceInstanceStatus == null) {
 		throw new RuntimeException("initLog: serviceInstanceStatus can't be null");		
 	}
@@ -172,12 +179,15 @@ public static void initLog(ServiceInstanceStatus serviceInstanceStatus, String l
 			
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");
 		File logfile = new File(logdir, serviceInstanceStatus.getServerID()+"_"+serviceInstanceStatus.getType().getName()+"_"+serviceInstanceStatus.getOrdinal() + "_"+dateFormat.format(new Date())+".log");
-		java.io.PrintStream ps = new PrintStream(new FileOutputStream(logfile), true); // don't append, auto flush
+		FileOutputStream fos = new FileOutputStream(logfile); // don't append, auto flush
+		java.io.PrintStream ps = new PrintStream(fos,true); // don't append, auto flush
 		System.out.println("logging to file " + logfile.getAbsolutePath());
 		System.setOut(ps);
 		System.setErr(ps);
+		return fos;
 	}else{
 		System.out.println("logging to stdout");
+		return null;
 	}
 }
 

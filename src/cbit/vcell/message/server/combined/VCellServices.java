@@ -10,8 +10,10 @@
 
 package cbit.vcell.message.server.combined;
 import java.io.File;
+import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
@@ -20,6 +22,7 @@ import javax.management.ObjectName;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.StdoutSessionLogConcurrent;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.logging.WatchLogging;
 
@@ -215,9 +218,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
 					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 			
-			initLog(serviceInstanceStatus, logdir);
+			OutputStream os = initLog(serviceInstanceStatus, logdir);
+			Objects.requireNonNull(os);
 
-			final SessionLog log = new StdoutSessionLog(serviceInstanceStatus.getID());
+			final SessionLog log = new StdoutSessionLogConcurrent(serviceInstanceStatus.getID(),os);
             
 			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
@@ -246,7 +250,6 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	        exportServiceImpl.addExportListener(vcellServices);
 
 			vcellServices.init();
-
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);
 		}

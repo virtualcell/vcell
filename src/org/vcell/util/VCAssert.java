@@ -1,6 +1,7 @@
 package org.vcell.util;
 
 
+
 /**
  * runtime assertion facility that throws exception instead of errors
  * @author gweatherby
@@ -46,23 +47,43 @@ public class VCAssert {
 	}
 	
 	/**
-	 * validate object is of specified type
-	 * @param fileFilter; not null
+	 * validate object is not null and of specified type
+	 * @param obj
 	 * @param clzz required type; non null
+	 * @throws ProgrammingException if null or not of expected type
 	 */
 	public static <T> void ofType(Object obj, Class<T> clzz) {
-		if (!clzz.isAssignableFrom(obj.getClass())) {
-			throw new ProgrammingException(MSG_PREFIX + "Object of type " + obj.getClass().getName() 
-					+ " not instance of type " + clzz.getName() );
+		if (obj != null) {
+			if (!clzz.isAssignableFrom(obj.getClass())) {
+				throw new ProgrammingException(MSG_PREFIX + "Object of type " + obj.getClass().getName() 
+						+ " not instance of type " + clzz.getName() );
+			}
+			return;
 		}
+		throw new ProgrammingException(MSG_PREFIX + "Null pointer for expected type " + clzz.getName() );
 	}
 
+	/**
+	 * validate object is not of specified type
+	 * @param obj can be null
+	 * @param clzz required type; non null
+	 * @throws ProgrammingException if not of expected type
+	 */
+	public static <T> void notOfType(Object obj, Class<T> clzz) {
+		if (obj != null) {
+			if (clzz.isAssignableFrom(obj.getClass())) {
+				throw new ProgrammingException(MSG_PREFIX + "Object of type " + obj.getClass().getName() 
+						+ " is instance of type " + clzz.getName() );
+			}
+			return;
+		}
+	}
+	
 	/**
 	 * prevent objects
 	 */
 	private VCAssert() {
 		//make this class an interface in Java 8
 	}
-
-
+	
 }
