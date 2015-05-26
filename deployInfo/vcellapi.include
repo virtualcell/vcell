@@ -7,7 +7,7 @@
 #--------------------------------------
 vcellapi_root="${common_siteRootDir}/vcellapi/VCell_Rest"
 
-vcellapi_keystorepath="${vcellapi_root}/keys/keystore.jks"
+vcellapi_keystorepath="/usr/local/deploy/keystore.jks"
 vcellapi_keystorepswd="fLDIyxpojOJcG1H+1AlD4A=="
 vcellapi_javascriptdir="${vcellapi_root}/docroot"
 
