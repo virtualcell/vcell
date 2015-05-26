@@ -14,6 +14,7 @@ import org.vcell.util.Displayable;
 
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularComponentSmallShape extends AbstractComponentShape {
@@ -86,7 +87,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 			if(csp != null && !csp.isAny()) {
 				componentColor = componentGreen;
 			}
-		} else if(owner instanceof ReactionRule) {
+		} else if(owner instanceof ReactionRule || owner instanceof SimpleReaction) {
 			componentColor = componentHidden;
 			if(mcp.isbVisible()) {
 				componentColor = componentGreen;
