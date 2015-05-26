@@ -686,37 +686,29 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						} else {					// plain reaction, check if reactants have species pattern and if yes draw them in bold
 							ReactionStep rs = (ReactionStep)selectedObject;
 							String text = "<html>";
-							int count = 0;
-							for(int i=0; i<rs.getReactionParticipants().length; i++) {
-								ReactionParticipant p = rs.getReactionParticipants(i);
-								if(p instanceof Reactant) {
-									if(p.getSpeciesContext().hasSpeciesPattern()) {
-										text += "<b>" + p.getName() + "</b>";
-									} else {
-										text += p.getName();
-									}
+							for(int i = 0; i<rs.getNumReactants(); i++) {
+								Reactant p = rs.getReactant(i);
+								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += "<b>" + p.getName() + "</b>";
+								} else {
+									text += p.getName();
 								}
-								if(count < rs.getNumReactants()-1) {
+								if(i < rs.getNumReactants()-1) {
 									text += " + ";
 								}
-								count++;
 							}
 							text += " -&gt; ";
-							count = 0;
-							for(int i=0; i<rs.getReactionParticipants().length; i++) {
-								ReactionParticipant p = rs.getReactionParticipants(i);
-								if(p instanceof Product) {
-									if(p.getSpeciesContext().hasSpeciesPattern()) {
-										text += "<b>" + p.getName() + "</b>";
-									} else {
-										text += p.getName();
-									}
+							for(int i = 0; i<rs.getNumProducts(); i++) {
+								Product p = rs.getProduct(i);
+								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += "<b>" + p.getName() + "</b>";
+								} else {
+									text += p.getName();
 								}
-								if(count < rs.getNumProducts()-1) {
+								if(i < rs.getNumProducts()-1) {
 									text += " + ";
 								}
-								count++;
-							}
+							}								
 							text += "</html>";
 							setText(text);
 						}
