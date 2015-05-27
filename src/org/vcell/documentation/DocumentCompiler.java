@@ -52,7 +52,7 @@ public class DocumentCompiler {
 	public final static String tocHTMLFileName = "VCellHelpTOC.html";
 	public final static String helpSetFileName = "HelpSet.hs";
 	public final static String helpSearchFolderName = "JavaHelpSearch";
-	public final static String definitionFilePath = "topics/Appendix/";
+	public final static String definitionFilePath = "topics/ch_9/Appendix/";
 	public final static String definitionXMLFileName = "Definitions.xml";
 	
 	private Documentation documentation = new Documentation();
@@ -89,7 +89,6 @@ public class DocumentCompiler {
 			docCompiler.validateTOC();
 			docCompiler.copyHelpSet();
 			docCompiler.generateHelpSearch();
-			
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
@@ -324,7 +323,8 @@ public class DocumentCompiler {
 	
 	private void copyHelpSet() throws Exception
 	{
-		FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
+		//FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
+		FileUtils.copyFile(new File(docSourceDir, helpSetFileName), new File(docTargetDir, helpSetFileName), true, true, 4 * 1024);
 	}
 	
 	private void readTOCItem(HashSet<DocumentPage> pagesNotYetReferenced, Element element){
