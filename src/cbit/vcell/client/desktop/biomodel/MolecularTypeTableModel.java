@@ -102,7 +102,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					return;
 				}
 				if (ourMt == null) {	// new molecular type in empty row
-					getModel().getRbmModelContainer().addMolecularType(new MolecularType(stringValue));
+					getModel().getRbmModelContainer().addMolecularType(new MolecularType(stringValue), true);
 				} else {						// rename it
 					ourMt.setName(stringValue);
 				}
@@ -112,7 +112,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 			case bngl_pattern: {
 				MolecularType tempMolecularType = RbmUtils.parseMolecularType(stringValue);
 				if (ourMt == null) {	// new
-					getModel().getRbmModelContainer().addMolecularType(tempMolecularType);
+					getModel().getRbmModelContainer().addMolecularType(tempMolecularType, true);
 				} else {						// change it
 					ourMt.setName(tempMolecularType.getName());		// if it had been renamed
 					// here we add components

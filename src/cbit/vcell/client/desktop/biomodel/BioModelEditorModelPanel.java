@@ -1060,7 +1060,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 			if(bioModel.getModel().getRbmModelContainer() != null) {
 				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
-				bioModel.getModel().getRbmModelContainer().addMolecularType(mt);
+				bioModel.getModel().getRbmModelContainer().addMolecularType(mt, true);
 				newObject = mt;
 			}
 		} else if (currentSelectedTable == observablesTable) {
