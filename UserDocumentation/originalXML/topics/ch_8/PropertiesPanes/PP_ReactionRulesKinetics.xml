@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Reactions Properties Pane" target="PP_Reactions">
+<page title="Reactions Rules Kinetics Pane" target="PP_ReactionRulesKinetics">
 
   <introduction>
-  The reaction properties panel is used to display and edit properties of a reaction.
+  The reaction properties panel is used to display and edit kinetics and annotations for a reaction rule.
   </introduction>
 		
   <appearance>
-  <imgReference target = "PP_Reactions.png"/>
+  <imgReference target = "PP_BNG_ReactRules_Kinetics.png"/>
   <para>
-  The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
-  second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
-  (J)that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Concentrations 
-  of all species referred to in the kinetic terms (e.g.reactants, catalysts, products)are required. Items in brown cannot be edited.
+  The top of the table shows the Reaction Name. Below is a table of the kinetic terms used to define the reaction rate. 
+  Items in brown cannot be edited. tbd stands for "to be determined" based on units of other parameters.
   </para>
   </appearance>
 	

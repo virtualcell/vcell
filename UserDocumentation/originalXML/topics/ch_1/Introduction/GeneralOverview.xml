@@ -23,7 +23,13 @@ simulations are stored on the Virtual Cell database server and are easily export
 Access to the Virtual Cell modeling software is available via the internet using a JAVA based interface.
 The Virtual Cell has been developed using the latest supported Java technology.
 <para></para>
-The Virtual Cell version 5.4 is the first version that supports rule-based modeling.
+The Virtual Cell version 5.4 is the first VCell version that supports 
+<link target="RuleBasedOverview">rule-based modeling</link> that involves the representation 
+of species as structured objects consisting of <link target="Molecules">molecules</link> 
+and molecular interactions as <link target="ReactionRules">rules</link> for transforming the attributes of species. 
+The approach allows one to systematically incorporate site-specific details about 
+molecular interactions into a model.
+that 
 	</introduction>
 	
 </page>

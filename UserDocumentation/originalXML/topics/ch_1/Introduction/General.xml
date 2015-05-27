@@ -23,8 +23,7 @@ methods or conditions are used.
 
 <para><bold>MathModel</bold></para>
 MathModels define Virtual Experiments using VCell Markup Language.
-<para></para>
-Both BioModels and MathModels have the same interface for defining spatial domains as <link target = "GeometryOverview">geometries</link>.
+
 
 	</introduction>
 	
