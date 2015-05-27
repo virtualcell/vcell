@@ -2,15 +2,26 @@
 <vcelldoc>
 <page title="Physiology Overview">
 
-	<introduction> <para>The Physiology contains the description of the biological components that comprise
-	a BioModel; separate windows are provided for defining the cellular <def target = "def_structure">Structures</def> within which
-	<def target = "def_species"> species </def> exist and undergo <link target = "Reactions"> reactions</link>.
-	</para>  
-	<para><def target = "def_compartments">Compartments</def> are made up of <def target = "def_membranes"> membrane</def> 
-	and <def target = "def_volumes"> volume</def> structures.  They can be created, viewed and edited in 
-	<link target = "PhysStructTabView"> tabular</link> or <link target = "ReactDiagView"> diagrammatic tabs</link>.</para>  
-	<para> <bold>Properties</bold> for structures can be found in the <link target = "PP_Structures"> object properties pane</link>
-	in the bottom window.</para>	
+	<introduction> The Physiology contains the description of the biological components that comprise
+	a BioModel:
+	<list>
+	<item><link target = "ReactDiagView">Graphical Reactions Editor</link>. Reactions and species can be added and edited here.</item>
+	<item><link target = "ReactTabView">Reactions and Rules Editor</link>. 
+	Both <link target = "Reactions"> reactions</link> and 
+	<link target = "ReactionRules">Reaction Rules</link> can be specified and edited here. </item> 
+	<item><link target = "PhysStructTabView">Structures (Compartments)</link> are made up of 
+	<def target = "def_membranes"> membrane</def> 
+	and <def target = "def_volumes"> volume</def> structures.</item>
+	<item><link target = "Species">Species</link> are defined across multiple compartments 
+	(except for <link target = "RuleBasedOverview">Rule-Based</link> models, 
+	where a single compartment is enforced temporarily)</item>
+	<item><link target = "Molecules">Molecules</link> that define building blocks for rule-based models</item>
+	<item><link target = "Observables">Observables</link> that define outputs for rule-based models</item> 
+	</list>
+	
+	
+	<para> <bold>Properties</bold> for structures can be found in the <link target = "PropertiesPaneOverview"> object properties pane</link>
+	in the bottom pane.</para>	
 	</introduction>
 	
 </page>

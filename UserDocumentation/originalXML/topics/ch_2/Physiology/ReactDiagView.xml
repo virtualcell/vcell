@@ -3,7 +3,10 @@
 <page title="Reactions Diagram View" target="ReactDiagView">
 
 	<introduction> 
-	The <link target="Reactions"> reactions</link> diagram shows a bipartite graph of species (green balls) and reactions (yellow squares), each within the appropriate
+	The <link target="Reactions"> reactions</link> diagram shows a bipartite graph consisting of of <link target = "Species">species</link> 
+	(<bold>green</bold> balls for species that do not have <link target = "Molecules">Molecules</link> assigned, 
+	or <bold>blue</bold> balls for species with <link target = "Molecules">Molecules</link> assigned) and reactions (<bold>yellow</bold> squares) nodes, 
+	each within the appropriate
 	compartments, and connected by lines showing which species participates in which reaction.
 	</introduction>
 	
@@ -35,8 +38,12 @@
 	    with the left mouse button, toggle the selection using the control key.
 	    
 	  
-	    <imgReference target = "icon_species.gif"/> <bold> enables adding new species </bold> by clicking within a compartment. Preliminary names for species are generated
-	    automatically, but can be changed immediately in the <link target= "PP_Species"> species property panel </link>.
+	    <imgReference target = "icon_species.gif"/> <bold> enables adding new species </bold> by clicking within a compartment. 
+	    Preliminary names for species are generated
+	    automatically, but can be changed immediately in the <link target= "PP_Species"> species property panel </link>. 
+	    By default, new species is created <bold>green</bold>, meaning a species not consisting of Molecules,
+	    but by specifying Molecular composition of Species at  <link target = "PP_Species">species properties pane</link>, 
+	    a species become <bold>blue.</bold>
 	  
 	   
 	    <imgReference target = "icon_rxsolid.png"/> <bold>'reaction tool'</bold> enables one to create reactants/products of a reaction or membrane flux.  

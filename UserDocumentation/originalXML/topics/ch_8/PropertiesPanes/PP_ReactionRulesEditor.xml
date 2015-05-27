@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Reactions Properties Pane" target="PP_Reactions">
+<page title="Reactions Rules Editor Pane" target="PP_ReactionRulesEditor">
 
   <introduction>
-  The reaction properties panel is used to display and edit properties of a reaction.
+  The reaction properties panel is used to display and edit properties of a reaction
   </introduction>
 		
   <appearance>
