@@ -349,7 +349,7 @@ public class RbmUtils {
 				node.childrenAccept(this, molecularType);
 				if (data != null) {
 					try {
-						model.getRbmModelContainer().addMolecularType(molecularType);
+						model.getRbmModelContainer().addMolecularType(molecularType, false);
 					} catch (Exception ex) {
 						throw new RuntimeException(ex.getMessage());
 					}
@@ -367,7 +367,7 @@ public class RbmUtils {
 					}
 					molecularType = new MolecularType(name);
 					try {
-						model.getRbmModelContainer().addMolecularType(molecularType);
+						model.getRbmModelContainer().addMolecularType(molecularType, false);
 					} catch (ModelException e) {
 						e.printStackTrace();
 					}

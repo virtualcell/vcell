@@ -85,7 +85,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			try {
 				MolecularType newmt = newModel.getRbmModelContainer().createMolecularType();
-				newModel.getRbmModelContainer().addMolecularType(newmt);
+				newModel.getRbmModelContainer().addMolecularType(newmt, false);
 				MolecularTypePattern newmtp = new MolecularTypePattern(newmt);
 				SpeciesPattern newsp = new SpeciesPattern();
 				newsp.addMolecularTypePattern(newmtp);

@@ -1148,13 +1148,22 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 		
-		public void addMolecularType(MolecularType molecularType) throws ModelException {
+		public void addMolecularType(MolecularType molecularType, boolean makeObservable) throws ModelException {
 			if (getMolecularType(molecularType.getName()) != null) {
 				throw new ModelException(molecularType.getDisplayType() + " '" + molecularType.getDisplayName() + "' already exists!");
 			}
 			ArrayList<MolecularType> newValue = new ArrayList<MolecularType>(molecularTypeList);
 			newValue.add(molecularType);
 			setMolecularTypeList(newValue);
+			
+			if(makeObservable) {		// we also make an observable to go with the newly created molecular type
+				RbmObservable o = createObservable(RbmObservable.ObservableType.Molecules, molecularType);
+				MolecularTypePattern mtp = new MolecularTypePattern(molecularType, true);
+				SpeciesPattern sp = new SpeciesPattern();
+				sp.addMolecularTypePattern(mtp);
+				o.addSpeciesPattern(sp);
+				addObservable(o);
+			}
 		}
 		
 		public boolean removeMolecularType(MolecularType molecularType) {
@@ -1340,10 +1349,23 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 
 		public RbmObservable createObservable(RbmObservable.ObservableType type) {
+			return createObservable(type, null);
+		}
+		public RbmObservable createObservable(RbmObservable.ObservableType type, MolecularType mt) {
+			String name;
+			String nameRoot;
+			String namePostfix;
+			
+			if(mt == null) {
+				nameRoot = "O";
+				namePostfix = "";
+			} else {
+				nameRoot = "O";
+				namePostfix = "_" + mt.getName() + "_tot";
+			}
 			int count=0;
-			String name = null;
 			while (true) {
-				name = "O" + count;	
+				name = nameRoot + count + namePostfix;	
 				if (getObservable(name) == null) {
 					break;
 				}	
