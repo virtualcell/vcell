@@ -175,7 +175,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 						return;
 					}
 					MolecularType mt = model.getRbmModelContainer().createMolecularType();
-					model.getRbmModelContainer().addMolecularType(mt);
+					model.getRbmModelContainer().addMolecularType(mt, true);
 					newObject = mt;
 					break;
 				case OBSERVABLES_NODE:
