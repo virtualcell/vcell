@@ -129,7 +129,7 @@ public class RbmUtils {
 						exp = new Expression(expS);
 					}
 					exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
-					model.getRbmModelContainer().addParameter(node.getName(), exp);
+					model.getRbmModelContainer().addParameter(node.getName(), exp, model.getUnitSystem().getInstance_TBD());
 				}
 			} catch (Exception ex) {
 				throw new RuntimeException("Parameter '" + node.getName() + " can not be added, " + ex.getMessage());
@@ -606,7 +606,7 @@ public class RbmUtils {
 				if (model.getRbmModelContainer().getFunction(node.getName()) == null) {
 					String expS = node.getExpressionString();
 					Expression exp = getBoundExpression(expS, model.getRbmModelContainer().getSymbolTable());
-					model.getRbmModelContainer().addFunction(node.getName(), exp);
+					model.getRbmModelContainer().addFunction(node.getName(), exp, model.getUnitSystem().getInstance_TBD());
 				}
 			} catch (Exception ex) {
 				throw new RuntimeException("Function '" + node.getName() + " can not be added, " + ex.getMessage());
