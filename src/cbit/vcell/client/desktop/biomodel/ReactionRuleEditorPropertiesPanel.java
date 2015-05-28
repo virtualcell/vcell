@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,9 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -33,11 +29,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
@@ -56,15 +50,11 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -383,7 +373,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	}
 	
 	public void addReactant() {
-		ReactantPattern reactant = new ReactantPattern(new SpeciesPattern());
+		ReactantPattern reactant = new ReactantPattern(new SpeciesPattern(), reactionRule.getStructure());
 		reactionRule.addReactant(reactant);
 		final TreePath path = reactantTreeModel.findObjectPath(null, reactant);
 		reactantTree.setSelectionPath(path);
@@ -396,7 +386,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	}
 	
 	public void addProduct() {
-		ProductPattern product = new ProductPattern(new SpeciesPattern());
+		ProductPattern product = new ProductPattern(new SpeciesPattern(), reactionRule.getStructure());
 		reactionRule.addProduct(product);
 		final TreePath path = productTreeModel.findObjectPath(null, product);
 		productTree.setSelectionPath(path);

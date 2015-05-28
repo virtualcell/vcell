@@ -534,13 +534,6 @@ public Structure getStructure() {
 //}
 
 /**
- * Insert the method's description here.
- * Creation date: (5/22/00 10:20:28 PM)
- * @return java.lang.String
- */
-public abstract String getTerm();
-
-/**
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {

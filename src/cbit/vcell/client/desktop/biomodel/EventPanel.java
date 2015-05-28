@@ -50,15 +50,14 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.ElectricalStimulusPanel;
@@ -898,7 +897,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 //					getLabelTriggerType().setText(getBioEvent().getTrigger().getClass().getSimpleName());
 //				}
 				getLabelTriggerType().setText(getBioEvent().getTriggerType().name());
-				LocalParameter delayParam = getBioEvent().getParameter(ParameterType.TriggerDelay);
+				LocalParameter delayParam = getBioEvent().getParameter(BioEventParameterType.TriggerDelay);
 				if (delayParam != null) {
 					if (delayParam.getExpression() != null){
 						getDelayTextField().setText(delayParam.getExpression().infix());
@@ -941,7 +940,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 				if (bioEvent == null) {
 					return;
 				}
-				bioEvent.setParameterValue(ParameterType.TriggerDelay, new Expression(text));
+				bioEvent.setParameterValue(BioEventParameterType.TriggerDelay, new Expression(text));
 				bioEvent.setUseValuesFromTriggerTime(bUseValuesFromTriggerTime);
 				
 //			} catch (ExpressionException e1) {

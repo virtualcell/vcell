@@ -96,7 +96,7 @@ private void refreshData() {
 	if (reactionRule != null) {
 		parameterList = new ArrayList<Object>();
 //		parameterList.add(reactionRule.getKineticLaw());
-		parameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getKineticsParameters()));
+		parameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
 		parameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
 		parameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
 //		parameterList.addAll(reactionRule.getReactantPatterns());
@@ -208,7 +208,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	case COLUMN_IS_GLOBAL:
 		// if the parameter is reaction rate param or a ReservedSymbol in the model, it should not be editable
-		if ( (parameter instanceof LocalParameter) && (((LocalParameter)parameter).getRole() != RbmKineticLaw.ParameterType.UserDefined.getRole()) ) {
+		if ( (parameter instanceof LocalParameter) && (((LocalParameter)parameter).getRole() != RbmKineticLaw.RbmKineticLawParameterType.UserDefined) ) {
 			return false;
 		}
 		if (parameter instanceof UnresolvedParameter) {
@@ -240,8 +240,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (oldValue != null){
 			oldValue.removePropertyChangeListener(this);
 			oldValue.getKineticLaw().removePropertyChangeListener(this);
-			for (int i = 0; i < oldValue.getKineticLaw().getKineticsParameters().length; i++){
-				oldValue.getKineticLaw().getKineticsParameters()[i].removePropertyChangeListener(this);
+			for (int i = 0; i < oldValue.getKineticLaw().getLocalParameters().length; i++){
+				oldValue.getKineticLaw().getLocalParameters()[i].removePropertyChangeListener(this);
 			}
 			for (int i = 0; i < oldValue.getKineticLaw().getProxyParameters().length; i++){
 				oldValue.getKineticLaw().getProxyParameters()[i].removePropertyChangeListener(this);
@@ -251,8 +251,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		if (newValue != null){
 			newValue.addPropertyChangeListener(this);
 			newValue.getKineticLaw().addPropertyChangeListener(this);
-			for (int i = 0; i < newValue.getKineticLaw().getKineticsParameters().length; i++){
-				newValue.getKineticLaw().getKineticsParameters()[i].addPropertyChangeListener(this);
+			for (int i = 0; i < newValue.getKineticLaw().getLocalParameters().length; i++){
+				newValue.getKineticLaw().getLocalParameters()[i].addPropertyChangeListener(this);
 			}
 			for (int i = 0; i < newValue.getKineticLaw().getProxyParameters().length; i++){
 				newValue.getKineticLaw().getProxyParameters()[i].addPropertyChangeListener(this);
@@ -265,8 +265,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		RbmKineticLaw oldValue = (RbmKineticLaw)evt.getOldValue();		
 		if (oldValue != null){
 			oldValue.removePropertyChangeListener(this);
-			for (int i = 0; i < oldValue.getKineticsParameters().length; i++){
-				oldValue.getKineticsParameters()[i].removePropertyChangeListener(this);
+			for (int i = 0; i < oldValue.getLocalParameters().length; i++){
+				oldValue.getLocalParameters()[i].removePropertyChangeListener(this);
 			}
 			for (int i = 0; i < oldValue.getProxyParameters().length; i++){
 				oldValue.getProxyParameters()[i].removePropertyChangeListener(this);
@@ -275,8 +275,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		RbmKineticLaw newValue = (RbmKineticLaw)evt.getNewValue();
 		if (newValue != null){
 			newValue.addPropertyChangeListener(this);
-			for (int i = 0; i < newValue.getKineticsParameters().length; i++){
-				newValue.getKineticsParameters()[i].addPropertyChangeListener(this);
+			for (int i = 0; i < newValue.getLocalParameters().length; i++){
+				newValue.getLocalParameters()[i].addPropertyChangeListener(this);
 			}
 			for (int i = 0; i < newValue.getProxyParameters().length; i++){
 				newValue.getProxyParameters()[i].addPropertyChangeListener(this);
@@ -366,7 +366,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				} else {
 					// check box has been <set> (<false> to <true>) : change param from local to global  
-					if ( (parameter instanceof LocalParameter) && (((LocalParameter)parameter).getRole() != RbmKineticLaw.ParameterType.UserDefined.getRole()) ) {
+					if ( (parameter instanceof LocalParameter) && (((LocalParameter)parameter).getRole() != RbmKineticLaw.RbmKineticLawParameterType.UserDefined) ) {
 						PopupGenerator.showErrorDialog(ownerTable, "Parameter : \'" + parameter.getName() + "\' is a pre-defined kinetics parameter (not user-defined); cannot convert it to a model level (global) parameter.");
 					} else {
 						ModelParameter mp = reactionRule.getModel().getModelParameter(parameter.getName());
@@ -390,7 +390,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 								if (!parameter.getExpression().isNumeric()) {
 									String[] symbols = parameter.getExpression().getSymbols();
 									for (int i = 0; i < symbols.length; i++) {
-										if (reactionRule.getKineticLaw().getKineticsParameter(symbols[i]) != null) {
+										if (reactionRule.getKineticLaw().getLocalParameter(symbols[i]) != null) {
 											PopupGenerator.showErrorDialog(ownerTable, "Parameter \'" + parameter.getName() + "\' contains other local kinetic parameters; Cannot convert it to global until the referenced parameters are global.");
 											bPromoteable = false;
 										}
@@ -444,7 +444,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_UNITS:{
 				try {
-					if (aValue instanceof String && parameter instanceof LocalParameter && ((LocalParameter)parameter).getRole()==RbmKineticLaw.ParameterType.UserDefined.getRole()){
+					if (aValue instanceof String && parameter instanceof LocalParameter && ((LocalParameter)parameter).getRole()==RbmKineticLaw.RbmKineticLawParameterType.UserDefined){
 						String newUnitString = (String)aValue;
 						LocalParameter kineticsParm = (LocalParameter)parameter;
 						ModelUnitSystem modelUnitSystem = reactionRule.getModel().getUnitSystem();
@@ -454,7 +454,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
-				}catch (VCUnitException | PropertyVetoException e){
+				}catch (VCUnitException e){
 					e.printStackTrace(System.out);
 					PopupGenerator.showErrorDialog(ownerTable, "Error changing parameter unit:\n"+e.getMessage());
 				}

@@ -48,7 +48,6 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -113,7 +112,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				if (left.length() == 0 && right.length() == 0) {
 					return;
 				}
-				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule("aaa", bReversible);
+				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule("aaa", model.getStructures()[0], bReversible);
 				
 				String regex = "[^!]\\+";
 				String[] patterns = left.split(regex);
@@ -124,7 +123,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
 					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 					System.out.println(speciesPattern.toString());
-					reactionRule.addReactant(new ReactantPattern(speciesPattern));
+					reactionRule.addReactant(new ReactantPattern(speciesPattern, reactionRule.getStructure()));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						return;
@@ -139,7 +138,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
 					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 					System.out.println(speciesPattern.toString());
-					reactionRule.addProduct(new ProductPattern(speciesPattern));
+					reactionRule.addProduct(new ProductPattern(speciesPattern, reactionRule.getStructure()));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						return;

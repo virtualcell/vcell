@@ -1110,10 +1110,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 				return;
 			}
-			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule();
+			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule(bioModel.getModel().getStructure(0));
 			if(rr != null) {
 				rr.setReversible(false);
-				rr.setStructure(bioModel.getModel().getStructure(0));
 				bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
 				newObject = rr;
 			} else {

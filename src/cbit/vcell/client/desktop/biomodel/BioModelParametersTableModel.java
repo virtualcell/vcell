@@ -115,7 +115,7 @@ protected List<Parameter> computeData() {
 		}
 		if(!bioModel.getModel().getRbmModelContainer().isEmpty()) {
 			for(ReactionRule reactionRule : bioModel.getModel().getRbmModelContainer().getReactionRuleList()) {
-				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getKineticsParameters()));
+				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getLocalParameters()));
 				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getProxyParameters()));
 				allParameterList.addAll(Arrays.asList(reactionRule.getKineticLaw().getUnresolvedParameters()));
 			}

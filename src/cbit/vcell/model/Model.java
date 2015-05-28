@@ -1394,12 +1394,12 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return new ModelParameter(name, null, ROLE_UserDefined, unitSystem.getInstance_DIMENSIONLESS());
 		}
 		
-		public ReactionRule createReactionRule() {
-			return createReactionRule("", true);
+		public ReactionRule createReactionRule(Structure structure) {
+			return createReactionRule("", structure, true);
 		}
 		
-		public ReactionRule createReactionRule(String label, boolean bReversible) {		
-			return new ReactionRule(Model.this, label, bReversible);
+		public ReactionRule createReactionRule(String label, Structure structure, boolean bReversible) {		
+			return new ReactionRule(Model.this, label, structure, bReversible);
 		}
 		
 		public void vetoableChange(PropertyChangeEvent evt) throws ModelPropertyVetoException {
@@ -3959,7 +3959,7 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	if (!newSymbolClass.equals(ReactionStep.class)){
 		for (int j = 0; j < fieldReactionSteps.length; j++){
 			if (fieldReactionSteps[j].getName().equals(newSymbolName)){
-				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
+				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getDisplayType()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
 			}
 		}
 	}

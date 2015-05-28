@@ -27,7 +27,7 @@ import org.vcell.util.BeanUtils;
 
 import cbit.gui.TextFieldAutoCompletion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext;
@@ -526,24 +526,24 @@ public class TriggerTemplatePanel extends JPanel {
 			if(existingBioEvent != null){//Edit Trigger mode
 				switch (existingBioEvent.getTriggerType()){
 				case GeneralTrigger:{
-					textFieldGeneral.setText(existingBioEvent.getParameter(ParameterType.GeneralTriggerFunction).getExpression().infix());
+					textFieldGeneral.setText(existingBioEvent.getParameter(BioEventParameterType.GeneralTriggerFunction).getExpression().infix());
 					rdbtnGeneral.setSelected(true);
 					break;
 				}
 				case LogRangeTimes:{
-					LocalParameter rangeMinParam = existingBioEvent.getParameter(ParameterType.RangeMinTime);
+					LocalParameter rangeMinParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
 					if (rangeMinParam!=null && rangeMinParam.getExpression()!=null){
 						textFieldLogMin.setText(rangeMinParam.getExpression().infix());
 					}else{
 						textFieldLogMin.setText("");
 					}
-					LocalParameter rangeMaxParam = existingBioEvent.getParameter(ParameterType.RangeMinTime);
+					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
 					if (rangeMaxParam!=null && rangeMaxParam.getExpression()!=null){
 						textFieldLogMax.setText(rangeMaxParam.getExpression().infix());
 					}else{
 						textFieldLogMax.setText("");
 					}
-					LocalParameter rangeNumParam = existingBioEvent.getParameter(ParameterType.RangeNumTimes);
+					LocalParameter rangeNumParam = existingBioEvent.getParameter(BioEventParameterType.RangeNumTimes);
 					if (rangeNumParam!=null && rangeNumParam.getExpression()!=null){
 						textFieldLogNum.setText(rangeNumParam.getExpression().infix());
 					}else{
@@ -553,19 +553,19 @@ public class TriggerTemplatePanel extends JPanel {
 					break;
 				}
 				case LinearRangeTimes:{
-					LocalParameter rangeMinParam = existingBioEvent.getParameter(ParameterType.RangeMinTime);
+					LocalParameter rangeMinParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
 					if (rangeMinParam!=null && rangeMinParam.getExpression()!=null){
 						textFieldLinearMin.setText(rangeMinParam.getExpression().infix());
 					}else{
 						textFieldLinearMin.setText("");
 					}
-					LocalParameter rangeMaxParam = existingBioEvent.getParameter(ParameterType.RangeMinTime);
+					LocalParameter rangeMaxParam = existingBioEvent.getParameter(BioEventParameterType.RangeMinTime);
 					if (rangeMaxParam!=null && rangeMaxParam.getExpression()!=null){
 						textFieldLinearMax.setText(rangeMaxParam.getExpression().infix());
 					}else{
 						textFieldLinearMax.setText("");
 					}
-					LocalParameter rangeNumParam = existingBioEvent.getParameter(ParameterType.RangeNumTimes);
+					LocalParameter rangeNumParam = existingBioEvent.getParameter(BioEventParameterType.RangeNumTimes);
 					if (rangeNumParam!=null && rangeNumParam.getExpression()!=null){
 						textFieldLinearNum.setText(rangeNumParam.getExpression().infix());
 					}else{
@@ -577,7 +577,7 @@ public class TriggerTemplatePanel extends JPanel {
 				case ListOfTimes: {
 					StringBuffer sb = new StringBuffer();
 					for (LocalParameter p : existingBioEvent.getEventParameters()){
-						if (p.getRole() == ParameterType.TimeListItem.getRole()){
+						if (p.getRole() == BioEventParameterType.TimeListItem){
 							if (sb.length()>0){
 								sb.append(",");
 							}
@@ -589,29 +589,29 @@ public class TriggerTemplatePanel extends JPanel {
 					break;
 				}
 				case ObservableAboveThreshold: {
-					LocalParameter observableParameter = existingBioEvent.getParameter(ParameterType.Observable);
+					LocalParameter observableParameter = existingBioEvent.getParameter(BioEventParameterType.Observable);
 					SymbolTableEntry ste = null;
 					if (observableParameter!=null && observableParameter.getExpression()!=null && observableParameter.getExpression().isIdentifier()){
 						ste = observableParameter.getExpression().getSymbolBinding(observableParameter.getExpression().getSymbols()[0]);
 						varAboveComboBox.setSelectedItem(ste);
 					}
-					textFieldAboveVarVal.setText(existingBioEvent.getParameter(ParameterType.Threshold).getExpression().infix());
+					textFieldAboveVarVal.setText(existingBioEvent.getParameter(BioEventParameterType.Threshold).getExpression().infix());
 					rdbtnVarAboveThreshold.setSelected(true);
 					break;
 				}
 				case ObservableBelowThreshold: {
-					LocalParameter observableParameter = existingBioEvent.getParameter(ParameterType.Observable);
+					LocalParameter observableParameter = existingBioEvent.getParameter(BioEventParameterType.Observable);
 					SymbolTableEntry ste = null;
 					if (observableParameter!=null && observableParameter.getExpression()!=null && observableParameter.getExpression().isIdentifier()){
 						ste = observableParameter.getExpression().getSymbolBinding(observableParameter.getExpression().getSymbols()[0]);
 						varBelowComboBox.setSelectedItem(ste);
 					}
-					textFieldBelowVarVal.setText(existingBioEvent.getParameter(ParameterType.Threshold).getExpression().infix());
+					textFieldBelowVarVal.setText(existingBioEvent.getParameter(BioEventParameterType.Threshold).getExpression().infix());
 					rdbtnVarBelowThreshold.setSelected(true);
 					break;
 				}
 				case SingleTriggerTime: {
-					LocalParameter parameter = existingBioEvent.getParameter(ParameterType.SingleTriggerTime);
+					LocalParameter parameter = existingBioEvent.getParameter(BioEventParameterType.SingleTriggerTime);
 					textFieldSingleTime.setText(parameter.getExpression().infix());
 					rdbtnSingleTime.setSelected(true);
 					break;
@@ -663,38 +663,38 @@ public class TriggerTemplatePanel extends JPanel {
 //
 //	}
 	public void setTrigger(BioEvent bioEvent) throws Exception{
-		LocalParameter delayParam = bioEvent.getParameter(ParameterType.TriggerDelay);
+		LocalParameter delayParam = bioEvent.getParameter(BioEventParameterType.TriggerDelay);
 		if(rdbtnGeneral.isSelected()){
 			bioEvent.setTriggerType(TriggerType.GeneralTrigger);
-			bioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, new Expression(textFieldGeneral.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.GeneralTriggerFunction, new Expression(textFieldGeneral.getText()));
 		}else if (rdbtnListTimes.isSelected()){
 			bioEvent.setTriggerType(TriggerType.ListOfTimes);
 			Expression[] listExps = new Expression("myFunc("+textFieldListTimes.getText()+")").getFunctionInvocations(null)[0].getArguments();
 			bioEvent.setTimeList(listExps);
 		}else if(rdbtnLinearTimeRange.isSelected()){
 			bioEvent.setTriggerType(TriggerType.LinearRangeTimes);
-			bioEvent.setParameterValue(ParameterType.RangeMinTime, new Expression(textFieldLinearMin.getText()));
-			bioEvent.setParameterValue(ParameterType.RangeMaxTime, new Expression(textFieldLinearMax.getText()));
-			bioEvent.setParameterValue(ParameterType.RangeNumTimes, new Expression(textFieldLinearNum.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeMinTime, new Expression(textFieldLinearMin.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeMaxTime, new Expression(textFieldLinearMax.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeNumTimes, new Expression(textFieldLinearNum.getText()));
 		}else if(rdbtnLogTimeRange.isSelected()){
 			bioEvent.setTriggerType(TriggerType.LogRangeTimes);
-			bioEvent.setParameterValue(ParameterType.RangeMinTime, new Expression(textFieldLogMin.getText()));
-			bioEvent.setParameterValue(ParameterType.RangeMaxTime, new Expression(textFieldLogMax.getText()));
-			bioEvent.setParameterValue(ParameterType.RangeNumTimes, new Expression(textFieldLogNum.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeMinTime, new Expression(textFieldLogMin.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeMaxTime, new Expression(textFieldLogMax.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.RangeNumTimes, new Expression(textFieldLogNum.getText()));
 		}else if (rdbtnSingleTime.isSelected()){
 			bioEvent.setTriggerType(TriggerType.SingleTriggerTime);
-			bioEvent.setParameterValue(ParameterType.SingleTriggerTime,  new Expression(textFieldSingleTime.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.SingleTriggerTime,  new Expression(textFieldSingleTime.getText()));
 		}else if (rdbtnVarAboveThreshold.isSelected()){
 			bioEvent.setTriggerType(TriggerType.ObservableAboveThreshold);
-			bioEvent.setParameterValue(ParameterType.Observable, new Expression(((SymbolTableEntry)varAboveComboBox.getSelectedItem()).getName()));
-			bioEvent.setParameterValue(ParameterType.Threshold, new Expression(textFieldAboveVarVal.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.Observable, new Expression(((SymbolTableEntry)varAboveComboBox.getSelectedItem()).getName()));
+			bioEvent.setParameterValue(BioEventParameterType.Threshold, new Expression(textFieldAboveVarVal.getText()));
 		}else if (rdbtnVarBelowThreshold.isSelected()){
 			bioEvent.setTriggerType(TriggerType.ObservableBelowThreshold);
-			bioEvent.setParameterValue(ParameterType.Observable, new Expression(((SymbolTableEntry)varBelowComboBox.getSelectedItem()).getName()));
-			bioEvent.setParameterValue(ParameterType.Threshold, new Expression(textFieldBelowVarVal.getText()));
+			bioEvent.setParameterValue(BioEventParameterType.Observable, new Expression(((SymbolTableEntry)varBelowComboBox.getSelectedItem()).getName()));
+			bioEvent.setParameterValue(BioEventParameterType.Threshold, new Expression(textFieldBelowVarVal.getText()));
 		}
 		if (delayParam.getExpression()!=null){
-			bioEvent.setParameterValue(ParameterType.TriggerDelay, delayParam.getExpression());
+			bioEvent.setParameterValue(BioEventParameterType.TriggerDelay, delayParam.getExpression());
 		}
 	}
 }

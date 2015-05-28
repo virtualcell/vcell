@@ -92,8 +92,8 @@ import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
@@ -1157,7 +1157,7 @@ protected void addEvents() {
 			}
 			
 			// create delay
-			LocalParameter delayParam = vcEvent.getParameter(ParameterType.TriggerDelay);
+			LocalParameter delayParam = vcEvent.getParameter(BioEventParameterType.TriggerDelay);
 			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().isZero()) {
 				Delay delay = sbmlEvent.createDelay();
 				Expression delayExpr = delayParam.getExpression();

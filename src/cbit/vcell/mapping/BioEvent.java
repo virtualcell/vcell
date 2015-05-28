@@ -20,23 +20,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import cbit.vcell.mapping.BioEvent.ParameterType;
-import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
+import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -48,7 +49,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitSystem;
 
 @SuppressWarnings("serial")
-public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener {
+public class BioEvent implements Matchable, Serializable, VetoableChangeListener, PropertyChangeListener, IssueSource {
 	
 	private static final String PROPERTY_NAME_NAME = "name";
 
@@ -133,7 +134,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		}	
 	}
 
-	public static enum ParameterType {
+	public static enum BioEventParameterType implements ParameterRoleEnum {
 		GeneralTriggerFunction(0,"GeneralTriggerFunction","triggerFunction","fires on each rising edge"),
 		Observable(1,"Observable","observable","observable to watch"),
 		Threshold(2,"Threshold", "threshold","threshold for observable"),
@@ -150,7 +151,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		private final String defaultName;
 		private final String description;
 		
-		private ParameterType(int role,String roleXmlName,String defaultName,String description){
+		private BioEventParameterType(int role,String roleXmlName,String defaultName,String description){
 			this.role = role;
 			this.roleXmlName = roleXmlName;
 			this.defaultName = defaultName;
@@ -173,8 +174,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			return description;
 		}
 		
-		public static ParameterType fromRole(int role){
-			for (ParameterType type : values()){
+		public static BioEventParameterType fromRole(int role){
+			for (BioEventParameterType type : values()){
 				if (type.getRole()==role){
 					return type;
 				}
@@ -182,8 +183,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			return null;
 		}
 
-		public static ParameterType fromRoleXmlName(String roleStr) {
-			for (ParameterType type : values()){
+		public static BioEventParameterType fromRoleXmlName(String roleStr) {
+			for (BioEventParameterType type : values()){
 				if (type.getRoleXmlName().equals(roleStr)){
 					return type;
 				}
@@ -224,7 +225,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 
 		@Override /* ParameterPolicy */
 		public boolean isUserDefined(LocalParameter localParameter) {
-			return (localParameter.getRole() == ParameterType.UserDefined.getRole());
+			return (localParameter.getRole() == BioEventParameterType.UserDefined);
 		}
 
 		@Override /* ParameterPolicy */
@@ -261,6 +262,22 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		public Parameter addParameter(String name, Expression exp, VCUnitDefinition unit) throws PropertyVetoException {
 			Model model = getSimulationContext().getModel();
 			return model.addModelParameter(model.new ModelParameter(name, exp, Model.ROLE_UserDefined, unit));
+		}
+
+		@Override
+		public ParameterRoleEnum getUserDefinedRole() {
+			return BioEventParameterType.UserDefined;
+		}
+
+		@Override
+		public IssueSource getIssueSource() {
+			return BioEvent.this;
+		}
+
+		@Override
+		public RealInterval getConstraintBounds(ParameterRoleEnum role) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 
 	};
@@ -356,26 +373,26 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 	
 	
-	public Expression getParameterValue(ParameterType parameterType) {
-		if(parameterContext.getLocalParameterFromRole(parameterType.getRole()) == null) {
+	public Expression getParameterValue(BioEventParameterType parameterType) {
+		if(parameterContext.getLocalParameterFromRole(parameterType) == null) {
 			return null;
 		}
-		return parameterContext.getLocalParameterFromRole(parameterType.getRole()).getExpression();
+		return parameterContext.getLocalParameterFromRole(parameterType).getExpression();
 	}
 
-	public LocalParameter getParameter(ParameterType parameterType) {
-		return parameterContext.getLocalParameterFromRole(parameterType.getRole());
+	public LocalParameter getParameter(BioEventParameterType parameterType) {
+		return parameterContext.getLocalParameterFromRole(parameterType);
 	}
 
-	public ParameterType getParameterType(LocalParameter parameter) {
+	public BioEventParameterType getParameterType(LocalParameter parameter) {
 		if (!parameterContext.contains(parameter)){
 			throw new RuntimeException("parameter "+parameter.getName()+" not found in bioEvent "+getName());
 		}
-		return ParameterType.fromRole(parameter.getRole());
+		return (BioEventParameterType)parameter.getRole();
 	}
 
-	public void setParameterValue(ParameterType parameterType, Expression expression) throws ExpressionBindingException, PropertyVetoException {
-		parameterContext.getLocalParameterFromRole(parameterType.getRole()).setExpression(expression);
+	public void setParameterValue(BioEventParameterType parameterType, Expression expression) throws ExpressionBindingException, PropertyVetoException {
+		parameterContext.getLocalParameterFromRole(parameterType).setExpression(expression);
 	}
 	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
@@ -423,7 +440,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	}
 
 	public void convertParameterType(Parameter param, boolean bConvertToGlobal) throws PropertyVetoException, ExpressionBindingException {
-		if ((param instanceof LocalParameter) && ((LocalParameter)param).getRole() != ParameterType.UserDefined.getRole()) {
+		if ((param instanceof LocalParameter) && ((LocalParameter)param).getRole() != BioEventParameterType.UserDefined) {
 			throw new RuntimeException("Cannot convert pre-defined local parameter : \'" + param.getName() + "\' to global parameter.");
 		}
 
@@ -457,12 +474,12 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 
 		switch (triggerType){
 		case GeneralTrigger:{
-			return new Expression(getParameter(ParameterType.GeneralTriggerFunction),getNameScope());
+			return new Expression(getParameter(BioEventParameterType.GeneralTriggerFunction),getNameScope());
 		}
 		case ListOfTimes:{
 			ArrayList<LocalParameter> timeParams = new ArrayList<LocalParameter>();
 			for (LocalParameter p : parameterContext.getLocalParameters()){
-				if (p.getRole() == ParameterType.TimeListItem.getRole()){
+				if (p.getRole() == BioEventParameterType.TimeListItem){
 					timeParams.add(p);
 				}
 			}
@@ -522,9 +539,9 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			// these numbers are sorted to find the minimum distance between adjacent times.
 			// epsilon is 1/2 of this inter-trigger time interval (to insert a falling edge between events)
 			//
-			LocalParameter firstTimeParam = getParameter(ParameterType.RangeMinTime);
-			LocalParameter lastTimeParam = getParameter(ParameterType.RangeMaxTime);
-			LocalParameter numTimesParam = getParameter(ParameterType.RangeNumTimes);
+			LocalParameter firstTimeParam = getParameter(BioEventParameterType.RangeMinTime);
+			LocalParameter lastTimeParam = getParameter(BioEventParameterType.RangeMaxTime);
+			LocalParameter numTimesParam = getParameter(BioEventParameterType.RangeNumTimes);
 			double firstTime = MathUtilities.substituteModelParameters(firstTimeParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
 			double lastTime = MathUtilities.substituteModelParameters(lastTimeParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
 			double numTimes = MathUtilities.substituteModelParameters(numTimesParam.getExpression(), getScopedSymbolTable()).flatten().evaluateConstant();
@@ -583,16 +600,16 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			}
 		}
 		case ObservableAboveThreshold:{
-			Expression highTrigger = Expression.relational(">=", new Expression(getParameter(ParameterType.Observable),getNameScope()), new Expression(getParameter(ParameterType.Threshold), getNameScope()));
+			Expression highTrigger = Expression.relational(">=", new Expression(getParameter(BioEventParameterType.Observable),getNameScope()), new Expression(getParameter(BioEventParameterType.Threshold), getNameScope()));
 			return highTrigger;
 		}
 		case ObservableBelowThreshold:{
-			Expression lowTrigger = Expression.relational("<=", new Expression(getParameter(ParameterType.Observable),getNameScope()), new Expression(getParameter(ParameterType.Threshold), getNameScope()));
+			Expression lowTrigger = Expression.relational("<=", new Expression(getParameter(BioEventParameterType.Observable),getNameScope()), new Expression(getParameter(BioEventParameterType.Threshold), getNameScope()));
 			return lowTrigger;
 		}
 		case SingleTriggerTime:{
 			SymbolTableEntry time = getSimulationContext().getModel().getTIME();
-			return Expression.relational(">=", new Expression(time,getNameScope()), new Expression(getParameter(ParameterType.SingleTriggerTime), getNameScope()));
+			return Expression.relational(">=", new Expression(time,getNameScope()), new Expression(getParameter(BioEventParameterType.SingleTriggerTime), getNameScope()));
 		}
 		default:{
 			throw new RuntimeException("unexpected triggerType "+getTriggerType());
@@ -721,18 +738,18 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		VCUnitDefinition unit_modelTime = modelUnitSystem.getTimeUnit();
 
 		LocalParameter delayParam = parameterContext.new LocalParameter(
-				ParameterType.TriggerDelay.getDefaultName(), 
+				BioEventParameterType.TriggerDelay.getDefaultName(), 
 				new Expression(0.0), 
-				ParameterType.TriggerDelay.getRole(), 
+				BioEventParameterType.TriggerDelay, 
 				unit_modelTime, 
-				ParameterType.TriggerDelay.getDescription());
+				BioEventParameterType.TriggerDelay.getDescription());
 		
 		LocalParameter generatedGeneralTriggerParam = parameterContext.new LocalParameter(
-				ParameterType.GeneralTriggerFunction.getDefaultName(), 
+				BioEventParameterType.GeneralTriggerFunction.getDefaultName(), 
 				null, 
-				ParameterType.GeneralTriggerFunction.getRole(), 
+				BioEventParameterType.GeneralTriggerFunction, 
 				unit_Dimensionless, 
-				ParameterType.GeneralTriggerFunction.getDescription());
+				BioEventParameterType.GeneralTriggerFunction.getDescription());
 		
 		switch (triggerType){
 		case GeneralTrigger: {
@@ -740,11 +757,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 				parameterContext.setLocalParameters(new LocalParameter[] {
 					delayParam,
 					parameterContext.new LocalParameter(
-							ParameterType.GeneralTriggerFunction.getDefaultName(), 
+							BioEventParameterType.GeneralTriggerFunction.getDefaultName(), 
 							new Expression(0.0), 
-							ParameterType.GeneralTriggerFunction.getRole(), 
+							BioEventParameterType.GeneralTriggerFunction, 
 							unit_Dimensionless, 
-							ParameterType.GeneralTriggerFunction.getDescription()),
+							BioEventParameterType.GeneralTriggerFunction.getDescription()),
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
@@ -759,17 +776,17 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						delayParam,
 						generatedGeneralTriggerParam,
 						parameterContext.new LocalParameter(
-								ParameterType.Observable.getDefaultName(), 
+								BioEventParameterType.Observable.getDefaultName(), 
 								null, 
-								ParameterType.Observable.getRole(), 
+								BioEventParameterType.Observable, 
 								unit_TBD, 
-								ParameterType.Observable.getDescription()), 
+								BioEventParameterType.Observable.getDescription()), 
 						parameterContext.new LocalParameter(
-								ParameterType.Threshold.getDefaultName(), 
+								BioEventParameterType.Threshold.getDefaultName(), 
 								new Expression(1.0), 
-								ParameterType.Threshold.getRole(), 
+								BioEventParameterType.Threshold, 
 								unit_TBD, 
-								ParameterType.Threshold.getDescription()), 
+								BioEventParameterType.Threshold.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
@@ -783,11 +800,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						delayParam,
 						generatedGeneralTriggerParam,
 						parameterContext.new LocalParameter(
-								ParameterType.SingleTriggerTime.getDefaultName(), 
+								BioEventParameterType.SingleTriggerTime.getDefaultName(), 
 								new Expression(1.0), 
-								ParameterType.SingleTriggerTime.getRole(), 
+								BioEventParameterType.SingleTriggerTime, 
 								unit_modelTime, 
-								ParameterType.SingleTriggerTime.getDescription()), 
+								BioEventParameterType.SingleTriggerTime.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
@@ -802,23 +819,23 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						delayParam,
 						generatedGeneralTriggerParam,
 						parameterContext.new LocalParameter(
-								ParameterType.RangeMinTime.getDefaultName(), 
+								BioEventParameterType.RangeMinTime.getDefaultName(), 
 								new Expression(1.0), 
-								ParameterType.RangeMinTime.getRole(), 
+								BioEventParameterType.RangeMinTime, 
 								unit_modelTime, 
-								ParameterType.RangeMinTime.getDescription()), 
+								BioEventParameterType.RangeMinTime.getDescription()), 
 						parameterContext.new LocalParameter(
-								ParameterType.RangeMaxTime.getDefaultName(), 
+								BioEventParameterType.RangeMaxTime.getDefaultName(), 
 								new Expression(10.0), 
-								ParameterType.RangeMaxTime.getRole(), 
+								BioEventParameterType.RangeMaxTime, 
 								unit_modelTime, 
-								ParameterType.RangeMaxTime.getDescription()), 
+								BioEventParameterType.RangeMaxTime.getDescription()), 
 						parameterContext.new LocalParameter(
-								ParameterType.RangeNumTimes.getDefaultName(), 
+								BioEventParameterType.RangeNumTimes.getDefaultName(), 
 								new Expression(9), 
-								ParameterType.RangeNumTimes.getRole(), 
+								BioEventParameterType.RangeNumTimes, 
 								unit_modelTime, 
-								ParameterType.RangeNumTimes.getDescription()), 
+								BioEventParameterType.RangeNumTimes.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
@@ -832,23 +849,23 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 						delayParam,
 						generatedGeneralTriggerParam,
 						parameterContext.new LocalParameter(
-								ParameterType.TimeListItem.getDefaultName()+"0", 
+								BioEventParameterType.TimeListItem.getDefaultName()+"0", 
 								new Expression(1.0), 
-								ParameterType.TimeListItem.getRole(), 
+								BioEventParameterType.TimeListItem, 
 								unit_modelTime, 
-								ParameterType.TimeListItem.getDescription()), 
+								BioEventParameterType.TimeListItem.getDescription()), 
 						parameterContext.new LocalParameter(
-								ParameterType.TimeListItem.getDefaultName()+"1", 
+								BioEventParameterType.TimeListItem.getDefaultName()+"1", 
 								new Expression(2.0), 
-								ParameterType.TimeListItem.getRole(), 
+								BioEventParameterType.TimeListItem, 
 								unit_modelTime, 
-								ParameterType.TimeListItem.getDescription()), 
+								BioEventParameterType.TimeListItem.getDescription()), 
 						parameterContext.new LocalParameter(
-								ParameterType.TimeListItem.getDefaultName()+"2", 
+								BioEventParameterType.TimeListItem.getDefaultName()+"2", 
 								new Expression(3.0), 
-								ParameterType.TimeListItem.getRole(), 
+								BioEventParameterType.TimeListItem, 
 								unit_modelTime, 
-								ParameterType.TimeListItem.getDescription()), 
+								BioEventParameterType.TimeListItem.getDescription()), 
 				});
 			} catch (PropertyVetoException | ExpressionBindingException e) {
 				e.printStackTrace();
@@ -871,7 +888,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		//
 		ArrayList<LocalParameter> parameters = new ArrayList<LocalParameter>();
 		for (LocalParameter p : getEventParameters()){
-			if (p.getRole() != ParameterType.TimeListItem.getRole()){
+			if (p.getRole() != BioEventParameterType.TimeListItem){
 				parameters.add(p);
 			}
 		}
@@ -881,9 +898,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		VCUnitDefinition timeUnit = getSimulationContext().getModel().getUnitSystem().getTimeUnit();
 		String name = "t0";
 		for (Expression exp : listExps){
-			String description = ParameterType.TimeListItem.description;
-			int role = ParameterType.TimeListItem.getRole();
-			parameters.add(parameterContext.new LocalParameter(name, exp, role, timeUnit, description));
+			String description = BioEventParameterType.TimeListItem.description;
+			parameters.add(parameterContext.new LocalParameter(name, exp, BioEventParameterType.TimeListItem, timeUnit, description));
 			name = TokenMangler.getNextEnumeratedToken(name);
 		}
 		setParameters(parameters.toArray(new LocalParameter[0]));
@@ -893,8 +909,8 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		this.bUseValuesFromTriggerTime = bUseValuesFromTriggerTime;
 	}
 
-	public LocalParameter createNewParameter(String paramName, ParameterType parameterType, Expression exp, VCUnitDefinition unit) {
-		return parameterContext.new LocalParameter(paramName, exp, parameterType.role, unit, parameterType.description);
+	public LocalParameter createNewParameter(String paramName, BioEventParameterType parameterType, Expression exp, VCUnitDefinition unit) {
+		return parameterContext.new LocalParameter(paramName, exp, parameterType, unit, parameterType.description);
 	}
 
 	public void setParameters(LocalParameter[] parameters) throws PropertyVetoException, ExpressionBindingException {
@@ -904,11 +920,11 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 	public String getTriggerDescription() {
 		switch (triggerType){
 		case GeneralTrigger:{
-			return "on condition: "+getParameter(ParameterType.GeneralTriggerFunction).getExpression().infix();
+			return "on condition: "+getParameter(BioEventParameterType.GeneralTriggerFunction).getExpression().infix();
 		}
 		case LinearRangeTimes:
 		case LogRangeTimes:{
-			Expression numTimesExp = getParameter(ParameterType.RangeNumTimes).getExpression();
+			Expression numTimesExp = getParameter(BioEventParameterType.RangeNumTimes).getExpression();
 			String numTimes = numTimesExp.infix();
 			if (numTimesExp.isNumeric()){
 				double numTimesDouble;
@@ -921,9 +937,9 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 					e.printStackTrace();
 				}
 			}
-			String minTime = getParameter(ParameterType.RangeMinTime).getExpression().infix();
-			String maxTime = getParameter(ParameterType.RangeMaxTime).getExpression().infix();
-			String timeUnit = getParameter(ParameterType.RangeMinTime).getUnitDefinition().getSymbol();
+			String minTime = getParameter(BioEventParameterType.RangeMinTime).getExpression().infix();
+			String maxTime = getParameter(BioEventParameterType.RangeMaxTime).getExpression().infix();
+			String timeUnit = getParameter(BioEventParameterType.RangeMinTime).getUnitDefinition().getSymbol();
 			if (triggerType == TriggerType.LinearRangeTimes){
 				return "at "+numTimes+" times from "+minTime+" to "+maxTime+" "+timeUnit+" (linear scale)";
 			}else{
@@ -933,7 +949,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 		case ListOfTimes:{
 			StringBuffer sb = new StringBuffer();
 			for (LocalParameter p : getEventParameters()){
-				if (p.getRole() == ParameterType.TimeListItem.getRole()){
+				if (p.getRole() == BioEventParameterType.TimeListItem){
 					if (sb.length()==0){
 						sb.append(p.getExpression().infix());
 					}else{
@@ -944,13 +960,13 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			return "at times: ["+sb.toString()+"]";
 		}
 		case ObservableAboveThreshold:{
-			return "when "+getParameter(ParameterType.Observable).getExpression().infix()+" is above "+getParameter(ParameterType.Threshold).getExpression().infix();
+			return "when "+getParameter(BioEventParameterType.Observable).getExpression().infix()+" is above "+getParameter(BioEventParameterType.Threshold).getExpression().infix();
 		}
 		case ObservableBelowThreshold:{
-			return "when "+getParameter(ParameterType.Observable).getExpression().infix()+" is below "+getParameter(ParameterType.Threshold).getExpression().infix();
+			return "when "+getParameter(BioEventParameterType.Observable).getExpression().infix()+" is below "+getParameter(BioEventParameterType.Threshold).getExpression().infix();
 		}
 		case SingleTriggerTime:{
-			LocalParameter triggerTimeParam = getParameter(ParameterType.SingleTriggerTime);
+			LocalParameter triggerTimeParam = getParameter(BioEventParameterType.SingleTriggerTime);
 			return "at time of "+triggerTimeParam.getExpression().infix()+" "+triggerTimeParam.getUnitDefinition().getSymbol();
 		}
 		default:{

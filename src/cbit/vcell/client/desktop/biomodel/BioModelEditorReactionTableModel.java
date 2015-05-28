@@ -18,8 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
@@ -30,20 +28,16 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.gui.ModelProcessEquation;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.MolecularTypeTableModel.Column;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ModelProcessDynamics;
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
-import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -310,16 +304,18 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					}else if (modelProcess instanceof ReactionRule){
 						ReactionRule oldReactionRule = (ReactionRule)modelProcess;
 						// when editing an existing reaction rule
-						ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, bioModel);
+						ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, oldReactionRule.getStructure(), bioModel);
 						if(newReactionRule != null) {
-							String name = oldReactionRule.getName();
-							RbmKineticLaw kl = oldReactionRule.getKineticLaw();
-							Structure st = oldReactionRule.getStructure();
-							getModel().getRbmModelContainer().removeReactionRule(oldReactionRule);
-							newReactionRule.setName(name);
-							newReactionRule.setKineticLaw(kl);
-							newReactionRule.setStructure(st);
-							getModel().getRbmModelContainer().addReactionRule(newReactionRule);
+							oldReactionRule.setProductPatterns(newReactionRule.getProductPatterns());
+							oldReactionRule.setReactantPatterns(newReactionRule.getReactantPatterns());
+//							String name = oldReactionRule.getName();
+//							RbmKineticLaw kl = oldReactionRule.getKineticLaw();
+//							Structure st = oldReactionRule.getStructure();
+//							getModel().getRbmModelContainer().removeReactionRule(oldReactionRule);
+//							newReactionRule.setName(name);
+//							newReactionRule.setKineticLaw(kl);
+//							newReactionRule.setStructure(st);
+//							getModel().getRbmModelContainer().addReactionRule(newReactionRule);
 						}
 					}
 					break;
@@ -338,8 +334,7 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						inputValue = inputValue.trim();
 						
 						if(inputValue.contains("(") && inputValue.contains(")")) {
-							ReactionRule reactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, bioModel);
-							reactionRule.setStructure(getModel().getStructure(0));
+							ReactionRule reactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, getModel().getStructure(0), bioModel);
 							getModel().getRbmModelContainer().addReactionRule(reactionRule);
 						} else {
 							if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(inputValue)) {
@@ -418,11 +413,11 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					ModelProcessEquation.parseReaction(reactionStep, getModel(), inputValue);
 				}else if (modelProcess instanceof ReactionRule){
 					//ReactionRuleEmbedded reactionRule = (ReactionRuleEmbedded)modelProcess;
-					ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, bioModel);
+					ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, getModel().getStructures()[0], bioModel);
 				}else{
 					// new row ... it's a rule if contains parentheses, plain reaction if it does not 
 					if(inputValue.contains("(") && inputValue.contains(")")) {
-						ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, bioModel);
+						ReactionRule newlyParsedReactionRule_NotUsedForValidation = RbmUtils.parseReactionRule(inputValue, getModel().getStructures()[0], bioModel);
 						if(newlyParsedReactionRule_NotUsedForValidation == null) {
 							throw new RuntimeException("Unable to generate a reaction rule for this input.");
 						}

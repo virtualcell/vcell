@@ -9,15 +9,15 @@
  */
 
 package cbit.vcell.mapping.potential;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -61,8 +61,7 @@ public VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus
 	//
 	LocalParameter[] stimulusParameters = voltageClampStimulus.getLocalParameters();
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
-		int role = stimulusParameters[i].getRole();
-		if (role==ElectricalStimulus.ROLE_UserDefined){
+		if (stimulusParameters[i].getRole() == ElectricalStimulusParameterType.UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
 			parameters = (ElectricalDeviceParameter[])org.vcell.util.BeanUtils.addElement(parameters,newParam);
 		}

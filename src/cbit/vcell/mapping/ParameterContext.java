@@ -13,10 +13,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
+
+import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.model.BioNameScope;
@@ -24,6 +32,7 @@ import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AbstractNameScope;
 import cbit.vcell.parser.Expression;
@@ -37,9 +46,15 @@ import cbit.vcell.parser.SymbolTableFunctionEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.UnitSystemProvider;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 import cbit.vcell.units.VCUnitSystem;
 
 public class ParameterContext implements Matchable, ScopedSymbolTable, Serializable {
+	
+	public interface ParameterRoleEnum {
+		// uses == semantics, must be implemented by an enumeration
+		String getDescription();
+	}
 	
 	public interface ParameterPolicy {
 		public boolean isUserDefined(LocalParameter localParameter);
@@ -49,27 +64,34 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 		public boolean isUnitEditable(LocalParameter localParameter);
 
 		public boolean isNameEditable(LocalParameter localParameter);
+
+		public ParameterRoleEnum getUserDefinedRole();
+
+		public IssueSource getIssueSource();
+
+		public RealInterval getConstraintBounds(ParameterRoleEnum role);
 	}
 
-	public class LocalParameter extends Parameter implements ExpressionContainer {
+	public class LocalParameter extends Parameter implements ExpressionContainer, IssueSource {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
- 		private int fieldParameterRole = -1;
+ 		private final ParameterRoleEnum fieldParameterRole;
  		private VCUnitDefinition fieldUnitDefinition = null;
 
-		public LocalParameter(String parmName, Expression argExpression, int argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
+		public LocalParameter(String parmName, Expression argExpression, ParameterRoleEnum argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
-			if (argRole >= 0){
+			if (argRole != null){
 				this.fieldParameterRole = argRole;
 			}else{
-				throw new IllegalArgumentException("parameter 'role' = "+argRole+" is out of range");
+				throw new IllegalArgumentException("parameter \""+parmName+"\" 'role' not set");
 			}
 			fieldUnitDefinition = argUnitDefinition;
 			setDescription(argDescription);
 		}
 
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof LocalParameter)){
 				return false;
@@ -85,26 +107,32 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			return true;
 		}
 
+		@Override
 		public NameScope getNameScope(){
 			return ParameterContext.this.getNameScope();
 		}
 
+		@Override
 		public boolean isExpressionEditable() {
 			return parameterPolicy.isExpressionEditable(this);
 		}
 
+		@Override
 		public boolean isUnitEditable() {
 			return parameterPolicy.isUnitEditable(this);
 		}
 
+		@Override
 		public boolean isNameEditable() {
 			return parameterPolicy.isNameEditable(this);
 		}
 
+		@Override
 		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 		
+		@Override
 		public void setExpression(Expression expression) throws ExpressionBindingException {
 			if (expression!=null){
 				expression = new Expression(expression);
@@ -115,10 +143,12 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
+		@Override
 		public double getConstantValue() throws ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 		
+		@Override
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = fieldParameterName;
 			super.fireVetoableChange("name", oldValue, name);
@@ -126,31 +156,34 @@ public class ParameterContext implements Matchable, ScopedSymbolTable, Serializa
 			super.firePropertyChange("name", oldValue, name);
 		}
 		
-		public void setUnitDefinition(VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+		@Override
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) {
 			VCUnitDefinition oldValue = fieldUnitDefinition;
-			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
 		
+		@Override
 		public String getName(){
 			return fieldParameterName;
 		}
 		
+		@Override
 		public Expression getExpression(){
 			return fieldParameterExpression;
 		}
 		
+		@Override
 		public int getIndex() { // used for evaluation evaluateVector(double[])
 			return -1;
 		}
 
-		public int getRole() {
+		public ParameterRoleEnum getRole() {
 			return fieldParameterRole;
 		}
 	}
 	
-	public class UnresolvedParameter extends Parameter {
+	public class UnresolvedParameter extends Parameter implements IssueSource {
 		
 		private String fieldParameterName = null;
 
@@ -348,6 +381,7 @@ public ParameterContext(BioNameScope bioNameScope, ParameterPolicy parameterPoli
 	this.parameterPolicy = parameterPolicy;
 	this.unitSystemProvider = argUnitSystemProvider;
 	addPropertyChangeListener(listener);
+System.out.println(this);
 }            
 
 /**
@@ -518,7 +552,7 @@ public ParameterContext.LocalParameter getLocalParameterFromName(String name) {
  * @return cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter
  * @param role int
  */
-public ParameterContext.LocalParameter getLocalParameterFromRole(int role) {
+public ParameterContext.LocalParameter getLocalParameterFromRole(ParameterRoleEnum role) {
 	for (int i = 0; i < fieldParameters.length; i++){
 		if (fieldParameters[i].getRole() == role){
 			return fieldParameters[i];
@@ -867,7 +901,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	getNameScope().getExternalEntries(entryMap);		
 }
 
-public LocalParameter addLocalParameter(String name, Expression exp, int role, VCUnitDefinition unit, String description) throws PropertyVetoException, ExpressionBindingException {
+public LocalParameter addLocalParameter(String name, Expression exp, ParameterRoleEnum role, VCUnitDefinition unit, String description) throws PropertyVetoException, ExpressionBindingException {
 	if (getLocalParameterFromName(name)!=null){
 		throw new RuntimeException("local parameter '"+name+"' already exists");
 	}
@@ -940,7 +974,7 @@ public void convertParameterType(Parameter param, boolean bConvertToGlobal, Glob
 			if (expression != null) {
 				Expression newExpr = new Expression(expression);
 				newExpr.bindExpression(this);
-				addLocalParameter(param.getName(), newExpr, RbmKineticLaw.ParameterType.UserDefined.getRole(), param.getUnitDefinition(), RbmKineticLaw.ParameterType.UserDefined.getDescription());
+				addLocalParameter(param.getName(), newExpr, parameterPolicy.getUserDefinedRole(), param.getUnitDefinition(), RbmKineticLaw.RbmKineticLawParameterType.UserDefined.getDescription());
 			} 
 		}
 	} else {
@@ -985,7 +1019,7 @@ public void setParameterValue(LocalParameter parm, Expression exp, boolean autoc
 			for (int i = 0; symbols!=null && i < symbols.length; i++){
 				SymbolTableEntry ste = getEntry(symbols[i]);
 				if (ste==null){
-					newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,new LocalParameter(symbols[i],new Expression(0.0),RbmKineticLaw.ParameterType.UserDefined.getRole(), modelUnitSystem.getInstance_TBD(),RbmKineticLaw.ParameterType.UserDefined.getDescription()));
+					newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,new LocalParameter(symbols[i],new Expression(0.0),RbmKineticLaw.RbmKineticLawParameterType.UserDefined, modelUnitSystem.getInstance_TBD(),RbmKineticLaw.RbmKineticLawParameterType.UserDefined.getDescription()));
 				}
 			}
 			setLocalParameters(newLocalParameters);
@@ -1014,6 +1048,126 @@ public boolean contains(LocalParameter parameter) {
 		}
 	}
 	return false;
+}
+
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ParameterRoleEnum userDefinedRole) {
+	//
+	// for each user unresolved parameter, make an issue
+	//
+	for (int i = 0; fieldUnresolvedParameters!=null && i < fieldUnresolvedParameters.length; i++){
+		issueList.add(new Issue(fieldUnresolvedParameters[i],issueContext, IssueCategory.UnresolvedParameter,"Unresolved parameter '"+fieldUnresolvedParameters[i].getName(),Issue.SEVERITY_ERROR));
+	}
+	//
+	// for each user defined parameter, see if it is used, if not make an issue
+	//
+	for (int i=0;fieldParameters!=null && i<fieldParameters.length;i++){
+		if (fieldParameters[i].getRole()==userDefinedRole){
+			try {
+				if (!isReferenced(fieldParameters[i],0)){
+					issueList.add(new Issue(fieldParameters[i],issueContext, IssueCategory.KineticsUnreferencedParameter,"Unreferenced Kinetic Parameter '"+fieldParameters[i].getName(),Issue.SEVERITY_WARNING));
+				}
+			}catch (ExpressionException e){
+				issueList.add(new Issue(fieldParameters[i],issueContext,IssueCategory.KineticsExpressionError, "error resolving expression " + e.getMessage(),Issue.SEVERITY_WARNING));
+			}
+		}
+	}
+
+	//
+	// check for use of symbol bindings that are species contexts that are not reaction participants
+	//
+	if (fieldParameters!=null) {
+		for (LocalParameter parameter : this.fieldParameters){
+			if (parameter.getExpression()==null){
+				issueList.add(new Issue(parameter,issueContext,IssueCategory.KineticsExpressionMissing,"expression is missing",Issue.SEVERITY_INFO));
+			}else{
+				Expression exp = parameter.getExpression();
+				String symbols[] = exp.getSymbols();
+				String issueMessagePrefix = "parameter '" + parameter.getName() + "' ";
+				if (symbols!=null) { 
+					for (int j = 0; j < symbols.length; j++){
+						SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
+						if (ste instanceof LocalProxyParameter) {
+							ste = ((LocalProxyParameter) ste).getTarget();
+						}
+						if (ste == null) {
+							issueList.add(new Issue(parameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+//						} else if (ste instanceof SpeciesContext) {
+//							if (!getReactionStep().getModel().contains((SpeciesContext)ste)) {
+//								issueList.add(new Issue(parameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined species '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+//							}
+//							if (reactionStep.countNumReactionParticipants((SpeciesContext)ste) == 0){
+//								issueList.add(new Issue(parameter,issueContext,IssueCategory.KineticsExpressionNonParticipantSymbol, issueMessagePrefix + "references species context '"+symbols[j]+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+//							}
+//						} else if (ste instanceof ModelParameter) {
+//							if (!getReactionStep().getModel().contains((ModelParameter)ste)) {
+//								issueList.add(new Issue(parameter,issueContext,IssueCategory.KineticsExpressionUndefinedSymbol, issueMessagePrefix + "references undefined global parameter '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+//							}
+						}
+					}
+				}
+			}
+		}
+		
+		// looking for local param which masks a global and issueing a warning
+		for (LocalParameter parameter : fieldParameters){
+			String name = parameter.getName();
+			SymbolTableEntry ste = nameScope.getExternalEntry(name, this);
+			String steName;
+			if(ste != null) {
+				if(ste instanceof Displayable) {
+					steName = ((Displayable) ste).getDisplayType() + " " + ste.getName();
+				} else {
+					steName = ste.getClass().getSimpleName() + " " + ste.getName();
+				}
+				String msg = steName + " is overriden by a local parameter " + name;
+				issueList.add(new Issue(parameter,issueContext,IssueCategory.Identifiers,msg ,Issue.SEVERITY_WARNING));
+			}
+		}
+	}
+
+	try {
+		//
+		// determine unit consistency for each expression
+		//
+		VCUnitSystem unitSystem = unitSystemProvider.getUnitSystem();
+		VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(unitSystem);
+		for (int i = 0; i < fieldParameters.length; i++){
+			if (fieldParameters[i].getExpression()==null){
+				continue;
+			}
+			try {
+				VCUnitDefinition paramUnitDef = fieldParameters[i].getUnitDefinition();
+				VCUnitDefinition expUnitDef = unitEvaluator.getUnitDefinition(fieldParameters[i].getExpression());
+				if (paramUnitDef == null){
+					issueList.add(new Issue(fieldParameters[i], issueContext, IssueCategory.Units,"defined unit is null",Issue.SEVERITY_WARNING));
+				}else if (paramUnitDef.isTBD()){
+					issueList.add(new Issue(fieldParameters[i], issueContext, IssueCategory.Units,"undefined unit " + unitSystem.getInstance_TBD().getSymbol(),Issue.SEVERITY_WARNING));
+				}else if (expUnitDef == null){
+					issueList.add(new Issue(fieldParameters[i], issueContext, IssueCategory.Units,"computed unit is null",Issue.SEVERITY_WARNING));
+				}else if (paramUnitDef.isTBD() || (!paramUnitDef.isEquivalent(expUnitDef) && !expUnitDef.isTBD())){
+					issueList.add(new Issue(fieldParameters[i], issueContext, IssueCategory.Units,"inconsistent units, defined=["+fieldParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
+				}
+			}catch (VCUnitException e){
+				issueList.add(new Issue(fieldParameters[i], issueContext, IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+			}catch (ExpressionException e){
+				issueList.add(new Issue(fieldParameters[i],issueContext,IssueCategory.Units, e.getMessage(),Issue.SEVERITY_WARNING));
+			}
+		}
+	}catch (Throwable e){
+		issueList.add(new Issue(parameterPolicy.getIssueSource(),issueContext,IssueCategory.Units,"unexpected exception: "+e.getMessage(),Issue.SEVERITY_INFO));
+	}
+
+	//
+	// add constraints (simpleBounds) for predefined parameters
+	//
+	for (int i = 0; i < fieldParameters.length; i++){
+		RealInterval simpleBounds = parameterPolicy.getConstraintBounds(fieldParameters[i].getRole());
+		if (simpleBounds!=null){
+			String parmName = fieldParameters[i].getName();
+			issueList.add(new SimpleBoundsIssue(fieldParameters[i], issueContext, simpleBounds, "parameter "+parmName+": must be within "+simpleBounds.toString()));
+		}
+	}
+	
 }
 
 
