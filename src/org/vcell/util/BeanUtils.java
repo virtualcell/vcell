@@ -1131,6 +1131,7 @@ public final class BeanUtils {
 						message);
 				}catch(Exception e){
 					e.printStackTrace();
+					System.err.println("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message);
 					//ignore
 				}
 			}
