@@ -18,8 +18,6 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.modeldb.ReactStepDbDriver.Flux;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlParseException;
 
 public class FluxReaction extends ReactionStep {
 //	private Species fieldFluxCarrier = null;
@@ -52,17 +50,6 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/22/00 10:21:47 PM)
- * @return java.lang.String
- */
-public String getTerm() {
-	return "Flux Reaction";
-}
-
 
 /**
  * This method was created by a SmartGuide.

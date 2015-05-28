@@ -13,7 +13,8 @@ import java.beans.PropertyVetoException;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
@@ -42,8 +43,8 @@ public class TotalCurrentClampStimulus extends ElectricalStimulus {
 		LocalParameter[] localParameters = new LocalParameter[1];
 		VCUnitDefinition currentUnit = argSimulationContext.getModel().getUnitSystem().getCurrentUnit();
 		localParameters[0] = parameterContext.new LocalParameter(
-				DefaultNames[ROLE_TotalCurrent], argCurrExpr, 
-				ROLE_TotalCurrent, currentUnit, 
+				ElectricalStimulusParameterType.TotalCurrent.defaultName, argCurrExpr, 
+				ElectricalStimulusParameterType.TotalCurrent, currentUnit, 
 				"applied current");
 		
 		try {
@@ -82,7 +83,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 
 public LocalParameter getCurrentParameter() {
-	return parameterContext.getLocalParameterFromRole(ElectricalStimulus.ROLE_TotalCurrent);
+	return parameterContext.getLocalParameterFromRole(ElectricalStimulusParameterType.TotalCurrent);
 }
 
 

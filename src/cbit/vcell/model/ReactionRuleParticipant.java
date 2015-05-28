@@ -6,13 +6,22 @@ import org.vcell.util.Matchable;
 
 public abstract class ReactionRuleParticipant implements ModelProcessParticipant {
 	private final SpeciesPattern speciesPattern;
+	private final Structure structure;
 	
-	public ReactionRuleParticipant(SpeciesPattern speciesPattern){
+	public ReactionRuleParticipant(SpeciesPattern speciesPattern, Structure structure){
 		this.speciesPattern = speciesPattern;
+		this.structure = structure;
+		if (structure == null){
+			System.out.println("null structure in ReactionRulePattern");
+		}
 	}
 	
 	public SpeciesPattern getSpeciesPattern(){
 		return this.speciesPattern;
+	}
+	
+	public Structure getStructure(){
+		return this.structure;
 	}
 
 	@Override

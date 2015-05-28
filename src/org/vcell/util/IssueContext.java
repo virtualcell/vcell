@@ -16,7 +16,7 @@ public class IssueContext implements Serializable {
 		BioModel,
 		Model,
 		SimContext,
-		Kinetics,
+		ModelProcessDynamics,
 		MathDescription,
 		MathMapping,
 		Geometry,

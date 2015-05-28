@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -104,6 +103,7 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
@@ -219,7 +219,7 @@ import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactantPattern;
@@ -1242,7 +1242,7 @@ private Element getXML(ElectricalStimulus param) {
 		Element tempparameter = new Element(XMLTags.ParameterTag);
 		//Get parameter attributes
 		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
-		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, ElectricalStimulus.RoleDescs[parm.getRole()]);
+		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, ((ElectricalStimulusParameterType)parm.getRole()).roleDescription);
 		VCUnitDefinition unit = parm.getUnitDefinition();
 		if (unit != null) {
 			tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
@@ -3536,23 +3536,23 @@ private Element getXML(ReactionRule param) {
 	e.setAttribute(XMLTags.RbmReactionRuleLabelTag, mangle(param.getName()));
 	boolean reversible = param.isReversible();
 	e.setAttribute(XMLTags.RbmReactionRuleReversibleTag, String.valueOf(reversible));
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate)!=null){
-		e.setAttribute(XMLTags.RbmMassActionKfTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKfTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)));
 	}
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate)!=null){
-		e.setAttribute(XMLTags.RbmMassActionKrTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKrTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)));
 	}
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat)!=null){
-		e.setAttribute(XMLTags.RbmMichaelisMentenKcatTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKcatTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)));
 	}
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm)!=null){
-		e.setAttribute(XMLTags.RbmMichaelisMentenKmTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKmTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)));
 	}
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableKs)!=null){
-		e.setAttribute(XMLTags.RbmSaturableKsTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableKs)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)!=null){
+		e.setAttribute(XMLTags.RbmSaturableKsTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)));
 	}
-	if (param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableVmax)!=null){
-		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.SaturableVmax)));
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)!=null){
+		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)));
 	}
 	List<ReactantPattern> reactantPatterns = param.getReactantPatterns();
 	if(!reactantPatterns.isEmpty()) {

@@ -16,14 +16,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
+import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ModelUnitSystem;
@@ -45,24 +49,44 @@ import cbit.vcell.units.VCUnitSystem;
  * @author: Anuradha Lakshminarayana
  */
 
-public abstract class ElectricalStimulus implements Matchable, java.io.Serializable {
+public abstract class ElectricalStimulus implements Matchable, java.io.Serializable, IssueSource {
 	private final ElectricalStimulusNameScope nameScope = new ElectricalStimulusNameScope();
 	private final ParameterPolicy parameterPolicy = new ParameterPolicy(){
 
+		@Override
 		public boolean isUserDefined(LocalParameter localParameter) {
-			return (localParameter.getRole() == ROLE_UserDefined);
+			return (localParameter.getRole() == ElectricalStimulusParameterType.UserDefined);
 		}
 
+		@Override
 		public boolean isExpressionEditable(LocalParameter localParameter) {
 			return (localParameter.getExpression()!=null);
 		}
 
+		@Override
 		public boolean isNameEditable(LocalParameter localParameter) {
 			return true;
 		}
 
+		@Override
 		public boolean isUnitEditable(LocalParameter localParameter) {
 			return isUserDefined(localParameter);
+		}
+
+		@Override
+		public ParameterRoleEnum getUserDefinedRole() {
+			return ElectricalStimulusParameterType.UserDefined;
+		}
+
+		@Override
+		public IssueSource getIssueSource() {
+			return ElectricalStimulus.this;
+		}
+
+		@Override
+		public RealInterval getConstraintBounds(ParameterRoleEnum role) {
+			// TODO Auto-generated method stub
+			return null;
 		}
 		
 		
@@ -112,30 +136,27 @@ public abstract class ElectricalStimulus implements Matchable, java.io.Serializa
 	// for Voltage Clamp:  CurrentParameter.exp == null and VoltageParameter.exp != null
 	// for Current Clamp:  CurrentParameter.exp != null and VoltageParameter.exp == null
 	//
-	public static final int NUM_PARAMETER_ROLES = 3;
-	public static final int ROLE_UserDefined = 0;
-	public static final int ROLE_CurrentDensity = 1;
-	public static final int ROLE_TotalCurrent = 2;
-	public static final int ROLE_Voltage = 3;
-
-	private static final String RoleTags[] = {
-		VCMODL.ES_Role_UserDefined,
-		VCMODL.ES_Role_CurrentDensity,
-		VCMODL.ES_Role_TotalCurrent,
-		VCMODL.ES_Role_Voltage
-	};
-	public static final String DefaultNames[] = {
-		null,
-		"currentDensity",
-		"totalCurrent",
-		"V",
-	};
-	public static final String RoleDescs[] = {
-		"user defined",
-		"current density",  // supported for old models.
-		"current",
-		"potential difference",
-	};
+	
+	public static enum ElectricalStimulusParameterType implements ParameterRoleEnum {
+		UserDefined(null,"user defined", VCMODL.ES_Role_UserDefined),
+		CurrentDensity("currentDensity","current density",VCMODL.ES_Role_CurrentDensity),
+		TotalCurrent("totalCurrent","current",VCMODL.ES_Role_TotalCurrent),
+		Voltage("V","potential difference",VCMODL.ES_Role_Voltage);
+	
+		public final String defaultName;
+		public final String roleDescription;
+		public final String databaseRoleTag;
+		private ElectricalStimulusParameterType(String defaultName, String roleDescription, String databaseRoleTag){
+			this.defaultName = defaultName;
+			this.roleDescription = roleDescription;
+			this.databaseRoleTag = databaseRoleTag;
+		}
+		@Override
+		public String getDescription() {
+			return roleDescription;
+		}
+	}
+	
 	public static String OLD_ROLEDESC_FOR_CURRENT_DENSITY = "total current";
 	
 /**
@@ -203,7 +224,7 @@ public void addUnresolvedParameter(String parameterName) {
  * @throws ExpressionBindingException 
  */
 public LocalParameter addUserDefinedParameter(String parameterName, Expression expression, VCUnitDefinition unit) throws PropertyVetoException, ExpressionBindingException {
-	return parameterContext.addLocalParameter(parameterName,expression,ROLE_UserDefined,unit,RoleDescs[ROLE_UserDefined]);
+	return parameterContext.addLocalParameter(parameterName,expression,ElectricalStimulusParameterType.UserDefined,unit,ElectricalStimulusParameterType.UserDefined.roleDescription);
 }
 
 
@@ -379,14 +400,14 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 		}
 		if (token.equalsIgnoreCase(VCMODL.Parameter)){
 			String roleName = tokens.nextToken();
-			int roleInt = -1;
-			for(int i =0;i<RoleTags.length;i+= 1){
-				if(roleName.equals(RoleTags[i])){
-					roleInt = i;
+			ElectricalStimulusParameterType parameterType = null;
+			for (ElectricalStimulusParameterType role : ElectricalStimulusParameterType.values()){
+				if (roleName.equals(role.databaseRoleTag)){
+					parameterType = role;
 					break;
 				}
 			}
-			if(roleInt == -1){
+			if(parameterType == null){
 				throw new RuntimeException(ElectricalStimulus.class.getName()+".parameterVCMLRead, unexpected token for roleName "+roleName);
 			}
 			String parameterName = tokens.nextToken();
@@ -406,7 +427,7 @@ public final void parameterVCMLSet(CommentStringTokenizer tokens) throws Express
 			}else{
 				tokens.pushToken(unitsString);
 			}
-			LocalParameter esp = parameterContext.new LocalParameter(parameterName,exp,roleInt,unitDef,RoleDescs[roleInt]);
+			LocalParameter esp = parameterContext.new LocalParameter(parameterName,exp,parameterType,unitDef,parameterType.databaseRoleTag);
 			esParametersV.add(esp);
 		}else{
 			throw new RuntimeException(ElectricalStimulus.class.getName()+".parameterVCMLRead, unexpected token for paramter tag "+token);
@@ -446,11 +467,11 @@ public final void parameterVCMLWrite(java.io.PrintWriter pw) {
 	if (parameters!=null){
 		for (int i=0;i<parameters.length;i++){
 			LocalParameter parm = parameters[i];
-			String roleName = RoleTags[parm.getRole()];
+			String databaseRoleTag = ((ElectricalStimulusParameterType)parm.getRole()).databaseRoleTag;
 			VCUnitDefinition unit = parm.getUnitDefinition();
 			pw.println("\t\t\t"+
 				VCMODL.Parameter+" "+
-				roleName + " " +
+				databaseRoleTag + " " +
 				parm.getName()+" "+
 				parm.getExpression().infix() + ";" +
 				(unit != null?" ["+unit.getSymbol()+"]":""));
@@ -559,7 +580,7 @@ public void setParameterValue(LocalParameter parm, Expression exp) throws Expres
 		ModelUnitSystem modelUnitSystem = simulationContext.getModel().getUnitSystem();
 		for (int i = 0; i < symbolsToAdd.size(); i++){
 			newLocalParameters = (LocalParameter[])BeanUtils.addElement(newLocalParameters,
-				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined, modelUnitSystem.getInstance_TBD(),RoleDescs[ROLE_UserDefined]));
+				parameterContext.new LocalParameter(symbolsToAdd.elementAt(i),new Expression(0.0),ElectricalStimulusParameterType.UserDefined, modelUnitSystem.getInstance_TBD(),ElectricalStimulusParameterType.UserDefined.databaseRoleTag));
 		}
 		parameterContext.setLocalParameters(newLocalParameters);
 		exp.bindExpression(parameterContext);

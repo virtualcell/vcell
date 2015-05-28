@@ -124,9 +124,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	 * removal of a molecule of a molecular type
 	 * adding a fully defined molecule
 	 * @param label 
+	 * @throws ExpressionBindingException 
 	 */
 	
-	public ReactionRule(Model model, String name, boolean reversible) {
+	public ReactionRule(Model model, String name, Structure structure, boolean reversible) {
 		super();
 		this.model = model;
 		if((name == null) || name.isEmpty()) {
@@ -137,6 +138,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			this.name = model.getReactionName();
 		}
 		this.bReversible = reversible;
+		this.structure = structure;
 		this.kineticLaw = new RbmKineticLaw(this,RbmKineticLaw.RateLawType.MassAction);
 	}
 	
@@ -170,6 +172,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		firePropertyChange(ReactionRule.PROPERTY_NAME_REACTANT_PATTERNS, oldValue, newValue);
 //		checkReactantPatterns(null);
 //		checkProductPatterns(null);
+		getKineticLaw().refreshUnits();
 	}
 	
 	public void checkReactantPatterns(IssueContext issueContext, List<Issue> issueList) {
@@ -302,6 +305,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		}
 		firePropertyChange(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS, oldValue, newValue);
 //		checkProductPatterns(null);
+		getKineticLaw().refreshUnits();
 	}
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;
@@ -800,7 +804,5 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public final String getDisplayType() {
 		return typeName;
 	}
-
-
 }
 

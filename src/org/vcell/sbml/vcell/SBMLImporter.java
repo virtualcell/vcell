@@ -143,9 +143,9 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 //import cbit.vcell.mapping.BioEvent.Delay;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
@@ -516,7 +516,7 @@ public class SBMLImporter {
 							bUseValsFromTriggerTime = false;
 						}
 						vcEvent.setUseValuesFromTriggerTime(bUseValsFromTriggerTime);
-						vcEvent.getParameter(ParameterType.TriggerDelay)
+						vcEvent.getParameter(BioEventParameterType.TriggerDelay)
 								.setExpression(durationExpr);
 					}
 

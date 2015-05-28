@@ -9,10 +9,15 @@
  */
 
 package cbit.vcell.model;
-import org.vcell.util.Issue;
-
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.model.Parameter;
+
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+
+import cbit.vcell.mapping.ParameterContext;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 /**
  * Insert the type's description here.
  * Creation date: (11/1/2005 9:32:59 AM)
@@ -28,13 +33,34 @@ public class SimpleBoundsIssue extends Issue {
  * @param argMessage java.lang.String
  * @param argSeverity int
  */
-public SimpleBoundsIssue(Parameter argParameter, RealInterval argBounds, String argMessage) {
-	super(argParameter, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
-	if (argBounds==null){
-		throw new IllegalArgumentException("parameter bounds cannot be null");
+	public SimpleBoundsIssue(ParameterContext.LocalParameter argParameter, IssueContext issueContext, RealInterval argBounds, String argMessage) {
+		super(argParameter, issueContext, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
+		if (argBounds==null){
+			throw new IllegalArgumentException("parameter bounds cannot be null");
+		}
+		this.bounds = argBounds;
 	}
-	this.bounds = argBounds;
-}
+	public SimpleBoundsIssue(SpeciesContextSpecParameter argParameter, IssueContext issueContext, RealInterval argBounds, String argMessage) {
+		super(argParameter, issueContext, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
+		if (argBounds==null){
+			throw new IllegalArgumentException("parameter bounds cannot be null");
+		}
+		this.bounds = argBounds;
+	}
+	public SimpleBoundsIssue(KineticsParameter argParameter, IssueContext issueContext, RealInterval argBounds, String argMessage) {
+		super(argParameter, issueContext, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
+		if (argBounds==null){
+			throw new IllegalArgumentException("parameter bounds cannot be null");
+		}
+		this.bounds = argBounds;
+	}
+	public SimpleBoundsIssue(StructureMappingParameter argParameter, IssueContext issueContext, RealInterval argBounds, String argMessage) {
+		super(argParameter, issueContext, IssueCategory.ParameterBoundsDefinition, argMessage, Issue.SEVERITY_BUILTIN_CONSTRAINT);
+		if (argBounds==null){
+			throw new IllegalArgumentException("parameter bounds cannot be null");
+		}
+		this.bounds = argBounds;
+	}
 
 
 /**

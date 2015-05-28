@@ -417,7 +417,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 					}
 					buffer.append(unresolvedParameters[j].getName());
 				}
-				throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+				throw new MappingException(reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 			}
 		}
 			

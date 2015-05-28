@@ -119,7 +119,7 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.BioEvent.ParameterType;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
@@ -246,7 +246,7 @@ import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactantPattern;
@@ -3079,9 +3079,9 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			
 			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, simContext);
 			try {
-				newBioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, triggerExpression);
+				newBioEvent.setParameterValue(BioEventParameterType.GeneralTriggerFunction, triggerExpression);
 				if (delayDurationExpression != null){
-					newBioEvent.setParameterValue(ParameterType.TriggerDelay, delayDurationExpression);
+					newBioEvent.setParameterValue(BioEventParameterType.TriggerDelay, delayDurationExpression);
 				}
 			} catch (ExpressionBindingException | PropertyVetoException e) {
 				e.printStackTrace();
@@ -3126,9 +3126,9 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			
 			newBioEvent = new BioEvent(name, TriggerType.GeneralTrigger, useValuesFromTriggerTime, simContext);
 			try {
-				newBioEvent.setParameterValue(ParameterType.GeneralTriggerFunction, triggerExpression);
+				newBioEvent.setParameterValue(BioEventParameterType.GeneralTriggerFunction, triggerExpression);
 				if (delayDurationExpression != null){
-					newBioEvent.setParameterValue(ParameterType.TriggerDelay, delayDurationExpression);
+					newBioEvent.setParameterValue(BioEventParameterType.TriggerDelay, delayDurationExpression);
 				}
 			} catch (ExpressionBindingException | PropertyVetoException e) {
 				e.printStackTrace();
@@ -3157,8 +3157,8 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 				String paramName = paramElement.getAttributeValue(XMLTags.NameAttrTag);
 				Expression exp = unMangleExpression(paramElement.getText());
 				String roleStr = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
-				ParameterType parameterType = ParameterType.fromRoleXmlName(roleStr);
-				if (parameterType == ParameterType.GeneralTriggerFunction){
+				BioEventParameterType parameterType = BioEventParameterType.fromRoleXmlName(roleStr);
+				if (parameterType == BioEventParameterType.GeneralTriggerFunction){
 					bHasGeneralTriggerParam = true;
 				}
 				VCUnitDefinition unit = simContext.getModel().getUnitSystem().getInstance_TBD();
@@ -3171,8 +3171,8 @@ public BioEvent[] getBioEvents(SimulationContext simContext, Element bioEventsEl
 			}
 			if (!bHasGeneralTriggerParam){
 				parameters.add(newBioEvent.createNewParameter(
-						ParameterType.GeneralTriggerFunction.getDefaultName(), 
-						ParameterType.GeneralTriggerFunction, 
+						BioEventParameterType.GeneralTriggerFunction.getDefaultName(), 
+						BioEventParameterType.GeneralTriggerFunction, 
 						null, // computed as needed
 						simContext.getModel().getUnitSystem().getInstance_DIMENSIONLESS()));
 			}
@@ -4346,7 +4346,8 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 		return null;
 	}
 	boolean reversible = Boolean.valueOf(e.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
-	ReactionRule r = new ReactionRule(newModel, n, reversible);
+	Structure structure = newModel.getStructures()[0];
+	ReactionRule r = new ReactionRule(newModel, n, structure, reversible);
 	String l = e.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now
 
 	boolean bKineticLawFound = false;
@@ -4356,7 +4357,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 	} else {
 		Expression massActionKfExp = unMangleExpression(massActionForwardRate);
 		try {
-			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, massActionKfExp);
+			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, massActionKfExp);
 			bKineticLawFound = true;
 		} catch (ExpressionBindingException | PropertyVetoException e3) {
 			e3.printStackTrace();
@@ -4368,7 +4369,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 			} else {
 				Expression massActionKrExp = unMangleExpression(massActionReverseRate);
 				try {
-					r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, massActionKrExp);
+					r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, massActionKrExp);
 					bKineticLawFound = true;
 				} catch (ExpressionBindingException | PropertyVetoException e3) {
 					e3.printStackTrace();
@@ -4385,7 +4386,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 	} else {
 		Expression MM_Kcat_exp = unMangleExpression(MM_Kcat);
 		try {
-			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKcat, MM_Kcat_exp);
+			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat, MM_Kcat_exp);
 			bKineticLawFound = true;
 		} catch (ExpressionBindingException | PropertyVetoException e3) {
 			e3.printStackTrace();
@@ -4396,7 +4397,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 		} else {
 			Expression MM_Km_exp = unMangleExpression(MM_Km);
 			try {
-				r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MichaelisMentenKm, MM_Km_exp);
+				r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm, MM_Km_exp);
 				bKineticLawFound = true;
 			} catch (ExpressionBindingException | PropertyVetoException e3) {
 				e3.printStackTrace();
@@ -4412,7 +4413,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 	} else {
 		Expression Sat_Ks_exp = unMangleExpression(Sat_Ks);
 		try {
-			r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.SaturableKs, Sat_Ks_exp);
+			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.SaturableKs, Sat_Ks_exp);
 			bKineticLawFound = true;
 		} catch (ExpressionBindingException | PropertyVetoException e3) {
 			e3.printStackTrace();
@@ -4423,7 +4424,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 		} else {
 			Expression Sat_Vmax_exp = unMangleExpression(Sat_Vmax);
 			try {
-				r.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.SaturableVmax, Sat_Vmax_exp);
+				r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.SaturableVmax, Sat_Vmax_exp);
 				bKineticLawFound = true;
 			} catch (ExpressionBindingException | PropertyVetoException e3) {
 				e3.printStackTrace();
@@ -4446,7 +4447,7 @@ private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newMode
 		List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
 		for (Element element : children) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
-			if(s != null) { r.addReactant(new ReactantPattern(s)); }
+			if(s != null) { r.addReactant(new ReactantPattern(s, r.getStructure())); }
 	}
 	}
 }
@@ -4460,7 +4461,7 @@ private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel
 		List<Element> children = GenericUtils.convert(e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace), Element.class);
 		for (Element element : children) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
-			if(s != null) { r.addProduct(new ProductPattern(s)); }
+			if(s != null) { r.addProduct(new ProductPattern(s, r.getStructure())); }
 		}
 	}
 }

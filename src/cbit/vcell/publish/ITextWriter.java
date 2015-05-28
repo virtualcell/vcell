@@ -1776,7 +1776,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 				reactionSpecTable.endHeaders();
 			}
 			String reactionName = reactionSpecs[i].getReactionStep().getName();
-			String reactionType = reactionSpecs[i].getReactionStep().getTerm();
+			String reactionType = reactionSpecs[i].getReactionStep().getDisplayType();
 			reactionSpecTable.addCell(createCell(reactionName, getFont()));
 			reactionSpecTable.addCell(createCell(reactionType, getFont()));
 			reactionSpecTable.addCell(createCell((reactionSpecs[i].isExcluded() ? " F ": " T "), getFont()));
