@@ -15,7 +15,6 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -34,6 +33,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ParameterContext.UnresolvedParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
@@ -75,6 +75,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -139,6 +140,23 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	ArrayList<ReactionRule> rrList = new ArrayList<ReactionRule>();
 	for (ReactionRule reactionRule : rbmModelContainer.getReactionRuleList()){
 		rrList.add(reactionRule);
+	}
+
+	//
+	// fail if any unresolved parameters
+	//
+	for (ReactionRule reactionRule : rrList){
+		UnresolvedParameter unresolvedParameters[] = reactionRule.getKineticLaw().getUnresolvedParameters();
+		if (unresolvedParameters!=null && unresolvedParameters.length>0){
+			StringBuffer buffer = new StringBuffer();
+			for (int j = 0; j < unresolvedParameters.length; j++){
+				if (j>0){
+					buffer.append(", ");
+				}
+				buffer.append(unresolvedParameters[j].getName());
+			}
+			throw new MappingException("In Application '" + getSimulationContext().getName() + "', " + reactionRule.getDisplayType()+" '"+reactionRule.getName()+"' contains unresolved identifier(s): "+buffer);
+		}
 	}
 
 	//
@@ -331,30 +349,26 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		}
 	}
 
-//	//
-//	// kinetic parameters (functions or constants)
-//	//
-//	for (int j=0;j<reactionSteps.length;j++){
-//		ReactionStep rs = reactionSteps[j];
+	//
+	// kinetic parameters (functions or constants)
+	//
+	for (ReactionRule reactionRule : rrList){
 //		if (getSimulationContext().getReactionContext().getReactionSpec(rs).isExcluded()){
 //			continue;
 //		}
-//		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
-//		GeometryClass geometryClass = null;
-//		if (rs.getStructure()!=null){
-//			geometryClass = getSimulationContext().getGeometryContext().getStructureMapping(rs.getStructure()).getGeometryClass();
-//		}
-//		if (parameters != null){
-//			for (int i=0;i<parameters.length;i++){
-//				//Reaction rate, currentDensity, LumpedCurrent and null parameters are not going to displayed in the particle math description.
-//				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent) || (parameters[i].getRole() == Kinetics.ROLE_ReactionRate)) ||
-//					 (parameters[i].getExpression()==null)){
-//					continue;
-//				}
-//				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],geometryClass), getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),geometryClass),geometryClass));
-//			}
-//		}
-//	}
+		LocalParameter localParameters[] = reactionRule.getKineticLaw().getLocalParameters();
+		GeometryClass geometryClass = null;
+		if (reactionRule.getStructure()!=null){
+			geometryClass = getSimulationContext().getGeometryContext().getStructureMapping(reactionRule.getStructure()).getGeometryClass();
+		}
+		for (LocalParameter localParameter : localParameters){
+			//Reaction rate, and null parameters are not going to displayed in the particle math description.
+			if ((localParameter.getRole() == RbmKineticLawParameterType.RuleRate) || (localParameter.getExpression()==null)){
+				continue;
+			}
+			varHash.addVariable(newFunctionOrConstant(getMathSymbol(localParameter,geometryClass), getIdentifierSubstitutions(localParameter.getExpression(),localParameter.getUnitDefinition(),geometryClass),geometryClass));
+		}
+	}
 //	//
 //	// initial constants (either function or constant)
 //	//
@@ -692,7 +706,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		} else {
 			reactionRuleName = reactionRuleNameDefault;
 		}
-		LocalParameter forwardRateParameter = reactionRule.getKineticLaw().getParameter(RbmKineticLaw.ParameterType.MassActionForwardRate);
+		LocalParameter forwardRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
 		Expression forwardRate = getIdentifierSubstitutions(forwardRateParameter.getExpression(), forwardRateParameter.getUnitDefinition(), defaultGeometryClass);
 		ArrayList<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
 		for (ReactantPattern reactantSpeciesPattern : reactionRule.getReactantPatterns()){
@@ -720,7 +734,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		subDomain.addParticleJumpProcess(forwardParticleJumpProcess);
 
 		// reverse reaction
-		LocalParameter reverseRateParameter = reactionRule.getKineticLaw().getParameter(RbmKineticLaw.ParameterType.MassActionReverseRate);
+		LocalParameter reverseRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
 		if (reactionRule.isReversible() && reverseRateParameter!=null){
 			Expression reverseRate = getIdentifierSubstitutions(reverseRateParameter.getExpression(), reverseRateParameter.getUnitDefinition(), defaultGeometryClass);
 			String reverseName = reactionRuleName+"_reverse";

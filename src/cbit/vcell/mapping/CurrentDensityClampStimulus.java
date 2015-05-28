@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 
+import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.parser.Expression;
@@ -43,8 +44,8 @@ public class CurrentDensityClampStimulus extends ElectricalStimulus {
 		LocalParameter[] localParameters = new LocalParameter[1];
 		VCUnitDefinition currentDensityUnit = argSimulationContext.getModel().getUnitSystem().getCurrentDensityUnit();
 		localParameters[0] = parameterContext.new LocalParameter(
-				DefaultNames[ROLE_CurrentDensity], argCurrExpr, 
-				ROLE_CurrentDensity, currentDensityUnit, 
+				ElectricalStimulusParameterType.CurrentDensity.defaultName, argCurrExpr, 
+				ElectricalStimulusParameterType.CurrentDensity, currentDensityUnit, 
 				"applied current density (deprecated)");
 		
 
@@ -84,7 +85,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 
 public LocalParameter getCurrentDensityParameter() {
-	return parameterContext.getLocalParameterFromRole(ElectricalStimulus.ROLE_CurrentDensity);
+	return parameterContext.getLocalParameterFromRole(ElectricalStimulusParameterType.CurrentDensity);
 }
 
 

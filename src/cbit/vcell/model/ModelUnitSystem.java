@@ -235,6 +235,8 @@ public class ModelUnitSystem extends VCUnitSystem implements Matchable {
 				return getVolumeConcentrationUnit();	
 			} else if (structure instanceof Membrane) {
 				return getMembraneConcentrationUnit();
+			} else if (structure == null){
+				throw new RuntimeException("null structure, cannot determine concentration unit");
 			}
 			throw new RuntimeException("Unknown Structure type : cannot determine concentration unit");
 		}

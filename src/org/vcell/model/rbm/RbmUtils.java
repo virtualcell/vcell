@@ -3,18 +3,13 @@ package org.vcell.model.rbm;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
+import java.util.StringTokenizer;
 
 import org.vcell.model.bngl.ASTAction;
 import org.vcell.model.bngl.ASTAddNode;
@@ -67,25 +62,21 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.units.VCUnitDefinition;
-
-import java.util.StringTokenizer;
 
 public class RbmUtils {
 	
@@ -205,7 +196,7 @@ public class RbmUtils {
 
 		public Object visit(ASTReactionRule node, Object data) {
 			if (data instanceof RbmModelContainer) {
-				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule(node.getLabel(), node.getArrowString().equals("<->"));
+				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule(node.getLabel(), model.getStructures()[0], node.getArrowString().equals("<->"));
 				node.childrenAccept(this, reactionRule);
 				if(model.getStructures().length > 0) {
 					reactionRule.setStructure(model.getStructure(0));
@@ -221,7 +212,7 @@ public class RbmUtils {
 	    	  Node child = node.jjtGetChild(i);
 	    	  Object object = child.jjtAccept(this, data);
 	    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
-	    		  ((ReactionRule) data).addReactant(new ReactantPattern((SpeciesPattern) object));
+	    		  ((ReactionRule) data).addReactant(new ReactantPattern((SpeciesPattern) object, ((ReactionRule)data).getStructure()));
 	    	  }
 	      }
 	      return null;
@@ -232,7 +223,7 @@ public class RbmUtils {
 		    	  Node child = node.jjtGetChild(i);
 		    	  Object object = child.jjtAccept(this, data);
 		    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
-		    		  ((ReactionRule) data).addProduct(new ProductPattern((SpeciesPattern) object));
+		    		  ((ReactionRule) data).addProduct(new ProductPattern((SpeciesPattern) object, ((ReactionRule)data).getStructure()));
 		    	  }
 		     }
 		     return null;
@@ -297,10 +288,10 @@ public class RbmUtils {
 							Double bnglModelVolume = bngUnitSystem.getVolume();
 							double reactantsFactor = Math.pow(bnglModelVolume,numReactants-1);
 							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(reactantsFactor)).flatten();
-							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, correctedRate);
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, correctedRate);
 // TODO:	test me please.
 						}else{
-							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate, new Expression(node.getValue()));
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, new Expression(node.getValue()));
 						}
 					} catch (PropertyVetoException | ExpressionException e1) {
 						// TODO Auto-generated catch block
@@ -313,12 +304,12 @@ public class RbmUtils {
 							Double bnglModelVolume = bngUnitSystem.getVolume();
 							double productsFactor = Math.pow(bnglModelVolume,numProducts-1);
 							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(productsFactor)).flatten();
-							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, correctedRate);
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, correctedRate);
 //	TODO:  test me please.
 //	this results in an expression which is molecules/time ... but we need concentration/time.
 //    K' = K * V^(N-1)
 						}else{
-							rr.getKineticLaw().setParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate, new Expression(node.getValue()));
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, new Expression(node.getValue()));
 						}
 					} catch (ExpressionException | PropertyVetoException e1) {
 						// TODO Auto-generated catch block
@@ -1021,11 +1012,11 @@ public class RbmUtils {
 		}
 	}
 	
-	public static ReactionRule parseReactionRule(String inputString, BioModel bioModel) throws ParseException {
-		return parseReactionRule(inputString, null, bioModel);
+	public static ReactionRule parseReactionRule(String inputString, Structure structure, BioModel bioModel) throws ParseException {
+		return parseReactionRule(inputString, null, structure, bioModel);
 	}
 
-	public static ReactionRule parseReactionRule(String inputString, String name, BioModel bioModel) throws ParseException {
+	public static ReactionRule parseReactionRule(String inputString, String name, Structure structure, BioModel bioModel) throws ParseException {
 		try {
 			String label = name;
 //			int labelIndex = inputString.indexOf(':');		// TODO: the way we edit reaction rules now, we have no labels here
@@ -1057,18 +1048,18 @@ public class RbmUtils {
 			}
 			
 			// note that the constructor will try to honor the label from the editor but will generate a new one if already in use
-			ReactionRule reactionRule = bioModel.getModel().getRbmModelContainer().createReactionRule(label, bReversible);
+			ReactionRule reactionRule = bioModel.getModel().getRbmModelContainer().createReactionRule(label, structure, bReversible);
 			String regex = "[^!]\\+";
 			String[] patterns = left.split(regex);
 			for (String sp : patterns) {
 				SpeciesPattern speciesPattern = parseSpeciesPattern(sp, bioModel.getModel());
-				reactionRule.addReactant(new ReactantPattern(speciesPattern));
+				reactionRule.addReactant(new ReactantPattern(speciesPattern,reactionRule.getStructure()));
 			}
 			
 			patterns = right.split(regex);
 			for (String sp : patterns) {
 				SpeciesPattern speciesPattern = parseSpeciesPattern(sp, bioModel.getModel());
-				reactionRule.addProduct(new ProductPattern(speciesPattern));
+				reactionRule.addProduct(new ProductPattern(speciesPattern,reactionRule.getStructure()));
 			}			
 			return reactionRule;
 		} catch (Throwable ex) {
@@ -1195,8 +1186,8 @@ public class RbmUtils {
 		String str = reactionRule.getName() + ":\t";
 		str += toBnglStringShort(reactionRule);
 		str += "\t\t";
-		if(reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate) != null) {
-			String str1 = reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionForwardRate).infixBng();
+		if(reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate) != null) {
+			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate).infixBng();
 			str += str1;
 		} else {
 			str += "(no name)";
@@ -1204,8 +1195,8 @@ public class RbmUtils {
 		if(!reactionRule.isReversible()) {
 			return str;
 		}
-		if (reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate) != null) {
-			String str1 = reactionRule.getKineticLaw().getParameterValue(RbmKineticLaw.ParameterType.MassActionReverseRate).infixBng();
+		if (reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate) != null) {
+			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate).infixBng();
 			str += ", " + str1;
 		} else {
 			throw new RuntimeException("Reaction rule " + reactionRule.getName() + " (reversible) is missing the reverse rate Kr (null).");

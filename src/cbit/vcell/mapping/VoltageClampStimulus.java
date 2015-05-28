@@ -41,8 +41,8 @@ public VoltageClampStimulus(Electrode argElectrode, String argName, Expression a
 	LocalParameter[] localParameters = new LocalParameter[1];
 	VCUnitDefinition voltageUnit = argSimulationContext.getModel().getUnitSystem().getVoltageUnit();
 	localParameters[0] = parameterContext.new LocalParameter(
-			DefaultNames[ROLE_Voltage], argVoltExpr, 
-			ROLE_Voltage, voltageUnit, 
+			ElectricalStimulusParameterType.Voltage.defaultName, argVoltExpr, 
+			ElectricalStimulusParameterType.Voltage, voltageUnit, 
 			"applied voltage");
 	
 	try {
@@ -78,7 +78,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 }
 
 public LocalParameter getVoltageParameter() {
-	return parameterContext.getLocalParameterFromRole(ROLE_Voltage);
+	return parameterContext.getLocalParameterFromRole(ElectricalStimulusParameterType.Voltage);
 }
 
 

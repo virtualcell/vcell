@@ -1254,7 +1254,7 @@ private boolean isEquivalentRoleFromKineticsVCMLTokens(int role1, int role2) {
  * Creation date: (5/12/2004 2:53:13 PM)
  */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	issueContext = issueContext.newChildContext(ContextType.Kinetics,this);
+	issueContext = issueContext.newChildContext(ContextType.ModelProcessDynamics,this);
 	//
 	// for each user unresolved parameter, make an issue
 	//

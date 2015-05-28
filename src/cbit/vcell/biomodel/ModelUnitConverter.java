@@ -52,7 +52,7 @@ public class ModelUnitConverter {
 			for (Parameter p : reactionRule.getKineticLaw().getUnresolvedParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
-			for (Parameter p : reactionRule.getKineticLaw().getKineticsParameters()){
+			for (Parameter p : reactionRule.getKineticLaw().getLocalParameters()){
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p);
 			}
 		}

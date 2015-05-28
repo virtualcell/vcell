@@ -24,8 +24,8 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
-import cbit.vcell.model.RbmKineticLaw.ParameterType;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactantPattern;
@@ -117,7 +117,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			
 			boolean bReversible = true;
-			ReactionRule rr = new ReactionRule(newModel, name, bReversible);
+			ReactionRule rr = new ReactionRule(newModel, name, rs.getStructure(), bReversible);
 			rr.setStructure(rs.getStructure());
 		
 			Expression forwardRateExp = ((MassActionKinetics)k).getForwardRateParameter().getExpression();
@@ -125,9 +125,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			RateLawType rateLawType = RateLawType.MassAction;
 			RbmKineticLaw kineticLaw = new RbmKineticLaw(rr, rateLawType);
 			try {
-				LocalParameter fR = kineticLaw.getParameter(ParameterType.MassActionForwardRate);
+				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				fR.setExpression(forwardRateExp);
-				LocalParameter rR = kineticLaw.getParameter(ParameterType.MassActionReverseRate);
+				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
 				rR.setExpression(reverseRateExp);
 			} catch (ExpressionBindingException e) {
 				e.printStackTrace();
@@ -143,12 +143,12 @@ public class RulebasedTransformer implements SimContextTransformer {
 			for(ReactionParticipant p : pList) {
 				if(p instanceof Reactant) {
 					SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
-					ReactantPattern reactantPattern = new ReactantPattern(speciesPattern);
+					ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, rr.getStructure());
 					rr.addReactant(reactantPattern);
 					
 				} else if(p instanceof Product) {
 					SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
-					ProductPattern productPattern = new ProductPattern(speciesPattern);
+					ProductPattern productPattern = new ProductPattern(speciesPattern, rr.getStructure());
 					rr.addProduct(productPattern);
 				}
 			}

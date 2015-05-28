@@ -33,9 +33,10 @@ import org.vcell.util.VCellThreadChecker;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.ElectricalStimulus;
+import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -1014,9 +1015,9 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 	if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ElectricalStimulus.ElectricalStimulusNameScope){
 		LocalParameter esParm = (LocalParameter)ste;
 		String nameWithScope = esParm.getNameScope().getName();
-		if (esParm.getRole()==ElectricalStimulus.ROLE_TotalCurrent){
+		if (esParm.getRole()==ElectricalStimulusParameterType.TotalCurrent){
 			return "I_"+nameWithScope;
-		} else if (esParm.getRole()==ElectricalStimulus.ROLE_Voltage){
+		} else if (esParm.getRole()==ElectricalStimulusParameterType.Voltage){
 			return "V_"+nameWithScope;
 		}
 	}
@@ -1740,7 +1741,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				}
 				buffer.append(unresolvedParameters[j].getName());
 			}
-			throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+			throw new MappingException(reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
 	
@@ -2644,9 +2645,9 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			// transform the bioEvent trigger/delay to math Event
 			Expression mathTriggerExpr = getIdentifierSubstitutions(be.generateTriggerExpression(), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
 			Delay mathDelay = null;
-			if (be.getParameter(ParameterType.TriggerDelay) != null) {
+			if (be.getParameter(BioEventParameterType.TriggerDelay) != null) {
 				boolean bUseValsFromTriggerTime = be.getUseValuesFromTriggerTime();
-				Expression mathDelayExpr = getIdentifierSubstitutions(be.getParameter(ParameterType.TriggerDelay).getExpression(), timeUnit, null);
+				Expression mathDelayExpr = getIdentifierSubstitutions(be.getParameter(BioEventParameterType.TriggerDelay).getExpression(), timeUnit, null);
 				mathDelay = new Delay(bUseValsFromTriggerTime, mathDelayExpr);
 			}
 			// now deal with (bio)event Assignment translation to math EventAssignment 

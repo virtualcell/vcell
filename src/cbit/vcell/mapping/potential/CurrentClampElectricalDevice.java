@@ -124,8 +124,7 @@ private void initializeParameters() throws ExpressionException {
 	//
 	LocalParameter[] stimulusParameters = currentClampStimulus.getLocalParameters();
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
-		int role = stimulusParameters[i].getRole();
-		if (role==ElectricalStimulus.ROLE_UserDefined){
+		if (stimulusParameters[i].getRole() == ElectricalStimulus.ElectricalStimulusParameterType.UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
 			parameters = (ElectricalDeviceParameter[])BeanUtils.addElement(parameters,newParam);
 		}

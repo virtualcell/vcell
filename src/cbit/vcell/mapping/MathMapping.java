@@ -37,8 +37,8 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ExperimentalPSF;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
@@ -1179,9 +1179,9 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 	if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ElectricalStimulus.ElectricalStimulusNameScope){
 		LocalParameter esParm = (LocalParameter)ste;
 		String nameWithScope = esParm.getNameScope().getName();
-		if (esParm.getRole()==ElectricalStimulus.ROLE_TotalCurrent){
+		if (esParm.getRole()==ElectricalStimulus.ElectricalStimulusParameterType.TotalCurrent){
 			return PARAMETER_TOTAL_CURRENT_PREFIX+nameWithScope;
-		} else if (esParm.getRole()==ElectricalStimulus.ROLE_Voltage){
+		} else if (esParm.getRole()==ElectricalStimulus.ElectricalStimulusParameterType.Voltage){
 			return PARAMETER_VOLTAGE_PREFIX+nameWithScope;
 		}
 	}
@@ -1694,7 +1694,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 				buffer.append(unresolvedParameters[j].getName());
 			}
-			throw new MappingException("In Application '" + simContext.getName() + "', " + reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+			throw new MappingException("In Application '" + simContext.getName() + "', " + reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
 	
@@ -2298,7 +2298,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			for (LocalParameter p : be.getEventParameters()){
 				if (p.getExpression()!=null){
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(p,null),getIdentifierSubstitutions(p.getExpression(),p.getUnitDefinition(),null),null));
-				}else if (be.getParameter(ParameterType.GeneralTriggerFunction) == p){
+				}else if (be.getParameter(BioEventParameterType.GeneralTriggerFunction) == p){
 					//
 					// use generated function here.
 					//
@@ -2787,11 +2787,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	if (bioevents != null && bioevents.length > 0) {
 		for (BioEvent be : bioevents) {
 			// transform the bioEvent trigger/delay to math Event
-			LocalParameter genTriggerParam = be.getParameter(ParameterType.GeneralTriggerFunction);
+			LocalParameter genTriggerParam = be.getParameter(BioEventParameterType.GeneralTriggerFunction);
 			Expression mathTriggerExpr = getIdentifierSubstitutions(new Expression(genTriggerParam,be.getNameScope()), modelUnitSystem.getInstance_DIMENSIONLESS(), null);
 			
 			Delay mathDelay = null;
-			LocalParameter delayParam = be.getParameter(ParameterType.TriggerDelay);
+			LocalParameter delayParam = be.getParameter(BioEventParameterType.TriggerDelay);
 			if (delayParam != null && delayParam.getExpression() != null && !delayParam.getExpression().compareEqual(new Expression(0.0))){
 				boolean bUseValsFromTriggerTime = be.getUseValuesFromTriggerTime();
 				Expression mathDelayExpr = getIdentifierSubstitutions(new Expression(delayParam, be.getNameScope()), timeUnit, null);

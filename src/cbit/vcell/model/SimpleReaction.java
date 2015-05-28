@@ -91,14 +91,6 @@ public int getNumReactants() {
 }   
 
 /**
- * Insert the method's description here.
- * Creation date: (5/22/00 10:22:19 PM)
- * @return java.lang.String
- */
-public String getTerm() {
-	return "Reaction";
-}
-/**
  * This method was created by a SmartGuide.
  * @return boolean
  */

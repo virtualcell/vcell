@@ -150,7 +150,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 				}
 				buffer.append(unresolvedParameters[j].getName());
 			}
-			throw new MappingException(reactionSteps[i].getTerm()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+			throw new MappingException(reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
 		}
 	}
 

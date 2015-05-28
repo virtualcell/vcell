@@ -20,8 +20,8 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.mapping.BioEvent;
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
-import cbit.vcell.mapping.BioEvent.ParameterType;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
@@ -69,7 +69,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();
 				try{
-					Expression delayExp = bioEvent.getParameter(ParameterType.TriggerDelay).getExpression();
+					Expression delayExp = bioEvent.getParameter(BioEventParameterType.TriggerDelay).getExpression();
 					Expression generatedTriggerExp = bioEvent.generateTriggerExpression();
 					if (bioEvent.getName().toLowerCase().contains(lowerCaseSearchText)
 						|| generatedTriggerExp.infix().toLowerCase().contains(lowerCaseSearchText)
@@ -106,7 +106,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 							varNames = varNames.concat(ea.getTarget().getName() + ", ");
 						}
 						varNames = varNames.substring(0, varNames.lastIndexOf(","));
-						LocalParameter delayParam = event.getParameter(ParameterType.TriggerDelay);
+						LocalParameter delayParam = event.getParameter(BioEventParameterType.TriggerDelay);
 						if (delayParam.getExpression()!=null && !delayParam.getExpression().isZero()){
 							return delayParam.getExpression().infix()+" "+delayParam.getUnitDefinition().getSymbol()+" after trigger reset "+varNames;
 						}
