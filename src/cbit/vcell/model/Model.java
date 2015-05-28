@@ -1474,12 +1474,12 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			setObservableList(newValue);
 		}
 		
-		public Parameter addFunction(String name, Expression expression) throws ModelException, PropertyVetoException {
-			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
+		public Parameter addFunction(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException, PropertyVetoException {
+			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitDefinition));
 		}
 		
-		public Parameter addParameter(String name, Expression expression) throws ModelException,PropertyVetoException {		
-			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitSystem.getInstance_DIMENSIONLESS()));
+		public Parameter addParameter(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException,PropertyVetoException {		
+			return Model.this.addModelParameter(new ModelParameter(name,expression,ROLE_UserDefined,unitDefinition));
 		}
 		
 		public RbmObservable getObservable(String obName){
@@ -3113,6 +3113,13 @@ public void refreshDependencies() {
 			e.printStackTrace(System.out);
 		}
 		getRbmModelContainer().getReactionRule(i).refreshDependencies();
+	}
+	for (RbmObservable observable : getRbmModelContainer().getObservableList()){
+		observable.removePropertyChangeListener(this);
+		observable.removeVetoableChangeListener(this);
+		observable.addPropertyChangeListener(this);
+		observable.addVetoableChangeListener(this);
+		observable.setModel(this);
 	}
 	
 }

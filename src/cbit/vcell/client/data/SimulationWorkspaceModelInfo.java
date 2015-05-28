@@ -331,9 +331,6 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
 					Variable var = varEnum.nextElement();
-					if(var.getName().equals("R_Shc")) {
-						System.out.println(var.getName());
-					}
 					SymbolTableEntry[] bioSymbols = mathSymbolMapping.getBiologicalSymbol(var);
 					if (bioSymbols != null && bioSymbols.length>0){
 						
