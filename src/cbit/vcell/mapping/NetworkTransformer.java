@@ -253,7 +253,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			}
 			Expression exp = new Expression(p.getValue());
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
-			model.getRbmModelContainer().addParameter(p.getName(), exp);
+			model.getRbmModelContainer().addParameter(p.getName(), exp, model.getUnitSystem().getInstance_TBD());
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
@@ -545,8 +545,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				}
 			}
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
-			model.getRbmModelContainer().removeObservable(model.getRbmModelContainer().getObservable(o.getObservableGroupName()));
-			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp);
+			RbmObservable originalObservable = model.getRbmModelContainer().getObservable(o.getObservableGroupName());
+			model.getRbmModelContainer().removeObservable(originalObservable);
+			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp, originalObservable.getUnitDefinition());
 
 			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
