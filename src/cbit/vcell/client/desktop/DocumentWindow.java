@@ -468,7 +468,6 @@ private void showVCellHelpWindow() {
 		helpWindow.show();
 	}else{
 		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-//		vcellHelpViewer.add
 		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
 		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
 		vcellHelpViewer.setCloseMyParent(helpWindow);
