@@ -87,11 +87,14 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 					MolecularTypeSmallShape stssTo = getShape(mtpTo); 
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
 					if(stssTo == null) {
-						System.out.println("Null 'to' shape for " + mcpFrom.getMolecularComponent().getDisplayName());
-						break;
+						System.err.println("Null 'to' MolecularTypeSmallShape for " + mcpFrom.getMolecularComponent().getDisplayName());
+						continue;
 					}
 					MolecularComponentSmallShape mcssTo = stssTo.getShape(mcpTo);
-					
+					if(mcssTo == null) {
+						System.err.println("Null 'to' MolecularComponentSmallShape for " + mcpFrom.getMolecularComponent().getDisplayName());
+						continue;
+					}
 					Point from = new Point(mcssFrom.getX()+mcssFrom.getWidth()/2, mcssFrom.getY()+mcssFrom.getHeight());
 					Point to = new Point(mcssTo.getX()+mcssTo.getWidth()/2, mcssTo.getY()+mcssFrom.getHeight());
 					if(from.x < to.x) {		// the bonds with from.x > to.x are duplicates
