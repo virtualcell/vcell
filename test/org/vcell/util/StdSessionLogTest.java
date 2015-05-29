@@ -1,5 +1,6 @@
 package org.vcell.util;
 
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import org.vcell.util.logging.Logging;
@@ -9,7 +10,8 @@ import org.vcell.util.logging.Logging;
  * load testing {@link StdoutSessionLogA} implementations 
  */
 public class StdSessionLogTest {
-
+	
+	private static final boolean TEST_STD_OUT = true;
 
 	public static void main(String[] args) {
 		try {
@@ -38,9 +40,19 @@ public class StdSessionLogTest {
 		String type = args[0];
 		if (type.equals("reg")) {
 			log = new StdoutSessionLog("stdlog", output);
+			if (TEST_STD_OUT) {
+				PrintStream ps = new PrintStream(new FileOutputStream("console.txt"),true);
+				System.setOut(ps);
+			}
 		}
 		else if (type.equals("con")) {
-			log = new StdoutSessionLogConcurrent("conlog",output);
+			StdoutSessionLogConcurrent a = new StdoutSessionLogConcurrent("conlog",output);
+			if (TEST_STD_OUT) {
+				PrintStream ad = a.printStreamFacade(); 
+				System.setOut(ad);
+				System.out.print("h");
+			}
+			log = a; 
 		}
 		else {
 			showUsage();
@@ -85,6 +97,9 @@ public class StdSessionLogTest {
 		public void run() {
 			int i = 1;
 			for (;;) {
+				if (TEST_STD_OUT) {
+					System.out.println(Integer.toString(id) + " tells console " +  i + " time");
+				}
 				log.print(Integer.toString(id) + " says hello " + ( i++ ) + " time");
 			}
 		}

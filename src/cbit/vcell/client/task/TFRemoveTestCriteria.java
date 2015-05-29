@@ -28,7 +28,9 @@ public class TFRemoveTestCriteria extends AsynchClientTask {
 		if(removeTheseTestCriterias == null){
 			removeTheseTestCriterias = (TestCriteriaNew[])hashTable.get(REMOVE_THESE_TESTCRITERIAS);
 		}
-		tfwm.removeTestCriteria(removeTheseTestCriterias);
+		if (removeTheseTestCriterias.length > 0) {
+			tfwm.removeTestCriteria(removeTheseTestCriterias);
+		}
 	}
 
 }

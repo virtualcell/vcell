@@ -127,11 +127,8 @@ org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAc
 
 
 /**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
+ * @param bAll -- get all models user has access to 
+ * @return information about models owned by logged in user (bAll == false) or all models user has access to (bAll == true)
  */
 org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 

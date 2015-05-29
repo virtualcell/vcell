@@ -288,7 +288,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			threadCount = 1;
 			executor =  new ScheduledThreadPoolExecutor(2,this,this);
 			executor.scheduleAtFixedRate(new ZombieKiller( ), 0, ZOMBIE_MINUTES, TimeUnit.MINUTES); 
-			executor.scheduleAtFixedRate(new QueueFlusher( ), 1000,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(new QueueFlusher( ), 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
 		}
 
 		/**
