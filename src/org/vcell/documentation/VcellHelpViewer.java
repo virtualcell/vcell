@@ -12,7 +12,6 @@ package org.vcell.documentation;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
@@ -43,7 +42,7 @@ public class VcellHelpViewer extends JPanel
 	public static final String VFRAP_DOC_URL = "/doc/HelpSet.hs";
 	public static final String VCELL_DOC_URL = "/vcellDoc/HelpSet.hs";
 	
-	JButton btnCloseHelp;
+	private JButton btnCloseHelp;
 	private ChildWindow closeableWindow;
 	
 	public void setCloseMyParent(ChildWindow closeableWindow){
