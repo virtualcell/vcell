@@ -10,21 +10,20 @@
 
 package org.vcell.documentation;
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.FlowLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
-import org.vcell.util.gui.VCellIcons;
-
-import cbit.vcell.client.desktop.DocumentWindowAboutBox;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 
 /**
  * This helpviewer enables navigate virtual frap help through table of contents. 
@@ -44,6 +43,15 @@ public class VcellHelpViewer extends JPanel
 	public static final String VFRAP_DOC_URL = "/doc/HelpSet.hs";
 	public static final String VCELL_DOC_URL = "/vcellDoc/HelpSet.hs";
 	
+	JButton btnCloseHelp;
+	private ChildWindow closeableWindow;
+	
+	public void setCloseMyParent(ChildWindow closeableWindow){
+		this.closeableWindow = closeableWindow;
+		if(closeableWindow != null){
+			btnCloseHelp.setVisible(true);
+		}
+	}
 	public VcellHelpViewer(String docUrl) {
 		URL resourceURL = VcellHelpViewer.class.getResource(docUrl);
 
@@ -62,6 +70,23 @@ public class VcellHelpViewer extends JPanel
 		}
 		
 		setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH,DEFAULT_HELP_DIALOG_HEIGHT));
+		
+		JPanel panel = new JPanel();
+		add(panel, BorderLayout.SOUTH);
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		btnCloseHelp = new JButton("Close");
+		btnCloseHelp.setVisible(false);
+		btnCloseHelp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(closeableWindow != null){
+					closeableWindow.close();
+					closeableWindow = null;
+				}
+			}
+		});
+		panel.add(btnCloseHelp);
 	}
 	
 	public static void main(String[] args){
@@ -70,7 +95,7 @@ public class VcellHelpViewer extends JPanel
 		
 		frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 		frame.pack();
-		frame.add(helpViewer);
+		frame.getContentPane().add(helpViewer);
 		frame.setVisible(true);
 	}
 }
