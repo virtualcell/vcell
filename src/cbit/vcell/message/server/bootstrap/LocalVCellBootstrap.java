@@ -12,11 +12,11 @@ package cbit.vcell.message.server.bootstrap;
 
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.rmi.RemoteException;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.management.MBeanServer;
@@ -222,7 +222,11 @@ public static void main(java.lang.String[] args) {
 		
 		SessionLog log;
 		if (logOutputStream != null) {
-			log = new StdoutSessionLogConcurrentRmi("local(unauthenticated)_administrator",logOutputStream);
+			StdoutSessionLogConcurrentRmi sslc = new StdoutSessionLogConcurrentRmi("local(unauthenticated)_administrator",logOutputStream);
+			final PrintStream concurrentPrintStream = sslc.printStreamFacade();
+			System.setOut(concurrentPrintStream);
+			System.setErr(concurrentPrintStream);
+			log = sslc;
 		}
 		else {
 			log = new StdoutSessionLog("local(unauthenticated)_administrator");
@@ -257,6 +261,7 @@ public static void main(java.lang.String[] args) {
 		//
 		long minuteMS = 60000;
 		long monitorSleepTime = 20*minuteMS;
+		monitorSleepTime = Long.MAX_VALUE; //TEST: only run once
 		String rmiUrl = "//" + host + ":" + rmiPort + "/VCellBootstrapServer";
 		Thread watchdogMonitorThread = new Thread(new WatchdogMonitor(monitorSleepTime,rmiPort,rmiUrl,localVCellBootstrap,serverConfig),"WatchdogMonitor");
 		watchdogMonitorThread.setDaemon(true);

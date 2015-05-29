@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.rmi.server.RemoteServer;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Objects;
 import java.util.StringTokenizer;
 
@@ -37,10 +38,11 @@ public abstract class StdoutSessionLogA implements SessionLog {
 	
 	public void alert(String message) {
 		String host = hostInfo(); 
-		String time = calendar.get( ).getTime().toString();
+		String time = currentTime( ).toString();
 		output("<<<ALERT>>> "+userid+" "+host+" "+time+" "+message + LINE_TERMINATOR);
 		return;
 	}
+	
 
 	/**
 	 * log exception
@@ -49,7 +51,7 @@ public abstract class StdoutSessionLogA implements SessionLog {
 	public void exception(Throwable exception) {
 		Objects.requireNonNull(userid);
 		String host = hostInfo(); 
-		String time = calendar.get( ).getTime().toString();
+		String time = currentTime( ).toString();
 	
 		//
 		// capture stack in String
@@ -83,8 +85,18 @@ public abstract class StdoutSessionLogA implements SessionLog {
 	 */
 	public void print(String message) {
 		String host = hostInfo(); 
-		String time = calendar.get( ).getTime().toString();
+		String time = currentTime( ).toString();
 		output(userid+" "+host+" "+time+" "+message+LINE_TERMINATOR);
+	}
+	
+	/**
+	 *  update local calendar to now
+	 * @return current time
+	 */
+	private Date currentTime( ) {
+		Calendar c = calendar.get();
+		c.setTimeInMillis(System.currentTimeMillis());
+		return c.getTime();
 	}
 	
 	/**
@@ -123,9 +135,4 @@ public abstract class StdoutSessionLogA implements SessionLog {
 	 * @param message
 	 */
 	abstract protected void output(String message);
-	
-	
-	
-	
-
 }

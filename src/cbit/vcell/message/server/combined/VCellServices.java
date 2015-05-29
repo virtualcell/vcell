@@ -11,6 +11,7 @@
 package cbit.vcell.message.server.combined;
 import java.io.File;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.Date;
 import java.util.Objects;
@@ -219,9 +220,18 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 			
 			OutputStream os = initLog(serviceInstanceStatus, logdir);
-			Objects.requireNonNull(os);
+			SessionLog log  = null;
+			if (os != null) {
+				Objects.requireNonNull(os);
 
-			final SessionLog log = new StdoutSessionLogConcurrent(serviceInstanceStatus.getID(),os);
+				final StdoutSessionLogConcurrent sslc = new StdoutSessionLogConcurrent(serviceInstanceStatus.getID(),os);
+				final PrintStream concurrentPrintStream = sslc.printStreamFacade();
+				System.setOut(concurrentPrintStream);
+				System.setErr(concurrentPrintStream);
+			}
+			else {
+				log = new StdoutSessionLog(serviceInstanceStatus.getID());
+			}
             
 			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
