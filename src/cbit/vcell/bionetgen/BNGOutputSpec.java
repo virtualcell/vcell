@@ -9,12 +9,15 @@
  */
 
 package cbit.vcell.bionetgen;
+
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 12:49:34 PM)
  * @author: Jim Schaff
  */
-public class BNGOutputSpec {
+public class BNGOutputSpec  implements Serializable {
 	private BNGParameter[] bngParams = null;
 	private BNGMolecule[] bngMoleculeTypes = null;
 	private BNGSpecies[] bngSpecies = null;

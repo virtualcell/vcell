@@ -9,12 +9,15 @@
  */
 
 package cbit.vcell.bionetgen;
+
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 1:19:06 PM)
  * @author: Jim Schaff
  */
-public class BNGParameter {
+public class BNGParameter implements Serializable {
 	private String name = null;
 	private double value = 0.0;
 
