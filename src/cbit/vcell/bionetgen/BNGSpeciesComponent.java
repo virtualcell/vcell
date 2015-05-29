@@ -9,12 +9,15 @@
  */
 
 package cbit.vcell.bionetgen;
+
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/1/2006 2:18:54 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class BNGSpeciesComponent {
+public class BNGSpeciesComponent implements Serializable {
 	private String[] stateNames = null;
 	private String currentState = null;
 	private String componentName = null;

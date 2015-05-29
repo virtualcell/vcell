@@ -10,12 +10,14 @@
 
 package cbit.vcell.bionetgen;
 
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/13/2006 5:47:24 PM)
  * @author: Jim Schaff
  */
-public class BNGReactionRule {
+public class BNGReactionRule  implements Serializable {
 	private BNGParameter[] parameters = null;
 	private BNGSpecies[] reactants = null;
 	private BNGSpecies[] products = null;

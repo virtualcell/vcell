@@ -9,12 +9,15 @@
  */
 
 package cbit.vcell.bionetgen;
+
+import java.io.Serializable;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 11:43:29 AM)
  * @author: Jim Schaff
  */
-public class ObservableGroup {
+public class ObservableGroup  implements Serializable {
 	//
 	// 'speciesMultiplicity' and 'listofSpecies' should be of the same length, since the 'speciesMultiplicity' represents the
 	// coefficient of a species concentration if the observable is of 'molecule' type. By default, it is 1 for each species in 
