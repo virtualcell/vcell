@@ -9,13 +9,14 @@
  */
 
 package cbit.vcell.bionetgen;
+import java.io.Serializable;
 import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2006 9:41:36 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class BNGMolecule {
+public class BNGMolecule implements Serializable {
 	private String molName = null;
 	BNGSpeciesComponent[] molComponents = null;
 	private String actualName = null;

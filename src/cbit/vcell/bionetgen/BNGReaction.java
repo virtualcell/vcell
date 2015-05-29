@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.bionetgen;
+import java.io.Serializable;
+
 import cbit.vcell.parser.Expression;
 
 
@@ -17,7 +19,7 @@ import cbit.vcell.parser.Expression;
  * Creation date: (1/13/2006 5:47:24 PM)
  * @author: Jim Schaff
  */
-public class BNGReaction {
+public class BNGReaction  implements Serializable {
 	private Expression paramExpression = null; 
 	private BNGSpecies[] reactants = null;
 	private BNGSpecies[] products = null;
