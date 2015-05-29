@@ -18,6 +18,13 @@ import edu.uchc.connjur.wb.LineStringBuilder;
  * @author gweatherby
  */
 public class SuiteTFRemoveCompiledSolvers  {
+	/**
+	 * Messages from attempts to run compiled solvers
+	 */
+	private static final String COMPILED_MSGS[] = {
+		"Compiled solvers no longer supported",
+		"The selected Solver Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)"	
+	};
 
 	/**
 	 * create required tasks
@@ -59,8 +66,11 @@ public class SuiteTFRemoveCompiledSolvers  {
 			for (TestCaseNew tcn : ts.getTestCases()) {
 				for ( TestCriteriaNew tcc : tcn.getTestCriterias()) {
 					if (tcc.getReportStatus().equals(TestCriteriaNew.TCRIT_STATUS_SIMFAILED)) {
-						if (tcc.getReportStatusMessage().contains("Compiled solvers no longer supported")) {
-							compiledSolverTests.add(tcc);
+						for (String f: COMPILED_MSGS) {
+							if (tcc.getReportStatusMessage().contains(f)) {
+								compiledSolverTests.add(tcc);
+								break; //COMPILED_MSGS
+							}
 						}
 					}
 				}

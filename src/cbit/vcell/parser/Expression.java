@@ -12,9 +12,7 @@ package cbit.vcell.parser;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
@@ -977,6 +975,18 @@ substituteCount++;////////////////////////////////
    {
 	   Expression exp = new Expression((SimpleNode)rootNode.convertToRvachevFunction());
 	   return exp;
+   }
+   
+   /**
+    * return constant value as double, if possible
+    * @return double value if evaluates as constant, null otherwise
+    */
+   public Double toDouble( ) {
+	   try {
+		   return evaluateConstant();
+	   } catch (ExpressionException e) {
+		   return null;
+	   }
    }
 }
 
