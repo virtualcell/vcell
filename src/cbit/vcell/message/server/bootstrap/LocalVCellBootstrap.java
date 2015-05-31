@@ -28,6 +28,8 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.StdoutSessionLogConcurrent;
+import org.vcell.util.StdoutSessionLogConcurrent.LifeSignInfo;
 import org.vcell.util.StdoutSessionLogConcurrentRmi;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
@@ -222,7 +224,8 @@ public static void main(java.lang.String[] args) {
 		
 		SessionLog log;
 		if (logOutputStream != null) {
-			StdoutSessionLogConcurrentRmi sslc = new StdoutSessionLogConcurrentRmi("local(unauthenticated)_administrator",logOutputStream);
+			StdoutSessionLogConcurrent sslc = 
+				new StdoutSessionLogConcurrentRmi("local(unauthenticated)_administrator",logOutputStream, new LifeSignInfo()); 
 			final PrintStream concurrentPrintStream = sslc.printStreamFacade();
 			System.setOut(concurrentPrintStream);
 			System.setErr(concurrentPrintStream);
@@ -230,10 +233,9 @@ public static void main(java.lang.String[] args) {
 		}
 		else {
 			log = new StdoutSessionLog("local(unauthenticated)_administrator");
+			int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
+			new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		}
-		
-		int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
-		new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 		
 		ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
 		KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();

@@ -3,6 +3,7 @@ package org.vcell.util;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import org.vcell.util.StdoutSessionLogConcurrent.LifeSignInfo;
 import org.vcell.util.logging.Logging;
 
 /**
@@ -46,7 +47,7 @@ public class StdSessionLogTest {
 			}
 		}
 		else if (type.equals("con")) {
-			StdoutSessionLogConcurrent a = new StdoutSessionLogConcurrent("conlog",output);
+			StdoutSessionLogConcurrent a = new StdoutSessionLogConcurrent("conlog",output, new LifeSignInfo( ));
 			if (TEST_STD_OUT) {
 				PrintStream ad = a.printStreamFacade(); 
 				System.setOut(ad);
