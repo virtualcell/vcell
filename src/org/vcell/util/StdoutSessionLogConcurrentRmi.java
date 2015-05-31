@@ -7,8 +7,8 @@ import java.io.OutputStream;
  */
 public class StdoutSessionLogConcurrentRmi extends StdoutSessionLogConcurrent {
 
-	public StdoutSessionLogConcurrentRmi(String userid, OutputStream outStream) {
-		super(userid, outStream);
+	public StdoutSessionLogConcurrentRmi(String userid, OutputStream outStream, LifeSignInfo lifeSignInfo) {
+		super(userid, outStream, lifeSignInfo);
 	}
 
 	@Override

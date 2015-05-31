@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,8 +26,15 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	/**
 	 * flush after this much time, or {@link #FLUSH_COUNT}, whichever occurs first
 	 */
-	private static final long FLUSH_TIME_MINUTES = 2;
-	
+	private static final long FLUSH_TIME = 2;
+	/**
+	 *  Units of {@link #FLUSH_TIME} 
+	 */
+	private static final TimeUnit FLUSH_TIME_UNITS = TimeUnit.MINUTES; 
+	/**
+	 * token to sign flush event
+	 */
+	private static final String FLUSH_NOW = "";
 
 	private final LinkedBlockingQueue<String> messageQueue;
 	private static final Logger LG = Logger.getLogger(StdoutSessionLogConcurrent.class);
@@ -34,8 +42,34 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	private final ThreadThatWrites writerThread;
 	protected final PrintWriter out; 
 	private PrintStream psFacade; 
+	
+	public static class LifeSignInfo {
+		/**
+		 * message to post
+		 */
+		private final String message;
+		/**
+		 * how often
+		 */
+		private final long timeInterval; 
+		/**
+		 * units of {@link #timeInterval}
+		 */
+		private final TimeUnit timeUnit;
+		public LifeSignInfo( ) {
+			this.message = "Still Alive";
+			this.timeInterval = FLUSH_TIME;
+			this.timeUnit = FLUSH_TIME_UNITS;
+		}
+		public LifeSignInfo(String message, int timeInterval, TimeUnit timeUnit) {
+			this.message = message;
+			this.timeInterval = timeInterval;
+			this.timeUnit = timeUnit;
+		} 
+		
+	}
 
-	public StdoutSessionLogConcurrent(String userid, OutputStream outStream) {
+	public StdoutSessionLogConcurrent(String userid, OutputStream outStream, LifeSignInfo lifeSignInfo) {
 		super(userid);
 		messageQueue = new LinkedBlockingQueue<>();
 		shutdown = new AtomicBoolean(false);
@@ -44,6 +78,7 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		psFacade = null;
 		writerThread.start();
 		Runtime.getRuntime().addShutdownHook(new EndOfLife());
+		new TimeFlushLifeSignThread(lifeSignInfo).start( );
 	}
 	
 	/**
@@ -93,16 +128,23 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 			for (;;) {
 				String m = null;
 				try {
-					m = messageQueue.poll(FLUSH_TIME_MINUTES, TimeUnit.MINUTES);
-					if (m != null) {
+					m = messageQueue.take( );
+					if (m != FLUSH_NOW) { 
 						out.print(m);
 						if (++messageCount >= FLUSH_COUNT) {
+							if (LG.isDebugEnabled()) {
+								LG.debug("message count flush: " + messageCount + " limit:  " + FLUSH_COUNT);
+							}
 							flush( );
 						}
 					}
 					else {
-						out.flush();
+						if (LG.isDebugEnabled()) {
+								LG.debug("token flush: " + messageCount + " limit:  " + FLUSH_COUNT);
+						}
+						flush();
 					}
+					
 					if (interrupted() && shutdown.get()) {
 						if (LG.isDebugEnabled()) {
 							LG.debug("Writer shutdown, flag, last msg " + m);
@@ -129,6 +171,33 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		}
 	}
 	
+	private class TimeFlushLifeSignThread extends Thread {
+		final LifeSignInfo lsi;
+
+		TimeFlushLifeSignThread(LifeSignInfo lsi) {
+			super("TimeFlushLifeSign");
+			Objects.requireNonNull(lsi);
+			this.lsi = lsi;
+			setDaemon(true);
+		}
+		
+		@Override
+		public void run() {
+			for (;;) {
+				try {
+					lsi.timeUnit.sleep(lsi.timeInterval);
+					StdoutSessionLogConcurrent.this.alert(lsi.message);
+					StdoutSessionLogConcurrent.this.output(FLUSH_NOW);
+				} catch (InterruptedException e) {
+					LG.warn(getClass( ).getName() + " interrupted",e);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * shutdown hook thread that sends interrupt to {@link ThreadThatWrites}
+	 */
 	private class EndOfLife extends Thread {
 		EndOfLife( ) {
 			super("StdoutSessionLogS EndOfLife");
@@ -143,9 +212,6 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 			String endOfLife = "eol"; // marker String to indicate shutdown has been triggered 
 			messageQueue.add(endOfLife);
 			int c = 0;
-			String firstMsg = messageQueue.poll( );
-			out.print(firstMsg);
-			LG.debug("first " + firstMsg);
 			String lastMsg = null;
 			while (!messageQueue.isEmpty()) {
 				String m = messageQueue.poll( );
@@ -163,12 +229,15 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		}
 	}
 	
+	/**
+	 * OutputStream which writes to the concurrent queue when
+	 * newline (10) received
+	 */
 	private class ConcurrentOutputStream extends OutputStream {
 		ThreadLocal<ByteArrayOutputStream> accumulator;
 		public ConcurrentOutputStream() {
-			accumulator = new TLStringBuilder();
+			accumulator = new TLByteArrayOutputStream();
 		}
-		
 
 		@Override
 		public void write(int byteAsInt) throws IOException {
@@ -183,15 +252,20 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		}
 		
 	}
-	private static class TLStringBuilder extends ThreadLocal<ByteArrayOutputStream> {
-
+	
+	/**
+	 * {@link ThreadLocal} {@link ByteArrayOutputStream}
+	 */
+	private static class TLByteArrayOutputStream extends ThreadLocal<ByteArrayOutputStream> {
 		/**
 		 * see {@link ThreadLocal#initialValue}
-		 * @return new {@link StringBuilder}
+		 * @return new {@link ByteArrayOutputStream} 
 		 */
 		@Override
 		protected ByteArrayOutputStream initialValue() {
 			return new ByteArrayOutputStream(); 
 		}
 	}
+	
+	
 }
