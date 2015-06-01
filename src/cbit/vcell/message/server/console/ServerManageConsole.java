@@ -2246,8 +2246,6 @@ private void query() {
 		querySpec.userid = text;
 	}
 
-	StringBuffer status = new StringBuffer();
-	int index = 0;
 	boolean  bAllStatus = getQueryAllStatusCheck().isSelected();
 	querySpec.waiting = bAllStatus || getQueryWaitingCheck().isSelected();
 	querySpec.queued = bAllStatus || getQueryQueuedCheck().isSelected();
@@ -2257,7 +2255,6 @@ private void query() {
 	querySpec.stopped = bAllStatus || getQueryStoppedCheck().isSelected();
 	querySpec.failed = bAllStatus || getQueryFailedCheck().isSelected();
 
-	java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("MM/dd/yyyy", java.util.Locale.US);
 	
 	if (getQuerySubmitDateCheck().isSelected()) {
 		bOtherConditions = true;
@@ -2657,6 +2654,9 @@ private void refresh () {
 		userList.clear();
 		try {
 			if (vcellBootstrap == null) {
+				HostPortDialog hpd = new HostPortDialog(this);
+				hpd.setVisible(true);
+				/*
 				String rmiHostPortString = DialogUtils.showInputDialog0(this,  "enter VCell RMI bootstrap host:port", "rmi-rel.cam.uchc.edu:40105");
 				String hostPort[] = rmiHostPortString.split(":");
 				if (hostPort == null || hostPort.length != 2){
@@ -2664,6 +2664,9 @@ private void refresh () {
 				}
 				String rmiHost = hostPort[0];
 				int rmiPort = Integer.parseInt(hostPort[1]);
+				*/
+				String rmiHost = hpd.getHost();
+				int rmiPort = hpd.getPort(); 
 				String rmiUrl = "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
 
 				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(rmiUrl);
