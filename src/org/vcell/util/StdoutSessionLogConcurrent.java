@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 
+import cbit.vcell.message.server.LifeSignThread;
+
 /**
  * use Java concurrent capability to make {@link SessionLog} methods as
  * fast as possible.
@@ -57,7 +59,7 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		 */
 		private final TimeUnit timeUnit;
 		public LifeSignInfo( ) {
-			this.message = "Still Alive";
+			this.message = LifeSignThread.ALIVE_MESSAGE; 
 			this.timeInterval = FLUSH_TIME;
 			this.timeUnit = FLUSH_TIME_UNITS;
 		}
@@ -171,6 +173,10 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		}
 	}
 	
+	/**
+	 * combine functionality of {@link cbit.vcell.message.server.LifeSignThread} with
+	 * flushing queue based on time
+	 */
 	private class TimeFlushLifeSignThread extends Thread {
 		final LifeSignInfo lsi;
 
