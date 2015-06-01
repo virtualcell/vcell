@@ -194,6 +194,11 @@ public class ServerManageConsole extends JFrame {
 	
 	private JButton ivjStopSelectedButton = null;
 	
+	/**
+	 * password passed on command line
+	 */
+	private static String commandLineAdminPassword = null;
+	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
@@ -2103,6 +2108,9 @@ private void initialize() {
  */
 public static void main(java.lang.String[] args) {
 	try {		
+		if (args.length == 2 && args[0].equals("-password")) {
+			ServerManageConsole.commandLineAdminPassword = args[1];
+		}
 		PropertyLoader.loadProperties();
 		
 		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
@@ -2672,17 +2680,28 @@ private void refresh () {
 				vcellBootstrap = (VCellBootstrap) java.rmi.Naming.lookup(rmiUrl);
 				String clearTextPassword = null;
 				if(VCellDBAdminpassword == null){
-					clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
+					if (commandLineAdminPassword == null) {
+						clearTextPassword = DialogUtils.showInputDialog0(this, "Enter VCell DB Administrator password", "AdminPassword");
+					}
+					else {
+						clearTextPassword = commandLineAdminPassword; 
+					}
 				}
-				vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
+				try {
+					vcellServer = null;
+					vcellServer = vcellBootstrap.getVCellServer(new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID)), new UserLoginInfo.DigestedPassword(clearTextPassword));
+				} catch (Exception e) {
+					javax.swing.JOptionPane.showMessageDialog(this, "Login fail: " + e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+				}
 				if (vcellServer!=null){
 					//everything OK, save cache password
 					VCellDBAdminpassword = clearTextPassword;
 				}else{
 					vcellBootstrap = null;
+					commandLineAdminPassword = null; //only try once 
 				}
 			}		
-			
+
 			if (vcellServer!=null){
 				ServerInfo serverInfo = vcellServer.getServerInfo();
 				User[] users = serverInfo.getConnectedUsers();
@@ -2692,13 +2711,13 @@ private void refresh () {
 			}
 		} catch (Exception ex) {
 			javax.swing.JOptionPane.showMessageDialog(this, "Exception:" + ex.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+			ex.printStackTrace();
 		}
 		showUsers(userList);
 	}
 		
 	return;
 }
-
 
 /**
  * Comment
