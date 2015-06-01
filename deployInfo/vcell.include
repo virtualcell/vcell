@@ -1,6 +1,16 @@
 #
 # GENERAL INCLUDE FILE FOR COMMON VCELL VARIABLES
 #
+#
+# Java 7 / 8 switch
+JAVA_NUM=8
+if [ $JAVA_NUM -ne 8 ]; then
+	JAVA_VERSION=current
+	JDK_VERSION=currentjdk
+else
+	JAVA_VERSION=current8
+	JDK_VERSION=currentjdk8
+fi
 
 #--------------------------------------
 # common definitions
@@ -25,13 +35,12 @@ common_siteLibDir=${common_siteRootDir}/lib
 LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
 
 #these are necessary to pick up the JVM shared libraries for VTK
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/currentjdk/jre/lib/amd64
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/currentjdk/jre/lib/amd64/server
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/currentjdk/jre/lib/amd64/xawt
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/lib
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/server
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/xawt
 export LD_LIBRARY_PATH
 
-common_jre=${common_vcellInstallDir}/java/current/bin/java
+common_jre=${common_vcellInstallDir}/java/$JAVA_VERSION/bin/java
 common_jvm_jars=GENERATED
 
 #--------------------------------------
