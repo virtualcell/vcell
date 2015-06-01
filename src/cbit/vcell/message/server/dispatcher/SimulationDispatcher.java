@@ -102,7 +102,7 @@ public class SimulationDispatcher extends ServiceProvider {
 
 	private HtcProxy htcProxy = null;
 	/**
-	 * format for logging.
+	 * format for logging. Lazily created on {@link #getDateFormat()}
 	 */
 	private DateFormat dateFormat = null;
 	private static Logger lg = Logger.getLogger(SimulationDispatcher.class);
@@ -269,7 +269,7 @@ public class SimulationDispatcher extends ServiceProvider {
 			threadCount = 1;
 			executor =  new ScheduledThreadPoolExecutor(2,this,this);
 			executor.scheduleAtFixedRate(new ZombieKiller( ), 0, ZOMBIE_MINUTES, TimeUnit.MINUTES); 
-			executor.scheduleAtFixedRate(new QueueFlusher( ), 1000,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(new QueueFlusher( ), 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
 		}
 
 		/**
@@ -456,9 +456,6 @@ public class SimulationDispatcher extends ServiceProvider {
 		super(vcMessagingService,serviceInstanceStatus,log,bSlaveMode);
 		this.simulationDatabase = simulationDatabase;
 		this.htcProxy = htcProxy;
-		if (lg.isTraceEnabled()) {
-			dateFormat = new SimpleDateFormat("k:m:s");
-		}
 	}
 
 
@@ -539,8 +536,18 @@ public class SimulationDispatcher extends ServiceProvider {
 	private void traceThread(Object source) {
 		if (lg.isTraceEnabled()) {
 			lg.trace(source.getClass( ).getName() + " thread id "  + Thread.currentThread().getId( ) + 
-				" commencing run cycle at " +  dateFormat.format(new Date( )) );
+				" commencing run cycle at " +  getDateFormat( ).format(new Date( )) );
 		}
+	}
+	
+	/**
+	 * @return new or existing date format
+	 */
+	private DateFormat getDateFormat( ) {
+		if (dateFormat == null) {
+			dateFormat = new SimpleDateFormat("k:m:s");
+		}
+		return dateFormat;
 	}
 
 
