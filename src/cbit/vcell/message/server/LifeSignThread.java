@@ -6,8 +6,10 @@ public class LifeSignThread extends Thread{
 
 private SessionLog sessionLog = null;
 private int interval;
-
-
+/**
+ * alive message left in log
+ */
+public static final String ALIVE_MESSAGE = "Still alive";
 
 public LifeSignThread(SessionLog aSessionLog, int anInterval) {
 	super("LifeSignThread");
@@ -18,7 +20,7 @@ public LifeSignThread(SessionLog aSessionLog, int anInterval) {
 
 public void run(){
 	for ( ; ; ) {
-		sessionLog.alert("Still alive");
+		sessionLog.alert(ALIVE_MESSAGE);
 		try {
 			sleep(interval); 
 		} catch (InterruptedException e) {
