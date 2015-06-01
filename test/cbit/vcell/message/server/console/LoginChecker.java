@@ -3,6 +3,7 @@ package cbit.vcell.message.server.console;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.vcell.util.document.BioModelInfo;
@@ -22,7 +23,7 @@ public class LoginChecker {
 	private static final String SERVICE = "/VCellBootstrapServer";
 	private static final boolean VERBOSE = System.getProperty("LOGINCHECK_VERBOSE") != null;
 	private static final long SOCKET_TIMEOUT_MINUTES = 1;
-	private static class SiteInfo {
+	public static class SiteInfo {
 		final String name;
 		final String host;
 		final int port;
@@ -33,7 +34,7 @@ public class LoginChecker {
 			this.port = port;
 		}
 		
-		String bootStrapUrl( ) {
+		public String bootStrapUrl( ) {
 			return "//" + host   + ":" + port + SERVICE;
 		}
 		
@@ -67,6 +68,22 @@ public class LoginChecker {
 		add(new SiteInfo("test4", "alpha",40113));
 	}
 	
+	
+	/**
+	 * get {@link SiteInfo} matching name
+	 * @param siteName
+	 * @return Collection of matching sites (could be empty)
+	 */
+	public static Collection<SiteInfo> getSiteInfos(String siteName) {
+		ArrayList<SiteInfo> filtered = new ArrayList<>();
+		for (SiteInfo si : sites) {
+			if (Objects.equals(si.name, siteName)) {
+				filtered.add(si);
+			}
+		}
+		return filtered;
+	}
+	
 	public static void main(String[] args) {
 		if (args.length != 3) {
 			System.out.println("Usage: site username password");
@@ -78,11 +95,10 @@ public class LoginChecker {
 		//redirect standard error to standard out, easier for scripts to deal with
 		System.setErr(System.out);
 		String site = args[0];
-		boolean match = false;
 		boolean good = true;
-		for (SiteInfo si : sites) {
-			if (site.equals(si.name)) {
-				match = true;
+		Collection<SiteInfo> matching = getSiteInfos(site);
+		if (!matching.isEmpty()) {
+			for (SiteInfo si : matching) {
 				final boolean attempt =  attemptLogin(si, args[1],args[2]);
 				if (!attempt) {
 					System.out.println("login failed " + si);
@@ -90,7 +106,7 @@ public class LoginChecker {
 				good &= attempt;
 			}
 		}
-		if (!match) {
+		else {
 			System.err.println("unrecognized site " + site);
 			System.exit(2);
 		}
@@ -128,7 +144,7 @@ public class LoginChecker {
 			}
 			UserMetaDbServer dataServer = vcellConnection.getUserMetaDbServer();
 			@SuppressWarnings("unused")
-			BioModelInfo[] bmi = dataServer.getBioModelInfos(false);
+			BioModelInfo[] bmi = dataServer.getBioModelInfos(true);
 			if (VERBOSE) {
 				System.out.println("success on " + si + " in " + elapsed(start) + " seconds");
 			}
