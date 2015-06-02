@@ -5,6 +5,7 @@ package org.vcell.model.bngl;
 public class ASTSeedSpecies extends SimpleNode {
 
 	private String initial;
+	private boolean clamped = false;
 
 	public ASTSeedSpecies(int id) {
 		super(id);
@@ -19,6 +20,9 @@ public class ASTSeedSpecies extends SimpleNode {
 			image = image.substring(1, image.length()-1);
 		}
 		this.initial = image;
+	}
+	public void setClamped() {
+		this.clamped = true;
 	}
 
 	@Override

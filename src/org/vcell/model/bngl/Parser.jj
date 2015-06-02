@@ -182,10 +182,10 @@ TOKEN : /* LITERALS */
 
 TOKEN : 
 {
+   < CLAMP: "$" > |
    < QUESTION_MARK: "?" > |
    < COMMA: "," > 
 }
-
 
 TOKEN : /* pattern escape tokens */
 {
@@ -452,7 +452,7 @@ void SeedSpeciesBlock()                   :
         try {
 /*@egen*/
 	<SEED> <SPECIES>
-	( [ <INTEGER> ] SeedSpecies() )*
+	( [ <INTEGER> ]  SeedSpecies() )*
 	<END> <SEED> <SPECIES>/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -481,17 +481,18 @@ void SeedSpecies()              :
   ASTSeedSpecies jjtn000 = new ASTSeedSpecies(JJTSEEDSPECIES);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ ASTExpression t; }
+/*@egen*/ ASTExpression t; Token tClamped = null;}
 {/*@bgen(jjtree) SeedSpecies */
         try {
 /*@egen*/
-	SpeciesPattern() ( "{" t = Expression() "}")/*@bgen(jjtree)*/
+	[ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t = Expression() "}")/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
         }
 /*@egen*/
-	{ jjtn000.setInitial(t.toBNGL()); }/*@bgen(jjtree)*/
+	{ jjtn000.setInitial(t.toBNGL());
+	if(tClamped != null) {jjtn000.setClamped();} }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
