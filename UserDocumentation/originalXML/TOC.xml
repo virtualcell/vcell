@@ -25,7 +25,6 @@
     			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
     			<tocitem target="NewUserRegistration" text="New User Registration"/>
     		</tocitem>	
-    		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu">
     			 	<tocitem target="BioNetGenRulesEditor" text="BioNetGen Rules Editor"/>

@@ -1058,7 +1058,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getFileMenu());
 			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
-			ivjDocumentWindowJMenuBar.add(getWindowMenu());
+//			ivjDocumentWindowJMenuBar.add(getWindowMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}
