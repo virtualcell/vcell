@@ -69,9 +69,6 @@
 	  <item>
 		<link target = "Export">Export...</link>,
 	  </item>
-	  <item>
-	    <link target = "ImportPathway">Import Pathway...</link>,
-	  </item>  
 	  <item>		
 		<bold>Exit</bold> - exits the Virtual Cell, closing all open documents and prompting user to save any unsaved document(s).
 	  </item>
