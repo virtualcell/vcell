@@ -42,16 +42,17 @@ public interface BNGLParserConstants {
   int DIV = 40;
   int FLOATING_POINT_LITERAL = 41;
   int EXPONENT = 42;
-  int QUESTION_MARK = 43;
-  int COMMA = 44;
-  int NAMED_ATTRIBUTE = 45;
-  int VARIABLE_ATTRIBUTE = 46;
-  int MINUS = 47;
-  int BOND = 48;
-  int DOT = 49;
-  int REACTION_ARROW_RIGHT = 50;
-  int REACTION_ARROW_LEFT = 51;
-  int REACTION_ARROW_BOTH = 52;
+  int CLAMP = 43;
+  int QUESTION_MARK = 44;
+  int COMMA = 45;
+  int NAMED_ATTRIBUTE = 46;
+  int VARIABLE_ATTRIBUTE = 47;
+  int MINUS = 48;
+  int BOND = 49;
+  int DOT = 50;
+  int REACTION_ARROW_RIGHT = 51;
+  int REACTION_ARROW_LEFT = 52;
+  int REACTION_ARROW_BOTH = 53;
 
   int DEFAULT = 0;
 
@@ -99,6 +100,7 @@ public interface BNGLParserConstants {
     "\"/\"",
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
+    "\"$\"",
     "\"?\"",
     "\",\"",
     "\"~\"",

@@ -180,10 +180,10 @@ TOKEN : /* LITERALS */
 
 TOKEN : 
 {
+   < CLAMP: "$" > |
    < QUESTION_MARK: "?" > |
    < COMMA: "," > 
 }
-
 
 TOKEN : /* pattern escape tokens */
 {
@@ -268,15 +268,16 @@ void SeedSpeciesBlock() #SeedSpeciesBlock :
 {}
 {
 	<SEED> <SPECIES>
-	( [ <INTEGER> ] SeedSpecies() )*
+	( [ <INTEGER> ]  SeedSpecies() )*
 	<END> <SEED> <SPECIES>
 }
 
 void SeedSpecies() #SeedSpecies :
-{ ASTExpression t; }
+{ ASTExpression t; Token tClamped = null;}
 {
-	SpeciesPattern() ( "{" t = Expression() "}")
-	{ jjtThis.setInitial(t.toBNGL()); }
+	[ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t = Expression() "}")
+	{ jjtThis.setInitial(t.toBNGL());
+	if(tClamped != null) {jjtThis.setClamped();} }
 }
 
 void ReactionRulesBlock() #ReactionRulesBlock :
