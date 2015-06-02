@@ -66,9 +66,9 @@ import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.resource.VisitSupport;
@@ -898,7 +898,9 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 
 
 private void startVirtualFRAP(){
-	VirtualFrapLoader.loadVFRAP(null, false,getWindowManager());
+	final DocumentWindowManager dwm = getWindowManager();
+	final Hashtable<String,Object> ht = new Hashtable<>();
+	ClientTaskDispatcher.dispatch(this, ht,LaunchVirtualFRAP.taskList(dwm), true,false,false,null,false);
 }
 
 private void startVCellVisIt() {
