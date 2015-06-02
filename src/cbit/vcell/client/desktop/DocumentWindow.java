@@ -1151,7 +1151,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getJMenuItemImport());
 			ivjFileMenu.add(getJMenuItemExport());
 			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuImportPathway());			
+			//ivjFileMenu.add(getJMenuImportPathway());			
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getExitMenuItem());
 			// user code begin {1}
@@ -2629,7 +2629,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 					getWindowManager().getVCDocument() != null &&
 					getWindowManager().getVCDocument() instanceof BioModel
 			);
-			getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
+			//getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
 		}
