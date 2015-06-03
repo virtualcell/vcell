@@ -2748,7 +2748,7 @@ static public class BngUnitSystem {
 
 	public BngUnitSystem(BngUnitOrigin bngUnitOrigin) {
 		this.o = bngUnitOrigin;
-		this.volume = 1.0;
+		this.volume = 5000.0;		// in the dialog it'll show as 5000 cubic micrometers, which is a good initial value
 		this.isConcentration = true;
 		this.volumeUnit = null;
 		this.concUnit = ConcUnitSystem.ConcUnitSymbol_uM;
