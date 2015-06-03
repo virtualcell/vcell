@@ -59,6 +59,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
@@ -88,20 +89,20 @@ public class RbmUtils {
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
 		private Model model = null;
-		SimulationContext application = null;
+		private List<SimulationContext> appList = null;
 		private final BngUnitSystem bngUnitSystem;		// never null
 		
 		public BnglObjectConstructionVisitor() {
 			this(null, null, null, true);
 		}
-		public BnglObjectConstructionVisitor(Model model, SimulationContext application, boolean stopOnError) {
-			this(model, application, null, stopOnError);
+		public BnglObjectConstructionVisitor(Model model, List<SimulationContext> appList, boolean stopOnError) {
+			this(model, appList, null, stopOnError);
 		}
-		public BnglObjectConstructionVisitor(Model model, SimulationContext application, BngUnitSystem bngUnitSystem, boolean stopOnError) {
+		public BnglObjectConstructionVisitor(Model model, List<SimulationContext> appList, BngUnitSystem bngUnitSystem, boolean stopOnError) {
 			this.bngUnitSystem = bngUnitSystem;
 			this.stopOnError = stopOnError;
 			this.model = model;
-			this.application = application;
+			this.appList = appList;
 		}
 		
 		public Object visit(SimpleNode node, Object data) {
@@ -149,7 +150,7 @@ public class RbmUtils {
 
 		public Object visit(ASTSeedSpecies node, Object data) {
 			assert model != null;
-			assert application != null;
+			assert appList != null;
 			SeedSpecies seedSpecies = new SeedSpecies();		// limited scope, we only need it to allow for a proper visitation process
 			node.childrenAccept(this, seedSpecies);
 			try {
@@ -159,15 +160,20 @@ public class RbmUtils {
 				try {
 					Structure structure = model.getStructure(0);
 					SpeciesContext speciesContext = model.createSpeciesContext(structure, seedSpecies.getSpeciesPattern());
-					
-//					SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
-					SpeciesContextSpec scs = application.getReactionContext().getSpeciesContextSpec(speciesContext);
-					if (bngUnitSystem.isConcentration() && application.isUsingConcentration()){
-						scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
-					}else if (!bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
-						scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(exp);
-					}else{
-						throw new RuntimeException("failed to interpret initial conditions as concentration or count");
+					for(SimulationContext application : appList) {
+						SpeciesContextSpec scs = application.getReactionContext().getSpeciesContextSpec(speciesContext);
+						if (bngUnitSystem.isConcentration() && application.isUsingConcentration()){
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(exp);
+						}else if (!bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(exp);
+						}else if (!bngUnitSystem.isConcentration() && application.isUsingConcentration()){
+							Expression covertedConcentration = scs.convertParticlesToConcentration(exp);
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).setExpression(covertedConcentration);
+						}else if (bngUnitSystem.isConcentration() && !application.isUsingConcentration()){
+							Expression covertedAmount = scs.convertConcentrationToParticles(exp);
+							scs.getParameter(SpeciesContextSpec.ROLE_InitialCount).setExpression(covertedAmount);
+						}
+						scs.setConstant(node.isClamped());
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace(System.out);

@@ -172,6 +172,7 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
@@ -2854,7 +2855,9 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
-					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
+					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("temp NFSim app", bStochastic, bRuleBased);
+					List<SimulationContext> appList = new ArrayList<SimulationContext>();
+					appList.add(ruleBasedSimContext);
 
 					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
 					RbmUtils.reactionRuleLabelIndex = 0;
@@ -2869,9 +2872,9 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing.");
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), appList, bngUnitSystem, false);
 					} else {
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, true);
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), appList, bngUnitSystem, true);
 					}
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					bException = false;
@@ -2955,11 +2958,15 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					// we use the BngUnitSystem already created during the 1st pass
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
-					boolean bStochastic = true;
-					boolean bRuleBased = true;
-					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("rulebased app", bStochastic, bRuleBased);
+
+					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("NFSim app", true, true);
+					SimulationContext odeSimContext = bioModel.addNewSimulationContext("BioNetGen app", false, false);
+					List<SimulationContext> appList = new ArrayList<SimulationContext>();
+					appList.add(ruleBasedSimContext);
+					appList.add(odeSimContext);
 					// set convention for initial conditions in generated application for seed species (concentration or count)
 					ruleBasedSimContext.setUsingConcentration(bngUnitSystem.isConcentration);
+					odeSimContext.setUsingConcentration(bngUnitSystem.isConcentration);
 
 					RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
 					RbmUtils.reactionRuleLabelIndex = 0;
@@ -2967,26 +2974,42 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					Reader reader = externalDocInfo.getReader();
 					ASTModel astModel = RbmUtils.importBnglFile(reader);
 					
-					BnglObjectConstructionVisitor constructionVisitor = null;
-					if(!astModel.hasMolecularDefinitions()) {
-						System.out.println("Molecular Definition Block missing. Extracting it from Species, Reactions, Obserbables.");
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, false);
-					} else {
-						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), ruleBasedSimContext, bngUnitSystem, true);
-					}
-					// we'll convert the kinetic parameters to BngUnitSystem inside the visit(ASTKineticsParameter...)
-					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
 					if(!bngUnitSystem.isConcentration()) {
 						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
 						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
+						odeSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
 					}
-					// it is rule-based so it wont have to flatten, should be fast.
-					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-					NetworkGenerationRequirements networkGenerationRequirements = null; // network generation should not be executed.
+					BnglObjectConstructionVisitor constructionVisitor = null;
+					if(!astModel.hasMolecularDefinitions()) {
+						System.out.println("Molecular Definition Block missing. Extracting it from Species, Reactions, Obserbables.");
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), appList, bngUnitSystem, false);
+					} else {
+						constructionVisitor = new BnglObjectConstructionVisitor(bioModel.getModel(), appList, bngUnitSystem, true);
+					}
+					// we'll convert the kinetic parameters to BngUnitSystem inside the visit(ASTKineticsParameter...)
+					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					
-					ruleBasedSimContext.refreshMathDescription(callback,networkGenerationRequirements);
-					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
+					// we remove the NFSim application if any seed species is clamped because NFSim doesn't know what to do with it
+					boolean bClamped = false;
+					for(SpeciesContextSpec scs : ruleBasedSimContext.getReactionContext().getSpeciesContextSpecs()) {
+						if(scs.isConstant()) {
+							bClamped = true;
+							break;
+						}
+					}
+					if(bClamped) {
+						bioModel.removeSimulationContext(ruleBasedSimContext);
+					}
+					
+//					// TODO: DON'T delete this code
+//					// the code below is needed if we also want to create simulations, example for 1 rule based simulation
+//					// it is rule-based so it wont have to flatten, should be fast.
+//					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
+//					NetworkGenerationRequirements networkGenerationRequirements = null; // network generation should not be executed.
+//					ruleBasedSimContext.refreshMathDescription(callback,networkGenerationRequirements);
+//					Simulation sim = ruleBasedSimContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
+					
 					doc = bioModel;
 						}
 				}else{ // is XML
