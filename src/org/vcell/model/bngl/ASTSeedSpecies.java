@@ -38,4 +38,8 @@ public class ASTSeedSpecies extends SimpleNode {
 	public final String getInitial() {
 		return initial;
 	}
+
+	public boolean isClamped() {
+		return clamped;
+	}
 }
