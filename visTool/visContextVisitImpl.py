@@ -116,10 +116,16 @@ class VisContextVisitImpl(visContextAbstract.visContextAbstract):
         assert(isinstance(bSameDomain,bool))
         if (self._databaseName != filename):
             self._databaseName = filename;
-            if (bSameDomain):
-                retcode = visit.ReplaceDatabase(self._databaseName)
-            else:
-                retcode = visit.OpenDatabase(self._databaseName)   
+
+
+
+
+#            if (bSameDomain):
+#                retcode = visit.ReplaceDatabase(self._databaseName)
+#            else:
+#                retcode = visit.OpenDatabase(self._databaseName)
+# Now just open the given database regardless of whether the domain was the same as last call   
+            retcode = visit.OpenDatabase(self._databaseName)
 
         self._variable = vtuVariableName 
         print("new database name is \"" + self._databaseName + "\"")
