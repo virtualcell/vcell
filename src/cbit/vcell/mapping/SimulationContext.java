@@ -299,13 +299,18 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private RateRule[] fieldRateRules = null;
 	public static final String FLUOR_DATA_NAME = "fluor";
 
-	// speed optimizations
+	private transient ArrayList<TaskCallbackMessage> consoleNotificationList = new ArrayList<TaskCallbackMessage>();
+
+	// Cache of the BNGOutputSpec produced by running bng.exe
+	// This operation has no relationship whatsoever with caching of the MathMapping below
 	private transient String md5hash = null;
 	private transient BNGOutputSpec mostRecentlyCreatedOutputSpec = null;	// valid only if the hash is verified
-	// warning: we don't verify the validity of the mostRecentlyCreatedMathMapping,
-	// use it only when certain that it's still valid!
+	private transient boolean bInsufficientIterations = false;		// not related with the cache but used at the same time
+	
+	// Cache the most recent Math Mapping
+	// This operation has no relationship whatsoever with caching of the BNGLOutputSpec above
+	// warning: we don't verify the validity of the mostRecentlyCreatedMathMapping, use it only when certain that it's still valid!
 	private transient MathMapping mostRecentlyCreatedMathMapping;
-	private transient ArrayList<TaskCallbackMessage> consoleNotificationList = new ArrayList<TaskCallbackMessage>();
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -2447,6 +2452,13 @@ public void setMostRecentlyCreatedOutputSpec(BNGOutputSpec mostRecentlyCreatedOu
 	this.mostRecentlyCreatedOutputSpec = mostRecentlyCreatedOutputSpec;
 	firePropertyChange("bngOutputChanged", "", "NA");
 }
+public boolean isInsufficientIterations() {
+	return bInsufficientIterations;
+}
+public void setInsufficientIterations(boolean bInsufficientIterations) {
+	this.bInsufficientIterations = bInsufficientIterations;
+}
+
 public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }

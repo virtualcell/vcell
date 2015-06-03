@@ -866,7 +866,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			return;
 		}
 //		rightBottomTabbedPane.addTab("Network Console", new TabCloseIcon(), getSimulationConsolePanel());
-		rightBottomTabbedPane.addTab("BioNetGen Console", getSimulationConsolePanel());
+		rightBottomTabbedPane.addTab("Network Generation Status", getSimulationConsolePanel());
 	}
 }
 

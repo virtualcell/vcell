@@ -165,6 +165,7 @@ public class SimulationConsolePanel extends JPanel {
 				String s = getInsufficientIterationsMessage();
 				StyleConstants.setForeground(keyWord, Color.RED);
 				doc.insertString(doc.getLength(), s + "\n", keyWord);
+				fieldSimulationContext.setInsufficientIterations(true);
 			}
 			break;
 		case TaskStopped:
@@ -188,6 +189,7 @@ public class SimulationConsolePanel extends JPanel {
 				StyleConstants.setForeground(keyWord, Color.RED);
 				String s = getInsufficientIterationsMessage();
 				doc.insertString(doc.getLength(), s + "\n", keyWord);
+				fieldSimulationContext.setInsufficientIterations(true);
 			}
 			break;
 		case Error:			// display this in red
