@@ -33,6 +33,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
@@ -43,7 +44,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -66,9 +66,11 @@ public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
 	protected JPanel bottomPanel = null;
 	protected DatabaseSearchPanel dbSearchPanel = null;	
 	protected boolean bShowMetadata = true;
-	protected VCDocumentDbTreeModel treeModel = null;
+	private VCDocumentDbTreeModel treeModel = null;
 	protected VCDocumentDbCellRenderer treeCellRenderer = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private boolean initializeNotCalled = true;
+	private boolean exceptionHasOccured = true; 
 	
 	private class IvjEventHandler implements DatabaseListener, ActionListener, MouseListener, TreeModelListener, TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -91,7 +93,7 @@ public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
 			}
 		}
 		public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
-			if (e.getSource() == treeModel) { 
+			if (e.getSource() == getTreeModel( )) { 
 				treeSelection();
 			}
 		};
@@ -124,10 +126,23 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 	this.bShowMetadata = bMetadata;
 }
 
+private VCDocumentDbTreeModel getTreeModel( )  {
+	if (treeModel != null) {
+		return treeModel;
+	}
+	if (initializeNotCalled) {
+		throw new NullPointerException("initialize( ) not called on " + getClass().getName());
+	}
+	if (exceptionHasOccured) {
+		throw new NullPointerException("exception occured on  " + getClass().getName());
+	}
+	throw new NullPointerException("Unknown NullPointerException on  " + getClass().getName());
+}
+
 protected abstract void actionsOnClick(MouseEvent mouseEvent);
 
 public void onSelectedObjectsChange(Object[] selectedObjects) {
-	treeModel.onSelectedObjectsChange(selectedObjects);	
+	getTreeModel( ).onSelectedObjectsChange(selectedObjects);	
 }
 
 protected abstract void documentManager_DatabaseUpdate(DatabaseEvent event);
@@ -203,10 +218,12 @@ public VersionInfo getSelectedVersionInfo() {
  * @param exception java.lang.Throwable
  */
 protected void handleException(java.lang.Throwable exception) {
+	exceptionHasOccured = true;
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	exception.printStackTrace(System.out);
+	BeanUtils.sendErrorReport(exception);
 }
 
 protected abstract JPanel getBottomPanel();
@@ -217,6 +234,7 @@ protected abstract JPanel getBottomPanel();
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 protected void initialize() {
 	try {
+		initializeNotCalled = false;
 		// user code begin {1}
 		// user code end
 		setName("BioModelTreePanel");
@@ -236,9 +254,9 @@ protected void initialize() {
 		});
 		treeCellRenderer = createTreeCellRenderer();
 		treeModel = createTreeModel();
-		getJTree1().setModel(treeModel);
+		getJTree1().setModel(getTreeModel( ));
 		getJTree1().setCellRenderer(treeCellRenderer);
-		treeModel.addTreeModelListener(ivjEventHandler);
+		getTreeModel( ).addTreeModelListener(ivjEventHandler);
 		getJTree1().getSelectionModel().addTreeSelectionListener(ivjEventHandler);		
 		getJTree1().addMouseListener(ivjEventHandler);
 		
@@ -282,14 +300,14 @@ protected void refireActionPerformed(ActionEvent e) {
 
 private void refresh() {	
 	treeCellRenderer.setSessionUser(getDocumentManager() == null ? null : getDocumentManager().getUser());	
-	treeModel.refreshTree();
+	getTreeModel( ).refreshTree();
 }
 /**
  * 
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 public void refresh(ArrayList<SearchCriterion> newFilterList) throws DataAccessException {
-	treeModel.refreshTree(newFilterList);
+	getTreeModel( ).refreshTree(newFilterList);
 }
 
 
@@ -326,7 +344,7 @@ public void setDocumentManager(DocumentManager newValue) {
 	if (ivjDocumentManager != null) {
 		ivjDocumentManager.addDatabaseListener(ivjEventHandler);				
 	}
-	treeModel.setDocumentManager(ivjDocumentManager);
+	getTreeModel( ).setDocumentManager(ivjDocumentManager);
 	treeCellRenderer.setSessionUser(ivjDocumentManager == null ? null : ivjDocumentManager.getUser());
 	firePropertyChange("documentManager", oldValue, newValue);
 }
@@ -336,7 +354,7 @@ public void setDocumentManager(DocumentManager newValue) {
  * @param arg1 boolean
  */
 public void setLatestVersionOnly(boolean arg1) {
-	treeModel.setLatestOnly(arg1);
+	getTreeModel( ).setLatestOnly(arg1);
 }
 
 /**
@@ -463,6 +481,6 @@ public void expandSearchPanel(boolean bExpand) {
 }
 
 public void updateConnectionStatus(ConnectionStatus connStatus) {
-	treeModel.updateConnectionStatus(connStatus);
+	getTreeModel( ).updateConnectionStatus(connStatus);
 }
 }
