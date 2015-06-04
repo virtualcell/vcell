@@ -723,12 +723,14 @@ public class RbmUtils {
 	}
 	public static ASTModel importBnglFile(BufferedReader br) throws ParseException {
 		try {
-			StringBuilder sb = new StringBuilder();
 			// remove all the comments
 			reactionRuleNames.clear();
+			StringBuilder sPrologBuilder = new StringBuilder();		// just the prologue
+			StringBuilder sb = new StringBuilder();
 			ArrayList<BnglComment> comments = new ArrayList<BnglComment>();
 			int lineNumber = 0;
 			boolean bEscapingExpressionBegin = false;
+			boolean inProlog = true;
 			BnglLocation location = BnglLocation.OutsideBlock;
 			while (true) {
 				String line = br.readLine();
@@ -737,6 +739,26 @@ public class RbmUtils {
 				}
 				line = line.trim();
 				line = applySyntaxCorrections(line);
+				
+				// we capture all the prologue and insert in in the BioModel notes
+				if(line.startsWith("begin model") || line.startsWith("begin parameters")) {
+					inProlog = false;
+				}
+				if(inProlog == true) {	
+					sPrologBuilder.append(line);
+					sPrologBuilder.append("\n");
+					sb.append("\n");
+					lineNumber++;
+					continue;
+				}
+				
+				if(line.startsWith("version")) {	// we include the version in the prologue even if it shows up later in the code
+					sPrologBuilder.append(line);
+					sPrologBuilder.append("\n");
+					sb.append("\n");
+					lineNumber++;
+					continue;
+				}
 				
 				if (line.length() == 0 || line.charAt(0) == '#') {
 					if(line.length() > 0 && line.charAt(0) == '#') {
@@ -919,6 +941,9 @@ public class RbmUtils {
 			
 			BNGLParser parser = new BNGLParser(new StringReader(cleanedBngl));
 			ASTModel astModel = parser.Model();
+			
+			String prologString = sPrologBuilder.toString();
+			astModel.setProlog(prologString);
 			return astModel;
 //			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(rbmModelContainer);
 //			astModel.jjtAccept(constructionVisitor, rbmModelContainer); 

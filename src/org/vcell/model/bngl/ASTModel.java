@@ -5,6 +5,8 @@ package org.vcell.model.bngl;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 
 public class ASTModel extends SimpleNode {
+	private String prolog = null;
+
 	public ASTModel(int id) {
 		super(id);
 	}
@@ -100,5 +102,16 @@ public class ASTModel extends SimpleNode {
 	public BngUnitSystem getUnitSystem() {
 		BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitSystem.BngUnitOrigin.PARSER);
 		return bngUnitSystem;
+	}
+
+	public void setProlog(String prolog) {
+		this.prolog = prolog;
+	}
+	public String getProlog() {
+		if(prolog != null) {
+			return prolog;
+		} else {
+			return new String("");
+		}
 	}
 }
