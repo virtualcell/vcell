@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.EventObject;
 import java.util.Hashtable;
 
@@ -54,6 +55,7 @@ import cbit.vcell.client.task.CreateBNGOutputSpec;
 import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
@@ -62,9 +64,13 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -625,29 +631,12 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
 	}
 	private void createModel() {
-		try {
+
 		DocumentWindow dw = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
 		BioModelWindowManager bmwm = (BioModelWindowManager)(dw.getTopLevelWindowManager());
 		RequestManager rm = dw.getTopLevelWindowManager().getRequestManager();
 			
-		ClientRequestManager.updateMath(bmwm.getComponent(), fieldSimulationContext, false, NetworkGenerationRequirements.ComputeFullNetwork);
-//		MathMapping mm = fieldSimulationContext.createNewMathMapping(null, NetworkGenerationRequirements.ComputeFullNetwork);
-//		fieldSimulationContext.setMathDescription(mm.getMathDescription());
-			
-		MathMapping mm = fieldSimulationContext.getMostRecentlyCreatedMathMapping();
-		if(mm == null) {
-			String message = "Math Mapping missing.\nPlease go to the Simulations / Generated Math panel and refresh math.";
-			throw new RuntimeException(message);
-		}
-			
-		SimulationContext sc = mm.getSimulationContext();
-//		BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitOrigin.DEFAULT);
-			
-		rm.createBioModelFromApplication(bmwm, "Test", sc);
-		} catch(RuntimeException e) {
-			DialogUtils.showErrorDialog(this, e.getMessage(), e);
-		}
-
+		rm.createBioModelFromApplication(bmwm, "Test", fieldSimulationContext);
 	}
 	@Override
 	public boolean isInterrupted() {
