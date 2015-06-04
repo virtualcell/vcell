@@ -314,6 +314,9 @@ if(speciesPatternString != null) {
 }
 
 public void setSpeciesPattern(SpeciesPattern newValue) {
+	if(this.speciesPattern == null && newValue == null) {
+		return;
+	}
 	SpeciesPattern oldValue = speciesPattern;
 	this.speciesPattern = newValue;
 	if(newValue != null) {

@@ -44,6 +44,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -67,6 +68,7 @@ import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.ApplicationTerminator;
@@ -184,6 +186,9 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
@@ -924,18 +929,39 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			
+//			MathMapping mm = simContext.getMostRecentlyCreatedMathMapping();
+//			if(mm == null) {
+				MathMappingCallback dummyCallback = new MathMappingCallback() {
+					public void setProgressFraction(float percentDone) {}
+					public void setMessage(String message) {}
+					public boolean isInterrupted() { return false; }
+				};
+				MathMapping mm = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+				simContext.setMathDescription(mm.getMathDescription());
+//			}
 			
 			BioModel newBioModel = new BioModel(null);
+			SimulationContext sc = mm.getSimulationContext();
+			newBioModel.setModel(sc.getModel());
+			//newBioModel.addSimulationContext(sc);
 			
-			boolean bStochastic = false;
-			boolean bRuleBased = false;
-			newBioModel.setModel(simContext.getModel());
-			newBioModel.addSimulationContext(simContext);
-
+			for(SpeciesContext speciesContext : newBioModel.getModel().getSpeciesContexts()) {
+				speciesContext.setSpeciesPattern(null);
+			}
+			RbmModelContainer rbmmc = newBioModel.getModel().getRbmModelContainer();
+			for(RbmObservable o : rbmmc.getObservableList()) {
+				rbmmc.removeObservable(o);
+			}
+			for(ReactionRule r : rbmmc.getReactionRuleList()) {
+				rbmmc.removeReactionRule(r);
+			}
+			for(MolecularType m : rbmmc.getMolecularTypeList()) {
+				rbmmc.removeMolecularType(m);
+			}
+			
 			hashTable.put("newBioModel", newBioModel);
 		}		
 	};
-	
 	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -950,6 +976,41 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 	};
 	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
 }
+//public void createBioModelFromApplication(final BioModelWindowManager requester, final String name, final SimulationContext simContext) {
+//	if (simContext == null) {
+//		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding bio model");
+//		return;
+//	}
+//	AsynchClientTask task1 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			
+//			
+//			BioModel newBioModel = new BioModel(null);
+//			
+//			boolean bStochastic = false;
+//			boolean bRuleBased = false;
+//			newBioModel.setModel(simContext.getModel());
+//			newBioModel.addSimulationContext(simContext);
+//
+//			hashTable.put("newBioModel", newBioModel);
+//		}		
+//	};
+//	
+//	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//		@Override
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			BioModel newBioModel = (BioModel)hashTable.get("newBioModel");
+//			DocumentWindowManager windowManager = createDocumentWindowManager(newBioModel);
+////			if(simContext.getBioModel().getVersion() != null){
+////				((BioModelWindowManager)windowManager). setCopyFromBioModelAppVersionableTypeVersion(
+////							new VersionableTypeVersion(VersionableType.BioModelMetaData, simContext.getBioModel().getVersion()));
+////			}
+//			getMdiManager().createNewDocumentWindow(windowManager);
+//		}
+//	};
+//	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
+//}
 private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) throws Exception {
 	BioModel bioModel = new BioModel(null);
 	bioModel.setName("BioModel" + (getMdiManager().getNumCreatedDocumentWindows() + 1));
