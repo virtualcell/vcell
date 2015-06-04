@@ -876,7 +876,7 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
 	}
-	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathModel newMathModel = new MathModel(null);
@@ -925,7 +925,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding bio model");
 		return;
 	}
-	AsynchClientTask task1 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task1 = new AsynchClientTask("Creating BioModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			
@@ -962,7 +962,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 			hashTable.put("newBioModel", newBioModel);
 		}		
 	};
-	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			BioModel newBioModel = (BioModel)hashTable.get("newBioModel");
@@ -981,7 +981,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 //		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding bio model");
 //		return;
 //	}
-//	AsynchClientTask task1 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//	AsynchClientTask task1 = new AsynchClientTask("Creating BioModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 //		@Override
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
 //			
@@ -997,7 +997,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 //		}		
 //	};
 //	
-//	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//	AsynchClientTask task2 = new AsynchClientTask("Creating BioModel from BioModel Application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 //		@Override
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
 //			BioModel newBioModel = (BioModel)hashTable.get("newBioModel");
