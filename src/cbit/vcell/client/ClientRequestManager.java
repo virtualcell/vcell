@@ -74,6 +74,7 @@ import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -125,6 +126,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -3034,6 +3036,10 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					RbmUtils.reactionRuleNames.clear();
 					Reader reader = externalDocInfo.getReader();
 					ASTModel astModel = RbmUtils.importBnglFile(reader);
+					if(bioModel.getModel() != null && bioModel.getModel().getVcMetaData() != null){
+						VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
+						vcMetaData.setFreeTextAnnotation(bioModel, astModel.getProlog());	
+					}
 					
 					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
 					if(!bngUnitSystem.isConcentration()) {
