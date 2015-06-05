@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
@@ -55,6 +57,7 @@ import cbit.vcell.resource.NativeLib;
 public class VtkGridUtils {
 	
 	public static final String VTKVAR_DOMAINSEPARATOR = "__DOMAINSEPARATOR__";
+	public static final Logger LG = Logger.getLogger(VtkGridUtils.class);
 
 	// Load VTK library and print which library was not properly loaded
 	static {
@@ -62,7 +65,7 @@ public class VtkGridUtils {
 			//in case loader thread not complete
 			NativeLib.VTK.load();
 		}catch (Exception e){
-			e.printStackTrace(System.out);
+			LG.warn("exception loading VTK NativeLib",e);
 		}
 		vtkNativeLibrary.DisableOutputWindow(null);
 		vtkObjectBase.JAVA_OBJECT_MANAGER.getAutoGarbageCollector().SetAutoGarbageCollection(true);
@@ -184,7 +187,9 @@ public class VtkGridUtils {
 		writer.SetFileName(filename);
 		writer.Update();
 		long length = new File(filename).length();
-		System.out.println("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+		if (LG.isInfoEnabled()) {
+			LG.info("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+		}
 	}
 	
 	public void writeXML(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
@@ -202,7 +207,9 @@ public class VtkGridUtils {
 		writer.SetFileName(filename);
 		writer.Update();
 		long length = new File(filename).length();
-		System.out.println("saved to XML file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+		if (LG.isInfoEnabled()) {
+			LG.info("saved to XML file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+		}
 	}
 	
 //	public void writeXDMF(vtkUnstructuredGrid vtkgrid, String filename){
@@ -228,13 +235,17 @@ public class VtkGridUtils {
 			reader.SetFileName(filename);
 			reader.Update();
 			vtkgrid = reader.GetOutput();
-			System.out.println("read from XML file "+filename+", of type "+tester.GetFileDataType());
+			if (LG.isInfoEnabled()) {
+				LG.info("read from XML file "+filename+", of type "+tester.GetFileDataType());
+			}
 		}else{
 			vtkUnstructuredGridReader reader = new vtkUnstructuredGridReader();
 			reader.SetFileName(filename);
 			reader.Update();
 			vtkgrid = reader.GetOutput();
-			System.out.println("read from legacy file "+filename);
+			if (LG.isInfoEnabled()) {
+				LG.info("read from legacy file "+filename);
+			}
 		}
 		//vtkgrid.BuildLinks();
 		return vtkgrid;
@@ -282,7 +293,7 @@ public class VtkGridUtils {
 			ArrayList<VisTetrahedron> visTets = new ArrayList<VisTetrahedron>();
 			int numTets = vtkgrid2.GetNumberOfCells();
 			if (numTets<1){
-				System.out.println("found no tets");
+				LG.debug("found no tets");
 			}
 	//		System.out.println("numFaces = "+vtkpolydata.GetNumberOfCells()+", numTets = "+numTets);
 			for (int cellIndex=0; cellIndex<numTets; cellIndex++){
@@ -301,7 +312,9 @@ public class VtkGridUtils {
 					VisTetrahedron visTet = new VisTetrahedron(visPointIds, clippedPolyhedron.getLevel(), clippedPolyhedron.getBoxNumber(), clippedPolyhedron.getBoxIndex(), clippedPolyhedron.getFraction(), clippedPolyhedron.getRegionIndex());
 					visTets.add(visTet);
 				}else{
-					System.out.println("ChomboMeshMapping.createTetrahedra(): expecting a tet, found a "+cell.GetClassName());
+					if (LG.isEnabledFor(Level.WARN)) {
+						LG.warn("ChomboMeshMapping.createTetrahedra(): expecting a tet, found a "+cell.GetClassName());
+					}
 				}
 			}
 			return visTets.toArray(new VisTetrahedron[0]);
@@ -321,13 +334,17 @@ public class VtkGridUtils {
 		int numCellArrays = cellData.GetNumberOfArrays();
 		for (int i=0;i<numCellArrays;i++){
 			String cellArrayName = cellData.GetArrayName(i);
-			System.out.println("CellArray("+i+") \""+cellArrayName+"\"");
+			if (LG.isDebugEnabled()) {
+				LG.debug("CellArray("+i+") \""+cellArrayName+"\"");
+			}
 		}
 		vtkPointData pointData = surfaceUnstructuredGrid.GetPointData();
 		int numPointArrays = pointData.GetNumberOfArrays();
 		for (int i=0;i<numPointArrays;i++){
 			String pointArrayName = pointData.GetArrayName(i);
-			System.out.println("PointArray("+i+") \""+pointArrayName+"\"");
+			if (LG.isDebugEnabled()) {
+				LG.debug("PointArray("+i+") \""+pointArrayName+"\"");
+			}
 		}
 		}
 		
