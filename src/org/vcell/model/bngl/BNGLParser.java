@@ -632,17 +632,27 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         throw new ParseException();
       }
       t = jj_consume_token(IDENTIFIER);
+      SpeciesPattern();
       label_11:
       while (true) {
-        SpeciesPattern();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case IDENTIFIER:
+        case COMMA:
           ;
           break;
         default:
           jj_la1[19] = jj_gen;
           break label_11;
         }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case COMMA:
+          jj_consume_token(COMMA);
+          break;
+        default:
+          jj_la1[20] = jj_gen;
+          ;
+        }
+        SpeciesPattern();
       }
            jjtree.closeNodeScope(jjtn000, true);
            jjtc000 = false;
@@ -699,7 +709,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[20] = jj_gen;
+          jj_la1[21] = jj_gen;
           break label_12;
         }
         jj_consume_token(ADD);
@@ -716,7 +726,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         t = jj_consume_token(REACTION_ARROW_BOTH);
         break;
       default:
-        jj_la1[21] = jj_gen;
+        jj_la1[22] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -728,7 +738,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[22] = jj_gen;
+          jj_la1[23] = jj_gen;
           break label_13;
         }
         jj_consume_token(ADD);
@@ -741,7 +751,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         KineticsParameter();
         break;
       default:
-        jj_la1[23] = jj_gen;
+        jj_la1[24] = jj_gen;
         ;
       }
           jjtree.closeNodeScope(jjtn000, true);
@@ -869,7 +879,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[24] = jj_gen;
+          jj_la1[25] = jj_gen;
           break label_14;
         }
         jj_consume_token(DOT);
@@ -912,7 +922,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         Components();
         break;
       default:
-        jj_la1[25] = jj_gen;
+        jj_la1[26] = jj_gen;
         ;
       }
     jjtree.closeNodeScope(jjtn000, true);
@@ -947,7 +957,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
       ComponentList();
       break;
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[27] = jj_gen;
       ;
     }
     jj_consume_token(55);
@@ -962,7 +972,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         ;
         break;
       default:
-        jj_la1[27] = jj_gen;
+        jj_la1[28] = jj_gen;
         break label_15;
       }
       jj_consume_token(COMMA);
@@ -985,7 +995,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[28] = jj_gen;
+          jj_la1[29] = jj_gen;
           break label_16;
         }
         AttributePattern();
@@ -995,7 +1005,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         BondPattern();
         break;
       default:
-        jj_la1[29] = jj_gen;
+        jj_la1[30] = jj_gen;
         ;
       }
      jjtree.closeNodeScope(jjtn000, true);
@@ -1039,7 +1049,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           t = jj_consume_token(INTEGER);
           break;
         default:
-          jj_la1[30] = jj_gen;
+          jj_la1[31] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1055,7 +1065,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           jjtn000.setVariableName(t.image);
         break;
       default:
-        jj_la1[31] = jj_gen;
+        jj_la1[32] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1146,7 +1156,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
      {if (true) return jjtn000;}
         break;
       default:
-        jj_la1[32] = jj_gen;
+        jj_la1[33] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1185,7 +1195,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[33] = jj_gen;
+          jj_la1[34] = jj_gen;
           break label_17;
         }
         jj_consume_token(OR);
@@ -1225,7 +1235,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[34] = jj_gen;
+          jj_la1[35] = jj_gen;
           break label_18;
         }
         jj_consume_token(AND);
@@ -1267,7 +1277,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         t_name = jj_consume_token(GT);
         break;
       default:
-        jj_la1[35] = jj_gen;
+        jj_la1[36] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1305,7 +1315,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[36] = jj_gen;
+          jj_la1[37] = jj_gen;
           break label_19;
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1317,7 +1327,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           MinusTerm();
           break;
         default:
-          jj_la1[37] = jj_gen;
+          jj_la1[38] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1386,7 +1396,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           ;
           break;
         default:
-          jj_la1[38] = jj_gen;
+          jj_la1[39] = jj_gen;
           break label_20;
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1398,7 +1408,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
           DivTerm();
           break;
         default:
-          jj_la1[39] = jj_gen;
+          jj_la1[40] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1557,7 +1567,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
       PrimaryExpression();
       break;
     default:
-      jj_la1[40] = jj_gen;
+      jj_la1[41] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1580,7 +1590,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         jj_consume_token(55);
         break;
       default:
-        jj_la1[41] = jj_gen;
+        jj_la1[42] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1633,7 +1643,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
       ArgumentList();
       break;
     default:
-      jj_la1[42] = jj_gen;
+      jj_la1[43] = jj_gen;
       ;
     }
     jj_consume_token(55);
@@ -1654,7 +1664,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
       LogicalORExpression();
       break;
     default:
-      jj_la1[43] = jj_gen;
+      jj_la1[44] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1665,7 +1675,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         ;
         break;
       default:
-        jj_la1[44] = jj_gen;
+        jj_la1[45] = jj_gen;
         break label_22;
       }
       jj_consume_token(COMMA);
@@ -1683,7 +1693,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
         LogicalORExpression();
         break;
       default:
-        jj_la1[45] = jj_gen;
+        jj_la1[46] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1710,7 +1720,7 @@ public class BNGLParser/*@bgen(jjtree)*/implements BNGLParserTreeConstants, BNGL
     jjtn000.value = new Double(t.image);
         break;
       default:
-        jj_la1[46] = jj_gen;
+        jj_la1[47] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1950,13 +1960,13 @@ Token t_name=null;
     return false;
   }
 
-  final private boolean jj_3R_26() {
-    if (jj_3R_34()) return true;
+  final private boolean jj_3R_57() {
+    if (jj_3R_60()) return true;
     return false;
   }
 
-  final private boolean jj_3R_57() {
-    if (jj_3R_60()) return true;
+  final private boolean jj_3R_26() {
+    if (jj_3R_34()) return true;
     return false;
   }
 
@@ -1971,6 +1981,11 @@ Token t_name=null;
     return false;
   }
 
+  final private boolean jj_3R_56() {
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_39() {
     if (jj_scan_token(FUNCTIONS)) return true;
     return false;
@@ -1978,11 +1993,6 @@ Token t_name=null;
 
   final private boolean jj_3R_30() {
     if (jj_3R_38()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_56() {
-    if (jj_3R_25()) return true;
     return false;
   }
 
@@ -2085,15 +2095,15 @@ Token t_name=null;
     return false;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_scan_token(BEGIN)) return true;
-    if (jj_scan_token(MODEL)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_49() {
     if (jj_scan_token(ADD)) return true;
     if (jj_3R_44()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_scan_token(BEGIN)) return true;
+    if (jj_scan_token(MODEL)) return true;
     return false;
   }
 
@@ -2202,7 +2212,7 @@ Token t_name=null;
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[47];
+  final private int[] jj_la1 = new int[48];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -2210,10 +2220,10 @@ Token t_name=null;
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x4da0,0x2,0x200,0x4da0,0x2,0x200,0x8000,0x88000,0x80000,0x88000,0x80000,0x88000,0x80000,0x0,0x180000,0x80000,0x80050,0x80000,0x50,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,0x88000,0x0,0x2088000,0x0,0x0,0x1c000000,0x0,0x0,0x0,0x0,0x88000,0x80000,0x2088000,0x2088000,0x0,0x2088000,0x80000,};
+      jj_la1_0 = new int[] {0x4da0,0x2,0x200,0x4da0,0x2,0x200,0x8000,0x88000,0x80000,0x88000,0x80000,0x88000,0x80000,0x0,0x180000,0x80000,0x80050,0x80000,0x50,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,0x88000,0x0,0x2088000,0x0,0x0,0x1c000000,0x0,0x0,0x0,0x0,0x88000,0x80000,0x2088000,0x2088000,0x0,0x2088000,0x80000,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x0,0x20,0x380000,0x20,0x2000,0x40000,0x400000,0x0,0x2000,0xc000,0x20000,0x0,0xc000,0x400268,0x4,0x2,0x0,0x60,0x60,0x180,0x180,0x400268,0x400200,0x400268,0x400268,0x2000,0x400268,0x200,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x800,0x0,0x0,0x0,0x0,0x0,0x2000,0x2000,0x20,0x380000,0x20,0x2000,0x40000,0x400000,0x0,0x2000,0xc000,0x20000,0x0,0xc000,0x400268,0x4,0x2,0x0,0x60,0x60,0x180,0x180,0x400268,0x400200,0x400268,0x400268,0x2000,0x400268,0x200,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[10];
   private boolean jj_rescan = false;
@@ -2228,7 +2238,7 @@ Token t_name=null;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2242,7 +2252,7 @@ Token t_name=null;
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2252,7 +2262,7 @@ Token t_name=null;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2263,7 +2273,7 @@ Token t_name=null;
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2272,7 +2282,7 @@ Token t_name=null;
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2282,7 +2292,7 @@ Token t_name=null;
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 47; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 48; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -2401,7 +2411,7 @@ Token t_name=null;
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 47; i++) {
+    for (int i = 0; i < 48; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
