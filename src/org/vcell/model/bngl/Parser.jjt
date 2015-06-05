@@ -301,7 +301,8 @@ void ObservablesBlock() #ObservablesBlock :
 void Observable() #Observable :
 { Token t1=null; Token t2=null; Token t=null;}
 {
-	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )
+/*	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )		*/
+	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern() ( [ <COMMA> ] SpeciesPattern())*) )
  	 { jjtThis.setName(t.image);
  	 if (t1 != null) {jjtThis.setType(t1.image);}
  	 if (t2 != null) {jjtThis.setType(t2.image);} }

@@ -594,7 +594,8 @@ void Observable()             :
 {/*@bgen(jjtree) Observable */
         try {
 /*@egen*/
-	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )/*@bgen(jjtree)*/
+/*	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )		*/
+	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern() ( [ <COMMA> ] SpeciesPattern())*) )/*@bgen(jjtree)*/
          {
            jjtree.closeNodeScope(jjtn000, true);
            jjtc000 = false;
