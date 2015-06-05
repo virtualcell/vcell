@@ -22,7 +22,7 @@ import org.vcell.util.VCAssert;
  */
 @SuppressWarnings("serial")
 public class AbstractPolygon implements Polygon, java.io.Serializable {
-	private Node[] fieldNodes = new Node[0];
+	private final Node[] fieldNodes; 
 
 /**
  * Quadrilateral constructor comment.
