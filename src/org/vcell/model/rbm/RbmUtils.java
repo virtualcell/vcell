@@ -383,8 +383,10 @@ public class RbmUtils {
 			if (data instanceof MolecularType) {
 				MolecularComponent[] mcl = ((MolecularType) data).getMolecularComponents(name);
 				if(mcl.length > 0) {
-					throw new RuntimeException(MolecularComponent.typeName + " '" + name + "' already exists in " + MolecularType.typeName + " '" 
-								+ ((MolecularType) data).getDisplayName() + "'!");
+					String message = MolecularComponent.typeName + " '" + name + "' already exists in " + MolecularType.typeName + " '" 
+								+ ((MolecularType) data).getDisplayName() + "'! ";
+					message += " <font color=red>Multiple identical " + MolecularComponent.typeName + "s not supported witin a " + MolecularType.typeName + ".</font> ";
+					throw new RuntimeException(message);
 				}
 				MolecularComponent molecularComponent = new MolecularComponent(name);
 				node.childrenAccept(this, molecularComponent);
@@ -422,8 +424,10 @@ public class RbmUtils {
 					node.childrenAccept(this, molecularComponentPattern);
 					return molecularComponentPattern;
 				} else {
-					throw new RuntimeException(MolecularComponentPattern.typeName + " '" + name + "' already exists in " + MolecularTypePattern.typeName + " '" 
-								+ ((MolecularTypePattern) data).getDisplayName() + "'!");
+					String message = MolecularComponentPattern.typeName + " '" + name + "' already exists in " + MolecularTypePattern.typeName + " '" 
+								+ ((MolecularTypePattern) data).getDisplayName() + "'! ";
+					message += " <font color=red>Multiple identical " + MolecularComponentPattern.typeName + "s not supported witin a " + MolecularTypePattern.typeName + ".</font> ";
+					throw new RuntimeException(message);
 				}
 			}
 			return null;

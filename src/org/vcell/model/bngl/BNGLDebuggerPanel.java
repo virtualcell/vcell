@@ -16,10 +16,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -41,7 +43,7 @@ public class BNGLDebuggerPanel extends JPanel {
 	private final static Set<String> keywords = null;
 
 	private MultiPurposeTextPanel bnglTextArea = null;
-	private JTextArea	exceptionTextArea;
+	private JTextPane exceptionTextArea;
 	
 	private ParseException parseException = null;
 	private Exception exception = null;
@@ -71,9 +73,11 @@ public class BNGLDebuggerPanel extends JPanel {
 		upperPanel.add(getBnglPanel(), BorderLayout.CENTER);
 
 		JScrollPane exceptionPanel = new JScrollPane();
-		exceptionTextArea = new JTextArea();
+		exceptionTextArea = new JTextPane();
 		exceptionTextArea.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		exceptionTextArea.setFont(new Font("monospaced", Font.PLAIN, 12));
+		exceptionTextArea.setContentType("text/html");
+//		Font f = new Font("monospaced", Font.PLAIN, 10);
+//		exceptionTextArea.setFont(f);
 
 		exceptionPanel.getViewport().add(exceptionTextArea);
 		exceptionPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -137,17 +141,20 @@ public class BNGLDebuggerPanel extends JPanel {
 			getBnglPanel().setCursor(lineNumber, columnNumber);
 			getBnglPanel().getLineNumberPanel().setErrorLine(lineNumber);
 		}
-		exceptionTextArea.setText(exceptionText);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Rectangle rect = exceptionTextArea.modelToView(exceptionTextArea.getLineStartOffset(0));
-					exceptionTextArea.scrollRectToVisible(rect);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		Font font = new Font("monospaced", Font.PLAIN, 3);
+		String pre = "<html><font face=\"" + font.getFamily() + "\" size=\"" + font.getSize() + "\"> " + exceptionText + "</font></html>";
+		exceptionTextArea.setText(pre);
+		
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				try {
+//					Rectangle rect = exceptionTextArea.modelToView(exceptionTextArea.getLineStartOffset(0));
+//					exceptionTextArea.scrollRectToVisible(rect);
+//				} catch (BadLocationException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
 	}
 
 	//   isAsciiPrintable('a')  = true
