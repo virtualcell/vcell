@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.ISize;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
@@ -32,6 +33,7 @@ import org.vcell.vis.vtk.VtkGridUtils;
 
 
 public class ChomboMeshMapping {
+	private static Logger LG = Logger.getLogger(ChomboMeshMapping.class);
 	
 	public ChomboMeshMapping(){
 		
@@ -364,7 +366,7 @@ public class ChomboMeshMapping {
 				}
 			}
 		}
-		System.out.println("ChomboMeshMapping:check() first mesh passed the point test");
+		LG.debug("ChomboMeshMapping:check() first mesh passed the point test");
 	}
 	
 	private static class VoxelPoint {
@@ -493,7 +495,7 @@ public class ChomboMeshMapping {
 						}
 					}
 					if (intersectingTriangles.size()==0){
-						System.out.println("fraction<1.0 but found no triangles");
+						LG.info("fraction<1.0 but found no triangles");
 						newPolyhedraList.add(visPolyhedron);
 						continue;
 					}
@@ -837,7 +839,7 @@ public class ChomboMeshMapping {
 							    	polygon.setPointIndices(new int[] { segment.getP1(),segment.getP2(),p1,p2 });
 							    }
 							} else {
-							    System.out.println("found the segment for this polygon, don't know how to crop this one yet");
+							    LG.warn("found the segment for this polygon, don't know how to crop this one yet");
 							}
 						}
 					}
