@@ -141,6 +141,11 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_WELLMIXED);
 		columns.remove(ColumnType.COLUMN_DIFFUSION);
 	}
+	if (getSimulationContext() == null || getSimulationContext().isRuleBased()) {
+		// the NFSim simulator used for rule-based doesn't accept clamped or force continuous
+		columns.remove(ColumnType.COLUMN_CLAMPED);
+		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
+	}
 }
 /**
  * getColumnCount method comment.
