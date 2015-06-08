@@ -645,6 +645,14 @@ public void setGeometry(Geometry newValue) {
 					getIvjButtonEditImage().setEnabled(true);
 					tabbedPane.setVisible(true);
 				}
+				if (getGeometryOwner() instanceof SimulationContext){
+					SimulationContext sc = (SimulationContext)getGeometryOwner();
+					if(sc.isRuleBased()) {
+						getJButtonReplace().setEnabled(false);
+					} else {
+						getJButtonReplace().setEnabled(true);
+					}
+				}
 				updateSurfaceView();
 			}
 			firePropertyChange("geometry", oldValue, newValue);
