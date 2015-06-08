@@ -953,8 +953,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			if(molecularTypeList == null) {
 				issueList.add(new Issue(this, issueContext, IssueCategory.RbmMolecularTypesTableBad, MolecularType.typeName + " List is null", Issue.SEVERITY_ERROR));
-			} else if (!this.isEmpty() && molecularTypeList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.RbmMolecularTypesTableBad, MolecularType.typeName + " List is empty", Issue.SEVERITY_WARNING));
 			}else {
 				for (MolecularType entity : molecularTypeList) {
 					entity.gatherIssues(issueContext, issueList);
@@ -962,8 +960,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			if(observableList == null) {
 				issueList.add(new Issue(this, issueContext, IssueCategory.RbmObservablesTableBad, "Observable List is null", Issue.SEVERITY_ERROR));
-			} else if (!this.isEmpty() && observableList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.RbmObservablesTableBad, "Observable List is empty", Issue.SEVERITY_WARNING));
 			} else {
 				for (RbmObservable entity : observableList) {
 					entity.gatherIssues(issueContext, issueList);
@@ -971,8 +967,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			if(reactionRuleList == null) {
 				issueList.add(new Issue(this, issueContext, IssueCategory.RbmReactionRulesTableBad, "Reaction Rule List is null", Issue.SEVERITY_ERROR));
-			} else if (!this.isEmpty() && reactionRuleList.isEmpty()){
-				issueList.add(new Issue(this, issueContext, IssueCategory.RbmReactionRulesTableBad, "Reaction Rule List is empty", Issue.SEVERITY_WARNING));
 			} else {
 				for (ReactionRule entity : reactionRuleList) {
 					entity.gatherIssues(issueContext, issueList);
