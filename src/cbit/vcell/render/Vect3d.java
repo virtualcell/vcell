@@ -12,6 +12,7 @@ package cbit.vcell.render;
 
 import java.io.Serializable;
 
+import cbit.vcell.geometry.concept.ThreeSpacePoint;
 import cbit.vcell.geometry.surface.Node;
 
 /**
@@ -19,7 +20,8 @@ import cbit.vcell.geometry.surface.Node;
  * Creation date: (11/29/2003 1:04:15 PM)
  * @author: Jim Schaff
  */
-public class Vect3d implements Serializable {
+@SuppressWarnings("serial")
+public class Vect3d implements ThreeSpacePoint, Serializable {
 	double q[] = new double[3];
 
 /**
@@ -36,18 +38,11 @@ public Vect3d(double x, double y, double z) {
 	q[1] = y;
 	q[2] = z;
 }
+
 /**
  * Vect3d constructor comment.
  */
-public Vect3d(Vect3d v) {
-	q[0] = v.q[0];
-	q[1] = v.q[1];
-	q[2] = v.q[2];
-}
-/**
- * Vect3d constructor comment.
- */
-public Vect3d(Node p) {
+public Vect3d(ThreeSpacePoint p) {
 	q[0] = p.getX();
 	q[1] = p.getY();
 	q[2] = p.getZ();

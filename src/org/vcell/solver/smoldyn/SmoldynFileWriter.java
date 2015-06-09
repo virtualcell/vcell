@@ -1329,8 +1329,9 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					Surface surface = surfaceCollection.getSurfaces(j);
 					if ((surface.getInteriorRegionIndex() == exteriorRegionID && surface.getExteriorRegionIndex() == interiorRegionID) || 
 						(surface.getInteriorRegionIndex() == interiorRegionID && surface.getExteriorRegionIndex() == exteriorRegionID)) { // my triangles
-						for(int k = 0; k < surface.getPolygonCount(); k++) {
-							Polygon polygon = surface.getPolygons(k);
+//						for(int k = 0; k < surface.getPolygonCount(); k++) {
+//							Polygon polygon = surface.getPolygons(k);
+						for (Polygon polygon: surface) {
 							if (polygonMembaneElementMap != null) {
 								membraneIndex = polygonMembaneElementMap.get(polygon).getMembraneIndex();
 							} 
