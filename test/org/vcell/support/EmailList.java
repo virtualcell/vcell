@@ -17,7 +17,8 @@ import oracle.jdbc.pool.OracleDataSource;
  * @author GWeatherby
  */
 public class EmailList {
-	private static final String QUERY = "Select email from vcell.vc_userinfo where notify='on'";
+	private static final String QUERY = "Select email from vcell.vc_userinfo where notify='on' "
+			+ "and regexp_like(email,'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$')";
 	private static final String DEFAULT_FILE = "emails.csv";
 	
 	static String jdbcUrl = "jdbc:oracle:thin:@dbs6.cam.uchc.edu:1521:orcl";

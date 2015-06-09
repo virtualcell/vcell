@@ -9,11 +9,24 @@
  */
 
 package cbit.vcell.geometry.surface;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.vcell.util.ProgrammingException;
+
+import cbit.vcell.geometry.concept.PolygonImmutable;
+import cbit.vcell.geometry.concept.ThreeSpacePoint;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/29/2003 1:10:38 AM)
  * @author: John Wagner
  */
+@SuppressWarnings("serial")
 public class Triangle extends AbstractPolygon {
 /**
  * Triangle constructor comment.
@@ -118,4 +131,69 @@ public boolean isAcute() {
 		return false;
 	}
 }
+
+/**
+ * scale and translate set of triangles. Scaling is from origin.
+ * @param source not null
+ * @param factor
+ * @param translation not null
+ * @return new list of new Triangles, scaled and translated from source
+ */
+public static List<Triangle> scale(List<PolygonImmutable> source, double factor, ThreeSpacePoint translation) {
+	Scaler s = new Scaler(factor,translation);
+	return s.convert(source);
+}
+
+private static class Scaler {
+	final double factor;
+	final ThreeSpacePoint translation;
+	final Map<ThreeSpacePoint, Node> map;
+
+	Scaler(double factor, ThreeSpacePoint translation) {
+		super();
+		this.factor = factor;
+		this.translation = translation;
+		map = new HashMap<>();
+	}
+	
+	/**
+	 * @param tsp
+	 * @return new or existing scaled node
+	 */
+	private Node fetch(ThreeSpacePoint tsp) {
+		Objects.requireNonNull(tsp);
+		Node n = map.get(tsp);
+		if (n == null) {
+			n = new Node(tsp);
+			n.multiply(factor);
+			n.translate(translation);
+			map.put(tsp, n);
+		}
+		return n;
+	}
+
+	/**
+	 * @param source not null
+	 * @return new List of new Triangles, scaled per constructor arguments
+	 */
+	List<Triangle> convert(List<PolygonImmutable> source) {
+		ArrayList<Triangle> rval = new ArrayList<>(source.size());
+		for (PolygonImmutable pi: source) {
+			List<ThreeSpacePoint> points = pi.pointList();
+			if (points.size() == 3) {
+				Node a = fetch(points.get(0));
+				Node b = fetch(points.get(1));
+				Node c = fetch(points.get(2));
+				rval.add(new Triangle(a,b,c));
+			}
+			else {
+				throw new ProgrammingException("Triangle::scale input polygons must have 3 points, " + points.size() 
+						+ " found");
+			}
+
+		}
+	return rval;
+	}
+}
+
 }
