@@ -9,12 +9,15 @@
  */
 
 package cbit.vcell.geometry.surface;
+
+import java.util.Iterator;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 4:58:39 PM)
  * @author: Jim Schaff
  */
-public interface Surface {
+public interface Surface extends Iterable<Polygon> {
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:06:00 PM)
@@ -76,4 +79,9 @@ Polygon getPolygons(int index);
  * Creation date: (5/14/2004 5:05:40 PM)
  */
 void reverseDirection();
+
+default Iterator<Polygon> iterator( ) {
+	return new SurfacePolygonIteratorAdapter(this);
+	
+}
 }

@@ -10,9 +10,18 @@
 
 package cbit.vcell.geometry.surface;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.VCAssert;
 //import org.apache.commons.lang.StringUtils;
+
+
+
+import cbit.vcell.geometry.concept.PolygonConcept;
+import cbit.vcell.geometry.concept.ThreeSpacePoint;
 
 
 /**
@@ -21,7 +30,7 @@ import org.vcell.util.VCAssert;
  * @author: John Wagner
  */
 @SuppressWarnings("serial")
-public class AbstractPolygon implements Polygon, java.io.Serializable {
+public class AbstractPolygon implements Polygon, PolygonConcept, java.io.Serializable {
 	private final Node[] fieldNodes; 
 
 /**
@@ -99,20 +108,23 @@ public int getNodeCount() {
 	return(fieldNodes.length);
 }
 
-
-/**
- * Quadrilateral constructor comment.
- */
 public Node[] getNodes() {
 	return(fieldNodes);
 }
 
+@Override
+public List<ThreeSpacePoint> pointList() {
+	return Collections.unmodifiableList(Arrays.asList(fieldNodes)) ;
+}
 
-/**
- * Quadrilateral constructor comment.
- */
+
+@Override
 public Node getNodes(int n) {
 	return(fieldNodes[n]);
+}
+
+public List<Node> asList( ) {
+	return Arrays.asList(fieldNodes);
 }
 
 
