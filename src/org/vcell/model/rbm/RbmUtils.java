@@ -59,12 +59,12 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
@@ -295,9 +295,12 @@ public class RbmUtils {
 							double reactantsFactor = Math.pow(bnglModelVolume,numReactants-1);
 							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(reactantsFactor)).flatten();
 							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, correctedRate);
-// TODO:	test me please.
 						}else{
-							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, new Expression(node.getValue()));
+							String value = node.getValue();
+							Expression newExpression = getBoundExpression(value, model.getRbmModelContainer().getSymbolTable());
+							//Expression newExpression = new Expression(value);
+							RbmKineticLaw kineticLaw = rr.getKineticLaw();
+							kineticLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, newExpression);
 						}
 					} catch (PropertyVetoException | ExpressionException e1) {
 						// TODO Auto-generated catch block
@@ -311,11 +314,13 @@ public class RbmUtils {
 							double productsFactor = Math.pow(bnglModelVolume,numProducts-1);
 							Expression correctedRate = Expression.mult(new Expression(node.getValue()),new Expression(productsFactor)).flatten();
 							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, correctedRate);
-//	TODO:  test me please.
 //	this results in an expression which is molecules/time ... but we need concentration/time.
 //    K' = K * V^(N-1)
 						}else{
-							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, new Expression(node.getValue()));
+							String value = node.getValue();
+							Expression newExpression = getBoundExpression(value, model.getRbmModelContainer().getSymbolTable());
+							//Expression newExpression = new Expression(node.getValue());
+							rr.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, newExpression);
 						}
 					} catch (ExpressionException | PropertyVetoException e1) {
 						// TODO Auto-generated catch block
