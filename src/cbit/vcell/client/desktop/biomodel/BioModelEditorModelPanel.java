@@ -647,7 +647,58 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				return this;
 			}
 		};
-		DefaultScrollTableCellRenderer rbmEeactionExpressionCellRenderer = new DefaultScrollTableCellRenderer() {
+		DefaultScrollTableCellRenderer rbmReactionExpressionCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == reactionTableModel) {
+						selectedObject = reactionTableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof ReactionRule && value instanceof ModelProcessEquation) {
+							String text = "<html>";
+							text += "Reaction Rule";
+							text += "</html>";
+							setText(text);
+						} else {					// plain reaction, check if reactants have species pattern
+							ReactionStep rs = (ReactionStep)selectedObject;
+							String text = "<html>";
+							for(int i = 0; i<rs.getNumReactants(); i++) {
+								Reactant p = rs.getReactant(i);
+								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += p.getName();			//		text += "<b>" + p.getName() + "</b>";
+								} else {
+									text += p.getName();
+								}
+								if(i < rs.getNumReactants()-1) {
+									text += " + ";
+								}
+							}
+							text += " -&gt; ";
+							for(int i = 0; i<rs.getNumProducts(); i++) {
+								Product p = rs.getProduct(i);
+								if(p.getSpeciesContext().hasSpeciesPattern()) {
+									text += p.getName();			//			text += "<b>" + p.getName() + "</b>";
+								} else {
+									text += p.getName();
+								}
+								if(i < rs.getNumProducts()-1) {
+									text += " + ";
+								}
+							}								
+							text += "</html>";
+							setText(text);
+						}
+					}
+				}
+				return this;
+			}
+		};
+		DefaultScrollTableCellRenderer rbmReactionDefinitionCellRenderer = new DefaultScrollTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -990,9 +1041,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 			}
 		};
-
+		// TODO: here are the renderers associated with the columns
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
-		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmEeactionExpressionCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_EQUATION).setCellRenderer(rbmReactionExpressionCellRenderer);
+		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEFINITION).setCellRenderer(rbmReactionDefinitionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);

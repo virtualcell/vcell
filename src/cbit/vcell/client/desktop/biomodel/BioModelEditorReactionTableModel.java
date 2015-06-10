@@ -44,15 +44,14 @@ import cbit.vcell.parser.SymbolTable;
 @SuppressWarnings("serial")
 public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTableModel<ModelProcess> {	
 	public final static int COLUMN_EQUATION = 0;
-	public final static int COLUMN_LINK = 1;
-	public final static int COLUMN_DEPICTION = 2;
-	public final static int COLUMN_NAME = 3;
-	public final static int COLUMN_STRUCTURE = 4;
+	public final static int COLUMN_NAME = 1;
+	public final static int COLUMN_STRUCTURE = 2;
+	public final static int COLUMN_DEPICTION = 3;
+	public final static int COLUMN_LINK = 4;
 	public final static int COLUMN_KINETICS = 5;
-//	public final static int COLUMN_DEFINITION = 6;
+	public final static int COLUMN_DEFINITION = 6;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-//	private static String[] columnNames = new String[] {"Reaction", "Link", "Depiction", "Name", "Structure", "Kinetics", "BioNetGen Definition"};
-	private static String[] columnNames = new String[] {"Reaction", "Link", "Depiction", "Name", "Structure", "Kinetics"};
+	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Depiction", "Link", "Kinetics", "BioNetGen Definition"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);
@@ -90,9 +89,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			case COLUMN_KINETICS: {
 				return ModelProcessDynamics.class;
 			}
-//			case COLUMN_DEFINITION: {
-//				return String.class;
-//			}
+			case COLUMN_DEFINITION: {
+				return String.class;
+			}
 		}
 		return Object.class;
 	}
@@ -155,8 +154,12 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 					case COLUMN_STRUCTURE: {
 						return process.getStructure();
 					} 
-					case COLUMN_KINETICS:
+					case COLUMN_KINETICS: {
 						return process.getDynamics();
+					}
+					case COLUMN_DEFINITION: {
+						return new ModelProcessEquation(process, bioModel.getModel());
+					}
 				}
 			} else {
 				if (column == COLUMN_EQUATION) {
@@ -384,10 +387,39 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
             public int compare(ModelProcess o1, ModelProcess o2) {
             	int scale = ascending ? 1 : -1;
                 if (col==COLUMN_NAME){
-					return scale * o1.getName().compareTo(o2.getName());
+                	
+                	String s1 = o1.getName();
+                	String s2 = o2.getName();
+                	String s1int = s1.replaceAll("[^0-9]", "");
+                	String s2int = s2.replaceAll("[^0-9]", "");
+                	// we try to properly sort the sequence x1, x11, x2, which should result in x1, x2, x11
+                	// we look for pattern of letters followed numbers where we apply the special sort; for the rest we use normal (alphabetical) sort
+                	if(s1int.isEmpty() || s2int.isEmpty()) {
+                		return scale * o1.getName().compareTo(o2.getName());	// normal sort if no numbers
+                	}
+                	if(!s1.endsWith(s1int) || !s2.endsWith(s2int)) {
+                		return scale * o1.getName().compareTo(o2.getName());	// normal sort if doesn't end in numbers
+                	}
+                	s1 = s1.substring(0, s1.indexOf(s1int));
+                	s2 = s2.substring(0, s2.indexOf(s2int));
+                	if(s1.isEmpty() || s2.isEmpty()) {
+                		return scale * o1.getName().compareTo(o2.getName());	// normal sort if no letters
+                	}
+                	// we have the we want to properly sort: letters followed by numbers
+                	if(!s1.equals(s2)) {
+                		return scale * o1.getName().compareTo(o2.getName());	// normal sort if the letter part is not equal
+                	}
+                	Integer i1 = Integer.parseInt(s1int);
+                	Integer i2 = Integer.parseInt(s2int);
+					return scale * i1.compareTo(i2);
 				} else if (col == COLUMN_EQUATION) {
 					ModelProcessEquation re1 = new ModelProcessEquation(o1, bioModel.getModel());
 					ModelProcessEquation re2 = new ModelProcessEquation(o2, bioModel.getModel());
+					if(o1 instanceof ReactionStep && o2 instanceof ReactionRule) {
+						return scale;
+					} else if(o1 instanceof ReactionRule && o2 instanceof ReactionStep) {
+						return -scale;
+					}
 					return scale * re1.toString().compareTo(re2.toString());
 				} else if (col == COLUMN_STRUCTURE) {
 					return scale * o1.getStructure().getName().compareTo(o2.getStructure().getName());
