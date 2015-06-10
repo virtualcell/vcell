@@ -428,6 +428,19 @@ public class ChomboMeshMapping {
 			this.p3 = p3;
 		}
 	}
+
+	private boolean between(double d, double dLo, double dHi)
+	{
+		return d >= dLo && d <= dHi || Math.abs(d - dLo) < 1e-12 || Math.abs(d - dHi) < 1e-12;
+	}
+	
+	private boolean inLoHi(VisPoint p, VisPoint pLo, VisPoint pHi)
+	{
+		return between(p.x, pLo.x, pHi.x)
+				&& between(p.y, pLo.y, pHi.y)
+				&& between(p.z, pLo.z, pHi.z)
+				;
+	}
 	
 	private void cropVoxels(VisMesh visMesh, ChomboBoundaries chomboBoundaries, ChomboDomain chomboDomain){
 		if (visMesh.getDimension()!=3){
@@ -461,37 +474,19 @@ public class ChomboMeshMapping {
 					VisPoint vp6 = points.get(p6);
 					VisPoint vp7 = points.get(p7);
 					
-					double pLowX = vp0.x;
-					double pLowY = vp0.y;
-					double pLowZ = vp0.z;
-					double pHiX = vp7.x;
-					double pHiY = vp7.y;
-					double pHiZ = vp7.z;
-					
 					ArrayList<VisSurfaceTriangle> intersectingTriangles = new ArrayList<VisSurfaceTriangle>();
 					for (VisSurfaceTriangle triangle : triangles){
-						VisPoint tp1 = points.get(triangle.getPointIndices()[0]);
-						double t1x = tp1.x;
-						double t1y = tp1.y;
-						double t1z = tp1.z;
-						
-						if (t1x <= pHiX && t1x >= pLowX && t1y <= pHiY && t1y >= pLowY && t1z <= pHiZ && t1z >= pLowZ) {
-		
-							VisPoint tp2 = points.get(triangle.getPointIndices()[1]);
-							double t2x = tp2.x;
-							double t2y = tp2.y;
-							double t2z = tp2.z;
-		
-							if (t2x <= pHiX && t2x >= pLowX && t2y <= pHiY && t2y >= pLowY && t2z <= pHiZ && t2z >= pLowZ) {
-								VisPoint tp3 = points.get(triangle.getPointIndices()[1]);
-								double t3x = tp3.x;
-								double t3y = tp3.y;
-								double t3z = tp3.z;
-			
-								if (t3x <= pHiX && t3x >= pLowX && t3y <= pHiY && t3y >= pLowY && t3z <= pHiZ && t3z >= pLowZ) {
-									intersectingTriangles.add(triangle);
-								}
+						boolean bInRange = true;
+						for (int pi = 0; pi < 3; pi ++)
+						{
+							VisPoint tp = points.get(triangle.getPointIndices()[pi]);
+							if (!inLoHi(tp, vp0, vp7)) {
+								bInRange = false;
 							}
+						}
+						if (bInRange)
+						{
+							intersectingTriangles.add(triangle);
 						}
 					}
 					if (intersectingTriangles.size()==0){
@@ -500,20 +495,20 @@ public class ChomboMeshMapping {
 						continue;
 					}
 	
-					//       p6-------------------p7
-	                //      /|                   /|
-	                //     / |                  / |
-	                //   p4-------------------p5  |
-	                //    |  |                 |  |      face number         coordinates
-	                //    |  |                 |  |
-	                //    |  |                 |  |         5   3            z   y
-	                //    |  p2................|..p3        |  /             |  /
-	                //    | /                  | /          | /              | /
-	                //    |/                   |/           |/               |/
-	                //   p0-------------------p1       0 ---'---- 1          '----- x
-					//                                     /|
-					//								      / |
-					//                                   2  4
+	        //       p6-------------------p7
+          //      /|                   /|
+          //     / |                  / |
+          //   p4-------------------p5  |
+          //    |  |                 |  |      face number         coordinates
+          //    |  |                 |  |
+          //    |  |                 |  |         5   3            z   y
+          //    |  p2................|..p3        |  /             |  /
+          //    | /                  | /          | /              | /
+          //    |/                   |/           |/               |/
+          //   p0-------------------p1       0 ---'---- 1          '----- x
+	        //                                     /|
+	        //								                    / |
+	        //                                   2  4
 	
 					BorderCellInfo borderCellInfo = chomboBoundaries.getMeshMetrics().getBorderCellInfo(intersectingTriangles.get(0).getChomboIndex());
 					//
