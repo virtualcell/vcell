@@ -20,6 +20,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -58,9 +61,14 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.KeyStroke;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -898,6 +906,32 @@ public final class BeanUtils {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
+		}
+	}
+	public static KeyStroke CLOSE_WINDOW_KEY_STROKE = KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+	public static void addCloseWindowKeyboardAction(JComponent jComponent){
+		Action winCloseAction = new AbstractAction() {
+			@Override
+			public synchronized void actionPerformed(ActionEvent e) {
+				Window window = null;
+				if(e.getSource() != null){
+					if(e.getSource() instanceof Window){
+						window = (Window)e.getSource();
+					}else{
+						window = (Window)BeanUtils.findTypeParentOfComponent((Component)e.getSource(), Window.class);
+					}
+				}
+				if(window != null){
+					window.dispatchEvent(new WindowEvent(window,java.awt.event.WindowEvent.WINDOW_CLOSING));
+				}
+			}
+		};
+		
+		final String winCloseInputMapAction = "winCloseAction";
+		InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		if(inputMap.get(CLOSE_WINDOW_KEY_STROKE) == null){
+			inputMap.put(CLOSE_WINDOW_KEY_STROKE, winCloseInputMapAction);
+			jComponent.getActionMap().put(winCloseInputMapAction, winCloseAction);
 		}
 	}
 
