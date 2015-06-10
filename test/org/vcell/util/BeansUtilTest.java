@@ -40,8 +40,10 @@ public class BeansUtilTest {
 		
 	}
 	
+	
+	
 	/**
-	 * expected behavior of {@link SwingUtilities#getAncestorOfClass(Class, Component)}
+	 * expected behavior of {@link BeanUtils#findTypeParentOfComponent(Component, Class)} 
 	 * @param method not null
 	 */
 	private void aTest(BiFunction<Class<?>, Component, Container> method) {
@@ -50,6 +52,7 @@ public class BeansUtilTest {
 		jf.add(jp);
 		JButton btn = new JButton();
 		jf.add(btn);
+		assertTrue(method.apply(Frame.class, jf) == jf);
 		assertTrue(method.apply(Frame.class, jp) == jf);
 		assertTrue(method.apply(Window.class, jp) == jf);
 		assertTrue(method.apply(JDialog.class, jp) == null);
@@ -61,17 +64,12 @@ public class BeansUtilTest {
 	
 	
 	/**
-	 * ensure {@link SwingUtilities#getAncestorOfClass(Class, Component)} and
-	 * {@link BeanUtils#findTypeParentOfComponent(Component, Class)} have same behavior
+	 * ensure  {@link BeanUtils#findTypeParentOfComponent(Component, Class)} has expected behavior
 	 */
 	@Test
 	public void ancestorTest( ) {
-		BiFunction<Class<?>, Component, Container> swingMethod =  
-				(clzz, cmpt) -> { return SwingUtilities.getAncestorOfClass(clzz, cmpt); };
-				@SuppressWarnings("deprecation")
-				BiFunction<Class<?>, Component, Container> buMethod =  
+		BiFunction<Class<?>, Component, Container> buMethod =  
 				(clzz, cmpt) -> { return BeanUtils.findTypeParentOfComponent(cmpt, clzz); };
-				aTest(swingMethod);
 				aTest(buMethod);
 	}
 
