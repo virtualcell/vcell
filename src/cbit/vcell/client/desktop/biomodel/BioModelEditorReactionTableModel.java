@@ -49,7 +49,9 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public final static int COLUMN_NAME = 3;
 	public final static int COLUMN_STRUCTURE = 4;
 	public final static int COLUMN_KINETICS = 5;
+//	public final static int COLUMN_DEFINITION = 6;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
+//	private static String[] columnNames = new String[] {"Reaction", "Link", "Depiction", "Name", "Structure", "Kinetics", "BioNetGen Definition"};
 	private static String[] columnNames = new String[] {"Reaction", "Link", "Depiction", "Name", "Structure", "Kinetics"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
@@ -69,24 +71,28 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	}
 
 	public Class<?> getColumnClass(int column) {
-		switch (column){		
-			case COLUMN_NAME:{
+		switch (column) {		
+			case COLUMN_NAME: {
 				return String.class;
 			}
-			case COLUMN_LINK:{
+			case COLUMN_LINK: {
 				return BioPaxObject.class;
 			}
-			case COLUMN_DEPICTION:{
+			case COLUMN_DEPICTION: {
 				return Object.class;
 			}
 			case COLUMN_EQUATION:{
 				return ModelProcessEquation.class;
 			}
-			case COLUMN_STRUCTURE:{
+			case COLUMN_STRUCTURE: {
 				return Structure.class;
 			}
-			case COLUMN_KINETICS:
+			case COLUMN_KINETICS: {
 				return ModelProcessDynamics.class;
+			}
+//			case COLUMN_DEFINITION: {
+//				return String.class;
+//			}
 		}
 		return Object.class;
 	}
@@ -174,7 +180,12 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 			return true;
 		}
 		if (column == COLUMN_EQUATION) {
-			return bioModel.getModel().getNumStructures() == 1;
+			if(process instanceof ReactionStep) {
+				return true;
+			} else {
+				return false;
+			}
+//			return bioModel.getModel().getNumStructures() == 1;
 		}
 		return false;
 	}
