@@ -39,6 +39,7 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
 import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -1044,6 +1045,7 @@ private javax.swing.JMenuItem getCloseMenuItem() {
 			ivjCloseMenuItem = new javax.swing.JMenuItem();
 			ivjCloseMenuItem.setName("CloseMenuItem");
 			ivjCloseMenuItem.setText("Close");
+			ivjCloseMenuItem.setAccelerator(BeanUtils.CLOSE_WINDOW_KEY_STROKE);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

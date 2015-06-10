@@ -35,6 +35,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -50,6 +51,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
 import org.vcell.documentation.VcellHelpViewer;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.gui.DialogUtils;
 
@@ -105,6 +107,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 	public static final String BATCHRUN_VER_NUMBER = "VFRAP 1.1_Batch_Run";
 	private static final String OPEN_ACTION_COMMAND = "Open vfrap";
 	private static final String SAVE_ACTION_COMMAND = "Save";
+	private static final String CLOSE_ACTION_COMMAND = "Close";
 	private static final String SAVEAS_MATLAB_COMMAND = "Save Image Data to Matlab";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
 	//	private static final String PRINT_ACTION_COMMAND = "Print";
@@ -126,6 +129,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
 	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
+	private static final JMenuItem mclose = new JMenuItem(CLOSE_ACTION_COMMAND,BeanUtils.CLOSE_WINDOW_KEY_STROKE.getKeyChar());
 	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
 	private static final JMenuItem msaveasMat = new JMenuItem(SAVEAS_MATLAB_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
@@ -287,13 +291,13 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 					}
 					System.out.println("Writing FRAP Image data is done.");
 				}
-				else if(arg.equals(EXIT_ACTION_COMMAND))
+				else if(arg.equals(EXIT_ACTION_COMMAND) || arg.equals(CLOSE_ACTION_COMMAND))
 				{
 					String text = "";
 					if (frapWorkspace != null && frapWorkspace.getWorkingFrapStudy() != null && frapWorkspace.getWorkingFrapStudy().isSaveNeeded()) {
 						text = "UnSaved changes will be lost!";
 					}
-					String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this, "Do you want to Exit Virtual Frap? " + text, new String[]{UserMessage.OPTION_EXIT, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_EXIT); 
+					String result = DialogUtils.showWarningDialog(VirtualFrapMainFrame.this,"Exit Warning","Do you want to Exit Virtual Frap? " + text,new String[]{UserMessage.OPTION_EXIT, UserMessage.OPTION_CANCEL}, UserMessage.OPTION_EXIT); 
 					if (result == UserMessage.OPTION_EXIT)
 					{
 						if(bStandalone)
@@ -313,7 +317,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 					{
 						VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
 						helpViewerWindow = getChildWindowManager().addChildWindow(hviewer,HELP_VIEWER_CONTEXT_OBJECT,"Virtual FRAP Help", false);
-						
+						BeanUtils.addCloseWindowKeyboardAction((JComponent)helpViewerWindow.getContentPane());
 						helpViewerWindow.setIsCenteredOnParent();
 						helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 						helpViewerWindow.pack();
@@ -543,11 +547,11 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 
 		menuOpen.addActionListener(menuHandler);
 		fileMenu.add(menuOpen);
-		menuOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,InputEvent.CTRL_MASK));
+		menuOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
 		msave.addActionListener(menuHandler);
 		fileMenu.add(msave);
-		msave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,InputEvent.CTRL_MASK));
+		msave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 
 		msaveas.addActionListener(menuHandler);
 		fileMenu.add(msaveas);
@@ -555,6 +559,10 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 		msaveasMat.addActionListener(menuHandler);
 		fileMenu.add(msaveasMat);
 		
+		mclose.addActionListener(menuHandler);
+		fileMenu.add(mclose);
+		mclose.setAccelerator(BeanUtils.CLOSE_WINDOW_KEY_STROKE);
+
 		fileMenu.addSeparator();
 
 		//    mprint.addActionListener(menuHandler);

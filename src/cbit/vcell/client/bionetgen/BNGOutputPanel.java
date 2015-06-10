@@ -2060,6 +2060,7 @@ private void initialize() {
 		initConnections();
 		connEtoC5();
 		connEtoC14();
+		BeanUtils.addCloseWindowKeyboardAction(this);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
