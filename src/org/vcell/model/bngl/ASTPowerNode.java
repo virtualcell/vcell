@@ -19,6 +19,6 @@ public class ASTPowerNode extends SimpleNode {
 
 @Override
 public String toBNGL() {
-	return "(("+jjtGetChild(0) + ")^(" + jjtGetChild(1)+"))";
+	return "(("+jjtGetChild(0).toBNGL() + ")^(" + jjtGetChild(1).toBNGL()+"))";
 }
 }

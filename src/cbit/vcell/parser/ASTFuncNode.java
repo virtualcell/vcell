@@ -135,6 +135,14 @@ public class ASTFuncNode extends SimpleNode {
 		public final String getMathMLTag() {
 			return mathMLTag;
 		}
+		public static FunctionType fromFunctionName(String functionName){
+			for (FunctionType ft : values()){
+				if (ft.name.equals(functionName)){
+					return ft;
+				}
+			}
+			return null;
+		}
  	}
 	
   ASTFuncNode() {

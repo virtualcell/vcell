@@ -19,6 +19,6 @@ public class ASTNotNode extends SimpleNode {
 
 @Override
 public String toBNGL() {
-	return "!("+jjtGetChild(0)+")";
+	return "!("+jjtGetChild(0).toBNGL()+")";
 }
 }
