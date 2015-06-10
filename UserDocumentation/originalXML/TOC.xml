@@ -17,7 +17,6 @@
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu"/>
     			<tocitem target="Export" text="File->Export Menu"/>
-    			<tocitem target="ImportPathway" text="File->Import Pathway"/>
     		</tocitem>
     		<tocitem target="View" text="View Menu"/>
     		<tocitem target="Server" text="Server Menu">
@@ -26,7 +25,6 @@
     			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
     			<tocitem target="NewUserRegistration" text="New User Registration"/>
     		</tocitem>	
-    		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchBioNetGen" text="Launch BioNetGen Menu">
     			 	<tocitem target="BioNetGenRulesEditor" text="BioNetGen Rules Editor"/>
