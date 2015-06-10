@@ -661,7 +661,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (selectedObject != null) {
 						if(selectedObject instanceof ReactionRule && value instanceof ModelProcessEquation) {
 							ReactionRule rr = (ReactionRule)selectedObject;
-							String text = "<html><b>";
+							String text = "<html>";
 							for(int i=0; i< rr.getReactantPatterns().size(); i++) {
 								ReactantPattern rp = rr.getReactantPattern(i);
 								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), isSelected);
@@ -681,15 +681,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 									text += "+";
 								}
 							}
-							text += "</b></html>";
+							text += "</html>";
 							setText(text);
-						} else {					// plain reaction, check if reactants have species pattern and if yes draw them in bold
+						} else {					// plain reaction, check if reactants have species pattern
 							ReactionStep rs = (ReactionStep)selectedObject;
 							String text = "<html>";
 							for(int i = 0; i<rs.getNumReactants(); i++) {
 								Reactant p = rs.getReactant(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
-									text += "<b>" + p.getName() + "</b>";
+									text += p.getName();			//		text += "<b>" + p.getName() + "</b>";
 								} else {
 									text += p.getName();
 								}
@@ -701,7 +701,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							for(int i = 0; i<rs.getNumProducts(); i++) {
 								Product p = rs.getProduct(i);
 								if(p.getSpeciesContext().hasSpeciesPattern()) {
-									text += "<b>" + p.getName() + "</b>";
+									text += p.getName();			//			text += "<b>" + p.getName() + "</b>";
 								} else {
 									text += p.getName();
 								}
