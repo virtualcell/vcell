@@ -69,7 +69,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -387,12 +386,14 @@ public final class BeanUtils {
 		}
 	}
 
-	/**
-	 * use {@link SwingUtilities#getAncestorOfClass(Class, Component)}
-	 */
-	@Deprecated
 	public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
-		return SwingUtilities.getAncestorOfClass(parentType, component);
+		Container p = component == null || component instanceof Container ? (Container) component : component.getParent(); 
+		for (; p != null; p = p.getParent()) {
+			if(parentType.isAssignableFrom(p.getClass())) {
+				return p;
+			}
+		}
+		return null;
 	}
 
 	public static int firstIndexOf(double[] dd, double d) {
