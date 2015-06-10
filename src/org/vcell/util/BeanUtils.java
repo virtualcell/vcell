@@ -16,11 +16,13 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Line2D;
@@ -915,8 +917,19 @@ public final class BeanUtils {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	public static KeyStroke CLOSE_WINDOW_KEY_STROKE = KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+	
+	public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;  
+	static { //allow initialization in headless environment
+		KeyStroke ks;
+		try {
+			ks  = KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+		} catch (HeadlessException he) {
+			ks = KeyStroke.getKeyStroke(KeyEvent.VK_W,InputEvent.CTRL_DOWN_MASK);
+		}
+		CLOSE_WINDOW_KEY_STROKE = ks; 
+	}
 	public static void addCloseWindowKeyboardAction(JComponent jComponent){
+		@SuppressWarnings("serial")
 		Action winCloseAction = new AbstractAction() {
 			@Override
 			public synchronized void actionPerformed(ActionEvent e) {
