@@ -2942,6 +2942,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
 					bException = false;
 				} catch (final Exception e) {
+					e.printStackTrace(System.out);
 					BNGLDebuggerPanel panel = new BNGLDebuggerPanel(fileText, e);
 					int oKCancel = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), panel, "Bngl Debugger: " + file.getName());
 					if (oKCancel == JOptionPane.CANCEL_OPTION || oKCancel == JOptionPane.DEFAULT_OPTION) {

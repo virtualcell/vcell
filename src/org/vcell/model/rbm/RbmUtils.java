@@ -78,6 +78,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry;
 
 public class RbmUtils {
 	
@@ -624,7 +625,7 @@ public class RbmUtils {
 					model.getRbmModelContainer().addFunction(node.getName(), exp, model.getUnitSystem().getInstance_TBD());
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException("Function '" + node.getName() + " can not be added, " + ex.getMessage());
+				throw new RuntimeException("Function '" + node.getName() + " can not be added, " + ex.getMessage(),ex);
 			}
 			return null;
 		}
@@ -690,17 +691,36 @@ public class RbmUtils {
 					//
 					// no arguments, look for existing parameter by name (parameter name is function name).
 					//
-					SymbolTableEntry ste = symbolTable.getEntry(invocation.getFunctionName());
-					if (ste != null){
-						exp.substituteInPlace(invocation.getFunctionExpression(), new Expression(ste,ste.getNameScope()));
+					// look up "identifier()" as "identifier" to find a model parameter generated earlier when processing functions (or prior functions)
+					//
+					SymbolTableEntry parameter = symbolTable.getEntry(invocation.getFunctionName());
+					if (parameter != null){
+						exp.substituteInPlace(invocation.getFunctionExpression(), new Expression(parameter,parameter.getNameScope()));
 					}else{
-						throw new RuntimeException("function "+invocation.getFunctionExpression().infix()+" not found");
+						//
+						// didn't find a parameter, may be a built-in function with zero arguments built into VCell. (none exists right now).
+						//
+						SymbolTableFunctionEntry vcellFunction = (SymbolTableFunctionEntry)symbolTable.getEntry(invocation.getFormalDefinition());
+						if (vcellFunction!=null){
+							//
+							// nothing to do, vcell will parse and interpret this correctly
+							//
+						}else{
+							throw new RuntimeException("function \""+invocation.getFunctionExpression().infix()+"\" not found as a bngl function or as a vcell built-in function");
+						}
 					}
 				}else{
 					//
-					// one or more arguments ... have to flatten this one (do this later)
+					// should be a build-in vcell function with arguments ... user defined functions with arguments not supported yet in bngl import.
 					//
-					throw new RuntimeException("Function invocations with arguments not yet supported");
+					FunctionType builtinFunctionType = cbit.vcell.parser.ASTFuncNode.FunctionType.fromFunctionName(invocation.getFunctionName());
+					if (builtinFunctionType==null){
+						throw new RuntimeException("function \""+invocation.getFunctionExpression().infix()+"\" not found as a built-in VCell function (and bngl functions with arguments are not yet supported");
+					}else{
+						if (invocation.getArguments().length != builtinFunctionType.getArgTypes().length){
+							throw new RuntimeException("built-in function \""+invocation.getFunctionExpression().infix()+"\" expects "+builtinFunctionType.getArgTypes().length+" arguments");
+						}
+					}
 				}
 				System.out.println(invocations.toString());
 			}
