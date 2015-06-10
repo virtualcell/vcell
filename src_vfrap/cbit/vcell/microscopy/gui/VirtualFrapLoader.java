@@ -84,7 +84,7 @@ public class VirtualFrapLoader {
 			    } 
 			    /* Set Look and Feel */ 
 			    try{
-			    	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			    	UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 			    }catch(Exception e){
 			    	throw new RuntimeException(e.getMessage(),e);
 			    }

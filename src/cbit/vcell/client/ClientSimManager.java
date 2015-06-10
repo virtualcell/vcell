@@ -345,6 +345,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
+						BeanUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 					}
 				}
