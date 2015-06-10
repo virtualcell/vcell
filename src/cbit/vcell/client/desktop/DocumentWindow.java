@@ -69,9 +69,9 @@ import cbit.vcell.client.constants.VCellCodeVersion;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.LoginDelegate;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.microscopy.gui.VirtualFrapLoader;
 import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
@@ -909,7 +909,9 @@ private javax.swing.JMenuItem getAbout_BoxMenuItem() {
 
 
 private void startVirtualFRAP(){
-	VirtualFrapLoader.loadVFRAP(null, false,getWindowManager());
+	final DocumentWindowManager dwm = getWindowManager();
+	final Hashtable<String,Object> ht = new Hashtable<>();
+	ClientTaskDispatcher.dispatch(this, ht,LaunchVirtualFRAP.taskList(dwm), true,false,false,null,false);
 }
 
 private void startVCellVisIt() {
@@ -1070,7 +1072,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getFileMenu());
 			ivjDocumentWindowJMenuBar.add(getViewMenu());
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
-			ivjDocumentWindowJMenuBar.add(getWindowMenu());
+//			ivjDocumentWindowJMenuBar.add(getWindowMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}
@@ -1162,7 +1164,7 @@ private javax.swing.JMenu getFileMenu() {
 			ivjFileMenu.add(getJMenuItemImport());
 			ivjFileMenu.add(getJMenuItemExport());
 			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuImportPathway());			
+			//ivjFileMenu.add(getJMenuImportPathway());			
 			ivjFileMenu.add(new JSeparator());
 			ivjFileMenu.add(getExitMenuItem());
 			// user code begin {1}
@@ -2693,7 +2695,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 					getWindowManager().getVCDocument() != null &&
 					getWindowManager().getVCDocument() instanceof BioModel
 			);
-			getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
+			//getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
 			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
 			break;
 		}
