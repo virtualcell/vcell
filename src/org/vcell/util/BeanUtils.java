@@ -386,6 +386,13 @@ public final class BeanUtils {
 		}
 	}
 
+	/**
+	 * return Container of specified type that is either the input component, or a AWT parent
+	 * of the input component 
+	 * @param component, may be null
+	 * @param parentType not null
+	 * @return component, ancestor of component, or null 
+	 */
 	public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
 		Container p = component == null || component instanceof Container ? (Container) component : component.getParent(); 
 		for (; p != null; p = p.getParent()) {
