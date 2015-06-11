@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="How to create a rule-based model" target="RBCreate">
+
+	<introduction> 
+There are two ways to create a <def target= "def_RuleBased">rule-based</def> model:
+<list>
+<item>Import existing rule-based model encoded in BNGL format, using <link target = "ImportBNGL">File->Import menu</link>.
+The rule-based model will be created with two applications: <link target = "NFSimApp">network-free application</link>
+called NFSim app, and <link target = "BNGApp">deterministic network application</link> called BioNetGen app.
+In some cases, when some features in BNGL file (such as fixed value of concentration) are supported by 
+BioNetGen but not NFsim, 
+only a single deterministic rule-based application will be created.</item>
+<item>Create a new rule-based model using <link target = "PhysOverview">Physiology</link> tabs.</item>
+<item>Convert an existing single-compartment reaction network model into rule-based by adding rule-based features.</item>
+</list>
+To create a new rule-based model, the user has to perform the following operations:
+<list>
+<item>Create one or more <link target = "Molecules">Molecules</link> that are structured objects 
+that have binding sites having optional attribute state</item>
+<item>Create one or more <link target = "CompositeSpecies">Composite Species</link> that are made of 
+molecules connected through binding sites. These composite species will serve as seed species for either
+network generation or network-free simulation.</item>
+<item>Create one or more <link target = "Observables">Observables</link> that describe classes of species with specified features, 
+e.g. having the same site being phosphorylated.</item>
+<item>Create one or more <link target = "ReactionRules">Reaction Rules</link> that describe transformations 
+of species classes by specifying of the initial and final states of participating in reaction molecules.</item>
+</list>
+	</introduction>
+	
+</page>
+
+</vcelldoc>

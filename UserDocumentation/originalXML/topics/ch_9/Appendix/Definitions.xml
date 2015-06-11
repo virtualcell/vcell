@@ -2,8 +2,12 @@
 <vcelldoc>
 
 
-<def target = "def_BioNetGen" defLabel = "BioNetGen"> BioNetGen is a set of software tools for rule-based 
-modeling. Rule-based modeling can be described with the help of the BioNetGen Language (BNGL) .
+<def target = "def_BioNetGen" defLabel = "BioNetGen"> BioNetGen (stands for Biological Network 
+Generator) is a set of software tools for rule-based 
+modeling. Rule-based modeling can be described with the help of the BioNetGen Language (BNGL). The software
+and language are described in Faeder JR, Blinov ML, and 
+Hlavacek WS (2009). Rule-based modeling of biochemical systems with BioNetGen. 
+In Systems biology (pp. 113-167). Humana Press.
 </def>
 
 <def target = "def_compartments" defLabel = "Compartments"> A compartment is a volume structure and associated membrane 
@@ -49,6 +53,19 @@ with volume species in reactions, or reactions may occur only among membrane spe
 within membranes and have reactants and products in the adjacent volume structures.
 </def>
 
+
+<def target = "def_NetworkFree" defLabel = "NetworkFree"> Network-free simulation of rule-based 
+models is performed without generation of the reaction network. Rather than generating and tracking all possible chemical species, 
+network-free approaches follows only the molecular configurations that exist at a given time. 
+</def>
+
+<def target = "def_NFSim" defLabel = "NFSim"> NFSim (stands for Network-Free Simulator) 
+is a software tool for simulation of rule-based models using 
+network-free simulation.  It is described in 
+Sneddon MW, Faeder JR, and Emonet T. (2011). 
+Efficient modeling, simulation and coarse-graining of biological complexity with NFsim. 
+Nature methods, 8(2), 177-183.
+</def>
 
 <def target = "def_pathcom" defLabel = "Pathway Commons">
 Pathway Commons mirrors the content of ten major pathway databases, providing 3,436 pathways including 565,977 
