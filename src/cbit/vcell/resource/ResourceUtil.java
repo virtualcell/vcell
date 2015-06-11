@@ -46,8 +46,16 @@ public class ResourceUtil {
 	public final static boolean bMac = system_osname.contains("Mac");
 	public final static boolean bLinux = system_osname.contains("Linux");
 
-	public static enum JavaVersion  {FIVE,SIX,SEVEN};
+	public static enum JavaVersion  {
+		SEVEN("1.7"),
+		EIGHT("1.8");
+		final String versionIdentifier;
 
+		private JavaVersion(String versionIdentifier) {
+			this.versionIdentifier = versionIdentifier;
+		}
+		
+	};
 	// temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	private static String lastUserLocalDir = null;
 
@@ -331,23 +339,27 @@ public class ResourceUtil {
 			throw new Error("Update ResourceUtil.loadLicensedLibraries");
 		}
 	}
-	
+	/**
+	 * determine java version from system property
+	 * @return current version, or default to first enum value
+	 */
 	public static JavaVersion getJavaVersion() {
-		if ((System.getProperty("java.version")).contains("1.5")) {
-			return JavaVersion.FIVE;
-		} 
-		else if ((System.getProperty("java.version")).contains("1.6")) {
-			return JavaVersion.SIX;
-		} 
-		else if ((System.getProperty("java.version")).contains("1.7")) {
-			return JavaVersion.SEVEN;
-		} 
-		else {
-			System.err.println("Whoa... VCell only runs on JVM versions 1.5, 1.6 or 1.7 and can't determine that its running on one of these.  Assuming 1.5 as a default for safety");
-			return JavaVersion.FIVE;
+		final String vers = System.getProperty("java.version");
+		for (JavaVersion jv: JavaVersion.values()) {
+			if (vers.contains(jv.versionIdentifier) ) {
+				return jv;
+			}
 		}
-
+		JavaVersion dflt = JavaVersion.values( )[0];
+		System.err.print("Supported JVM versions ");
+		for (JavaVersion jv: JavaVersion.values()) {
+			System.err.print(jv.versionIdentifier + " ");
+		}
+		System.err.print("and can't determine that its running on one of these.  Assuming " + dflt.versionIdentifier + " as a default for safety");
+		return dflt; 
 	}
+
+	
 
 	/**
 	 * set path to native library directory 
