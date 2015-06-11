@@ -271,6 +271,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
 		leftPanel.add(top, gbc);
@@ -278,8 +280,8 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
-		gbc.weightx = 1;
-		gbc.weighty = 1;
+		gbc.weightx = 0;
+		gbc.weighty = 0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		leftPanel.add(bottom, gbc);
@@ -351,7 +353,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.weightx = gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(20, 4, 4, 10);
+		gbc.insets = new Insets(5, 4, 4, 10);
 		top.add(p, gbc);
 		
 		// ------------------------------------------- Populating the right group box ------------
@@ -380,7 +382,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(10, 4, 4, 10);
+		gbc.insets = new Insets(6, 4, 4, 10);
 		bottom.add(generatedSpeciesLabel, gbc);
 		
 		gbc = new GridBagConstraints();
@@ -388,7 +390,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.gridy = gridy;
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(10, 4, 4, 10);
+		gbc.insets = new Insets(6, 4, 4, 10);
 		bottom.add(getViewGeneratedSpeciesButton(), gbc);
 
 		gbc = new GridBagConstraints();
@@ -396,7 +398,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.gridy = gridy;
 //		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(10, 4, 4, 10);
+		gbc.insets = new Insets(6, 4, 4, 10);
 		bottom.add(getRefreshMathButton(), gbc);
 
 		gridy++;
@@ -405,21 +407,21 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(5, 4, 4, 10);
+		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(generatedReactionsLabel, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(5, 4, 4, 10);
+		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(getViewGeneratedReactionsButton(), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(5, 4, 4, 10);
+		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(getCreateModelButton(), gbc);
 		
 		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
