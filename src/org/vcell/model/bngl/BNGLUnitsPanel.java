@@ -292,7 +292,7 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		add(lowerMolPanel, gbc);
 		
-		Dimension size = new Dimension(195,150);
+		Dimension size = new Dimension(260,150);		// 195
 		setPreferredSize(size);
 		setMaximumSize(size);
 		
