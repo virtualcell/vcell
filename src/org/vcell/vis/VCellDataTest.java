@@ -60,7 +60,7 @@ public class VCellDataTest {
 			// process each domain separately (only have to process the mesh once for each one)
 			CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
 			File destinationDirectory = new File("C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\VtkData\\");
-			File[] generatedFiles = cartesianMeshVtkFileWriter.writeFiles(vcellFiles, destinationDirectory, null);
+			File[] generatedFiles = cartesianMeshVtkFileWriter.writeVtuExportFiles(vcellFiles, destinationDirectory, null);
 
 			boolean bDisplay = true;
 			

@@ -3,9 +3,8 @@ package org.vcell.vis.chombo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.vis.vismesh.VisPolygon;
-import org.vcell.vis.vismesh.VisPolyhedron;
-
+import org.vcell.vis.vismesh.ChomboCellIndices;
+import org.vcell.vis.vismesh.ChomboVisMembraneIndex;
 
 public class ChomboMeshData {
 	public final static String BUILTIN_VAR_BOXLEVEL = "level";
@@ -13,6 +12,7 @@ public class ChomboMeshData {
 	public final static String BUILTIN_VAR_BOXINDEX = "boxindex";
 	public final static String BUILTIN_VAR_BOX = "box";
 	private final static int BOX_LEVEL_GAIN = 50;
+	public final static String BUILTIN_VAR_MEMBRANE_INDEX = "membraneIndex";
 	
 	private final ChomboMesh chomboMesh;
 	private ArrayList<ChomboLevelData> chomboLevelDatas = new ArrayList<ChomboLevelData>();
@@ -45,23 +45,15 @@ public class ChomboMeshData {
 	public void addComponentName(String componentName){
 		componentNamesList.add(componentName);
 	}
-	
-	public String[] getAllNames(){
-		ArrayList<String> allNames = new ArrayList<String>();
-		allNames.addAll(builtinNamesList);
-		allNames.addAll(componentNamesList);
-		return allNames.toArray(new String[0]);
-	}
-	
-	public String[] getComponentNames(){
+	public String[] getVolumeDataNames(){
 		return componentNamesList.toArray(new String[0]);
 	}
 	
-	public String[] getBuiltinNames(){
+	public String[] getVolumeBuiltinNames(){
 		return builtinNamesList.toArray(new String[0]);
 	}
-	
-	private int getComponentIndex(String name) {
+
+	private int getVolumeComponentIndex(String name) {
 		for (int i=0;i<componentNamesList.size();i++){
 			if (componentNamesList.get(i).equals(name)){
 				return i;
@@ -73,44 +65,56 @@ public class ChomboMeshData {
 	public double getTime() {
 		return this.time;
 	}
+		
+	public String[] getMembraneDataNames() {
+		ArrayList<String> names = new ArrayList<String>();
+		for (ChomboMembraneVarData memVarData : membraneDataList){
+			names.add(memVarData.getName());
+		}
+		return names.toArray(new String[names.size()]);
+	}
 
-	public double[] getPolygonData(String var, List<VisPolygon> polygons) {
-		double[] cellData = new double[polygons.size()];
+	public String[] getMembraneBuiltinNames() {
+		return new String[] { BUILTIN_VAR_MEMBRANE_INDEX };
+	}
+
+	public double[] getVolumeCellData(String var, List<? extends ChomboCellIndices> cellIndices) {
+		double[] cellData = new double[cellIndices.size()];
 		if (builtinNamesList.contains(var)){
 			if (var.equals(BUILTIN_VAR_BOXINDEX)){
 				int i = 0;
-				for (VisPolygon visPolygon : polygons){
-					cellData[i] = visPolygon.getBoxIndex();
+				for (ChomboCellIndices cellIndex : cellIndices){
+					cellData[i] = cellIndex.getBoxIndex();
 					i++;
 				}
 			}else if (var.equals(BUILTIN_VAR_BOXLEVEL)){
 				int i = 0;
-				for (VisPolygon visPolygon : polygons){
-					cellData[i] = visPolygon.getLevel();
+				for (ChomboCellIndices cellIndex : cellIndices){
+					cellData[i] = cellIndex.getLevel();
 					i++;
 				}
 			}else if (var.equals(BUILTIN_VAR_BOXNUMBER)){
 				int i = 0;
-				for (VisPolygon visPolygon : polygons){
-					cellData[i] = visPolygon.getBoxNumber();
+				for (ChomboCellIndices cellIndex : cellIndices){
+					cellData[i] = cellIndex.getBoxNumber();
 					i++;
 				}
 			}else if (var.equals(BUILTIN_VAR_BOX)){
 				int i = 0;
-				for (VisPolygon visPolygon : polygons){
-					cellData[i] = visPolygon.getLevel()*BOX_LEVEL_GAIN + visPolygon.getBoxNumber();
+				for (ChomboCellIndices cellIndex : cellIndices){
+					cellData[i] = cellIndex.getLevel()*BOX_LEVEL_GAIN + cellIndex.getBoxNumber();
 					i++;
 				}
 			}else{
 				throw new RuntimeException("built-in variable "+var+" not yet implemented");
 			}
 		}else if (componentNamesList.contains(var)){
-			int component = getComponentIndex(var);
+			int component = getVolumeComponentIndex(var);
 			int i = 0;
-			for (VisPolygon visPolygon : polygons){
-				int levelIndex = visPolygon.getLevel();
-				int boxNumber = visPolygon.getBoxNumber();
-				int boxIndex = visPolygon.getBoxIndex();
+			for (ChomboCellIndices cellIndex : cellIndices){
+				int levelIndex = cellIndex.getLevel();
+				int boxNumber = cellIndex.getBoxNumber();
+				int boxIndex = cellIndex.getBoxIndex();
 				ChomboLevelData chomboLevelData = getLevelData(levelIndex);
 				int boxOffset = chomboLevelData.getOffsets()[boxNumber];
 				int boxSize = chomboMesh.getLevel(levelIndex).getBoxes().get(boxNumber).getSize();
@@ -122,49 +126,24 @@ public class ChomboMeshData {
 		return cellData;
 	}
 
-	public double[] getPolyhedaData(String var, List<VisPolyhedron> polyhedra) {
-		double[] cellData = new double[polyhedra.size()];
-		if (builtinNamesList.contains(var)){
-			if (var.equals(BUILTIN_VAR_BOXINDEX)){
-				int i = 0;
-				for (VisPolyhedron visVoxel : polyhedra){
-					cellData[i] = visVoxel.getBoxIndex();
-					i++;
-				}
-			}else if (var.equals(BUILTIN_VAR_BOXLEVEL)){
-				int i = 0;
-				for (VisPolyhedron visVoxel : polyhedra){
-					cellData[i] = visVoxel.getLevel();
-					i++;
-				}
-			}else if (var.equals(BUILTIN_VAR_BOXNUMBER)){
-				int i = 0;
-				for (VisPolyhedron visVoxel : polyhedra){
-					cellData[i] = visVoxel.getBoxNumber();
-					i++;
-				}
-			}else if (var.equals(BUILTIN_VAR_BOX)){
-				int i = 0;
-				for (VisPolyhedron visVoxel : polyhedra){
-					cellData[i] = visVoxel.getLevel()*BOX_LEVEL_GAIN + visVoxel.getBoxNumber();
-					i++;
-				}
-			}else{
-				throw new RuntimeException("built-in variable "+var+" not yet implemented");
+	public double[] getMembraneCellData(String var, List<? extends ChomboVisMembraneIndex> cellIndices){
+		double[] cellData = new double[cellIndices.size()];
+		ChomboMembraneVarData memVarData = null;
+		for (ChomboMembraneVarData mvd : this.membraneDataList){
+			if (mvd.getName().equals(var)){
+				memVarData = mvd;
+				break;
 			}
-		}else if (componentNamesList.contains(var)){
-			int component = getComponentIndex(var);
-			int i = 0;
-			for (VisPolyhedron visVoxel : polyhedra){
-				int levelIndex = visVoxel.getLevel();
-				int boxNumber = visVoxel.getBoxNumber();
-				int boxIndex = visVoxel.getBoxIndex();
-				ChomboLevelData chomboLevelData = getLevelData(levelIndex);
-				int boxOffset = chomboLevelData.getOffsets()[boxNumber];
-				int boxSize = chomboMesh.getLevel(levelIndex).getBoxes().get(boxNumber).getSize();
-				double value = chomboLevelData.getData()[boxOffset+(component*boxSize) + boxIndex];
-				cellData[i] = value;
-				i++;
+		}
+		if (memVarData!=null){
+			for (int i=0;i<cellData.length;i++){
+				int chomboIndex = cellIndices.get(i).getChomboIndex();
+				cellData[i] = memVarData.getRawChomboData()[chomboIndex];
+			}
+		}else if (var.equals(BUILTIN_VAR_MEMBRANE_INDEX)){
+			for (int i=0;i<cellData.length;i++){
+				int chomboIndex = cellIndices.get(i).getChomboIndex();
+				cellData[i] = chomboIndex;
 			}
 		}
 		return cellData;

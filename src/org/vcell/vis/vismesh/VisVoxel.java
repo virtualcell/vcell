@@ -24,14 +24,17 @@ public class VisVoxel implements VisPolyhedron {
 		return pointIndices;
 	}
 
+	@Override
 	public int getLevel(){
 		return level;
 	}
 	
+	@Override
 	public int getBoxNumber() {
 		return boxNumber;
 	}
 
+	@Override
 	public int getBoxIndex() {
 		return boxIndex;
 	}

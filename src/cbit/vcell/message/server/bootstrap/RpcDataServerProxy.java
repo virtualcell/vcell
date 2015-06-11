@@ -9,11 +9,14 @@
  */
 
 package cbit.vcell.message.server.bootstrap;
+import java.rmi.RemoteException;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -243,8 +246,24 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 
 
 @Override
-public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time)	throws DataAccessException {
-	return (VtuFileContainer)rpc("getVtuMeshFiles", new Object[]{userLoginInfo.getUser(), vcdataID, new Double(time)});
+public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID)	throws DataAccessException {
+	return (VtuFileContainer)rpc("getEmptyVtuMeshFiles", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID});
+}
+
+
+@Override
+public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time)	throws DataAccessException {
+	return (double[])rpc("getVtuMeshData", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID, var, new Double(time)});
+}
+
+
+
+@Override
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
+		VCDataIdentifier vcDataIdentifier) throws DataAccessException,
+		RemoteException {
+	// TODO Auto-generated method stub
+	return null;
 }
 
 }

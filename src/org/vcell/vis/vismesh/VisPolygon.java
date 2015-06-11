@@ -2,7 +2,7 @@ package org.vcell.vis.vismesh;
 
 import org.vcell.vis.core.Vect3D;
 
-public class VisPolygon {
+public class VisPolygon implements ChomboCellIndices {
 	
 	private int[] pointIndices;
 	private final int level;
@@ -24,14 +24,17 @@ public class VisPolygon {
 		return pointIndices;
 	}
 
+	@Override
 	public int getLevel(){
 		return level;
 	}
 	
+	@Override
 	public int getBoxNumber() {
 		return boxNumber;
 	}
 
+	@Override
 	public int getBoxIndex() {
 		return boxIndex;
 	}

@@ -16,6 +16,7 @@ import java.rmi.RemoteException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
@@ -67,12 +68,16 @@ public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteExceptio
  */
 public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteException, DataAccessException;
 /**
+ * @param outputContext 
  * This method was created in VisualAge.
  * @return CartesianMesh
  * @throws  
  */
 
-public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws RemoteException, DataAccessException;
+public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
+
+
+public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws RemoteException, DataAccessException;
 
 
 
@@ -131,4 +136,8 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  * @exception java.rmi.RemoteException The exception description.
  */
 ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, java.rmi.RemoteException;
+
+
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,	VCDataIdentifier vcDataIdentifier) throws DataAccessException, java.rmi.RemoteException;
+
 }

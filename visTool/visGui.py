@@ -388,7 +388,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             currVar = variables[0]
             assert isinstance(currVar,pyvcell.ttypes.VariableInfo)
 
-            dataFileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,currVar.domainName,0)
+            dataFileName = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,currVar,0)
             self._visDataContext.setVariableInfos(variables);
             self._visDataContext.setCurrentVariable(currVar);
             self._visDataContext.setCurrentDataSet(sim);
@@ -455,7 +455,7 @@ class VCellPysideApp(QtGui.QMainWindow):
                 sim = self._visDataContext.getCurrentDataSet()
                 timeIndex = self._visDataContext.getCurrentTimeIndex()
                 bSameDomain = (oldVariable.domainName == newVariable.domainName)
-                newFilename = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(sim,newVariable.domainName,timeIndex)
+                newFilename = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,newVariable,timeIndex)
                 self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain)
             finally:
                 vcellProxy2.close()
@@ -486,9 +486,9 @@ class VCellPysideApp(QtGui.QMainWindow):
             print("New current Time Point should be: "+str(self._visDataContext.getCurrentDataSetTimePoints()[newIndex]))
             print("new current Time Point is: "+str(self._visDataContext.getCurrentTimePoint()))
             self._timeLabel.setText(str(self._visDataContext.getCurrentTimePoint()))
-            dataFileName = vcellProxy2.getClient().getDataSetFileOfDomainAtTimeIndex(
+            dataFileName = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(
                 self._visDataContext.getCurrentDataSet(),
-                self._visDataContext.getCurrentVariable().domainName,
+                self._visDataContext.getCurrentVariable(),
                 self._visDataContext.getCurrentTimeIndex())
         finally:
             vcellProxy2.close()

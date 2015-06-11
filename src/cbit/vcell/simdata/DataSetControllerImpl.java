@@ -69,6 +69,7 @@ import org.vcell.util.document.VCDataJobID;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
 import org.vcell.vis.mapping.ChomboVtkFileWriter;
 
@@ -4407,7 +4408,32 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 	}
 
 
-	public VtuFileContainer getVtuMeshFiles(ChomboFiles chomboFiles, VCDataIdentifier vcdataID, double time) throws DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+		try {
+			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
+			return vtuFiles;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
+		}
+	}
+	
+	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellSimFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+		try {
+			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getEmptyVtuMeshFiles(vcellSimFiles, primaryDirectory);
+			return vtuFiles;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
+		}
+	}
+
+
+	public double[] getVtuMeshData(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 		try {
 			double[] times = getDataSetTimes(vcdataID);
 			int timeIndex = -1;
@@ -4420,32 +4446,51 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
 			}
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			VtuFileContainer vtuFiles = chomboVTKFileWriter.getVtuMeshFiles(chomboFiles, time, timeIndex);
-			return vtuFiles;
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			double[] vtuData = chomboVTKFileWriter.getVtuMeshData(chomboFiles, outputContext, primaryDirectory, time, var, timeIndex);
+			return vtuData;
 		}catch (Exception e){
 			log.exception(e);
-			throw new DataAccessException("failed to retrieve VTU files: "+e.getMessage(),e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
-	
-	public VtuFileContainer getVtuMeshFiles(VCellSimFiles vcellSimFiles, VCDataIdentifier vcdataID, double time) throws DataAccessException {
+
+
+	public double[] getVtuMeshData(VCellSimFiles vcellFiles, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 		try {
-			double[] times = getDataSetTimes(vcdataID);
-			int timeIndex = -1;
-			for (int i=0;i<times.length;i++){
-				if (times[i] == time){
-					timeIndex = i;
-				}
-			}
-			if (timeIndex<0){
-				throw new DataAccessException("data for dataset "+vcdataID+" not found at time "+time);
-			}
 			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
-			VtuFileContainer vtuFiles = cartesianMeshVTKFileWriter.getVtuMeshFiles(vcellSimFiles, time);
-			return vtuFiles;
+			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			SimDataBlock simDataBlock = getSimDataBlock(outputContext, vcdataID, var.name, time);
+			double[] vtuData = cartesianMeshVTKFileWriter.getVtuMeshData(vcellFiles, outputContext, simDataBlock, primaryDirectory, var, time);
+			return vtuData;
 		}catch (Exception e){
 			log.exception(e);
-			throw new DataAccessException("failed to retrieve VTU files: "+e.getMessage(),e);
+			throw new DataAccessException("failed to retrieve VTK files: "+e.getMessage(),e);
 		}
 	}
+
+
+	public VtuVarInfo[] getVtuVarInfos(VCellSimFiles vcellFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+		try {
+			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
+			VtuVarInfo[] vtuVarInfos = cartesianMeshVTKFileWriter.getVtuVarInfos(vcellFiles, outputContext, getVCData(vcdataID));
+			return vtuVarInfos;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
+		}
+	}
+
+
+	public VtuVarInfo[] getVtuVarInfos(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+		try {
+			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
+			VtuVarInfo[] vtuVarInfos = chomboVTKFileWriter.getVtuVarInfos(chomboFiles, outputContext, getVCData(vcdataID));
+			return vtuVarInfos;
+		}catch (Exception e){
+			log.exception(e);
+			throw new DataAccessException("failed to retrieve VTK variable list: "+e.getMessage(),e);
+		}
+	}
+
 }
