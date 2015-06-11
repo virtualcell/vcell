@@ -1,12 +1,6 @@
 package org.vcell.vis.vismesh;
 
-public interface VisPolyhedron {
-
-	int getLevel();
-
-	int getBoxNumber();
-
-	int getBoxIndex();
+public interface VisPolyhedron extends ChomboCellIndices {
 
 	int getRegionIndex();
 

@@ -17,6 +17,7 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -196,20 +197,31 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,cbit.vcell.export.
 
 
 @Override
-public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException {
 	return dataServerImpl.getDataSetMetadata(user, vcdataID);
 }
 
 
 @Override
-public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException, RemoteException {
+public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException {
 	return dataServerImpl.getDataSetTimeSeries(user, vcdataID, variableNames);
 }
 
 
 @Override
-public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws DataAccessException {
-	return dataServerImpl.getVtuMeshFiles(user, vcdataID, time);
+public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+	return dataServerImpl.getEmptyVtuMeshFiles(user, outputContext, vcdataID);
+}
+
+@Override
+public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
+	return dataServerImpl.getVtuMeshData(user, outputContext, vcdataID, var, time);
+}
+
+
+@Override
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+	return dataServerImpl.getVtuVarInfos(user, outputContext, vcdataID);
 }
 
 }

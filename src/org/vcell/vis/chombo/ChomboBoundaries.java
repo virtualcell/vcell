@@ -19,10 +19,12 @@ public class ChomboBoundaries {
 	public static class Segment {
 		private final int p1;
 		private final int p2;
+		private final int chomboIndex;
 		
-		public Segment(int p1,int p2){
+		public Segment(int chomboIndex,int p1,int p2){
 			this.p1 = p1;
 			this.p2 = p2;
+			this.chomboIndex = chomboIndex;
 		}
 
 		public int getP1() {
@@ -31,6 +33,10 @@ public class ChomboBoundaries {
 
 		public int getP2() {
 			return p2;
+		}
+		
+		public int getChomboIndex(){
+			return this.chomboIndex;
 		}
 	}
 	

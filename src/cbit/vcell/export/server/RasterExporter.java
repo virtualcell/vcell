@@ -664,7 +664,7 @@ public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext
 	
 	ChomboFiles chomboFiles = dataServerImpl.getChomboFiles(user, vcdID);
 	ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-	File[] vtkFiles = chomboVTKFileWriter.writeFiles(chomboFiles, tmpDir, new ChomboVtkFileWriter.ProgressListener() {
+	File[] vtkFiles = chomboVTKFileWriter.writeVtuExportFiles(chomboFiles, tmpDir, new ChomboVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
 			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
 		}
@@ -693,7 +693,7 @@ public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,
 	
 	VCellSimFiles vcellFiles = dataServerImpl.getVCellSimFiles(user, vcdID);
 	CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
-	File[] vtkFiles = cartesianMeshVtkFileWriter.writeFiles(vcellFiles, tmpDir, new CartesianMeshVtkFileWriter.ProgressListener() {
+	File[] vtkFiles = cartesianMeshVtkFileWriter.writeVtuExportFiles(vcellFiles, tmpDir, new CartesianMeshVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
 			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
 		}

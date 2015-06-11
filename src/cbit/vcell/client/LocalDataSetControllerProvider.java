@@ -19,10 +19,10 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.client.pyvcellproxy.SimulationDataSetRef;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
@@ -121,8 +121,21 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws DataAccessException {
-			return dataServerImpl.getVtuMeshFiles(user, vcdataID, time);
+		public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+			return dataServerImpl.getEmptyVtuMeshFiles(user, outputContext, vcdataID);
+		}
+		
+		@Override
+		public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
+			return dataServerImpl.getVtuMeshData(user, outputContext, vcdataID, var, time);
+		}
+
+		@Override
+		public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
+				VCDataIdentifier vcDataIdentifier) throws DataAccessException,
+				RemoteException {
+			// TODO Auto-generated method stub
+			return null;
 		}
 	}
 	

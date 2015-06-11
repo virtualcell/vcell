@@ -71,7 +71,8 @@ public class ChomboFileReader {
 				for (int i=0;i<numSegments;i++){
 					int v1 = (int)segmentColumns[1].getValue(i);
 					int v2 = (int)segmentColumns[2].getValue(i);
-					boundaries.addSegment(new ChomboBoundaries.Segment(v1, v2));
+					int chomboIndex = i; // THIS COULD BE WRONG - is the chomboIndex one-to-one with the line segments? ... if not should be in the HDF5 file.
+					boundaries.addSegment(new ChomboBoundaries.Segment(chomboIndex, v1, v2));
 				}
 			}else if (chomboMesh.getDimension()==3){
 				Hdf5Reader.DataColumn[] surfaceTriangleColumns = Hdf5Reader.getDataTable(meshGroup,"surface triangles");

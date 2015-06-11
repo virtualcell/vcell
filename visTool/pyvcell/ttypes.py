@@ -39,6 +39,7 @@ class VariableInfo:
    - domainName
    - variableDomainType
    - unitsLabel
+   - isMeshVar
   """
 
   thrift_spec = (
@@ -48,14 +49,16 @@ class VariableInfo:
     (3, TType.STRING, 'domainName', None, None, ), # 3
     (4, TType.I32, 'variableDomainType', None, None, ), # 4
     (5, TType.STRING, 'unitsLabel', None, None, ), # 5
+    (6, TType.BOOL, 'isMeshVar', None, None, ), # 6
   )
 
-  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None,):
+  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None, isMeshVar=None,):
     self.variableVtuName = variableVtuName
     self.variableDisplayName = variableDisplayName
     self.domainName = domainName
     self.variableDomainType = variableDomainType
     self.unitsLabel = unitsLabel
+    self.isMeshVar = isMeshVar
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -91,6 +94,11 @@ class VariableInfo:
           self.unitsLabel = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.BOOL:
+          self.isMeshVar = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -121,6 +129,10 @@ class VariableInfo:
       oprot.writeFieldBegin('unitsLabel', TType.STRING, 5)
       oprot.writeString(self.unitsLabel)
       oprot.writeFieldEnd()
+    if self.isMeshVar is not None:
+      oprot.writeFieldBegin('isMeshVar', TType.BOOL, 6)
+      oprot.writeBool(self.isMeshVar)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -135,6 +147,8 @@ class VariableInfo:
       raise TProtocol.TProtocolException(message='Required field variableDomainType is unset!')
     if self.unitsLabel is None:
       raise TProtocol.TProtocolException(message='Required field unitsLabel is unset!')
+    if self.isMeshVar is None:
+      raise TProtocol.TProtocolException(message='Required field isMeshVar is unset!')
     return
 
 
@@ -145,6 +159,7 @@ class VariableInfo:
     value = (value * 31) ^ hash(self.domainName)
     value = (value * 31) ^ hash(self.variableDomainType)
     value = (value * 31) ^ hash(self.unitsLabel)
+    value = (value * 31) ^ hash(self.isMeshVar)
     return value
 
   def __repr__(self):

@@ -24,7 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] function [arg1 [arg2...]]')
   print('')
   print('Functions:')
-  print('  FilePath getDataSetFileOfDomainAtTimeIndex(SimulationDataSetRef simulationDataSetRef, DomainName domainName, TimeIndex timeIndex)')
+  print('  FilePath getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulationDataSetRef, VariableInfo varInfo, TimeIndex timeIndex)')
   print('  SimulationDataSetRefList getSimsFromOpenModels()')
   print('  TimePoints getTimePoints(SimulationDataSetRef simulationDataSetRef)')
   print('  VariableList getVariableList(SimulationDataSetRef simulationDataSetRef)')
@@ -86,11 +86,11 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = VCellProxy.Client(protocol)
 transport.open()
 
-if cmd == 'getDataSetFileOfDomainAtTimeIndex':
+if cmd == 'getDataSetFileOfVariableAtTimeIndex':
   if len(args) != 3:
-    print('getDataSetFileOfDomainAtTimeIndex requires 3 args')
+    print('getDataSetFileOfVariableAtTimeIndex requires 3 args')
     sys.exit(1)
-  pp.pprint(client.getDataSetFileOfDomainAtTimeIndex(eval(args[0]),eval(args[1]),eval(args[2]),))
+  pp.pprint(client.getDataSetFileOfVariableAtTimeIndex(eval(args[0]),eval(args[1]),eval(args[2]),))
 
 elif cmd == 'getSimsFromOpenModels':
   if len(args) != 0:

@@ -18,6 +18,7 @@ import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.plot.PlotData;
 import cbit.vcell.client.server.DataSetControllerProvider;
@@ -368,17 +369,47 @@ private void handleRemoteException(RemoteException remoteException) {
 }
 
 
-public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcDataIdentifier, double time) throws DataAccessException {
+public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcDataIdentifier) throws DataAccessException {
 	try {
-		return getDataSetController().getVtuMeshFiles(vcDataIdentifier, time);
+		return getDataSetController().getEmptyVtuMeshFiles(outputContext, vcDataIdentifier);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			return getDataSetController().getVtuMeshFiles(vcDataIdentifier,time);
+			return getDataSetController().getEmptyVtuMeshFiles(outputContext, vcDataIdentifier);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());
 		}
 	}
 }
+
+public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcDataIdentifier, VtuVarInfo var, double time) throws DataAccessException {
+	try {
+		return getDataSetController().getVtuMeshData(outputContext, vcDataIdentifier, var, time);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getVtuMeshData(outputContext, vcDataIdentifier, var, time);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
+
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,	VCDataIdentifier vcDataIdentifier) throws DataAccessException {
+	try {
+		return getDataSetController().getVtuVarInfos(outputContext, vcDataIdentifier);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().getVtuVarInfos(outputContext, vcDataIdentifier);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 }

@@ -119,4 +119,8 @@ public class ChomboFiles {
 		return getSimID()+"_"+getJobIndex()+"_"+domainName+"_"+String.format("%06d",timeIndex);
 	}
 
+	public String getCannonicalFilePrefix(String domainName) {
+		return getSimID()+"_"+getJobIndex()+"_"+domainName;
+	}
+
 }

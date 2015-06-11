@@ -15,6 +15,7 @@ import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.plot.PlotData;
 import cbit.vcell.math.Function;
@@ -168,8 +169,12 @@ public ClientPDEDataContext getPDEDataContext() {
  * 
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public VtuFileContainer getVtuMeshFiles(double time) throws DataAccessException {
-	return getVCDataManager().getVtuMeshFiles(getVcDataIdentifier(), time);
+public VtuFileContainer getEmptyVtuMeshFiles() throws DataAccessException {
+	return getVCDataManager().getEmptyVtuMeshFiles(getOutputContext(),getVcDataIdentifier());
+}
+
+public double[] getVtuMeshData(VtuVarInfo var, double time) throws DataAccessException {
+	return getVCDataManager().getVtuMeshData(getOutputContext(),getVcDataIdentifier(), var, time);
 }
 
 public SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException {
@@ -268,6 +273,10 @@ public PDEDataManager createNewPDEDataManager(VCDataIdentifier argVCdid, ClientP
 	} else {
 		return new PDEDataManager(getOutputContext(), getVCDataManager(), argVCdid, argNewClientPDEDataContext);
 	}
+}
+
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext2) throws DataAccessException {
+	return getVCDataManager().getVtuVarInfos(getOutputContext(),getVcDataIdentifier());
 }
 
 }

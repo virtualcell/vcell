@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.chombo.ChomboMembraneVarData;
+import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
@@ -56,7 +56,6 @@ import cbit.vcell.resource.NativeLib;
 
 public class VtkGridUtils {
 	
-	public static final String VTKVAR_DOMAINSEPARATOR = "__DOMAINSEPARATOR__";
 	public static final Logger LG = Logger.getLogger(VtkGridUtils.class);
 
 	// Load VTK library and print which library was not properly loaded
@@ -71,7 +70,7 @@ public class VtkGridUtils {
 		vtkObjectBase.JAVA_OBJECT_MANAGER.getAutoGarbageCollector().SetAutoGarbageCollection(true);
 	}
 
-	public vtkUnstructuredGrid getVtkGrid(VisDomain visDomain) throws IOException{
+	public vtkUnstructuredGrid getVolumeVtkGrid(VisDomain visDomain) throws IOException{
 		
 		vtkPoints vtkpoints = new vtkPoints();
 		VisMesh vMesh = visDomain.getVisMesh();
@@ -153,7 +152,7 @@ public class VtkGridUtils {
 		    vtkDoubleArray cellScalars1 = new vtkDoubleArray();
 		    cellScalars1.SetNumberOfComponents(1);
 		    cellScalars1.SetNumberOfTuples(numCells);
-		    cellScalars1.SetName(varName.replace("::", VTKVAR_DOMAINSEPARATOR));
+		    cellScalars1.SetName(varName);
 //		    System.out.println("saving var "+varName);
 		    cellScalars1.SetJavaArray(data);
 			cellData.AddArray(cellScalars1);
@@ -382,7 +381,7 @@ public class VtkGridUtils {
 		return grid;
 	}
 
-	public vtkUnstructuredGrid constructVCellVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData) {
+	public vtkUnstructuredGrid getMembraneVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData) {
 		vtkPoints vtkpoints = new vtkPoints();
 		List<VisPoint> surfacePoints = visMesh.getSurfacePoints();
 		for (VisPoint visPoint : surfacePoints) {
@@ -426,7 +425,7 @@ public class VtkGridUtils {
 		vtkCellData cellData = vtkgrid.GetCellData();
 		for (ChomboMembraneVarData vcsol : chomboMeshData.getMembraneVarData())
 		{
-			double[] data = vcsol.getData();
+			double[] data = vcsol.getRawChomboData();
 			if (visMesh.getDimension() == 3)
 			{
 				// reconstruct data based on triangles
