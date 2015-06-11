@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="RegularSpecies" target="Species">
+
+	<introduction>
+	In BioModels, species are used to create variables (molecular species) in <link target = "Reactions"> reactions and
+ 	fluxes</link>. Species can exist in both <def target = "def_membranes">  membranes </def> and 
+ 	<def target = "def_compartments"> compartments </def> (volumes) of the cellular structures. 
+ 	Species are unique pools of molecules within a single compartment. If the same molecular component is present in multiple 
+ 	compartments, the compartment name is appended to the species name to retain a unique identifier, e.g. species_compartment.  	
+	</introduction>
+	
+	<appearance>
+	The Species Tab displays a table of the species name and the <def target = "def_structure"> structure </def> that contains it.  
+	If the species is linked to a pathway object, a link to that object will be shown in the Link column. 
+	Mousing over a link will open a tooltip box with additional information about the linked object.	
+	Double click on that link to navigate to the Pathway Diagram and highlight the object linked to the species. 
+	<para>The <link target = "PP_Species"> Species Properties pane </link> is shown in the bottom right pane
+	<imgReference target = "SpeciesTable.png"> </imgReference>	</para>
+	</appearance>
+	
+	<operations>
+	<para><bold>Edit</bold> A species name by highlighting and typing in either table or within the properties pane
+	 in the lower window.</para>
+	<para> <bold>Filter</bold> the list of species using the Search Box to enter a species name or a structure name.</para>
+	<para><bold>Delete</bold> species by highlighting and using the "Delete Selected" button below the table.</para>
+	<para>If you wish to use <link target = "PathwayOverview"> Pathways Commons</link> data, select the species and use the 
+	<link target = "PathLink"> Pathway Links</link> button.</para>
+	<para><bold>Add annotation </bold> about the species within the <link target = "PP_Species"> Species Properties pane </link> in the bottom window.</para>
+	</operations>
+	
+	<properties>
+	</properties>
+
+</page>
+
+</vcelldoc>

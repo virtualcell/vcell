@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Applications Overview" target="ApplicationOverview">
+<page title="Deterministic Rule-Based Application" target="BNGApp">
 
 	<introduction>
 	Applications allow users to define the quantitative conditions needed to define, 
