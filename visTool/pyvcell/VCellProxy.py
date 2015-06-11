@@ -18,11 +18,11 @@ except:
 
 
 class Iface:
-  def getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
+  def getDataSetFileOfVariableAtTimeIndex(self, simulationDataSetRef, varInfo, timeIndex):
     """
     Parameters:
      - simulationDataSetRef
-     - domainName
+     - varInfo
      - timeIndex
     """
     pass
@@ -66,27 +66,27 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
+  def getDataSetFileOfVariableAtTimeIndex(self, simulationDataSetRef, varInfo, timeIndex):
     """
     Parameters:
      - simulationDataSetRef
-     - domainName
+     - varInfo
      - timeIndex
     """
-    self.send_getDataSetFileOfDomainAtTimeIndex(simulationDataSetRef, domainName, timeIndex)
-    return self.recv_getDataSetFileOfDomainAtTimeIndex()
+    self.send_getDataSetFileOfVariableAtTimeIndex(simulationDataSetRef, varInfo, timeIndex)
+    return self.recv_getDataSetFileOfVariableAtTimeIndex()
 
-  def send_getDataSetFileOfDomainAtTimeIndex(self, simulationDataSetRef, domainName, timeIndex):
-    self._oprot.writeMessageBegin('getDataSetFileOfDomainAtTimeIndex', TMessageType.CALL, self._seqid)
-    args = getDataSetFileOfDomainAtTimeIndex_args()
+  def send_getDataSetFileOfVariableAtTimeIndex(self, simulationDataSetRef, varInfo, timeIndex):
+    self._oprot.writeMessageBegin('getDataSetFileOfVariableAtTimeIndex', TMessageType.CALL, self._seqid)
+    args = getDataSetFileOfVariableAtTimeIndex_args()
     args.simulationDataSetRef = simulationDataSetRef
-    args.domainName = domainName
+    args.varInfo = varInfo
     args.timeIndex = timeIndex
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getDataSetFileOfDomainAtTimeIndex(self):
+  def recv_getDataSetFileOfVariableAtTimeIndex(self):
     iprot = self._iprot
     (fname, mtype, rseqid) = iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
@@ -94,14 +94,14 @@ class Client(Iface):
       x.read(iprot)
       iprot.readMessageEnd()
       raise x
-    result = getDataSetFileOfDomainAtTimeIndex_result()
+    result = getDataSetFileOfVariableAtTimeIndex_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
     if result.dataAccessException is not None:
       raise result.dataAccessException
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDataSetFileOfDomainAtTimeIndex failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getDataSetFileOfVariableAtTimeIndex failed: unknown result");
 
   def getSimsFromOpenModels(self):
     self.send_getSimsFromOpenModels()
@@ -266,7 +266,7 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["getDataSetFileOfDomainAtTimeIndex"] = Processor.process_getDataSetFileOfDomainAtTimeIndex
+    self._processMap["getDataSetFileOfVariableAtTimeIndex"] = Processor.process_getDataSetFileOfVariableAtTimeIndex
     self._processMap["getSimsFromOpenModels"] = Processor.process_getSimsFromOpenModels
     self._processMap["getTimePoints"] = Processor.process_getTimePoints
     self._processMap["getVariableList"] = Processor.process_getVariableList
@@ -288,16 +288,16 @@ class Processor(Iface, TProcessor):
       self._processMap[name](self, seqid, iprot, oprot)
     return True
 
-  def process_getDataSetFileOfDomainAtTimeIndex(self, seqid, iprot, oprot):
-    args = getDataSetFileOfDomainAtTimeIndex_args()
+  def process_getDataSetFileOfVariableAtTimeIndex(self, seqid, iprot, oprot):
+    args = getDataSetFileOfVariableAtTimeIndex_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getDataSetFileOfDomainAtTimeIndex_result()
+    result = getDataSetFileOfVariableAtTimeIndex_result()
     try:
-      result.success = self._handler.getDataSetFileOfDomainAtTimeIndex(args.simulationDataSetRef, args.domainName, args.timeIndex)
+      result.success = self._handler.getDataSetFileOfVariableAtTimeIndex(args.simulationDataSetRef, args.varInfo, args.timeIndex)
     except ThriftDataAccessException, dataAccessException:
       result.dataAccessException = dataAccessException
-    oprot.writeMessageBegin("getDataSetFileOfDomainAtTimeIndex", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("getDataSetFileOfVariableAtTimeIndex", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -375,24 +375,24 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class getDataSetFileOfDomainAtTimeIndex_args:
+class getDataSetFileOfVariableAtTimeIndex_args:
   """
   Attributes:
    - simulationDataSetRef
-   - domainName
+   - varInfo
    - timeIndex
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'simulationDataSetRef', (SimulationDataSetRef, SimulationDataSetRef.thrift_spec), None, ), # 1
-    (2, TType.STRING, 'domainName', None, None, ), # 2
+    (2, TType.STRUCT, 'varInfo', (VariableInfo, VariableInfo.thrift_spec), None, ), # 2
     (3, TType.I32, 'timeIndex', None, None, ), # 3
   )
 
-  def __init__(self, simulationDataSetRef=None, domainName=None, timeIndex=None,):
+  def __init__(self, simulationDataSetRef=None, varInfo=None, timeIndex=None,):
     self.simulationDataSetRef = simulationDataSetRef
-    self.domainName = domainName
+    self.varInfo = varInfo
     self.timeIndex = timeIndex
 
   def read(self, iprot):
@@ -411,8 +411,9 @@ class getDataSetFileOfDomainAtTimeIndex_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.STRING:
-          self.domainName = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.varInfo = VariableInfo()
+          self.varInfo.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 3:
@@ -429,14 +430,14 @@ class getDataSetFileOfDomainAtTimeIndex_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getDataSetFileOfDomainAtTimeIndex_args')
+    oprot.writeStructBegin('getDataSetFileOfVariableAtTimeIndex_args')
     if self.simulationDataSetRef is not None:
       oprot.writeFieldBegin('simulationDataSetRef', TType.STRUCT, 1)
       self.simulationDataSetRef.write(oprot)
       oprot.writeFieldEnd()
-    if self.domainName is not None:
-      oprot.writeFieldBegin('domainName', TType.STRING, 2)
-      oprot.writeString(self.domainName)
+    if self.varInfo is not None:
+      oprot.writeFieldBegin('varInfo', TType.STRUCT, 2)
+      self.varInfo.write(oprot)
       oprot.writeFieldEnd()
     if self.timeIndex is not None:
       oprot.writeFieldBegin('timeIndex', TType.I32, 3)
@@ -452,7 +453,7 @@ class getDataSetFileOfDomainAtTimeIndex_args:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.simulationDataSetRef)
-    value = (value * 31) ^ hash(self.domainName)
+    value = (value * 31) ^ hash(self.varInfo)
     value = (value * 31) ^ hash(self.timeIndex)
     return value
 
@@ -467,7 +468,7 @@ class getDataSetFileOfDomainAtTimeIndex_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getDataSetFileOfDomainAtTimeIndex_result:
+class getDataSetFileOfVariableAtTimeIndex_result:
   """
   Attributes:
    - success
@@ -512,7 +513,7 @@ class getDataSetFileOfDomainAtTimeIndex_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getDataSetFileOfDomainAtTimeIndex_result')
+    oprot.writeStructBegin('getDataSetFileOfVariableAtTimeIndex_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)

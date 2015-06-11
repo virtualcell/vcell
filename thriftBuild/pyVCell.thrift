@@ -24,6 +24,7 @@ struct VariableInfo{
    3: required DomainName domainName;
    4: required DomainType variableDomainType;
    5: required string unitsLabel;
+   6: required bool isMeshVar;
 }
 
 typedef list<VariableInfo> VariableList
@@ -56,7 +57,7 @@ exception ThriftDataAccessException {
 
 service VCellProxy {
 
-    FilePath getDataSetFileOfDomainAtTimeIndex(1:SimulationDataSetRef simulationDataSetRef, 2:DomainName domainName, 3:TimeIndex timeIndex) throws (1:ThriftDataAccessException dataAccessException)
+    FilePath getDataSetFileOfVariableAtTimeIndex(1:SimulationDataSetRef simulationDataSetRef, 2:VariableInfo varInfo, 3:TimeIndex timeIndex) throws (1:ThriftDataAccessException dataAccessException)
     
     SimulationDataSetRefList getSimsFromOpenModels() throws (1: ThriftDataAccessException dataAccessException);
     

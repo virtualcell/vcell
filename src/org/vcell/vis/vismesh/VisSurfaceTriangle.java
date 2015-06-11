@@ -3,7 +3,7 @@ package org.vcell.vis.vismesh;
 import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
 
-public class VisSurfaceTriangle {
+public class VisSurfaceTriangle implements ChomboVisMembraneIndex {
 	
 	private int[] pointIndices;
 	private final int chomboIndex;
@@ -19,6 +19,7 @@ public class VisSurfaceTriangle {
 		return pointIndices;
 	}
 
+	@Override
 	public int getChomboIndex(){
 		return chomboIndex;
 	}

@@ -92,7 +92,7 @@ public class ChomboMeshMapping {
 	        
 	    }
 	    for (ChomboBoundaries.Segment segment : chomboBoundaries.getSegments()){
-	    	VisLine newVisLine = new VisLine(segment.getP1(),segment.getP2());
+	    	VisLine newVisLine = new VisLine(segment.getP1(),segment.getP2(),segment.getChomboIndex());
 	    	visMesh.addLine(newVisLine);
 	    }
 	
@@ -334,9 +334,16 @@ public class ChomboMeshMapping {
 			ChomboMeshData chomboMeshData = chomboDomain.getChomboMeshData();
 			ChomboMeshMapping chomboMeshMapping = new ChomboMeshMapping();
 			VisMesh visMesh = chomboMeshMapping.fromMeshData(chomboMeshData, chomboDomain);
-			VisMeshData visMeshData = new ChomboVisMeshData(chomboMeshData, visMesh);
-			VisDataset.VisDomain visDomain = new VisDataset.VisDomain(chomboDomain.getName(),visMesh,visMeshData);
-			visDataset.addDomain(visDomain);
+			
+			boolean bMembrane = false;
+			VisMeshData visMeshVolumeData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
+			VisDataset.VisDomain visVolumeDomain = new VisDataset.VisDomain(chomboDomain.getName(),visMesh,visMeshVolumeData);
+			visDataset.addDomain(visVolumeDomain);
+			
+			bMembrane = true;
+			VisMeshData visMeshMembraneData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
+			VisDataset.VisDomain visMembraneDomain = new VisDataset.VisDomain(chomboDomain.getName()+"_MEMBRANE",visMesh,visMeshMembraneData);
+			visDataset.addDomain(visMembraneDomain);
 		}
 		
 		check(visDataset);

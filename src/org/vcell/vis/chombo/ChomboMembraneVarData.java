@@ -1,5 +1,6 @@
 package org.vcell.vis.chombo;
 
+
 public class ChomboMembraneVarData {
 	
 	private final String name;
@@ -14,7 +15,8 @@ public class ChomboMembraneVarData {
 		return name;
 	}
 
-	public double[] getData() {
+	public double[] getRawChomboData() {
 		return data;
 	}
+	
 }

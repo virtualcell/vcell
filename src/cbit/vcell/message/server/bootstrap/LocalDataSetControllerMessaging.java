@@ -10,7 +10,6 @@
 
 package cbit.vcell.message.server.bootstrap;
 import java.rmi.ConnectException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -19,6 +18,7 @@ import org.vcell.util.SessionLog;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
@@ -375,11 +375,11 @@ public void close() {
 
 
 @Override
-public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time)	throws DataAccessException, RemoteException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ", time=" + time + ")");
+public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ")");
 	checkClosed();
 	try {
-		return dataServerProxy.getVtuMeshFiles(vcdataID, time);
+		return dataServerProxy.getEmptyVtuMeshFiles(outputContext, vcdataID);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;
@@ -387,6 +387,32 @@ public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time)	
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+
+@Override
+public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time)	throws DataAccessException, RemoteException {
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ", time=" + time + ")");
+	checkClosed();
+	try {
+		return dataServerProxy.getVtuMeshData(outputContext, vcdataID, var, time);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+
+@Override
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
+		VCDataIdentifier vcDataIdentifier) throws DataAccessException,
+		RemoteException {
+	// TODO Auto-generated method stub
+	return null;
 }
 
 }

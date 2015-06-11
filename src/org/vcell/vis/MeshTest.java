@@ -99,7 +99,7 @@ public class MeshTest {
 			// process each domain separately (only have to process the mesh once for each one)
 			ChomboVtkFileWriter chomboVtkFileWriter = new ChomboVtkFileWriter();
 			File destinationDirectory = new File("C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\VtkData\\");
-			chomboVtkFileWriter.writeFiles(chomboFiles, destinationDirectory, null);
+			chomboVtkFileWriter.writeVtuExportFiles(chomboFiles, destinationDirectory, null);
 
 			boolean bDisplay = true;
 			

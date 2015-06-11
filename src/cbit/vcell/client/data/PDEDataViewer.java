@@ -91,6 +91,7 @@ import org.vcell.util.gui.TitledBorderBean;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.ImageException;
@@ -149,6 +150,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataOperation;
@@ -158,7 +160,6 @@ import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.simdata.DataSetMetadata;
 import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
@@ -1940,7 +1941,22 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 				}
 
 				@Override
-				public VtuFileContainer getVtuMeshFiles(VCDataIdentifier vcdataID, double time) throws DataAccessException {
+				public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID,
+						VtuVarInfo var, double time) throws RemoteException,
+						DataAccessException {
+					// TODO Auto-generated method stub
+					return null;
+				}
+
+				@Override
+				public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
+						VCDataIdentifier vcDataIdentifier) {
 					// TODO Auto-generated method stub
 					return null;
 				}

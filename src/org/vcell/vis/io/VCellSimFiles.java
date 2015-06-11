@@ -78,6 +78,10 @@ public class VCellSimFiles {
 		throw new RuntimeException("no zip entry found for time "+time);
 	}
 
+	public String getCannonicalFilePrefix(String domainName) {
+		return simID+"_"+jobIndex+"_"+domainName;
+	}
+
 	public String getCannonicalFilePrefix(String domainName, int timeIndex) {
 		return simID+"_"+jobIndex+"_"+domainName+"_"+String.format("%06d",timeIndex);
 	}

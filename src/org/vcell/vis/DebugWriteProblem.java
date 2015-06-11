@@ -94,7 +94,7 @@ public class DebugWriteProblem {
 			
 			VisDomain visDomain = new VisDomain("domain1",visMesh,visData);
 			VtkGridUtils vtkGridUtils = new VtkGridUtils();
-			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVtkGrid(visDomain);
+			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
 			String filenameASCII = "testASCII.vtk";
 			String filenameBinary = "testBinary.vtk";
 			vtkGridUtils.writeXML(vtkgrid, filenameASCII, true);
