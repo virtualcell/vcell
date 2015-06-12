@@ -10,6 +10,7 @@
 
 package cbit.vcell.desktop;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.TreeMap;
@@ -21,6 +22,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
 
 import cbit.vcell.clientdb.DatabaseEvent;
@@ -40,6 +42,7 @@ public BioModelDbTreeModel(JTree tree) {
 	super(tree);
 	tutorialModelsNode = new BioModelNode(Tutorials, true);
 	educationModelsNode = new BioModelNode(Education, true);
+	bngRulesBasedModelsNode = new BioModelNode(BNGRulesBased, true);
 	publicModelsNode = new BioModelNode(Public_BioModels, true);
 }
 
@@ -50,89 +53,22 @@ public BioModelDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
-	if (rootNode.getChildCount() == 0) {
-		rootNode.add(myModelsNode);
-		rootNode.add(sharedModelsNode);
-		rootNode.add(publicModelsNode);
-		rootNode.add(tutorialModelsNode);
-		rootNode.add(educationModelsNode);
-	}
-	rootNode.setUserObject("Biological Models");
-	sharedModelsNode.setUserObject(SHARED_BIO_MODELS);
+	VCDocumentDbTreeModel.initBaseTree(rootNode,
+			new BioModelNode[] {myModelsNode,sharedModelsNode,publicModelsNode,tutorialModelsNode,educationModelsNode,bngRulesBasedModelsNode},
+			"Biological Models",
+			sharedModelsNode, SHARED_BIO_MODELS);
 	
 	BioModelInfo bioModelInfos[] = getDocumentManager().getBioModelInfos();
-	
-	//
-	// get list of users (owners)
-	//
-	Vector<User> userList = new Vector<User>();
 	User loginUser = getDocumentManager().getUser();
-	userList.addElement(loginUser);
-	for (int i=0;i<bioModelInfos.length;i++){
-		BioModelInfo bioModelInfo = bioModelInfos[i];
-		if (!userList.contains(bioModelInfo.getVersion().getOwner())){
-			userList.addElement(bioModelInfo.getVersion().getOwner());
-		}
+	TreeMap<String, BioModelNode> treeMap = null;
+	try{
+		treeMap = VCDocumentDbTreeModel.initOwners(bioModelInfos, loginUser, this, this.getClass().getMethod("createUserSubTree", new Class[] {User.class,BioModelInfo[].class}));
+	}catch(Exception e){
+		e.printStackTrace();
+		treeMap = new TreeMap<String,BioModelNode>();
+		treeMap.put(loginUser.getName(), new BioModelNode("Error:"+e.getMessage()));
 	}
-	//
-	// for each user
-	//
-	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>(new Comparator<String>() {
-
-		public int compare(String o1, String o2) {
-			return o1.compareToIgnoreCase(o2);
-		}		
-	});
-	for (int ownerIndex=0;ownerIndex<userList.size();ownerIndex++){
-		User owner = (User)userList.elementAt(ownerIndex);
-		BioModelNode ownerNode = createUserSubTree(owner, bioModelInfos);
-		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
-			treeMap.put(owner.getName(), ownerNode);
-		}
-	}
-	//
-	// create final tree
-	//
-	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
-	myModelsNode.setUserObject(loginUser);
-	myModelsNode.removeAllChildren();
-	for (int c = 0; c < ownerNode.getChildCount();) {
-		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
-		myModelsNode.add(childNode);
-	}	
-	sharedModelsNode.removeAllChildren();
-	tutorialModelsNode.removeAllChildren();
-	educationModelsNode.removeAllChildren();
-	publicModelsNode.removeAllChildren();
-	for (String username : treeMap.keySet()) {
-		BioModelNode userNode = treeMap.get(username);
-		BioModelNode parentNode = sharedModelsNode;
-		boolean bSpecificUser = true;
-		if (username.equals(USER_tutorial)) {
-			parentNode = tutorialModelsNode;
-		} else if (username.equals(USER_Education)) {
-			parentNode = educationModelsNode;
-		} else {
-			bSpecificUser = false;
-		}
-		for (int c = 0; c < userNode.getChildCount();) {
-			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
-			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
-			if (!bSpecificUser) {
-				parentNode = sharedModelsNode;
-				BigDecimal groupid = GroupAccess.GROUPACCESS_NONE;
-				Version version = vcdDocumentInfoNode.getVCDocumentInfo().getVersion();
-				if (version != null && version.getGroupAccess() != null) {
-					groupid = version.getGroupAccess().getGroupid();
-				}
-				if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
-					parentNode = publicModelsNode;
-				}
-			}
-			// when added to other node, this childNode was removed from userNode
-			parentNode.add(childNode);
-		}
-	}
+	initFinalTree(this, treeMap, loginUser);
 }
 
 /**
@@ -141,7 +77,7 @@ protected void createBaseTree() throws DataAccessException {
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createUserSubTree(User user, BioModelInfo bioModelInfos[]) throws DataAccessException {
+public BioModelNode createUserSubTree(User user, BioModelInfo bioModelInfos[]) throws DataAccessException {
 	//
 	// for each user
 	//

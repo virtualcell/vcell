@@ -44,7 +44,9 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 				|| VCDocumentDbTreeModel.SHARED_GEOMETRIES.equals(userObject)
 				|| VCDocumentDbTreeModel.Public_BioModels.equals(userObject)
 				|| VCDocumentDbTreeModel.Public_MathModels.equals(userObject)
+				|| VCDocumentDbTreeModel.PUBLIC_GEOMETRIES.equals(userObject)
 				|| VCDocumentDbTreeModel.Education.equals(userObject)
+				|| VCDocumentDbTreeModel.BNGRulesBased.equals(userObject)
 				|| VCDocumentDbTreeModel.Tutorials.equals(userObject)
 				) {
 			setText(getText() + " (" + node.getChildCount() + ")");
