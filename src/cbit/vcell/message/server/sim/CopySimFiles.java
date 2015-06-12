@@ -1,7 +1,9 @@
 package cbit.vcell.message.server.sim;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitOption;
@@ -12,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.log4j.Level;
@@ -29,40 +32,49 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	private final String jobName;
 	private final String fromDirectory;
 	private final String toDirectory;
+	private final String logName;
 	/**
 	 * transient to avoid capture by PortableCommand
 	 */
 	private transient FileSystem fs = null; 
-	/**
-	 * transient to avoid capture by PortableCommand
-	 */
 	private transient Exception exc = null; 
+	private transient PrintWriter pw = null;
+	
+	
 	private static Logger lg = Logger.getLogger(CopySimFiles.class);
 
-	public CopySimFiles(String jobName, String fromDirectory, String toDirectory) {
+	public CopySimFiles(String jobName, String fromDirectory, String toDirectory, String logName) {
 		this.jobName = jobName;
 		this.fromDirectory = fromDirectory;
 		this.toDirectory = toDirectory;
+		this.logName = logName;
 	}
 
 	@Override
 	public int execute() {
 		try {
-			fs = FileSystems.getDefault( );
-			Path from = fs.getPath(fromDirectory);
-			File toDir = new File(toDirectory);
-			if (!toDir.exists()) {
-				toDir.mkdir( );
-				if (lg.isDebugEnabled()) {
-					lg.debug("copying " + from + " to " + toDir + " (created)");
+			pw = new PrintWriter(new FileWriter(logName,true)); //append to log, if it exists already
+			try {
+				fs = FileSystems.getDefault( );
+				Path from = fs.getPath(fromDirectory);
+				File toDir = new File(toDirectory);
+				if (!toDir.exists()) {
+					toDir.mkdir( );
+					if (lg.isDebugEnabled()) {
+						lg.debug("copying " + from + " to " + toDir + " (created)");
+					}
 				}
+				else if(lg.isDebugEnabled()) {
+					lg.debug("copying " + from + " to " + toDir + " (exists)");
+				}
+				Set<FileVisitOption> empty = Collections.emptySet();
+				Files.walkFileTree(from, empty, 1, this);
+				return 0;
 			}
-			else if(lg.isDebugEnabled()) {
-				lg.debug("copying " + from + " to " + toDir + " (exists)");
+			finally {
+				pw.close();
+				pw = null;
 			}
-			Set<FileVisitOption> empty = Collections.emptySet();
-			Files.walkFileTree(from, empty, 1, this);
-			return 0;
 		} catch (IOException e) {
 			exc = e;
 			return 1;
@@ -98,15 +110,16 @@ public class CopySimFiles implements PortableCommand, FileVisitor<Path> {
 	 */
 	@Override
 	public FileVisitResult visitFile(Path p, BasicFileAttributes attr) throws IOException {
+		Objects.requireNonNull(pw);
 		String filename = p.getFileName().toString();
 		if (lg.isEnabledFor(Level.TRACE)) {
 			lg.trace("evaluating " + filename);
 		}
 		if (filename.startsWith(jobName)) {
 			Path destination = fs.getPath(toDirectory, filename);
-			if (lg.isDebugEnabled()) {
-				lg.debug("Copying "  + p + " to " + destination);
-			}
+			String report = "CopySimFiles copying "  + p + " to " + destination;
+			pw.println(report);
+			lg.debug(report);
 			Files.copy(p, destination, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
 		}
 		return FileVisitResult.CONTINUE; 
