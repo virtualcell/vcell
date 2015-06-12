@@ -187,14 +187,14 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	private JButton getRefreshMathButton() {
 		if (refreshMathButton == null) {
-			refreshMathButton = new javax.swing.JButton(" Test Run BioNetGen ");
+			refreshMathButton = new javax.swing.JButton(" Create Reaction Network ");
 			refreshMathButton.setName("RefreshMathButton");
 		}
 		return refreshMathButton;
 	}
 	private JButton getCreateModelButton() {
 		if (createModelButton == null) {
-			createModelButton = new javax.swing.JButton(" Create Model from Network ");
+			createModelButton = new javax.swing.JButton(" Create new VCell BioModel from Network ");
 			createModelButton.setName("CreateModelButton");
 		}
 		return createModelButton;
