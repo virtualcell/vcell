@@ -66,6 +66,8 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -289,7 +291,11 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		
 		if (rd.isCopyNeeded()) {
 			postProcessingCommands = new ArrayList<PortableCommand>(); 
-			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), rd.runDirectory,rd.finalDataDirectory); 
+			KeyValue sk = simTask.getSimKey();
+			SimulationJob sj = simTask.getSimulationJob();
+			int ji = sj.getJobIndex(); 
+			String logName = rd.finalDataDirectory + '/' + SimulationData.createCanonicalSimLogFileName(sk, ji, false); 
+			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), rd.runDirectory,rd.finalDataDirectory, logName); 
 			postProcessingCommands.add(csf);
 		}
 		
