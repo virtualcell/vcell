@@ -20,6 +20,7 @@ import java.awt.Point;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyVetoException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,7 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -92,10 +94,16 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				System.out.println(selectedRows[0] + ": " + inputString);
 //				ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputString, bioModel);
 				
-				Model model = new Model("MyTempModel");
+				Model tempModel = null;
+				try {
+					tempModel = new Model("MyTempModel");
+					tempModel.addFeature("c0");
+				} catch (ModelException | PropertyVetoException e1) {
+					e1.printStackTrace();
+				}
 				if(owner != null && owner.getSimulationContext() != null) {
 					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-					model.getRbmModelContainer().setMolecularTypeList(mtList);
+					tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
 				} else {
 					return;		// something is wrong, we just show nothing rather than crash
 				}
@@ -112,7 +120,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				if (left.length() == 0 && right.length() == 0) {
 					return;
 				}
-				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule("aaa", model.getStructures()[0], bReversible);
+				ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
 				
 				String regex = "[^!]\\+";
 				String[] patterns = left.split(regex);
@@ -120,7 +128,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					try {
 					BNGLParser parser = new BNGLParser(new StringReader(sp));
 					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
-					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
+					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
 					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 					System.out.println(speciesPattern.toString());
 					reactionRule.addReactant(new ReactantPattern(speciesPattern, reactionRule.getStructure()));
@@ -135,7 +143,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					try {
 					BNGLParser parser = new BNGLParser(new StringReader(sp));
 					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
-					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, false);
+					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
 					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
 					System.out.println(speciesPattern.toString());
 					reactionRule.addProduct(new ProductPattern(speciesPattern, reactionRule.getStructure()));
