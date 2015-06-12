@@ -23,6 +23,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.model.Model.RbmModelContainer;
+
 public class MolecularTypeSmallShape {
 	
 	private static final int baseWidth = 11;
@@ -189,10 +191,24 @@ public class MolecularTypeSmallShape {
 			g.setColor(colorOld);
 			return;
 		} else {							// molecular type, species pattern, observable
-			primaryColor = Color.blue.darker().darker();
+			if(mt == null || mt.getModel() == null) {
+				primaryColor = Color.blue.darker().darker();
+			} else {
+				RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
+				List<MolecularType> mtList = rbmmc.getMolecularTypeList();
+				int index = mtList.indexOf(mt);
+				index = index%6;
+				switch(index) {
+				case 0:  primaryColor = Color.red.darker().darker(); break;
+				case 1:  primaryColor = Color.blue.darker().darker(); break;
+				case 2:  primaryColor = Color.pink.darker().darker(); break;
+				case 3:  primaryColor = Color.cyan.darker().darker(); break;
+				case 4:  primaryColor = Color.orange.darker().darker(); break;
+				case 5:  primaryColor = Color.magenta.darker().darker(); break;
+				default: primaryColor = Color.blue.darker().darker(); break;
+				}
+			}
 		}
-		
-		
 		
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + finalHeight/2, Color.WHITE, true);
 		g2.setPaint(p);

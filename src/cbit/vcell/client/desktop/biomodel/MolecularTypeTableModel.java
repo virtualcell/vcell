@@ -102,7 +102,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 					return;
 				}
 				if (ourMt == null) {	// new molecular type in empty row
-					getModel().getRbmModelContainer().addMolecularType(new MolecularType(stringValue), true);
+					getModel().getRbmModelContainer().addMolecularType(new MolecularType(stringValue, getModel()), true);
 				} else {						// rename it
 					ourMt.setName(stringValue);
 				}

@@ -1301,13 +1301,17 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			List<MolecularType> oldValue = molecularTypeList;
 			if (oldValue != null) {
 				for (MolecularType mt : oldValue) {
-					mt.removeVetoableChangeListener(this);
+					mt.removePropertyChangeListener(Model.this);
+					mt.removeVetoableChangeListener(Model.this);
+					mt.setModel(null);
 				}
 			}
 			this.molecularTypeList = newValue;
 			if (newValue != null) {
 				for (MolecularType mt : newValue) {
-					mt.addVetoableChangeListener(this);
+					mt.addPropertyChangeListener(Model.this);
+					mt.addVetoableChangeListener(Model.this);
+					mt.setModel(Model.this);
 				}
 			}
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST, oldValue, newValue);
@@ -1339,7 +1343,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}	
 				count++;
 			}
-			return new MolecularType(name);
+			return new MolecularType(name, Model.this);
 		}
 
 		public RbmObservable createObservable(RbmObservable.ObservableType type) {
@@ -3115,9 +3119,14 @@ public void refreshDependencies() {
 		observable.addVetoableChangeListener(this);
 		observable.setModel(this);
 	}
-	
+	for (MolecularType molType : getRbmModelContainer().getMolecularTypeList()){
+		molType.removePropertyChangeListener(this);
+		molType.removeVetoableChangeListener(this);
+		molType.addPropertyChangeListener(this);
+		molType.addVetoableChangeListener(this);
+		molType.setModel(this);
+	}
 }
-
 
 /**
  * Insert the method's description here.

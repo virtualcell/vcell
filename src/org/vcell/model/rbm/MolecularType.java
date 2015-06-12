@@ -17,6 +17,8 @@ import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
+import cbit.vcell.model.Model;
+
 @SuppressWarnings("serial")
 public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
 	IssueSource, Identifiable, Displayable
@@ -25,9 +27,11 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	
 	private String name;	
 	private List<MolecularComponent> componentList = new ArrayList<MolecularComponent>();
+	private transient Model model = null;
 	
-	public MolecularType(String name) {
+	public MolecularType(String name, Model model) {
 		this.name = name;
+		this.model = model;
 	}
 	
 	public void addMolecularComponent(MolecularComponent molecularComponent) {
@@ -37,7 +41,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			setComponentList(newValue);
 		}
 	}
-	
 	public MolecularComponent createMolecularComponent() {
 		int count=0;
 		String name = null;
@@ -50,7 +53,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		}
 		return new MolecularComponent(name);
 	}
-	
 	public void removeMolecularComponent(MolecularComponent molecularComponent) {
 		if (componentList.contains(molecularComponent)) {
 			List<MolecularComponent> newValue = new ArrayList<MolecularComponent>(componentList);
@@ -58,7 +60,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			setComponentList(newValue);
 		}
 	}
-
 	public MolecularComponent getMolecularComponent(String componentName) {
 		for (MolecularComponent mc : componentList)  {
 			if (mc.getName().equals(componentName)) {
@@ -67,8 +68,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		}
 		return null;
 	}
-	
-		public MolecularComponent[] getMolecularComponents(String componentName) {
+	public MolecularComponent[] getMolecularComponents(String componentName) {
 		ArrayList<MolecularComponent> molecularComponents = new ArrayList<MolecularComponent>();
 		for (MolecularComponent mc : componentList)  {
 			if (mc.getName().equals(componentName)) {
@@ -81,7 +81,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public final String getName() {
 		return name;
 	}
-
 	public void setName(String newValue) throws PropertyVetoException {
 		String oldValue = name;
 		fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, newValue);
@@ -92,7 +91,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public final List<MolecularComponent> getComponentList() {
 		return componentList;
 	}
-
 	public final void setComponentList(List<MolecularComponent> newValue) {
 		List<MolecularComponent> oldValue = componentList;
 		if (oldValue != null) {
@@ -109,6 +107,13 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			}
 		}
 		firePropertyChange(PROPERTY_NAME_COMPONENT_LIST, oldValue, newValue);
+	}
+
+	public Model getModel() {
+		return model;
+	}
+	public void setModel(Model model){
+		this.model = model;
 	}
 
 	public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
