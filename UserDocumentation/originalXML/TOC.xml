@@ -38,15 +38,15 @@
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
-    	<tocitem target="RuleBasedOverview" text="Rule-Based Features in VCell 5.4">
+    	<tocitem target="RuleBasedOverview2" text="Rule-Based Features in VCell 5.4">
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 
        		<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>		
-    		<tocitem target="Molecules" text="Molecules"/>
-    		<tocitem target="Observables" text="Observables"/>
-     		<tocitem target="ReactionRules" text="Reaction Rules"/>	
-	    	<tocitem target="PP_ReactionRules" text="Reaction Rules Properties Pane"/>
-    		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
-    		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
+    		<tocitem target="Molecules2" text="Molecules"/>
+    		<tocitem target="Observables2" text="Observables"/>
+     		<tocitem target="ReactionRules2" text="Reaction Rules"/>	
+	    	<tocitem target="PP_ReactionRules2" text="Reaction Rules Properties Pane"/>
+    		<tocitem target="PP_ReactionRulesEditor2" text="Reaction Rules Editor Pane"/>
+    		<tocitem target="PP_ReactionRulesKinetics2" text="Reaction Rules Kinetics Pane"/>
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
     		<tocitem target="NFSimApp" text="Network-Free Application"/>
     		<tocitem target="BNGApp" text="Determimistic Rule-Based Application"/>    		
