@@ -10,15 +10,25 @@
 
 package cbit.vcell.desktop;
 
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import javax.swing.JTree;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
@@ -33,7 +43,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTreeModel implements DatabaseListener {
+public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements DatabaseListener {
 	protected boolean fieldLatestOnly = false;
 	private transient java.beans.PropertyChangeSupport propertyChange;
 	protected DocumentManager fieldDocumentManager = null;
@@ -45,13 +55,16 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 	
 	public static final String USER_tutorial = "tutorial";
 	public static final String USER_Education = "Education";
+	public static final String USER_BioNetGen = "BioNetGen";
 	
 	protected BioModelNode tutorialModelsNode = null;
 	protected BioModelNode educationModelsNode = null;
+	protected BioModelNode bngRulesBasedModelsNode = null;
 	protected BioModelNode publicModelsNode = null;
 	
 	public static final String Tutorials = "Tutorials";
 	public static final String Education = "Education";
+	public static final String BNGRulesBased = "Tutorial VCell 6.0 (Rule-based)";
 	
 	public static final String SHARED_BIO_MODELS = "Shared BioModels";
 	public static final String Public_BioModels = "Public BioModels";
@@ -60,6 +73,7 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 	public static final String Public_MathModels = "Public MathModels";
 	
 	public static final String SHARED_GEOMETRIES = "Shared Geometries";
+	public static final String PUBLIC_GEOMETRIES = "Public Geometries";
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -67,7 +81,7 @@ public abstract class VCDocumentDbTreeModel extends javax.swing.tree.DefaultTree
 public VCDocumentDbTreeModel(JTree tree) {
 	super(new BioModelNode("not connected", true),true);
 	ownerTree = tree;
-	rootNode = (BioModelNode)root;
+	rootNode = (BioModelNode)((DefaultTreeModel)this).getRoot();
 	myModelsNode = new BioModelNode("My Models", true);
 	sharedModelsNode = new BioModelNode("Shared Models", true);
 }
@@ -85,6 +99,106 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  */
 protected abstract void createBaseTree() throws DataAccessException;
 
+protected synchronized static void initBaseTree(BioModelNode rootNode,BioModelNode[] mainChildNodes,Object rootNodeUserObject,BioModelNode sharedModelsNode,Object sharedModelsNodeUserObject){
+	rootNode.removeAllChildren();
+	for(BioModelNode mainChildNode:mainChildNodes){
+		rootNode.add(mainChildNode);
+	}
+	rootNode.setUserObject(rootNodeUserObject);
+	sharedModelsNode.setUserObject(sharedModelsNodeUserObject);
+}
+protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumentDbTreeModel,TreeMap<String, BioModelNode> treeMap,User loginUser){
+	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
+	vcDocumentDbTreeModel.myModelsNode.setUserObject(loginUser);
+	vcDocumentDbTreeModel.myModelsNode.removeAllChildren();
+	for (int c = 0; c < ownerNode.getChildCount();) {
+		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
+		vcDocumentDbTreeModel.myModelsNode.add(childNode);
+	}	
+	vcDocumentDbTreeModel.sharedModelsNode.removeAllChildren();
+	vcDocumentDbTreeModel.publicModelsNode.removeAllChildren();
+	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
+	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
+	boolean bBNGRules = vcDocumentDbTreeModel.bngRulesBasedModelsNode != null;
+	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
+	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
+	if(bBNGRules){vcDocumentDbTreeModel.bngRulesBasedModelsNode.removeAllChildren();}
+	for (String username : treeMap.keySet()) {
+		BioModelNode userNode = treeMap.get(username);
+		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;
+		boolean bSpecificUser = true;
+		if (username.equals(USER_tutorial) && bTutorial) {
+			parentNode = vcDocumentDbTreeModel.tutorialModelsNode;
+		} else if (username.equals(USER_Education) && bEducation) {
+			parentNode = vcDocumentDbTreeModel.educationModelsNode;
+		} else if (username.equals(USER_BioNetGen) && bBNGRules) {
+			parentNode = vcDocumentDbTreeModel.bngRulesBasedModelsNode;
+		} else {
+			bSpecificUser = false;
+		}
+		for (int c = 0; c < userNode.getChildCount();) {
+			BioModelNode childNode = (BioModelNode) userNode.getChildAt(c);
+			VCDocumentInfoNode vcdDocumentInfoNode = (VCDocumentInfoNode) childNode.getUserObject();
+			if (!bSpecificUser) {
+				parentNode = vcDocumentDbTreeModel.sharedModelsNode;
+				BigDecimal groupid = GroupAccess.GROUPACCESS_NONE;
+				Version version = vcdDocumentInfoNode.getVCDocumentInfo().getVersion();
+				if (version != null && version.getGroupAccess() != null) {
+					groupid = version.getGroupAccess().getGroupid();
+				}
+				if (groupid.equals(GroupAccess.GROUPACCESS_ALL)) {
+					parentNode = vcDocumentDbTreeModel.publicModelsNode;
+				}
+			}
+			// when added to other node, this childNode was removed from userNode
+			parentNode.add(childNode);
+		}
+	}
+
+}
+protected synchronized static TreeMap<String, BioModelNode> initOwners(VCDocumentInfo[] vcDocumentInfos,User loginUser,VCDocumentDbTreeModel subTreeParent,Method subTreeMethod){
+	//
+	// get list of users (owners)
+	//
+	Vector<User> userList = new Vector<User>();
+	userList.addElement(loginUser);
+	for (int i=0;i<vcDocumentInfos.length;i++){
+		VCDocumentInfo vcDocumentInfo = vcDocumentInfos[i];
+		if (!userList.contains(vcDocumentInfo.getVersion().getOwner())){
+			userList.addElement(vcDocumentInfo.getVersion().getOwner());
+		}
+	}
+	//
+	// for each user
+	//
+	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>(new Comparator<String>() {
+
+		public int compare(String o1, String o2) {
+			return o1.compareToIgnoreCase(o2);
+		}		
+	});
+	for (int ownerIndex=0;ownerIndex<userList.size();ownerIndex++){
+		User owner = (User)userList.elementAt(ownerIndex);
+		BioModelNode ownerNode = null;
+		try{
+			if(vcDocumentInfos instanceof BioModelInfo[]){
+				ownerNode = (BioModelNode)subTreeMethod.invoke(subTreeParent, new Object[] {owner,(BioModelInfo[])vcDocumentInfos});
+			}else if(vcDocumentInfos instanceof MathModelInfo[]){
+				ownerNode = (BioModelNode)subTreeMethod.invoke(subTreeParent, new Object[] {owner,(MathModelInfo[])vcDocumentInfos});
+			}else if(vcDocumentInfos instanceof GeometryInfo[]){
+				ownerNode = (BioModelNode)subTreeMethod.invoke(subTreeParent, new Object[] {owner,(GeometryInfo[])vcDocumentInfos});
+			}else{
+				throw new Exception("Unimplemented VCDocumentInfo type="+vcDocumentInfos.getClass().getName());
+			}
+		}catch(Exception e){
+			ownerNode = new BioModelNode("Error"+e.getMessage());
+		}
+		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
+			treeMap.put(owner.getName(), ownerNode);
+		}
+	}
+	return treeMap;
+}
 protected boolean meetSearchCriteria(VCDocumentInfo vcDocumentInfo) {
 	if (searchCriterionList == null) {
 		return true;		
