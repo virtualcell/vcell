@@ -17,6 +17,7 @@ import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.clientdb.DatabaseEvent;
@@ -35,6 +36,7 @@ public class GeometryDbTreeModel extends VCDocumentDbTreeModel {
  */
 public GeometryDbTreeModel(JTree tree) {
 	super(tree);
+	publicModelsNode = new BioModelNode(PUBLIC_GEOMETRIES, true);	
 }
 
 
@@ -45,59 +47,20 @@ public GeometryDbTreeModel(JTree tree) {
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
 protected void createBaseTree() throws DataAccessException {
-	if (rootNode.getChildCount() == 0) {
-		rootNode.add(myModelsNode);
-		rootNode.add(sharedModelsNode);
-	}
-	rootNode.setUserObject("Geometries");
-	sharedModelsNode.setUserObject(SHARED_GEOMETRIES);
+	VCDocumentDbTreeModel.initBaseTree(rootNode, new BioModelNode[] {myModelsNode,sharedModelsNode,publicModelsNode}, "Geometries", sharedModelsNode, SHARED_GEOMETRIES);
 	
 	GeometryInfo geometryInfos[] = getDocumentManager().getGeometryInfos();
-	//
-	// get list of users (owners)
-	//
-	Vector<User> ownerList = new Vector<User>();
 	User loginUser = getDocumentManager().getUser();
-	ownerList.addElement(loginUser);
-	for (int i=0;i<geometryInfos.length;i++){
-		GeometryInfo geometryInfo = geometryInfos[i];
-		if (!ownerList.contains(geometryInfo.getVersion().getOwner())){
-			ownerList.addElement(geometryInfo.getVersion().getOwner());
-		}
+	TreeMap<String, BioModelNode> treeMap = null;
+	try{
+		treeMap = VCDocumentDbTreeModel.initOwners(geometryInfos, loginUser, this, this.getClass().getMethod("createOwnerSubTree", new Class[] {User.class,GeometryInfo[].class}));
+	}catch(Exception e){
+		e.printStackTrace();
+		treeMap = new TreeMap<String,BioModelNode>();
+		treeMap.put(loginUser.getName(), new BioModelNode("Error:"+e.getMessage()));
 	}
-	//
-	// for each user
-	//
-	TreeMap<String, BioModelNode> treeMap = new TreeMap<String, BioModelNode>(new Comparator<String>() {
-
-		public int compare(String o1, String o2) {
-			return o1.compareToIgnoreCase(o2);
-		}		
-	});
-	for (int ownerIndex=0;ownerIndex<ownerList.size();ownerIndex++){
-		User owner = (User)ownerList.elementAt(ownerIndex);
-		BioModelNode ownerNode = createOwnerSubTree(owner, geometryInfos);
-		if(owner.equals(loginUser) || ownerNode.getChildCount() > 0){
-			treeMap.put(owner.getName(),ownerNode);
-		}
-	}
-	//
-	// create final tree
-	//
-	BioModelNode ownerNode = (BioModelNode)treeMap.remove(loginUser.getName());
-	myModelsNode.removeAllChildren();
-	myModelsNode.setUserObject(loginUser);
-	for (int c = 0; c < ownerNode.getChildCount();) {
-		BioModelNode childNode = (BioModelNode) ownerNode.getChildAt(c);
-		myModelsNode.add(childNode);
-	}
-	sharedModelsNode.removeAllChildren();
-	for (BioModelNode userNode : treeMap.values()) {
-		for (int c = 0; c < userNode.getChildCount();) {
-			// when added to otherUserNode, this childNode was removed from userNode
-			sharedModelsNode.add((MutableTreeNode) userNode.getChildAt(c));
-		}
-	}	
+	
+	initFinalTree(this, treeMap, loginUser);
 }
 
 /**
@@ -106,7 +69,7 @@ protected void createBaseTree() throws DataAccessException {
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createOwnerSubTree(User owner, GeometryInfo geometryInfos[]) throws DataAccessException {
+public BioModelNode createOwnerSubTree(User owner, GeometryInfo geometryInfos[]) throws DataAccessException {
 	//
 	// for each user
 	//
