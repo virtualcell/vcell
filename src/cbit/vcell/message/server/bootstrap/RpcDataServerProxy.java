@@ -259,11 +259,8 @@ public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcd
 
 
 @Override
-public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
-		VCDataIdentifier vcDataIdentifier) throws DataAccessException,
-		RemoteException {
-	// TODO Auto-generated method stub
-	return null;
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+	return (VtuVarInfo[])rpc("getVtuVarInfos", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID});
 }
 
 }
