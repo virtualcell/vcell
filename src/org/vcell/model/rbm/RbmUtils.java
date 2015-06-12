@@ -348,7 +348,7 @@ public class RbmUtils {
 		public Object visit(ASTMolecularTypePattern node, Object data) {
 			String name = node.getName();
 			if (data == null || data instanceof RbmModelContainer) {
-				MolecularType molecularType = new MolecularType(name);
+				MolecularType molecularType = new MolecularType(name, model);
 				node.childrenAccept(this, molecularType);
 				if (data != null) {
 					try {
@@ -368,7 +368,7 @@ public class RbmUtils {
 					} else {
 						System.out.println(MolecularType.typeName + " '" + name + "' doesn't exist! Creating it.");
 					}
-					molecularType = new MolecularType(name);
+					molecularType = new MolecularType(name, model);
 					try {
 						model.getRbmModelContainer().addMolecularType(molecularType, false);
 					} catch (ModelException e) {

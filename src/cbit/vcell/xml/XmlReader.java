@@ -4138,7 +4138,7 @@ private MolecularType getRbmMolecularType(Element e, Model newModel) {
 		System.out.println("XMLReader: getRBMMolecularType: name is missing.");
 		return null;
 	}
-	MolecularType mt = new MolecularType(s);
+	MolecularType mt = new MolecularType(s, newModel);
 	List<Element> children = e.getChildren(XMLTags.RbmMolecularComponentTag, vcNamespace);
 	for (Element element : children) {
 		MolecularComponent mc = getRbmMolecularComponent(element, newModel);
