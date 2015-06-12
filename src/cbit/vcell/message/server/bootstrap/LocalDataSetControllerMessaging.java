@@ -376,7 +376,7 @@ public void close() {
 
 @Override
 public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ")");
+	sessionLog.print("LocalDataSetControllerMessaging.getEmptyVtuMeshFiles(vcdataID=" + vcdataID + ")");
 	checkClosed();
 	try {
 		return dataServerProxy.getEmptyVtuMeshFiles(outputContext, vcdataID);
@@ -392,7 +392,7 @@ public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCData
 
 @Override
 public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time)	throws DataAccessException, RemoteException {
-	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ", time=" + time + ")");
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshData(vcdataID=" + vcdataID + ", var=" + var.name + ", time=" + time + ")");
 	checkClosed();
 	try {
 		return dataServerProxy.getVtuMeshData(outputContext, vcdataID, var, time);
@@ -408,11 +408,18 @@ public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcd
 
 
 @Override
-public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext,
-		VCDataIdentifier vcDataIdentifier) throws DataAccessException,
-		RemoteException {
-	// TODO Auto-generated method stub
-	return null;
+public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException, RemoteException {
+	sessionLog.print("LocalDataSetControllerMessaging.getVtuMeshFiles(vcdataID=" + vcdataID + ")");
+	checkClosed();
+	try {
+		return dataServerProxy.getVtuVarInfos(outputContext, vcdataID);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
 }
 
 }
