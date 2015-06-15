@@ -31,11 +31,13 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -98,41 +100,54 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 				}
 			}
 		}
-
 		public void actionPerformed(ActionEvent e) {
-
 		}
-
 		public void mouseClicked(MouseEvent e) {			
 		}
-
 		public void mousePressed(MouseEvent e) {
 		}
 		public void mouseReleased(MouseEvent e) {
 		}
 		public void mouseEntered(MouseEvent e) {
 		}
-
 		public void mouseExited(MouseEvent e) {
 		}
-
 		public void valueChanged(TreeSelectionEvent e) {
 		}
 	}
-	
-
-
-	
+	private ChangeListener changeListener = new ChangeListener() {
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			final String prologue = "<html><b>";
+			final String epilogue = "</html></b>";
+			JTabbedPane sourceTabbedPane = (JTabbedPane) e.getSource();	// it's the ReactionRulePropertiesPanel itself
+			int numTabs = sourceTabbedPane.getTabCount();
+			for(int i = 0; i < numTabs; i++) {
+				String curTitle = sourceTabbedPane.getTitleAt(i);
+				if(curTitle.startsWith(prologue)) {
+					curTitle = curTitle.substring(prologue.length());
+					curTitle = curTitle.substring(0, curTitle.indexOf(epilogue));
+					setTitleAt(i, curTitle);
+				}
+			}
+			int index = sourceTabbedPane.getSelectedIndex();
+			System.out.println("Tab changed to: " + sourceTabbedPane.getTitleAt(index));
+			String selectedTitle = sourceTabbedPane.getTitleAt(index);	// we know it's clean of prologue or epilogue
+			selectedTitle = prologue + selectedTitle + epilogue;
+			setTitleAt(index, selectedTitle);
+		}
+	};
+		
 	public ReactionRulePropertiesPanel() {
 		super();
-		
 		kpp = new ReactionRuleKineticsPropertiesPanel();
 		epp = new ReactionRuleEditorPropertiesPanel();
 
 		setTabPlacement(TOP);
-		addTab("Kinetics", kpp);
+		addTab("Kinetics", kpp);		// TODO: add the icon here
 		addTab("Editor", epp);
 		
+		addChangeListener(changeListener);
 		setSelectedComponent(epp);
 	}
 	
