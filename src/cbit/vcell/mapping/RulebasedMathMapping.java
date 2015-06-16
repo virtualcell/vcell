@@ -568,7 +568,11 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	//
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
-	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+	try {
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+	} catch (Exception e1){
+		throw new MathException("Problem generating math in application "+getSimulationContext().getName()+": "+e1.getMessage(),e1);
+	}
 	
 	
 	//
@@ -582,7 +586,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			throw new MappingException("failure setting geometry "+e.getMessage());
 		}
 	}else{
-		throw new MappingException("geometry must be defined");
+		throw new MappingException("Geometry must be defined in Application "+getSimulationContext().getName());
 	}
 
 	//

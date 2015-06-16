@@ -47,23 +47,27 @@ public class RulebasedTransformer implements SimContextTransformer {
 			transformedSimContext.refreshDependencies();
 			transformedSimContext.compareEqual(originalSimContext);
 		} catch (ClassNotFoundException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			throw new RuntimeException("unexpected exception: "+e.getMessage());
+			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
 		}
 		transformedSimContext.getModel().refreshDependencies();
 		transformedSimContext.refreshDependencies1(false);
 
 		ArrayList<ModelEntityMapping> entityMappings = new ArrayList<ModelEntityMapping>();
 		
-		transform(originalSimContext,transformedSimContext,entityMappings);
+		try {
+			transform(originalSimContext,transformedSimContext,entityMappings);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
+		}
 		
 		ModelEntityMapping[] modelEntityMappings = entityMappings.toArray(new ModelEntityMapping[0]);
 		
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
 		
-	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings){
+	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings) throws PropertyVetoException{
 		Model newModel = transformedSimulationContext.getModel();
 		Model originalModel = simContext.getModel();
 		ModelEntityMapping em = null;

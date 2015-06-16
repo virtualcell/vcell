@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -230,7 +231,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == newButton) {
 				try {
 					newButtonPressed();
-				} catch (ModelException e1) {
+				} catch (ModelException | PropertyVetoException e1) {
 					e1.printStackTrace();
 					throw new RuntimeException(e1.getMessage(), e1);
 				}
@@ -249,7 +250,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (e.getSource() == newButton2) {
 				try {
 					newButton2Pressed();
-				} catch (ModelException e1) {
+				} catch (ModelException | PropertyVetoException e1) {
 					e1.printStackTrace();
 					throw new RuntimeException(e1.getMessage(), e1);
 				}
@@ -1122,7 +1123,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
-	private void newButtonPressed() throws ModelException {
+	private void newButtonPressed() throws ModelException, PropertyVetoException {
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == speciesTable) {
@@ -1176,7 +1177,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		}
 	}
-	private void newButton2Pressed() throws ModelException {
+	private void newButton2Pressed() throws ModelException, PropertyVetoException {
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == reactionsTable) {
