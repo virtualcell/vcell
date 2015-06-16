@@ -3926,7 +3926,7 @@ private Model getModel(Element param) throws XmlParseException {
 }
 
 public static void reorderDiagramsInPlace_UponRead(VCellSoftwareVersion docVCellSoftwareVersion,final Diagram[] diagramArr,final StructureTopology structureTopology){
-	if(docVCellSoftwareVersion != null && !docVCellSoftwareVersion.isValid() && docVCellSoftwareVersion.getMajorVersion()<=5 && docVCellSoftwareVersion.getMinorVersion() <=2){
+	if(docVCellSoftwareVersion != null && (docVCellSoftwareVersion.getMajorVersion()<5 || (docVCellSoftwareVersion.getMajorVersion()==5 && docVCellSoftwareVersion.getMinorVersion() <=2))){
 		//In Vcell 5.2 and previous we need to order diagrams topologically, in 5.3 and later the diagrams are displayed as they are ordered when read from document
 		Arrays.sort(diagramArr, new Comparator<Diagram>() {
 			@Override

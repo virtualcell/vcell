@@ -20,7 +20,7 @@ public class VCellSoftwareVersion implements Serializable {
 	public static enum VCellSite {
 		alpha,
 		beta,
-		release,
+		rel,
 		other,
 		unknown
 	};
@@ -46,8 +46,8 @@ public class VCellSoftwareVersion implements Serializable {
 					vcellSite = VCellSite.alpha;
 				}else if (VCellSite.beta.toString().equalsIgnoreCase(EDITION)){
 					vcellSite = VCellSite.beta;
-				}else if (VCellSite.release.toString().equalsIgnoreCase(EDITION)){
-					vcellSite = VCellSite.release;
+				}else if (VCellSite.rel.toString().equalsIgnoreCase(EDITION)){
+					vcellSite = VCellSite.rel;
 				}else{
 					vcellSite = VCellSite.other;
 				}
@@ -147,9 +147,4 @@ public class VCellSoftwareVersion implements Serializable {
 	public int getBuildInt() {
 		return buildInt;
 	}
-	
-	public boolean isValid(){
-		return getSite() != VCellSite.unknown;
-	}
-
 }
