@@ -2314,22 +2314,29 @@ public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern s
 				break;
 			}
 		}
-		if(getSpecies(nameRoot) == null && getSpeciesContext(nameRoot) == null) {
-			speciesName = nameRoot;		// the name is good and unused
+		speciesName = nameRoot;
+		if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
+				getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
+				getRbmModelContainer().getReactionRule(speciesName) == null ) {
+			// the name is good and unused
 		} else {
 			nameRoot += "_";
 			while (true) {
 				speciesName = nameRoot + count;	
-				if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
+				if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
+						getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
+						getRbmModelContainer().getReactionRule(speciesName) == null ) {
 					break;
-				}	
+				}
 				count++;
 			}
 		}
 	} else {			// for plain species it works as before
 		while (true) {
 			speciesName = nameRoot + count;	
-			if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null) {
+			if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
+					getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
+					getRbmModelContainer().getReactionRule(speciesName) == null ) {
 				break;
 			}	
 			count++;
