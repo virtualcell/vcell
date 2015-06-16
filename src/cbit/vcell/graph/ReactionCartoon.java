@@ -174,13 +174,13 @@ public class ReactionCartoon extends ModelCartoon {
 					if (membraneShape == null) {
 						membraneShape = new ReactionContainerShape(membrane, structureSuite, this);
 						addShape(membraneShape);
-						membrane.removePropertyChangeListener(this);
-						membrane.addPropertyChangeListener(this);
 						membrane.getMembraneVoltage().removePropertyChangeListener(this);
 						membrane.getMembraneVoltage().addPropertyChangeListener(this);
 					} else {
 						membraneShape.setStructureSuite(structureSuite);
 					}
+					membrane.removePropertyChangeListener(this);
+					membrane.addPropertyChangeListener(this);
 					membraneShape.refreshLabel();
 					unwantedShapes.remove(membraneShape);
 					reactionContainerShapeList.add(membraneShape);
@@ -190,11 +190,11 @@ public class ReactionCartoon extends ModelCartoon {
 					if (featureShape == null) {
 						featureShape = new ReactionContainerShape(feature, structureSuite, this);
 						addShape(featureShape);
-						feature.removePropertyChangeListener(this);
-						feature.addPropertyChangeListener(this);
 					} else {
 						featureShape.setStructureSuite(structureSuite);
 					}
+					feature.removePropertyChangeListener(this);
+					feature.addPropertyChangeListener(this);
 					featureShape.refreshLabel();
 					unwantedShapes.remove(featureShape);
 					reactionContainerShapeList.add(featureShape);
@@ -218,14 +218,14 @@ public class ReactionCartoon extends ModelCartoon {
 					if (ss == null) {
 						ss = new SpeciesContextShape(structSpeciesContext, this);
 						ss.truncateLabelName(false);
-						structSpeciesContext.removePropertyChangeListener(this);
-						structSpeciesContext.addPropertyChangeListener(this);
 						structSpeciesContext.getSpecies().removePropertyChangeListener(this);
 						structSpeciesContext.getSpecies().addPropertyChangeListener(this);
 						reactionContainerShape.addChildShape(ss);
 						addShape(ss);
 						ss.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 					}
+					structSpeciesContext.removePropertyChangeListener(this);
+					structSpeciesContext.addPropertyChangeListener(this);
 					ss.refreshLabel();
 					unwantedShapes.remove(ss);
 				}
@@ -253,7 +253,6 @@ public class ReactionCartoon extends ModelCartoon {
 							throw new RuntimeException("unknown type of ReactionStep '"	+ reactionStep.getClass().toString());
 						}
 						addShape(reactionStepShape);
-						reactionStep.addPropertyChangeListener(this);
 						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
 						reactionContainerShape.addChildShape(reactionStepShape);
 						reactionStepShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());

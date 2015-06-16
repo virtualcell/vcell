@@ -59,7 +59,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 //	private String reactantWarning = null;
 //	private String productWarning = null;
 	private Structure structure = null;
-	private Model model = null;
+	private transient Model model = null;
 	
 	private final ReactionRuleNameScope nameScope = new ReactionRuleNameScope();
 	public class ReactionRuleNameScope extends BioNameScope {
@@ -795,7 +795,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	}
 
 
-	private static final String typeName = "Reaction Rule";
+	public static final String typeName = "Reaction Rule";
 	@Override
 	public final String getDisplayName() {
 		return getName();
@@ -803,6 +803,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	@Override
 	public final String getDisplayType() {
 		return typeName;
+	}
+
+	public void setModel(Model model) {
+		this.model = model;
 	}
 }
 

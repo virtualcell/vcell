@@ -103,7 +103,12 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				}
 				if(owner != null && owner.getSimulationContext() != null) {
 					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-					tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
+					try {
+						tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
+					} catch (PropertyVetoException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
+					}
 				} else {
 					return;		// something is wrong, we just show nothing rather than crash
 				}
