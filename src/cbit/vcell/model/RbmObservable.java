@@ -451,7 +451,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		return true;
 	}
 
-	private static final String typeName = "Observable";
+	public static final String typeName = "Observable";
 	@Override
 	public final String getDisplayName() {
 		return getName();

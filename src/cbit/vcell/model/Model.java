@@ -919,7 +919,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 	}
 	
-	public class RbmModelContainer implements Matchable, Serializable, VetoableChangeListener, IssueSource {
+	public class RbmModelContainer implements Matchable, Serializable, IssueSource {
 		private List<MolecularType> molecularTypeList = new ArrayList<MolecularType>();
 		private List<ReactionRule> reactionRuleList = new ArrayList<ReactionRule>();
 		private List<RbmObservable> observableList = new ArrayList<RbmObservable>();
@@ -1142,7 +1142,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 		
-		public void addMolecularType(MolecularType molecularType, boolean makeObservable) throws ModelException {
+		public void addMolecularType(MolecularType molecularType, boolean makeObservable) throws ModelException, PropertyVetoException {
 			if (getMolecularType(molecularType.getName()) != null) {
 				throw new ModelException(molecularType.getDisplayType() + " '" + molecularType.getDisplayName() + "' already exists!");
 			}
@@ -1160,7 +1160,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 		}
 		
-		public boolean removeMolecularType(MolecularType molecularType) {
+		public boolean removeMolecularType(MolecularType molecularType) throws PropertyVetoException {
 			if (!molecularTypeList.contains(molecularType)) {
 				return false;
 			}
@@ -1170,7 +1170,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 		
-		public void deleteMolecularType(String molecularTypeName) {
+		public void deleteMolecularType(String molecularTypeName) throws PropertyVetoException {
 			MolecularType molecularType = getMolecularType(molecularTypeName);
 			if (molecularType == null) {
 				return;
@@ -1180,7 +1180,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			setMolecularTypeList(newValue);
 		}
 		
-		public boolean removeReactionRule(ReactionRule reactionRule) {
+		public boolean removeReactionRule(ReactionRule reactionRule) throws PropertyVetoException {
 			if (!reactionRuleList.contains(reactionRule)) {
 				return false;
 			}
@@ -1297,8 +1297,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return constantMap;
 		}
 		
-		public final void setMolecularTypeList(List<MolecularType> newValue) {
+		public final void setMolecularTypeList(List<MolecularType> newValue) throws PropertyVetoException {
 			List<MolecularType> oldValue = molecularTypeList;
+			fireVetoableChange(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST, oldValue, newValue);
 			if (oldValue != null) {
 				for (MolecularType mt : oldValue) {
 					mt.removePropertyChangeListener(Model.this);
@@ -1317,17 +1318,22 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST, oldValue, newValue);
 		}
 
-		private final void setReactionRules(List<ReactionRule> newValue) {
+		private final void setReactionRules(List<ReactionRule> newValue) throws PropertyVetoException {
 			List<ReactionRule> oldValue = reactionRuleList;
+			fireVetoableChange(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST, oldValue, newValue);
 			if (oldValue != null) {
 				for (ReactionRule reactionRule : oldValue) {
-					reactionRule.removeVetoableChangeListener(this);
+					reactionRule.removePropertyChangeListener(Model.this);
+					reactionRule.removeVetoableChangeListener(Model.this);
+					reactionRule.setModel(null);
 				}
 			}
 			this.reactionRuleList = newValue;
 			if (newValue != null) {
 				for (ReactionRule reactionRule : newValue) {
-					reactionRule.addVetoableChangeListener(this);
+					reactionRule.addPropertyChangeListener(Model.this);
+					reactionRule.addVetoableChangeListener(Model.this);
+					reactionRule.setModel(Model.this);
 				}
 			}
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST, oldValue, newValue);
@@ -1400,55 +1406,22 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return new ReactionRule(Model.this, label, structure, bReversible);
 		}
 		
-		public void vetoableChange(PropertyChangeEvent evt) throws ModelPropertyVetoException {
-			if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
-				if (evt.getSource() instanceof MolecularType) {
-					String newName = (String) evt.getNewValue();
-					for (MolecularType molecularType : molecularTypeList) {
-						if (molecularType != evt.getSource()) {
-							if (molecularType.getName().equals(newName)) {
-								throw new ModelPropertyVetoException(MolecularType.typeName + " '" + newName + "' already exists!", evt);
-							}
-						}
-					}
-					for (RbmObservable observable : observableList) {
-						if (observable != evt.getSource()) {
-							if (observable.getName().equals(newName)) {
-								throw new ModelPropertyVetoException("'" + newName + "' is already used for an observable!", evt);
-							}
-						}
-					}
-				} else if (evt.getSource() instanceof RbmObservable) {
-					String newName = (String) evt.getNewValue();
-					for (MolecularType molecularType : molecularTypeList) {
-						if (molecularType != evt.getSource()) {
-							if (molecularType.getName().equals(newName)) {
-								throw new ModelPropertyVetoException("'" + newName + "' is already used for a " + MolecularType.typeName + "!", evt);
-							}
-						}
-					}
-					for (RbmObservable observable : observableList) {
-						if (observable != evt.getSource()) {
-							if (observable.getName().equals(newName)) {
-								throw new ModelPropertyVetoException("Observable '" + newName + "' already exists!", evt);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		private final void setObservableList(List<RbmObservable> newValue) {
+		private final void setObservableList(List<RbmObservable> newValue) throws PropertyVetoException {
 			List<RbmObservable> oldValue = observableList;
+			fireVetoableChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
 			if (oldValue != null) {
 				for (RbmObservable mt : oldValue) {
-					mt.removeVetoableChangeListener(this);
+					mt.removePropertyChangeListener(Model.this);
+					mt.removeVetoableChangeListener(Model.this);
+					mt.setModel(null);
 				}
 			}
 			this.observableList = newValue;
 			if (newValue != null) {
 				for (RbmObservable mt : newValue) {
-					mt.addVetoableChangeListener(this);
+					mt.addPropertyChangeListener(Model.this);
+					mt.addVetoableChangeListener(Model.this);
+					mt.setModel(Model.this);
 				}
 			}
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
@@ -1463,7 +1436,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return molecularTypeList;
 		}
 
-		public void addObservable(RbmObservable observable) throws ModelException {
+		public void addObservable(RbmObservable observable) throws ModelException, PropertyVetoException {
 			if (getObservable(observable.getName()) != null) {
 				throw new ModelException("Observable '" + observable.getName() + "' already exists!");
 			}
@@ -1503,7 +1476,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return Model.this.getModelParameter(obName);
 		}
 		
-		public boolean removeObservable(RbmObservable observable) {
+		public boolean removeObservable(RbmObservable observable) throws PropertyVetoException {
 			if (!observableList.contains(observable)) {
 				return false;
 			}
@@ -1521,7 +1494,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 		
-		public void addReactionRule(ReactionRule reactionRule) {		
+		public void addReactionRule(ReactionRule reactionRule) throws PropertyVetoException {		
 			List<ReactionRule> newValue = new ArrayList<ReactionRule>(reactionRuleList);
 			newValue.add(reactionRule);
 			setReactionRules(newValue);
@@ -2987,7 +2960,16 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	
-	if (evt.getSource() instanceof ModelParameter && evt.getPropertyName().equals("name")){
+	//
+	// if any symbolTableEntry within this model namescope changes (e.g. SpeciesContext, ModelParameter, etc...) then we have to update
+	// the expressions in the ModelParameters (they might be referenced).
+	//
+	if ( (  evt.getSource() instanceof ModelParameter ||
+			evt.getSource() instanceof SpeciesContext ||
+			evt.getSource() instanceof RbmObservable ||
+			evt.getSource() instanceof MembraneVoltage ||
+			evt.getSource() instanceof StructureSize)
+			 && evt.getPropertyName().equals("name")){
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
 				Expression exp = fieldModelParameters[i].getExpression();
@@ -3079,38 +3061,23 @@ public void refreshDependencies() {
 		}
 	}
 	
-	for (int i=0;i<fieldReactionSteps.length;i++){
-		fieldReactionSteps[i].removePropertyChangeListener(this);
-		fieldReactionSteps[i].removeVetoableChangeListener(this);
-		fieldReactionSteps[i].getKinetics().removePropertyChangeListener(this);
-		fieldReactionSteps[i].getKinetics().removeVetoableChangeListener(this);
-		fieldReactionSteps[i].getKinetics().addPropertyChangeListener(this);
-		fieldReactionSteps[i].getKinetics().addVetoableChangeListener(this);
-		fieldReactionSteps[i].addPropertyChangeListener(this);
-		fieldReactionSteps[i].addVetoableChangeListener(this);
-		fieldReactionSteps[i].setModel(this);
-		try {
-			fieldReactionSteps[i].rebindAllToModel(this);
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
-		fieldReactionSteps[i].refreshDependencies();
-	}
 	for (int i=0;i<getRbmModelContainer().getReactionRuleList().size();i++){
-		getRbmModelContainer().getReactionRule(i).removePropertyChangeListener(this);
-		getRbmModelContainer().getReactionRule(i).removeVetoableChangeListener(this);
-		getRbmModelContainer().getReactionRule(i).getKineticLaw().removePropertyChangeListener(this);
-		//getRbmModelContainer().getReactionRule(i).getKineticLaw().removeVetoableChangeListener(this);
-		getRbmModelContainer().getReactionRule(i).getKineticLaw().addPropertyChangeListener(this);
-		//getRbmModelContainer().getReactionRule(i).getKineticLaw().addVetoableChangeListener(this);
-		getRbmModelContainer().getReactionRule(i).addPropertyChangeListener(this);
-		getRbmModelContainer().getReactionRule(i).addVetoableChangeListener(this);
+		ReactionRule reactionRule = getRbmModelContainer().getReactionRule(i);
+		reactionRule.removePropertyChangeListener(this);
+		reactionRule.removeVetoableChangeListener(this);
+		reactionRule.getKineticLaw().removePropertyChangeListener(this);
+		//reactionRule.getKineticLaw().removeVetoableChangeListener(this);
+		reactionRule.getKineticLaw().addPropertyChangeListener(this);
+		//reactionRule.getKineticLaw().addVetoableChangeListener(this);
+		reactionRule.addPropertyChangeListener(this);
+		reactionRule.addVetoableChangeListener(this);
+		reactionRule.setModel(this);
 		try {
-			getRbmModelContainer().getReactionRule(i).rebindAllToModel(this);
+			reactionRule.rebindAllToModel(this);
 		}catch (Exception e){
 			e.printStackTrace(System.out);
 		}
-		getRbmModelContainer().getReactionRule(i).refreshDependencies();
+		reactionRule.refreshDependencies();
 	}
 	for (RbmObservable observable : getRbmModelContainer().getObservableList()){
 		observable.removePropertyChangeListener(this);
@@ -3673,6 +3640,24 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 			validateNamingConflicts("Model Parameter", ModelParameter.class, newName, e);
 		}
 	}
+	if (e.getSource() instanceof MolecularType){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			if (getRbmModelContainer().getMolecularType(newName)!=null){
+				throw new ModelPropertyVetoException(MolecularType.typeName+" with name '"+newName+"' already exists.",e);
+			}
+			validateNamingConflicts(((MolecularType)e.getSource()).getDisplayType(), MolecularType.class, newName, e);
+		}
+	}
+	if (e.getSource() instanceof RbmObservable){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			if (getRbmModelContainer().getObservable(newName)!=null){
+				throw new ModelPropertyVetoException(((RbmObservable)e.getSource()).getDisplayType()+" with name '"+newName+"' already exists.",e);
+			}
+			validateNamingConflicts(((RbmObservable)e.getSource()).getDisplayType(), RbmObservable.class, newName, e);
+		}
+	}
 
 	if (e.getSource() instanceof Species){
 		if (e.getPropertyName().equals("commonName") && !e.getOldValue().equals(e.getNewValue())){
@@ -3690,6 +3675,36 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 				throw new ModelPropertyVetoException("cannot use reserved symbol '"+commonName+"' as a Species common name",e,
 						ModelPropertyVetoException.Category.RESERVED_SYMBOL);
 			}
+		}
+	}
+	
+	if (e.getSource() == this && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)){
+		ArrayList<MolecularType> newMolecularTypes = (ArrayList<MolecularType>)e.getNewValue();
+		if (newMolecularTypes==null){
+			throw new ModelPropertyVetoException(MolecularType.typeName + " list cannot be null",e);
+		}
+		for (MolecularType mt : getRbmModelContainer().getMolecularTypeList()){
+			validateNamingConflicts(MolecularType.typeName, MolecularType.class, mt.getName(), e);
+		}
+	}
+
+	if (e.getSource() == this && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST)){
+		ArrayList<RbmObservable> newObservables = (ArrayList<RbmObservable>)e.getNewValue();
+		if (newObservables==null){
+			throw new ModelPropertyVetoException(RbmObservable.typeName + " list cannot be null",e);
+		}
+		for (RbmObservable observable : getRbmModelContainer().getObservableList()){
+			validateNamingConflicts(RbmObservable.typeName, RbmObservable.class, observable.getName(), e);
+		}
+	}
+
+	if (e.getSource() == this && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)){
+		ArrayList<ReactionRule> newReactionRules = (ArrayList<ReactionRule>)e.getNewValue();
+		if (newReactionRules==null){
+			throw new ModelPropertyVetoException(ReactionRule.typeName + " list cannot be null", e);
+		}
+		for (ReactionRule rr : getRbmModelContainer().getReactionRuleList()){
+			validateNamingConflicts(ReactionRule.typeName, ReactionRule.class, rr.getName(), e);
 		}
 	}
 
@@ -3964,12 +3979,27 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 	}
 	
 	//
-	// make sure not to change name of a "global" symbol to that of a ReactionStep name .... (this IS necessary with namespaces)
+	// Make sure not to change name of a "global" symbol to that of a ReactionStep name, ReactionRule name, or MolecularType name.  
+	// These things are not really in the global namespace, but it would be confusing to allow reuse of names.
 	//
 	if (!newSymbolClass.equals(ReactionStep.class)){
 		for (int j = 0; j < fieldReactionSteps.length; j++){
 			if (fieldReactionSteps[j].getName().equals(newSymbolName)){
 				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getDisplayType()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'.",e);
+			}
+		}
+	}
+	if (!newSymbolClass.equals(ReactionRule.class)){
+		for (ReactionRule rr : rbmModelContainer.reactionRuleList){
+			if (rr.getName().equals(newSymbolName)){
+				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+rr.getDisplayType()+" '"+rr.getName()+"' in structure '"+rr.getStructure().getName()+"'.",e);
+			}
+		}
+	}
+	if (!newSymbolClass.equals(MolecularType.class)){
+		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
+			if (molecularType.getName().equals(newSymbolName)){
+				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
 			}
 		}
 	}

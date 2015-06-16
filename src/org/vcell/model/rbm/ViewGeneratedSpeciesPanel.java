@@ -85,7 +85,12 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 				Model model = new Model("MyTempModel");
 				if(owner != null && owner.getSimulationContext() != null) {
 					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-					model.getRbmModelContainer().setMolecularTypeList(mtList);
+					try {
+						model.getRbmModelContainer().setMolecularTypeList(mtList);
+					} catch (PropertyVetoException e1) {
+						e1.printStackTrace();
+						throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
+					}
 				} else {
 					System.out.println("something is wrong, we just do nothing rather than crash");
 					return;

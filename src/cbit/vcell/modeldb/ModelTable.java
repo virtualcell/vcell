@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -91,7 +92,7 @@ public static void readRbmElement(Connection con,Model model) throws SQLExceptio
 				XmlReader reader = new XmlReader(false);
 				try{
 					reader.getRbmModelContainer(rbmElement, model);
-				}catch(ModelException e){
+				}catch(ModelException | PropertyVetoException e) {
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}

@@ -208,7 +208,12 @@ public class RbmUtils {
 				if(model.getStructures().length > 0) {
 					reactionRule.setStructure(model.getStructure(0));
 				}
-				model.getRbmModelContainer().addReactionRule(reactionRule);
+				try {
+					model.getRbmModelContainer().addReactionRule(reactionRule);
+				} catch (PropertyVetoException ex) {
+					ex.printStackTrace();
+					throw new RuntimeException("Unexpected " + ReactionRule.typeName + " exception: " + ex.getMessage());
+				}
 				return reactionRule;
 			}
 			return null;
@@ -371,8 +376,9 @@ public class RbmUtils {
 					molecularType = new MolecularType(name, model);
 					try {
 						model.getRbmModelContainer().addMolecularType(molecularType, false);
-					} catch (ModelException e) {
+					} catch (ModelException | PropertyVetoException e) {
 						e.printStackTrace();
+						throw new RuntimeException("Unexpected " + SpeciesPattern.typeName + " exception: " + e.getMessage());
 					}
 				}
 				MolecularTypePattern molecularTypePattern = new MolecularTypePattern(molecularType, false);

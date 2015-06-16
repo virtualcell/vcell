@@ -4077,7 +4077,7 @@ private Model getModel(Element param) throws XmlParseException {
 }
 
 @SuppressWarnings("unchecked")
-public void getRbmModelContainer(Element param, Model newModel) throws ModelException {
+public void getRbmModelContainer(Element param, Model newModel) throws ModelException, PropertyVetoException {
 	Element element = param.getChild(XMLTags.RbmMolecularTypeListTag, vcNamespace);
 	if(element != null) {
 		getRbmMolecularTypeList(element, newModel);
@@ -4113,7 +4113,7 @@ private void getRbmMolecularTypeList(Element param, Model newModel) {
 //		if(s != null) { ssl.add(s); }
 //	}
 //}
-private void getRbmObservableList(Element param, Model newModel) throws ModelException {
+private void getRbmObservableList(Element param, Model newModel) throws ModelException, PropertyVetoException {
 	RbmModelContainer mc = newModel.getRbmModelContainer();
 	List<Element> children = new ArrayList<Element>();
 	children = param.getChildren(XMLTags.RbmObservableTag, vcNamespace);
