@@ -183,7 +183,7 @@ public class RbmUtils {
 			}
 			return seedSpecies;
 			} catch (Exception ex) {
-				throw new RuntimeException("Initial condition for seed species " + toBnglString(seedSpecies.getSpeciesPattern()) + " can not be initialized: " + ex.getMessage());
+				throw new RuntimeException("Initial condition for Species " + toBnglString(seedSpecies.getSpeciesPattern()) + " can not be initialized: " + ex.getMessage());
 			}	
 		}
 
