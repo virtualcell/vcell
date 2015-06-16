@@ -15,6 +15,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.client.desktop.TopLevelWindow;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 
@@ -347,6 +349,7 @@ public class ChildWindowManager {
 	
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
+		BeanUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
 	}
 		
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){
