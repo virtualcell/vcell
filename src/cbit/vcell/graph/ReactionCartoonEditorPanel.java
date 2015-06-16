@@ -289,15 +289,14 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getSelectButton(), getSelectButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+				toolBar.add(getStructureButton(), getStructureButton().getName());
 				toolBar.add(getSpeciesButton(), getSpeciesButton().getName());
+				toolBar.add(getLineDirectedButton(), getLineDirectedButton().getName());
+				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
 				toolBar.add(getFluxReactionButton(), getFluxReactionButton().getName());
 				//toolBar.add(getStepButton(), getStepButton().getName());
 				//toolBar.add(getFluxButton(), getFluxButton().getName());
 				//toolBar.add(getLineButton(), getLineButton().getName());
-				toolBar.add(getLineDirectedButton(), getLineDirectedButton().getName());
-				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getStructureButton(), getStructureButton().getName());
 				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
 				toolBar.add(getZoomInButton(), getZoomInButton().getName());
 				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
