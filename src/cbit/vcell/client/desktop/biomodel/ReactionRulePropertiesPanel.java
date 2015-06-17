@@ -60,6 +60,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
@@ -144,8 +145,8 @@ public class ReactionRulePropertiesPanel extends JTabbedPaneEnhanced {
 		epp = new ReactionRuleEditorPropertiesPanel();
 
 		setTabPlacement(TOP);
-		addTab("Kinetics", kpp);		// TODO: add the icon here
-		addTab("Editor", epp);
+		addTab(" Kinetics ", VCellIcons.kineticsPropertiesIcon, kpp);
+		addTab(" Editor ", VCellIcons.editorPropertiesIcon, epp);
 		
 		addChangeListener(changeListener);
 		setSelectedComponent(epp);
