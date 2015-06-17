@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
@@ -71,6 +72,7 @@ public class VcellHelpViewer extends JPanel
 			JHelp jhelp = new JHelp(hs);
 			setLayout(new BorderLayout());
 			add(jhelp);
+			BeanUtils.addCloseWindowKeyboardAction(this);
 			HelpBroker broker = hs.createHelpBroker();
 			Font fn = broker.getFont();
 			float s = fn.getSize();
