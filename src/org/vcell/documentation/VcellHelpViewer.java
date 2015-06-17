@@ -22,6 +22,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 
 /**
@@ -63,6 +65,7 @@ public class VcellHelpViewer extends JPanel
 			JHelp jhelp = new JHelp(hs);
 			setLayout(new BorderLayout());
 			add(jhelp);
+			BeanUtils.addCloseWindowKeyboardAction(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
