@@ -59,7 +59,7 @@ public class GuiConstants {
 
 	public static final String ACTIONCMD_CREATE_STOCHASTIC_APPLICATION = "Create Stochastic Application";
 	public static final String ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION = "Create Non-stochastic Application";
-	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = "Create Rule-based Application";
+	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = "Create Network-Free Application";
 	public static final String ACTIONCMD_EXPORT = "Export";
 	
 	public static final String ACTIONCMD_OPEN_APPLICATION = "Open";
@@ -67,7 +67,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_RENAME_APPLICATION = "Rename";
 	public static final String ACTIONCMD_DELETE_APPLICATION = "Delete";
 	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION = "Non-Spatial Copy To Deterministic Application";
-	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION = "Non-Spatial Copy To Rule-based Application";
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION = "Non-Spatial Copy To Network-Free Application";
 	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION = "Non-Spatial Copy To Stochastic Application";
 	
 	public static final String MENU_TEXT_APP_NEWBIOMODEL = "New BioModel From App";
@@ -76,7 +76,7 @@ public class GuiConstants {
 	public static final String MENU_TEXT_SPATIAL_APPLICATION = "Spatial";
 	public static final String MENU_TEXT_NON_SPATIAL_APPLICATION = "Non-Spatial";
 	public static final String MENU_TEXT_DETERMINISTIC_APPLICATION = "Deterministic";
-	public static final String MENU_TEXT_RULEBASED_APPLICATION = "Rule-based";
+	public static final String MENU_TEXT_RULEBASED_APPLICATION = "Network-Free";
 	public static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
 
 	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION = "Spatial Copy To NonSpatial Deterministic Application";

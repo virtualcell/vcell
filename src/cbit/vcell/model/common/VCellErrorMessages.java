@@ -10,6 +10,7 @@
 
 package cbit.vcell.model.common;
 
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 
 import cbit.vcell.math.CompartmentSubDomain;
@@ -80,10 +81,10 @@ public class VCellErrorMessages {
 		
 	// ========== BioModel start ==========================//
 	public static final String PressEscToUndo = "<br><font color=red>Press Esc to undo this change.</font>";
-	public static final String RightClickComponentForBond = "<br><font color=blue>Right click on the Component above to edit a Bond.</font>";
-	public static final String RightClickComponentForState = "<br><font color=blue>Right click on the Component above to edit a State.</font>";
-	public static final String RightClickComponentToEdit = "<br><font color=blue>Right click on this Component to edit it.</font>";
-	public static final String ClickShowAllComponents = "<br><font color=blue>Check the 'Show all components' box above to see all possible Components.</font>";
+	public static final String RightClickComponentForBond = "<br><font color=blue>Right click on the " + MolecularComponent.typeName + " above to edit a Bond.</font>";
+	public static final String RightClickComponentForState = "<br><font color=blue>Right click on the " + MolecularComponent.typeName + " above to edit a State.</font>";
+	public static final String RightClickComponentToEdit = "<br><font color=blue>Right click on this " + MolecularComponent.typeName + " to edit it.</font>";
+	public static final String ClickShowAllComponents = "<br><font color=blue>Check the 'Show all " + MolecularComponent.typeName + "s' box above to see all possible " + MolecularComponent.typeName + ".</font>";
 	public static final String RightClickToAddMolecules = "<br><font color=blue>Right click on this Pattern to add more " + MolecularType.typeName + "s.</font>";
 
 	public static final String TripleClickOrRightClick = "<br><font color=blue>Triple click to edit an element, Right click for more options.</font>";
@@ -91,9 +92,9 @@ public class VCellErrorMessages {
 	public static final String SpecifyMolecularTypes = "Specify " + MolecularType.typeName;
 	public static final String AddMolecularTypes = "Add " + MolecularType.typeName;
 
-	public static final String MustBeRuleBased = "Feature available for Rule-based models only.\nPlease define a Molecule first.";
-	public static final String MustNotBeRuleBased = "Feature available for non Rule-based models only.";
-	public static final String OneStructureOnly = "Currently Rule-based modeling is only available for single structure.";
+	public static final String MustBeRuleBased = "Feature available for Network-Free models only.\nPlease define a " + MolecularType.typeName + " first.";
+	public static final String MustNotBeRuleBased = "Feature available for non Network-Free models only.";
+	public static final String OneStructureOnly = "Currently Network-Free modeling is only available for single structure.";
 
 	// ========== BioModel end =======================//
 	
