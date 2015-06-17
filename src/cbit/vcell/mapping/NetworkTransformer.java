@@ -328,13 +328,13 @@ public class NetworkTransformer implements SimContextTransformer {
 						break;
 					}
 				}
-				if(model.getSpecies(nameRoot) == null && model.getSpeciesContext(nameRoot) == null && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
+				if(Model.isNameUnused(speciesName, model) && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
 					speciesName = nameRoot;		// the name is good and unused
 				} else {
 					nameRoot += "_";
 					while (true) {
 						speciesName = nameRoot + count;	
-						if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
+						if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
 							break;
 						}	
 						count++;
@@ -343,7 +343,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else {			// for plain species it works as before
 				while (true) {
 					speciesName = nameRoot + count;	
-					if (model.getSpecies(speciesName) == null && model.getSpeciesContext(speciesName) == null && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
+					if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
 						break;
 					}	
 					count++;
