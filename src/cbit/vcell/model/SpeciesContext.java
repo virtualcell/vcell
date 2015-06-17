@@ -588,7 +588,7 @@ public boolean deleteStateFromPatterns(MolecularType mt, MolecularComponent mc, 
 	return true;
 }
 
-private static final String typeName = "Species";
+public static final String typeName = "Species";
 @Override
 public final String getDisplayName() {
 	return getName();
