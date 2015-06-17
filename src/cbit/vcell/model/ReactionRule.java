@@ -132,7 +132,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		this.model = model;
 		if((name == null) || name.isEmpty()) {
 			this.name = model.getReactionName();
-		} else if ((model.getReactionStep(name) == null) && (model.getRbmModelContainer().getReactionRule(name) == null)){
+		} else if (Model.isNameUnused(name, model)){
 			this.name = name;
 		} else {
 			this.name = model.getReactionName();

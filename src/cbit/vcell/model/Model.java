@@ -1370,7 +1370,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			int count=0;
 			while (true) {
 				name = nameRoot + count + namePostfix;	
-				if (getObservable(name) == null) {
+				if (Model.isNameUnused(name, Model.this)) {
 					break;
 				}	
 				count++;
@@ -2291,6 +2291,16 @@ public FluxReaction createFluxReaction(Membrane membrane) {
 	}
 }
 
+public static boolean isNameUnused(String name, Model model) {
+	if (model.getSpecies(name) == null && model.getSpeciesContext(name) == null &&
+			model.getReactionStep(name) == null &&
+			model.getRbmModelContainer().getObservable(name) == null &&
+			model.getRbmModelContainer().getReactionRule(name) == null ) {
+		return true;
+	} else {
+		return false;
+	}
+}
 /**
  * @return java.lang.String
  * @throws ModelPropertyVetoException 
@@ -2315,17 +2325,13 @@ public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern s
 			}
 		}
 		speciesName = nameRoot;
-		if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
-				getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
-				getRbmModelContainer().getReactionRule(speciesName) == null ) {
-			// the name is good and unused
+		if (Model.isNameUnused(speciesName, this)) {
+					// the name is good and unused
 		} else {
 			nameRoot += "_";
 			while (true) {
 				speciesName = nameRoot + count;	
-				if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
-						getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
-						getRbmModelContainer().getReactionRule(speciesName) == null ) {
+				if (Model.isNameUnused(speciesName, this)) {
 					break;
 				}
 				count++;
@@ -2334,9 +2340,7 @@ public SpeciesContext createSpeciesContext(Structure structure, SpeciesPattern s
 	} else {			// for plain species it works as before
 		while (true) {
 			speciesName = nameRoot + count;	
-			if (getSpecies(speciesName) == null && getSpeciesContext(speciesName) == null &&
-					getRbmModelContainer().getMolecularType(speciesName) == null && getRbmModelContainer().getObservable(speciesName) == null &&
-					getRbmModelContainer().getReactionRule(speciesName) == null ) {
+			if (Model.isNameUnused(speciesName, this)) {
 				break;
 			}	
 			count++;
@@ -3971,7 +3975,8 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
  * if newSTE is null, then newName is the proposed name of a reaction
  * else newSTE is the symbol to be added.
  */
-private void validateNamingConflicts(String symbolDescription, Class<?> newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws ModelPropertyVetoException {
+private void validateNamingConflicts(String symbolDescription, Class<?> newSymbolClass, String newSymbolName, PropertyChangeEvent e) 
+	throws ModelPropertyVetoException {
 	//
 	// validate lexicon
 	//
@@ -4003,13 +4008,13 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 			}
 		}
 	}
-	if (!newSymbolClass.equals(MolecularType.class)){
-		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
-			if (molecularType.getName().equals(newSymbolName)){
-				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
-			}
-		}
-	}
+//	if (!newSymbolClass.equals(MolecularType.class)){
+//		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
+//			if (molecularType.getName().equals(newSymbolName)){
+//				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
+//			}
+//		}
+//	}
 	//
 	// make sure not to change to name of any other symbol in 'model' namespace (or friendly namespaces)
 	//
