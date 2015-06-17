@@ -10,6 +10,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 
 public class SeedSpecies extends RbmElementAbstract implements Matchable, IssueSource {
@@ -78,10 +79,10 @@ public class SeedSpecies extends RbmElementAbstract implements Matchable, IssueS
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.SeedSpecies, this);
 		if(speciesPattern == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Seed Species Pattern is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, SpeciesPattern.typeName + " is null", Issue.SEVERITY_ERROR));
 		} else {
 			if(initialCondition == null) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Seed Species '" + speciesPattern + "' Initial Condition Expression is null", Issue.SEVERITY_WARNING));
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, SpeciesContext.typeName + " '" + speciesPattern + "' Initial Condition Expression is null", Issue.SEVERITY_WARNING));
 			}
 			speciesPattern.gatherIssues(issueContext, issueList);
 		}

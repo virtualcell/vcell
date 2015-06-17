@@ -69,7 +69,9 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Species;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
@@ -541,7 +543,7 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				text6 = "unavailable";
 			}
 		}
-		seedSpeciesLabel.setText("Seed Species: " + text3);
+		seedSpeciesLabel.setText(SpeciesContext.typeName + ": " + text3);
 		generatedSpeciesLabel.setText("Generated Species: " + text4);
 		reactionRulesLabel.setText("Reaction Rules: " + text5);
 		generatedReactionsLabel.setText("Generated Reactions: " + text6);
