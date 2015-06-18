@@ -20,9 +20,10 @@ procLabel="-DprocessLabel=${bootstrap_http_processLabel}"
 #
 # Java Management Extensions
 #
-jmxargs="-Dcom.sun.management.jmxremote"
-jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.authenticate=false"
-jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${bootstrap_http_jmxport}"
+jmxargs="-Dcom.sun.management.jmxremote.authenticate=false"
+if [ ${bootstrap_http_jmxport} -gt 0 ]; then
+	jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.port=${bootstrap_http_jmxport}"
+fi
 jmxargs="${jmxargs} -Dcom.sun.management.jmxremote.ssl=false"
 jmxargs="${jmxargs} -Djava.rmi.server.hostname=${bootstrap_jmxhost}"
 
