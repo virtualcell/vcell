@@ -155,6 +155,9 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 				}
 			}
 			String unitsLabel = "<unknown unit>";
+			if (vtuVarInfo.bMeshVariable){
+				continue; // skip "mesh variables" like size, vcRegionArea, etc, globalIndex, etc.
+			}
 			varInfoList.add(new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel, vtuVarInfo.bMeshVariable));
 		}
 		return varInfoList;

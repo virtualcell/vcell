@@ -140,7 +140,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 	private static final String PARAMETER_VOLTAGE_PREFIX = "V_";
 	private static final String PARAMETER_TOTAL_CURRENT_PREFIX = "I_";
 	private static final String PARAMETER_SPECIFIC_CAPACITANCE_PREFIX = "C_";
-	private static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
+//	private static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
 	private static final String PARAMETER_K_UNITFACTOR_PREFIX = "UnitFactor_";
 
 	
@@ -149,7 +149,7 @@ public class MathMapping implements ScopedSymbolTable, UnitFactorProvider, Issue
 	public static final String PARAMETER_SIZE_FUNCTION_PREFIX = "Size_";
 	public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
 	public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
-//	public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
+	public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
 	
 	static final String BIO_PARAM_SUFFIX_SPECIES_COUNT = "_temp_Count";
 	static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";

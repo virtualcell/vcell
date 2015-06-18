@@ -318,7 +318,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             vcellProxy2.getClient().displayPostProcessingDataInVCell(sim)
         except Exception as exc:
             print(exc.message)
-            msgBox = QMessageBox()
+            msgBox = QtGui.QMessageBox()
             msgBox.setText("Exception occurred: "+exc.message)
             msgBox.exec_()
             return
