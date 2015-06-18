@@ -168,6 +168,9 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		} finally {
 			bPopulatingRoot = false;
 		}
+		TreePath path = new TreePath(applicationsNode.getPath());	// expand the application node at initialization
+		ownerTree.expandPath(path);
+		
 		ownerTree.expandPath(new TreePath(modelNode.getPath()));
 		if (selectedBioModelNode == null) {
 			selectedBioModelNode = defaultSelectModelNode;
