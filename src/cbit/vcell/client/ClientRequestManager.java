@@ -83,6 +83,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -248,13 +249,17 @@ private AsynchClientTask createSelectDocTask(final TopLevelWindowManager request
 	AsynchClientTask selectDocumentTypeTask = new AsynchClientTask("Select/Load geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			String[][] docTypeoptions = new String[][] {{"BioModel names"},{"MathModel names"}};
+			VCDocumentType[] sourceDocumentTypes = new VCDocumentType[] { VCDocumentType.BIOMODEL_DOC, VCDocumentType.MATHMODEL_DOC};
+			VCAssert.assertTrue(docTypeoptions.length == sourceDocumentTypes.length , "Label and types mismatch" );
 			int[] geomType = DialogUtils.showComponentOKCancelTableList(
 				JOptionPane.getFrameForComponent(requester.getComponent()), 
 				"Select different Geometry",
 				new String[] {"Search by"}, 
-				new String[][] {{"BioModel names"},{"MathModel names"},{"Geometry names"},{"Legacy Image names"}}, ListSelectionModel.SINGLE_SELECTION);
-			VCDocumentType[] sourceDocumentTypes = new VCDocumentType[] { VCDocumentType.BIOMODEL_DOC, VCDocumentType.MATHMODEL_DOC, VCDocumentType.LEGACYIMAGE_DOC };
-			VCDocumentType sourceDocumentType = sourceDocumentTypes[geomType[0]];
+				docTypeoptions,
+				ListSelectionModel.SINGLE_SELECTION);
+			final int selectedType = geomType[0];
+			VCDocumentType sourceDocumentType = sourceDocumentTypes[selectedType];
 			VersionInfo vcVersionInfo = null;
 			if(geomType[0] == 3){
 				ImageDbTreePanel imageDbTreePanel = new ImageDbTreePanel();
