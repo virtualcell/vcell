@@ -2500,6 +2500,10 @@ private MDIManager getMdiManager() {
 public SimulationStatus getServerSimulationStatus(SimulationInfo simInfo) {
 	
 	SimulationStatus simStatus = null;
+	if (simInfo==null){
+		// unsaved simulation ... won't have simulation status
+		return null;
+	}
 	try {
 		VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
 		simStatus = getClientServerManager().getJobManager().getServerSimulationStatus(vcSimulationIdentifier);
