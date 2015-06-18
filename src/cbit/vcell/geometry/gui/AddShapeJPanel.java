@@ -80,8 +80,23 @@ public class AddShapeJPanel extends JPanel {
 	private final JRadioButton cylZRadioButton = new JRadioButton();
 	private ButtonGroup cylAxisButtonGroup = new ButtonGroup();
 	
-	private ActionListener shapeTypeComboBoxActionListener =
-			actionEvent -> {
+	private class ComboRadioListener implements ActionListener {
+		boolean active = true;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (active) {
+				execute( );
+			}
+		}
+			
+		/**
+		 * set panel / label based on selection
+		 */
+		private void execute( ) {
+			//we expect comboBox and getSelectedItem to be non-null based on
+			//program logic
+			try {
 				Object si = comboBox.getSelectedItem();
 				JPanel panel = null;
 
@@ -92,16 +107,35 @@ public class AddShapeJPanel extends JPanel {
 				}else if(si.equals(RECTANGLE_SELECT) || si.equals(BOX_SELECT)){
 					panel = boxPanel;
 				}else if(si.equals(ELLIPSE_SELECT) || si.equals(ELLIPSOID_SELECT)){
-					panel = cardPanel;
+					panel = ellipsePanel; 
 				}else if(comboBox.getSelectedItem().equals(CYLINDER_SELECT)){
 					panel = cylinderPanel; 
-					cardLayout.show(cardPanel, cylinderPanel.getName());
 				}
 				if (panel != null) {
 					cardLayout.show(cardPanel, panel.getName());
 				}
 				setAnalyticExprLabel();
-			};
+			} catch (NullPointerException npe) {
+				npe.printStackTrace();
+			}
+		}
+
+		/**
+		 * disable (for setting items)
+		 */
+		void freeze( ) {
+			active = false;
+		}
+		/**
+		 * reenable (after settting items)
+		 */
+		void thaw( ) {
+			active = true;
+			execute( );
+		}
+	}
+	
+	private ComboRadioListener shapeTypeComboBoxActionListener = new ComboRadioListener();
 	
 	public AddShapeJPanel() {
 		super();
@@ -413,8 +447,8 @@ public class AddShapeJPanel extends JPanel {
 	private final static String XYZONE = "1,1,1";
 		
 	public void setDimension(int dimension){
+		populateShapeTypeComboBox(dimension);
 		if (dimension > 1){
-			populateShapeTypeComboBox(dimension);
 			circleCenterLabel.setText(CENTERPOINT+" "+(dimension == 2?XY:XYZ));
 			boxLCLabel.setText(LOWERCORNERPOINT+" "+(dimension == 2?XY:XYZ));
 			boxUCLabel.setText(UPPERCORNERPOINT+" "+(dimension == 2?XY:XYZ));
@@ -438,21 +472,27 @@ public class AddShapeJPanel extends JPanel {
 	}
 	
 	private void populateShapeTypeComboBox(int dimension){
-		comboBox.removeAllItems();
-		comboBox.insertItemAt(MANUAL_SELECT, 0);
-		if(dimension == 2){
-			comboBox.insertItemAt(CIRCLE_SELECT, 1);
-			comboBox.insertItemAt(RECTANGLE_SELECT, 2);
-			comboBox.insertItemAt(ELLIPSE_SELECT, 3);
-		}else if(dimension == 3){
-			comboBox.insertItemAt(SPHERE_SELECT, 1);
-			comboBox.insertItemAt(BOX_SELECT, 2);
-			comboBox.insertItemAt(ELLIPSOID_SELECT, 3);
-			comboBox.insertItemAt(CYLINDER_SELECT, 4);			
+		shapeTypeComboBoxActionListener.freeze();
+		try {
+			comboBox.removeAllItems();
+			comboBox.insertItemAt(MANUAL_SELECT, 0);
+			if(dimension == 2){
+				comboBox.insertItemAt(CIRCLE_SELECT, 1);
+				comboBox.insertItemAt(RECTANGLE_SELECT, 2);
+				comboBox.insertItemAt(ELLIPSE_SELECT, 3);
+			}else if(dimension == 3){
+				comboBox.insertItemAt(SPHERE_SELECT, 1);
+				comboBox.insertItemAt(BOX_SELECT, 2);
+				comboBox.insertItemAt(ELLIPSOID_SELECT, 3);
+				comboBox.insertItemAt(CYLINDER_SELECT, 4);			
+			}
+			comboBox.setSelectedIndex(0);
 		}
-		comboBox.setSelectedIndex(0);
+		finally {
+			shapeTypeComboBoxActionListener.thaw();
+		}
 	}
-	
+
 	private void setAnalyticExprLabel(){
 		try{
 			analyticExprLabel.setText(getCurrentAnalyticExpression());
@@ -469,18 +509,19 @@ public class AddShapeJPanel extends JPanel {
 			//ignore
 		}
 	}
+	
 	private void init(){
-		
 		cylAxisButtonGroup.add(cylXRadioButton);
 		cylAxisButtonGroup.add(cylYRadioButton);
 		cylAxisButtonGroup.add(cylZRadioButton);
 		cylXRadioButton.addActionListener(shapeTypeComboBoxActionListener);
 		cylYRadioButton.addActionListener(shapeTypeComboBoxActionListener);
 		cylZRadioButton.addActionListener(shapeTypeComboBoxActionListener);
+		comboBox.addActionListener(shapeTypeComboBoxActionListener);
 		
 		copyExpressionTextButton.setEnabled(false);
 		
-		populateShapeTypeComboBox(3);
+		populateShapeTypeComboBox(1);
 		
 		UndoableEditListener undoableEditListener = 
 			new UndoableEditListener(){
