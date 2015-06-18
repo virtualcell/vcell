@@ -457,6 +457,12 @@ class VCellPysideApp(QtGui.QMainWindow):
                 bSameDomain = (oldVariable.domainName == newVariable.domainName)
                 newFilename = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,newVariable,timeIndex)
                 self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain)
+            except Exception as exc:
+                print(exc.message)
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Exception occurred: "+exc.message)
+                msgBox.exec_()
+                return
             finally:
                 vcellProxy2.close()
 
@@ -490,6 +496,12 @@ class VCellPysideApp(QtGui.QMainWindow):
                 self._visDataContext.getCurrentDataSet(),
                 self._visDataContext.getCurrentVariable(),
                 self._visDataContext.getCurrentTimeIndex())
+        except Exception as exc:
+            print(exc.message)
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Exception occurred: "+exc.message)
+            msgBox.exec_()
+            return
         finally:
             vcellProxy2.close()
             
