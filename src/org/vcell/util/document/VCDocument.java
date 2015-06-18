@@ -26,7 +26,6 @@ public interface VCDocument extends java.io.Serializable, org.vcell.util.Matchab
 		BIOMODEL_DOC,
 		MATHMODEL_DOC,
 		GEOMETRY_DOC,
-		LEGACYIMAGE_DOC,
 		EXTERNALFILE_DOC
 	}
 //	public static final int BIOMODEL_DOC = 0;
