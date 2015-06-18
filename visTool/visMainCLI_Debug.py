@@ -4,7 +4,7 @@
 # C:\Windows\system32>"C:\Program Files\LLNL\VisIt 2.9.0\visit.exe" -cli -pysideviewer -s C:\Developer\EclipseLuna\eclipse\workspace\VCell-5.4-trunk\visTool\visMainCLI_Debug.py
 
 # Jim's debug invocation (as of 6/3/2015) on NRCAMDEV5
-#    > "C:\Program Files\LLNL\VisIt 2.9.0\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_5.4_fastvis\visTool\visMainCLI_Debug.py
+#    > "C:\Program Files\LLNL\VisIt 2.9.0\visit.exe" -cli -pysideviewer -s D:\Developer\eclipse\workspace_refactor\VCell_5.4_cleaner\visTool\visMainCLI_Debug.py
 
 import sys, os
 sys.path.append(os.path.dirname(__file__))

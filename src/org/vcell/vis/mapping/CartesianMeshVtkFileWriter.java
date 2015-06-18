@@ -23,7 +23,9 @@ import org.vcell.vis.vtk.VtkGridUtils;
 
 import vtk.vtkDoubleArray;
 import vtk.vtkUnstructuredGrid;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
@@ -38,6 +40,23 @@ public class CartesianMeshVtkFileWriter {
 
 	public interface ProgressListener {
 		public void progress(double percentDone);
+	}
+	
+	private boolean isMeshVar(DataIdentifier dataID){
+		boolean bMeshVar = false;
+		if (dataID.getName().startsWith(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())){
+			bMeshVar = true;
+		}
+		if (dataID.getName().startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())){
+			bMeshVar = true;
+		}
+		if (dataID.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX)){
+			bMeshVar = true;
+		}
+		if (dataID.getName().startsWith(MathMapping.PARAMETER_SIZE_FUNCTION_PREFIX)){
+			bMeshVar = true;
+		}
+		return bMeshVar;
 	}
 
 	public VtuVarInfo[] getVtuVarInfos(VCellSimFiles vcellFiles, OutputContext outputContext, VCData vcData) throws IOException, DataAccessException, MathException{
@@ -62,7 +81,8 @@ public class CartesianMeshVtkFileWriter {
 			}
 			for (DataIdentifier dataID : dataIdentifiers){
 				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(domainName)){
-					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, false));
+					boolean bMeshVar = isMeshVar(dataID);
+					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, bMeshVar));
 				}
 			}
 			varInfos.add(new VtuVarInfo(GLOBAL_INDEX_VAR, "("+domainName+")  "+GLOBAL_INDEX_VAR, domainName, varDomain, true));
@@ -350,7 +370,7 @@ public class CartesianMeshVtkFileWriter {
 		// have to reorder the cartesian mesh data according to the vtk mesh cell indices (may not even be the same length)
 		//
 		double[] vtkData = new double[numCells];
-		if ((cartesianMeshData.length - 1) > maxRegionIndex){
+		if (cartesianMeshData.length >= numCells){
 			// data is not from region variable, uses global indices
 			for (int vtkCellIndex=0; vtkCellIndex < numCells; vtkCellIndex++){
 				int cartesianMeshGlobalIndex = (int)globalIndexValues[vtkCellIndex];
