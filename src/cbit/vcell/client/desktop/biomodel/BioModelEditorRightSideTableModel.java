@@ -51,6 +51,13 @@ public abstract class BioModelEditorRightSideTableModel<T> extends VCellSortTabl
 	public static final String ADD_NEW_HERE_HTML = "<html><i>(add new here)</i></html>";
 	public static final String ADD_NEW_HERE_REACTION_TEXT = ModelProcessEquation.REACTION_GOESTO;
 	public static final String ADD_NEW_HERE_REACTION_HTML = "<html><i>(add new here, e.g. <font color=blue><b>a+b" + ModelProcessEquation.REACTION_GOESTO + "c</b></font>)</i></html>";
+	public static final String ADD_NEW_REACTION_OR_RULE_HTML = "<html><i>Press the "
+			+ "<font color=blue><b>Add New... </b></font>"
+//			+ "or the "
+//			+ "<font color=blue><b>Add New Rule </b></font>)"
+//			+ "buttons below for new entry."
+			+ "buttons."
+			+ "</i></html>";
 	
 	public BioModelEditorRightSideTableModel(EditorScrollTable table) {
 		super(table);
