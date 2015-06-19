@@ -9,45 +9,38 @@
  */
 
 package cbit.vcell.export.server;
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
+import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.FileUtils;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.vis.chombo.ChomboDataset;
-import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
-import org.vcell.vis.mapping.ChomboMeshMapping;
 import org.vcell.vis.mapping.ChomboVtkFileWriter;
-import org.vcell.vis.vismesh.VisDataset;
-import org.vcell.vis.vismesh.VisDataset.VisDomain;
-import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkUnstructuredGrid;
+import cbit.image.SourceDataInfo;
+import cbit.image.gui.ImagePlaneManager;
 import cbit.vcell.export.AVS_UCD_Exporter;
 import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.export.nrrd.NrrdInfo.NRRDAxisNames;
 import cbit.vcell.export.nrrd.NrrdWriter;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.microscopy.batchrun.gui.addFRAPdocWizard.FileSummaryDescriptor;
-import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -72,122 +65,254 @@ public RasterExporter(ExportServiceImpl exportServiceImpl) {
 }
 
 
-/**
- * This method was created in VisualAge.
- */
-private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager) 
-						throws RemoteException, DataAccessException, IOException {
-
-	cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
-	DataProcessingOutputInfo dataProcessingOutputInfo = null;
-	try {
-		dataProcessingOutputInfo = (DataProcessingOutputInfo)dataServerImpl.doDataOperation(user,new DataOperation.DataProcessingOutputInfoOP(vcdID,false,outputContext));
-	} catch (Exception e) {
-		e.printStackTrace();
-//		throw new Exception("Data Processing Output Error - '"+e.getMessage()+"'  (Note: Data Processing Output is generated automatically when running VCell 5.2 or later simulations)");
+private static class NRRDHelper {
+	private ISize isize;
+	private Coordinate spacing;
+	private boolean bPostProcessInfo = false;
+	public NRRDHelper(String exportVarName,ISize isize,Extent extent,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
+		if(dataProcessingOutputInfo != null){
+			for(int varIndex=0;varIndex<dataProcessingOutputInfo.getVariableNames().length;varIndex++){
+				if(dataProcessingOutputInfo.getVariableNames()[varIndex].equals(exportVarName)){
+					if(!dataProcessingOutputInfo.getPostProcessDataType(exportVarName).equals(PostProcessDataType.image)){
+						throw new DataAccessException("Export nrrd only implemented for 'image' post-process data");
+					}
+					this.bPostProcessInfo = true;
+					this.isize = new ISize(dataProcessingOutputInfo.getVariableISize(exportVarName).getX(),
+										dataProcessingOutputInfo.getVariableISize(exportVarName).getY(),
+										dataProcessingOutputInfo.getVariableISize(exportVarName).getZ());
+					this.spacing = new Coordinate(dataProcessingOutputInfo.getVariableExtent(exportVarName).getX()/isize.getX(),
+											dataProcessingOutputInfo.getVariableExtent(exportVarName).getY()/isize.getY(),
+											dataProcessingOutputInfo.getVariableExtent(exportVarName).getZ()/isize.getZ());
+					break;
+				}
+			}
+		}
+		if(!bPostProcessInfo){
+			this.isize = isize;
+			this.spacing = new Coordinate(extent.getX() / isize.getX(),
+					extent.getY() / isize.getY(),
+					extent.getZ() / isize.getZ());
+		}
+	}
+	
+	public boolean isSizeEqual(NRRDHelper obj) {
+		return obj instanceof NRRDHelper &&
+				((NRRDHelper)obj).isize.compareEqual(isize) &&
+				((NRRDHelper)obj).spacing.equals(spacing);
+//				&& ((NRRDHelper)obj).bPostProcessInfo == bPostProcessInfo;
 	}
 
-	String simID = vcdID.getID();
-	int NUM_TIMES = timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1;
+	public ISize getIsize() {
+		return isize;
+	}
+	public Coordinate getSpacing() {
+		return spacing;
+	}
+	public boolean isPostProcessInfo(){
+		return bPostProcessInfo;
+	}
+	public static int calculateNumTimes(TimeSpecs timeSpecs){
+		return timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1;
+	}
+	public NrrdInfo createSingleFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,VariableSpecs variableSpecs,RasterSpecs rasterSpecs,TimeSpecs timeSpecs) throws IOException{
+		String simID = vcdID.getID();
+		int NUM_TIMES = calculateNumTimes(timeSpecs);
+		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
+				5,
+				new int[] {getIsize().getX(),getIsize().getY(),getIsize().getZ(),NUM_TIMES, variableSpecs.getVariableNames().length},
+				"double",
+				"raw",
+				NrrdInfo.createXYZTVMap()
+			);
+			nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+				Double.NaN,	// timepoints can have irregular intervals
+				Double.NaN  // not meaningful for variables
+			});
+
+		nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames().length + "vars");
+		
+		StringBuffer sb = new StringBuffer();
+		sb.append(nrrdInfo.getDimensionDescription()+" VCData("+simID+") Vars(");
+		for(int i=0;i<variableSpecs.getVariableNames().length;i++){
+			sb.append(variableSpecs.getVariableNames()[i]+(i!=(variableSpecs.getVariableNames().length-1)?",":""));
+		}
+		sb.append(") Times(");
+		for(int i=timeSpecs.getBeginTimeIndex();i<= timeSpecs.getEndTimeIndex();i++){
+			sb.append(timeSpecs.getAllTimes()[i]+(i!=timeSpecs.getEndTimeIndex()?",":""));
+		}
+		sb.append(")");
+		nrrdInfo.setMainComment(sb.toString());
+
+		nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell", "???"});
+
+		nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
+		// make datafile and update info
+		nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+		return nrrdInfo;
+	}
+	public NrrdInfo createTimeFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,VariableSpecs variableSpecs,double time,RasterSpecs rasterSpecs) throws IOException{
+		String simID = vcdID.getID();
+		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
+			4,
+			new int[] {getIsize().getX(),getIsize().getY(), getIsize().getZ(),variableSpecs.getVariableNames().length},
+			"double",
+			"raw",
+			NrrdInfo.createXYZVMap()
+		);
+		nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + formatTime(time) + "time_" + variableSpecs.getVariableNames().length + "vars");
+
+		nrrdInfo.setContent(nrrdInfo.getDimensionDescription()+" VCData from " + simID);
+		nrrdInfo.setCenters(new String[] {"cell", "cell", "cell","???"});
+		nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+			Double.NaN  // not meaningful for variables
+		});
+		nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
+		// make datafile and update info						
+		nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+		return nrrdInfo;
+	}
+	public NrrdInfo createVariableFullNrrdInfo(FileDataContainerManager fileDataContainerManager,VCDataIdentifier vcdID,String variableName,TimeSpecs timeSpecs,RasterSpecs rasterSpecs) throws IOException{
+		String simID = vcdID.getID();
+		int NUM_TIMES = calculateNumTimes(timeSpecs);
+		NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
+			4,
+			new int[] {getIsize().getX(),	getIsize().getY(),getIsize().getZ(), NUM_TIMES},
+			"double",
+			"raw",
+			NrrdInfo.createXYZTMap()
+		);
+		nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableName + "vars");
+
+		nrrdInfo.setContent(nrrdInfo.getDimensionDescription()+" VCData from " + simID);
+		nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell"});
+		nrrdInfo.setSpacings(new double[] {getSpacing().getX(),getSpacing().getY(),getSpacing().getZ(),
+			Double.NaN,	// timepoints can have irregular intervals
+		});
+		nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
+		// make datafile and update info
+		nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
+		return nrrdInfo;
+
+	}
+	public static NRRDHelper getSizeCheckedNrrdHelper(VariableSpecs variableSpecs,ISize isize,Extent extent,DataProcessingOutputInfo dataProcessingOutputInfo) throws DataAccessException{
+		NRRDHelper lastNRRDHelper = null;
+		for(int nameIndex=0;nameIndex<variableSpecs.getVariableNames().length;nameIndex++){
+			NRRDHelper currentNRDHelper = new NRRDHelper(variableSpecs.getVariableNames()[nameIndex], isize,extent, dataProcessingOutputInfo);
+			if(lastNRRDHelper != null && !lastNRRDHelper.isSizeEqual(currentNRDHelper)){
+				throw new DataAccessException("NRRD export error: all variables must have the same x,y,z size"+(lastNRRDHelper.isPostProcessInfo() != currentNRDHelper.isPostProcessInfo()?" (mixed postprocess)":""));
+			}
+			lastNRRDHelper = currentNRDHelper;
+		}
+		return lastNRRDHelper;
+	}
+	public static void appendDoubleData(NrrdInfo nrrdInfo,FileDataContainerManager fileDataContainerManager,double[] data,String varName) throws DataAccessException,IOException{
+		int bufferSize = 8*nrrdInfo.getSizes()[0]*nrrdInfo.getSizes()[1]*nrrdInfo.getSizes()[2];
+		if(data.length != (bufferSize/8)){//doubles are 8 bytes
+			throw new DataAccessException("NRRD export Var: "+varName+" size != calculated size");
+		}
+		byte[] output = new byte[bufferSize];
+		ByteBuffer byteBuffer = ByteBuffer.wrap(output);
+		for (int k = 0; k < data.length; k++){
+			byteBuffer.putDouble(data[k]);
+		}
+		fileDataContainerManager.append(nrrdInfo.getDataFileID(), output);
+
+	}
+}
+
+
+private NRRDHelper createSliceNrrdHelper(CartesianMesh mesh,DataProcessingOutputInfo dataProcessingOutputInfo,VCDataIdentifier vcdID,
+		VariableSpecs variableSpecs, TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs,
+		FileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
+	ISize planeISize = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getISize(), geometrySpecs.getAxis());
+	planeISize = new ISize(planeISize.getX(),planeISize.getY(),1);
+	Extent planeExtent = Coordinate.convertAxisFromStandardXYZToNormal(mesh.getExtent(), geometrySpecs.getAxis());
+	planeExtent = new Extent(planeExtent.getX(),planeExtent.getY(),1);
+	return NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs,planeISize,planeExtent,dataProcessingOutputInfo);
+}
+private ImagePlaneManager createSlicer(CartesianMesh mesh,double[] data,GeometrySpecs originalGeometrySpecs){
+	SourceDataInfo sdi = new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, data, mesh.getExtent(), mesh.getOrigin(),
+			null, 0, mesh.getSizeX(), 1, mesh.getSizeY(), mesh.getSizeX(), mesh.getSizeZ(), mesh.getSizeX()*mesh.getSizeY());
+	ImagePlaneManager imagePlaneManager = new ImagePlaneManager();
+	imagePlaneManager.setSourceDataInfo(sdi);
+	imagePlaneManager.setNormalAxis(originalGeometrySpecs.getAxis());
+	imagePlaneManager.setSlice(originalGeometrySpecs.getSliceNumber());
+	return imagePlaneManager;
+}
+private void appendSlice(String varName,double[] unslicedData,NrrdInfo sliceNrrdInfo,CartesianMesh mesh,GeometrySpecs geometrySpecs,
+	FileDataContainerManager fileDataContainerManager) throws IOException,DataAccessException{
+	//Setup manager to extract plane
+	double[] sliceData = new double[sliceNrrdInfo.getAxisSize(NRRDAxisNames.X)*sliceNrrdInfo.getAxisSize(NRRDAxisNames.Y)];
+	ImagePlaneManager imagePlaneManager = createSlicer(mesh, unslicedData, geometrySpecs);
+	//copy plane to double[]
+	int index = 0;
+	for(int y=0;y<sliceNrrdInfo.getAxisSize(NRRDAxisNames.Y);y++){
+		for(int x=0;x<sliceNrrdInfo.getAxisSize(NRRDAxisNames.X);x++){
+			sliceData[index] = imagePlaneManager.getImagePlaneData().getDataAsTypeRaw(x, y, 0);
+			index++;
+		}
+	}
+	NRRDHelper.appendDoubleData(sliceNrrdInfo, fileDataContainerManager,sliceData,varName);
+}
+private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, VariableSpecs variableSpecs,
+	TimeSpecs timeSpecs2, GeometrySpecs geometrySpecs, RasterSpecs rasterSpecs, FileDataContainerManager fileDataContainerManager) throws RemoteException, DataAccessException, IOException {
+	
+	CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+	DataProcessingOutputInfo dataProcessingOutputInfo = null;
+	//check if any of export variables are PostProcess and if so try to get PostProcessOutputInfo
+	exportServiceImpl.fireExportProgress(jobID, vcdID, "Check PostProcess",0.0);
+	DataIdentifier[] dataIdentifiers = dataServerImpl.getDataIdentifiers(outputContext, user, vcdID);
+	for (int i = 0; i < dataIdentifiers.length; i++) {
+		for(int j=0;j<variableSpecs.getVariableNames().length;j++){
+			if(variableSpecs.getVariableNames()[j].equals(dataIdentifiers[i].getName()) && VariableType.POSTPROCESSING.equals(dataIdentifiers[i].getVariableType())){
+				try{//we need PostProcessOutputInfo
+					exportServiceImpl.fireExportProgress(jobID, vcdID, "Read PostProcess",0.0);
+					dataProcessingOutputInfo = (DataProcessingOutputInfo)dataServerImpl.doDataOperation(user,new DataOperation.DataProcessingOutputInfoOP(vcdID,false,outputContext));
+					break;
+				}catch(Exception e){
+					throw new DataAccessException("Export variable '"+variableSpecs.getVariableNames()[j] + "' is PostProcessing type.  Error reading PostProcessing data: "+e.getClass().getName()+" "+e.getMessage());
+				}
+			}
+		}
+	}
+
+	long lastUpdateTime = 0;
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
-			// single info, specifying 5D
 			switch (geometrySpecs.getModeID()) {
-				case GEOMETRY_FULL: {
-					boolean bPostProcess = false;
-					NrrdInfo nrrdInfo = null;
-					if(dataProcessingOutputInfo != null){
-						for(int nameIndex=0;nameIndex<variableSpecs.getVariableNames().length;nameIndex++){
-							String myVarName = variableSpecs.getVariableNames()[nameIndex];
-							boolean bFound = false;
-							for(int varIndex=0;varIndex<dataProcessingOutputInfo.getVariableNames().length;varIndex++){
-								if(dataProcessingOutputInfo.getVariableNames()[varIndex].equals(myVarName)){
-									bFound = true;
-									if(!dataProcessingOutputInfo.getPostProcessDataType(myVarName).equals(PostProcessDataType.image)){
-										throw new DataAccessException("Export nrrd only implemented for 'image' post-process data");
-									}
-									if(bPostProcess){
-										if(dataProcessingOutputInfo.getVariableISize(myVarName).getX() != nrrdInfo.getSizes()[0] ||
-											dataProcessingOutputInfo.getVariableISize(myVarName).getY() != nrrdInfo.getSizes()[1] ||
-											dataProcessingOutputInfo.getVariableISize(myVarName).getZ() != nrrdInfo.getSizes()[2]){
-											throw new DataAccessException("Export nrrd post-process must all have same x,y,z size, try exporting individually");
-										}
-										continue;
-									}
-									bPostProcess = true;
-									nrrdInfo = NrrdInfo.createBasicNrrdInfo(
-											5,
-											new int[] {dataProcessingOutputInfo.getVariableISize(myVarName).getX(),
-													dataProcessingOutputInfo.getVariableISize(myVarName).getY(),
-													dataProcessingOutputInfo.getVariableISize(myVarName).getZ(),
-													NUM_TIMES, variableSpecs.getVariableNames().length},
-											"double",
-											"raw"
-										);
-									nrrdInfo.setSpacings(new double[] {
-										dataProcessingOutputInfo.getVariableExtent(myVarName).getX()/dataProcessingOutputInfo.getVariableISize(myVarName).getX(),
-										dataProcessingOutputInfo.getVariableExtent(myVarName).getY()/dataProcessingOutputInfo.getVariableISize(myVarName).getY(),
-										dataProcessingOutputInfo.getVariableExtent(myVarName).getZ()/dataProcessingOutputInfo.getVariableISize(myVarName).getZ(),
-										Double.NaN,	// timepoints can have irregular intervals
-										Double.NaN  // not meaningful for variables
-									});
-									nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + "postprocvars");
-									nrrdInfo.setContent("5D(x,y,z,t,var) PostProcess VCData from " + simID);
-								}
-							}
-							if(bPostProcess && !bFound){
-								throw new DataAccessException("Mixed post-process and regular data not allowed");
-							}
-						}
-						
-					}
-					if(!bPostProcess){
-						// create the info object
-						nrrdInfo = NrrdInfo.createBasicNrrdInfo(
-							5,
-							new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(),NUM_TIMES, variableSpecs.getVariableNames().length},
-							"double",
-							"raw"
-						);
-						nrrdInfo.setSpacings(new double[] {
-							mesh.getExtent().getX() / mesh.getSizeX(),
-							mesh.getExtent().getY() / mesh.getSizeY(),
-							mesh.getExtent().getZ() / mesh.getSizeZ(),
-							Double.NaN,	// timepoints can have irregular intervals
-							Double.NaN  // not meaningful for variables
-						});
-						nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames().length + "vars");
-						nrrdInfo.setContent("5D(x,y,z,t,var) VCData from " + simID);
-					}
-					
-					nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell", "???"});
-
-					nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
-					// make datafile and update info
-					nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-					//DataOutputStream out = null;
-				
-					//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
-					int bufferSize = 8*nrrdInfo.getSizes()[0]*nrrdInfo.getSizes()[1]*nrrdInfo.getSizes()[2];
+				case GEOMETRY_FULL:{
+					NrrdInfo nrrdInfo =
+						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo).
+							createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglfull",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
 							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-							if(data.length != (bufferSize/8)){//doubles are 8 bytes
-								System.out.println(data.length+" "+(bufferSize/8));
-								throw new DataAccessException("Var: "+variableSpecs.getVariableNames()[i]+" size != calculated size");
-							}
-							byte[] output = new byte[bufferSize];
-							ByteBuffer byteBuffer = ByteBuffer.wrap(output);
-							for (int k = 0; k < data.length; k++){
-								byteBuffer.putDouble(data[k]);
-							}
-							fileDataContainerManager.append(nrrdInfo.getDataFileID(), output);
+							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 						}
 					}
-				
-				// write out final output
-				nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
-				return new NrrdInfo[] {nrrdInfo};
+					nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+					return new NrrdInfo[] {nrrdInfo};
+				}
+				case GEOMETRY_SLICE: {
+					NrrdInfo sliceNrrdInfo =
+						createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs,
+							timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).createSingleFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, rasterSpecs, timeSpecs2);
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-snglslice",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
+						}
+					}
+					sliceNrrdInfo = NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
+					return new NrrdInfo[] {sliceNrrdInfo};
 				}
 				default: {
 					throw new DataAccessException("NRRD export from slice not yet supported");
@@ -197,44 +322,44 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 		case NRRD_BY_TIME: {
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
-					Vector<NrrdInfo> nrrdinfoV = new Vector();
+					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
+					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-						// create the info object
-						NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
-							4,
-							new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(),variableSpecs.getVariableNames().length},
-							"double",
-							"raw"
-						);
-						nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + formatTime(timeSpecs2.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars");
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timefull",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						NrrdInfo nrrdInfo = nrrdHelper.createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
 						nrrdinfoV.add(nrrdInfo);
-						nrrdInfo.setContent("4D(x,y,z,var) VCData from " + simID);
-						nrrdInfo.setCenters(new String[] {"cell", "cell", "cell","???"});
-						nrrdInfo.setSpacings(new double[] {
-							mesh.getExtent().getX() / mesh.getSizeX(),
-							mesh.getExtent().getY() / mesh.getSizeY(),
-							mesh.getExtent().getZ() / mesh.getSizeZ(),
-							Double.NaN  // not meaningful for variables
-						});
-						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
-						// make datafile and update info						
-						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-		
-						try {
-							//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
-							for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-								//for (int j = 0; j < timeSpecs.getAllTimes().length; j++){
-									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-									for (int k = 0; k < data.length; k++){
-										fileDataContainerManager.append(nrrdInfo.getDataFileID(), String.valueOf(data[k]));
-									}
-								//}
-							}
-						} catch (IOException exc) {
-							throw new DataAccessException(exc.toString());
-						} 
-						// write out final output
-						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
+						}
+						NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+					}
+					if(nrrdinfoV.size() > 0){
+						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+						nrrdinfoV.copyInto(nrrdinfoArr);
+						return nrrdinfoArr;
+					}
+					return null;
+				}
+				case GEOMETRY_SLICE: {
+					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = (timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+					for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+						lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-timeslice",jobID, vcdID, progressIndex,progressEnd);
+						progressIndex++;
+						NrrdInfo sliceNrrdInfo =
+							createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
+								createTimeFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs, timeSpecs2.getAllTimes()[j], rasterSpecs);
+						nrrdinfoV.add(sliceNrrdInfo);
+						for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
+						}
+						NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
 					}
 					if(nrrdinfoV.size() > 0){
 						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
@@ -251,44 +376,44 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 		case NRRD_BY_VARIABLE : {
 			switch (geometrySpecs.getModeID()) {
 				case GEOMETRY_FULL: {
-					Vector nrrdinfoV = new Vector();
+					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
 					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-						// create the info object
-						NrrdInfo nrrdInfo = NrrdInfo.createBasicNrrdInfo(
-							4,
-							new int[] {mesh.getSizeX(),	mesh.getSizeY(), mesh.getSizeZ(), NUM_TIMES},
-							"double",
-							"raw"
-						);
-						nrrdInfo.setCanonicalFileNamePrefix(simID + "_" + NUM_TIMES + "times_" + variableSpecs.getVariableNames()[i] + "vars");
-						nrrdinfoV.add(nrrdInfo);
-						nrrdInfo.setContent("4D(x,y,z,t) VCData from " + simID);
-						nrrdInfo.setCenters(new String[] {"cell", "cell", "cell", "cell"});
-						nrrdInfo.setSpacings(new double[] {
-							mesh.getExtent().getX() / mesh.getSizeX(),
-							mesh.getExtent().getY() / mesh.getSizeY(),
-							mesh.getExtent().getZ() / mesh.getSizeZ(),
-							Double.NaN,	// timepoints can have irregular intervals
-						});
-						nrrdInfo.setSeparateHeader(rasterSpecs.isSeparateHeader());
-						// make datafile and update info
-						nrrdInfo.setDataFileID(fileDataContainerManager.getNewFileDataContainerID());
-					
-						try {
-							//out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileDataContainerManager.getFile(nrrdInfo.getDataFileID()))));
-							//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
-								for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
-									double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
-									for (int k = 0; k < data.length; k++){
-										fileDataContainerManager.append(nrrdInfo.getDataFileID(),String.valueOf(data[k]));
-									}
-								}
-							//}
-						} catch (IOException exc) {
-							throw new DataAccessException(exc.toString());
+						NRRDHelper nrrdhelHelper = new NRRDHelper(variableSpecs.getVariableNames()[i], mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
+						NrrdInfo nrrdInfo = nrrdhelHelper.createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
+						nrrdinfoV.add(nrrdInfo);		
+						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							NRRDHelper.appendDoubleData(nrrdInfo, fileDataContainerManager, data, variableSpecs.getVariableNames()[i]);
 						}
-						// write out final output
 						nrrdInfo = NrrdWriter.writeNRRD(nrrdInfo,fileDataContainerManager);
+					}
+					if(nrrdinfoV.size() > 0){
+						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
+						nrrdinfoV.copyInto(nrrdinfoArr);
+						return nrrdinfoArr;
+					}
+					return null;
+				}
+				case GEOMETRY_SLICE: {
+					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
+					int progressIndex = 1;
+					int progressEnd = variableSpecs.getVariableNames().length*(timeSpecs2.getEndTimeIndex()-timeSpecs2.getBeginTimeIndex()+1);
+					for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
+						NrrdInfo sliceNrrdInfo =
+								createSliceNrrdHelper(mesh, dataProcessingOutputInfo, vcdID, variableSpecs, timeSpecs2, geometrySpecs, rasterSpecs, fileDataContainerManager).
+									createVariableFullNrrdInfo(fileDataContainerManager, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2, rasterSpecs);
+						nrrdinfoV.add(sliceNrrdInfo);		
+						for (int j = timeSpecs2.getBeginTimeIndex(); j <= timeSpecs2.getEndTimeIndex(); j++){
+							lastUpdateTime = fireThrottledProgress(exportServiceImpl, lastUpdateTime, "NRRD-varsfull",jobID, vcdID, progressIndex,progressEnd);
+							progressIndex++;
+							double[] data = dataServerImpl.getSimDataBlock(outputContext,user, vcdID, variableSpecs.getVariableNames()[i], timeSpecs2.getAllTimes()[j]).getData();
+							appendSlice(variableSpecs.getVariableNames()[i], data, sliceNrrdInfo, mesh, geometrySpecs, fileDataContainerManager);
+						}
+						NrrdWriter.writeNRRD(sliceNrrdInfo,fileDataContainerManager);
 					}
 					if(nrrdinfoV.size() > 0){
 						NrrdInfo[] nrrdinfoArr = new NrrdInfo[nrrdinfoV.size()];
@@ -308,6 +433,13 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	}											
 }
 
+	private static long fireThrottledProgress(ExportServiceImpl exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex){
+		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
+			lastUpdateTime = System.currentTimeMillis();
+			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));
+		}
+		return lastUpdateTime;
+	}
 
 /**
  * This method was created in VisualAge.
@@ -751,7 +883,7 @@ private void writeVTKUnstructuredHeader(CartesianMesh.UCDInfo ucdInfo,VCDataIden
 	stringWriter.write(ucdInfo.getMeshGridNodesString(true));
 
 }
-private String formatTime(double timePoint){
+private static String formatTime(double timePoint){
 	StringBuffer timeSB = new StringBuffer(timePoint+"");
 	int dotIndex = timeSB.toString().indexOf(".");
 	if(dotIndex != -1){
