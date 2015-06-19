@@ -47,11 +47,11 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 	public final static int COLUMN_NAME = 1;
 	public final static int COLUMN_STRUCTURE = 2;
 	public final static int COLUMN_DEPICTION = 3;
-	public final static int COLUMN_LINK = 4;
-	public final static int COLUMN_KINETICS = 5;
-	public final static int COLUMN_DEFINITION = 6;
+	public final static int COLUMN_KINETICS = 4;
+	public final static int COLUMN_DEFINITION = 5;
+	public final static int COLUMN_LINK = 6;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Depiction", "Link", "Kinetics", "BioNetGen Definition"};
+	private static String[] columnNames = new String[] {"Reaction", "Name", "Structure", "Depiction", "Kinetics", "BioNetGen Definition", "Link"};
 	
 	public BioModelEditorReactionTableModel(EditorScrollTable table) {
 		super(table);

@@ -113,7 +113,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		if (BioModelEditorRightSideTableModel.ADD_NEW_HERE_TEXT.equals(value)) {
 			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_HTML);
 		} else if (value instanceof ModelProcessEquation && BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_TEXT.equals(((ModelProcessEquation)value).toString())) {
-			setText(BioModelEditorRightSideTableModel.ADD_NEW_HERE_REACTION_HTML);
+			setText(BioModelEditorRightSideTableModel.ADD_NEW_REACTION_OR_RULE_HTML);
 		}
 		if (tableModel instanceof SortTableModel) {
 			DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel)tableModel);
