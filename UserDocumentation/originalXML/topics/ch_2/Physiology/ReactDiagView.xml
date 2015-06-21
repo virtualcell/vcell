@@ -65,7 +65,11 @@
 	 
 	    <imgReference target = "icon_addcompartment.gif"/> <bold>inserts a new compartment</bold> by clicking between existing structures or appends new compartments to the ends.  
 	    dashed vertical lines appear on the reaction diagram to indicate where compartments can be added.
-	  
+	    
+	    <para>
+	    Click and drag on a <bold>compartment name</bold> heading starts <bold>Drag to move</bold>, release the mouse over any set of vertical dashed lines
+	    moves the compartment and contents to the new location.
+	    </para>
 	    
 	    <imgReference target = "icon_ImageEd_zooms.gif"/> buttons vary the display magnification of the reaction diagram.
 	  
