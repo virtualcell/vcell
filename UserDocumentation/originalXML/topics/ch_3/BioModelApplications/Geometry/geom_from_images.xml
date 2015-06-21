@@ -45,7 +45,11 @@
 	<item>MathModel names (select geometry from a previously saved MathModel).</item>
 	<item>Geometry names. (legacy from database, not generally used) - (Re-use old geometries saved in earlier version of VCell).</item>
 	</list>
-	The chosen geometry will immediately replace the current geometry in the application.  To edit the new geometry click the "Replace Geometry" button, choose "New... and select "Edit Current Geometry".
+	The chosen geometry will immediately replace the current geometry in the application.
+	</para>
+	<para>
+	<bold>EDIT the current image based geometry</bold>
+	 by clicking the "Edit Image" button to activate the <bold>Geometry Editor</bold> tool (see below).
 	</para>
 	<imgReference target = "Geom_edit_new.gif"/>	
 	<para>
