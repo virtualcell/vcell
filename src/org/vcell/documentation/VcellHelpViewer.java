@@ -50,8 +50,23 @@ public class VcellHelpViewer extends JPanel
 	public void setCloseMyParent(ChildWindow closeableWindow){
 		this.closeableWindow = closeableWindow;
 		if(closeableWindow != null){
-			btnCloseHelp.setVisible(true);
+			getCloseJButton().setVisible(true);
 		}
+	}
+	private JButton getCloseJButton(){
+		if(btnCloseHelp == null){
+			btnCloseHelp = new JButton("Close");
+			btnCloseHelp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(closeableWindow != null){
+						closeableWindow.close();
+						closeableWindow = null;
+					}
+				}
+			});
+		}
+		return btnCloseHelp;
 	}
 	public VcellHelpViewer(String docUrl) {
 		URL resourceURL = VcellHelpViewer.class.getResource(docUrl);
@@ -77,18 +92,8 @@ public class VcellHelpViewer extends JPanel
 		add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
-		btnCloseHelp = new JButton("Close");
-		btnCloseHelp.setVisible(false);
-		btnCloseHelp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(closeableWindow != null){
-					closeableWindow.close();
-					closeableWindow = null;
-				}
-			}
-		});
-		panel.add(btnCloseHelp);
+		getCloseJButton().setVisible(false);
+		panel.add(getCloseJButton());
 	}
 	
 	public static void main(String[] args){
