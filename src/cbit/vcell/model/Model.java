@@ -3612,6 +3612,16 @@ public void vetoableChange(PropertyChangeEvent e) throws ModelPropertyVetoExcept
 			// validateNamingConflicts("Reaction",ReactionStep.class, newName, e);
 		}
 	}
+	if (e.getSource() instanceof ReactionRule && e.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)){
+		if (!e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			if (getRbmModelContainer().getReactionRule(newName)!=null){
+				throw new ModelPropertyVetoException("another reaction rule is already using name '"+newName+"'",e);
+			}
+			validateNamingConflicts("Rule",ReactionRule.class, newName, e);
+		}
+	}
+	
 	if (e.getSource() instanceof SpeciesContext){
 		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
