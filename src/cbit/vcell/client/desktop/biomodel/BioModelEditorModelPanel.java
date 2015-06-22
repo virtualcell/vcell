@@ -1187,9 +1187,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule(bioModel.getModel().getStructure(0));
 			if(rr != null) {
+				try {
 				rr.setReversible(false);
 				bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
 				newObject = rr;
+				} catch (Exception e){
+					e.printStackTrace();
+					DialogUtils.showErrorDialog(this, e.getMessage(), e);
+				}
 			} else {
 				throw new RuntimeException("Reaction Rule is null");
 			}
