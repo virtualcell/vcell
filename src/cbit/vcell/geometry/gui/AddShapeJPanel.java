@@ -38,7 +38,7 @@ import cbit.vcell.math.ReservedVariable;
 @SuppressWarnings("serial")
 public class AddShapeJPanel extends JPanel {
 		
-	private JTextField manualTextField;
+	private final JTextField manualTextField;
 	public static String PROPCHANGE_VALID_ANALYTIC = "PROPCHANGE_VALID_ANALYTIC";
 	public static final String MANUAL_SELECT = "Manual";
 	public static final String CIRCLE_SELECT = "Circle";
@@ -49,30 +49,11 @@ public class AddShapeJPanel extends JPanel {
 	public static final String ELLIPSE_SELECT = "Ellipse";
 	public static final String ELLIPSOID_SELECT = "Ellipsoid";
 
-	private ActionListener shapeTypeComboBoxActionListener =
-		new ActionListener(){
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == comboBox) {
-				if(comboBox.getSelectedItem().equals(MANUAL_SELECT)){
-					cardLayout.show(cardPanel, manualPanel.getName());
-				}else if(comboBox.getSelectedItem().equals(CIRCLE_SELECT) || comboBox.getSelectedItem().equals(SPHERE_SELECT)){
-					cardLayout.show(cardPanel, circlePanel.getName());
-				}else if(comboBox.getSelectedItem().equals(RECTANGLE_SELECT) || comboBox.getSelectedItem().equals(BOX_SELECT)){
-					cardLayout.show(cardPanel, boxPanel.getName());
-				}else if(comboBox.getSelectedItem().equals(ELLIPSE_SELECT) || comboBox.getSelectedItem().equals(ELLIPSOID_SELECT)){
-					cardLayout.show(cardPanel, ellipsePanel.getName());
-				}else if(comboBox.getSelectedItem().equals(CYLINDER_SELECT)){
-					cardLayout.show(cardPanel, cylinderPanel.getName());
-				}
-			}
-			setAnalyticExprLabel();
-		}
-	};
 	private final JTextField boxUCTextField = new JTextField();
 	private final JTextField boxLCTextField = new JTextField();
 	private final JTextField circleRadiusTextField = new JTextField();
 	private final JTextField circleCenterTextField = new JTextField();
-	private final JComboBox comboBox = new JComboBox();
+	private final JComboBox<String> comboBox = new JComboBox<>();
 	private final JPanel cardPanel = new JPanel();
 	private final CardLayout cardLayout = new CardLayout();
 	private final JPanel circlePanel = new JPanel();
@@ -98,6 +79,63 @@ public class AddShapeJPanel extends JPanel {
 	private final JRadioButton cylYRadioButton = new JRadioButton();
 	private final JRadioButton cylZRadioButton = new JRadioButton();
 	private ButtonGroup cylAxisButtonGroup = new ButtonGroup();
+	
+	private class ComboRadioListener implements ActionListener {
+		boolean active = true;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (active) {
+				execute( );
+			}
+		}
+			
+		/**
+		 * set panel / label based on selection
+		 */
+		private void execute( ) {
+			//we expect comboBox and getSelectedItem to be non-null based on
+			//program logic
+			try {
+				Object si = comboBox.getSelectedItem();
+				JPanel panel = null;
+
+				if(si.equals(MANUAL_SELECT)){
+					panel = manualPanel;
+				}else if(si.equals(CIRCLE_SELECT) || si.equals(SPHERE_SELECT)){
+					panel = circlePanel;
+				}else if(si.equals(RECTANGLE_SELECT) || si.equals(BOX_SELECT)){
+					panel = boxPanel;
+				}else if(si.equals(ELLIPSE_SELECT) || si.equals(ELLIPSOID_SELECT)){
+					panel = ellipsePanel; 
+				}else if(comboBox.getSelectedItem().equals(CYLINDER_SELECT)){
+					panel = cylinderPanel; 
+				}
+				if (panel != null) {
+					cardLayout.show(cardPanel, panel.getName());
+				}
+				setAnalyticExprLabel();
+			} catch (NullPointerException npe) {
+				npe.printStackTrace();
+			}
+		}
+
+		/**
+		 * disable (for setting items)
+		 */
+		void freeze( ) {
+			active = false;
+		}
+		/**
+		 * reenable (after settting items)
+		 */
+		void thaw( ) {
+			active = true;
+			execute( );
+		}
+	}
+	
+	private ComboRadioListener shapeTypeComboBoxActionListener = new ComboRadioListener();
 	
 	public AddShapeJPanel() {
 		super();
@@ -397,23 +435,20 @@ public class AddShapeJPanel extends JPanel {
 		init();
 	}
 	
-	public void setDimension(int dimension){
-		final String XY = "(x,y)";
-		final String XYZ = "(x,y,z)";
-		final String CENTERPOINT = "Center Point";
-		final String LOWERCORNERPOINT = "Lower Corner Point";
-		final String UPPERCORNERPOINT = "Upper Corner Point";
-		final String AXISRADII = "Axis Radii";
-		final String XYZERO = "0,0";
-		final String XYZZERO = "0,0,0";
-		final String XYONE = "1,1";
-		final String XYZONE = "1,1,1";
+	private final static String XY = "(x,y)";
+	private final static String XYZ = "(x,y,z)";
+	private final static String CENTERPOINT = "Center Point";
+	private final static String LOWERCORNERPOINT = "Lower Corner Point";
+	private final static String UPPERCORNERPOINT = "Upper Corner Point";
+	private final static String AXISRADII = "Axis Radii";
+	private final static String XYZERO = "0,0";
+	private final static String XYZZERO = "0,0,0";
+	private final static String XYONE = "1,1";
+	private final static String XYZONE = "1,1,1";
 		
-		manualTextField.setText("1.0");
-		if(dimension  == 1){
-			cardLayout.show(cardPanel, manualPanel.getName());
-		}else{
-			populateShapeTypeComboBox(dimension);
+	public void setDimension(int dimension){
+		populateShapeTypeComboBox(dimension);
+		if (dimension > 1){
 			circleCenterLabel.setText(CENTERPOINT+" "+(dimension == 2?XY:XYZ));
 			boxLCLabel.setText(LOWERCORNERPOINT+" "+(dimension == 2?XY:XYZ));
 			boxUCLabel.setText(UPPERCORNERPOINT+" "+(dimension == 2?XY:XYZ));
@@ -429,27 +464,35 @@ public class AddShapeJPanel extends JPanel {
 			cylStartPointTextField.setText((dimension == 2?XYZERO:XYZZERO));
 			cylRadiusTextField.setText("1.0");
 			cylLengthTextField.setText("1.0");
-
 		}
+		else {
+			cardLayout.show(cardPanel, manualPanel.getName());
+		}
+		manualTextField.setText("1.0");
 	}
 	
 	private void populateShapeTypeComboBox(int dimension){
-		comboBox.removeActionListener(shapeTypeComboBoxActionListener);
-		comboBox.removeAllItems();
-		comboBox.insertItemAt(MANUAL_SELECT, 0);
-		if(dimension == 2){
-			comboBox.insertItemAt(CIRCLE_SELECT, 1);
-			comboBox.insertItemAt(RECTANGLE_SELECT, 2);
-			comboBox.insertItemAt(ELLIPSE_SELECT, 3);
-		}else if(dimension == 3){
-			comboBox.insertItemAt(SPHERE_SELECT, 1);
-			comboBox.insertItemAt(BOX_SELECT, 2);
-			comboBox.insertItemAt(ELLIPSOID_SELECT, 3);
-			comboBox.insertItemAt(CYLINDER_SELECT, 4);			
+		shapeTypeComboBoxActionListener.freeze();
+		try {
+			comboBox.removeAllItems();
+			comboBox.insertItemAt(MANUAL_SELECT, 0);
+			if(dimension == 2){
+				comboBox.insertItemAt(CIRCLE_SELECT, 1);
+				comboBox.insertItemAt(RECTANGLE_SELECT, 2);
+				comboBox.insertItemAt(ELLIPSE_SELECT, 3);
+			}else if(dimension == 3){
+				comboBox.insertItemAt(SPHERE_SELECT, 1);
+				comboBox.insertItemAt(BOX_SELECT, 2);
+				comboBox.insertItemAt(ELLIPSOID_SELECT, 3);
+				comboBox.insertItemAt(CYLINDER_SELECT, 4);			
+			}
+			comboBox.setSelectedIndex(0);
 		}
-		comboBox.setSelectedIndex(0);
-		comboBox.addActionListener(shapeTypeComboBoxActionListener);
+		finally {
+			shapeTypeComboBoxActionListener.thaw();
+		}
 	}
+
 	private void setAnalyticExprLabel(){
 		try{
 			analyticExprLabel.setText(getCurrentAnalyticExpression());
@@ -466,14 +509,15 @@ public class AddShapeJPanel extends JPanel {
 			//ignore
 		}
 	}
+	
 	private void init(){
-		
 		cylAxisButtonGroup.add(cylXRadioButton);
 		cylAxisButtonGroup.add(cylYRadioButton);
 		cylAxisButtonGroup.add(cylZRadioButton);
 		cylXRadioButton.addActionListener(shapeTypeComboBoxActionListener);
 		cylYRadioButton.addActionListener(shapeTypeComboBoxActionListener);
 		cylZRadioButton.addActionListener(shapeTypeComboBoxActionListener);
+		comboBox.addActionListener(shapeTypeComboBoxActionListener);
 		
 		copyExpressionTextButton.setEnabled(false);
 		

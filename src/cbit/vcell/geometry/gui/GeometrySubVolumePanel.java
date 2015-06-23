@@ -386,8 +386,9 @@ private void addAnalyticSubVolume() {
 				getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
 				(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
 				(getGeometry().getDimension() > 2?getGeometry().getOrigin().getZ()+getGeometry().getExtent().getZ()/2:null));
-		addShapeJPanel.setDimension(getGeometry().getDimension());
 	}
+	final int dim = getGeometry().getDimension();
+	addShapeJPanel.setDimension(dim);
 	while(true){
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
