@@ -92,7 +92,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 					}
 					MolecularComponentSmallShape mcssTo = stssTo.getShape(mcpTo);
 					if(mcssTo == null) {
-						System.err.println("Null 'to' MolecularComponentSmallShape for " + mcpFrom.getMolecularComponent().getDisplayName());
+//						System.err.println("Null 'to' MolecularComponentSmallShape for " + mcpFrom.getMolecularComponent().getDisplayName());
 						continue;
 					}
 					Point from = new Point(mcssFrom.getX()+mcssFrom.getWidth()/2, mcssFrom.getY()+mcssFrom.getHeight());
