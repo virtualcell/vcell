@@ -27,6 +27,7 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
@@ -45,6 +46,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.units.VCUnitDefinition;
 
@@ -313,6 +315,9 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
 
 		if (savedMetadataMap != null){
+			if(simulationOwner instanceof SimulationContext){
+				addOutputFunctionsToMetaData((SimulationContext)simulationOwner, savedMetadataMap);
+			}
 			return;
 		}
 		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<String,DataSymbolMetadata>();
@@ -327,7 +332,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				MathDescription mathDescription = mathMapping.getMathDescription();
 				MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
 				Enumeration<Variable> varEnum = mathDescription.getVariables();
-				
+				addOutputFunctionsToMetaData(simulationContext, metadataMap);
 				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
 					Variable var = varEnum.nextElement();
@@ -395,7 +400,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 
 }
 
-public static enum FilterCategoryType {Species,Reactions,/* UserFunctions ,*/Observables,GeneratedSpecies,ReservedXYZT,Other};
+public static enum FilterCategoryType {Species,Reactions,UserFunctions ,Observables,GeneratedSpecies,ReservedXYZT,Other};
 
 public static class DataSymbolMetadata {
 	public final FilterCategoryType filterCategory;
@@ -416,4 +421,20 @@ public static class DataSymbolMetadata {
 public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
 	return dataSymbolMetadataResolver;
 }
+
+private static void addOutputFunctionsToMetaData(SimulationContext simulationContext,HashMap<String, DataSymbolMetadata> metaDataMap){
+	if(metaDataMap != null &&
+		simulationContext.getOutputFunctionContext() != null &&
+		simulationContext.getOutputFunctionContext().getOutputFunctionsList() != null){
+			ArrayList<AnnotatedFunction> annotfuncs = simulationContext.getOutputFunctionContext().getOutputFunctionsList();
+			for(AnnotatedFunction annotfunc:annotfuncs){
+				if(simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()) != null){
+				metaDataMap.put(annotfunc.getName(),
+					new DataSymbolMetadata(FilterCategoryType.UserFunctions,
+						simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()).getUnitDefinition()));
+				}
+			}
+		}
+}
+
 }
