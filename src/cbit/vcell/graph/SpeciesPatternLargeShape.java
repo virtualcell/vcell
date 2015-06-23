@@ -90,7 +90,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 					}
 					MolecularComponentPattern mcpTo = b.molecularComponentPattern;
 					MolecularComponentLargeShape mclsTo = stlsTo.getShape(mcpTo);
-					
+					if(mclsTo == null) {
+						Point from = new Point(mclsFrom.getX()+mclsFrom.baseWidth/2, mclsFrom.getY()+mclsFrom.getHeight());
+						String symbol = mcpFrom.getBondType().symbol;
+						BondSingle bs = new BondSingle(mcpFrom, from);
+						bondSingles.add(bs);
+						continue;
+					}
 					Point from = new Point(mclsFrom.getX()+mclsFrom.baseWidth/2, mclsFrom.getY()+mclsFrom.getHeight());
 					Point to = new Point(mclsTo.getX()+mclsTo.baseWidth/2, mclsTo.getY()+mclsFrom.getHeight());
 					if(from.x < to.x) {		// the bonds with from.x > to.x are duplicates

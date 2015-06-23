@@ -431,13 +431,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) parentObject;
 				rrp.speciesPattern.getSpeciesPattern().removeMolecularTypePattern(mtp);
 			}
-		} else if (selectedUserObject instanceof MolecularComponentPattern) {
-			MolecularComponentPattern mcp = (MolecularComponentPattern)selectedUserObject;
-			Object parentObject = parentNode.getUserObject();
-			if (parentObject instanceof MolecularTypePattern) {
-				MolecularTypePattern mtp = (MolecularTypePattern)parentObject;
-				mtp.removeMolecularComponentPattern(mcp);
-			}
+// delete site doesn't make sense for a reaction rule
+//		} else if (selectedUserObject instanceof MolecularComponentPattern) {
+//			MolecularComponentPattern mcp = (MolecularComponentPattern)selectedUserObject;
+//			Object parentObject = parentNode.getUserObject();
+//			if (parentObject instanceof MolecularTypePattern) {
+//				MolecularTypePattern mtp = (MolecularTypePattern)parentObject;
+//				mtp.removeMolecularComponentPattern(mcp);
+//			}
 		}
 	}
 	
@@ -644,7 +645,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularComponentPattern) {
 						manageComponentPattern(reactantTreeModel, reactantTree, selectedNode, selectedObject);
-						bDelete = true;
+						bDelete = false;	// we don't delete a site in a reaction rule
 					}
 				}
 		    }
