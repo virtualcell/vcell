@@ -11,6 +11,7 @@ import javax.swing.tree.TreePath;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -119,6 +120,10 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
+				if(!inputString.equals(TokenMangler.fixTokenStrict(inputString))) {
+					throw new RuntimeException("Invalid name " + inputString);
+				}
+				
 				if (userObject instanceof MolecularType) {
 					((MolecularType) userObject).setName(inputString);
 				} else if (userObject instanceof MolecularComponent) {
