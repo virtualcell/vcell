@@ -110,7 +110,9 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 				shapePanel.repaint();
 				} catch (ParseException e1) {
 					e1.printStackTrace();
-					return;
+					Graphics panelContext = shapePanel.getGraphics();
+					spls = new SpeciesPatternLargeShape(20, 20, panelContext, true);	// error (red circle)
+					shapePanel.repaint();
 				}
 			}
 		}

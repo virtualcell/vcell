@@ -37,11 +37,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	private Displayable owner;
 	private SpeciesPattern sp;
 	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
+	private boolean isError = false;
 	
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
-	
+	// this is only used to display an error in the ViewGeneratedSpeciespanel
+	public SpeciesPatternLargeShape(int xPos, int yPos, Graphics graphicsContext, boolean isError) {
+		this.owner = null;
+		this.sp = null;
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.graphicsContext = graphicsContext;
+		this.isError = true;
+
+		int xPattern = xPos;
+		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, null);
+		speciesShapes.add(stls);
+	}
 	public SpeciesPatternLargeShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;

@@ -139,6 +139,12 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					reactionRule.addReactant(new ReactantPattern(speciesPattern, reactionRule.getStructure()));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
+						Graphics panelContext = shapePanel.getGraphics();
+						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, panelContext, true);	// error (red circle)
+						reactantPatternShapeList.clear();
+						productPatternShapeList.clear();
+						reactantPatternShapeList.add(spls);
+						shapePanel.repaint();
 						return;
 					}
 				}
@@ -154,6 +160,12 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					reactionRule.addProduct(new ProductPattern(speciesPattern, reactionRule.getStructure()));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
+						Graphics panelContext = shapePanel.getGraphics();
+						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, panelContext, true);	// error (red circle)
+						reactantPatternShapeList.clear();
+						productPatternShapeList.clear();
+						reactantPatternShapeList.add(spls);
+						shapePanel.repaint();
 						return;
 					}
 				}			

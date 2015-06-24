@@ -52,7 +52,7 @@ public class MolecularTypeLargeShape implements LargeShape {
 	
 	// this is only called for plain species context (no pattern)
 	public MolecularTypeLargeShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
-		this.owner = owner;
+		this.owner = owner;		// null owner means we want to display a red circle (meaning error)
 		this.pattern = false;
 		this.mt = null;
 		this.mtp = null;
@@ -233,11 +233,15 @@ public class MolecularTypeLargeShape implements LargeShape {
 		Font fontOld = g2.getFont();
 		Color colorOld = g2.getColor();
 		Color primaryColor = null;
-
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		if(mt == null && mtp == null) {		// plain species context
-			Color exterior = Color.green.darker().darker();
+			Color exterior;
+			if(owner == null) {
+				exterior = Color.red.darker();		// error
+			} else {
+				exterior = Color.green.darker().darker();		// plain species
+			}
 			Point2D center = new Point2D.Float(xPos+baseHeight/3, yPos+baseHeight/3);
 			float radius = baseHeight*0.5f;
 			Point2D focus = new Point2D.Float(xPos+baseHeight/3-1, yPos+baseHeight/3-1);
@@ -250,7 +254,14 @@ public class MolecularTypeLargeShape implements LargeShape {
 			Ellipse2D circle2 = new Ellipse2D.Double(xPos-1, yPos-1, baseHeight, baseHeight);
 			g2.setPaint(Color.DARK_GRAY);
 			g2.draw(circle2);
-
+			
+			if(owner == null) {
+				Font font = fontOld.deriveFont(Font.BOLD);
+				g.setFont(font);
+				g.setColor(Color.red.darker().darker());
+				g2.drawString("Error parsing generated species!", xPos+baseHeight+10, yPos+baseHeight-9);
+			}
+			
 			g.setFont(fontOld);
 			g.setColor(colorOld);
 			return;
