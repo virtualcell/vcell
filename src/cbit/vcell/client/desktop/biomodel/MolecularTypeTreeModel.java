@@ -15,6 +15,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.Displayable;
 
 import cbit.vcell.desktop.BioModelNode;
 
@@ -120,8 +121,10 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
-				if(!inputString.equals(TokenMangler.fixTokenStrict(inputString))) {
-					throw new RuntimeException("Invalid name " + inputString);
+				String mangled = TokenMangler.fixTokenStrict(inputString);
+				if(!mangled.equals(inputString)) {
+					String errMsg = ((Displayable)userObject).getDisplayType() + " '" + inputString + "' not legal identifier, try '" + mangled + "'";
+					throw new RuntimeException(errMsg);
 				}
 				
 				if (userObject instanceof MolecularType) {
