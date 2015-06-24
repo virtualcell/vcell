@@ -638,7 +638,7 @@ public class BioEvent implements Matchable, Serializable, VetoableChangeListener
 			throw new RuntimeException(e.getMessage());
 		}
 
-		ArrayList<EventAssignment> newEventAssignmentList = new ArrayList<EventAssignment>(eventAssignmentList);
+		ArrayList<EventAssignment> newEventAssignmentList = new ArrayList<EventAssignment>((eventAssignmentList==null?new ArrayList<EventAssignment>():eventAssignmentList));
 		newEventAssignmentList.add(eventAssign);
 		setEventAssignmentsList(newEventAssignmentList);
 	}   

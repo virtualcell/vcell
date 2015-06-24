@@ -98,7 +98,7 @@ public class EventsSummaryTableModel extends BioModelEditorApplicationRightSideT
 					}
 					case COLUMN_EVENT_ACTIONS: {
 						ArrayList<EventAssignment> eas = event.getEventAssignments();
-						if (eas.size() == 0) {
+						if (eas == null || eas.size() == 0) {
 							return "No actions defined";
 						} 
 						String varNames = "";
