@@ -118,7 +118,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_WARNING)) {
 
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
-					changeName();
+					nameChanged(evt);
 				}
 			}
 		}
@@ -304,6 +304,12 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		}
 	}
 
+	private void nameChanged(PropertyChangeEvent e) {
+		if (reactionRule == null) {
+			return;
+		}
+		nameTextField.setText(reactionRule.getName());
+	}
 	private void changeName() {
 		if (reactionRule == null) {
 			return;
