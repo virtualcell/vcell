@@ -16,6 +16,8 @@ import java.util.Hashtable;
 
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.RenderDoubleWithTooltip;
+import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
@@ -181,6 +183,8 @@ private PlotPane getPlotPane1() {
 		try {
 			ivjPlotPane1 = new PlotPane();
 			ivjPlotPane1.setName("PlotPane1");
+			SpecialtyTableRenderer str = new RenderDoubleWithTooltip();
+			ivjPlotPane1.setSpecialityRenderer(str);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

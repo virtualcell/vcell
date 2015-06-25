@@ -1390,11 +1390,8 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 		}
 		
 	};
-	newJCheckBox.setSelected(true);
-	if(filterCategory.equals(FilterCategoryType.ReservedXYZT)){
-		//Don't let user unselect reserved variables for now
-		newJCheckBox.setEnabled(false);
-	}
+	newJCheckBox.setSelected(filterCategory.initialSelect);
+	newJCheckBox.setEnabled(filterCategory.enabled);
 	filterSettings.put(newJCheckBox,filterCategory);
 	return newJCheckBox;		
 }

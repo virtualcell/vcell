@@ -551,7 +551,9 @@ private void initConnections() throws java.lang.Exception {
 				int column) {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if (value instanceof OutputTimeSpec) {
-				setText(((OutputTimeSpec) value).getDescription());
+				OutputTimeSpec ots = (OutputTimeSpec) value;
+				String text = ots.getDescription();
+				setText(text);
 			} else if (value instanceof Double) {
 				setText(value+"");
 			}
