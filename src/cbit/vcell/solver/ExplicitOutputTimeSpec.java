@@ -110,7 +110,7 @@ public double[] getOutputTimes() {
 
 @Override
 public java.lang.String getDescription() {
-	return toCommaSeperatedOneLineOfString();
+	return "at " + toCommaSeperatedOneLineOfString() + " sec";
 }
 /**
  * Insert the method's description here.
