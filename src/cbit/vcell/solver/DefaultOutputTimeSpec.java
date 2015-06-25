@@ -93,12 +93,15 @@ public int getKeepEvery() {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (9/7/2005 3:42:25 PM)
+ * describe 
  * @return java.lang.String
  */
 public java.lang.String getDescription() {
-	return "keep every " + fieldKeepEvery;// + ", max " + fieldKeepAtMost;
+	String r = "keep every " + fieldKeepEvery + " sample";// + ", max " + fieldKeepAtMost;
+	if (fieldKeepEvery != 1) {
+		return r + 's' ;
+	}
+	return r;
 }
 
 
