@@ -77,7 +77,7 @@ public void setOuputTimeStep(double arg_outputTimeStep)
  * @return java.lang.String
  */
 public java.lang.String getDescription() {
-	return "every " + fieldOutputTimeStep;
+	return "every " + fieldOutputTimeStep + " sec";
 }
 
 
