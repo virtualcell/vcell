@@ -31,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -330,6 +331,17 @@ public static class ScrollTableBooleanCellRenderer extends JCheckBox implements 
 		};
 		addMouseListener(mouseListener);
 		addMouseMotionListener(mouseMotionListener);
+	}
+	
+	/**
+	 * set a speciality renderer
+	 * @param str not null
+	 */
+	public void setSpecialityRenderer(SpecialtyTableRenderer str) {
+		Objects.requireNonNull(str);
+		for (Class<?> clzz : str.supportedTypes()) {
+			setDefaultRenderer(clzz, str);
+		}
 	}
 
 	public final JComponent getEnclosingScrollPane() {

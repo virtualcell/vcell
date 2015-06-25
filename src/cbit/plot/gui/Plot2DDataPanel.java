@@ -21,9 +21,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
+import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import cbit.plot.Plot2D;
 import cbit.vcell.desktop.VCellTransferable;
@@ -36,6 +38,8 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: Ion Moraru
  */
 public class Plot2DDataPanel extends JPanel {
+	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev$");
+	private static final Logger LG = Logger.getLogger(Plot2DDataPanel.class);
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -46,7 +50,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			if (e.getSource() == Plot2DDataPanel.this.getScrollPaneTable()) 
-				connEtoC1(e);
+				showPopupMenu(e, getJPopupMenu1());
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
@@ -67,9 +71,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 	private ScrollTable ivjScrollPaneTable = null;
 	private NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
-	private JPopupMenu ivjJPopupMenu1 = null;
+//	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private final static String COPY_ROW = "Copy Entire Row";
 
 /**
  * Plot2DDataPanel constructor comment.
@@ -77,25 +82,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 public Plot2DDataPanel() {
 	super();
 	initialize();
-}
-
-/**
- * connEtoC1:  (ScrollPaneTable.mouse.mouseClicked(java.awt.event.MouseEvent) --> Plot2DDataPanel.scrollPaneTable_MouseClicked(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.showPopupMenu(arg1, getJPopupMenu1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
 }
 
 /**
@@ -306,7 +292,7 @@ private synchronized void copyCells(String actionCommand) {
 			rows = getScrollPaneTable().getSelectedRows();
 			columns = getScrollPaneTable().getSelectedColumns();
 		}
-		if (actionCommand.equals("Copy All")) {
+		else if (actionCommand.equals("Copy All")) {
 			r = getScrollPaneTable().getRowCount();
 			c = getScrollPaneTable().getColumnCount();
 			rows = new int[r];
@@ -314,6 +300,18 @@ private synchronized void copyCells(String actionCommand) {
 			for (int i = 0; i < rows.length; i++){
 				rows[i] = i;
 			}
+			for (int i = 0; i < columns.length; i++){
+				columns[i] = i;
+			}
+		}
+		else if (actionCommand == COPY_ROW) { //we use exact String, so identity check == works
+			r = getScrollPaneTable().getSelectedRowCount();
+			if (r != 1) {
+				LG.warn("only expected one selected row, but " + r + " selected");
+			}
+			rows = getScrollPaneTable().getSelectedRows();
+			c = getScrollPaneTable().getColumnCount();
+			columns = new int[c];
 			for (int i = 0; i < columns.length; i++){
 				columns[i] = i;
 			}
@@ -445,26 +443,21 @@ private javax.swing.JMenuItem getJMenuItemCopyAll() {
 }
 
 /**
- * Return the JPopupMenu1 property value.
+ * dynamically build popup, depending on number of rows currently selected 
  * @return javax.swing.JPopupMenu
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPopupMenu getJPopupMenu1() {
-	if (ivjJPopupMenu1 == null) {
-		try {
-			ivjJPopupMenu1 = new javax.swing.JPopupMenu();
-			ivjJPopupMenu1.setName("JPopupMenu1");
-			ivjJPopupMenu1.add(getJMenuItemCopy());
-			ivjJPopupMenu1.add(getJMenuItemCopyAll());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
+	JPopupMenu popupMenu = new javax.swing.JPopupMenu();
+	popupMenu.setName("JPopupMenu1");
+	popupMenu.add(getJMenuItemCopy());
+	popupMenu.add(getJMenuItemCopyAll());
+	int src = getScrollPaneTable().getSelectedRowCount();
+	if (src == 1) {
+		JMenuItem copyRow = new JMenuItem(COPY_ROW);
+		copyRow.addActionListener(ae -> copyCells(COPY_ROW) );
+		popupMenu.add(copyRow);
 	}
-	return ivjJPopupMenu1;
+	return popupMenu; 
 }
 
 /**
@@ -522,6 +515,12 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setCellSelectionEnabled(true);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
+			/*
+			RenderDoubleWithTooltip rdwtt = new RenderDoubleWithTooltip(); 
+			ivjScrollPaneTable.setDefaultRenderer(Double.class,rdwtt);
+			ivjScrollPaneTable.setDefaultRenderer(Object.class,rdwtt);
+			ivjScrollPaneTable.setDefaultRenderer(Number.class,rdwtt);
+			*/
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -662,5 +661,13 @@ private void showPopupMenu(MouseEvent mouseEvent, javax.swing.JPopupMenu menu) {
 	if (SwingUtilities.isRightMouseButton(mouseEvent)) {
 		menu.show(getScrollPaneTable(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 	}
+}
+
+/**
+ * set speciality renderer on the scrolltable
+ * @param str not null
+ */
+public void setSpecialityRenderer(SpecialtyTableRenderer str) {
+	getScrollPaneTable().setSpecialityRenderer(str);
 }
 }

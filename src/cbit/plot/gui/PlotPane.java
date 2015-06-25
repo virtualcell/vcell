@@ -32,6 +32,7 @@ import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EnhancedJLabel;
 import org.vcell.util.gui.JToolBarToggleButton;
+import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
@@ -1388,5 +1389,13 @@ public void setBackground(Color color)
 	getJPanelBottom().setBackground(color);
 	getJPanelPlot().setBackground(color);
 //	this.setBackground(color);
+}
+
+/**
+ * set renderer on the 2D data panel
+ * @param str not null
+ */
+public void setSpecialityRenderer(SpecialtyTableRenderer str) {
+	getPlot2DDataPanel1().setSpecialityRenderer(str);
 }
 }

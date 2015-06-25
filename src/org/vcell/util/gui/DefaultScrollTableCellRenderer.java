@@ -33,7 +33,6 @@ import org.vcell.util.gui.sorttable.SortTableModel;
 
 import cbit.gui.ModelProcessEquation;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 
 @SuppressWarnings("serial")
 public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
@@ -95,12 +94,7 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		if (value instanceof Double) {
 			Double doubleValue = (Double)value;
-			if (doubleValue.isNaN() || doubleValue.isInfinite()) {
-				setText(java.text.NumberFormat.getInstance().format(doubleValue.doubleValue()));
-			} else {
-				String formattedDouble = NumberUtils.formatNumber(doubleValue.doubleValue());
-				setText(formattedDouble);
-			}			
+			setText(nicelyFormattedDouble(doubleValue));
 		} else if (value instanceof JComponent) {
 			JComponent jc = (JComponent)value;
 			if (hasFocus) {
@@ -120,6 +114,23 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		}
 		return this;
 	}
+	
+	/**
+	 * format double nicely for Nan, infinite and typical values
+	 * @param doubleValue not null
+	 * @return String
+	 */
+	public static String nicelyFormattedDouble(Double doubleValue) {
+		if (doubleValue.isNaN() || doubleValue.isInfinite()) {
+			return java.text.NumberFormat.getInstance().format(doubleValue.doubleValue());
+		} else {
+			return NumberUtils.formatNumber(doubleValue.doubleValue() );
+		}
+		
+	}
+	
+	
+	
 	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, SortTableModel tableModel) {
 		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
 		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
