@@ -15,7 +15,7 @@ import javax.swing.table.TableModel;
  */
 public class RenderDataViewerDoubleWithTooltip extends DefaultScrollTableCellRenderer implements SpecialtyTableRenderer {
 
-	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev: 1 $");
+	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev$");
 	
 	/**
 	 * types of cells supported

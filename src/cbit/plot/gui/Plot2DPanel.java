@@ -56,7 +56,7 @@ import cbit.plot.PlotData;
  * @author: Ion Moraru
  */
 public class Plot2DPanel extends JPanel {
-	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev: 1 $");
+	private static final long serialVersionUID = org.vcell.util.Serial.serialFromSVNRevision("$Rev$");
 	//
 	//
 	private final BasicStroke lineBS_10 = new BasicStroke(1.0f);
