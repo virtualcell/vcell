@@ -102,8 +102,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
  * Comment
  */
 private void actionsOnClick(MouseEvent mouseEvent) {
-	if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-		//make right mouse also select
+	if (mouseEvent.isPopupTrigger()) {
 		TreePath tp = getJTree1().getPathForLocation(mouseEvent.getX(),mouseEvent.getY());
 		getJTree1().setSelectionPath(tp);
 		

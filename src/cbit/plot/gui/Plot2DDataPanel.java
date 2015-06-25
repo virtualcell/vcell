@@ -19,7 +19,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.gui.DialogUtils;
@@ -44,18 +43,23 @@ public class Plot2DDataPanel extends JPanel {
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == Plot2DDataPanel.this.getJMenuItemCopy()) 
-				connEtoC2(e);
-			if (e.getSource() == Plot2DDataPanel.this.getJMenuItemCopyAll()) 
-				connEtoC4(e);
+				copyCells(CopyAction.copy);
+			else if (e.getSource() == Plot2DDataPanel.this.getJMenuItemCopyAll()) 
+				copyCells(CopyAction.copyall);
+			else if (e.getSource() == Plot2DDataPanel.this.getJMenuItemCopyRow()) 
+				copyCells(CopyAction.copyrow);
 		};
-		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == Plot2DDataPanel.this.getScrollPaneTable()) 
-				showPopupMenu(e, getJPopupMenu1());
-		};
+		public void mouseClicked(java.awt.event.MouseEvent e) {};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {};
-		public void mouseReleased(java.awt.event.MouseEvent e) {};
+		public void mousePressed(java.awt.event.MouseEvent e) {
+			if (e.getSource() == getScrollPaneTable() && e.isPopupTrigger()) 
+				showPopupMenu(e, getJPopupMenu1());
+		};
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+			if (e.getSource() == getScrollPaneTable() && e.isPopupTrigger()) 
+				showPopupMenu(e, getJPopupMenu1());
+		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == Plot2DDataPanel.this && (evt.getPropertyName().equals("plot2D"))) 
 				connPtoP2SetTarget();
@@ -71,10 +75,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 	private ScrollTable ivjScrollPaneTable = null;
 	private NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
-//	private JPopupMenu ivjJPopupMenu1 = null;
+	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
+	private JMenuItem ivjJMenuItemCopyRow = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private final static String COPY_ROW = "Copy Entire Row";
+	private static enum CopyAction {copy,copyrow,copyall};
 
 /**
  * Plot2DDataPanel constructor comment.
@@ -84,24 +89,6 @@ public Plot2DDataPanel() {
 	initialize();
 }
 
-/**
- * connEtoC2:  (JMenuItemCopy.action.actionPerformed(java.awt.event.ActionEvent) --> Plot2DDataPanel.copySelection()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.copyCells(getJMenuItemCopy().getActionCommand());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 /**
  * connEtoC3:  (Plot2DDataPanel.initialize() --> Plot2DDataPanel.controlKeys()V)
@@ -120,27 +107,6 @@ private void connEtoC3() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC4:  (JMenuItemCopyAll.action.actionPerformed(java.awt.event.ActionEvent) --> Plot2DDataPanel.copyCells(Ljava.lang.String;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.copyCells(getJMenuItemCopyAll().getActionCommand());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM1:  (plot2D1.this --> DefaultTableModel1.setDataVector([[Ljava.lang.Object;[Ljava.lang.Object;)V)
@@ -263,12 +229,12 @@ private void connPtoP2SetTarget() {
 private void controlKeys() {
 	registerKeyboardAction(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			copyCells("Copy");
+			copyCells(CopyAction.copy);
 		}
 	}, KeyStroke.getKeyStroke("ctrl C"), WHEN_IN_FOCUSED_WINDOW);
 	registerKeyboardAction(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-			copyCells("Copy All");
+			copyCells(CopyAction.copyall);
 		}
 	}, KeyStroke.getKeyStroke("ctrl K"), WHEN_IN_FOCUSED_WINDOW);
 }
@@ -280,19 +246,19 @@ private void controlKeys() {
  * @param actionCommand java.lang.String
  * @return java.lang.String
  */
-private synchronized void copyCells(String actionCommand) {
+private synchronized void copyCells(CopyAction copyAction) {
 	try{
 		int r = 0;
 		int c = 0;
 		int[] rows = new int[0];
 		int[] columns = new int[0];
-		if (actionCommand.equals("Copy")) {
+		if (copyAction == CopyAction.copy) {
 			r = getScrollPaneTable().getSelectedRowCount();
 			c = getScrollPaneTable().getSelectedColumnCount();
 			rows = getScrollPaneTable().getSelectedRows();
 			columns = getScrollPaneTable().getSelectedColumns();
 		}
-		else if (actionCommand.equals("Copy All")) {
+		else if (copyAction == CopyAction.copyall) {
 			r = getScrollPaneTable().getRowCount();
 			c = getScrollPaneTable().getColumnCount();
 			rows = new int[r];
@@ -304,7 +270,7 @@ private synchronized void copyCells(String actionCommand) {
 				columns[i] = i;
 			}
 		}
-		else if (actionCommand == COPY_ROW) { //we use exact String, so identity check == works
+		else if (copyAction == CopyAction.copyrow) {
 			r = getScrollPaneTable().getSelectedRowCount();
 			if (r != 1) {
 				LG.warn("only expected one selected row, but " + r + " selected");
@@ -407,7 +373,7 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
 		try {
 			ivjJMenuItemCopy = new javax.swing.JMenuItem();
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
-			ivjJMenuItemCopy.setText("Copy");
+			ivjJMenuItemCopy.setText("Copy Cells");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -442,22 +408,39 @@ private javax.swing.JMenuItem getJMenuItemCopyAll() {
 	return ivjJMenuItemCopyAll;
 }
 
-/**
- * dynamically build popup, depending on number of rows currently selected 
- * @return javax.swing.JPopupMenu
- */
-private javax.swing.JPopupMenu getJPopupMenu1() {
-	JPopupMenu popupMenu = new javax.swing.JPopupMenu();
-	popupMenu.setName("JPopupMenu1");
-	popupMenu.add(getJMenuItemCopy());
-	popupMenu.add(getJMenuItemCopyAll());
-	int src = getScrollPaneTable().getSelectedRowCount();
-	if (src == 1) {
-		JMenuItem copyRow = new JMenuItem(COPY_ROW);
-		copyRow.addActionListener(ae -> copyCells(COPY_ROW) );
-		popupMenu.add(copyRow);
+private javax.swing.JMenuItem getJMenuItemCopyRow() {
+	if (ivjJMenuItemCopyRow == null) {
+		try {
+			ivjJMenuItemCopyRow = new javax.swing.JMenuItem();
+			ivjJMenuItemCopyRow.setName("JMenuItemCopyRow");
+			ivjJMenuItemCopyRow.setText("Copy Rows");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
 	}
-	return popupMenu; 
+	return ivjJMenuItemCopyRow;
+}
+private javax.swing.JPopupMenu getJPopupMenu1() {
+	if (ivjJPopupMenu1 == null) {
+		try {
+			ivjJPopupMenu1 = new javax.swing.JPopupMenu();
+			ivjJPopupMenu1.setName("JPopupMenu1");
+			ivjJPopupMenu1.add(getJMenuItemCopy());
+			ivjJPopupMenu1.add(getJMenuItemCopyRow());
+			ivjJPopupMenu1.add(getJMenuItemCopyAll());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJPopupMenu1;
 }
 
 /**
@@ -556,6 +539,7 @@ private void initConnections() throws java.lang.Exception {
 	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
+	getJMenuItemCopyRow().addActionListener(ivjEventHandler);
 	connPtoP2SetTarget();
 	connPtoP1SetTarget();
 }
@@ -658,7 +642,9 @@ private void setplot2D1(Plot2D newValue) {
  * Comment
  */
 private void showPopupMenu(MouseEvent mouseEvent, javax.swing.JPopupMenu menu) {
-	if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+	if (mouseEvent.isPopupTrigger()) {
+		getJMenuItemCopy().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
+		getJMenuItemCopyRow().setEnabled(getScrollPaneTable().getSelectedColumnCount() > 0);
 		menu.show(getScrollPaneTable(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 	}
 }
