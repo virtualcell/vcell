@@ -21,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
@@ -106,20 +107,24 @@ public BioModelDbTreePanel(boolean bMetadata) {
  * Comment
  */
 protected void actionsOnClick(MouseEvent mouseEvent) {
-	if (mouseEvent.getClickCount() == 2 && getSelectedVersionInfo() instanceof BioModelInfo) {
-		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
-		return;
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && getSelectedVersionInfo() instanceof BioModelInfo && (! getPopupMenuDisabled())) {
-		Version version = getSelectedVersionInfo().getVersion();
-		boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
-		configureArhivePublishMenuState(version,isOwner);
-		getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
-		getJMenuItemDelete().setEnabled(isOwner &&
-			!version.getFlag().compareEqual(VersionFlag.Archived) &&
-			!version.getFlag().compareEqual(VersionFlag.Published));
-		compareWithMenuItemEnable(getSelectedVersionInfo());
-		getBioModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+	if (mouseEvent.isPopupTrigger()) {
+		if(!getPopupMenuDisabled()){
+			TreePath treePath = ((JTree)mouseEvent.getSource()).getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+			((JTree)mouseEvent.getSource()).setSelectionPath(treePath);
+			if(getSelectedVersionInfo() instanceof BioModelInfo){
+				Version version = getSelectedVersionInfo().getVersion();
+				boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
+				configureArhivePublishMenuState(version,isOwner);
+				getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
+				getJMenuItemDelete().setEnabled(isOwner &&
+					!version.getFlag().compareEqual(VersionFlag.Archived) &&
+					!version.getFlag().compareEqual(VersionFlag.Published));
+				compareWithMenuItemEnable(getSelectedVersionInfo());
+				getBioModelPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+			}
+		}
+	}else {
+		ifNeedsDoubleClickEvent(mouseEvent,BioModelInfo.class);
 	}
 }
 

@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
@@ -37,10 +38,12 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -106,13 +109,25 @@ public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
 			}
 		}
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == getJTree1()) 
+			//System.out.println("---------- click - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			if (e.getSource() == getJTree1()){
 				actionsOnClick(e);
+			}
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {};
-		public void mouseReleased(java.awt.event.MouseEvent e) {};
+		public void mousePressed(java.awt.event.MouseEvent e) {
+			//System.out.println("---------- press - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			if (e.getSource() == getJTree1()){
+				actionsOnClick(e);
+			}
+		};
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+			//System.out.println("---------- release - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			if (e.getSource() == getJTree1()){
+				actionsOnClick(e);
+			}
+		};
 	}
 /**
  * BioModelTreePanel constructor comment.
@@ -125,7 +140,34 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 	super();
 	this.bShowMetadata = bMetadata;
 }
+//private long press1Time = -1;
+protected void ifNeedsDoubleClickEvent(MouseEvent mouseEvent,Class<? extends VersionInfo> versionInfoClass){
+//	System.out.println(versionInfoClass.getName()+" "+mouseEvent);
+	boolean doubleClick = false;
+//	if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+//			mouseEvent.getButton() == MouseEvent.BUTTON1 &&
+//			mouseEvent.getClickCount() == 1){
+//		press1Time = System.currentTimeMillis();
+//	}if(mouseEvent.getID() == MouseEvent.MOUSE_RELEASED &&
+//			mouseEvent.getButton() == MouseEvent.BUTTON1 &&
+//			mouseEvent.getClickCount() == 2){
+//		long diff = System.currentTimeMillis() - press1Time;
+//		System.out.println(diff+"");
+//		if(diff < 500){
+//			doubleClick = true;
+//		}
+//	}
+	if(mouseEvent.getID() == MouseEvent.MOUSE_CLICKED &&
+		mouseEvent.getButton() == MouseEvent.BUTTON1 &&
+		mouseEvent.getClickCount() == 2){
+		doubleClick = true;
+	}
+	if(doubleClick &&
+			versionInfoClass.isInstance(getSelectedVersionInfo())){
+		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
+	}
 
+}
 private VCDocumentDbTreeModel getTreeModel( )  {
 	if (treeModel != null) {
 		return treeModel;

@@ -100,20 +100,19 @@ public class AdvancedTablePanel  extends JPanel
 			if (e.getSource() == AdvancedTablePanel.this.getJMenuItemCopyAll()) 
 				copyCells(e.getActionCommand());
 		};
-		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == table) 
-				showPopupMenu(e, getPopupMenu());
-		};
+		public void mouseClicked(java.awt.event.MouseEvent e) {};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {};
-		public void mouseReleased(java.awt.event.MouseEvent e) {};
-	}
-	
-	private void showPopupMenu(MouseEvent mouseEvent, JPopupMenu menu) {
-		if (SwingUtilities.isRightMouseButton(mouseEvent)) {
-			menu.show(table, mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-		}
+		public void mousePressed(java.awt.event.MouseEvent e) {
+			if (e.getSource() == table && e.isPopupTrigger()){
+				getPopupMenu().show(table, e.getPoint().x, e.getPoint().y);;
+			}
+		};
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+			if (e.getSource() == table && e.isPopupTrigger()){
+				getPopupMenu().show(table, e.getPoint().x, e.getPoint().y);;
+			}
+		};
 	}
 	
 	private synchronized void copyCells(String actionCommand) {

@@ -199,8 +199,7 @@ private void actionsOnClick(MouseEvent mouseEvent) {
 	}	
 	
 	// right click
-	boolean bRightClick = SwingUtilities.isRightMouseButton(mouseEvent);
-	if (bRightClick) {
+	if (mouseEvent.isPopupTrigger()) {
 		Point mousePoint = mouseEvent.getPoint();
 		if (selectedObject instanceof BioModel) {	
 			getBioModelPopupMenu().show(getJTree2(), mousePoint.x, mousePoint.y);

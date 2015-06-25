@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
@@ -52,7 +53,7 @@ private class IvjEventHandler implements java.awt.event.ActionListener, java.bea
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemCreateNewGeometry()) 
 				refireActionPerformed(e);
-			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen())
+			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen()) 
 				DocumentWindow.showGeometryCreationWarning(GeometryTreePanel.this);
 //				refireActionPerformed(e);
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemDelete()) 
@@ -90,38 +91,36 @@ private class IvjEventHandler implements java.awt.event.ActionListener, java.bea
  * Comment
  */
 protected void actionsOnClick(MouseEvent mouseEvent) {
-	if (mouseEvent.getClickCount() == 2 && getSelectedVersionInfo() instanceof GeometryInfo) {
-		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
-		return;
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent) && (! getPopupMenuDisabled()) && getSelectedVersionInfo() instanceof GeometryInfo) {
-		Version version = getSelectedVersionInfo().getVersion();
-		boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
-		getJMenuItemPermission().setEnabled(isOwner);
-		getJMenuItemDelete().setEnabled(isOwner);
-		getJMenuItemGeomRefs().setEnabled(isOwner);
-		getGeometryPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
-		return;
-	}
+	if (mouseEvent.isPopupTrigger()) {
+		if(!getPopupMenuDisabled()){
+			TreePath treePath = ((JTree)mouseEvent.getSource()).getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+			((JTree)mouseEvent.getSource()).setSelectionPath(treePath);
+			if(getSelectedVersionInfo() instanceof GeometryInfo){
+				Version version = getSelectedVersionInfo().getVersion();
+				boolean isOwner = version.getOwner().compareEqual(getDocumentManager().getUser());
+				getJMenuItemPermission().setEnabled(isOwner);
+				getJMenuItemDelete().setEnabled(isOwner);
+				getJMenuItemGeomRefs().setEnabled(isOwner);
+				getGeometryPopupMenu().show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+			}else if (treePath != null){
+				BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
+				Object object = bioModelNode.getUserObject();
+				if(object instanceof User){
+					User selectedUser = (User)object;
+					boolean isOwner = selectedUser.compareEqual(getDocumentManager().getUser());
+					if(isOwner){
+						JPopupMenu jPopupMenu = new JPopupMenu();
+						jPopupMenu.add(getJMenuItemCreateNewGeometry());
+						jPopupMenu.show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+					}
+				}		
 	
-	if(SwingUtilities.isRightMouseButton(mouseEvent) && !getPopupMenuDisabled()){
-		TreePath treePath = getJTree1().getSelectionPath();
-		if (treePath == null){
-			return;
-		}
-		BioModelNode bioModelNode = (BioModelNode)treePath.getLastPathComponent();
-		Object object = bioModelNode.getUserObject();
-		if(object instanceof User){
-			User selectedUser = (User)object;
-			boolean isOwner = selectedUser.compareEqual(getDocumentManager().getUser());
-			if(isOwner){
-				JPopupMenu jPopupMenu = new JPopupMenu();
-				jPopupMenu.add(getJMenuItemCreateNewGeometry());
-				jPopupMenu.show(getJTree1(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
-		}		
+		}
 	}
-
+	else{
+		ifNeedsDoubleClickEvent(mouseEvent,GeometryInfo.class);
+	}
 }
 
 /**
