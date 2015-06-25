@@ -400,7 +400,40 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 
 }
 
-public static enum FilterCategoryType {Species,Reactions,UserFunctions ,Observables,GeneratedSpecies,ReservedXYZT,Other};
+public static enum FilterCategoryType {
+	Species(true,true),
+	Reactions,
+	UserFunctions ,
+	Observables(true,true),
+	GeneratedSpecies,
+	ReservedXYZT(true,false),
+	Other;
+	/**
+	 * should this be selected initially on GUI?
+	 */
+	public final boolean initialSelect;
+	/**
+	 * should this be enabled so user can select / deselect?
+	 */
+	public final boolean enabled;
+	
+	/**
+	 * initialSelect is false, enabled is true
+	 */
+	private FilterCategoryType( ) {
+		initialSelect = false;
+		enabled = true;
+	}
+	/**
+	 * @param initialSelect display checked initially?
+	 * @param enabled allow user to edit? 
+	 */
+	private FilterCategoryType(boolean initialSelect, boolean enabled) {
+		this.initialSelect = initialSelect;
+		this.enabled = enabled;
+	}
+
+};
 
 public static class DataSymbolMetadata {
 	public final FilterCategoryType filterCategory;
