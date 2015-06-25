@@ -125,13 +125,11 @@ public class Plot2DPanel extends JPanel {
 	private Color[] userDefinedColors;
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
-		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == Plot2DPanel.this) 
-				connEtoC6(e);
-		};
+		public void mouseClicked(java.awt.event.MouseEvent e) {};
 		public void mouseDragged(java.awt.event.MouseEvent e) {
-			if (e.getSource() == Plot2DPanel.this) 
-				connEtoC17(e);
+			if (e.getSource() == Plot2DPanel.this){
+				processDrag0(e);
+			}
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {
@@ -143,12 +141,16 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 				connEtoC1(e);
 		};
 		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == Plot2DPanel.this) 
-				connEtoC18(e);
+			if (e.getSource() == Plot2DPanel.this){
+				processDrag0(e);//To handle possible drag start action
+				processMouseButtonEvent(e);//popup menu, etc...
+			}
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == Plot2DPanel.this) 
-				connEtoC19(e);
+			if (e.getSource() == Plot2DPanel.this){
+				processDrag0(e);//to handle possible drag end action
+				processMouseButtonEvent(e);//popup menu, etc...
+			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == Plot2DPanel.this && (evt.getPropertyName().equals("plot2D"))) 
@@ -390,64 +392,6 @@ private void connEtoC16(Plot2D value) {
 }
 
 
-/**
- * connEtoC17:  (Plot2DPanel.mouseMotion.mouseDragged(java.awt.event.MouseEvent) --> Plot2DPanel.processMouseDragged(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC17(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.processDrag(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC18:  (Plot2DPanel.mouse.mousePressed(java.awt.event.MouseEvent) --> Plot2DPanel.processDrag(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC18(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.processDrag(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC19:  (Plot2DPanel.mouse.mouseReleased(java.awt.event.MouseEvent) --> Plot2DPanel.processDrag(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC19(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.processDrag(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
 
 
 /**
@@ -529,27 +473,6 @@ private void connEtoC5() {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC6:  (Plot2DPanel.mouse.mouseClicked(java.awt.event.MouseEvent) --> Plot2DPanel.showSettings(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.processMouseClick(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoC7:  (Plot2DPanel.xManualRange --> Plot2DPanel.updateAxes()V)
@@ -2433,38 +2356,42 @@ private void pointerMoved(java.awt.event.MouseEvent mouseEvent) {
 /**
  * Comment
  */
-private void processDrag(java.awt.event.MouseEvent mouseEvent) {
-	if (mouseEvent.isShiftDown()) {
-		Point point = mouseEvent.getPoint();
-		switch (mouseEvent.getID()) {
-			case MouseEvent.MOUSE_PRESSED: {
-				setDragStartPoint(point);
-				break;
-			}
-			case MouseEvent.MOUSE_DRAGGED: {
-				resetCrossHair();
-				setDragEndPoint(point);
-				drawSelectionRectangle();
-				break;
-			}
-			case MouseEvent.MOUSE_RELEASED: {
-				setDragEndPoint(point);
-				drawSelectionRectangle();
-				Point2D.Double p1 = new Point2D.Double();
-				Point2D.Double p2 = new Point2D.Double();
-				try {
-					getTransform().inverseTransform(getDragStartPoint(), p1);
-					getTransform().inverseTransform(getDragEndPoint(), p2);
-				} catch (NoninvertibleTransformException exc) {
-					// no worry, this is always an invertible transform...
+private void processDrag0(java.awt.event.MouseEvent mouseEvent) {
+	try{
+		if (mouseEvent.isShiftDown()) {
+			Point point = mouseEvent.getPoint();
+			switch (mouseEvent.getID()) {
+				case MouseEvent.MOUSE_PRESSED: {
+					setDragStartPoint(point);
+					break;
 				}
-				setXManualRange(new Range(p1.x, p2.x));
-				setXAuto(false);
-				setYManualRange(new Range(p1.y, p2.y));
-				setYAuto(false);
-				break;
+				case MouseEvent.MOUSE_DRAGGED: {
+					resetCrossHair();
+					setDragEndPoint(point);
+					drawSelectionRectangle();
+					break;
+				}
+				case MouseEvent.MOUSE_RELEASED: {
+					setDragEndPoint(point);
+					drawSelectionRectangle();
+					Point2D.Double p1 = new Point2D.Double();
+					Point2D.Double p2 = new Point2D.Double();
+					try {
+						getTransform().inverseTransform(getDragStartPoint(), p1);
+						getTransform().inverseTransform(getDragEndPoint(), p2);
+					} catch (NoninvertibleTransformException exc) {
+						// no worry, this is always an invertible transform...
+					}
+					setXManualRange(new Range(p1.x, p2.x));
+					setXAuto(false);
+					setYManualRange(new Range(p1.y, p2.y));
+					setYAuto(false);
+					break;
+				}
 			}
 		}
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
 	}
 }
 
@@ -2472,40 +2399,45 @@ private void processDrag(java.awt.event.MouseEvent mouseEvent) {
 /**
  * Comment
  */
-private void processMouseClick(java.awt.event.MouseEvent mouseEvent) {
-	if (getPlot2D() == null) return;
-	if (mouseEvent.isAltDown()) {
-		// zoom out x2 on manual scale(s)
-		if (! getXAuto()) {
-			setXManualRange(Range.multiplyRange(getXManualRange(), 2));
-		}
-		if (! getYAuto()) {
-			setYManualRange(Range.multiplyRange(getYManualRange(), 2));
-		}
-		return;
-	}
-	if (SwingUtilities.isRightMouseButton(mouseEvent)) { // right-click shows Settings panel
-		// save current settings before showing panel; plot will update live
-		getplot2DSettings1().saveSettings();
-//		int newSettings = JOptionPane.showOptionDialog(this, getPlot2DSettingsPanel1(), "Plot Settings", 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
-		if (newSettings != JOptionPane.OK_OPTION) {
-			// user didn't ok, put back old settings
-			getplot2DSettings1().restoreSavedSettings();
-		}
-		paintComponent(getGraphics());
-	} else { // regular click tries to select an active plot	
-		GeneralPath path = null;
-		for (int i=0;i<plotDatas.length;i++) {
-			if (getPlot2D().isVisiblePlot(i)) {
-				path = getLinePlot(plotDatas[i], i);
-				if (path.intersects(new Rectangle(mouseEvent.getPoint().x - 1, mouseEvent.getPoint().y - 1, 3, 3))) {
-					setCurrentPlotIndex(i);
-					return;
+private void processMouseButtonEvent(java.awt.event.MouseEvent mouseEvent) {
+	try{
+		if (getPlot2D() == null){
+			return;
+		} else if (mouseEvent.isPopupTrigger()) {
+			// save current settings before showing panel; plot will update live
+			getplot2DSettings1().saveSettings();
+			int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
+			if (newSettings != JOptionPane.OK_OPTION) {
+				// user didn't ok, put back old settings
+				getplot2DSettings1().restoreSavedSettings();
+			}
+//			paintComponent(getGraphics());//this shouldn't be needed
+		} else if (mouseEvent.getID() == MouseEvent.MOUSE_PRESSED && mouseEvent.getClickCount() == 1) {
+			if(mouseEvent.isAltDown()){
+				// zoom out x2 on manual scale(s)
+				if (! getXAuto()) {
+					setXManualRange(Range.multiplyRange(getXManualRange(), 2));
 				}
+				if (! getYAuto()) {
+					setYManualRange(Range.multiplyRange(getYManualRange(), 2));
+				}
+			}else{//try to select plot curve
+				GeneralPath path = null;
+				for (int i=0;i<plotDatas.length;i++) {
+					if (getPlot2D().isVisiblePlot(i)) {
+						path = getLinePlot(plotDatas[i], i);
+						if (path.intersects(new Rectangle(mouseEvent.getPoint().x - 1, mouseEvent.getPoint().y - 1, 3, 3))) {
+							setCurrentPlotIndex(i);
+						}
+					}
+				}
+
 			}
 		}
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
 	}
+
 }
 
 
