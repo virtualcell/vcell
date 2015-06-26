@@ -24,6 +24,7 @@ import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 
+@Deprecated
 public class DefiniteProgressDialog extends ProgressDialog {
 	
 	private static final Font fontPercent = new Font("Tahoma", Font.PLAIN, 10);
