@@ -101,6 +101,26 @@ public class NFsimXMLWriter {
 		public String component1 = "";
 		public String component2 = "";
 		
+		public BondSites() {
+			this.component1 = "";
+			this.component2 = "";
+		}
+		public BondSites(String component1, String component2) {
+			this.component1 = component1;
+			this.component2 = component2;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if(!(o instanceof BondSites)) {
+				return false;
+			}
+			BondSites that = (BondSites)o;
+			if(component1.equals(that.component1) && component2.equals(component2)) {
+				return true;
+			}
+			return false;
+		}
 		static public String extractMoleculeId(String componentID) {		// we extract the molecule id (ex RR1_RP1_M2) from the element id (ex RR1_RP1_M2_C1)
 			int pos = componentID.lastIndexOf("_C");
 			if(pos == -1) {
@@ -471,17 +491,30 @@ public class NFsimXMLWriter {
 	        //      <AddBond site1="RR1_RP1_M1_C1" site2="RR1_RP2_M1_C1"/>
 			//		<StateChange site="RR0_RP0_M0_C2" finalState="Y"/>
 	        //  </ListOfOperations>
-			// TODO: may need to use for ListOfOperations the reactionReactantBondSites and reactionProductBondSites instead of patternReactantBondSites and patternProductBondSites
 			Element listOfOperationsElement = new Element("ListOfOperations");
+			
 			// AddBond elements
+			// add any bond in the product which is not present in the reactant
 			Iterator<BondSites> it = patternProductBondSites.iterator();
 			while (it.hasNext()) {
 				BondSites bs = it.next();
+				String reactantS1 = MappingOfReactionParticipants.findMatchingReactant(bs.component1, currentMappingOfReactionParticipants);
+				String reactantS2 = MappingOfReactionParticipants.findMatchingReactant(bs.component2, currentMappingOfReactionParticipants);
+				// we check if the bonds in the product existed already in the reactant, in which case they were not "added" in this reaction
+				BondSites candidate = new BondSites(reactantS1, reactantS2);
+				boolean preExistent = false;
+				for(BondSites bsReactant : reactionReactantBondSites) {
+					if(bsReactant.equals(candidate)) {
+						preExistent = true;
+						break;
+					}
+				}
+				if(preExistent == true) {
+					continue;		// we don't add preexisting bonds
+				}
 				Element addBondElement = new Element("AddBond");
-				String reactant = MappingOfReactionParticipants.findMatchingReactant(bs.component1, currentMappingOfReactionParticipants);
-				addBondElement.setAttribute("site1", reactant);
-				reactant = MappingOfReactionParticipants.findMatchingReactant(bs.component2, currentMappingOfReactionParticipants);
-				addBondElement.setAttribute("site2", reactant);
+				addBondElement.setAttribute("site1", reactantS1);
+				addBondElement.setAttribute("site2", reactantS2);
 				listOfOperationsElement.addContent(addBondElement);
 			}
 			// StateChange elements
