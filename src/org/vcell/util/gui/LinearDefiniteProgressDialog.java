@@ -45,6 +45,8 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 	private Timer displayTimer;
 	private Timer workingPanelTimer;
 	private WorkingPanel graphicPanel;
+	
+	private String currentMessage = "Working";
 
 	public LinearDefiniteProgressDialog(Frame owner) {
 		super(owner);
@@ -116,6 +118,7 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 //		System.out.println("progress " + progress);
 		graphicPanel.setProgress(progress);
 		graphicPanel.repaint();
+		lblMessage.setText(currentMessage + "  (" + graphicPanel.getProgress() + "%)");
 	}
 	@Override
 	void setProgressBarString(String progressString) {
@@ -134,7 +137,8 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 		if(len > MaxLen) {
 			s = s.substring(0,TruncHeaderLen) + ".." + s.substring(len-TruncTailLen, len);
 		}
-		lblMessage.setText(s);
+		currentMessage = s;
+		lblMessage.setText(currentMessage + "  (" + graphicPanel.getProgress() + "%)");
 	}
 	
 	// ===========================================================================================================
@@ -164,6 +168,9 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 		public void setProgress(int progress) {
 //			System.out.println("progress: " + progress);
 			this.progress = progress;
+		}
+		public int getProgress() {
+			return progress;
 		}
 
 		@Override
@@ -212,12 +219,12 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 				g2d.fill(watchdog);	// draw the watchdog animation
 			}
 			
-			Font fontPercent = new Font("Tahoma", Font.PLAIN, 17);
-			g2d.setStroke(oldStroke);
-			g2d.setFont(fontPercent);
-			g2d.setColor(Color.black);
-			int x = width/2-5;
-			g2d.drawString(progress+"%", x, height/2+6);
+//			Font fontPercent = new Font("Tahoma", Font.PLAIN, 17);
+//			g2d.setStroke(oldStroke);
+//			g2d.setFont(fontPercent);
+//			g2d.setColor(Color.black);
+//			int x = width/2-5;
+//			g2d.drawString(progress+"%", x, height/2+6);
 			
 			if(pauseTicks == 0) {
 				curx += INCREMENT;
