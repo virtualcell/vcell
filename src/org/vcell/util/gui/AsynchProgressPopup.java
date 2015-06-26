@@ -166,7 +166,7 @@ protected ProgressDialog getDialog() {
 	if (dialog == null) {
 		Frame owner = JOptionPane.getFrameForComponent(requester);
 		if (knowsProgress) {
-			dialog = new DefiniteProgressDialog(owner);
+			dialog = new LinearDefiniteProgressDialog(owner);
 		}
 		else {
 			dialog = new IndefiniteProgressDialog(owner);
