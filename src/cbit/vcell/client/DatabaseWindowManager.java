@@ -112,7 +112,10 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
 	getBioModelDbTreePanel().setPopupMenuDisabled(true);
 	getMathModelDbTreePanel().setPopupMenuDisabled(true);
 	getGeometryTreePanel().setPopupMenuDisabled(true);
-
+	
+	getBioModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
+	getMathModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
+	getGeometryTreePanel().setDocumentManager(requestManager.getDocumentManager());
 }
 
 public void accessPermissions()  {
