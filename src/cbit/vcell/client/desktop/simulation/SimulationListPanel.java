@@ -54,6 +54,8 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
@@ -218,6 +220,7 @@ private void editSimulation() {
 		SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(sim);
 		if (!simStatus.isRunning()){
 			SimulationWorkspace.editSimulation(this, getSimulationWorkspace().getSimulationOwner(), sim); // just the first one if more than one selected...
+			refreshButtonsLax();
 		}
 	}
 }
@@ -666,14 +669,14 @@ private void refreshButtonsLax() {
 	if (selections != null && selections.length > 0) {
 		bCopy = true;
 		bStatusDetails = true;
-		Simulation firstSelection = ivjSimulationListTableModel1.getValueAt(selections[0]);
 		if (selections.length == 1){
+			Simulation firstSelection = ivjSimulationListTableModel1.getValueAt(selections[0]);
 			SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(firstSelection);
 			if (!simStatus.isRunning()){
 				bEditable = true;
 			}
 			bParticleView = firstSelection.getScanCount() == 1;	
-			bQuickRun = firstSelection.getScanCount() == 1 && !firstSelection.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume);
+			bQuickRun = canQuickRun(firstSelection.getSolverTaskDescription());
 		}
 		
 		// we make'em true if at least one sim satisfies criterion (lax policy)
@@ -697,6 +700,22 @@ private void refreshButtonsLax() {
 	quickRunButton.setEnabled(bQuickRun);
 }
 
+
+private boolean canQuickRun(SolverTaskDescription taskDesc) {
+	if(taskDesc.getSolverDescription().equals(SolverDescription.FiniteVolume)){
+		quickRunButton.setToolTipText("Not supported for "+SolverDescription.FiniteVolume.toString());
+		return false;
+	}else if (taskDesc.isParallel())  {
+		quickRunButton.setToolTipText("Parallel solver not supported");
+		return false;
+	}else if(taskDesc.getSimulation().getScanCount() > 1){
+		quickRunButton.setToolTipText("Not supported for parameter scans");
+		return false;
+	}
+	
+	quickRunButton.setToolTipText("Quick Run");
+	return true;
+}
 
 /**
  * Comment
