@@ -15,8 +15,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
 import cbit.vcell.geometry.GeometryOwner;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.VersionedLibrary;
 /**
@@ -42,5 +40,25 @@ public interface SimulationOwner extends GeometryOwner {
 	 * @return required library, if any, or null
 	 */
 	public VersionedLibrary getRequiredLibrary();
+	/**
+	 * @return UnitInfo (not null)
+	 * @throws UnsupportedOperationException if not implemented
+	 */
+	public UnitInfo getUnitInfo( ) throws UnsupportedOperationException;
+	/**
+	 * provide unit information for display purposes
+	 */
+	public static class UnitInfo {
+		private final String timeUnitString;
+
+		public UnitInfo(String timeUnitString) {
+			super();
+			this.timeUnitString = timeUnitString;
+		}
+
+		public String getTimeUnitString() {
+			return timeUnitString;
+		}
+	}
 }
 

@@ -46,6 +46,8 @@ import cbit.vcell.solver.SimulationOwner;
 @SuppressWarnings("serial")
 public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
+	private static final String TIME_UNIT_STRING = "time units";
+	
 	private Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -54,6 +56,7 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
 	private final OutputFunctionContext outputFunctionContext = new OutputFunctionContext(this);
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
+	private static UnitInfo mathUnitInfo = null;
 
 /**
  * BioModel constructor comment.
@@ -69,6 +72,15 @@ public MathModel(Version version) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+
+@Override
+public UnitInfo getUnitInfo() throws UnsupportedOperationException {
+	if (mathUnitInfo == null) {
+		mathUnitInfo = new UnitInfo(TIME_UNIT_STRING);
+	}
+	return mathUnitInfo;
 }
 
 
