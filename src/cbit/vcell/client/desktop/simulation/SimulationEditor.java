@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.simulation;
 import java.awt.Dimension;
+import java.util.Objects;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -21,6 +22,8 @@ import org.vcell.util.BeanUtils;
 import cbit.vcell.math.gui.MeshTabPanel;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.ode.gui.MathOverridesPanel;
 import cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel;
 /**
@@ -243,14 +246,24 @@ private void makeBoldTitle() {
 
 /**
  * Comment
+ * @param simulation not null
+ * @throws NullPointerException
  */
 public void prepareToEdit(Simulation simulation) {
+	Objects.requireNonNull(simulation);
 	try {
 		Simulation clonedSimulation = (Simulation)BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
 		getMathOverridesPanel1().setMathOverrides(clonedSimulation == null ? null : clonedSimulation.getMathOverrides());
 		getMeshTabPanel().setSimulation(clonedSimulation);
-		getSolverTaskDescriptionAdvancedPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
+		SolverTaskDescriptionAdvancedPanel stdap = getSolverTaskDescriptionAdvancedPanel1();
+		{
+			SimulationOwner so = simulation.getSimulationOwner();
+			UnitInfo unitInfo = so.getUnitInfo();
+			stdap.setUnitInfo(unitInfo);
+			
+		}
+		stdap.setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		
 		boolean shouldMeshBeEnabled = false;
 		MeshSpecification meshSpec = clonedSimulation.getMeshSpecification();

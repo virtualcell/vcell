@@ -11,12 +11,15 @@
 package cbit.vcell.solver;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
+
 import cbit.vcell.math.VCML;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/6/2005 3:00:40 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public abstract class OutputTimeSpec implements org.vcell.util.Matchable, java.io.Serializable {
 
 /**
@@ -36,6 +39,13 @@ public abstract String getDescription();
 public String getShortDescription() {
 	return getDescription();
 }
+
+/**
+ * describe simulation
+ * @param unitInfo not null
+ * @return appropriately formatted String
+ */
+public abstract String describe(SimulationOwner.UnitInfo unitInfo);
 
 
 /**

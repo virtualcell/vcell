@@ -9,13 +9,17 @@
  */
 
 package cbit.vcell.solver;
+import java.util.Objects;
+
 import cbit.vcell.math.VCML;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 
 /**
  * Insert the type's description here.
  * Creation date: (9/6/2005 3:10:22 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class ExplicitOutputTimeSpec extends OutputTimeSpec {
 	private double[] fieldOutputTimes = null;
 
@@ -112,6 +116,15 @@ public double[] getOutputTimes() {
 public java.lang.String getDescription() {
 	return "at " + toCommaSeperatedOneLineOfString() + " sec";
 }
+
+
+@Override
+public String describe(UnitInfo unitInfo) {
+	Objects.requireNonNull(unitInfo);
+	return "at " + toCommaSeperatedOneLineOfString() + ' ' + unitInfo.getTimeUnitString();
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (9/7/2005 3:43:11 PM)

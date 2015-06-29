@@ -10,12 +10,14 @@
 
 package cbit.vcell.solver;
 import cbit.vcell.math.VCML;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 
 /**
  * Insert the type's description here.
  * Creation date: (9/6/2005 3:11:12 PM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class DefaultOutputTimeSpec extends OutputTimeSpec {
 	private int fieldKeepEvery;
 	private int fieldKeepAtMost;	
@@ -102,6 +104,15 @@ public java.lang.String getDescription() {
 		return r + 's' ;
 	}
 	return r;
+}
+
+/**
+ * @param unitInfo ignored, na for this time spec
+ * @return {@link #getDescription()}
+ */
+@Override
+public String describe(UnitInfo unitInfo) {
+	return getDescription(); 
 }
 
 
