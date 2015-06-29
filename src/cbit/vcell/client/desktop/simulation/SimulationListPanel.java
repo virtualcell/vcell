@@ -711,12 +711,14 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 	if (taskDesc.isParallel())  {
 		quickRunButton.setToolTipText("Parallel solver not supported");
 		return false;
-	}
-		
-	if (taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly)) {
+	}else if (taskDesc.getSolverDescription().supports(SolverFeature.Feature_ServerOnly)) {
 		quickRunButton.setToolTipText("Not supported by selected solver");
 		return false;
+	}else if(taskDesc.getSimulation().getScanCount() > 1){
+		quickRunButton.setToolTipText("Not supported for parameter scans");
+		return false;
 	}
+	
 	quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
 	return true;
 }
