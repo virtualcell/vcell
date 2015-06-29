@@ -390,6 +390,14 @@ private static class OutputFunctionViewer extends JPanel{
 			public VersionedLibrary getRequiredLibrary() {
 				return null;
 			}
+
+			/**
+			 * @throws UnsupportedOperationException (always)
+			 */
+			@Override
+			public UnitInfo getUnitInfo() throws UnsupportedOperationException {
+				throw new UnsupportedOperationException();
+			}
 		};
 		VCDocument fakeVCDocument = new VCDocument(){
 

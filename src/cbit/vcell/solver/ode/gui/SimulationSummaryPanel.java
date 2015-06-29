@@ -292,6 +292,7 @@ private void displayTask() {
 		}
 		else
 		{
+			//gcwtodo
 			String text = solverTaskDescription.getOutputTimeSpec().getShortDescription();
 			if (solverTaskDescription.getOutputTimeSpec().isDefault() && !solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() 
 					&& !solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)) {

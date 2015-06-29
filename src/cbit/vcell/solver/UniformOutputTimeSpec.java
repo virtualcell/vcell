@@ -9,9 +9,12 @@
  */
 
 package cbit.vcell.solver;
+import java.util.Objects;
+
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 
 /**
  * Insert the type's description here.
@@ -78,6 +81,13 @@ public void setOuputTimeStep(double arg_outputTimeStep)
  */
 public java.lang.String getDescription() {
 	return "every " + fieldOutputTimeStep + " sec";
+}
+
+
+@Override
+public String describe(UnitInfo unitInfo) {
+	Objects.requireNonNull(unitInfo);
+	return "every " + fieldOutputTimeStep + ' '+ unitInfo.getTimeUnitString();
 }
 
 

@@ -15,6 +15,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -65,6 +66,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -85,6 +87,7 @@ import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
@@ -311,6 +314,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// This operation has no relationship whatsoever with caching of the BNGLOutputSpec above
 	// warning: we don't verify the validity of the mostRecentlyCreatedMathMapping, use it only when certain that it's still valid!
 	private transient MathMapping mostRecentlyCreatedMathMapping;
+	
+	//don't serialize, derivative info generated from info within class
+	private transient UnitInfo unitInfo; 
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
@@ -489,6 +495,29 @@ public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean
 }
 
 
+
+@Override
+public UnitInfo getUnitInfo() throws UnsupportedOperationException {
+	if (unitInfo != null) {
+		return unitInfo;
+	}
+	if (bioModel == null) {
+		throw new UnsupportedOperationException("bioModel not set yet");
+	}
+
+	Model m = bioModel.getModel();
+	ModelUnitSystem unitSys = m.getUnitSystem();
+	VCUnitDefinition tu = unitSys.getTimeUnit();
+	String sym = tu.getSymbol();
+	unitInfo = new UnitInfo(sym);
+	return unitInfo;
+}
+
+@Override
+protected Object clone() throws CloneNotSupportedException {
+	// TODO Auto-generated method stub
+	return super.clone();
+}
 
 /**
  * Sets the analysisTasks index property (cbit.vcell.modelopt.AnalysisTask[]) value.

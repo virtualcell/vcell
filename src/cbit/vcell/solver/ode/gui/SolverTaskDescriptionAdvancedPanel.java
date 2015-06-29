@@ -35,6 +35,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -80,6 +81,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private CollapsiblePanel sensitivityAnalysisCollapsiblePanel;
 	private JCheckBox performSensitivityAnalysisCheckBox;
 	private JButton sensitivityAnalysisHelpButton;
+	private UnitInfo unitInfo;
 		
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -873,7 +875,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			getStochSimOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getNFSimSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getSmoldynSimulationOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
-			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
+			getOutputOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription, unitInfo);
 			getSundialsSolverOptionsPanel().setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			stopAtSpatiallyUniformPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
@@ -1114,6 +1116,10 @@ private void performSensitivityAnalysisCheckbox_actionPerformed() {
 
 public void showSensitivityAnalysisHelp(){
 	DialogUtils.showInfoDialog(this, "Sensitivity Analysis Help", VCellErrorMessages.SensitivityAnalysis_Help);
+}
+
+public void setUnitInfo(UnitInfo unitInfo) {
+	this.unitInfo = unitInfo;
 }
 
 }

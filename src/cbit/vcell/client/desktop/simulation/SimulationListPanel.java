@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Objects;
 import java.util.Vector;
 
 import javax.swing.Box;
@@ -61,6 +62,8 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -551,8 +554,12 @@ private void initConnections() throws java.lang.Exception {
 				int column) {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus,	row, column);
 			if (value instanceof OutputTimeSpec) {
+				SimulationWorkspace sw = getSimulationWorkspace();
+				SimulationOwner so = sw.getSimulationOwner();
+				UnitInfo unitInfo = so.getUnitInfo();
+				Objects.requireNonNull(unitInfo);
 				OutputTimeSpec ots = (OutputTimeSpec) value;
-				String text = ots.getDescription();
+				String text = ots.describe(unitInfo);
 				setText(text);
 			} else if (value instanceof Double) {
 				setText(value+"");

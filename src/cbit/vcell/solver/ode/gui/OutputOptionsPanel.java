@@ -12,6 +12,7 @@ package cbit.vcell.solver.ode.gui;
 
 import java.awt.GridBagConstraints;
 import java.beans.PropertyVetoException;
+import java.util.Objects;
 
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
@@ -32,6 +33,9 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -508,91 +512,6 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		exception.printStackTrace(System.out);
 	}
 	
-	/**
-	 * Initializes connections
-	 * @exception java.lang.Exception The exception description.
-	 */
-	private void initConnections() {
-		getOutputTimeStepTextField().addFocusListener(ivjEventHandler);
-		getDefaultOutputRadioButton().addActionListener(ivjEventHandler);
-		getUniformOutputRadioButton().addActionListener(ivjEventHandler);
-		getExplicitOutputRadioButton().addActionListener(ivjEventHandler);
-		getKeepEveryTextField().addFocusListener(ivjEventHandler);
-		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
-		getOutputTimesTextField().addFocusListener(ivjEventHandler);
-				
-		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
-			
-			@Override
-			public boolean verify(JComponent input) {
-				return false;
-			}
-
-			@Override
-			public boolean shouldYieldFocus(JComponent input) {
-				boolean bValid = true;
-				try {
-					double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
-					if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
-						double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
-						
-						double suggestedInterval = outputTime;
-						if (outputTime < timeStep) {
-							suggestedInterval = timeStep;
-							bValid = false;
-						} else if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)) {
-							double n = outputTime/timeStep;
-							int intn = (int)Math.round(n);
-							if (intn != n) {
-								bValid = false;
-								suggestedInterval = (intn * timeStep);
-							}
-						} 
-					
-						if (!bValid) {		
-							String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval", "Output Interval must " +
-									"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
-									new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
-							if (ret.equals(UserMessage.OPTION_YES)) {
-								getOutputTimeStepTextField().setText(suggestedInterval + "");
-								bValid = true;
-							} 
-						}
-					}
-				} catch (NumberFormatException ex) {
-					DialogUtils.showErrorDialog(OutputOptionsPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
-					bValid = false;
-				}
-				if (bValid) {
-					getOutputTimeStepTextField().setBorder(UIManager.getBorder("TextField.border"));
-				} else {
-					getOutputTimeStepTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
-					SwingUtilities.invokeLater(new Runnable() { 
-					    public void run() { 
-					    	getOutputTimeStepTextField().requestFocus();
-					    }
-					});
-				}
-				return bValid;
-			}
-			
-		});
-		
-		getOutputTimesTextField().setInputVerifier(new InputVerifier() {
-			
-			@Override
-			public boolean verify(JComponent input) {				
-				return false;
-			}
-
-			@Override
-			public boolean shouldYieldFocus(JComponent input) {				
-				ExplicitOutputTimeSpec eots = ExplicitOutputTimeSpec.fromString(getOutputTimesTextField().getText());
-				return checkExplicitOutputTimes(eots);
-			}
-		});
-	}
-	
 	private boolean checkExplicitOutputTimes(ExplicitOutputTimeSpec ots) {
 		boolean bValid = true;
 		
@@ -784,7 +703,8 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 			getOutputTimesTextField().setText(((ExplicitOutputTimeSpec)ots).toCommaSeperatedOneLineOfString() + "");
 			getOutputTimesTextField().setCaretPosition(0);
 		}
-
+		
+	
 		DefaultOutputTimeSpec dots = new DefaultOutputTimeSpec();
 		UniformOutputTimeSpec uots = new UniformOutputTimeSpec(0.05);
 		ExplicitOutputTimeSpec eots = new ExplicitOutputTimeSpec(new double[] {0.1});
@@ -815,7 +735,15 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		}
 	}	
 
-	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
+	/**
+	 * set solver description. The contained {@link SolverTaskDescription#getSimulation()}
+	 * is usually a temporary cloned object with  a null {@link SimulationOwner}  ; therefore
+	 * we required the {@link UnitInfo} of the actual {@link Simulation} owner as a parameter
+	 * @param newValue
+	 * @param unitInfo not null
+	 */
+	public final void setSolverTaskDescription(SolverTaskDescription newValue, UnitInfo unitInfo) {
+		Objects.requireNonNull(unitInfo);
 		SolverTaskDescription oldValue = solverTaskDescription;
 		/* Stop listening for events from the current object */
 		if (oldValue != null) {
@@ -830,7 +758,88 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		solverTaskDescription = newValue;
 		chomboOutputOptionsPanel.setSolverTaskDescription(solverTaskDescription);
 		firePropertyChange("solverTaskDescription", oldValue, newValue);
+
+		getOutputTimeStepTextField().addFocusListener(ivjEventHandler);
+		getDefaultOutputRadioButton().addActionListener(ivjEventHandler);
+		getUniformOutputRadioButton().addActionListener(ivjEventHandler);
+		getExplicitOutputRadioButton().addActionListener(ivjEventHandler);
+		getKeepEveryTextField().addFocusListener(ivjEventHandler);
+		getKeepAtMostTextField().addFocusListener(ivjEventHandler);
+		getOutputTimesTextField().addFocusListener(ivjEventHandler);
+
+		getOutputTimeStepTextField().setInputVerifier(new InputVerifier() {
+
+			@Override
+			public boolean verify(JComponent input) {
+				return false;
+			}
+
+			@Override
+			public boolean shouldYieldFocus(JComponent input) {
+				boolean bValid = true;
+				try {
+					double outputTime = Double.parseDouble(getOutputTimeStepTextField().getText());
+					if (solverTaskDescription.getOutputTimeSpec().isUniform() && !solverTaskDescription.getSolverDescription().hasVariableTimestep()) {
+						double timeStep = solverTaskDescription.getTimeStep().getDefaultTimeStep();
+
+						double suggestedInterval = outputTime;
+						if (outputTime < timeStep) {
+							suggestedInterval = timeStep;
+							bValid = false;
+						} else if (!BeanUtils.isIntegerMultiple(outputTime, timeStep)) {
+							double n = outputTime/timeStep;
+							int intn = (int)Math.round(n);
+							if (intn != n) {
+								bValid = false;
+								suggestedInterval = (intn * timeStep);
+							}
+						} 
+
+						if (!bValid) {		
+							String ret = PopupGenerator.showWarningDialog(OutputOptionsPanel.this, "Output Interval", "Output Interval must " +
+									"be integer multiple of time step.\n\nChange Output Interval to " + suggestedInterval + "?", 
+									new String[]{ UserMessage.OPTION_YES, UserMessage.OPTION_NO}, UserMessage.OPTION_YES);
+							if (ret.equals(UserMessage.OPTION_YES)) {
+								getOutputTimeStepTextField().setText(suggestedInterval + "");
+								bValid = true;
+							} 
+						}
+					}
+				} catch (NumberFormatException ex) {
+					DialogUtils.showErrorDialog(OutputOptionsPanel.this, "Wrong number format " + ex.getMessage().toLowerCase());
+					bValid = false;
+				}
+				if (bValid) {
+					getOutputTimeStepTextField().setBorder(UIManager.getBorder("TextField.border"));
+				} else {
+					getOutputTimeStepTextField().setBorder(GuiConstants.ProblematicTextFieldBorder);
+					SwingUtilities.invokeLater(new Runnable() { 
+						public void run() { 
+							getOutputTimeStepTextField().requestFocus();
+						}
+					});
+				}
+				return bValid;
+			}
+
+		});
+
+		getOutputTimesTextField().setInputVerifier(new InputVerifier() {
+
+			@Override
+			public boolean verify(JComponent input) {				
+				return false;
+			}
+
+			@Override
+			public boolean shouldYieldFocus(JComponent input) {				
+				ExplicitOutputTimeSpec eots = ExplicitOutputTimeSpec.fromString(getOutputTimesTextField().getText());
+				return checkExplicitOutputTimes(eots);
+			}
+		});	
 		
-		initConnections();
+		//set time label units
+		JLabel timeUnitsLabel = getTimeStepUnitsLabel();
+		timeUnitsLabel.setText(unitInfo.getTimeUnitString());
 	}
 }
