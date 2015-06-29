@@ -12,6 +12,8 @@ package org.vcell.util;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 
 
 /**
@@ -36,6 +38,10 @@ public class Issue implements java.io.Serializable, Matchable {
 	public static final int SEVERITY_BUILTIN_CONSTRAINT = 2;
 	public static final int SEVERITY_WARNING = 3;
 	public static final int SEVERITY_ERROR = 4;
+	/**
+	 * prepend to tool tip text to indicate String contains html
+	 */
+	public static final char HTML_STRING = 17; //17 == non-printable Device Control 1
 	private static final int MAX_SEVERITY = 4;
 
 	private final static String severityName[] = { "info", "tip", "constraint", "warning", "error" };
@@ -305,13 +311,22 @@ public class Issue implements java.io.Serializable, Matchable {
 //		this.severity = argSeverity;
 //	}
 	
+	/**
+	 * @param argTooltip may be null; HTML formatted
+	 */
 	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, null, issueContext, argCategory, argMessage, null, argSeverity);
 	}
-	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argTooltip, String argMessage, int argSeverity) {
+	/**
+	 * @param argTooltip may be null; HTML formatted
+	 */
+	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 		this(argSource, null, issueContext, argCategory, argMessage, argTooltip, argSeverity);
 	}
 	
+	/**
+	 * @param argTooltip may be null; HTML formatted
+	 */
 	public Issue(IssueSource argSource, IssueSource argSource2, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 		super();
 		if (argSeverity<0 || argSeverity>MAX_SEVERITY){
@@ -427,6 +442,16 @@ public java.lang.String getMessage() {
 	return message;
 }
 public java.lang.String getTooltip() {
+	return tooltip;
+}
+/**
+ * 
+ * @return {@link #getTooltip()} wrapped in html tags if not blank; otherwise return {@link #getTooltip()}
+ */
+public String getHtmlTooltip() {
+	if (!StringUtils.isBlank(tooltip)) {
+		return "<html>" + tooltip + "</html>";
+	}
 	return tooltip;
 }
 

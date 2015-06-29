@@ -25,6 +25,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
@@ -36,7 +37,6 @@ import org.vcell.util.gui.sorttable.JSortTable;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
-import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
@@ -54,7 +54,6 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.ReactionRule.ReactionRuleNameScope;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -169,6 +168,10 @@ public class IssuePanel extends DocumentEditorSubPanel {
 					}
 					setIcon(icon);
 					setText(issue.getMessage());
+					String tt = issue.getHtmlTooltip();
+					if (!StringUtils.isBlank(tt)) {
+						setToolTipText(tt);
+					}
 					break;
 				}								
 				}
