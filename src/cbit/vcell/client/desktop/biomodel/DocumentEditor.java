@@ -46,6 +46,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
@@ -324,7 +325,7 @@ public abstract class DocumentEditor extends JPanel {
 			int oldNumErrors = 0;
 			int oldNumWarnings = 0;
 			for(Issue issue : issueEvent.getOldValue()) {
-				int severity = issue.getSeverity();
+				Severity severity = issue.getSeverity();
 				if (severity == Issue.SEVERITY_ERROR) {
 					oldNumErrors ++;
 				} else if (severity == Issue.SEVERITY_WARNING) {

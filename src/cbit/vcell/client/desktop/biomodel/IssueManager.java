@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.Timer;
 
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.document.VCDocument;
 
@@ -110,7 +111,7 @@ public class IssueManager {
 					continue;
 				}
 				issueList.add(issue);
-				int severity = issue.getSeverity();
+				Severity severity = issue.getSeverity();
 				if (severity == Issue.SEVERITY_ERROR) {
 					numErrors ++;
 				} else if (severity == Issue.SEVERITY_WARNING) {
