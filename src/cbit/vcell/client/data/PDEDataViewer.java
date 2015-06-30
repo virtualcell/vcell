@@ -1629,7 +1629,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 									AsynchClientTask postProcessInfoTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
-											if(postProcessPdeDataViewerPanel.getComponent(0) instanceof PDEDataViewer){
+											if(postProcessPdeDataViewerPanel.getComponentCount() == 1 && postProcessPdeDataViewerPanel.getComponent(0) instanceof PDEDataViewer){
 												//Setup is done already, cancel setup processing
 												throw UserCancelException.CANCEL_GENERIC;
 											}
