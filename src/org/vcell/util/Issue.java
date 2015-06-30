@@ -38,10 +38,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	public static final int SEVERITY_BUILTIN_CONSTRAINT = 2;
 	public static final int SEVERITY_WARNING = 3;
 	public static final int SEVERITY_ERROR = 4;
-	/**
-	 * prepend to tool tip text to indicate String contains html
-	 */
-	public static final char HTML_STRING = 17; //17 == non-printable Device Control 1
+	
 	private static final int MAX_SEVERITY = 4;
 
 	private final static String severityName[] = { "info", "tip", "constraint", "warning", "error" };
