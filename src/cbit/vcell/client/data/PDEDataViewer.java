@@ -1623,16 +1623,16 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 							dataProcessingResultsPanel.update(getPdeDataContext());
 						}else if(ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_IMAGE_TABNAME)){
 							try{
+								if(postProcessPdeDataViewerPanel.getComponentCount() == 1 && postProcessPdeDataViewerPanel.getComponent(0) instanceof PDEDataViewer){
+									//Setup is done already, cancel setup processing
+									return;
+								}
 								final DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, DocumentWindow.class);
 								final String SPATIAL_ERROR_KEY = "SPATIAL_ERROR_KEY";
 //								if(postProcessPdeDataViewerPanel.getComponentCount() == 0){
 									AsynchClientTask postProcessInfoTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
-											if(postProcessPdeDataViewerPanel.getComponentCount() == 1 && postProcessPdeDataViewerPanel.getComponent(0) instanceof PDEDataViewer){
-												//Setup is done already, cancel setup processing
-												throw UserCancelException.CANCEL_GENERIC;
-											}
 											if(getClientTaskStatusSupport() != null){
 												getClientTaskStatusSupport().setMessage("Getting Simulation status...");
 											}
@@ -1642,14 +1642,15 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 												//sim still busy, no postprocessing data
 												hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
 												return;
-											}else{
-												//sim completed, try to setup viewer again by removing jlabel message component
-												if(postProcessPdeDataViewerPanel.getComponentCount() == 1){
-													postProcessPdeDataViewerPanel.remove(0);
-												}else if(postProcessPdeDataViewerPanel.getComponentCount() != 0){
-													throw new Exception("Unexected number of components in PostProcessing Image tab");
-												}
-											}							
+											}
+//											else{
+//												//sim completed, try to setup viewer again by removing jlabel message component
+//												if(postProcessPdeDataViewerPanel.getComponentCount() == 1){
+//													postProcessPdeDataViewerPanel.remove(0);
+//												}else if(postProcessPdeDataViewerPanel.getComponentCount() != 0){
+//													throw new Exception("Unexected number of components in PostProcessing Image tab");
+//												}
+//											}							
 											if(getClientTaskStatusSupport() != null){
 												getClientTaskStatusSupport().setMessage("Getting Post Process Info...");
 											}
@@ -1676,6 +1677,9 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 									AsynchClientTask createPostProcessPDEDataViewer = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
+											if(postProcessPdeDataViewerPanel.getComponentCount() > 0){
+												postProcessPdeDataViewerPanel.removeAll();
+											}
 											if(hashTable.get(SPATIAL_ERROR_KEY) != null){
 												postProcessPdeDataViewerPanel.add(new JLabel((String)hashTable.get(SPATIAL_ERROR_KEY)),BorderLayout.CENTER);
 												throw UserCancelException.CANCEL_GENERIC;
