@@ -28,6 +28,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -153,18 +154,20 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				switch (column) {
 				case IssueTableModel.COLUMN_DESCRIPTION: {
 					Issue issue = (Issue)value;
-					int severity = issue.getSeverity();
-					Icon icon = null;
+					Severity severity = issue.getSeverity();
+					Icon icon;
 					switch (severity) {
-					case Issue.SEVERITY_INFO:
+					case INFO:
 						icon = VCellIcons.getInfoIcon();
 						break;
-					case Issue.SEVERITY_WARNING:
+					case WARNING:
 						icon = VCellIcons.getWarningIcon();
 						break;					
-					case Issue.SEVERITY_ERROR:
+					case ERROR:
 						icon = VCellIcons.getErrorIcon();
 						break;
+					default:
+						icon = null;
 					}
 					setIcon(icon);
 					setText(issue.getMessage());

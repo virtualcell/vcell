@@ -23,6 +23,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.gui.sorttable.SortPreference;
 import org.vcell.util.gui.sorttable.SortTableModel;
@@ -280,7 +281,7 @@ protected abstract Comparator<T> getComparator(final int col, final boolean asce
 	}
 
 	@Override
-	public List<Issue> getIssues(int row, int col, int severity) {
+	public List<Issue> getIssues(int row, int col, Severity severity) {
 		List<Issue> iL = new ArrayList<Issue>();
 		Object rowAt = getValueAt(row);
 		if (rowAt != null && issueManager != null) {

@@ -22,6 +22,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueOrigin;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCDocument;
@@ -95,12 +96,12 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 				int scale = ascending ? 1 : -1;
 				switch (col) {
 				case COLUMN_DESCRIPTION: {
-					int s1 = o1.getSeverity();
-					int s2 = o2.getSeverity();
+					Severity s1 = o1.getSeverity();
+					Severity s2 = o2.getSeverity();
 					if (s1 == s2) {
 						return scale * o1.getMessage().compareTo(o2.getMessage());
 					} else {
-						return scale * new Integer(s1).compareTo(new Integer(s2));
+						return scale * s1.compareTo(s2);
 					}
 				}
 				case COLUMN_SOURCE:
@@ -131,14 +132,14 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			List<Issue> allIssueList = issueManager.getIssueList();
 			issueList = new ArrayList<Issue>();
 			for (Issue issue : allIssueList) {
-				int severity = issue.getSeverity();
+				Severity severity = issue.getSeverity();
 				if (severity == Issue.SEVERITY_ERROR) {
 					issueList.add(issue);
 				}
 			}
 			if (bShowWarning) {
 				for (Issue issue : allIssueList) {
-					int severity = issue.getSeverity();
+					Severity severity = issue.getSeverity();
 					if (severity == Issue.SEVERITY_WARNING) {
 						issueList.add(issue);
 					}
