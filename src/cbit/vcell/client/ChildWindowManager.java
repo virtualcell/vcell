@@ -25,12 +25,8 @@ import cbit.vcell.client.desktop.TopLevelWindow;
 public class ChildWindowManager {
 	 
 	// matches the modality constants that are new to JDialog in Java 1.6 
-	public static enum ModalityType {APPLICATION_MODAL,DOCUMENT_MODAL,MODELESS,TOOLKIT_MODAL}
-	
-	private class JDialogFactory{
-		public JDialog createJDialog(Frame owner, String title, boolean modal) {
-			return new JDialog(owner, title, modal);
-		}
+	private JDialog createJDialog(Frame owner, String title, boolean modal) {
+		return new JDialog(owner, title, modal);
 	}
 	
 	public class ChildWindow {
@@ -301,7 +297,7 @@ public class ChildWindowManager {
 
 		public void show(){
 			if (dialog==null){
-				dialog = (new JDialogFactory()).createJDialog(parent, title, false);
+				dialog = createJDialog(parent, title, false);
 				initDialog();
 				dialog.setVisible(true);
 			}else if (!dialog.isVisible()){
@@ -311,7 +307,7 @@ public class ChildWindowManager {
 
 		public void showModal() {
 			if (dialog==null){
-				dialog = (new JDialogFactory()).createJDialog(parent, title, true);
+				dialog = createJDialog(parent, title, true);
 				initDialog();
 				dialog.setVisible(true);
 			}else if (!dialog.isVisible()){
