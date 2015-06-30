@@ -31,18 +31,61 @@ public class Issue implements java.io.Serializable, Matchable {
 	private Object source = null;
 	private Object source2 = null;
 	private IssueContext issueContext = null;
-	private int severity = -1;
+	private Severity severity = Severity.INFO; 
+	public enum Severity {
+		INFO("info"),
+		TIP("tip"),
+		BUILTIN_CONSTRAINT("constraint"),
+		WARNING("warning"),
+		ERROR("error");
+		
+		
+		/**
+		 * display name / toString return
+		 */
+		final String name;
 
-	public static final int SEVERITY_INFO = 0;
-	public static final int SEVERITY_TIP = 1;
-	public static final int SEVERITY_BUILTIN_CONSTRAINT = 2;
-	public static final int SEVERITY_WARNING = 3;
-	public static final int SEVERITY_ERROR = 4;
+		private Severity(String name) {
+			this.name = name;
+		}
+		
+		/**
+		 * @return {@link #name()}
+		 */
+		public String toString( ) {
+			return name;
+		}
+	}
 	
-	private static final int MAX_SEVERITY = 4;
+	
 
-	private final static String severityName[] = { "info", "tip", "constraint", "warning", "error" };
+	/**
+	 * use {@link Severity#INFO}
+	 */
+	@Deprecated
+	public static final Severity SEVERITY_INFO = Severity.INFO; 
+	/**
+	 * use {@link Severity#TIP}
+	 */
+	@Deprecated
+	public static final Severity   SEVERITY_TIP = Severity.TIP; 
+	/**
+	 * use {@link Severity#BUILTIN_CONSTRAINT}
+	 */
+	@Deprecated
+	public static final Severity  SEVERITY_BUILTIN_CONSTRAINT = Severity.BUILTIN_CONSTRAINT; 
+	/**
+	 * use {@link Severity#WARNING}
+	 */
+	@Deprecated
+	public static final Severity  SEVERITY_WARNING = Severity.WARNING; 
+	/**
+	 * use {@link Severity#ERROR}
+	 */
+	@Deprecated
+	public static final  Severity SEVERITY_ERROR = Severity.ERROR;  
 	
+
 	public interface IssueSource {
 		
 	}
@@ -311,24 +354,21 @@ public class Issue implements java.io.Serializable, Matchable {
 	/**
 	 * @param argTooltip may be null; HTML formatted
 	 */
-	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
+	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, Severity argSeverity) {
 		this(argSource, null, issueContext, argCategory, argMessage, null, argSeverity);
 	}
 	/**
 	 * @param argTooltip may be null; HTML formatted
 	 */
-	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, Severity argSeverity) {
 		this(argSource, null, issueContext, argCategory, argMessage, argTooltip, argSeverity);
 	}
 	
 	/**
 	 * @param argTooltip may be null; HTML formatted
 	 */
-	public Issue(IssueSource argSource, IssueSource argSource2, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
+	public Issue(IssueSource argSource, IssueSource argSource2, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, Severity argSeverity) {
 		super();
-		if (argSeverity<0 || argSeverity>MAX_SEVERITY){
-			throw new IllegalArgumentException("unexpected severity="+argSeverity);
-		}
 		this.source = argSource;
 		this.source2 = argSource2;
 		this.issueContext = issueContext;
@@ -458,20 +498,19 @@ public String getHtmlTooltip() {
  * Creation date: (4/1/2004 10:32:40 AM)
  * @return int
  */
-public int getSeverity() {
+public Severity getSeverity() {
 	return severity;
 }
 
 
 /**
- * Insert the method's description here.
- * Creation date: (4/2/2004 8:37:29 AM)
- * @return java.lang.String
+ * use {@link Severity#toString()}
+ * @return {@link #severity#} {@link #toString()}
  */
+@Deprecated
 public String getSeverityName() {
-	return severityName[severity];
+	return severity.toString();
 }
-
 
 /**
  * Insert the method's description here.
@@ -495,7 +534,7 @@ public IssueContext getIssueContext() {
  * @return int
  */
 public int hashCode() {
-	return source.hashCode()+category.hashCode()+message.hashCode()+severity;
+	return source.hashCode()^category.hashCode()^message.hashCode()^severity.hashCode();
 }
 
 

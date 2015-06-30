@@ -16,6 +16,7 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.TokenMangler;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
@@ -205,11 +206,11 @@ public class Workflow implements Serializable, IssueSource {
 		}
 	}
 	
-	public void reportIssues(ArrayList<Issue> issues, int minSeverity, boolean bExceptionOnError) {
+	public void reportIssues(ArrayList<Issue> issues, Severity minSeverity, boolean bExceptionOnError) {
 		boolean bAbort = false;
 		StringBuffer errorBuffer = new StringBuffer();
 		for (Issue issue : issues){
-			if (issue.getSeverity() >= minSeverity){
+			if (issue.getSeverity().ordinal() >= minSeverity.ordinal()){
 				System.out.println("ISSUE: "+issue.toString());
 			}
 			if (issue.getSeverity() == Issue.SEVERITY_ERROR){

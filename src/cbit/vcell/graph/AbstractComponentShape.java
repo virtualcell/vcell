@@ -100,7 +100,7 @@ public abstract class AbstractComponentShape {
 		
 		List<Issue> allIssueList = issueManager.getIssueList();
 		for (Issue issue: allIssueList) {
-			if(issue.getSeverity() < Issue.SEVERITY_WARNING) {
+			if(issue.getSeverity().ordinal() < Issue.SEVERITY_WARNING.ordinal()) {
 				continue;
 			}
 			
