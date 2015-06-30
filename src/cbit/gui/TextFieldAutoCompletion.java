@@ -155,13 +155,21 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 		}
 
+		int flag = 0;
 		public void keyTyped(KeyEvent e) {
+			flag = 2;
 		}
 
 		public void focusGained(FocusEvent e) {			
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.isTemporary()) {
+				if(flag > 0) {
+					flag--;
+				}
+				if(flag == 0) {
+					requestFocus();
+				}
 				return;
 			}
 			repaint();
@@ -185,6 +193,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		autoCompJList.addMouseListener(eventHandler);
 
 		autoCompJPopupMenu = new JPopupMenu();
+		autoCompJPopupMenu.setLightWeightPopupEnabled(false);
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(autoCompJList);
 		autoCompJPopupMenu.add(scrollPane);
