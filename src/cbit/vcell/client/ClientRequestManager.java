@@ -128,6 +128,7 @@ import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -3150,7 +3151,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			hashTable.put("doc", doc);
 		}
 	};
-		
+	final String WIN_MGR_KEY = "WIN_MGR_KY";
 	AsynchClientTask task2 = new AsynchClientTask("Showing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -3161,6 +3162,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					DocumentWindowManager windowManager = null;
 					if (inNewWindow) {
 						windowManager = createDocumentWindowManager(doc);
+						hashTable.put(WIN_MGR_KEY, windowManager);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);						
 //						if (windowManager instanceof BioModelWindowManager) {
@@ -3181,7 +3183,22 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			}
 		}		
 	};
-	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2}, false);
+	AsynchClientTask task3 = new AsynchClientTask("Special Layout", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			// TODO Auto-generated method stub
+			if (documentInfo instanceof ExternalDocInfo) {
+				ExternalDocInfo externalDocInfo = (ExternalDocInfo)documentInfo;
+				if(externalDocInfo.isBioModelsNet()){
+					DocumentWindowManager windowManager = (DocumentWindowManager)hashTable.get(WIN_MGR_KEY);
+					if(windowManager instanceof BioModelWindowManager){
+						((BioModelWindowManager)windowManager).specialLayout();
+					}
+				}
+			}
+		}
+	};
+	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3}, false);
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){

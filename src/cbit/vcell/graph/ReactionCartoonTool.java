@@ -359,6 +359,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 
 	public void layout(String layoutName) throws Exception {
+		layout(layoutName,true);
+	}
+	public void layout(String layoutName,boolean bWarn) throws Exception {
 		System.out.println(layoutName);
 		//-----Turn off user forced reaction diagram structure order
 		if(getReactionCartoon().getStructureSuite() instanceof AllStructureSuite){
@@ -373,6 +376,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					newDiagramOrderList.add(getModel().getDiagram(structure));
 				}
 				Diagram[] autosortDiagramOrder = newDiagramOrderList.toArray(new Diagram[0]);
+				if(bWarn){
 				final String OK = "OK";
 				String response =
 					DialogUtils.showWarningDialog(getGraphPane(), "Existing 'Structure' order preference set by user may be reset, continue?", new String[] {OK,"Cancel"},OK);
@@ -381,6 +385,9 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}else{
 					allStructureSuite.setModelStructureOrder(true);
 					return;
+				}
+				}else{
+					getModel().setDiagrams(autosortDiagramOrder);
 				}
 			}
 		}
