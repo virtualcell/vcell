@@ -26,9 +26,13 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -77,9 +81,16 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.gui.ParameterTableModel;
@@ -93,6 +104,8 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	private ReactionRule reactionRule = null;
 	private JLabel titleLabel = null;
 	private JCheckBox isReversibleCheckBox;
+	private JComboBox kineticsTypeComboBox = null;
+	private JButton jToggleButton = null;
 
 	private ReactionRulePropertiesTableModel tableModel = null;
 	private ScrollTable table = null;
@@ -123,9 +136,11 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			}
 		}
 		@Override
-		public void actionPerformed(ActionEvent evt) {
-		if (evt.getSource() == isReversibleCheckBox) {
-			setReversible(isReversibleCheckBox.isSelected());
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == getKineticsTypeComboBox()) {
+				updateKineticChoice();
+			} else if (e.getSource() == isReversibleCheckBox) {
+				setReversible(isReversibleCheckBox.isSelected());
 			}
 		}
 		@Override
@@ -170,8 +185,11 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			setLayout(new GridBagLayout());
 			setBackground(Color.white);
 
-			isReversibleCheckBox = new JCheckBox("Reversible");
+			isReversibleCheckBox = new JCheckBox("");
 			isReversibleCheckBox.addActionListener(eventHandler);
+			isReversibleCheckBox.setEnabled(true);
+			isReversibleCheckBox.setBackground(Color.white);
+//			isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 
 			Border border = BorderFactory.createLineBorder(Color.gray);
 			Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
@@ -193,27 +211,68 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
-			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			gbc.insets = new java.awt.Insets(2, 4, 4, 4);
 			gbc.anchor = GridBagConstraints.LINE_END;
 			add(new JLabel("Reaction Name"), gbc);
 			
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 1; 
 			gbc.gridy = gridy;
-			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			gbc.insets = new java.awt.Insets(2, 4, 4, 4);
 			gbc.weightx = 1.0;
+			gbc.gridwidth = 3;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			add(nameTextField, gbc);
-					
+
+			// --------------------------------------------------------
+			
+			JPanel p = new JPanel();
+			p.setLayout(new GridBagLayout());
+			p.setBackground(Color.white);
+			int gridyy = 0;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridyy;
+			gbc.anchor = GridBagConstraints.LINE_END;
+			p.add(new JLabel("Reversible"), gbc);
+			
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = gridyy;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			p.add(isReversibleCheckBox, gbc);
+			
+			gridy ++;
 			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
+			gbc.gridx = 0;
 			gbc.gridy = gridy;
 			gbc.weightx = 0;
-			gbc.insets = new Insets(2,2,0,2);
-			gbc.anchor = GridBagConstraints.EAST;
+			gbc.insets = new Insets(0, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.NONE;
-			add(isReversibleCheckBox, gbc);
+			add(p, gbc);
 			
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 1; 
+			gbc.gridy = gridy;
+			gbc.anchor = GridBagConstraints.LINE_END;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			add(new JLabel("Kinetic Type"), gbc);
+
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 2; 
+			gbc.gridy = gridy;
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			add(getKineticsTypeComboBox(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = gridy;
+			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+			add(getJToggleButton(), gbc);
+			// --------------------------------------------------------------
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
@@ -221,7 +280,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.fill = java.awt.GridBagConstraints.BOTH;
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
-			gbc.gridwidth = 3;
+			gbc.gridwidth = 4;
 			add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 
 			CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotations", false);
@@ -230,7 +289,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc = new java.awt.GridBagConstraints();
 			gbc.gridx = 0; 
 			gbc.gridy = gridy;
-			gbc.gridwidth = 3;
+			gbc.gridwidth = 4;
 			gbc.weightx = 1.0;
 			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			add(collapsiblePanel, gbc);
@@ -366,6 +425,28 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		}
 	}
 
+	private JComboBox getKineticsTypeComboBox() {
+		final String[] cOptions = { "Mass Action" };
+		if (kineticsTypeComboBox == null) {
+				kineticsTypeComboBox = new JComboBox(cOptions);
+		}
+		return kineticsTypeComboBox;
+	}
+	private void updateKineticChoice() {
+	}
+
+	private JButton getJToggleButton() {
+		if (jToggleButton == null) {
+			jToggleButton = new JButton("Convert units");
+		}
+		return jToggleButton;
+	}
+	private void updateToggleButtonLabel(){
+		getJToggleButton().setText("Convert units");
+		getJToggleButton().setToolTipText("Feature unavailable at this time.");
+	}
+	
+	
 	private void changeFreeTextAnnotation() {
 		try{
 			if (reactionRule == null) {
