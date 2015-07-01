@@ -16,6 +16,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -29,6 +30,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -36,6 +38,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.Entity;
@@ -80,6 +83,8 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	private JTextArea annotationTextArea = null;
 	private JTextField nameTextField = null;
 	private JLabel electricalPropertiesLabel;
+	private JCheckBox isReversibleCheckBox;
+
 	// wei's code
 	private BioModel bioModel = null;
 	private JScrollPane linkedPOScrollPane;
@@ -106,15 +111,20 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 	};
 	
 	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener {
+		@Override
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getKineticsTypeComboBox()) { 
 				updateKineticChoice();
 			} else if (e.getSource() == nameTextField) {
 				changeName();
+			} else if (e.getSource() == isReversibleCheckBox) {
+				setReversible(isReversibleCheckBox.isSelected());
 			}
 		}
+		@Override
 		public void focusGained(FocusEvent e) {
 		}
+		@Override
 		public void focusLost(FocusEvent e) {
 			if (e.getSource() == annotationTextArea) {
 				changeFreeTextAnnotation();
@@ -122,16 +132,14 @@ public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
 				changeName();
 			}
 		}
-		
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 			super.mouseExited(e);
 			if(e.getSource() == annotationTextArea){
 				changeFreeTextAnnotation();
 			}
 		}
-
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == reactionStep) {
 				updateInterface();
@@ -202,6 +210,12 @@ private void initialize() {
 		nameTextField.addFocusListener(eventHandler);
 		nameTextField.addActionListener(eventHandler);
 		
+		isReversibleCheckBox = new JCheckBox("");
+		isReversibleCheckBox.addActionListener(eventHandler);
+		isReversibleCheckBox.setEnabled(false);		// not functional for now
+		isReversibleCheckBox.setBackground(Color.white);
+//		isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+		
 		electricalPropertiesLabel = new JLabel("Electrical Properties");
 		electricalPropertiesLabel.setVisible(false);
 
@@ -212,16 +226,16 @@ private void initialize() {
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
 		gbc.anchor = GridBagConstraints.LINE_END;
 		add(new JLabel("Reaction Name"), gbc);
 		
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
+		gbc.insets = new java.awt.Insets(2, 4, 4, 4);
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 3;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		add(nameTextField, gbc);
 		
@@ -236,22 +250,48 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 1; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 3;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(0, 4, 0, 4);
 		add(reactionElectricalPropertiesPanel, gbc);
 		
-		gridy ++;		
+		// ----------------------------------------------------------------
+		JPanel p = new JPanel();	// this way we can disable the checkbox while keeping "Reversible" not grayed
+		p.setLayout(new GridBagLayout());
+		p.setBackground(Color.white);
+		int gridyy = 0;
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
+		gbc.gridy = gridyy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		p.add(new JLabel("Reversible"), gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
+		gbc.gridy = gridyy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		p.add(isReversibleCheckBox, gbc);
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 0;
+		gbc.insets = new Insets(0, 4, 4, 4);
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.NONE;
+		add(p, gbc);
+		
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 1; 
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(new JLabel("Kinetic Type"), gbc);
 
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; 
+		gbc.gridx = 2; 
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
@@ -259,7 +299,7 @@ private void initialize() {
 		add(getKineticsTypeComboBox(), gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
+		gbc.gridx = 3;
 		gbc.gridy = gridy;
 		gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getJToggleButton(), gbc);
@@ -271,7 +311,7 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 4;
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
 		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotation and Pathway Links", false);
@@ -321,7 +361,7 @@ private void initialize() {
 		gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
 		gbc.gridy = gridy;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 4;
 		gbc.weightx = 1.0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(collapsiblePanel, gbc);
@@ -382,6 +422,11 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
+
+private void setReversible(boolean bReversible) {
+//	reactionStep.setReversible(bReversible);
+}
+
 /**
  * Sets the kinetics property (cbit.vcell.model.Kinetics) value.
  * @param kinetics The new value for the property.
@@ -697,6 +742,7 @@ protected void updateInterface() {
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
 	}
+	isReversibleCheckBox.setSelected(true);
 	listLinkedPathwayObjects();
 }
 
