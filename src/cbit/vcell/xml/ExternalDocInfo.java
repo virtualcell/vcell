@@ -30,7 +30,7 @@ public class ExternalDocInfo implements org.vcell.util.document.VCDocumentInfo{
 	private String textContents = null;
 	private File file = null;
 	private transient Boolean bXML = null;
-
+	private boolean isBioModelsNet = false;
 	private String defaultName;
 /**
  * XMLInfo constructor comment.
@@ -53,6 +53,18 @@ public ExternalDocInfo(String textContents,String defaultName) {
 	this.defaultName = defaultName;
 }
 
+private ExternalDocInfo(String textContents,String defaultName,boolean isBioModelsNet){
+	this.textContents = textContents;
+	this.file = null;
+	this.defaultName = defaultName;
+	this.isBioModelsNet = isBioModelsNet;
+}
+public static ExternalDocInfo createBioModelsNetExternalDocInfo(String textContents,String defaultName){
+	return new ExternalDocInfo(textContents, defaultName,true);
+}
+public boolean isBioModelsNet(){
+	return isBioModelsNet;
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.Version

@@ -88,8 +88,12 @@ public BioModelWindowManager(JPanel panel, RequestManager requestManager, final 
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	getJPanel().add(getBioModelEditor(), BorderLayout.CENTER);
-	pathwayImportPanel = new PathwayImportPanel(pathwayImporter, getBioModelEditor().getSelectionManager());	
+	pathwayImportPanel = new PathwayImportPanel(pathwayImporter, getBioModelEditor().getSelectionManager());
 }
+public void specialLayout(){
+	bioModelEditor.specialLayout();
+}
+
 	/**
 	 * Invoked when an action occurs.
 	 */

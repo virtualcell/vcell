@@ -657,7 +657,16 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	public void setStructureSuite(StructureSuite structureSuite) {
 		getReactionCartoon().setStructureSuite(structureSuite);
 	}
-	
+	public void specialLayout(){
+		//if(getModel() != null && getModel().getDiagrams() != null && getModel().getDiagrams().length == 1 && getModel().getDiagrams()[0].getNodeList().size() == 0){
+			try{
+				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME,false);
+			}catch(Exception e){
+				System.out.println("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)");
+				e.printStackTrace();
+			}
+		//}
+	}
 	public final void setFloatingRequested(boolean newValue) {
 		boolean oldValue = bFloatingRequested;
 		this.bFloatingRequested = newValue;

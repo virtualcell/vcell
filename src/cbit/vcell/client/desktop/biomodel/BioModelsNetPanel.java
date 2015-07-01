@@ -196,7 +196,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				BioModelsWebServicesServiceLocator bioModelsWebServicesServiceLocator =	new BioModelsWebServicesServiceLocator();
 				BioModelsWebServices bioModelsWebServices = bioModelsWebServicesServiceLocator.getBioModelsWebServices();
 				String bioModelSBML = bioModelsWebServices.getModelSBMLById(bioModelsNetInfo.getId());
-				ExternalDocInfo externalDocInfo = new ExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
+				ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, bioModelsNetInfo.getName());
 				if (externalDocInfo != null) {
 					hashTable.put("externalDocInfo", externalDocInfo);
 				}
