@@ -155,19 +155,21 @@ public class TextFieldAutoCompletion extends JTextField {
 			}
 		}
 
-		int flag = 0;
+		// typing in this text field would result in 2 focusLost temporarily events
+		// we want to hold the cursor in the text field, so we have to do a requestFocus after the second
+		private int focusCounter = 0;
 		public void keyTyped(KeyEvent e) {
-			flag = 2;
+			focusCounter = 2;
 		}
 
 		public void focusGained(FocusEvent e) {			
 		}
 		public void focusLost(FocusEvent e) {
 			if (e.isTemporary()) {
-				if(flag > 0) {
-					flag--;
-				}
-				if(flag == 0) {
+				if(focusCounter == 2) {
+					focusCounter--;
+				} else if(focusCounter == 1) {
+					focusCounter--;
 					requestFocus();
 				}
 				return;
@@ -193,6 +195,7 @@ public class TextFieldAutoCompletion extends JTextField {
 		autoCompJList.addMouseListener(eventHandler);
 
 		autoCompJPopupMenu = new JPopupMenu();
+		// force heavyweight for consistency, it'll always fire 2 focus lost events
 		autoCompJPopupMenu.setLightWeightPopupEnabled(false);
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(autoCompJList);
