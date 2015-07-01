@@ -138,6 +138,10 @@ public class BioModelEditor extends DocumentEditor {
 		initialize();
 	}
 
+	public void specialLayout(){
+		bioModelEditorModelPanel.specialLayout();
+	}
+
 @Override
 protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, String actionCommand) {	
 	Model model = bioModel.getModel();

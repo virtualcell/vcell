@@ -338,6 +338,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		initialize();
 	}
 	
+	public void specialLayout(){
+		reactionCartoonEditorPanel.specialLayout();
+	}
 	private BioModelEntityObject getSelectedBioModelEntityObject() {
 		BioModelEntityObject selectedBioModelEntityObject = null;
 		ArrayList<Object> selectedObjects = selectionManager.getSelectedObjects(BioModelEntityObject.class);
@@ -1380,6 +1383,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTableModel.setBioModel(bioModel);
 		molecularTypeTableModel.setBioModel(bioModel);
 		observableTableModel.setBioModel(bioModel);
+//		reactionCartoonEditorPanel.specialLayout();
 	}
 	
 	private JTable currentSelectedTable = null;
