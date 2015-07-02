@@ -337,9 +337,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		simulationContext.gatherIssues(issueContext, issueList);
 	}
-	for (Simulation simulation : fieldSimulations) {
-		simulation.gatherIssues(issueContext,issueList);
-	}
+//	for (Simulation simulation : fieldSimulations) {
+//		simulation.gatherIssues(issueContext,issueList);
+//	}
 }
 
 

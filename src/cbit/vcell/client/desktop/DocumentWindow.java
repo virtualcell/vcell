@@ -12,6 +12,7 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -469,14 +470,27 @@ private void showVCellHelpWindow() {
 		helpWindow.show();
 	}else{
 		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
+		showHiearchy("create",vcellHelpViewer);
 		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
 		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
+		showHiearchy("acw",vcellHelpViewer);
 		vcellHelpViewer.setCloseMyParent(helpWindow);
 		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 		helpWindow.pack();
 		helpWindow.setIsCenteredOnParent();
+		showHiearchy("bshow",vcellHelpViewer);
 		helpWindow.show();
+		showHiearchy("shown",vcellHelpViewer);
 	}
+}
+
+private void showHiearchy(String when, VcellHelpViewer vcellHelpViewer ) {
+		System.out.println(when);
+		Container ctn = vcellHelpViewer.getParent();
+		while (ctn != null) {
+			System.out.println(ctn + ": " + ctn.getName() + " : " + ctn.getClass().getName());
+			ctn = ctn.getParent();
+		}
 }
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)

@@ -12,18 +12,13 @@ package cbit.vcell.solver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
@@ -36,7 +31,6 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
 /**
  * Specifies the problem to be solved by a solver.
@@ -374,77 +368,87 @@ public boolean isSpatial() {
 }
 
 
-public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	
-	getMathOverrides().gatherIssues(issueContext, issueList);
-	
-	//
-	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
-	// If so, the simulation is invalid.
-	//
-	if (fieldMathDescription != null && getSolverTaskDescription() != null) {
-		if (getMathDescription().hasFastSystems() && (getSolverTaskDescription().getSensitivityParameter() != null)) {
-			Issue issue = new Issue(this, issueContext, IssueCategory.Simulation_SensAnal_And_FastSystem,
-									VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_SENSANAL_FASTSYSTEM,getName()),
-									Issue.SEVERITY_ERROR);
-			issueList.add(issue);
-		}
-	}
-	if (fieldMathDescription==null || !fieldMathDescription.isValid()){
-		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
-		issueList.add(issue);
-	}
-	
-	Set<SolverFeature> supportedFeatures = getSolverTaskDescription().getSolverDescription().getSupportedFeatures();
-	Set<SolverFeature> missingFeatures = getRequiredFeatures();
-	missingFeatures.removeAll(supportedFeatures);
-	
-	String text = "The selected Solver does not support the following required features: \n";
-	for (SolverFeature sf : missingFeatures) {
-		text += sf.getName() + "\n";
-	}
-
-	if (!missingFeatures.isEmpty()) {
-		String tooltip = "The selected Solver " + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + 
-				" does not support the following required features: <br>";
-		for (SolverFeature sf : missingFeatures) {
-			tooltip += "&nbsp;&nbsp;&nbsp;" + sf.getName() + "<br>";
-		}
-		Collection<SolverDescription >goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures());
-		assert goodSolvers != null;
-		if (!goodSolvers.isEmpty()) {
-			tooltip += "Please choose one of the solvers : <br>";
-			for (SolverDescription sd : goodSolvers) {
-				tooltip += "&nbsp;&nbsp;&nbsp;" + sd.getDisplayLabel() + "<br>";
-			}
-		}
-		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException, text, tooltip, Issue.SEVERITY_ERROR);
-		issueList.add(issue);
-	}
-}
+//public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+//	
+//	getMathOverrides().gatherIssues(issueContext, issueList);
+//	
+//	//
+//	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
+//	// If so, the simulation is invalid.
+//	//
+//	if (fieldMathDescription != null && getSolverTaskDescription() != null) {
+//		if (getMathDescription().hasFastSystems() && (getSolverTaskDescription().getSensitivityParameter() != null)) {
+//			Issue issue = new Issue(this, issueContext, IssueCategory.Simulation_SensAnal_And_FastSystem,
+//									VCellErrorMessages.getErrorMessage(VCellErrorMessages.SIMULATION_SENSANAL_FASTSYSTEM,getName()),
+//									Issue.SEVERITY_ERROR);
+//			issueList.add(issue);
+//		}
+//	}
+//	if (fieldMathDescription==null || !fieldMathDescription.isValid()){
+//		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
+//		issueList.add(issue);
+//	}
+//	
+//	Set<SolverFeature> supportedFeatures = getSolverTaskDescription().getSolverDescription().getSupportedFeatures();
+//	Set<SolverFeature> missingFeatures = getRequiredFeatures();
+//	missingFeatures.removeAll(supportedFeatures);
+//	
+//	String text = "The selected Solver does not support the following required features: \n";
+//	for (SolverFeature sf : missingFeatures) {
+//		text += sf.getName() + "\n";
+//	}
+//
+//	if (!missingFeatures.isEmpty()) {
+//		System.out.println(this.getKey());
+//		String tooltip = "The selected Solver " + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + 
+//				" does not support the following required features: <br>";
+//		for (SolverFeature sf : missingFeatures) {
+//			tooltip += "&nbsp;&nbsp;&nbsp;" + sf.getName() + "<br>";
+//		}
+//		Collection<SolverDescription >goodSolvers = SolverDescription.getSolverDescriptions(getRequiredFeatures());
+//		assert goodSolvers != null;
+//		if (!goodSolvers.isEmpty()) {
+//			tooltip += "Please choose one of the solvers : <br>";
+//			for (SolverDescription sd : goodSolvers) {
+//				tooltip += "&nbsp;&nbsp;&nbsp;" + sd.getDisplayLabel() + "<br>";
+//			}
+//		}
+//		Issue issue = new Issue(this,issueContext, IssueCategory.MathDescription_MathException, text, tooltip, Issue.SEVERITY_ERROR);
+//		issueList.add(issue);
+//	}
+//}
 
 public Set<SolverFeature> getRequiredFeatures() {
 	Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
+	final MathDescription md = getMathDescription();
 	if (isSpatial()) {
 		requiredFeatures.add(SolverFeature.Feature_Spatial);
 	} else {
 		requiredFeatures.add(SolverFeature.Feature_NonSpatial);
 	}
-	if (getMathDescription().isNonSpatialStoch() || getMathDescription().isSpatialStoch()) {
+	
+	final boolean hybrid = md.isSpatialHybrid();
+	final boolean stoch = md.isNonSpatialStoch() || md.isSpatialStoch();
+	final boolean ruleBased = md.isRuleBased();
+	if (hybrid) {
+		requiredFeatures.add(SolverFeature.Feature_Hybrid);
+	}	
+	if (stoch && !hybrid) {
 		requiredFeatures.add(SolverFeature.Feature_Stochastic);
-	} else if (!getMathDescription().isRuleBased()){
+	}
+	if (!stoch && !ruleBased) {
 		requiredFeatures.add(SolverFeature.Feature_Deterministic);
 	}
-	if (getMathDescription().hasFastSystems()) {
+	if (md.hasFastSystems()) {
 		requiredFeatures.add(SolverFeature.Feature_FastSystem);
 	}
-	if (getMathDescription().hasPeriodicBoundaryCondition()) {
+	if (md.hasPeriodicBoundaryCondition()) {
 		requiredFeatures.add(SolverFeature.Feature_PeriodicBoundaryCondition);
 	}
-	if (getMathDescription().hasEvents()) {
+	if (md.hasEvents()) {
 		requiredFeatures.add(SolverFeature.Feature_Events);
 	}
-	if (getMathDescription().hasRandomVariables()) {
+	if (md.hasRandomVariables()) {
 		requiredFeatures.add(SolverFeature.Feature_RandomVariables);
 	}
 	if (getSolverTaskDescription().getStopAtSpatiallyUniformErrorTolerance() != null) {
@@ -453,25 +457,25 @@ public Set<SolverFeature> getRequiredFeatures() {
 	if (getDataProcessingInstructions() != null) {
 		requiredFeatures.add(SolverFeature.Feature_DataProcessingInstructions);
 	}
-	if (getMathDescription().getVariable(PSF_FUNCTION_NAME) != null) {
+	if (md.getVariable(PSF_FUNCTION_NAME) != null) {
 		requiredFeatures.add(SolverFeature.Feature_PSF);
 	}
 	if (isSerialParameterScan()) {
 		requiredFeatures.add(SolverFeature.Feature_SerialParameterScans);
 	}
-	if (getMathDescription().hasVolumeRegionEquations()) {
+	if (md.hasVolumeRegionEquations()) {
 		requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquations);
 	}
-	if (getMathDescription().hasRegionSizeFunctions()) {
+	if (md.hasRegionSizeFunctions()) {
 		requiredFeatures.add(SolverFeature.Feature_RegionSizeFunctions);
 	}
-	if (getMathDescription().hasGradient()) {
+	if (md.hasGradient()) {
 		requiredFeatures.add(SolverFeature.Feature_GradientSourceTerm);
 	}
-	if (getMathDescription().getPostProcessingBlock().getNumDataGenerators() > 0) {
+	if (md.getPostProcessingBlock().getNumDataGenerators() > 0) {
 		requiredFeatures.add(SolverFeature.Feature_PostProcessingBlock);
 	}
-	if (getMathDescription().isRuleBased()){
+	if (md.isRuleBased()){
 		requiredFeatures.add(SolverFeature.Feature_Rulebased);
 	}
 	return requiredFeatures;

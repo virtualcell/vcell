@@ -31,6 +31,7 @@ import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.desktop.DecoratedIssueSource;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.geometry.Geometry;
@@ -133,14 +134,14 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			issueList = new ArrayList<Issue>();
 			for (Issue issue : allIssueList) {
 				Severity severity = issue.getSeverity();
-				if (severity == Issue.SEVERITY_ERROR) {
+				if (severity == Issue.Severity.ERROR) {
 					issueList.add(issue);
 				}
 			}
 			if (bShowWarning) {
 				for (Issue issue : allIssueList) {
 					Severity severity = issue.getSeverity();
-					if (severity == Issue.SEVERITY_WARNING) {
+					if (severity == Issue.Severity.WARNING) {
 						issueList.add(issue);
 					}
 				}
@@ -298,6 +299,12 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		
 		if (vcDocument instanceof BioModel){
 			Object object = issue.getSource();
+			{
+				DecoratedIssueSource dis = BeanUtils.downcast(DecoratedIssueSource.class, object);
+				if (dis != null) {
+					return dis.getSourcePath();
+				}
+			}
 			String description = "";
 			if (object instanceof SymbolTableEntry) {
 				description = ((SymbolTableEntry)object).getName();

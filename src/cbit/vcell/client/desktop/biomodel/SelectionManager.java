@@ -147,18 +147,10 @@ public class SelectionManager {
 		getPropertyChange().removePropertyChangeListener(listener);
 	}
 	
-	public final void followHyperlink(ActiveView newActiveView, Object[] newSelection){
-//		System.out.println("========== followHyperlink (enter) thread="+Thread.currentThread().getName());
-//		showStack();
-		followHyperlink0(newActiveView, newSelection);
-//		System.out.println("========== followHyperlink (leave) thread="+Thread.currentThread().getName());
-//		show();
-	}
-	
 	public final void setSelectedObjects(Object[] newValue) {
 //		System.out.println("----- setSelectedObjects (enter) thread="+Thread.currentThread().getName());
 //		showStack();
-		followHyperlink0(getActiveView(), newValue);
+		followHyperlink(getActiveView(), newValue);
 //		System.out.println("----- setSelectedObjects (leave) thread="+Thread.currentThread().getName());
 //		show();
 	}
@@ -166,12 +158,12 @@ public class SelectionManager {
 	public final void setActiveView(ActiveView newValue) {
 //		System.out.println("===== setActiveView (enter) thread="+Thread.currentThread().getName());
 //		showStack();
-		followHyperlink0(newValue, new Object[0]);
+		followHyperlink(newValue, new Object[0]);
 //		System.out.println("===== setActiveView (leave) thread="+Thread.currentThread().getName());
 //		show();
 	}
 	
-	public final void followHyperlink0(ActiveView newActiveView, Object[] newSelection){
+	public final void followHyperlink(ActiveView newActiveView, Object ... newSelection) { 
 		if (bBusy){
 //			System.out.println("     busy...");
 			return;
