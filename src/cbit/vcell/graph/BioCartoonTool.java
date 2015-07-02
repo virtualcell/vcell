@@ -20,6 +20,8 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
+import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 
@@ -115,9 +117,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			boolean bNew,/*boolean bUseDBSpecies,*/ Component guiRequestComponent,
 			UserResolvedRxElements userResolvedRxElements) throws Exception {
 		Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
-
+		IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 		Vector<Issue> issueList =
-			pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig,
+			pasteReactionSteps0(guiRequestComponent, issueContext, reactionStepsArrOrig,
 					clonedModel, clonedModel.getStructure(struct.getName()), bNew,/*bUseDBSpecies,*/
 					UserResolvedRxElements.createCompatibleUserResolvedRxElements(userResolvedRxElements, clonedModel));
 		if (issueList.size() != 0) {
@@ -126,7 +128,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			}
 		}
 		issueList.clear();
-		issueList = pasteReactionSteps0(guiRequestComponent, reactionStepsArrOrig,
+		issueList = pasteReactionSteps0(guiRequestComponent, issueContext, reactionStepsArrOrig,
 				pasteModel, struct, bNew,/*bUseDBSpecies,*/
 				userResolvedRxElements);
 	}
@@ -216,7 +218,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	 * @param pasteToStructure cbit.vcell.model.Structure
 	 * @param bNew boolean
 	 */
-	private static final Vector<Issue> pasteReactionSteps0(Component parent,
+	private static final Vector<Issue> pasteReactionSteps0(Component parent,IssueContext issueContext,
 			ReactionStep[] copyFromRxSteps,Model pasteToModel, Structure pasteToStructure,
 			boolean bNew,/*boolean bUseDBSpecies,*/
 			UserResolvedRxElements userResolvedRxElements) throws Exception {
@@ -293,8 +295,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					}
 				}
 				// this adds the speciesContexts and species (if any) to the model)
+				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
 				SpeciesContext newSc =
-					pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
+					pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),rootSC,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 							UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
 				// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams. 
 				SpeciesContext oldSc = copyFromRxParticipantArr[i].getSpeciesContext();
@@ -345,15 +348,15 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 										// if paste-model has oldSc struct, paste it there, 
 										Structure newSCStruct = pasteToModel.getStructure(oldSC.getStructure().getName()); 
 										if (newSCStruct != null) {
-											newSC = pasteSpecies(parent, oldSC.getSpecies(), pasteToModel, newSCStruct, bNew, /*bUseDBSpecies,*/speciesHash,
+											newSC = pasteSpecies(parent, oldSC.getSpecies(), null, pasteToModel, newSCStruct, bNew, /*bUseDBSpecies,*/speciesHash,
 													UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, oldSC));
 											speciesContextHash.put(oldSC, newSC);
 										} else {
 											// oldStruct wasn't found in paste-model, paste it in newRxnStruct and add warning to issues list
-											newSC = pasteSpecies(parent, oldSC.getSpecies(), pasteToModel, toRxnStruct, bNew, /*bUseDBSpecies,*/speciesHash,
+											newSC = pasteSpecies(parent, oldSC.getSpecies(), null, pasteToModel, toRxnStruct, bNew, /*bUseDBSpecies,*/speciesHash,
 													UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements, oldSC));
 											speciesContextHash.put(oldSC, newSC);
-											Issue issue = new Issue(oldSC, IssueCategory.CopyPaste,
+											Issue issue = new Issue(oldSC, issueContext, IssueCategory.CopyPaste,
 													"SpeciesContext '" + oldSC.getSpecies().getCommonName() + "' was not found in compartment '" +
 													oldSC.getStructure().getName() + "' in the model; the species was added to the compartment '" +
 													toRxnStruct.getName() + "' where the reaction was pasted.",
@@ -450,7 +453,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 								}
 								// if a non-numeric parameter was encountered in the old model, it was added as a numeric (0.0), warn user of change.
 								if (bNonNumeric) {
-									Issue issue = new Issue(oldMp, IssueCategory.CopyPaste,
+									Issue issue = new Issue(oldMp, issueContext, IssueCategory.CopyPaste,
 											"Global parameter '" + oldMp.getName() + "' was non-numeric; it has been added " +
 											"as global parameter '" + newMpName + "' in the new model with value = 0.0. " +
 											"Please update its value, if required, before using it.",
@@ -572,6 +575,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	protected static final SpeciesContext pasteSpecies(
 			Component parent,
 			Species copyFromSpecies,
+			String useThisSpeciesContextRootName,
 			Model pasteToModel,
 			Structure pasteToStruct0,
 			boolean bNew,/*boolean bUseDBSpecies, */
@@ -592,7 +596,14 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				SpeciesContext speciesContext = pasteToModel.getSpeciesContext(newSpecies,preferredToStructure);
 				if(speciesContext == null){ //Has Species but not SpeciesContext
 					speciesContext = pasteToModel.addSpeciesContext(newSpecies,preferredToStructure);
-					speciesContext.setName(newSpecies.getCommonName());
+					String newSpeciesContextName = newSpecies.getCommonName();
+					if(useThisSpeciesContextRootName != null){
+						newSpeciesContextName = useThisSpeciesContextRootName+"_"+speciesContext.getStructure().getName();
+						while(pasteToModel.getSpeciesContext(newSpeciesContextName) != null){
+							newSpeciesContextName = TokenMangler.getNextEnumeratedToken(newSpeciesContextName);
+						}
+					}
+					speciesContext.setName(newSpeciesContextName);
 				}
 			}catch(Exception e){
 				DialogUtils.showErrorDialog(parent, e.getMessage(), e);

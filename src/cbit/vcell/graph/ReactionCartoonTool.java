@@ -557,7 +557,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
 				Vector<SpeciesContext> pastedSpeciesContextV = new Vector<SpeciesContext>();
 				for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
-					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), getModel(),structure,true,speciesHash, null));
+					String rootSC = speciesContextRootFinder(reactionSpeciesCopy.getSpeciesContextArr()[i]);
+					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), rootSC, getModel(),structure,true,speciesHash, null));
 				}
 				getGraphModel().clearSelection();
 				for(SpeciesContext pastedSpeciesContext:pastedSpeciesContextV){
@@ -575,6 +576,18 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 
 	}
+	
+	public static String speciesContextRootFinder(SpeciesContext speciesContext){
+		String rootSC = null;
+		if(speciesContext.getStructure() != null && speciesContext.getStructure().getName() != null){
+			String structSuffix = "_"+speciesContext.getStructure().getName();
+			if(speciesContext.getName().endsWith(structSuffix)){
+				rootSC = speciesContext.getName().substring(0, speciesContext.getName().length()-structSuffix.length());
+			}
+		}
+		return rootSC;
+	}
+	
 	private static final String RXSPECIES_BACK = "Back";
 	private static final String RXSPECIES_CANCEL = "Cancel";
 	private static final String RXSPECIES_DELETE = "Delete";
