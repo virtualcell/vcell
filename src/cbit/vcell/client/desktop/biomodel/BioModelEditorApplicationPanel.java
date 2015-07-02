@@ -183,6 +183,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
 				parameterEstimationPanel.setSelectionManager(selectionManager);
+				showOrHideProtocolsPanel();
 				if (respondingToSelectionManager){
 					selectionManager.setSelectedObjects(new Object[0]);
 					selectionManager.setSelectedObjects(selectedObj);
@@ -192,6 +193,27 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2});
 	}
 
+	private void showOrHideProtocolsPanel() {
+		boolean bShow = !simulationContext.isRuleBased();
+		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
+		int index = tabbedPane.indexOfComponent(tab.component);
+		if (bShow) {
+			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
+		} else {
+			if (index >= 0) {
+				Component selectedComponent = tabbedPane.getSelectedComponent();
+				tabbedPane.remove(tab.component);
+				if (selectedComponent == tab.component) {
+					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
+						if (tabbedPane.isEnabledAt(i)) {
+							tabbedPane.setSelectedIndex(i);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
 	private void showOrHideFittingPanel() {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
