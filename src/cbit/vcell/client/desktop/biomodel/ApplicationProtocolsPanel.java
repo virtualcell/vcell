@@ -84,10 +84,7 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 	public void setSimulationContext(SimulationContext newValue) {
 		super.setSimulationContext(newValue);
 //		electricalMembraneMappingPanel.setSimulationContext(simulationContext);
-		showOrHideEventsPanel();
-		showOrHideelectricalMembraneMappingPanel();
-		showOrHideMicroscopeMeasurementPanel();
-		showOrHideRateRulesPanel();
+		showOrHideSubpanels();
 		rateRulesDisplayPanel.setSimulationContext(simulationContext);
 	}
 	
@@ -120,6 +117,16 @@ public class ApplicationProtocolsPanel extends ApplicationSubPanel {
 		}
 	}
 
+	public void geometryChanged() {
+		showOrHideSubpanels();
+	}
+	
+	private void showOrHideSubpanels() {
+		showOrHideEventsPanel();
+		showOrHideelectricalMembraneMappingPanel();
+		showOrHideMicroscopeMeasurementPanel();
+		showOrHideRateRulesPanel();
+	}
 	
 	private void showOrHideelectricalMembraneMappingPanel() {
 		boolean bShow = true;
