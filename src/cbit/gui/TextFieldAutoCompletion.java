@@ -171,6 +171,13 @@ public class TextFieldAutoCompletion extends JTextField {
 				} else if(focusCounter == 1) {
 					focusCounter--;
 					requestFocus();
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							int cp = getCaretPosition();
+							setCaretPosition(cp);
+							moveCaretPosition(cp);				
+						}
+					});
 				}
 				return;
 			}
