@@ -750,9 +750,9 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 		fieldMathDescription.gatherIssues(issueContext,issueList);
 		outputFunctionContext.gatherIssues(issueContext,issueList);
-		for (Simulation simulation : fieldSimulations){
-			simulation.gatherIssues(issueContext,issueList);
-		}
+//		for (Simulation simulation : fieldSimulations){
+//			simulation.gatherIssues(issueContext,issueList);
+//		}
 	}
 
 	public Simulation getSimulation(String chosenSimulationName) {

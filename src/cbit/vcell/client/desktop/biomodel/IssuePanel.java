@@ -14,8 +14,6 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -28,6 +26,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
@@ -35,6 +34,7 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.JSortTable;
 
+import cbit.vcell.client.desktop.DecoratedIssueSource;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -69,37 +69,16 @@ public class IssuePanel extends DocumentEditorSubPanel {
 	
 	public IssuePanel() {
 		super();
-		initialize();
-	}
-	
-	@Override
-	public void setIssueManager(IssueManager issueManager) {
-		super.setIssueManager(issueManager);
-		issueTableModel.setIssueManager(issueManager);
-	}
-	
-	@Override
-	protected void onSelectedObjectsChange(Object[] selectedObjects) {	
-	}	
-	
-	private void initialize() {
 		refreshButton = new JButton("Refresh");
-		refreshButton.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
+		refreshButton.addActionListener(e -> {
 				if (issueManager != null) {
 					issueManager.updateIssues();
 				}			
-			}
 		});
 		showWarningCheckBox = new JCheckBox("Show Warnings");
 		showWarningCheckBox.setSelected(true);
-		showWarningCheckBox.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
+		showWarningCheckBox.addActionListener(e-> {
 				issueTableModel.setShowWarning(showWarningCheckBox.isSelected());
-				
-			}
 		});
 		issueTable = new JSortTable();
 		issueTableModel = new IssueTableModel(issueTable);
@@ -183,83 +162,100 @@ public class IssuePanel extends DocumentEditorSubPanel {
 		};
 		issueTable.getColumnModel().getColumn(IssueTableModel.COLUMN_DESCRIPTION).setCellRenderer(tableRenderer);
 	}
+	
+	@Override
+	public void setIssueManager(IssueManager issueManager) {
+		super.setIssueManager(issueManager);
+		issueTableModel.setIssueManager(issueManager);
+	}
+	
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {	
+	}	
 
 	private void invokeHyperlink(int row) {
-		Issue issue = issueTableModel.getValueAt(row);
-		IssueContext issueContext = issue.getIssueContext();
-		Object object = issue.getSource();
-		if (object instanceof Parameter) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
-		} else if (object instanceof StructureMapping) {
-			StructureMapping structureMapping = (StructureMapping) object;
-			StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
-			SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
-			followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
-		} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
-			UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
-			SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
-			followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
-		} else if (object instanceof MicroscopeMeasurement) {
-			SimulationContext simulationContext = ((MicroscopeMeasurement) object).getSimulationContext();
-			followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments),new Object[] {object});
-		} else if (object instanceof OutputFunctionIssueSource) {
-			SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
-			if (simulationOwner instanceof SimulationContext) {
-				SimulationContext simulationContext = (SimulationContext) simulationOwner;
-				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
-			} else if (simulationOwner instanceof MathModel) {
-				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
+		if (selectionManager != null) { //followHyperlink is no-op if selectionManger null, so no point in proceeding if it is
+			Issue issue = issueTableModel.getValueAt(row);
+			IssueContext issueContext = issue.getIssueContext();
+			IssueSource object = issue.getSource();
+
+			if (object instanceof DecoratedIssueSource) {
+				DecoratedIssueSource dis =(DecoratedIssueSource) object;
+				dis.activateView(selectionManager);
 			}
-		} else if (object instanceof Simulation) {
-			Simulation simulation = (Simulation)object;
-			SimulationOwner simulationOwner = simulation.getSimulationOwner();
-			if (simulationOwner instanceof SimulationContext) {
-				SimulationContext simulationContext = (SimulationContext) simulationOwner;
-				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations),new Object[] {simulation});
-			} else if (simulationOwner instanceof MathModel) {
-				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE, ActiveViewID.math_simulations),new Object[] {simulation});
-			}
-		} else if (object instanceof GeometryContext) {
-			setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
-		} else if (object instanceof Structure) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE, ActiveViewID.structures), new Object[] {object});
-		} else if (object instanceof ReactionStep) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
-		} else if (object instanceof ReactionRule) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
-		} else if (object instanceof SpeciesContextSpec) {
-			SpeciesContextSpec scs = (SpeciesContextSpec)object;
-			ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
-			followHyperlink(av,new Object[] {object});
-		} else if (object instanceof ReactionCombo) {
-			ReactionCombo rc = (ReactionCombo)object;
-			followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
-		} else if (object instanceof SpeciesContext) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {object});
-		} else if (object instanceof RbmObservable) {
-			followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {object});
-		} else if (object instanceof SpeciesPattern) {
-//			if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
-//				SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
-//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {thing});
-//			}else if(issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
-//				ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
-//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {thing});
-//			}else if(issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
-//				RbmObservable thing = (RbmObservable)issue.getIssueContext().getContextObject(ContextType.RbmObservable);
-//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {thing});
-//			} else {
+			else if (object instanceof Parameter) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
+			} else if (object instanceof StructureMapping) {
+				StructureMapping structureMapping = (StructureMapping) object;
+				StructureMappingNameScope structureMappingNameScope = (StructureMappingNameScope)structureMapping.getNameScope();
+				SimulationContext simulationContext = ((SimulationContextNameScope)(structureMappingNameScope.getParent())).getSimulationContext();
+				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
+			} else if (object instanceof GeometryContext.UnmappedGeometryClass) {
+				UnmappedGeometryClass unmappedGeometryClass = (UnmappedGeometryClass) object;
+				SimulationContext simulationContext = unmappedGeometryClass.getSimulationContext();
+				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.structure_mapping),new Object[] {object});
+			} else if (object instanceof MicroscopeMeasurement) {
+				SimulationContext simulationContext = ((MicroscopeMeasurement) object).getSimulationContext();
+				followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.PROTOCOLS_NODE, ActiveViewID.microscope_measuremments),new Object[] {object});
+			} else if (object instanceof OutputFunctionIssueSource) {
+				SimulationOwner simulationOwner = ((OutputFunctionIssueSource)object).getOutputFunctionContext().getSimulationOwner();
+				if (simulationOwner instanceof SimulationContext) {
+					SimulationContext simulationContext = (SimulationContext) simulationOwner;
+					followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
+				} else if (simulationOwner instanceof MathModel) {
+					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions),new Object[] {((OutputFunctionIssueSource)object).getAnnotatedFunction()});
+				}
+			} else if (object instanceof Simulation) {
+				Simulation simulation = (Simulation)object;
+				SimulationOwner simulationOwner = simulation.getSimulationOwner();
+				if (simulationOwner instanceof SimulationContext) {
+					SimulationContext simulationContext = (SimulationContext) simulationOwner;
+					followHyperlink(new ActiveView(simulationContext, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations),new Object[] {simulation});
+				} else if (simulationOwner instanceof MathModel) {
+					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE, ActiveViewID.math_simulations),new Object[] {simulation});
+				}
+			} else if (object instanceof GeometryContext) {
+				setActiveView(new ActiveView(((GeometryContext)object).getSimulationContext(), DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition));
+			} else if (object instanceof Structure) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.STRUCTURES_NODE, ActiveViewID.structures), new Object[] {object});
+			} else if (object instanceof ReactionStep) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
+			} else if (object instanceof ReactionRule) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {object});
+			} else if (object instanceof SpeciesContextSpec) {
+				SpeciesContextSpec scs = (SpeciesContextSpec)object;
+				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
+				followHyperlink(av,new Object[] {object});
+			} else if (object instanceof ReactionCombo) {
+				ReactionCombo rc = (ReactionCombo)object;
+				followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
+			} else if (object instanceof SpeciesContext) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {object});
+			} else if (object instanceof RbmObservable) {
+				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {object});
+			} else if (object instanceof SpeciesPattern) {
+				//			if (issue.getIssueContext().hasContextType(ContextType.SpeciesContext)){
+				//				SpeciesContext thing = (SpeciesContext)issue.getIssueContext().getContextObject(ContextType.SpeciesContext);
+				//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.SPECIES_NODE, ActiveViewID.species), new Object[] {thing});
+				//			}else if(issue.getIssueContext().hasContextType(ContextType.ReactionRule)) {
+				//				ReactionRule thing = (ReactionRule)issue.getIssueContext().getContextObject(ContextType.ReactionRule);
+				//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.REACTIONS_NODE, ActiveViewID.reactions), new Object[] {thing});
+				//			}else if(issue.getIssueContext().hasContextType(ContextType.RbmObservable)) {
+				//				RbmObservable thing = (RbmObservable)issue.getIssueContext().getContextObject(ContextType.RbmObservable);
+				//				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.OBSERVABLES_NODE, ActiveViewID.observables), new Object[] {thing});
+				//			} else {
 				System.err.println("SpeciesPattern object missing a proper issue context.");
-//			}
-		} else if (object instanceof Geometry) {
-			if (issueContext.hasContextType(ContextType.SimContext)){
-				SimulationContext simContext = (SimulationContext)issueContext.getContextObject(ContextType.SimContext);
-				followHyperlink(new ActiveView(simContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition), new Object[] {object});
-			}else if (issueContext.hasContextType(ContextType.MathModel)){
-				followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry), new Object[] {object});
+				//			}
+			} else if (object instanceof Geometry) {
+				if (issueContext.hasContextType(ContextType.SimContext)){
+					SimulationContext simContext = (SimulationContext)issueContext.getContextObject(ContextType.SimContext);
+					followHyperlink(new ActiveView(simContext, DocumentEditorTreeFolderClass.GEOMETRY_NODE, ActiveViewID.geometry_definition), new Object[] {object});
+				}else if (issueContext.hasContextType(ContextType.MathModel)){
+					followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry), new Object[] {object});
+				}
+			} else {
+				System.err.println("unknown object type in IssuePanel.invokeHyperlink(): " + object.getClass() + ", context type: " + issueContext.getContextType());
 			}
-		} else {
-			System.err.println("unknown object type in IssuePanel.invokeHyperlink(): " + object.getClass() + ", context type: " + issueContext.getContextType());
 		}
 	}
 }
