@@ -24,6 +24,7 @@ import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.document.VCDocument;
 
+import cbit.vcell.client.desktop.VCDocumentDecorator;
 import cbit.vcell.model.SimpleBoundsIssue;
 
 @SuppressWarnings("serial")
@@ -87,6 +88,9 @@ public class IssueManager {
 	private List<IssueEventListener> issueEventListeners = new ArrayList<IssueEventListener>();
 	
 	private void updateIssues0() {
+		if (vcDocument==null){
+			return;
+		}
 		if (dirtyTimestamp==0){
 			return;
 		}
@@ -95,15 +99,14 @@ public class IssueManager {
 			return;
 		}
 		try {
+			VCDocumentDecorator decorator = VCDocumentDecorator.getDecorator(vcDocument);
 			numErrors = 0;
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
 			IssueContext issueContext = new IssueContext();
-			if (vcDocument==null){
-				return;
-			}
-			vcDocument.gatherIssues(issueContext,tempIssueList);
+			decorator.gatherIssues(issueContext, tempIssueList);
+			//vcDocument.gatherIssues(issueContext,tempIssueList);
 			
 			issueList = new ArrayList<Issue>();
 			for (Issue issue: tempIssueList) {
@@ -112,9 +115,9 @@ public class IssueManager {
 				}
 				issueList.add(issue);
 				Severity severity = issue.getSeverity();
-				if (severity == Issue.SEVERITY_ERROR) {
+				if (severity == Issue.Severity.ERROR) {
 					numErrors ++;
-				} else if (severity == Issue.SEVERITY_WARNING) {
+				} else if (severity == Issue.Severity.WARNING) {
 					numWarnings ++;
 				}
 			}
