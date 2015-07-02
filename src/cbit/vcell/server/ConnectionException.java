@@ -13,6 +13,7 @@ package cbit.vcell.server;
 /**
  * This type was created in VisualAge.
  */
+@SuppressWarnings("serial")
 public class ConnectionException extends Exception {
 /**
  * ConnectionException constructor comment.
@@ -26,5 +27,8 @@ public ConnectionException() {
  */
 public ConnectionException(String s) {
 	super(s);
+}
+ConnectionException(String message, Throwable cause) {
+	super(message, cause);
 }
 }

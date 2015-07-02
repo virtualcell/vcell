@@ -52,7 +52,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 	try {
 		vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup(connectString);
 	} catch (Throwable e){
-		throw new ConnectionException(e.getMessage());
+		throw new ConnectionException(e.getMessage(),e);
 	}
 	try {
 		vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
