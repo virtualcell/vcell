@@ -76,9 +76,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	public String getActionCommand() { return actionCommand; }
 	};
 
-	private JPopupMenu lastJPopupMenu = null;
-	private List<JMenuItem> lastMenuList = null;
-
 	// reaction and structure cartoon image menus
 	JMenuItem saveAsImageMenu = new JMenuItem(CartoonToolSaveAsImageActions.getMenuAction(this));
 
@@ -169,11 +166,8 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 	public void keyPressed(KeyEvent e) {
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			if (lastJPopupMenu != null && lastJPopupMenu.isVisible()) {
-				MenuSelectionManager.defaultManager().clearSelectedPath();
-			} else {
-				getGraphModel().clearSelection();
-			}
+			MenuSelectionManager.defaultManager().clearSelectedPath();
+			getGraphModel().clearSelection();
 		}
 		if ((e.getKeyCode() == KeyEvent.VK_C)
 				&& ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0)) {
@@ -226,12 +220,6 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 		if (getGraphPane() == null) {
 			return;
 		}
-		// TODO is this really more efficient?
-		//
-		// For efficiency, this will reuse last JPopupMenu if possible.
-		// Could be made smarter and keep list of more than 1 previously
-		// constructed JPopupMenus and reuse
-		//
 		if (shape != null) {
 
 			List<JMenuItem> currentMenuList = new ArrayList<JMenuItem>();
@@ -263,54 +251,33 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 							menuItem.getActionCommand()));
 				}
 			}
-			// See if anything changed
-			JPopupMenu popupMenu = null;
+			
+			List<JMenuItem> editV = new ArrayList<JMenuItem>();
+			JPopupMenu popupMenu = new javax.swing.JPopupMenu();
+			popupMenu.setName("CartoonToolJPopupMenu");
+
+			for (int i = 0; i < currentMenuList.size(); i += 1) {
+				JMenuItem addableJMenuItem = currentMenuList.get(i);
+				if (miscMenuItems.contains(addableJMenuItem)
+						|| addableJMenuItem == saveAsImageMenu
+						|| paintingMenuItems.contains(addableJMenuItem)
+						|| groupMenuItems.contains(addableJMenuItem)) {
+					popupMenu.add(addableJMenuItem);
+				} else if (editMenuItems.contains(addableJMenuItem)) {
+					editV.add(addableJMenuItem);
+				} else {
+					throw new RuntimeException("Unknown JMenuItem="	+ addableJMenuItem.toString());
+				}
+			}
 			//
-			boolean bSame = true;
-			if (lastMenuList == null || !lastMenuList.equals(currentMenuList)) {
-				bSame = false;
-			}
-			if (bSame) {
-				for (int i = 0; i < currentMenuList.size(); i += 1) {
-					if ((lastMenuList.get(i)).isEnabled() != (currentMenuList.get(i)).isEnabled()) {
-						bSame = false;
-						break;
-					}
+			if (editV.size() > 0) {
+				for (int i = 0; i < editV.size(); i += 1) {
+					popupMenu.add(editV.get(i), i);
 				}
+				popupMenu.add(new JSeparator(), editV.size());
 			}
-			if (!bSame) {// Make new JPopupMenu if its different than the last
-				List<JMenuItem> editV = new ArrayList<JMenuItem>();
-				popupMenu = new javax.swing.JPopupMenu();
-				popupMenu.setName("CartoonToolJPopupMenu");
-				//
-				for (int i = 0; i < currentMenuList.size(); i += 1) {
-					JMenuItem addableJMenuItem = currentMenuList.get(i);
-					if (miscMenuItems.contains(addableJMenuItem)
-							|| addableJMenuItem == saveAsImageMenu
-							|| paintingMenuItems.contains(addableJMenuItem)
-							|| groupMenuItems.contains(addableJMenuItem)) {
-						popupMenu.add(addableJMenuItem);
-					} else if (editMenuItems.contains(addableJMenuItem)) {
-						editV.add(addableJMenuItem);
-					} else {
-						throw new RuntimeException("Unknown JMenuItem="	+ lastMenuList.get(i).toString());
-					}
-				}
-				//
-				if (editV.size() > 0) {
-					for (int i = 0; i < editV.size(); i += 1) {
-						popupMenu.add(editV.get(i), i);
-					}
-					popupMenu.add(new JSeparator(), editV.size());
-				}
-				//
-				lastMenuList = currentMenuList;
-				lastJPopupMenu = popupMenu;
-			}
-			// Show menu if anything is in it
-			if (lastJPopupMenu != null && (lastJPopupMenu.getComponentCount() > 0)) {
-				// graphPane.add(popupMenu);//JPopupMenus don't need to add themselves to Components
-				lastJPopupMenu.show(getGraphPane(), x, y);
+			if (popupMenu != null && (popupMenu.getComponentCount() > 0)) {
+				popupMenu.show(getGraphPane(), x, y);
 			}
 		}
 	}

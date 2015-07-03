@@ -78,7 +78,7 @@ public class CartoonToolEditActions {
 		public static final String MENU_TEXT = MENU_ACTION;
 		public PasteNew(CartoonTool cartoonTool) {
 			super(cartoonTool, MENU_ACTION, MENU_TEXT, MENU_TEXT, MENU_TEXT);
-			putValue(MNEMONIC_KEY, KeyEvent.VK_W);
+			putValue(MNEMONIC_KEY, KeyEvent.VK_V);
 		}
 	}	
 	
