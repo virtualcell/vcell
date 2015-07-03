@@ -10,7 +10,11 @@
 
 package cbit.gui.graph;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 
 public final class RubberBandRectShape extends RectangleShape {
 
@@ -48,6 +52,12 @@ public final class RubberBandRectShape extends RectangleShape {
 	public void setEnd(Point end) throws Exception {
 		this.end = end;
 		refreshLayoutSelf();
+	}
+
+	@Override
+	public void paintSelf(Graphics2D g2D, int absPosX, int absPosY) {
+		g2D.setColor(forgroundColor);
+		g2D.drawRect(absPosX, absPosY, getSpaceManager().getSize().width, getSpaceManager().getSize().height);
 	}
 
 }

@@ -1168,7 +1168,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			//we're editing, cancel
 			stopEditing();
 		}
-		if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
+		if (event.isPopupTrigger()) {
 			return;
 		}
 		boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
@@ -1291,25 +1291,19 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						}
 					} 
 					else if (shape instanceof ReactionContainerShape || bShift || bCntrl){
+						if(startPointWorld != null && worldPoint != null && startPointWorld.equals(worldPoint)){
+							//Don't start stretching until mouse moves at least 1 from startpoint
+							return;
+						}
 						bRectStretch = true;
-						endPointWorld = new Point(worldPoint.x + 1,
-								worldPoint.y + 1);
-						rectShape = new RubberBandRectShape(worldPoint,
-								endPointWorld, getReactionCartoon());
+						endPointWorld = new Point(worldPoint.x,worldPoint.y);
+						rectShape = new RubberBandRectShape(worldPoint,endPointWorld, getReactionCartoon());
 						rectShape.setEnd(endPointWorld);
 						if (!(shape instanceof ReactionContainerShape)) {
 							shape.getParent().addChildShape(rectShape);
 						} else {
 							shape.addChildShape(rectShape);
 						}
-						Graphics2D g = (Graphics2D) getGraphPane()
-								.getGraphics();
-						AffineTransform oldTransform = g.getTransform();
-						g.scale(0.01 * getReactionCartoon().getZoomPercent(),
-								0.01 * getReactionCartoon().getZoomPercent());
-						g.setXORMode(Color.white);
-						rectShape.paint(g, 0, 0);
-						g.setTransform(oldTransform);
 					}
 				}
 				break;
