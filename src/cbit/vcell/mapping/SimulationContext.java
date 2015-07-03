@@ -2237,9 +2237,11 @@ public boolean hasEventAssignment(SpeciesContext speciesContext) {
 	if (eventsList != null && eventsList.length > 0) {
 		for (BioEvent event : eventsList) {
 			ArrayList<EventAssignment> eventAssgnments = event.getEventAssignments();
-			for (EventAssignment eventAssign : eventAssgnments) {
-				if (eventAssign.getTarget() == speciesContext) {
-					return true;
+			if(eventAssgnments != null){
+				for (EventAssignment eventAssign : eventAssgnments) {
+					if (eventAssign.getTarget() == speciesContext) {
+						return true;
+					}
 				}
 			}
 		}

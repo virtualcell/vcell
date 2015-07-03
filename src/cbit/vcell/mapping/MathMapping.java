@@ -1587,9 +1587,12 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 		ArrayList<SymbolTableEntry> eventAssignTargets = new ArrayList<SymbolTableEntry>();
 		if (bioEvents != null && bioEvents.length > 0) {
 			for (BioEvent be : bioEvents) {
-				for (EventAssignment ea : be.getEventAssignments()) {
-					if (!eventAssignTargets.contains(ea.getTarget())) {
-						eventAssignTargets.add(ea.getTarget());
+				ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
+				if(eventAssignments != null){
+					for (EventAssignment ea : eventAssignments) {
+						if (!eventAssignTargets.contains(ea.getTarget())) {
+							eventAssignTargets.add(ea.getTarget());
+						}
 					}
 				}
 			}
@@ -2800,16 +2803,18 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			
 			// now deal with (bio)event Assignment translation to math EventAssignment 
 			ArrayList<EventAssignment> eventAssignments = be.getEventAssignments();
-			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>(); 
-			for (EventAssignment ea : eventAssignments) {
-				SymbolTableEntry ste = simContext.getEntry(ea.getTarget().getName());
-				if (ste instanceof StructureSize) {
-					throw new RuntimeException("Event Assignment Variable for compartment size is not supported yet");
+			ArrayList<Event.EventAssignment> mathEventAssignmentsList = new ArrayList<Event.EventAssignment>();
+			if(eventAssignments != null){
+				for (EventAssignment ea : eventAssignments) {
+					SymbolTableEntry ste = simContext.getEntry(ea.getTarget().getName());
+					if (ste instanceof StructureSize) {
+						throw new RuntimeException("Event Assignment Variable for compartment size is not supported yet");
+					}
+					VCUnitDefinition eventAssignVarUnit = ste.getUnitDefinition();
+					Variable variable = varHash.getVariable(ste.getName());
+					Event.EventAssignment mathEA = new Event.EventAssignment(variable, getIdentifierSubstitutions(ea.getAssignmentExpression(), eventAssignVarUnit, null));
+					mathEventAssignmentsList.add(mathEA);
 				}
-				VCUnitDefinition eventAssignVarUnit = ste.getUnitDefinition();
-				Variable variable = varHash.getVariable(ste.getName());
-				Event.EventAssignment mathEA = new Event.EventAssignment(variable, getIdentifierSubstitutions(ea.getAssignmentExpression(), eventAssignVarUnit, null));
-				mathEventAssignmentsList.add(mathEA);
 			}
 			// use the translated trigger, delay and event assignments to create (math) event
 			Event mathEvent = new Event(be.getName(), mathTriggerExpr, mathDelay, mathEventAssignmentsList);
