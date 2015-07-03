@@ -14,14 +14,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,10 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.help.plaf.basic.BasicFavoritesNavigatorUI.AddAction;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
-import javax.swing.FocusManager;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -56,11 +51,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.SimpleFilenameFilter;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DialogUtils.TableListResult;
@@ -79,8 +72,6 @@ import cbit.gui.graph.RubberBandEdgeShape;
 import cbit.gui.graph.RubberBandRectShape;
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.ShapeUtil;
-import cbit.gui.graph.GraphModel.NotReadyException;
-import cbit.gui.graph.GraphResizeManager.Event;
 import cbit.gui.graph.actions.ActionUtil;
 import cbit.gui.graph.actions.CartoonToolEditActions;
 import cbit.gui.graph.actions.CartoonToolMiscActions;
@@ -91,12 +82,9 @@ import cbit.gui.graph.visualstate.VisualState.PaintLayer;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.desktop.biomodel.ReactionPropertiesPanel;
-import cbit.vcell.client.desktop.biomodel.SpeciesPropertiesPanel;
-import cbit.vcell.client.desktop.biomodel.StructurePropertiesPanel;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -1484,6 +1472,46 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 	
+	private void popupSelect(MouseEvent mouseEvent,Shape shape){
+		// Allow 'popup' change of selection:
+		// If 0 or 1 things are selected in RXDiagramPanel (regardless of what's on clipboard)
+		// -or-
+		// If clipboard contents equal the currently selected objects (i.e. current selection has already been 'copied')
+		if(mouseEvent.isPopupTrigger()){
+			if(mode == Mode.SELECT){
+				if(getGraphModel().getSelectedShape() == null || getGraphModel().getSelectedShapes().size() == 1){
+					getGraphModel().clearSelection();
+					getGraphModel().selectShape(shape);
+				}else if(VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR) != null){
+					VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy)VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
+					int numObjectsOnClipboard =
+						(reactionSpeciesCopy.getSpeciesContextArr()==null?0:reactionSpeciesCopy.getSpeciesContextArr().length) + 
+						(reactionSpeciesCopy.getReactStepArr()==null?0:reactionSpeciesCopy.getReactStepArr().length);
+					if(numObjectsOnClipboard != (getGraphModel().getSelectedObjects() == null?0:getGraphModel().getSelectedObjects().length)){
+						return;
+					}
+					if(reactionSpeciesCopy.getSpeciesContextArr() != null){
+						for(SpeciesContext speciesContext:reactionSpeciesCopy.getSpeciesContextArr()){
+							Shape nextShape = getGraphModel().getShapeFromModelObject(speciesContext);
+							if(nextShape != null && !nextShape.isSelected()){
+								return;
+							}
+						}
+					}
+					if(reactionSpeciesCopy.getReactStepArr() != null){
+						for(ReactionStep reactStep:reactionSpeciesCopy.getReactStepArr()){
+							Shape nextShape = getGraphModel().getShapeFromModelObject(reactStep);
+							if(nextShape != null && !nextShape.isSelected()){
+								return;
+							}
+						}
+					}
+					getGraphModel().clearSelection();
+					getGraphModel().selectShape(shape);
+				}
+			}
+		}
+	}
 	private Timer dragStructTimer;
 	
 	@Override
@@ -1496,7 +1524,10 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			startShape = getReactionCartoon().pickWorld(startPointWorld);
-			if(mode == Mode.STRUCTURE){
+			if(event.isPopupTrigger()){
+				popupSelect(event, startShape);
+				popupMenu(getReactionCartoon().getSelectedShape(),eventX,eventY);
+			}else if(mode == Mode.STRUCTURE){
 				final RXContainerDropTargetInfo selectedContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
 				if(selectedContainerDropTargetInfo != null){
 					JPopupMenu jPopupMenu = new JPopupMenu();
@@ -1526,46 +1557,34 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				    jPopupMenu.add(menuItem);
 				    jPopupMenu.show(event.getComponent(),event.getX(), event.getY());
 				}
-				return;
-			}
-			if(startShape instanceof ReactionContainerShape){
-				if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
-					return;
-				}
-				if(mode == Mode.SELECT){
-					Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
-					bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
-					if(bStartRxContainerLabel){
-						lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
-						//delay showing structure drag drop targets in case user action will turn into
-						//popup menu or name double-click
-						if(dragStructTimer != null){
-							dragStructTimer.stop();
-						}
-						dragStructTimer = new Timer(500, new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								
-								activateDropTargetEnable();
-								getGraphPane().repaint();
+			}else if(mode == Mode.SELECT){
+					// User force select
+					boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
+					boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
+					selectEventFromWorld(startPointWorld, bShift, bCntrl);
+
+					if(startShape instanceof ReactionContainerShape){//setup potential compartment 'drag'
+						Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
+						bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
+						if(bStartRxContainerLabel){
+							lastRXContainerDropTargetInfoMap = updateRXContainerDropTargetInfoMap(startPointWorld);
+							//delay showing structure drag drop targets in case user action will turn into
+							//popup menu or name double-click
+							if(dragStructTimer != null){
+								dragStructTimer.stop();
 							}
-						});
-						dragStructTimer.setRepeats(false);
-						dragStructTimer.start();
+							dragStructTimer = new Timer(500, new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									
+									activateDropTargetEnable();
+									getGraphPane().repaint();
+								}
+							});
+							dragStructTimer.setRepeats(false);
+							dragStructTimer.start();
+						}
 					}
-				}
-			}
-			// Always select with MousePress
-			boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
-			boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
-			if (mode == Mode.SELECT
-					|| (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
-				selectEventFromWorld(startPointWorld, bShift, bCntrl);
-			}
-			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == Mode.SELECT) {
-				popupMenu(getReactionCartoon().getSelectedShape(), eventX, eventY);
-				return;
 			}
 		} catch (Exception e) {
 			System.out.println("CartoonTool.mousePressed: uncaught exception");
@@ -1684,10 +1703,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			Shape endShape = getReactionCartoon().pickWorld(endPointWorld);
 			// if mouse popupMenu event, popup menu
 			if (event.isPopupTrigger() && mode == Mode.SELECT) {
+				popupSelect(event, endShape);
 				popupMenu(getReactionCartoon().getSelectedShape(), event.getX(), event.getY());
-				return;
-			}
-			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
 				return;
 			}
 			if(mode == Mode.SELECT && bStartRxContainerLabel){
