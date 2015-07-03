@@ -110,9 +110,7 @@ public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
 		}
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			//System.out.println("---------- click - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
-			if (e.getSource() == getJTree1()){
-				actionsOnClick(e);
-			}
+			//this event is not generated on some MacOS, use mouse_pressed with 2 clicks instead
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
@@ -140,33 +138,14 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 	super();
 	this.bShowMetadata = bMetadata;
 }
-//private long press1Time = -1;
 protected void ifNeedsDoubleClickEvent(MouseEvent mouseEvent,Class<? extends VersionInfo> versionInfoClass){
-//	System.out.println(versionInfoClass.getName()+" "+mouseEvent);
-	boolean doubleClick = false;
-//	if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED &&
-//			mouseEvent.getButton() == MouseEvent.BUTTON1 &&
-//			mouseEvent.getClickCount() == 1){
-//		press1Time = System.currentTimeMillis();
-//	}if(mouseEvent.getID() == MouseEvent.MOUSE_RELEASED &&
-//			mouseEvent.getButton() == MouseEvent.BUTTON1 &&
-//			mouseEvent.getClickCount() == 2){
-//		long diff = System.currentTimeMillis() - press1Time;
-//		System.out.println(diff+"");
-//		if(diff < 500){
-//			doubleClick = true;
-//		}
-//	}
-	if(mouseEvent.getID() == MouseEvent.MOUSE_CLICKED &&
+	//do this because MouseEvent.MOUSE_CLICKED not genereated on some MacOS
+	if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED &&
 		mouseEvent.getButton() == MouseEvent.BUTTON1 &&
-		mouseEvent.getClickCount() == 2){
-		doubleClick = true;
-	}
-	if(doubleClick &&
-			versionInfoClass.isInstance(getSelectedVersionInfo())){
+		mouseEvent.getClickCount() == 2 &&
+		versionInfoClass.isInstance(getSelectedVersionInfo())){
 		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
 	}
-
 }
 private VCDocumentDbTreeModel getTreeModel( )  {
 	if (treeModel != null) {
