@@ -4554,11 +4554,13 @@ public Element getXML(BioEvent[] bioEvents) throws XmlParseException{
 		}
 
 		ArrayList<BioEvent.EventAssignment> eventAssignmentsList = bioEvents[i].getEventAssignments();
-		for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
-			Element eventAssignmentElement = new Element(XMLTags.EventAssignmentTag);
-			eventAssignmentElement.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
-			eventAssignmentElement.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
-			eventElement.addContent(eventAssignmentElement);
+		if(eventAssignmentsList != null){
+			for (BioEvent.EventAssignment eventAssignment : eventAssignmentsList) {
+				Element eventAssignmentElement = new Element(XMLTags.EventAssignmentTag);
+				eventAssignmentElement.setAttribute(XMLTags.EventAssignmentVariableAttrTag, eventAssignment.getTarget().getName());
+				eventAssignmentElement.addContent(mangleExpression(eventAssignment.getAssignmentExpression()));
+				eventElement.addContent(eventAssignmentElement);
+			}
 		}
 		bioEventsElement.addContent(eventElement);
 	}

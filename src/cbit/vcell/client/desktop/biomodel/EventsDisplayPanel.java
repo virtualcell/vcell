@@ -89,12 +89,14 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 	}
 
 	public static void createOrEditTrigger(Component owner,SimulationContext simulationContext,BioEvent existingBioEvent){
+		boolean bAddNew = existingBioEvent == null;
 		try {
 			TriggerTemplatePanel triggerTemplatePanel = new TriggerTemplatePanel();
-			
-			BioEvent bioEvent = existingBioEvent;
-			if (existingBioEvent==null){
+			BioEvent bioEvent = null;
+			if (bAddNew){
 				bioEvent = simulationContext.createBioEvent();
+			}else{
+				bioEvent = existingBioEvent;
 			}
 			
 			triggerTemplatePanel.init(simulationContext,EventPanel.getAutoCompleteFilter(),bioEvent);
@@ -102,6 +104,15 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 				try{
 					int result = DialogUtils.showComponentOKCancelDialog(owner, triggerTemplatePanel, "event trigger");
 					if(result != JOptionPane.OK_OPTION){
+						try{
+							if(bAddNew){
+								//remove pre-allocated bioevent
+								simulationContext.removeBioEvent(bioEvent);
+							}
+						}catch(Exception e){
+							//catch here to exit loop
+							e.printStackTrace();
+						}
 						return;
 					}
 					triggerTemplatePanel.setTrigger(bioEvent);
@@ -112,7 +123,7 @@ public class EventsDisplayPanel extends BioModelEditorApplicationRightSidePanel<
 			}
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-			DialogUtils.showErrorDialog(owner, "Error "+(existingBioEvent==null?"adding":"editing")+" Event : " + e.getMessage());
+			DialogUtils.showErrorDialog(owner, "Error "+(bAddNew?"adding":"editing")+" Event : " + e.getMessage());
 		}		
 
 	}
