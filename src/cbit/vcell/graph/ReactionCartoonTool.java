@@ -1035,8 +1035,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		Point worldPoint = screenToWorld(screenPoint);
 
 		try {
-			// if right mouse button, then do popup menu
-			if ((event.getModifiers() & (InputEvent.BUTTON2_MASK | InputEvent.BUTTON3_MASK)) != 0) {
+			if(event.getButton() != MouseEvent.BUTTON1){
 				return;
 			}
 			switch (mode) {
@@ -1466,46 +1465,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 	
-	private void popupSelect(MouseEvent mouseEvent,Shape shape){
-		// Allow 'popup' change of selection:
-		// If 0 or 1 things are selected in RXDiagramPanel (regardless of what's on clipboard)
-		// -or-
-		// If clipboard contents equal the currently selected objects (i.e. current selection has already been 'copied')
-		if(mouseEvent.isPopupTrigger()){
-			if(mode == Mode.SELECT){
-				if(getGraphModel().getSelectedShape() == null || getGraphModel().getSelectedShapes().size() == 1){
-					getGraphModel().clearSelection();
-					getGraphModel().selectShape(shape);
-				}else if(VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR) != null){
-					VCellTransferable.ReactionSpeciesCopy reactionSpeciesCopy = (VCellTransferable.ReactionSpeciesCopy)VCellTransferable.getFromClipboard(VCellTransferable.REACTION_SPECIES_ARRAY_FLAVOR);
-					int numObjectsOnClipboard =
-						(reactionSpeciesCopy.getSpeciesContextArr()==null?0:reactionSpeciesCopy.getSpeciesContextArr().length) + 
-						(reactionSpeciesCopy.getReactStepArr()==null?0:reactionSpeciesCopy.getReactStepArr().length);
-					if(numObjectsOnClipboard != (getGraphModel().getSelectedObjects() == null?0:getGraphModel().getSelectedObjects().length)){
-						return;
-					}
-					if(reactionSpeciesCopy.getSpeciesContextArr() != null){
-						for(SpeciesContext speciesContext:reactionSpeciesCopy.getSpeciesContextArr()){
-							Shape nextShape = getGraphModel().getShapeFromModelObject(speciesContext);
-							if(nextShape != null && !nextShape.isSelected()){
-								return;
-							}
-						}
-					}
-					if(reactionSpeciesCopy.getReactStepArr() != null){
-						for(ReactionStep reactStep:reactionSpeciesCopy.getReactStepArr()){
-							Shape nextShape = getGraphModel().getShapeFromModelObject(reactStep);
-							if(nextShape != null && !nextShape.isSelected()){
-								return;
-							}
-						}
-					}
-					getGraphModel().clearSelection();
-					getGraphModel().selectShape(shape);
-				}
-			}
-		}
-	}
 	private Timer dragStructTimer;
 	
 	@Override
@@ -1518,9 +1477,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					(int) (eventX * 100.0 / getReactionCartoon().getZoomPercent()),
 					(int) (eventY * 100.0 / getReactionCartoon().getZoomPercent()));
 			startShape = getReactionCartoon().pickWorld(startPointWorld);
-			if(event.isPopupTrigger()){
-				popupSelect(event, startShape);
+			if(event.isPopupTrigger()){//Mac popup
 				popupMenu(getReactionCartoon().getSelectedShape(),eventX,eventY);
+			}else if(event.getButton() != MouseEvent.BUTTON1){
+				//this may be a win, linux popup menu gesture on mouseRELEASED, let it pass through
+				return;
 			}else if(mode == Mode.STRUCTURE){
 				final RXContainerDropTargetInfo selectedContainerDropTargetInfo = getSelectedContainerDropTargetInfo();
 				if(selectedContainerDropTargetInfo != null){
@@ -1554,8 +1515,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}else if(mode == Mode.SELECT){
 					// User force select
 					boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
-					boolean bCntrl = (event.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
-					selectEventFromWorld(startPointWorld, bShift, bCntrl);
+					selectEventFromWorld(startPointWorld, bShift);
 
 					if(startShape instanceof ReactionContainerShape){//setup potential compartment 'drag'
 						Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
@@ -1695,9 +1655,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			if(dragStructTimer != null){dragStructTimer.stop();}
 			endPointWorld = getReactionCartoon().getResizeManager().unzoom(event.getPoint());
 			Shape endShape = getReactionCartoon().pickWorld(endPointWorld);
-			// if mouse popupMenu event, popup menu
-			if (event.isPopupTrigger() && mode == Mode.SELECT) {
-				popupSelect(event, endShape);
+			if (event.isPopupTrigger() && mode == Mode.SELECT) {//win, linux popup
 				popupMenu(getReactionCartoon().getSelectedShape(), event.getX(), event.getY());
 				return;
 			}
@@ -2415,11 +2373,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		}
 	}
 
-	private void selectEventFromWorld(Point worldPoint, boolean bShift, boolean bCntrl) {
+	private void selectEventFromWorld(Point worldPoint, boolean bShift) {
 		if (getReactionCartoon() == null) {
 			return;
 		}
-		if (!bShift && !bCntrl) {
+		if (!bShift) {
 			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 			if (pickedShape == null || !pickedShape.isSelected()) {
 				getReactionCartoon().clearSelection();
@@ -2431,7 +2389,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				getReactionCartoon().selectShape(pickedShape);
 			}
 
-		} else if (bShift) {
+		} else{
 			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
 			if (pickedShape == null) {
 				return;
@@ -2442,21 +2400,26 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			if (getReactionCartoon().getSelectedShape() instanceof ReactionContainerShape) {
 				getReactionCartoon().clearSelection();
 			}
-			getReactionCartoon().selectShape(pickedShape);
-		} else if (bCntrl) {
-			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
-			if (pickedShape == null) {
-				return;
-			}
-			if (pickedShape instanceof ReactionContainerShape) {
-				return;
-			}
 			if (pickedShape.isSelected()) {
 				getReactionCartoon().deselectShape(pickedShape);
 			} else {
 				getReactionCartoon().selectShape(pickedShape);
 			}
 		}
+//		else if (bCntrl) {
+//			Shape pickedShape = getReactionCartoon().pickWorld(worldPoint);
+//			if (pickedShape == null) {
+//				return;
+//			}
+//			if (pickedShape instanceof ReactionContainerShape) {
+//				return;
+//			}
+//			if (pickedShape.isSelected()) {
+//				getReactionCartoon().deselectShape(pickedShape);
+//			} else {
+//				getReactionCartoon().selectShape(pickedShape);
+//			}
+//		}
 	}
 
 	private void selectEventFromWorld(Rectangle rect, boolean bShift,
