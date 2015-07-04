@@ -1295,8 +1295,8 @@ public class ReactionCartoonTool extends BioCartoonTool {
 							return;
 						}
 						bRectStretch = true;
-						endPointWorld = new Point(worldPoint.x,worldPoint.y);
-						rectShape = new RubberBandRectShape(worldPoint,endPointWorld, getReactionCartoon());
+						endPointWorld = new Point((startPointWorld!=null?startPointWorld.x:worldPoint.x),(startPointWorld!=null?startPointWorld.y:worldPoint.y));
+						rectShape = new RubberBandRectShape((startPointWorld!=null?startPointWorld:worldPoint),endPointWorld, getReactionCartoon());
 						rectShape.setEnd(endPointWorld);
 						if (!(shape instanceof ReactionContainerShape)) {
 							shape.getParent().addChildShape(rectShape);
@@ -1515,6 +1515,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}else if(mode == Mode.SELECT){
 					// User force select
 					boolean bShift = (event.getModifiers() & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK;
+					
 					selectEventFromWorld(startPointWorld, bShift);
 
 					if(startShape instanceof ReactionContainerShape){//setup potential compartment 'drag'
