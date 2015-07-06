@@ -183,7 +183,7 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 				parameterEstimationPanel.setSelectionManager(null);
 				showOrHideFittingPanel();
 				parameterEstimationPanel.setSelectionManager(selectionManager);
-				showOrHideProtocolsPanel();
+//				showOrHideProtocolsPanel();
 				if (respondingToSelectionManager){
 					selectionManager.setSelectedObjects(new Object[0]);
 					selectionManager.setSelectedObjects(selectedObj);
