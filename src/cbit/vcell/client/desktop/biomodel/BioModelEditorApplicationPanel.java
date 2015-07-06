@@ -195,25 +195,17 @@ public class BioModelEditorApplicationPanel extends DocumentEditorSubPanel {
 
 	private void showOrHideProtocolsPanel() {
 		boolean bShow = !simulationContext.isRuleBased();
-		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
-		int index = tabbedPane.indexOfComponent(tab.component);
-		if (bShow) {
-			tabbedPane.addTab(tab.id.title, tab.icon, tab.component);
-		} else {
-			if (index >= 0) {
-				Component selectedComponent = tabbedPane.getSelectedComponent();
-				tabbedPane.remove(tab.component);
-				if (selectedComponent == tab.component) {
-					for (int i = 0; i < tabbedPane.getTabCount(); ++i) {
-						if (tabbedPane.isEnabledAt(i)) {
-							tabbedPane.setSelectedIndex(i);
-							break;
-						}
-					}
-				}
+		ApplicationPanelTab protocolsTab = appPanelTabs[ApplicationPanelTabID.protocols.ordinal()];
+		int protocolsTabIndexInPane = tabbedPane.indexOfComponent(protocolsTab.component);
+		if(bShow){
+			if(protocolsTabIndexInPane == -1){
+				tabbedPane.insertTab(protocolsTab.id.title, protocolsTab.icon, protocolsTab.component,"protocols",ApplicationPanelTabID.protocols.ordinal());
 			}
+		}else if(protocolsTabIndexInPane != -1){
+			tabbedPane.remove(protocolsTabIndexInPane);
 		}
 	}
+	
 	private void showOrHideFittingPanel() {
 		ApplicationPanelTab tab = appPanelTabs[ApplicationPanelTabID.parameterEstimation.ordinal()];
 		int index = tabbedPane.indexOfComponent(tab.component);
