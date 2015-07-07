@@ -4000,6 +4000,19 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 		throw new ModelPropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'.",e);
 	}
 	
+	// Molecular Type is an abstract concept, hence the name can be reused (in a species for example)
+	//
+	// TODO: we actually can't verify anything because setMolecularTypeList() will fire a PROPERTY_NAME_MOLECULAR_TYPE_LIST with names
+	// in the old list which will also be present in the new list, hence we'll always throw exception we shouldn't
+	if (newSymbolClass.equals(MolecularType.class)){
+//		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
+//			if (molecularType.getName().equals(newSymbolName)){
+//				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
+//			}
+//		}
+		return;
+	}
+	
 	//
 	// Make sure not to change name of a "global" symbol to that of a ReactionStep name, ReactionRule name, or MolecularType name.  
 	// These things are not really in the global namespace, but it would be confusing to allow reuse of names.
@@ -4018,13 +4031,6 @@ private void validateNamingConflicts(String symbolDescription, Class<?> newSymbo
 			}
 		}
 	}
-//	if (!newSymbolClass.equals(MolecularType.class)){
-//		for (MolecularType molecularType : rbmModelContainer.molecularTypeList){
-//			if (molecularType.getName().equals(newSymbolName)){
-//				throw new ModelPropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+molecularType.getDisplayType()+" '"+molecularType.getName()+"'.",e);
-//			}
-//		}
-//	}
 	//
 	// make sure not to change to name of any other symbol in 'model' namespace (or friendly namespaces)
 	//
