@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
@@ -37,10 +38,12 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -106,13 +109,23 @@ public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
 			}
 		}
 		public void mouseClicked(java.awt.event.MouseEvent e) {
-			if (e.getSource() == getJTree1()) 
-				actionsOnClick(e);
+			//System.out.println("---------- click - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			//this event is not generated on some MacOS, use mouse_pressed with 2 clicks instead
 		};
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
-		public void mousePressed(java.awt.event.MouseEvent e) {};
-		public void mouseReleased(java.awt.event.MouseEvent e) {};
+		public void mousePressed(java.awt.event.MouseEvent e) {
+			//System.out.println("---------- press - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			if (e.getSource() == getJTree1()){
+				actionsOnClick(e);
+			}
+		};
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+			//System.out.println("---------- release - isPopupTrigger="+e.isPopupTrigger()+" "+e.getClickCount());
+			if (e.getSource() == getJTree1()){
+				actionsOnClick(e);
+			}
+		};
 	}
 /**
  * BioModelTreePanel constructor comment.
@@ -125,7 +138,15 @@ public VCDocumentDbTreePanel(boolean bMetadata) {
 	super();
 	this.bShowMetadata = bMetadata;
 }
-
+protected void ifNeedsDoubleClickEvent(MouseEvent mouseEvent,Class<? extends VersionInfo> versionInfoClass){
+	//do this because MouseEvent.MOUSE_CLICKED not genereated on some MacOS
+	if(mouseEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+		mouseEvent.getButton() == MouseEvent.BUTTON1 &&
+		mouseEvent.getClickCount() == 2 &&
+		versionInfoClass.isInstance(getSelectedVersionInfo())){
+		fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, DatabaseWindowManager.BM_MM_GM_DOUBLE_CLICK_ACTION));
+	}
+}
 private VCDocumentDbTreeModel getTreeModel( )  {
 	if (treeModel != null) {
 		return treeModel;
