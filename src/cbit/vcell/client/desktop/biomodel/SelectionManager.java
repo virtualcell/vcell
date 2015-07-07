@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Window;
 import java.util.ArrayList;
 
 import org.vcell.util.Matchable;
@@ -72,15 +73,20 @@ public class SelectionManager {
 	}
 	
 	public static class ActiveView implements Matchable {
-		private SimulationContext simulationContext;
-		private DocumentEditorTreeFolderClass documentEditorTreeFolderClass;
-		private ActiveViewID activeViewID;
+		private final SimulationContext simulationContext;
+		private final DocumentEditorTreeFolderClass documentEditorTreeFolderClass;
+		private final ActiveViewID activeViewID;
+		/**
+		 * activated panel; provided for attaching Dialogs
+		 */
+		private Window activated;
 		
 		public ActiveView(SimulationContext simulationContext, DocumentEditorTreeFolderClass documentEditorTreeFolderClass, ActiveViewID activeViewID) {
 			super();
 			this.simulationContext = simulationContext;
 			this.documentEditorTreeFolderClass = documentEditorTreeFolderClass;
 			this.activeViewID = activeViewID;
+			activated = null;
 		}
 		public final SimulationContext getSimulationContext() {
 			return simulationContext;
@@ -106,7 +112,18 @@ public class SelectionManager {
 		}
 		public final ActiveViewID getActiveViewID() {
 			return activeViewID;
+		}
+		/**
+		 * set Window that's been activated
+		 * @param activated
+		 */
+		public void setActivated(Window activated) {
+			this.activated = activated;
 		}	
+		
+		public Window getActivated() {
+			return activated;
+		}
 		
 //		public String toString(){
 //			String simContextText = "no simContext";

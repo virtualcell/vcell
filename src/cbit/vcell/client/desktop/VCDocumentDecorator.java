@@ -1,5 +1,7 @@
 package cbit.vcell.client.desktop;
 
+import java.awt.Window;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -11,9 +13,11 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.QuickFixSimulation.CloseAction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
@@ -25,6 +29,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import cbit.vcell.solver.SolverTaskDescription;
 
 public abstract class VCDocumentDecorator {
 	
@@ -181,7 +186,8 @@ public abstract class VCDocumentDecorator {
 					return ss;
 				}
 			}
-			SimulationSource s = new SimulationSource(sim);
+			SimulationSource s = new SimulationSource(sim, simSources);
+			simSources.add(s);
 			return s;
 		}
 	}
@@ -193,27 +199,81 @@ public abstract class VCDocumentDecorator {
 		 * Simulation object may be disconnected from SimuationContext (e.g. if it's deleted) 
 		 */
 		final String pathDesc;
-		@SuppressWarnings("unused")
-		private Collection<SolverDescription> goodSolvers = null;
+		Collection<SolverDescription> goodSolvers = null;
+		final String currentSolver;
+		final Collection<SimulationSource> siblings;
 
-		SimulationSource(Simulation simulation) {
+		SimulationSource(Simulation simulation, Collection<SimulationSource> siblings) {
 			super();
 			this.simulation = simulation;
 			SimulationOwner owner = simulation.getSimulationOwner();
 			pathDesc = "App(" + owner.getName() + ") / Simulations";
+			SolverTaskDescription td = simulation.getSolverTaskDescription();
+			Objects.requireNonNull(td);
+			SolverDescription sd = td.getSolverDescription();
+			currentSolver = sd.getDisplayLabel();
+			this.siblings = siblings;
 		}
 
 		void setGoodSolvers( Collection<SolverDescription> solverDescriptions) {
 			this.goodSolvers = solverDescriptions;
 		}
 		
+		/**
+		 * exception safe setSolverDescription
+		 * @param sd
+		 * @throws ProgrammingException if {@link PropertyVetoException} thrown
+		 */
+		void setSolverDescription(SolverDescription sd) {
+			try {
+				SolverTaskDescription td = simulation.getSolverTaskDescription();
+				td.setSolverDescription(sd);
+			} catch (PropertyVetoException e) {
+				throw new ProgrammingException("invalid solver description " + sd.getDisplayLabel() , e);
+			}
+		}
 
 		@Override
 		public void activateView(SelectionManager selectionManager) {
 			SimulationContext sc = BeanUtils.downcast(SimulationContext.class, simulation.getSimulationOwner()); 
+			Window activated = null;
 			if (sc != null ) {
 				ActiveView av = new ActiveView(sc, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations);
 				selectionManager.followHyperlink(av,simulation);
+				activated = av.getActivated();
+			}
+			if (goodSolvers.size() > 0) {
+				final boolean useFixAll = siblings.size() > 1;
+				QuickFixSimulation qfs = new QuickFixSimulation(activated,useFixAll,
+						currentSolver + " does not support current model. Please select one of the following solvers:", 
+						goodSolvers);
+				qfs.setVisible(true);
+				CloseAction ca = qfs.getCloseAction();
+
+				switch (ca) {
+				case FIX:
+				{
+					SolverDescription ss = qfs.getSelectedSolver();
+					setSolverDescription(ss);
+					break;
+				}
+				case FIX_ALL:
+				{
+					SolverDescription ss = qfs.getSelectedSolver();
+					for (SimulationSource source : siblings) {
+						if (source.goodSolvers.contains(ss)) {
+							source.setSolverDescription(ss);
+						}
+						else if (source.goodSolvers.size() == 1) {
+							source.setSolverDescription(source.goodSolvers.iterator( ).next());
+						}
+					}
+					
+					break;
+				}
+				case CANCEL:
+
+				}
 			}
 		}
 
@@ -225,7 +285,7 @@ public abstract class VCDocumentDecorator {
 		public String getSourcePath() {
 			return pathDesc;
 		}
-		
 	}
+	
 	
 }
