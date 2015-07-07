@@ -10,7 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmNetworkGenerator;
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -316,43 +319,65 @@ public class NetworkTransformer implements SimContextTransformer {
 			int count = 0;				// generate unique name for the species
 			String speciesName = null;
 			String nameRoot = "s";
+			String speciesPatternString = s.getName();
 			
-			if(s.getName() != null) {	// for seed species we generate a name from the species pattern
-				nameRoot = s.getName();
-				nameRoot = nameRoot.replaceAll("[!?~]+", "");
-				nameRoot = TokenMangler.fixTokenStrict(nameRoot);
-				while(true) {
-					if(nameRoot.endsWith("_")) {		// clean all the '_' at the end, if any
-						nameRoot = nameRoot.substring(0, nameRoot.length()-1);
-					} else {
-						break;
-					}
-				}
-				if(Model.isNameUnused(speciesName, model) && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
-					speciesName = nameRoot;		// the name is good and unused
-				} else {
-					nameRoot += "_";
-					while (true) {
-						speciesName = nameRoot + count;	
-						if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
-							break;
-						}	
-						count++;
-					}
-				}
-			} else {			// for plain species it works as before
-				while (true) {
-					speciesName = nameRoot + count;	
-					if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
-						break;
-					}	
-					count++;
-				}
+			while (true) {
+				speciesName = nameRoot + count;	
+				if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
+					break;
+				}	
+				count++;
 			}
+
+//			// TODO: old way of generating complicated name from the pattern
+//			if(s.getName() != null) {	// for seed species we generate a name from the species pattern
+//				nameRoot = s.getName();
+//				speciesPatternString = s.getName();
+//				nameRoot = nameRoot.replaceAll("[!?~]+", "");
+//				nameRoot = TokenMangler.fixTokenStrict(nameRoot);
+//				while(true) {
+//					if(nameRoot.endsWith("_")) {		// clean all the '_' at the end, if any
+//						nameRoot = nameRoot.substring(0, nameRoot.length()-1);
+//					} else {
+//						break;
+//					}
+//				}
+//				if(Model.isNameUnused(nameRoot, model) && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
+//					speciesName = nameRoot;		// the name is good and unused
+//				} else {
+//					nameRoot += "_";
+//					while (true) {
+//						speciesName = nameRoot + count;	
+//						if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
+//							break;
+//						}	
+//						count++;
+//					}
+//				}
+//			} else {			// for plain species it works as before
+//				while (true) {
+//					speciesName = nameRoot + count;	
+//					if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
+//						break;
+//					}	
+//					count++;
+//				}
+//			}
 //			System.out.println(speciesName);
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
 			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
 			speciesContext.setName(speciesName);
+			try {
+				if(speciesPatternString != null) {
+					SpeciesPattern sp = RbmUtils.parseSpeciesPattern(speciesPatternString, model);
+					speciesContext.setSpeciesPattern(sp);
+				}
+			} catch (ParseException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Bad format for species pattern string: " + e.getMessage());
+			}
+//			speciesContext.setSpeciesPatternString(speciesPatternString);
+			
 //			model.addSpecies(speciesContext.getSpecies());
 //			model.addSpeciesContext(speciesContext);
 			sMap.put(speciesName, speciesContext.getSpecies());
