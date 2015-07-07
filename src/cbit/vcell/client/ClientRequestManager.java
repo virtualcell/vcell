@@ -954,7 +954,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 			//newBioModel.addSimulationContext(sc);
 			
 			for(SpeciesContext speciesContext : newBioModel.getModel().getSpeciesContexts()) {
-				speciesContext.setSpeciesPattern(null);
+//				speciesContext.setSpeciesPattern(null);
 			}
 			RbmModelContainer rbmmc = newBioModel.getModel().getRbmModelContainer();
 			for(RbmObservable o : rbmmc.getObservableList()) {
@@ -963,9 +963,9 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 			for(ReactionRule r : rbmmc.getReactionRuleList()) {
 				rbmmc.removeReactionRule(r);
 			}
-			for(MolecularType m : rbmmc.getMolecularTypeList()) {
-				rbmmc.removeMolecularType(m);
-			}
+//			for(MolecularType m : rbmmc.getMolecularTypeList()) {
+//				rbmmc.removeMolecularType(m);
+//			}
 			
 			hashTable.put("newBioModel", newBioModel);
 		}		
