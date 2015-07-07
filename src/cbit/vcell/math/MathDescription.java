@@ -1547,10 +1547,7 @@ public String getVCML_database(boolean includeComments) throws MathException {
 	
 	// Event
 	for (Event event : eventList) {
-		buffer.append(getVCML(event));
-	}
-	if (eventList.size() > 0) {
-		buffer.append("\n");
+		buffer.append(getVCML(event)+"\n");
 	}
 	
 	// Post Processing block
