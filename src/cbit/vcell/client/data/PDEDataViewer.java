@@ -144,6 +144,7 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataManager;
@@ -1631,12 +1632,34 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 							dataProcessingResultsPanel.update(getPdeDataContext());
 						}else if(ivjJTabbedPane1.getSelectedIndex() == ivjJTabbedPane1.indexOfTab(POST_PROCESS_IMAGE_TABNAME)){
 							try{
+								if(postProcessPdeDataViewerPanel.getComponentCount() == 1 && postProcessPdeDataViewerPanel.getComponent(0) instanceof PDEDataViewer){
+									//Setup is done already, cancel setup processing
+									return;
+								}
 								final DocumentWindow documentWindow = (DocumentWindow)BeanUtils.findTypeParentOfComponent(PDEDataViewer.this, DocumentWindow.class);
-								final String HAS_SPATIAL = "HAS_SPATIAL_KEY";
-								if(postProcessPdeDataViewerPanel.getComponentCount() == 0){
+								final String SPATIAL_ERROR_KEY = "SPATIAL_ERROR_KEY";
+//								if(postProcessPdeDataViewerPanel.getComponentCount() == 0){
 									AsynchClientTask postProcessInfoTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
+											if(getClientTaskStatusSupport() != null){
+												getClientTaskStatusSupport().setMessage("Getting Simulation status...");
+											}
+											SimulationStatus simStatus =
+												PDEDataViewer.this.getDataViewerManager().getRequestManager().getServerSimulationStatus(getSimulation().getSimulationInfo());
+											if(!simStatus.isCompleted()){
+												//sim still busy, no postprocessing data
+												hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
+												return;
+											}
+//											else{
+//												//sim completed, try to setup viewer again by removing jlabel message component
+//												if(postProcessPdeDataViewerPanel.getComponentCount() == 1){
+//													postProcessPdeDataViewerPanel.remove(0);
+//												}else if(postProcessPdeDataViewerPanel.getComponentCount() != 0){
+//													throw new Exception("Unexected number of components in PostProcessing Image tab");
+//												}
+//											}							
 											if(getClientTaskStatusSupport() != null){
 												getClientTaskStatusSupport().setMessage("Getting Post Process Info...");
 											}
@@ -1645,30 +1668,29 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 												new DataProcessingOutputInfoOP(PDEDataViewer.this.getPdeDataContext().getVCDataIdentifier(), false, null);
 											DataProcessingOutputInfo dataProcessingOutputInfo = 
 													(DataProcessingOutputInfo)PDEDataViewer.this.getPdeDataContext().doDataOperation(dataProcessingOutputInfoOP);
+											boolean bFoundImageStateVariables = false;
 											if(dataProcessingOutputInfo != null && dataProcessingOutputInfo.getVariableNames() != null){
-												boolean bFoundImageStateVariables = false;
 												for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
 													if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataProcessingOutputInfo.PostProcessDataType.image)){
 														bFoundImageStateVariables = true;
 														break;
 													}
 												}
-												if(!bFoundImageStateVariables){
-													hashTable.put(HAS_SPATIAL, Boolean.FALSE);
-												}else{
-													hashTable.put(HAS_SPATIAL, Boolean.TRUE);
-												}
-											}else{
-												hashTable.put(HAS_SPATIAL, Boolean.FALSE);
 											}
-										}
+											if(!bFoundImageStateVariables){
+												hashTable.put(SPATIAL_ERROR_KEY,"No spatial PostProcessing variables found. (see Application->Protocols->Microscope Measurement)");
+											}
+										};
 									};
 									final String POST_PROCESS_PDEDV = "POST_PROCESS_PDEDV";
 									AsynchClientTask createPostProcessPDEDataViewer = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 										@Override
 										public void run(Hashtable<String, Object> hashTable) throws Exception {
-											if(((Boolean)hashTable.get(HAS_SPATIAL)).equals(Boolean.FALSE)){
-												postProcessPdeDataViewerPanel.add(new JLabel("No Spatial Post Processing Data"),BorderLayout.CENTER);
+											if(postProcessPdeDataViewerPanel.getComponentCount() > 0){
+												postProcessPdeDataViewerPanel.removeAll();
+											}
+											if(hashTable.get(SPATIAL_ERROR_KEY) != null){
+												postProcessPdeDataViewerPanel.add(new JLabel((String)hashTable.get(SPATIAL_ERROR_KEY)),BorderLayout.CENTER);
 												throw UserCancelException.CANCEL_GENERIC;
 											}
 											if(getClientTaskStatusSupport() != null){
@@ -1794,7 +1816,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 //											}
 //										}
 //									});
-								}
+//								}
 								
 	//							final RequestManager requestManager = documentWindow.getTopLevelWindowManager().getRequestManager();
 	
