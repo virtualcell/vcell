@@ -11,9 +11,11 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Window;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.constants.GuiConstants;
@@ -131,12 +133,20 @@ public class ApplicationSimulationsPanel extends ApplicationSubPanel {
 		super.onActiveViewChange(activeView);
 		if (DocumentEditorTreeFolderClass.SIMULATIONS_NODE.equals(activeView.getDocumentEditorTreeFolderClass())) {
 			if (activeView.getActiveViewID() != null) {
+				boolean set = false;
 				if (activeView.getActiveViewID().equals(ActiveViewID.simulations)) {
 					tabbedPane.setSelectedIndex(SimulationsPanelTabID.simulations.ordinal());
+					set = true;
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.output_functions)) {
 					tabbedPane.setSelectedIndex(SimulationsPanelTabID.output_functions.ordinal());
+					set = true;
 				} else if (activeView.getActiveViewID().equals(ActiveViewID.generated_math)) {
 					tabbedPane.setSelectedIndex(SimulationsPanelTabID.generated_math.ordinal());
+					set = true;
+				}
+				if (set) {
+					Window w = (Window) SwingUtilities.getAncestorOfClass(Window.class, this);
+					activeView.setActivated(w);
 				}
 			}
 		}
