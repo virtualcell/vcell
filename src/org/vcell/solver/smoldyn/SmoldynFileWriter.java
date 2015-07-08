@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import org.vcell.util.Origin;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.VCAssert;
+import org.vcell.util.collections.HashListMap;
 
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -197,6 +199,13 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
 	private CartesianMesh cartesianMesh = null;
 	private String baseFileName = null;
+	
+	/**
+	 * temporary storage for disabling smoldyn particle diffusion on Membrane
+	 */
+	private ArrayList<ParticleProperties> tempDiffusingParticles = new ArrayList<>();
+	private boolean tempWroteDiffusion = false;
+	private HashListMap<MembraneSubDomain,ParticleProperties> tempMembranesWithParticles = new HashListMap<> ();
 
 public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging) 
 {
@@ -313,6 +322,10 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	writeSimulationSettings();
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
+	//SMOLDYN-DISABLE
+	if (!tempMembranesWithParticles.isEmpty()) {
+		throw new DiffusingMembraneParticleException(tempMembranesWithParticles);
+	}
 }
 
 /**
@@ -1181,13 +1194,31 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 	return count;
 }
 
+/**
+ * SMOLDYN-DISABLE
+ * temp code pending Smoldyn update -- check for diffusing particles on Surface
+ * @param subDomain
+ */
+private void tempCheckParticleSurfaceDiffusion(SubDomain subDomain) {
+	MembraneSubDomain msb = BeanUtils.downcast(MembraneSubDomain.class, subDomain);
+	if (msb != null) {
+		for (ParticleProperties pp : msb.getParticleProperties()) {
+			if (tempDiffusingParticles.contains(pp)) {
+				tempMembranesWithParticles.put(msb,pp);
+			}
+		}
+	}
+}
+
 private void writeMolecules() throws ExpressionException, MathException {
+	VCAssert.assertTrue(tempWroteDiffusion,"must call writeDiffusion before writeMolecules" ); //SMOLDYN-DISABLE
 	// write molecules
 	StringBuilder sb = new StringBuilder();
 	double max_mol = 0;
 	Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 	while (subDomainEnumeration.hasMoreElements()) {
 		SubDomain subDomain = subDomainEnumeration.nextElement();
+		tempCheckParticleSurfaceDiffusion(subDomain);
 				
 		for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
@@ -1946,12 +1977,17 @@ private void writeDiffusions() throws ExpressionBindingException,
 			try {
 				double diffConstant = subsituteFlattenToConstant(pp.getDiffusion());
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
+				if (diffConstant != 0) {
+					tempDiffusingParticles.add(pp);
+					
+				}
 			} catch (NotAConstantException ex) {
 				throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
 			}
 		}
 	}
 	printWriter.println();
+	tempWroteDiffusion = true;
 }
 
 private void writeDrifts() throws ExpressionBindingException,
@@ -2096,6 +2132,46 @@ private static class ClosestTriangle {
 		}
 	}
 }
+
+@SuppressWarnings("serial")
+public static class DiffusingMembraneParticleException extends RuntimeException {
+	final public HashListMap<MembraneSubDomain, ParticleProperties> particleMap;
+
+	public DiffusingMembraneParticleException(String message, DiffusingMembraneParticleException input) {
+		super(message, input);
+		this.particleMap = input.particleMap; 
+	}
+	
+	DiffusingMembraneParticleException( HashListMap<MembraneSubDomain, ParticleProperties> input) {
+		super("Smoldyn does not support particle diffusion on membranes. Please correct " + describe(input));
+		this.particleMap = new HashListMap<>(input); 
+	}
+	public String describe( ) {
+		return describe(particleMap);
+	}
+	
+	public static String describe( HashListMap<MembraneSubDomain, ParticleProperties> pMap ) {
+		StringWriter sw = new StringWriter( );
+		PrintWriter pw = new PrintWriter(sw);
+		for (MembraneSubDomain msb : pMap.keySet()) {
+			pw.print(msb.getName());
+			pw.print(": ");
+			boolean first = true;
+			for (ParticleProperties pp : pMap.get(msb)) {
+				if (!first) {
+					pw.print(", ");
+				}
+				first = false;
+				pw.print(pp.getVariable().getName());
+			}
+			pw.println();
+		}
+		return sw.toString();
+	}
+	
+	
+}
+	
 
 
 }
