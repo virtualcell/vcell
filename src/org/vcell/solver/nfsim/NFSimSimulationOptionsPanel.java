@@ -69,10 +69,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 	private JTextField preventIntraBondsTextField;
 	private JButton preventIntraBondsHelpButton = null;
 
-	private JCheckBox gCheckBox;
-	private JTextField gTextField;
-	private JButton gHelpButton = null;
-
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, PropertyChangeListener {
@@ -140,11 +136,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						"<html>-bscb <i>boolean</i> "
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
-						+ "</html>");
-			} else if (source == gHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Test", 
-						"<html>test <i>int</i> "
-						+ "<br> Test"
 						+ "</html>");
 
 // ----------------------------------------------------------------------------------------------------------
@@ -311,12 +302,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		preventIntraBondsHelpButton.setFont(font);
 		preventIntraBondsHelpButton.setBorder(border);
 		
-		gCheckBox = new JCheckBox("Test.");
-		gTextField = new JTextField();
-		gHelpButton = new JButton(" ? ");
-		gHelpButton.setFont(font);
-		gHelpButton.setBorder(border);
-		
 		getContentPanel().setLayout(new GridBagLayout());		
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -334,14 +319,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.insets = new Insets(0, 0, 0, 4);
 		getContentPanel().add(observableComputationHelpButton, gbc);
 				
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(aTextField, gbc);
-
 		// ----------------------------------------------------------------		
 		gridy++;
 		gbc = new GridBagConstraints();
@@ -380,14 +357,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.insets = new Insets(0, 0, 0, 4);
 		getContentPanel().add(aggregateBookkeepingHelpButton, gbc);
 				
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(cTextField, gbc);
-
 		// ----------------------------------------------------------------		
 		gridy++;
 		gbc = new GridBagConstraints();
@@ -474,37 +443,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		gbc.insets = new Insets(0, 0, 0, 4);
 		getContentPanel().add(preventIntraBondsHelpButton, gbc);
 				
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		getContentPanel().add(fTextField, gbc);
-
-		// ----------------------------------------------------------------		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(gCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(gHelpButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(gTextField, gbc);
-
 	}
 	
 	private void initConnections() {
@@ -515,7 +453,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeCheckBox.addActionListener(ivjEventHandler);
 		randomSeedCheckBox.addActionListener(ivjEventHandler);
 		preventIntraBondsCheckBox.addActionListener(ivjEventHandler);
-		gCheckBox.addActionListener(ivjEventHandler);
 
 		observableComputationTextField.addFocusListener(ivjEventHandler);
 		moleculeDistanceTextField.addFocusListener(ivjEventHandler);
@@ -524,7 +461,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeTextField.addFocusListener(ivjEventHandler);
 		randomSeedTextField.addFocusListener(ivjEventHandler);
 		preventIntraBondsTextField.addFocusListener(ivjEventHandler);
-		gTextField.addFocusListener(ivjEventHandler);
 
 		observableComputationHelpButton.addActionListener(ivjEventHandler);
 		moleculeDistanceHelpButton.addActionListener(ivjEventHandler);
@@ -533,7 +469,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeHelpButton.addActionListener(ivjEventHandler);
 		randomSeedHelpButton.addActionListener(ivjEventHandler);
 		preventIntraBondsHelpButton.addActionListener(ivjEventHandler);
-		gHelpButton.addActionListener(ivjEventHandler);
 	}
 	
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
