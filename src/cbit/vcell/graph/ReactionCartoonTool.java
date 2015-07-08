@@ -1290,19 +1290,29 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						}
 					} 
 					else if (shape instanceof ReactionContainerShape || bShift || bCntrl){
+						if(rectShape == null){
+							return;
+						}
 						if(startPointWorld != null && worldPoint != null && startPointWorld.equals(worldPoint)){
 							//Don't start stretching until mouse moves at least 1 from startpoint
 							return;
 						}
 						bRectStretch = true;
 						endPointWorld = new Point((startPointWorld!=null?startPointWorld.x:worldPoint.x),(startPointWorld!=null?startPointWorld.y:worldPoint.y));
-						rectShape = new RubberBandRectShape((startPointWorld!=null?startPointWorld:worldPoint),endPointWorld, getReactionCartoon());
 						rectShape.setEnd(endPointWorld);
 						if (!(shape instanceof ReactionContainerShape)) {
 							shape.getParent().addChildShape(rectShape);
 						} else {
 							shape.addChildShape(rectShape);
 						}
+						Graphics2D g = (Graphics2D) getGraphPane()
+								.getGraphics();
+						AffineTransform oldTransform = g.getTransform();
+						g.scale(0.01 * getReactionCartoon().getZoomPercent(),
+								0.01 * getReactionCartoon().getZoomPercent());
+						g.setXORMode(Color.white);
+						rectShape.paint(g, 0, 0);
+						g.setTransform(oldTransform);
 					}
 				}
 				break;
@@ -1519,6 +1529,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					selectEventFromWorld(startPointWorld, bShift);
 
 					if(startShape instanceof ReactionContainerShape){//setup potential compartment 'drag'
+						rectShape = new RubberBandRectShape(startPointWorld,startPointWorld, getReactionCartoon());
 						Rectangle labelOutlineRectangle = ((ReactionContainerShape)startShape).getLabelOutline(startShape.getAbsX(), startShape.getAbsY());
 						bStartRxContainerLabel = labelOutlineRectangle.contains(startPointWorld.x, startPointWorld.y);
 						if(bStartRxContainerLabel){
