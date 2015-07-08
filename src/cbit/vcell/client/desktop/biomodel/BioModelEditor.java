@@ -164,7 +164,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 					newObject = model.createSimpleReaction(model.getStructure(0));
 					break;
 				case STRUCTURES_NODE:
-					if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+					if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
 						PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 						return;
 					}
@@ -174,10 +174,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 					newObject = model.createSpeciesContext(model.getStructure(0));
 					break;
 				case MOLECULAR_TYPES_NODE:
-					if(bioModel.getModel().getStructures().length != 1) {
-						PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
-						return;
-					}
 					MolecularType mt = model.getRbmModelContainer().createMolecularType();
 					model.getRbmModelContainer().addMolecularType(mt, true);
 					newObject = mt;
@@ -865,7 +861,7 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
-		if(simulationContext.getModel().getRbmModelContainer().getMolecularTypeList().size() == 0) {
+		if(!simulationContext.getModel().getRbmModelContainer().hasRules()) {
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
