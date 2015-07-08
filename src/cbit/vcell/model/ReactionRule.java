@@ -93,11 +93,12 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public static final String PROPERTY_NAME_NAME = "name";
 	public static final String PROPERTY_NAME_REACTANT_PATTERNS = "reactantPatterns";
 	public static final String PROPERTY_NAME_PRODUCT_PATTERNS = "productPatterns";
+	public static final String PROPERTY_NAME_REVERSIBLE = "reversible";
 	public static final String PROPERTY_NAME_FORWARD_RATE = "forwardRate";
 	public static final String PROPERTY_NAME_REVERSE_RATE = "reverseRate";
 	public static final String PROPERTY_NAME_REACTANT_WARNING = "reactantWarning";
 	public static final String PROPERTY_NAME_PRODUCT_WARNING = "productWarning";
-	public static final Object PROPERTY_NAME_KINETICLAW = "kineticLaw";
+	public static final String PROPERTY_NAME_KINETICLAW = "kineticLaw";
 	
 	public static enum ReactionRuleParticipantType {
 		Reactant ("Reactant Pattern"),
@@ -323,8 +324,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public final boolean isReversible() {
 		return bReversible;
 	}
-	public final void setReversible(boolean bReversible) {
-		this.bReversible = bReversible;
+	public final void setReversible(boolean newValue) {
+		boolean oldValue = this.bReversible;
+		this.bReversible = newValue;
+		firePropertyChange(ReactionRule.PROPERTY_NAME_REVERSIBLE, oldValue, newValue);
 	}
 	
 	public void resolveBonds(){
@@ -507,8 +510,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public RbmKineticLaw getKineticLaw() {
 		return this.kineticLaw;
 	}
-	public void setKineticLaw(RbmKineticLaw kineticLaw) {
-		this.kineticLaw = kineticLaw;
+	public void setKineticLaw(RbmKineticLaw newValue) {
+		RbmKineticLaw oldValue = this.kineticLaw;
+		this.kineticLaw = newValue;
+		firePropertyChange(ReactionRule.PROPERTY_NAME_KINETICLAW, oldValue, newValue);
 	}
 
 	public String getName() {
