@@ -602,6 +602,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					sundialsSolverOptions = null;
 					setErrorTolerance(ErrorTolerance.getDefaultSemiImplicitErrorTolerance());
 				}
+			} else if (solverDescription.equals(SolverDescription.NFSim)){
+				TimeBounds timeBounds = getTimeBounds();
+				if (!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
+					// set to uniform output if it is not.
+					double outputTime = (timeBounds.getEndingTime()-timeBounds.getStartingTime())/20;
+					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				}
 			} else if (!solverDescription.supports(getOutputTimeSpec())){
 				setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 			}

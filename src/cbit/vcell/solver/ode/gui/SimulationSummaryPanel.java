@@ -37,11 +37,14 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MeshSpecification;
+import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.StochSimOptions;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2001 12:17:49 PM)
@@ -311,6 +314,42 @@ private void displayTask() {
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
+		} else if (solverDescription.equals(SolverDescription.NFSim)) {
+			TimeBounds tb = solverTaskDescription.getTimeBounds();
+			double dtime = tb.getEndingTime() - tb.getStartingTime();
+			
+			if(solverTaskDescription.getOutputTimeSpec() instanceof UniformOutputTimeSpec) {
+				UniformOutputTimeSpec uots = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+				double interval = uots.getOutputTimeStep();
+				int steps = (int)Math.round(dtime/interval);
+//				System.out.println("duration: " + dtime + ", every: " + dstep + ", steps: " + steps);
+				getJLabel12().setEnabled(true);
+				getJLabel12().setText("timepoints");		
+				getJLabelTimestep().setText(steps + "");
+			} else {
+				getJLabel12().setEnabled(false);
+				getJLabel12().setText("timepoints");		
+				getJLabelTimestep().setText("na");
+			}
+			
+			NFsimSimulationOptions nfsso = solverTaskDescription.getNFSimSimulationOptions();
+			String utl = "default";
+			Integer moleculeDistance = nfsso.getMoleculeDistance();
+			if(moleculeDistance != null) {
+				utl = moleculeDistance + "";
+			}
+			getJLabelRelTol().setEnabled(true);
+			getJLabelRelTol().setText("utl");
+			getJLabelRelTolValue().setText(utl);
+
+			String gml = "default";
+			Integer maxMoleculesPerType = nfsso.getMaxMoleculesPerType();
+			if(maxMoleculesPerType != null) {
+				gml = maxMoleculesPerType + "";
+			}
+			getJLabelAbsTol().setEnabled(true);
+			getJLabelAbsTol().setText("gml");
+			getJLabelAbsTolValue().setText(gml);
 		} else if (solverDescription.isNonSpatialStochasticSolver()) {
 			getJLabel12().setEnabled(true);
 			getJLabel12().setText("timestep");		
