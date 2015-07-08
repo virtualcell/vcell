@@ -33,6 +33,7 @@ import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
+import org.vcell.solver.smoldyn.SmoldynFileWriter.DiffusingMembraneParticleException;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -373,7 +374,15 @@ private void writeSmoldyn() throws Exception {
 		pw = new PrintWriter(inputFilename);
 		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, baseName, simTask, bUseMessaging);
 		stFileWriter.write();
-	} finally {
+	} 
+	catch (DiffusingMembraneParticleException dmpe) {
+		//SMOLDYN-DISABLE; catch and rethrow with better message
+		String msg = SolverDescription.FiniteVolumeStandalone.getDisplayLabel() 
+				+ " does not support particle diffusion on membranes. Please correct "
+				+ dmpe.describe();
+		throw new DiffusingMembraneParticleException(msg, dmpe);
+	}
+	finally {
 		if (pw != null) {
 			pw.close();	
 		}
