@@ -1500,7 +1500,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(!getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+							if(!getModel().getRbmModelContainer().hasRules()) {
 								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
 								return;
 							}
@@ -1512,7 +1512,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(!getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+							if(!getModel().getRbmModelContainer().hasRules()) {
 								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
 								return;
 							}
