@@ -19,7 +19,7 @@ public class UserMessage {
 	private String message = null;
 	private String options[] = null;
 	private String defaultSelection = null;
-	private int userPreferenceWarning = -1;
+	private final int userPreferenceWarning;
 	public final static String TEXT_REPLACE = "<<<REPLACE>>>";
 
 	public final static String OPTION_REVERT_TO_SAVED = "Revert to saved";
@@ -93,15 +93,19 @@ public class UserMessage {
 
 	public final static UserMessage warn_geom_histogram_apply = new UserMessage("Histogram tool has an active pixel range selection, press the 'Apply...' button to update/create Domain Regions.",
 			new String[] {OPTION_OK},					OPTION_OK,		UserPreferences.WARN_GEOMEDIT_HISTOGRAM_APPLY);
+	
+	public final static UserMessage QUESTION_BEFORE_SAVE = new UserMessage("Saving the model will erase all existing simulation results. Save model and discard simulation results, create a new model edition, or cancel?",
+				new String[] {OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION, OPTION_CANCEL},		OPTION_DISCARD_RESULTS);
 
 /**
- * UserMessage constructor comment.
+ * UserMessage; user preference to no longer display not active 
  */
 public UserMessage(String argMessage, String[] argOptions, String argDefaultSelection) {
 	super();
 	this.message = argMessage;
 	this.options = argOptions;
 	this.defaultSelection = argDefaultSelection;
+	this.userPreferenceWarning = -1; 
 }
 
 
