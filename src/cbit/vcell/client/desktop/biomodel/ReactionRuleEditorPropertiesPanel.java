@@ -115,6 +115,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					Object warning = evt.getNewValue();
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_PRODUCT_WARNING)) {
 					Object warning = evt.getNewValue();
+				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REVERSIBLE)) {
+					updateInterface();
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
 					updateInterface();
 				}
