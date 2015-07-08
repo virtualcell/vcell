@@ -941,6 +941,14 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			return true;
 		}
+		// reaction rules are the only entities with "wildcards"
+		// as long as we don't have rules we can allow multiple compartments, for example
+		public boolean hasRules() {
+			if (!reactionRuleList.isEmpty()){
+				return false;
+			}
+			return true;
+		}
 		
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			if(this.isEmpty()) {
@@ -1426,11 +1434,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			}
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
 		}
-		
-//		private final void setSeedSpeciesList(List<SeedSpecies> newValue) {
-//			........
-//			firePropertyChange(PROPERTY_NAME_SEED_SPECIES_LIST, oldValue, newValue);
-//		}
 		
 		public List<MolecularType> getMolecularTypeList() {
 			return molecularTypeList;

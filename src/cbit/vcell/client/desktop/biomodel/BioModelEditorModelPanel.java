@@ -1132,10 +1132,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		if (currentSelectedTable == speciesTable) {
 			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
 		} else if (currentSelectedTable == molecularTypeTable) {
-			if(bioModel.getModel().getStructures().length != 1) {
-				PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
-				return;
-			}
 			if(bioModel.getModel().getRbmModelContainer() != null) {
 				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
 				bioModel.getModel().getRbmModelContainer().addMolecularType(mt, true);
@@ -1143,7 +1139,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == observablesTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
-				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+				if(bioModel.getModel().getRbmModelContainer().hasRules()) {
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 					return;
 				}
@@ -1153,7 +1149,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == structuresTable) {
 			try {
-				if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+				if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 					return;
 				}
@@ -1188,6 +1184,10 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 				return;
 			}
+			if(bioModel.getModel().getStructures().length != 1) {
+				PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
+				return;
+			}
 			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule(bioModel.getModel().getStructure(0));
 			if(rr != null) {
 				try {
@@ -1216,7 +1216,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == structuresTable) {
-			if(!bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
+			if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
 				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 				return;
 			}
