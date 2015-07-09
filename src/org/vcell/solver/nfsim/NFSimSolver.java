@@ -218,15 +218,21 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		}
 		
 		Integer seed = nfsso.getRandomSeed();
-		if (seed == null) {
-			seed = new Integer(0);
-		}
+//		if (seed == null) {
+//			seed = new Integer(0);
+//		}
 //		String baseCommands[] = { executableName, "-seed", seed.toString(), "-xml", inputFilename, "-o", outputFilename,
 //				"-sim", Double.toString(dtime), "-oSteps", Integer.toString(steps) };
-		String baseCommands[] = { executableName, "-seed", seed.toString(),
-				"-xml", inputFilename, "-o", outputFilename,
-				"-sim", Double.toString(dtime) };
-		ArrayList<String> cmds = new ArrayList<String>(Arrays.asList(baseCommands));
+//		ArrayList<String> cmds = new ArrayList<String>(Arrays.asList(baseCommands));
+		
+		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime) };
+		ArrayList<String> cmds = new ArrayList<String>();
+		cmds.add(executableName);
+		if(seed != null) {
+			cmds.add("-seed");
+			cmds.add(seed.toString());
+		}
+		cmds.addAll(new ArrayList<String>(Arrays.asList(baseCommands)));
 		cmds.add(timeSpecOption1);
 		cmds.add(timeSpecOption2);
 		
