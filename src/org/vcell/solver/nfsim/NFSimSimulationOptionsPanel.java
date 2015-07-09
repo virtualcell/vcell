@@ -255,9 +255,6 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		solverTaskDescription.getNFSimSimulationOptions().setEquilibrateTime(equilibrateTime);
 	}
 	private void setNewRandomSeed(){
-		if(!isVisible()){
-			return;
-		}
 		Integer randomSeed = null;
 		if (randomSeedCheckBox.isSelected()) {
 			try {
@@ -315,7 +312,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeHelpButton.setFont(font);
 		equilibrateTimeHelpButton.setBorder(border);
 		
-		randomSeedCheckBox = new JCheckBox("Random Seed.");
+		randomSeedCheckBox = new JCheckBox("Provide a seed to NFsim's random number generator.");
 		randomSeedTextField = new JTextField();
 		randomSeedHelpButton.setFont(font);
 		randomSeedHelpButton.setBorder(border);
