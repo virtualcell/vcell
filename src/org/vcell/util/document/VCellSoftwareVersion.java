@@ -11,6 +11,7 @@
 package org.vcell.util.document;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.logging.NoLogging;
@@ -37,7 +38,7 @@ public class VCellSoftwareVersion implements Serializable {
 	/**
 	 * lazy evaluate {@link #fromSystemProperty()} version
 	 */
-	private static VCellSoftwareVersion sysPropVersion = null;
+	private static WeakReference<VCellSoftwareVersion> sysPropVersion = null;
 
 	private VCellSoftwareVersion(String softwareVersionString){
 		this.softwareVersionString = softwareVersionString;
@@ -124,15 +125,17 @@ public class VCellSoftwareVersion implements Serializable {
 
 	@NoLogging
 	public static VCellSoftwareVersion fromSystemProperty() {
-		if (sysPropVersion == null) {
+		VCellSoftwareVersion sysVers = sysPropVersion != null ? sysPropVersion.get() : null;
+		if (sysVers == null) {
 			String systemProperty = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, null);
 			if (systemProperty == null){
-				sysPropVersion = new VCellSoftwareVersion(null);
+				sysVers = new VCellSoftwareVersion(null);
 			}else{
-				sysPropVersion = fromString(systemProperty);
+				sysVers = fromString(systemProperty);
 			}
+			sysPropVersion = new WeakReference<VCellSoftwareVersion>(sysVers);
 		}
-		return sysPropVersion;
+		return sysVers; 
 	}
 	
 
