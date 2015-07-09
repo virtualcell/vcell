@@ -12,7 +12,6 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -114,7 +113,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjTile_VerticallyMenuItem = null;
 	//--------------------------------------
 	private JMenu ivjViewMenu = null;
-	private JMenu ivjWindowMenu = null;
 	private JSeparator ivjJSeparator6 = null;
 	private JMenuItem ivjJMenuItemNewBioModel = null;
 	private JMenuItem ivjJMenuItemOpenBioModel = null;
@@ -149,7 +147,6 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem jMenuItemPermissions  = null;
 	private JLabel warningText = null;
 	
-	private JMenu menuImportPathway = null;
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
 	private JMenuItem menuItemImportPathwayExample = null;
@@ -470,27 +467,29 @@ private void showVCellHelpWindow() {
 		helpWindow.show();
 	}else{
 		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-		showHiearchy("create",vcellHelpViewer);
+		showHierarchy("create",vcellHelpViewer);
 		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
 		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
-		showHiearchy("acw",vcellHelpViewer);
+		showHierarchy("acw",vcellHelpViewer);
 		vcellHelpViewer.setCloseMyParent(helpWindow);
 		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 		helpWindow.pack();
 		helpWindow.setIsCenteredOnParent();
-		showHiearchy("bshow",vcellHelpViewer);
+		showHierarchy("bshow",vcellHelpViewer);
 		helpWindow.show();
-		showHiearchy("shown",vcellHelpViewer);
+		showHierarchy("shown",vcellHelpViewer);
 	}
 }
 
-private void showHiearchy(String when, VcellHelpViewer vcellHelpViewer ) {
+private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer ) {
+	/*
 		System.out.println(when);
 		Container ctn = vcellHelpViewer.getParent();
 		while (ctn != null) {
 			System.out.println(ctn + ": " + ctn.getName() + " : " + ctn.getClass().getName());
 			ctn = ctn.getParent();
 		}
+	*/
 }
 /**
  * connEtoC2:  (StatusbarMenuItem.item.itemStateChanged(java.awt.event.ItemEvent) --> DocumentWindow.viewStatusBar()V)
@@ -1334,28 +1333,6 @@ private JMenuItem getJMenuItemImport() {
 		}
 	}
 	return menuItemImport;
-}
-
-private JMenu getJMenuImportPathway() {
-	if (menuImportPathway == null) {
-		try {
-			menuImportPathway = new JMenu();
-			menuImportPathway.setName("JMenuItemImportPathway");
-			menuImportPathway.setText("Import Pathway");
-			menuItemImportPathwayWebLocation = new JMenuItem("Web Location");
-			menuItemImportPathwayFile = new JMenuItem("File");
-			menuItemImportPathwayExample = new JMenuItem("Example");
-			menuItemImportPathwayWebLocation.addActionListener(ivjEventHandler);
-			menuItemImportPathwayFile.addActionListener(ivjEventHandler);
-			menuItemImportPathwayExample.addActionListener(ivjEventHandler);
-			menuImportPathway.add(menuItemImportPathwayWebLocation);
-			menuImportPathway.add(menuItemImportPathwayFile);
-			menuImportPathway.add(menuItemImportPathwayExample);
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
-	}
-	return menuImportPathway;
 }
 
 /**
@@ -2241,35 +2218,6 @@ private javax.swing.JMenu getViewMenu() {
  */
 private DocumentWindowManager getWindowManager() {
 	return fieldWindowManager;
-}
-
-
-/**
- * Return the WindowMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getWindowMenu() {
-	if (ivjWindowMenu == null) {
-		try {
-			ivjWindowMenu = new javax.swing.JMenu();
-			ivjWindowMenu.setName("WindowMenu");
-			ivjWindowMenu.setText("Window");
-			ivjWindowMenu.setEnabled(true);
-			ivjWindowMenu.add(getTile_HorizontallyMenuItem());
-			ivjWindowMenu.add(getTile_VerticallyMenuItem());
-			ivjWindowMenu.add(getCascadeMenuItem());
-			ivjWindowMenu.add(new JSeparator());
-			ivjWindowMenu.add(getMinimize_AllMenuItem());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjWindowMenu;
 }
 
 /**
