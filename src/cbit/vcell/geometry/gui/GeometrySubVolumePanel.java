@@ -11,6 +11,7 @@
 package cbit.vcell.geometry.gui;
 
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -34,6 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
@@ -70,7 +72,7 @@ public class GeometrySubVolumePanel extends DocumentEditorSubPanel {
 	private GeometrySpec ivjGeometrySpec = null;
 	private JButton addShapeButton = null;
 
-	private AddShapeJPanel addShapeJPanel = null;
+	//private AddShapeJPanel addShapeJPanel = null;
 	private JPopupMenu addSubVolumePopupMenu;
 	private JMenuItem addAnalyticSubVolumeMenuItem;
 	private JMenuItem addCSGSubVolumeMenuItem;
@@ -379,16 +381,14 @@ private void addSubVolume(final SubVolume subVolume) {
 }
 
 private void addAnalyticSubVolume() {
-	if(addShapeJPanel == null){
-		addShapeJPanel = new AddShapeJPanel();
-		addShapeJPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-		addShapeJPanel.setDefaultCenter(
-				getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
-				(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
+	Geometry g = getGeometry();
+	final int dim = g.getDimension();
+	AddShapeJPanel addShapeJPanel = new AddShapeJPanel(dim);
+	addShapeJPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
+	addShapeJPanel.setDefaultCenter(
+			getGeometry().getOrigin().getX()+getGeometry().getExtent().getX()/2,
+			(getGeometry().getDimension() > 1?getGeometry().getOrigin().getY()+getGeometry().getExtent().getY()/2:null),
 				(getGeometry().getDimension() > 2?getGeometry().getOrigin().getZ()+getGeometry().getExtent().getZ()/2:null));
-	}
-	final int dim = getGeometry().getDimension();
-	addShapeJPanel.setDimension(dim);
 	while(true){
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
@@ -404,13 +404,21 @@ private void addAnalyticSubVolume() {
 			addCancelJPanel.setBorder(new EmptyBorder(10,10,10,10));
 			BoxLayout addCancelBoxLayout = new BoxLayout(addCancelJPanel,BoxLayout.X_AXIS);
 			addCancelJPanel.setLayout(addCancelBoxLayout);
-			final JButton addJButton = new JButton("Add New Subdomain");
+			
+			{
+				JButton helpButton = new JButton("Help");
+				helpButton.addActionListener( ae -> { VcellHelpViewer.showStandaloneViewer();} ); 
+				addCancelJPanel.add(helpButton);
+			}
+			
+			JButton addJButton = new JButton("Add New Subdomain");
 			addJButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					d.dispose();
 					acceptFlag[0] = true;
 				}
 			});
+			
 			addCancelJPanel.add(addJButton);
 			JButton cancelJButton = new JButton("Cancel");
 			cancelJButton.addActionListener(new ActionListener(){
@@ -432,11 +440,13 @@ private void addAnalyticSubVolume() {
 					}
 				}
 			});
-			d.setModal(true);
+			d.setModalityType(ModalityType.DOCUMENT_MODAL);
+//			d.setModal(true);
 			d.getContentPane().add(main);
 			d.pack();
 			d.setSize(new Dimension(400, 400));
-			DialogUtils.showModalJDialogOnTop(d, GeometrySubVolumePanel.this);
+			d.setVisible(true);
+			//DialogUtils.showModalJDialogOnTop(d, GeometrySubVolumePanel.this);
 
 			if(acceptFlag[0]){
 				addSubVolume(new AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(),
