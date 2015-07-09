@@ -58,7 +58,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
@@ -82,6 +81,7 @@ import cbit.vcell.resource.VisitSupport;
 @SuppressWarnings("serial")
 public class DocumentWindow extends JFrame implements TopLevelWindow {	
 
+	@SuppressWarnings("unused") //PENDING Window Manager redesign
 	private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
 
 	private final ChildWindowManager childWindowManager;
@@ -461,26 +461,29 @@ private void connEtoC19(java.awt.event.ActionEvent arg1) {
 
 
 private void showVCellHelpWindow() {
+	VcellHelpViewer.showStandaloneViewer();
+	//PENDING Window Manager redesign
 
-	ChildWindow helpWindow = childWindowManager.getChildWindowFromContext(HelpViewerContextObject);
-	if (helpWindow!=null){
-		helpWindow.show();
-	}else{
-		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-		showHierarchy("create",vcellHelpViewer);
-		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
-		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
-		showHierarchy("acw",vcellHelpViewer);
-		vcellHelpViewer.setCloseMyParent(helpWindow);
-		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
-		helpWindow.pack();
-		helpWindow.setIsCenteredOnParent();
-		showHierarchy("bshow",vcellHelpViewer);
-		helpWindow.show();
-		showHierarchy("shown",vcellHelpViewer);
-	}
+//	ChildWindow helpWindow = childWindowManager.getChildWindowFromContext(HelpViewerContextObject);
+//	if (helpWindow!=null){
+//		helpWindow.show();
+//	}else{
+//		VcellHelpViewer vcellHelpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
+//		showHierarchy("create",vcellHelpViewer);
+//		String title = "Virtual Cell Help" + " -- VCell " + DocumentWindowAboutBox.getVERSION_NO() + " (build " + DocumentWindowAboutBox.getBUILD_NO() + ")";
+//		helpWindow = childWindowManager.addChildWindow(vcellHelpViewer, HelpViewerContextObject, title);
+//		showHierarchy("acw",vcellHelpViewer);
+//		vcellHelpViewer.setCloseMyParent(helpWindow);
+//		helpWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
+//		helpWindow.pack();
+//		helpWindow.setIsCenteredOnParent();
+//		showHierarchy("bshow",vcellHelpViewer);
+//		helpWindow.show();
+//		showHierarchy("shown",vcellHelpViewer);
+//	}
 }
 
+@SuppressWarnings("unused") //Pending Window Manager redesign
 private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer ) {
 	/*
 		System.out.println(when);
