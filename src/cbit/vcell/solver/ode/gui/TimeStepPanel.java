@@ -448,7 +448,12 @@ private void refresh() {
 		enableDefaultTimeStep(false);
 		enableMinTimeStep(false);
 		enableMaxTimeStep(false);
-	 } else {
+	} else if(solverDescription.compareEqual(SolverDescription.NFSim)) {
+		ivjTimeStepLabel.setEnabled(false);
+		enableDefaultTimeStep(false);
+		enableMinTimeStep(false);
+		enableMaxTimeStep(false);
+	} else {
 		setEnabled(true);
 		TimeStep ts = solverTaskDescription.getTimeStep();
 		getDefaultTimeStepTextField().setText(ts.getDefaultTimeStep()+"");
