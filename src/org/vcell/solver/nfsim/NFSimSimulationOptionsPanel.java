@@ -210,9 +210,33 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		Integer maxMoleculesPerType = null;
 		if (maxMoleculesPerTypeCheckBox.isSelected()) {
 			try {
-				maxMoleculesPerType = new Integer(maxMoleculesPerTypeTextField.getText());				
+				String text = maxMoleculesPerTypeTextField.getText();
+				if(text == null || text.isEmpty()) {
+					maxMoleculesPerTypeTextField.setText("");
+					solverTaskDescription.getNFSimSimulationOptions().setMaxMoleculesPerType(null);
+					return;
+				}
+				maxMoleculesPerType = new Integer(text);
+				if(maxMoleculesPerType < 0 || maxMoleculesPerType > 1000000) {  // just some large number
+					throw new RuntimeException("Number must be positive and smaller than 1,000,000.");
+				}
 			} catch (NumberFormatException ex) {
 				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
+				maxMoleculesPerType = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
+				if(maxMoleculesPerType != null) {
+					maxMoleculesPerTypeTextField.setText(maxMoleculesPerType + "");
+				} else {
+					maxMoleculesPerTypeTextField.setText("");
+				}
+				return;
+			} catch (RuntimeException ex) {
+				DialogUtils.showErrorDialog(this, ex.getMessage());
+				maxMoleculesPerType = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
+				if(maxMoleculesPerType != null) {
+					maxMoleculesPerTypeTextField.setText(maxMoleculesPerType + "");
+				} else {
+					maxMoleculesPerTypeTextField.setText("");
+				}
 				return;
 			}
 		}
