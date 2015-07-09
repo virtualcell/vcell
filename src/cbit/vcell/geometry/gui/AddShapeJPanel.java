@@ -137,7 +137,7 @@ public class AddShapeJPanel extends JPanel {
 	
 	private ComboRadioListener shapeTypeComboBoxActionListener = new ComboRadioListener();
 	
-	public AddShapeJPanel() {
+	public AddShapeJPanel(int nDimensions) {
 		super();
 		setLayout(new GridBagLayout());
 
@@ -433,6 +433,7 @@ public class AddShapeJPanel extends JPanel {
 		exprPanel.add(copyExpressionTextButton, gridBagConstraints_14);
 		
 		init();
+		setDimension(nDimensions);
 	}
 	
 	private final static String XY = "(x,y)";
@@ -446,7 +447,8 @@ public class AddShapeJPanel extends JPanel {
 	private final static String XYONE = "1,1";
 	private final static String XYZONE = "1,1,1";
 		
-	public void setDimension(int dimension){
+	//dialog used to be modal and reused
+	private void setDimension(int dimension){
 		populateShapeTypeComboBox(dimension);
 		if (dimension > 1){
 			circleCenterLabel.setText(CENTERPOINT+" "+(dimension == 2?XY:XYZ));

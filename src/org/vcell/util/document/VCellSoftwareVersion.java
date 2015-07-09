@@ -34,6 +34,10 @@ public class VCellSoftwareVersion implements Serializable {
 	private int majorVersion  = -1;
 	private int minorVersion = -1;
 	private int buildInt = -1; 
+	/**
+	 * lazy evaluate {@link #fromSystemProperty()} version
+	 */
+	private static VCellSoftwareVersion sysPropVersion = null;
 
 	private VCellSoftwareVersion(String softwareVersionString){
 		this.softwareVersionString = softwareVersionString;
@@ -94,9 +98,6 @@ public class VCellSoftwareVersion implements Serializable {
 		return -1;
 	}
 	
-
-
-	
 	@NoLogging
 	public static VCellSoftwareVersion fromString(String softwareVersion) {
 		return new VCellSoftwareVersion(softwareVersion);
@@ -123,12 +124,15 @@ public class VCellSoftwareVersion implements Serializable {
 
 	@NoLogging
 	public static VCellSoftwareVersion fromSystemProperty() {
-		String systemProperty = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, null);
-		if (systemProperty == null){
-			return new VCellSoftwareVersion(null);
-		}else{
-			return fromString(systemProperty);
+		if (sysPropVersion == null) {
+			String systemProperty = PropertyLoader.getProperty(PropertyLoader.vcellSoftwareVersion, null);
+			if (systemProperty == null){
+				sysPropVersion = new VCellSoftwareVersion(null);
+			}else{
+				sysPropVersion = fromString(systemProperty);
+			}
 		}
+		return sysPropVersion;
 	}
 	
 

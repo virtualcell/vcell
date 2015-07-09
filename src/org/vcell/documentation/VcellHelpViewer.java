@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 
 import javax.help.HelpSet;
@@ -23,6 +24,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.vcell.util.BeanUtils;
+import org.vcell.util.document.VCellSoftwareVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 
@@ -46,6 +48,10 @@ public class VcellHelpViewer extends JPanel
 	
 	private JButton btnCloseHelp;
 	private ChildWindow closeableWindow;
+	/**
+	 * reusable reference to viewer; allows garbage (if not visible)
+	 */
+	private static WeakReference<JFrame> standaloneRef = null; 
 	
 	public void setCloseMyParent(ChildWindow closeableWindow){
 		this.closeableWindow = closeableWindow;
@@ -96,13 +102,18 @@ public class VcellHelpViewer extends JPanel
 		panel.add(getCloseJButton());
 	}
 	
-	public static void main(String[] args){
-		VcellHelpViewer helpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-		JFrame frame = new JFrame("Virtual Cell Help");
-		
-		frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
-		frame.pack();
-		frame.getContentPane().add(helpViewer);
+	public static void showStandaloneViewer( )  {
+		JFrame frame = standaloneRef != null ? standaloneRef.get( ) : null ;
+		if (frame ==null ) {
+			VcellHelpViewer helpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
+			frame = new JFrame("Virtual Cell Help");
+			String title = "Virtual Cell Help" + " -- VCell " + VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString(); 
+			frame.setTitle(title);
+			frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
+			frame.pack();
+			frame.getContentPane().add(helpViewer);
+			standaloneRef = new WeakReference<JFrame>(frame);
+		}
 		frame.setVisible(true);
 	}
 }
