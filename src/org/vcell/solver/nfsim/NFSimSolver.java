@@ -162,42 +162,40 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		String outputFilename = getOutputFilename();
 		
 		NFsimSimulationOptions nfsso = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
-		String adv = "";
+		ArrayList<String> adv = new ArrayList<String>();
 		boolean observableComputationOff = nfsso.getObservableComputationOff();
 		if(observableComputationOff == true) {
-			adv += " -notf true";		// false is by default, no need to specify
+			adv.add("-notf");		// false is by default, no need to specify
+			adv.add("true");
 		}
 		Integer moleculeDistance = nfsso.getMoleculeDistance();
 		if(moleculeDistance != null) {
-			adv += " -utl " + moleculeDistance;
+			adv.add("-utl");
+			adv.add(moleculeDistance+"");
 		}
 		boolean aggregateBookkeeping = nfsso.getAggregateBookkeeping();
 		if(aggregateBookkeeping == true) {
-			adv += " -cb true";			// false is by default, no need to specify
+			adv.add("-cb");			// false is by default, no need to specify
+			adv.add("true");
 		}
 		Integer maxMoleculesPerType = nfsso.getMaxMoleculesPerType();
 		if(maxMoleculesPerType != null) {
-			adv += " -gml " + maxMoleculesPerType;
+			adv.add("-gml");
+			adv.add(maxMoleculesPerType+"");
 		}
 		Integer equilibrateTime = nfsso.getEquilibrateTime();
 		if(equilibrateTime != null) {
-			adv += " -eq " + equilibrateTime;
+			adv.add("-eq");
+			adv.add(equilibrateTime+"");
 		}
 		boolean preventIntraBonds = nfsso.getPreventIntraBonds();
 		if(preventIntraBonds == true) {
-			adv +=  "-bscb true";			// false is by default, no need to specify
+			adv.add("-bscb");			// false is by default, no need to specify
+			adv.add("true");
 		}
 		
 		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
 		double dtime = tb.getEndingTime() - tb.getStartingTime();
-		// long time = Math.round(dtime);
-		// TimeStep ts =
-		// getSimulationJob().getSimulation().getSolverTaskDescription().getTimeStep();
-		// double dsteps = ts.getDefaultTimeStep();
-		// if(dsteps == 0) {
-		// dsteps = ts.getMaximumTimeStep();
-		// }
-		// int steps = (int)Math.round(dtime/dsteps);
 		
 		String timeSpecOption1 = "-oSteps";
 		String timeSpecOption2 = "10";
@@ -218,12 +216,6 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		}
 		
 		Integer seed = nfsso.getRandomSeed();
-//		if (seed == null) {
-//			seed = new Integer(0);
-//		}
-//		String baseCommands[] = { executableName, "-seed", seed.toString(), "-xml", inputFilename, "-o", outputFilename,
-//				"-sim", Double.toString(dtime), "-oSteps", Integer.toString(steps) };
-//		ArrayList<String> cmds = new ArrayList<String>(Arrays.asList(baseCommands));
 		
 		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime) };
 		ArrayList<String> cmds = new ArrayList<String>();
@@ -237,14 +229,13 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		cmds.add(timeSpecOption2);
 		
 		if (simTask.getSimulation().getMathDescription().hasSpeciesObservable()) {
-			// To run a Species observable, you have to turn on aggregate
-			// bookkeeping
+			// To run a Species observable, you have to turn on aggregate bookkeeping
 			// with the command-line flag '-cb'. If you have large complexes,
 			// this will make your code run much slower.
 			// http://emonet.biology.yale.edu/nfsim/pages/support/support.html
 			cmds.add("-cb");
 		}
-		cmds.add(adv);
+		cmds.addAll(adv);
 		if (!bMessaging) {
 			cmds.add("-v");
 		}
