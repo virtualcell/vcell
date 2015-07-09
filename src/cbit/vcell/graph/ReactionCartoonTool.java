@@ -554,12 +554,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				try {
-					pasteReactionSteps(reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(getGraphPane(),"Error while pasting reaction:\n"+ e.getMessage(), e);
-				}						
+				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);					
 			}
 		}
 
