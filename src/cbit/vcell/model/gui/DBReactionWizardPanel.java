@@ -2520,7 +2520,7 @@ private void applySelectedReactionElements(){
 			// TODO Auto-generated method stub
 			Model pasteToModel = DBReactionWizardPanel.this.getModel();
 			Structure pasteToStructure = DBReactionWizardPanel.this.getStructure();
-			BioCartoonTool.pasteReactionSteps(
+			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this,
 					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
 					pasteToModel, pasteToStructure, false,DBReactionWizardPanel.this,
 					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"));
