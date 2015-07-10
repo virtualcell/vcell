@@ -561,7 +561,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 	
 	public static String speciesContextRootFinder(SpeciesContext speciesContext){
-		String rootSC = null;
+		String rootSC = speciesContext.getName();
 		if(speciesContext.getStructure() != null && speciesContext.getStructure().getName() != null){
 			String structSuffix = "_"+speciesContext.getStructure().getName();
 			if(speciesContext.getName().endsWith(structSuffix)){
