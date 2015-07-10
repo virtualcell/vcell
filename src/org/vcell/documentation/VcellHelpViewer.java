@@ -112,6 +112,7 @@ public class VcellHelpViewer extends JPanel
 			frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 			frame.pack();
 			frame.getContentPane().add(helpViewer);
+			BeanUtils.centerOnScreen(frame);
 			standaloneRef = new WeakReference<JFrame>(frame);
 		}
 		frame.setVisible(true);

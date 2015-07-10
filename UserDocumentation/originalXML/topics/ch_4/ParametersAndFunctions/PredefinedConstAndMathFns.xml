@@ -41,42 +41,47 @@
     	
 	<para> <bold>Math Functions</bold></para>
 	<list>
-		<item><bold>exp(x)</bold> - exponential function, e^x</item>     
-		<item><bold>sqrt(x)</bold> - square root</item>  	 
-		<item><bold>abs(x)</bold> - absolute value</item>  	 
-		<item><bold>pow(x,y)</bold> - power function, x^y</item>  	 
-		<item><bold>log(x)</bold> - natural logarithmic function</item>  
-		<item><bold>sin(x)</bold> - sine function</item>  	 
-		<item><bold>cos(x)</bold> - cosine function</item>  
-		<item><bold>tan(x)</bold> - tagent function</item>  
-		<item><bold>asin(x)</bold> - inverse since function</item>  	 
+		<item><bold>abs(x)</bold> - absolute value</item>
 		<item><bold>acos(x)</bold> - inverse cosine function</item>  
-		<item><bold>atan(x)</bold> - inverse tangent function</item>  	 
-		<item><bold>atan2(x,y)</bold> - similar to atan(y/x), except places the angle in the correct quadrant</item>  	 
+		<item><bold>acosh(x)</bold> - inverse hyperbolic cosine function</item>
+		<item><bold>acot(x)</bold> - inverse cotangent function</item>
+		<item><bold>acoth(x)</bold> - inverse hyperbolic cotangent function</item>
+		<item><bold>acsc(x)</bold> - inverse cosecant function</item>
+		<item><bold>acsch(x)</bold> - inverse hyperbolic cosecant function</item>
+		<item><bold>asec(x)</bold> - inverse secant</item>
+		<item><bold>asech(x)</bold> - inverse hyperbolic secant function</item>
+		<item><bold>asin(x)</bold> - inverse since function</item>
+		<item><bold>asinh(x)</bold> - inverse hyperbolic sine function</item>
+		<item><bold>atan(x)</bold> - inverse tangent function</item>
+		<item><bold>atan2(x,y)</bold> - similar to atan(y/x), except places the angle in the correct quadrant</item>
+		<item><bold>atanh(x)</bold> - inverse hyperbolic tangent function</item>
+		<item><bold>ceil(x)</bold> - smallest integral value not less than x</item>
+		<item><bold>cos(x)</bold> - cosine function</item>  
+		<item><bold>cosh(x)</bold> - hyperbolic cosine function</item>
+		<item><bold>cot(x)</bold> - cotangent function</item>
+		<item><bold>coth(x)</bold> - hyperbolic cotangent function</item>
+		<item><bold>csc(x)</bold> - cosecant function</item>
+		<item><bold>csch(x)</bold> - hyperbolic cosecant function</item>
+		<item><bold>exp(x)</bold> - exponential function, e^x</item>     
+		<item><bold>factorial(x)</bold> - factorial function  x!</item>
+		<item><bold>floor(x)</bold> - largest integral value not greater than x</item>
+		<item><bold>log(x)</bold> - natural logarithmic function</item>  
+		<item><bold>log10(x)</bold> - base 10 logarithmic function</item>
 		<item><bold>max(x,y)</bold> - maximum of x and y</item>  
 		<item><bold>min(x,y)</bold> - minimum of x and y</item>  
-		<item><bold>ceil(x)</bold> - smallest integral value not less than x</item>  	 
-		<item><bold>floor(x)</bold> - largest integral value not greater than x</item>  	 
-		<item><bold>csc(x)</bold> - cosecant function</item>  	 
-		<item><bold>cot(x)</bold> - cotangent function</item>  	 
-		<item><bold>sec(x)</bold> - secant function</item>  	 
-		<item><bold>acsc(x)</bold> - inverse cosecant function</item>  	 
-		<item><bold>acot(x)</bold> - inverse cotangent function</item>  	 
-		<item><bold>asec(x)</bold> - inverse secant</item>  	 
-		<item><bold>sinh(x)</bold> - hyperbolic sine function</item>  	 
-		<item><bold>cosh(x)</bold> - hyperbolic cosine function</item>  	 
-		<item><bold>tanh(x)</bold> - hyperbolic tangent function</item>  	 
-		<item><bold>csch(x)</bold> - hyperbolic cosecant function</item>  	 
-		<item><bold>coth(x)</bold> - hyperbolic cotangent function</item>  	 
-		<item><bold>sech(x)</bold> - hyperbolic secant function</item>  	 
-		<item><bold>asinh(x)</bold> - inverse hyperbolic sine function</item>  	 
-		<item><bold>acosh(x)</bold> - inverse hyperbolic cosine function</item>  	 
-		<item><bold>atanh(x)</bold> - inverse hyperbolic tangent function</item>  	 
-		<item><bold>acsch(x)</bold> - inverse hyperbolic cosecant function</item>  	 
-		<item><bold>acoth(x)</bold> - inverse hyperbolic cotangent function</item>  	 
-		<item><bold>asech(x)</bold> - inverse hyperbolic secant function</item>  	 
-		<item><bold>factorial(x)</bold> - factorial function  x!</item>  	 
-		<item><bold>log10(x)</bold> - base-10 logarithmic function</item>  	 
+		<item><bold>pow(x,y)</bold> - power function, x^y</item>
+		<item><bold>sec(x)</bold> - secant function</item>
+		<item><bold>sech(x)</bold> - hyperbolic secant function</item>
+		<item><bold>sin(x)</bold> - sine function</item>
+		<item><bold>sinh(x)</bold> - hyperbolic sine function</item>
+		<item><bold>sqrt(x)</bold> - square root</item>
+		<item><bold>tan(x)</bold> - tagent function</item>  
+		<item><bold>tanh(x)</bold> - hyperbolic tangent function</item>
+	</list>
+	
+	<para> <bold>Special </bold> <link target="output_functions">Output Function</link> <bold> Operators</bold></para>
+	<list>
+		<item><bold>vcGrad(variableName,{'x','y','z','m'})</bold> - Spatial gradient, non-membrane variable name, 'x','y','z' directions or 'm' magnitude. (include single quotes ' ')</item>
 	</list>
 	</operations>
 	
