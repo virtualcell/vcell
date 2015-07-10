@@ -108,8 +108,13 @@ public abstract class VCDocumentDecorator {
 				sfList.add(SolverFeature.Feature_NonSpatial);
 			}
 			if (!sc.isStoch()) {
-				sfList.add(SolverFeature.Feature_Deterministic);
-				return sfList;
+				if(!sc.isRuleBased()) {
+					sfList.add(SolverFeature.Feature_Deterministic);
+					return sfList;
+				} else {
+					sfList.add(SolverFeature.Feature_Rulebased);
+					return sfList;
+				}
 			}
 			//stochastic could also be hybrid 
 			boolean continuous = false;
