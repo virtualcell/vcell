@@ -67,9 +67,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
 		
-	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings) throws PropertyVetoException{
+	public void transform(SimulationContext originalSimContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings) throws PropertyVetoException{
 		Model newModel = transformedSimulationContext.getModel();
-		Model originalModel = simContext.getModel();
+		Model originalModel = originalSimContext.getModel();
 		ModelEntityMapping em = null;
 		
 //		for(ReactionRule newrr : newModel.getRbmModelContainer().getReactionRuleList()) {			// map new and old kinetic parameters of reaction rules
@@ -112,8 +112,12 @@ public class RulebasedTransformer implements SimContextTransformer {
 				e.printStackTrace();
 			}
 		}
-		for(ReactionStep rs : newModel.getReactionSteps()) {
+		for(ReactionSpec reactionSpec : transformedSimulationContext.getReactionContext().getReactionSpecs()) {
 			
+			if (reactionSpec.isExcluded()){
+				continue;
+			}
+			ReactionStep rs = reactionSpec.getReactionStep();
 			String name = rs.getName();
 			Kinetics k = rs.getKinetics();
 			if(!(k instanceof MassActionKinetics)) {
