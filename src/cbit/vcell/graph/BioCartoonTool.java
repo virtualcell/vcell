@@ -265,29 +265,24 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 		for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
 			Structure pasteToStruct = currentStruct;
 			Membrane oldMembr = (Membrane)fromRxnStruct;
-			if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getOutsideFeature(oldMembr).getName())){
-				pasteToStruct = (toStructureTopology.getOutsideFeature((Membrane)currentStruct));
-			}else if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
-				pasteToStruct = toStructureTopology.getInsideFeature((Membrane)currentStruct);
-			}
-			if(pasteToStruct == null){
-				userMap.put(copyFromRxParticipantArr[i],null);
-			}
+			pasteToStruct =
+			matchMembraneAdjacentStructure(currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
+			userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
 		}
-		if(userMap.size() > 0){
-			boolean bUnselected = false;
-			do{
-				bUnselected = false;
-				for(ReactionParticipant rxPart:userMap.keySet()){
-					userMap.put(rxPart,null);
-				}
-				JPanel rxMapperPanel = new JPanel();
+		JScrollPane jScrollPane = null;
+		JPanel rxMapperPanel = null;
+		Hashtable<JLabel,ReactionParticipant> mapLabelToPart = null;
+		boolean bUnselected;
+		do{
+			bUnselected = false;
+			if(jScrollPane == null){
+				rxMapperPanel = new JPanel();
 				rxMapperPanel.setLayout(new BoxLayout(rxMapperPanel, BoxLayout.Y_AXIS));
 				//((BoxLayout)rxMapperPanel.getLayout())
 				int height = 0;
 				final int[] widthlabels = new int[] {0};
 				int widthcombo= 0;
-				Hashtable<JLabel,ReactionParticipant> mapLabelToPart = new Hashtable<>();
+				mapLabelToPart = new Hashtable<>();
 				for(ReactionParticipant rxPart:userMap.keySet()){
 					JPanel row = new JPanel();
 					JLabel rxpartLabel = new JLabel(rxPart.getName());
@@ -314,38 +309,47 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 						e.printStackTrace();
 					}
 					for(Structure struct:allStructures){
-						structJC.addItem(struct);
+						if(struct instanceof Feature){
+							structJC.addItem(struct);
+						}
 					}
-					structJC.setSelectedIndex(0);
+					structJC.setSelectedItem((userMap.get(rxPart) == null?0:userMap.get(rxPart)));
 					row.add(structJC);
 					rxMapperPanel.add(row);
 				}
 				height+= 25;
 				rxMapperPanel.setSize(widthcombo+widthlabels[0], height);
 				rxMapperPanel.setPreferredSize(new Dimension(widthcombo+widthlabels[0], height));
-				JScrollPane jScrollPane = new JScrollPane(rxMapperPanel);
+				jScrollPane = new JScrollPane(rxMapperPanel);
 				jScrollPane.setPreferredSize(new Dimension(100,100));
-				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Select Compartments for RX Participants");
-				if(result != JOptionPane.OK_OPTION){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				
-				for(int i =0;i< rxMapperPanel.getComponentCount();i++){
-					JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
-					JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
-					if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
-						bUnselected = true;
-						DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
-						break;
-					}
-					userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
-				}
-				}while(bUnselected);
-				return userMap;
 			}
-		return null;
+			int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Select Compartments for RX Participants");
+			if(result != JOptionPane.OK_OPTION){
+				throw UserCancelException.CANCEL_GENERIC;
+			}
+			
+			for(int i =0;i< rxMapperPanel.getComponentCount();i++){
+				JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
+				JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
+				if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
+					bUnselected = true;
+					DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
+					break;
+				}
+				userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
+			}
+		}while(bUnselected);
+		return userMap;
 	}
 	
+	private static Structure matchMembraneAdjacentStructure(Structure currentStruct,Structure rxPartStruct,StructureTopology structTopology,StructureTopology toStructureTopology,Membrane oldMembr,Structure pasteToStruct){
+		if(rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName())){
+			pasteToStruct = (toStructureTopology.getOutsideFeature((Membrane)currentStruct));
+		}else if(rxPartStruct.getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
+			pasteToStruct = toStructureTopology.getInsideFeature((Membrane)currentStruct);
+		}
+		return pasteToStruct;
+	}
 	public static class PasteHelper {
 		public Vector<Issue> issues;
 		public HashMap<ReactionParticipant,Structure> rxPartMapStruct;
@@ -438,21 +442,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			for(int i=0;i<copyFromRxParticipantArr.length;i+= 1){
 				Structure pasteToStruct = currentStruct;
 				if(toRxnStruct instanceof Membrane){
-					Membrane oldMembr = (Membrane)fromRxnStruct;
-					if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getOutsideFeature(oldMembr).getName())){
-						pasteToStruct = (toStructureTopology.getOutsideFeature((Membrane)currentStruct));
-					}else if(copyFromRxParticipantArr[i].getStructure().getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
-						pasteToStruct = toStructureTopology.getInsideFeature((Membrane)currentStruct);
-					}
-					if(pasteToStruct == null && rxPartMapStructure != null){
-						pasteToStruct = rxPartMapStructure.get(copyFromRxParticipantArr[i]);
-					}
-//					if(pasteToStruct != null && pasteToStruct.getName().equals(DUMMY_CHOOSE)){
-//						pasteToStruct = null;
-//					}
-					if(pasteToStruct == null){//e.g. membrane compartment on the 'end' having only 1 adjacent neighbor, user didn't choose a resolution
-						throw new Exception("Error pasting Membrane RX '"+copyFromReactionStep.getName()+"', Can't match compartment to copy rxParticipant '"+copyFromRxParticipantArr[i].getName()+"'");
-					}
+					pasteToStruct = rxPartMapStructure.get(copyFromRxParticipantArr[i]);
 				}
 				// this adds the speciesContexts and species (if any) to the model)
 				String rootSC = ReactionCartoonTool.speciesContextRootFinder(copyFromRxParticipantArr[i].getSpeciesContext());
