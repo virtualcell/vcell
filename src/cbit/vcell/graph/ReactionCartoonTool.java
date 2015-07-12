@@ -547,19 +547,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				try {
-					pasteReactionSteps(reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
-					DialogUtils.showErrorDialog(getGraphPane(),"Error while pasting reaction:\n"+ e.getMessage(), e);
-				}						
+				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);					
 			}
 		}
 
 	}
 	
 	public static String speciesContextRootFinder(SpeciesContext speciesContext){
-		String rootSC = null;
+		String rootSC = speciesContext.getName();
 		if(speciesContext.getStructure() != null && speciesContext.getStructure().getName() != null){
 			String structSuffix = "_"+speciesContext.getStructure().getName();
 			if(speciesContext.getName().endsWith(structSuffix)){
