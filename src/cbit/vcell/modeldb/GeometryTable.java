@@ -15,6 +15,7 @@ import java.sql.*;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -163,5 +164,27 @@ public String getSQLValueList(KeyValue imageKey, Geometry geom,KeyValue sizeKey,
 	buffer.append(sizeKey + ",");
 	buffer.append(imageKey + ")");
 	return buffer.toString();
+}
+public static String getParentsPermissionSQL(KeyValue geomKey,User user){
+	return "select 'math' type,"+MathModelTable.table.name.getQualifiedColName()+","+MathModelTable.table.privacy.getQualifiedColName()+" " +
+	"from "+MathModelTable.table.getTableName()+","+MathDescTable.table.getTableName()+","+GeometryTable.table.getTableName()+" " +
+	"where " +
+	GeometryTable.table.id.getQualifiedColName()+" = "+geomKey+" and " +
+	MathDescTable.table.geometryRef.getQualifiedColName()+"="+GeometryTable.table.id.getQualifiedColName()+" and " +
+	MathModelTable.table.mathRef.getQualifiedColName()+" = "+MathDescTable.table.id.getQualifiedColName()+" and " +
+	"("+MathModelTable.table.ownerRef.getQualifiedColName()+" = "+user.getID()+" or "+MathModelTable.table.privacy.getQualifiedColName()+" = "+GroupAccess.GROUPACCESS_ALL.intValue()+" or " +
+	"("+MathModelTable.table.privacy.getQualifiedColName()+" != "+GroupAccess.GROUPACCESS_NONE.intValue()+" and "+user.getID()+" in (select "+GroupTable.table.userRef.getUnqualifiedColName()+" from "+GroupTable.table.getTableName()+" where "+GroupTable.table.groupid.getUnqualifiedColName()+" = "+MathModelTable.table.privacy.getQualifiedColName()+"))) " +
+	"union " +
+	"select 'bio' type,"+BioModelTable.table.name.getQualifiedColName()+","+BioModelTable.table.privacy.getQualifiedColName()+" " +
+	"from "+BioModelTable.table.getTableName()+","+BioModelSimContextLinkTable.table.getTableName()+","+SimContextTable.table.getTableName()+","+GeometryTable.table.getTableName()+" " +
+	"where " +
+	GeometryTable.table.id.getQualifiedColName()+" = "+geomKey+" and " +
+	SimContextTable.table.geometryRef.getQualifiedColName()+" = "+GeometryTable.table.id.getQualifiedColName()+" and " +
+	BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+" = "+SimContextTable.table.id.getQualifiedColName()+" and " +
+	BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+" = "+BioModelTable.table.id.getQualifiedColName()+" and " +
+	"( " +
+	BioModelTable.table.ownerRef.getQualifiedColName()+" = "+user.getID()+" or "+BioModelTable.table.privacy.getQualifiedColName()+" = "+GroupAccess.GROUPACCESS_ALL.intValue()+" or " +
+	"("+BioModelTable.table.privacy.getQualifiedColName()+" != "+GroupAccess.GROUPACCESS_NONE.intValue()+" and "+user.getID()+" in (select "+GroupTable.table.userRef.getUnqualifiedColName()+" from "+GroupTable.table.getTableName()+" where "+GroupTable.table.groupid.getUnqualifiedColName()+" = "+BioModelTable.table.privacy.getQualifiedColName()+")))";
+
 }
 }
