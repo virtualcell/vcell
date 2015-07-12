@@ -25,6 +25,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.SessionLog;
+import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
@@ -285,11 +286,30 @@ private Geometry getGeometry(QueryHashtable dbc, Connection con, User user, KeyV
 	Statement stmt = con.createStatement();
   	try{
 		ResultSet rset = stmt.executeQuery(sql);
-
 		if (rset.next()) {
+			//This geometry privacy flag gives this user permission to access
 			geom = getGeometry(dbc, con, user,rset);
 		}else{
-			throw new ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
+			//Due to change years ago, Geometry is no longer a TopLevel object so
+			//see if at least 1 geometry parents (Mathmodels and/or BioModels) are shared with this user
+			if(bCheckPermission){
+				rset.close();
+				String parentSQL = GeometryTable.getParentsPermissionSQL(geomKey, user);
+				rset = stmt.executeQuery(parentSQL);
+				if (rset.next()) {
+					// At least 1 parent of the geometry exists that's shared to this user so give them the geometry
+					rset.close();
+					//Get the geometry without checking the geometry permission
+					sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null,false);
+					rset = stmt.executeQuery(sql);
+					if(rset.next()){
+						geom = getGeometry(dbc, con, user,rset);
+					}
+				}
+			}
+			if(geom == null){
+				throw new ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
+			}
 		}
   	}finally{
 		stmt.close(); // Release resources include resultset
