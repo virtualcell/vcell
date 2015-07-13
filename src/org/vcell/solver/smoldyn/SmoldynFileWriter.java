@@ -2143,7 +2143,7 @@ public static class DiffusingMembraneParticleException extends RuntimeException 
 	}
 	
 	DiffusingMembraneParticleException( HashListMap<MembraneSubDomain, ParticleProperties> input) {
-		super("Smoldyn does not support particle diffusion on membranes. Please correct " + describe(input));
+		super("VCell – Smoldyn does not currently support particle diffusion on membranes. Please correct " + describe(input));
 		this.particleMap = new HashListMap<>(input); 
 	}
 	public String describe( ) {
