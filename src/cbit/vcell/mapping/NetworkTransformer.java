@@ -497,10 +497,12 @@ public class NetworkTransformer implements SimContextTransformer {
 			BNGReaction r = outputSpec.getBNGReactions()[i];
 //			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
 			int count=0;
+			String baseName = r.getRuleName();
 			String reactionName = null;
 			while (true) {
-				reactionName = "r" + count;	
-//				if (model.getReactionStep(reactionName) == null && model.getRbmModelContainer().getReactionRule(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {
+//				reactionName = "r" + count;
+				reactionName = baseName + "_" + count;
+				
 				if (model.getReactionStep(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {	// we can reuse the reaction rule labels
 					break;
 				}	
@@ -538,8 +540,10 @@ public class NetworkTransformer implements SimContextTransformer {
 			MassActionKinetics k = new MassActionKinetics(sr);
 			sr.setKinetics(k);
 			KineticsParameter kforward = k.getForwardRateParameter();
+//			String fieldParameterName = kforward.getName();
+//			fieldParameterName += "_" + r.getRuleName();
+//			kforward.setName(fieldParameterName);
 			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
-//			model.addReactionStep(sr);
 			reactionStepMap.put(reactionName, sr);
 		}
 		for(ReactionStep rs : model.getReactionSteps()) {
