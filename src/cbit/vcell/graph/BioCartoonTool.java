@@ -266,7 +266,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			Structure pasteToStruct = currentStruct;
 			Membrane oldMembr = (Membrane)fromRxnStruct;
 			pasteToStruct =
-			matchMembraneAdjacentStructure(currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
+			matchMembraneAdjacentStructure(allStructures,currentStruct, copyFromRxParticipantArr[i].getStructure(), structTopology, toStructureTopology, oldMembr, pasteToStruct);
 			userMap.put(copyFromRxParticipantArr[i],pasteToStruct);
 		}
 		JScrollPane jScrollPane = null;
@@ -284,38 +284,40 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				int widthcombo= 0;
 				mapLabelToPart = new Hashtable<>();
 				for(ReactionParticipant rxPart:userMap.keySet()){
-					JPanel row = new JPanel();
-					JLabel rxpartLabel = new JLabel(rxPart.getName());
-					row.add(rxpartLabel);
-					mapLabelToPart.put(rxpartLabel, rxPart);
-					JComboBox<Structure> structJC = new JComboBox<>();
-					structJC.setRenderer(new ListCellRenderer<Structure>() {
-						@Override
-						public Component getListCellRendererComponent(
-								JList<? extends Structure> list, Structure value, int index,
-								boolean isSelected, boolean cellHasFocus) {
-							// TODO Auto-generated method stub
-							JLabel label = new JLabel(value.getName());
-							widthlabels[0] = Math.max(widthlabels[0], label.getPreferredSize().width);
-							return label;
+					if(rxPart.getStructure() instanceof Feature){
+						JPanel row = new JPanel();
+						JLabel rxpartLabel = new JLabel(rxPart.getName());
+						row.add(rxpartLabel);
+						mapLabelToPart.put(rxpartLabel, rxPart);
+						JComboBox<Structure> structJC = new JComboBox<>();
+						structJC.setRenderer(new ListCellRenderer<Structure>() {
+							@Override
+							public Component getListCellRendererComponent(
+									JList<? extends Structure> list, Structure value, int index,
+									boolean isSelected, boolean cellHasFocus) {
+								// TODO Auto-generated method stub
+								JLabel label = new JLabel(value.getName());
+								widthlabels[0] = Math.max(widthlabels[0], label.getPreferredSize().width);
+								return label;
+							}
+						});
+						height+= structJC.getPreferredSize().getHeight();
+						widthcombo = Math.max(widthcombo, structJC.getPreferredSize().width);
+						try{
+							Feature dummyFeature = new Feature(DUMMY_CHOOSE);
+							structJC.addItem(dummyFeature);
+						}catch(Exception e){
+							e.printStackTrace();
 						}
-					});
-					height+= structJC.getPreferredSize().getHeight();
-					widthcombo = Math.max(widthcombo, structJC.getPreferredSize().width);
-					try{
-						Feature dummyFeature = new Feature(DUMMY_CHOOSE);
-						structJC.addItem(dummyFeature);
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-					for(Structure struct:allStructures){
-						if(struct instanceof Feature){
-							structJC.addItem(struct);
+						for(Structure struct:allStructures){
+							if(struct instanceof Feature){
+								structJC.addItem(struct);
+							}
 						}
+						structJC.setSelectedItem((userMap.get(rxPart) == null?0:userMap.get(rxPart)));
+						row.add(structJC);
+						rxMapperPanel.add(row);
 					}
-					structJC.setSelectedItem((userMap.get(rxPart) == null?0:userMap.get(rxPart)));
-					row.add(structJC);
-					rxMapperPanel.add(row);
 				}
 				height+= 25;
 				rxMapperPanel.setSize(widthcombo+widthlabels[0], height);
@@ -323,30 +325,35 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				jScrollPane = new JScrollPane(rxMapperPanel);
 				jScrollPane.setPreferredSize(new Dimension(100,100));
 			}
-			int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Select Compartments for RX Participants");
-			if(result != JOptionPane.OK_OPTION){
-				throw UserCancelException.CANCEL_GENERIC;
-			}
-			
-			for(int i =0;i< rxMapperPanel.getComponentCount();i++){
-				JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
-				JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
-				if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
-					bUnselected = true;
-					DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
-					break;
+			if(rxMapperPanel.getComponentCount() != 0){
+				int result = DialogUtils.showComponentOKCancelDialog(requester, jScrollPane, "Select Compartments for RX Participants");
+				if(result != JOptionPane.OK_OPTION){
+					throw UserCancelException.CANCEL_GENERIC;
 				}
-				userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
+				
+				for(int i =0;i< rxMapperPanel.getComponentCount();i++){
+					JLabel label0 = (JLabel)(((Container)rxMapperPanel.getComponent(i)).getComponent(0));
+					JComboBox<Structure> struct0 = (JComboBox<Structure>)(((Container)rxMapperPanel.getComponent(i)).getComponent(1));
+					if(((Structure)struct0.getSelectedItem()).getName().equals(DUMMY_CHOOSE)){
+						bUnselected = true;
+						DialogUtils.showWarningDialog(requester, "Choose a valid compartment for each ReactionParticipant");
+						break;
+					}
+					userMap.put(mapLabelToPart.get(label0),(Structure)struct0.getSelectedItem());
+				}
 			}
 		}while(bUnselected);
 		return userMap;
 	}
 	
-	private static Structure matchMembraneAdjacentStructure(Structure currentStruct,Structure rxPartStruct,StructureTopology structTopology,StructureTopology toStructureTopology,Membrane oldMembr,Structure pasteToStruct){
-		if(rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName())){
-			pasteToStruct = (toStructureTopology.getOutsideFeature((Membrane)currentStruct));
-		}else if(rxPartStruct.getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
-			pasteToStruct = toStructureTopology.getInsideFeature((Membrane)currentStruct);
+	private static Structure matchMembraneAdjacentStructure(Structure[] toAllStructures,Structure currentStruct,Structure rxPartStruct,StructureTopology structTopology,StructureTopology toStructureTopology,Membrane oldMembr,Structure pasteToStruct){
+		if(rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName()) ||
+			rxPartStruct.getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
+			for(Structure struct:toAllStructures){
+				if(struct.getName().equals(rxPartStruct.getName())){
+					return struct;
+				}
+			}
 		}
 		return pasteToStruct;
 	}
