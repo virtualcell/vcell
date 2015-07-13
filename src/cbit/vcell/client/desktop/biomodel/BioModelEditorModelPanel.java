@@ -1149,7 +1149,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == structuresTable) {
 			try {
-				if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
+				if(bioModel.getModel().getRbmModelContainer().hasRules()) {
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 					return;
 				}
@@ -1216,7 +1216,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == structuresTable) {
-			if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
+			if(bioModel.getModel().getRbmModelContainer().hasRules()) {
 				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 				return;
 			}
