@@ -185,7 +185,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 					bioModel.refreshDependencies();
 					logFilePrintStream.println("---- " + (j+1) + " ----> " + bioModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
 					databaseVisitor.visitBioModel(bioModel,logFilePrintStream);
-					verifyMathDescriptionsUnchanged(bioModel, logFilePrintWriter);
+//					verifyMathDescriptionsUnchanged(bioModel, logFilePrintWriter);
 				}catch (Exception e2){
 					log.exception(e2);
 					logFilePrintStream.println("======= " + e2.getMessage());
@@ -199,6 +199,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFile
 		logFilePrintStream.close();
 	}catch(Exception e)
 	{
+		e.printStackTrace();
 		System.err.println("error writing to log file.");
 	}
 }
