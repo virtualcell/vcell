@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -311,6 +312,12 @@ private void displayTask() {
 	try {
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 		TimeStep timeStep = solverTaskDescription.getTimeStep();
+		getJLabelRelTol().setText("rel tol");
+		getJLabelAbsTol().setText("abs tol");
+		getJLabel12().setText("timestep");
+		getJLabelRelTol().setEnabled(false);
+		getJLabelAbsTol().setEnabled(false);
+		getJLabel12().setEnabled(false);
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
@@ -322,7 +329,6 @@ private void displayTask() {
 				UniformOutputTimeSpec uots = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
 				double interval = uots.getOutputTimeStep();
 				int steps = (int)Math.round(dtime/interval);
-//				System.out.println("duration: " + dtime + ", every: " + dstep + ", steps: " + steps);
 				getJLabel12().setEnabled(true);
 				getJLabel12().setText("timepoints");		
 				getJLabelTimestep().setText(steps + "");
@@ -339,7 +345,7 @@ private void displayTask() {
 				utl = moleculeDistance + "";
 			}
 			getJLabelRelTol().setEnabled(true);
-			getJLabelRelTol().setText("utl");
+			getJLabelRelTol().setText("Universal Transversal Limit");
 			getJLabelRelTolValue().setText(utl);
 
 			String gml = "default";
@@ -348,7 +354,7 @@ private void displayTask() {
 				gml = maxMoleculesPerType + "";
 			}
 			getJLabelAbsTol().setEnabled(true);
-			getJLabelAbsTol().setText("gml");
+			getJLabelAbsTol().setText("Max instances of each " + MolecularType.typeName);
 			getJLabelAbsTolValue().setText(gml);
 		} else if (solverDescription.isNonSpatialStochasticSolver()) {
 			getJLabel12().setEnabled(true);
