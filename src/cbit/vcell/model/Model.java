@@ -944,7 +944,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		// reaction rules are the only entities with "wildcards"
 		// as long as we don't have rules we can allow multiple compartments, for example
 		public boolean hasRules() {
-			if (!reactionRuleList.isEmpty()){
+			if (reactionRuleList.isEmpty()){
 				return false;
 			}
 			return true;

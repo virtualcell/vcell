@@ -164,7 +164,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 					newObject = model.createSimpleReaction(model.getStructure(0));
 					break;
 				case STRUCTURES_NODE:
-					if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
+					if(bioModel.getModel().getRbmModelContainer().hasRules()) {
 						PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
 						return;
 					}
@@ -861,7 +861,9 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
-		if(!simulationContext.getModel().getRbmModelContainer().hasRules()) {
+		
+		boolean bHasRules = simulationContext.getModel().getRbmModelContainer().hasRules();
+		if(!bHasRules) {
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
 		}
