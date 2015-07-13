@@ -25,6 +25,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 
+@SuppressWarnings("serial")
 public class SmoldynSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 	private Integer randomSeed = null;
@@ -47,13 +48,18 @@ public class SmoldynSimulationOptions implements Serializable, Matchable, Vetoab
 		addVetoableChangeListener(this);
 	}
 	
+	/**
+	 * @param smoldynSimulationOptions if null, same as {@link #SmoldynSimulationOptions()}
+	 */
 	public SmoldynSimulationOptions(SmoldynSimulationOptions smoldynSimulationOptions) {
 		this();
-		randomSeed = smoldynSimulationOptions.randomSeed;
-		accuracy = smoldynSimulationOptions.accuracy;
-		gaussianTableSize = smoldynSimulationOptions.gaussianTableSize;
-		useHighResolutionSample = smoldynSimulationOptions.useHighResolutionSample;
-		saveParticleLocations = smoldynSimulationOptions.saveParticleLocations;
+		if (smoldynSimulationOptions != null) {
+			randomSeed = smoldynSimulationOptions.randomSeed;
+			accuracy = smoldynSimulationOptions.accuracy;
+			gaussianTableSize = smoldynSimulationOptions.gaussianTableSize;
+			useHighResolutionSample = smoldynSimulationOptions.useHighResolutionSample;
+			saveParticleLocations = smoldynSimulationOptions.saveParticleLocations;
+		}
 	}
 
 	public SmoldynSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
