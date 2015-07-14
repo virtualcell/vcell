@@ -27,6 +27,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.VCAssert;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
@@ -349,36 +350,36 @@ private static Application legacyType(boolean arg_isStoch, boolean arg_isRuleBas
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
  */
-public SimulationContext(SimulationContext simulationContext,Geometry newClonedGeometry, boolean arg_isStoch, boolean arg_isRuleBased) throws PropertyVetoException {
+public SimulationContext(SimulationContext oldSimulationContext,Geometry newClonedGeometry, boolean arg_isStoch, boolean arg_isRuleBased) throws PropertyVetoException {
 	
 	if(arg_isStoch)
 	{
-		String msg = simulationContext.getModel().isValidForStochApp();
+		String msg = oldSimulationContext.getModel().isValidForStochApp();
 		if(!msg.equals(""))
 		{
 			throw new RuntimeException("Error constructing a new simulation context:\n" + msg); //no need to show popup here, the exception passes to upper level.
 		}
-		this.bConcentration = simulationContext.bConcentration;
+		this.bConcentration = oldSimulationContext.bConcentration;
 	} else {
 		this.bConcentration = true; //deterministic method use concentration only.
 	}
-	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this, newClonedGeometry);
+	this.geoContext = new GeometryContext(oldSimulationContext.getGeometryContext(),this, newClonedGeometry);
 	geoContext.addPropertyChangeListener(this);
-	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
+	this.reactionContext = new ReactionContext(oldSimulationContext.getReactionContext(),this);
 	this.membraneContext = new MembraneContext(this);
 	this.version = null;
-	this.characteristicSize = simulationContext.getCharacteristicSize();
-	this.fieldName = "copied_from_"+simulationContext.getName();
-	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
-	this.bioModel = simulationContext.getBioModel();
+	this.characteristicSize = oldSimulationContext.getCharacteristicSize();
+	this.fieldName = "copied_from_"+oldSimulationContext.getName();
+	this.fieldDescription = "(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription();
+	this.bioModel = oldSimulationContext.getBioModel();
 	applicationType = legacyType(arg_isStoch, arg_isRuleBased);
 	//
 	// copy electrical stimuli and ground
 	//
-	if (simulationContext.getGroundElectrode()!=null){
-		this.fieldGroundElectrode = new Electrode(simulationContext.getGroundElectrode());
+	if (oldSimulationContext.getGroundElectrode()!=null){
+		this.fieldGroundElectrode = new Electrode(oldSimulationContext.getGroundElectrode());
 	}
-	this.fieldElectricalStimuli = (ElectricalStimulus[])simulationContext.getElectricalStimuli().clone();
+	this.fieldElectricalStimuli = (ElectricalStimulus[])oldSimulationContext.getElectricalStimuli().clone();
 	for (int i = 0; i < fieldElectricalStimuli.length; i++){
 		if (fieldElectricalStimuli[i] instanceof TotalCurrentClampStimulus){
 			TotalCurrentClampStimulus otherStimulus = (TotalCurrentClampStimulus)fieldElectricalStimuli[i];
@@ -396,7 +397,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	
 	if (applicationType == Application.NETWORK_DETERMINISTIC) {
 		// copy events
-		BioEvent[] bioEvents = simulationContext.getBioEvents();
+		BioEvent[] bioEvents = oldSimulationContext.getBioEvents();
 		if (bioEvents != null) {
 			fieldBioEvents = new BioEvent[bioEvents.length];
 			for (int i = 0; i < bioEvents.length; i++) {
@@ -405,7 +406,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 		}
 		
 		// copy rate rules
-		RateRule[] rateRules = simulationContext.getRateRules();
+		RateRule[] rateRules = oldSimulationContext.getRateRules();
 		if (rateRules != null) {
 			fieldRateRules = new RateRule[rateRules.length];
 			for (int i = 0; i < rateRules.length; i++) {
@@ -413,17 +414,17 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 			}
 		}
 	}
-	if(!simulationContext.isStoch() && applicationType == Application.NETWORK_STOCHASTIC && geoContext.getGeometry().getDimension()>0) {
+	if (oldSimulationContext.applicationType != Application.NETWORK_STOCHASTIC && applicationType == Application.NETWORK_STOCHASTIC && geoContext.getGeometry().getDimension()>0) {
 		initializeForSpatial();
 	}
 	
-	if(simulationContext.fieldAnalysisTasks != null)
+	if(oldSimulationContext.fieldAnalysisTasks != null)
 	{
 		try {
-			AnalysisTask[] analysisTasks = new AnalysisTask[simulationContext.fieldAnalysisTasks.length];
-			for(int i=0; i<simulationContext.fieldAnalysisTasks.length; i++)
+			AnalysisTask[] analysisTasks = new AnalysisTask[oldSimulationContext.fieldAnalysisTasks.length];
+			for(int i=0; i<oldSimulationContext.fieldAnalysisTasks.length; i++)
 			{
-				analysisTasks[i] = new ParameterEstimationTask(this, (ParameterEstimationTask)simulationContext.fieldAnalysisTasks[i]);
+				analysisTasks[i] = new ParameterEstimationTask(this, (ParameterEstimationTask)oldSimulationContext.fieldAnalysisTasks[i]);
 			}
 			setAnalysisTasks(analysisTasks);
 		} catch (ExpressionException e) {
@@ -2089,7 +2090,7 @@ public void checkValidity() throws MappingException
 //		}
 	}else{
 		// old-style ODE models should still work
-		if (!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull()){
+		if (applicationType == Application.NETWORK_DETERMINISTIC && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull()){
 			return; // old style ODE models
 		}
 		// otherwise, all sizes should be present and positive.
@@ -2121,7 +2122,7 @@ public boolean isUsingConcentration() {
 }
 
 public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
-	if(isStoch()) //do it only when it is stochastic application
+	if(applicationType == Application.NETWORK_STOCHASTIC) //do it only when it is stochastic application
 	{
 		boolean oldValue = bConcentration;
 		bConcentration = bUseConcentration;
@@ -2134,7 +2135,7 @@ public boolean isRandomizeInitCondition() {
 }
 
 public void setRandomizeInitCondition(boolean bRandomize) {
-	if(isStoch()) //do it only when it is stochastic application
+	if(applicationType == Application.NETWORK_STOCHASTIC) //do it only when it is stochastic application
 	{
 		bRandomizeInitCondition = bRandomize;
 	}
@@ -2255,7 +2256,7 @@ public boolean hasEventAssignment(SpeciesContext speciesContext) {
 	//
 	// spatial and stochastic models don't have events yet.
 	//
-	if (getGeometryContext().getGeometry().getDimension() != 0 || isStoch() || isRuleBased()){
+	if (getGeometryContext().getGeometry().getDimension() != 0 || applicationType != Application.NETWORK_DETERMINISTIC) { 
 		return false;
 	}
 
@@ -2307,16 +2308,20 @@ public DataContext getDataContext() {
 	return dataContext;
 }
 
+/**
+ * @return appropriate transformer, may be null
+ */
 public SimContextTransformer createNewTransformer(){
-	SimContextTransformer modelTransformer = null;
-	if (isRuleBased()){
-		modelTransformer = new RulebasedTransformer();
-	}else{
+	switch (applicationType) {
+	case RULE_BASED_STOCHASTIC:
+		return new RulebasedTransformer();
+	case NETWORK_DETERMINISTIC:
+	case NETWORK_STOCHASTIC:
 		if(getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
-			modelTransformer = new NetworkTransformer();
+			return new NetworkTransformer();
 		}	// if no rbm stuff we don't need to flatten a deterministic model
 	}
-	return modelTransformer;	
+	return null; 
 }
 
 /**
@@ -2325,7 +2330,9 @@ public SimContextTransformer createNewTransformer(){
  */
 @Override
 public VersionedLibrary getRequiredLibrary( ) {
-	if (!isRuleBased( )) {
+	switch (applicationType) {
+	case NETWORK_DETERMINISTIC:
+	case NETWORK_STOCHASTIC:
 		try { //4 gets and size -- can any return null? Wrap for safety
 			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
 			if (listSize > 0) {
@@ -2333,6 +2340,8 @@ public VersionedLibrary getRequiredLibrary( ) {
 			}
 		}
 		catch (NullPointerException npe) { }
+		break;
+	default:
 	}
 	return null;
 }
@@ -2366,17 +2375,23 @@ public MathMapping createNewMathMapping() {
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
 	mostRecentlyCreatedMathMapping = null;
-	if (isStoch() && !isRuleBased()){
+	switch (applicationType) {
+	case NETWORK_STOCHASTIC:
 		if (getGeometry().getDimension()==0){
 			mostRecentlyCreatedMathMapping = new StochMathMapping(this, callback, networkGenReq);
 		}else{
 			mostRecentlyCreatedMathMapping = new ParticleMathMapping(this, callback, networkGenReq);
 		}
-	}else if (isRuleBased()){
+		break;
+	case RULE_BASED_STOCHASTIC:
 		mostRecentlyCreatedMathMapping = new RulebasedMathMapping(this, callback, null);
-	}else {
+		break;
+	case NETWORK_DETERMINISTIC: 
 		mostRecentlyCreatedMathMapping = new MathMapping(this, callback, networkGenReq);
+		break;
 	}
+	VCAssert.assertFalse(mostRecentlyCreatedMathMapping == null, "math mapping not generated" );
+	
 	return mostRecentlyCreatedMathMapping;
 }
 
@@ -2384,17 +2399,11 @@ public boolean isSameTypeAs(SimulationContext simulationContext) {
 	if (getGeometry().getDimension() != simulationContext.getGeometry().getDimension()) {
 		return false;
 	}
-	if (isStoch() != simulationContext.isStoch()){
-		return false;
-	}
-	if (isRuleBased() != simulationContext.isRuleBased()){
-		return false;
-	}
-	return true;
+	return applicationType == simulationContext.applicationType;
 }
 
 public boolean isValidForFitting() {
-	return getGeometry().getDimension() == 0 && !isStoch() && !isRuleBased();
+	return getGeometry().getDimension() == 0 && applicationType == Application.NETWORK_DETERMINISTIC; 
 }
 
 private void initializeForSpatial() {
@@ -2406,7 +2415,7 @@ private void initializeForSpatial() {
 
 public void createDefaultParameterEstimationTask()
 {
-	if(!this.isStoch() && !this.isRuleBased() && this.getGeometry().getDimension() == 0 && fieldAnalysisTasks == null)
+	if (applicationType == Application.NETWORK_DETERMINISTIC && this.getGeometry().getDimension() == 0 && fieldAnalysisTasks == null)
 	{
 		try{
 			ParameterEstimationTask peTask = new ParameterEstimationTask(this);
