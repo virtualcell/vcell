@@ -17,8 +17,11 @@ import java.awt.Desktop;
 import java.awt.Desktop.Action;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -925,6 +928,31 @@ public static void showInfoDialog(final Component requester, final String title,
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareInfoDialog(requester, title, message);
+			findScreen(dialog);
+			try{
+				DialogUtils.showModalJDialogOnTop(dialog, requester);
+			}finally{
+				dialog.dispose();
+			}
+			return null;
+		}
+	}.dispatchWrapRuntime();
+}
+public static void showInfoDialogAndResize(final Component requester, final String title, final String message) {
+	new SwingDispatcherSync (){
+		public Object runSwing() throws Exception{
+			final JDialog dialog = prepareInfoDialog(requester, title, message);
+
+//			It may be better to tune the size based on the number of characters to display
+//			Rectangle currentScreen = getCurrentScreenBounds(requester);
+//			int currentScreenWidth = currentScreen.width;
+//			int currentScreenHeight = currentScreen.height;
+			
+			Dimension d = new Dimension(800, 350);
+			dialog.setSize(d);
+			Point location = requester.getLocationOnScreen();
+			dialog.setLocation(location.x, 400);
+
 			try{
 				DialogUtils.showModalJDialogOnTop(dialog, requester);
 			}finally{
@@ -1193,6 +1221,25 @@ public static Icon swingIcon(int optionPaneValue){
 	}
 	Icon i = UIManager.getIcon("OptionPane." + key);
 	return i;
+}
+
+public static int findScreen(JDialog dialog) {
+	GraphicsConfiguration config = dialog.getGraphicsConfiguration();
+	GraphicsDevice myScreen = config.getDevice();
+	GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	GraphicsDevice[] allScreens = env.getScreenDevices();
+	int myScreenIndex = -1;
+	for (int i = 0; i < allScreens.length; i++) {
+		if (allScreens[i].equals(myScreen)) {
+			myScreenIndex = i;
+			break;
+		}
+	}
+	System.out.println("Dialog is on screen " + myScreenIndex);
+	return myScreenIndex;
+}
+public static Rectangle getCurrentScreenBounds(Component component) {
+    return component.getGraphicsConfiguration().getBounds();
 }
 
 }
