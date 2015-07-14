@@ -4229,6 +4229,7 @@ public String isValidForStochApp()
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+								unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
 							}
 						}
 					}
@@ -4243,6 +4244,7 @@ public String isValidForStochApp()
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+								unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
 							}
 						} 
 					}
@@ -4262,7 +4264,7 @@ public String isValidForStochApp()
 	}
 	if(exceptionReacStr.length() > 0)
 	{
-		returnStr = returnStr + exceptionReacStr;
+		returnStr = returnStr + "\n\n detailed error:\n\n"+exceptionReacStr;
 	}
 	return returnStr;
 }
