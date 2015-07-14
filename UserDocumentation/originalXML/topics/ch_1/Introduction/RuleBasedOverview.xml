@@ -3,7 +3,7 @@
 <page title="Overview of Rule-Based Features" target="RuleBasedOverview">
 
 	<introduction> 
-The Virtual Cell Software version 5.4 for the first time provides an integrated environment to 
+The Virtual Cell Software version 6.0 for the first time provides an integrated environment to 
 introduce <def target= "def_RuleBased">rule-based</def> features in the VCell interface alongside familiar species and reaction concepts. 
 The new parts of <link target = "PhysOverview">Physiology</link> specifications include 
 <link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
