@@ -14,6 +14,10 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 
+/**
+ * temporary class to standardized Smoldyn inaccuracy warning; delete after Smoldyn updated (est Sep 2015)
+ * @author GWeatherby
+ */
 public class SmoldynSurfaceDiffusionWarning {
 	private static final String TEMP_SMOLDYN_HYBRID_WARNING = 
 			"<html>An inaccuracy has been found in the Smoldyn simulator for spatial stochastic models that require membrane (surface) diffusion.<br>" 
