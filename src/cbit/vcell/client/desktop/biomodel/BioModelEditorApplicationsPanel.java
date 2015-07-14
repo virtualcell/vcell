@@ -445,7 +445,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				return;
 			}
 		}
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, bStoch, bRuleBased);
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel, bStoch, bRuleBased);
 		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
 		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
 		tasks[newApplicationTasks.length] = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {

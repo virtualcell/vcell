@@ -44,7 +44,6 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -68,13 +67,12 @@ import org.jdom.Namespace;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
-import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -128,7 +126,6 @@ import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -178,9 +175,9 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
@@ -210,7 +207,6 @@ import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
@@ -883,6 +879,9 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 	if (simContext == null) {
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
+	}
+	if (simContext.isStoch() && ! simContext.isRuleBased()) {
+		SmoldynSurfaceDiffusionWarning.acknowledgeWarning(requester.getComponent());
 	}
 	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -1862,7 +1861,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						}
 					}
 				};
-				AsynchClientTask task2 = new AsynchClientTask("create math model from biomodel application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				AsynchClientTask task2 = new AsynchClientTask("find sim contexts in biomodel application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {		
 						// spatial or non-spatial
@@ -1886,8 +1885,9 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							for (int i = 0; i < simContexts.length; i++){
 								simContextNames[i] = simContexts[i].getName();
 							}
+							Component component = requester.getComponent(); 
 							// Get the simContext names, so that user can choose which simContext math to import
-							String simContextChoice = (String)PopupGenerator.showListDialog(getMdiManager().getDatabaseWindowManager().getComponent(), simContextNames, "Please select Application");
+							String simContextChoice = (String)PopupGenerator.showListDialog(component, simContextNames, "Please select Application");
 							if (simContextChoice == null) {
 								throw UserCancelException.CANCEL_DB_SELECTION;
 							}
@@ -1898,6 +1898,11 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 									break;
 								}
 							}
+							VCAssert.assertValid(chosenSimContext);
+							if (SmoldynSurfaceDiffusionWarning.isSmoldynOrHybrid(chosenSimContext)) {
+								SmoldynSurfaceDiffusionWarning.acknowledgeWarning(component);
+							}
+							
 							BioModelInfo bioModelInfo = (BioModelInfo)hashTable.get("bioModelInfo");
 							//Get corresponding mathDesc to create new mathModel and return.
 							String newName = bioModelInfo.getVersion().getName()+"_"+chosenSimContext.getName();

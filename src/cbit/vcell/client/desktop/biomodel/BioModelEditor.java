@@ -235,7 +235,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		if(action == DocumentEditorPopupMenuAction.add_new_app_rulebased) {
 			bRuleBased = true;
 		}
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic, bRuleBased);
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic, bRuleBased);
 		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
 		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
 		tasks[newApplicationTasks.length] = task;
