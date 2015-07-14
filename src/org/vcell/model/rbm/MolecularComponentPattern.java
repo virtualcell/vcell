@@ -177,7 +177,7 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		}
 	}
 
-	public static final String typeName = "Site Pattern";
+	public static final String typeName = "Site";		// normally would be site pattern but we try to simplify and get rid of the "pattern" part
 	@Override
 	public String getDisplayName() {
 		String name = toString();
