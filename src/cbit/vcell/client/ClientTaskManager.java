@@ -16,6 +16,7 @@ import java.util.Hashtable;
 
 import javax.swing.JComponent;
 
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
@@ -44,7 +45,11 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class ClientTaskManager {
-	public static AsynchClientTask[] newApplication(final BioModel bioModel, final boolean isStoch, final boolean isRuleBased) {		
+	
+	public static AsynchClientTask[] newApplication(JComponent tempRequester, final BioModel bioModel, final boolean isStoch, final boolean isRuleBased) {		
+		if (isStoch) {
+			SmoldynSurfaceDiffusionWarning.acknowledgeWarning(tempRequester);
+		}
 		
 		AsynchClientTask task0 = new AsynchClientTask("create application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			

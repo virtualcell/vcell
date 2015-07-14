@@ -693,7 +693,7 @@ private void newSimulation(final NetworkGenerationRequirements networkGeneration
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-			int newSimIndex = getSimulationWorkspace().newSimulation(mathMappingCallback,networkGenerationRequirements);
+			int newSimIndex = getSimulationWorkspace().newSimulation(SimulationListPanel.this,mathMappingCallback,networkGenerationRequirements);
 			getScrollPaneTable().getSelectionModel().setSelectionInterval(newSimIndex, newSimIndex);
 			getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(newSimIndex, 0, true));
 		}

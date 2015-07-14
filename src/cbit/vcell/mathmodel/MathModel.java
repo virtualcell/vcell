@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.List;
 
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -57,6 +58,8 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 	private static UnitInfo mathUnitInfo = null;
+	
+	private transient boolean tempSmoldynWarningAcknowledged;
 
 /**
  * BioModel constructor comment.
@@ -94,6 +97,9 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 	MathDescription math = getMathDescription();
 	if (math==null){
 		throw new RuntimeException("Can't create Simulation, math not created");
+	}
+	if (SmoldynSurfaceDiffusionWarning.isUnacknowledgedSmoldynOrHybrid(new TempSmoldynWarningAPI(), math) ) {
+		SmoldynSurfaceDiffusionWarning.acknowledgeWarning();
 	}
 	//
 	// get free name for new Simulation.
@@ -774,8 +780,35 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		return null;
 	}
 
-
 	public VersionedLibrary getRequiredLibrary() {
 		return null;
+	}
+	
+	/**
+	 * temporary class pending resolution of Smoldyn surface membrane inaccuracy 
+	 */
+	public class TempSmoldynWarningAPI {
+		private TempSmoldynWarningAPI( ) {}
+		
+		/**
+		 * @return true if acknowledged already
+		 */
+		public boolean isWarningAcknowledged( ) {
+			return tempSmoldynWarningAcknowledged;
+		}
+		
+		/**
+		 * set acknowledge to true
+		 */
+		public void acknowledge( ) {
+			tempSmoldynWarningAcknowledged = true;
+		}
+		
+		/**
+		 * @return parent model
+		 */
+		public MathModel getModel( ) {
+			return MathModel.this;
+		}
 	}
 }

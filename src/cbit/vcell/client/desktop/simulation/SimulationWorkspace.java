@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.swing.JScrollPane;
 
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
@@ -673,12 +674,13 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 /**
  * Comment
  */
-int newSimulation(MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
+int newSimulation(Component requester,MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) throws java.beans.PropertyVetoException {
 	
 	Simulation newSim = null;
 	if (simulationOwner instanceof SimulationContext){
 		newSim = ((SimulationContext)getSimulationOwner()).addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,networkGenerationRequirements);
 	}else{
+		SmoldynSurfaceDiffusionWarning.setGUIContext(requester);
 		newSim = ((MathModel)getSimulationOwner()).addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 	}
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
