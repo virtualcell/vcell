@@ -17,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -301,6 +302,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 				switch (folderClass) {
 				case MATH_SIMULATIONS_NODE:
+					SmoldynSurfaceDiffusionWarning.setGUIContext(this);
 					Object newsim = mathModel.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 					selectionManager.setSelectedObjects(new Object[]{newsim});
 					break;

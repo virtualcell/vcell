@@ -1143,13 +1143,29 @@ public static String showOKCancelWarningDialog(final Component parentComponent, 
 	if (parentComponent==null){
 		throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 	}
-	return (String)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
-			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
-		}
-	}.dispatchWrapRuntime();	
+	SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
+	if (SwingUtilities.isEventDispatchThread()) {
+		return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+	}
+	else {
+		return (String)
+				new SwingDispatcherSync (){
+			public Object runSwing() throws Exception{
+				return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+			}
+		}.dispatchWrapRuntime();	
+	}
+}
+/**
+ * call {@link #showOKCancelWarningDialog(Component, String, String)}, return true if user presses okay
+ * @param parentComponent
+ * @param title
+ * @param message
+ * @return true if user says OK
+ */
+public static boolean queryOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
+	String ret = showOKCancelWarningDialog(parentComponent, title, message);
+	return ret == SimpleUserMessage.OPTION_OK;
 }
 
 public static void showModalJDialogOnTop(JDialog jdialog, Component component) {
