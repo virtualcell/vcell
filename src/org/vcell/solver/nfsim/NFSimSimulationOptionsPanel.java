@@ -76,7 +76,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == observableComputationHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "On-the-fly computations of observables", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "On-the-fly computations of observables", 
 						"<html>-notf <i>boolean</i> " +
 						"<br> By default, observables are calculated on-the-fly, updating all observables at each simulation step. "
 						+ "This is necessary when rates of reactions depend on Observables. Otherwise, the values of Observables need "
@@ -85,7 +85,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "so you should try turning on or off this option to see which is more efficient."
 						+ "</html>");
 			} else if (source == moleculeDistanceHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
 						"<html>-utl <i>int</i> " +
 						"<br> The universal traversal limit (UTL) sets the distance neighboring molecules have to be to the site of the reaction "
 						+ "to be updated. The default UTL is set to the size of the largest reactant pattern, which is guaranteed to produce correct "
@@ -99,7 +99,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br><br> NFSim option -utl [integer] Default: the size of the largest reactant pattern in the rule-set."
 						+ "</html>");
 			} else if (source == aggregateBookkeepingHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
 						"<html>-cb <i>boolean</i> "
 						+ "<br> NFsim by default tracks individual molecule agents, not complete molecular complexes. This is useful and makes "
 						+ "simulations very fast, but is not always appropriate. For example, in some systems it is necessary to block "
@@ -111,7 +111,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br><br> NFSim option -cb Default: off"
 						+ "</html>");
 			} else if (source == maxMoleculesPerTypeHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
 						"<html>-gml <i>int</i> "
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
@@ -119,20 +119,20 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "<br><br> NFSim option: -gml [limit] Default: 100,000"
 						+ "</html>");
 			} else if (source == equilibrateTimeHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
 						"<html>-eq <i>time</i> "
 						+ "<br>Equilibrate the system for a set time before the simulation begins for the amount of time given. This operates "
 						+ "exactly like a normal simulation, except that the simulation time is set to zero immediately after the equilibration "
 						+ "phase and no output during equilibration is generated."
 						+ "</html>");
 			} else 	if (source == randomSeedHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Random Seed", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Random Seed", 
 						"<html>rand_seed <i>boolean</i> "
 						+ "<br>Provide a seed to NFsim's random number generator so exact trajectories can be reproduced. If this line is not "
 						+ "entered, the current time is used as a seed, producing different sequences for each run."
 						+ "</html>");
 			} else if (source == preventIntraBondsHelpButton) {
-				DialogUtils.showInfoDialog(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
 						"<html>-bscb <i>boolean</i> "
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
@@ -402,27 +402,27 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		getContentPanel().add(maxMoleculesPerTypeTextField, gbc);
 		
 		// ----------------------------------------------------------------		
-		gridy++;
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(equilibrateTimeCheckBox, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = gridy;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.insets = new Insets(0, 0, 0, 4);
-		getContentPanel().add(equilibrateTimeHelpButton, gbc);
-				
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = gridy;
-		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		getContentPanel().add(equilibrateTimeTextField, gbc);
+//		gridy++;
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		getContentPanel().add(equilibrateTimeCheckBox, gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = gridy;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.insets = new Insets(0, 0, 0, 4);
+//		getContentPanel().add(equilibrateTimeHelpButton, gbc);
+//				
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		getContentPanel().add(equilibrateTimeTextField, gbc);
 
 		// ----------------------------------------------------------------
 		
