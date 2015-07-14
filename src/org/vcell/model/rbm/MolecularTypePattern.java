@@ -227,7 +227,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		}			
 	}
 
-	public static final String typeName = "Molecular Type Pattern";
+	public static final String typeName = "Molecule";
 	@Override
 	public String getDisplayName() {
 		MolecularType mt = getMolecularType();

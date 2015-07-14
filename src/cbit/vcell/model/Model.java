@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
@@ -1617,6 +1618,37 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 							mtp.getComponentPatternList().add(mcp);
 							o.firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXTS, o, o);
 						}
+					}
+				}
+			}
+		}
+		public void adjustObservablesPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName() + ", " + csd.getName());
+			Model model = Model.this;
+			RbmModelContainer rbmmc = model.getRbmModelContainer();
+			List<RbmObservable> ol = rbmmc.getObservableList();
+			if(ol == null || ol.isEmpty()) {
+				return;
+			}
+			for(RbmObservable o : ol) {
+				List<SpeciesPattern> spList = o.getSpeciesPatternList();
+				for(SpeciesPattern sp : spList) {
+			
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() != mc) {
+								continue;
+							}
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+								// do not return, multiple observables may be defined for this molecule, component, etc
+							}
+						}							
 					}
 				}
 			}

@@ -258,7 +258,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 						continue;				// all is well
 					}
 					if(!cspThis.isAny() || (cspThis.getComponentStateDefinition() != null)) {
-						String msg = "Component pattern " + mcNameThis + " is in an invalid State.";
+						String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " is in an invalid State.";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 					}
 				} else {						// we check if mcpThis has any of these states... it should!

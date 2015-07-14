@@ -305,9 +305,9 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		IssueSource parent = issueContext.getContextObject();
 		if(molecularTypePatterns == null) {
-			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is null", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, MolecularTypePattern.typeName + " of " + SpeciesPattern.typeName + " is null.", Issue.SEVERITY_WARNING));
 		} else if (molecularTypePatterns.isEmpty()) {
-			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, "Molecular Type Pattern of Species Pattern is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, MolecularTypePattern.typeName + " of " + SpeciesPattern.typeName + " is empty.", Issue.SEVERITY_WARNING));
 		} else {
 			for (MolecularTypePattern entity : molecularTypePatterns) {
 				entity.gatherIssues(issueContext, issueList);
