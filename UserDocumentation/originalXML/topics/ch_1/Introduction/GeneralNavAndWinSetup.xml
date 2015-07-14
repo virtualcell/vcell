@@ -4,7 +4,7 @@
 
 	
 	<introduction>
-	Virtual Cell 5.4 has a redesigned GUI that incorporates elements required for rule-based modeling, 
+	Virtual Cell 6.0 has a redesigned GUI that incorporates elements required for rule-based modeling, 
 	with improved mechanisms to add <def target = "def_species">species</def>, <def target = "def_reactions"> reactions</def>, and model <def target = "def_structure" >structures</def>.
 	The document view displays the model at a glance, with intuitive tabs and tree structures that allows the user to navigate with ease.
 	</introduction>
