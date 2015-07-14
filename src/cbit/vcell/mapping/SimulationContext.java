@@ -15,7 +15,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
-import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +28,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -87,7 +87,6 @@ import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationOwner.UnitInfo;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
@@ -291,8 +290,9 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private transient BioModel bioModel = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private AnalysisTask[] fieldAnalysisTasks = null;
-	private boolean bStoch;
-	private boolean bRuleBased;
+//	private boolean bStoch;
+//	private boolean bRuleBased;
+	private final Application applicationType;
 	private boolean bConcentration = true;
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
@@ -317,11 +317,34 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	
 	//don't serialize, derivative info generated from info within class
 	private transient UnitInfo unitInfo; 
+	
+	public enum Application {
+		NETWORK_DETERMINISTIC(MathType.Deterministic),
+		NETWORK_STOCHASTIC(MathType.Stochastic),
+		RULE_BASED_STOCHASTIC(MathType.RuleBased);
+		
+		final public MathType mathType;
+
+		private Application(MathType mathType) {
+			this.mathType = mathType;
+		}
+		
+		
+	}
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
 		return microscopeMeasurement;
 	}
 
+private static Application legacyType(boolean arg_isStoch, boolean arg_isRuleBased) {
+	if (arg_isRuleBased) {
+		return Application.RULE_BASED_STOCHASTIC;
+	}
+	if (arg_isStoch) {
+		return Application.NETWORK_STOCHASTIC;
+	}
+	return Application.NETWORK_DETERMINISTIC;
+}
 /**
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
@@ -348,8 +371,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 	this.fieldName = "copied_from_"+simulationContext.getName();
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
 	this.bioModel = simulationContext.getBioModel();
-	this.setIsStoch(arg_isStoch);
-	this.setIsRuleBased(arg_isRuleBased);
+	applicationType = legacyType(arg_isStoch, arg_isRuleBased);
 	//
 	// copy electrical stimuli and ground
 	//
@@ -372,7 +394,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 		}
 	}
 	
-	if (!bStoch) {
+	if (applicationType == Application.NETWORK_DETERMINISTIC) {
 		// copy events
 		BioEvent[] bioEvents = simulationContext.getBioEvents();
 		if (bioEvents != null) {
@@ -391,7 +413,7 @@ public SimulationContext(SimulationContext simulationContext,Geometry newClonedG
 			}
 		}
 	}
-	if(!simulationContext.isStoch() && bStoch && geoContext.getGeometry().getDimension()>0) {
+	if(!simulationContext.isStoch() && applicationType == Application.NETWORK_STOCHASTIC && geoContext.getGeometry().getDimension()>0) {
 		initializeForSpatial();
 	}
 	
@@ -430,6 +452,7 @@ public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans
 
 
 /**
+ * @deprecated use {@link #SimulationContext(Model, Geometry, MathDescription, Version, Application)
  * SimulationContext constructor.
  * New constructor is in effect from sept 28,2006.
  * Creation date: (9/29/2006 9:44:57 AM)
@@ -439,22 +462,38 @@ public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans
  * @param argVersion cbit.sql.Version
  * @exception java.beans.PropertyVetoException The exception description.
  */
+@Deprecated
 public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws java.beans.PropertyVetoException
 {
-	this(argModel,argGeometry,argMathDesc,argVersion,false,false);
+	this(argModel,argGeometry,argMathDesc,argVersion,Application.NETWORK_DETERMINISTIC);
 }
 
 
 /**
- * SimulationContext constructor.
- * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
- * the new application is a stochastic application or not.
+ * @deprecated use {@link #SimulationContext(Model, Geometry, MathDescription, Version, Application)
+ * @param model
+ * @param geometry
+ * @param argMathDesc
+ * @param argVersion
+ * @param bStoch
+ * @param bRuleBased
+ * @throws PropertyVetoException
  */
+@Deprecated
 public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
-
+	this(model,geometry,argMathDesc,argVersion,legacyType(bStoch, bRuleBased));
+}
+/**
+ * Preferred SimulationContext constructor.
+ * @param model
+ * @param geometry
+ * @param argMathDesc null okay
+ * @param argVersion null okay
+ * @param type non-null
+ */
+public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, Application type) throws PropertyVetoException {
+	applicationType = type; 
 	addVetoableChangeListener(this);
-	setIsStoch(bStoch);
-	setIsRuleBased(bRuleBased);
 	geoContext = new GeometryContext(model,geometry,this);
 	geoContext.addPropertyChangeListener(this);
 	refreshCharacteristicSize();
@@ -478,20 +517,9 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
  * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
+@Deprecated
 public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
-
-	addVetoableChangeListener(this);
-	setIsStoch(bStoch);
-	setIsRuleBased(bRuleBased);
-	geoContext = new GeometryContext(model,geometry,this);
-	geoContext.addPropertyChangeListener(this);
-	refreshCharacteristicSize();
-	
-	this.reactionContext = new ReactionContext(model,this);
-	this.membraneContext = new MembraneContext(this);
-	this.version = null;
-	geometry.getGeometrySpec().addPropertyChangeListener(this);
-	this.fieldName = "Application_with_"+geometry.getName();
+	this(model,geometry,null,null,legacyType(bStoch, bRuleBased));
 }
 
 
@@ -517,6 +545,13 @@ public UnitInfo getUnitInfo() throws UnsupportedOperationException {
 protected Object clone() throws CloneNotSupportedException {
 	// TODO Auto-generated method stub
 	return super.clone();
+}
+
+/**
+ * @return non-null applicationType
+ */
+public Application getApplicationType() {
+	return applicationType;
 }
 
 /**
@@ -692,11 +727,7 @@ public boolean compareEqual(Matchable object) {
 	}else{
 		simContext = (SimulationContext)object;
 	}
-	if(simContext.bStoch != bStoch)
-	{
-		return false;
-	}
-	if(simContext.bRuleBased != bRuleBased)
+	if(simContext.applicationType != applicationType)
 	{
 		return false;
 	}
@@ -1347,16 +1378,20 @@ public synchronized boolean hasListeners(String propertyName) {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (9/22/2006 4:07:16 PM)
+ * @deprecated use {@link #getApplicationType()}
  * @return boolean
  */
+@Deprecated
 public boolean isStoch() {
-	return bStoch;
+	return applicationType == Application.NETWORK_STOCHASTIC; 
 }
 
+/**
+ * @deprecated use {@link #getApplicationType()}
+ * @return boolean
+ */
 public boolean isRuleBased(){
-	return bRuleBased;
+	return  applicationType == Application.RULE_BASED_STOCHASTIC;
 }
 
 /**
@@ -1889,13 +1924,13 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 }
 
 
-private void setIsStoch(boolean newIsStoch) {
-	bStoch = newIsStoch;
-}
-
-private void setIsRuleBased(boolean newIsRuleBased) {
-	bRuleBased = newIsRuleBased;
-}
+//private void setIsStoch(boolean newIsStoch) {
+//	bStoch = newIsStoch;
+//}
+//
+//private void setIsRuleBased(boolean newIsRuleBased) {
+//	bRuleBased = newIsRuleBased;
+//}
 
 
 /**
@@ -2139,13 +2174,7 @@ public void convertSpeciesIniCondition(boolean bUseConcentration) throws Mapping
 
 public MathType getMathType()
 {
-	if (bRuleBased){
-		return MathType.RuleBased;
-	}else if (bStoch){
-		return MathType.Stochastic;
-	}else{
-		return MathType.Deterministic;
-	}
+	return applicationType.mathType;
 }
 
 public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
@@ -2292,7 +2321,7 @@ public SimContextTransformer createNewTransformer(){
 
 /**
  * duplicate logic in {@link #createNewTransformer()} ... if {@link NetworkTransformer} 
- * going to be needed, return {@link VersionedLibrary#CYGWIN_DLL_BIONETGEN}
+ * going to be needed, return {@ link VersionedLibrary#CYGWIN_DLL_BIONETGEN}
  */
 @Override
 public VersionedLibrary getRequiredLibrary( ) {
@@ -2519,11 +2548,11 @@ public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation si
 	ReservedSymbol reservedSymbol = getModel().getReservedSymbolByName(overriddenConstantName);
 	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.KMOLE){
 		String msg = "overriding unit factor KMOLE is no longer supported, unit conversion has been completely redesigned";
-		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Severity.ERROR);
 	}
 	if (reservedSymbol!=null && reservedSymbol.getRole() == ReservedSymbolRole.N_PMOLE){
 		String msg = "overriding unit factor N_PMOLE is no longer supported, unit conversion has been completely redesigned";
-		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Issue.SEVERITY_ERROR);
+		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Severity.ERROR);
 	}
 	return null;
 }
