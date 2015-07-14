@@ -3,7 +3,7 @@
 	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
 	    <tocitem target="GeneralOverview" text="Introduction">
     		<tocitem target="General" text="Overview"/>
-      		<tocitem target="RuleBasedOverview" text="Rule-Based Features (VCell 5.4)"/>  		
+      		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
     		<tocitem target="File" text="File Menu">
@@ -38,7 +38,7 @@
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
-    	<tocitem target="RuleBasedOverview2" text="Rule-Based Features in VCell 5.4">
+    	<tocitem target="RuleBasedOverview2" text="Rule-Based Features">
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 
        		<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>		
     		<tocitem target="Molecules2" text="Molecules"/>
@@ -55,14 +55,14 @@
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
     		<tocitem target="Reactions" text="Reactions">
     			<tocitem target="ReactTabView" text="Regular Reactions"/>
-    			<tocitem target="ReactionRules" text="Reaction Rules (VCell 5.4)"/>
+    			<tocitem target="ReactionRules" text="Reaction Rules"/>
     		</tocitem>
     		<tocitem target="PhysStructTabView" text="Structures"/>
     		<tocitem target="Species" text="Species">
     			<tocitem target="RegularSpecies" text="Species"/> 
     			<tocitem target="CompositeSpecies" text="Composite Species"/>    		
     		</tocitem>
-    		<tocitem target="Molecules" text="Molecules (VCell 5.4)"/>
+    		<tocitem target="Molecules" text="Molecules"/>
     		<tocitem target="Observables" text="Observables (VCell5.4)"/>
     		<tocitem target="PathLink" text="Pathway Links"/>
     	</tocitem>
@@ -145,7 +145,7 @@
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
 	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
-	    	<tocitem target="PP_ReactionRules" text="Reaction Rules Properties Pane (VCell 5.4)">
+	    	<tocitem target="PP_ReactionRules" text="Reaction Rules Properties Pane">
     			<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
     			<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
     		</tocitem>
