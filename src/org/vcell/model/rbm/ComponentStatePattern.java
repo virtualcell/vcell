@@ -64,7 +64,7 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	}
 	
 	
-	public static final String typeName = "State Pattern";
+	public static final String typeName = "State";
 	@Override
 	public String getDisplayName() {
 			return "";

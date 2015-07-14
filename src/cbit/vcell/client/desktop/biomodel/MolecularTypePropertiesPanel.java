@@ -198,9 +198,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, molecularComponent));
 		} else if (selectedUserObject instanceof MolecularComponent){
 			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;
-			// TODO: anything to do about ComponentStatePattern ???
 			ComponentStateDefinition componentStateDefinition = molecularComponent.createComponentStateDefinition();
 			molecularComponent.addComponentStateDefinition(componentStateDefinition);
+			bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, molecularComponent, componentStateDefinition);
 			molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, componentStateDefinition));
 		}	
 	}

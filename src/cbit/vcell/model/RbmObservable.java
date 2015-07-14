@@ -319,7 +319,8 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			String mcNameThis = mcpThis.getMolecularComponent().getName();
 
 			if(cspThis == null && mcpThis.getMolecularComponent().getComponentStateDefinitions().size()>0) {
-				String msg = "Component pattern " + mcNameThis + " is in no State while the component has possible States defined.";
+//				String msg = "Component pattern " + mcNameThis + " is in no State while the component has possible States defined.";
+				String msg = "One of the possible States must be chosen for " + MolecularComponentPattern.typeName + " " + mcNameThis + ".";
 				issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 			}
 			
@@ -338,7 +339,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 						continue;				// all is well
 					}
 					if(!cspThis.isAny() || (cspThis.getComponentStateDefinition() != null)) {
-						String msg = "Component pattern " + mcNameThis + " is in an invalid State.";
+						String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " is in an invalid State.";
 						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 					}
 				} else {						// we check if mcpThis has any of these states... it should!
@@ -348,7 +349,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 					} else {
 						String csdNameThis = cspThis.getComponentStateDefinition().getName();
 						if(csdNameThis.isEmpty() || (mcThat.getComponentStateDefinition(csdNameThis) == null) ) {
-							String msg = "Invalid State " + csdNameThis + " for component pattern " + mcNameThis;
+							String msg = "Invalid State " + csdNameThis + " " + MolecularComponentPattern.typeName + " " + mcNameThis;
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 						}
 					}
