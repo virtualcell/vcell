@@ -1,8 +1,10 @@
 package org.vcell.model.rbm;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -17,7 +19,9 @@ import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -89,6 +93,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	private SimulationContext fieldSimulationContext;
 	private IssueManager fieldIssueManager;
 	private SelectionManager fieldSelectionManager;
+	
+	private JDialog viewSpeciesDialog = null;
+	private JDialog viewReactionsDialog = null;
 	
 	private JLabel seedSpeciesLabel;
 	private JLabel reactionRulesLabel;
@@ -240,9 +247,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		titleBottom.setTitleJustification(TitledBorder.LEFT);
 		titleBottom.setTitlePosition(TitledBorder.TOP);
 		
-//		leftPanel.setBorder(titleLeft);
-//		rightPanel.setBorder(titleRight);
-
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -253,15 +257,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 3, 2, 1);
 		add(leftPanel, gbc);
 		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = 0;
-//		gbc.weightx = 1;
-//		gbc.weighty = 1;
-//		gbc.fill = GridBagConstraints.BOTH;
-//		gbc.insets = new Insets(5, 1, 2, 3);	//  top, left, bottom, right 
-//		add(rightPanel, gbc);
-
 		// ------------------------------------------- Populating the left group box ---------------
 		JPanel top = new JPanel();
 		JPanel bottom = new JPanel();
@@ -288,66 +283,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		gbc.insets = new Insets(5, 2, 2, 3);
 		leftPanel.add(bottom, gbc);
 		
-//		top.setLayout(new GridBagLayout());		// --- top
-//		int gridy = 0;
-//		gbc = new GridBagConstraints();
-//		
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.weightx = 1.0;
-//		gbc.anchor = GridBagConstraints.NORTHWEST;
-//		gbc.insets = new Insets(15, 10, 4, 4);
-//		top.add(seedSpeciesLabel, gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = 0;
-//		gbc.weightx = 1.0;
-//		gbc.anchor = GridBagConstraints.NORTHEAST;
-//		gbc.insets = new Insets(15, 4, 4, 10);
-//		top.add(reactionRulesLabel, gbc);
-//		
-//		gridy++;
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		gbc.insets = new Insets(12, 10, 4, 4);
-//		top.add(new JLabel("Max Iteration"), gbc);
-//		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		gbc.insets = new Insets(12, 4, 4, 10);
-//		top.add(maxIterationTextField, gbc);
-//		
-//		gridy++;
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.insets = new Insets(5, 10, 4, 4);
-//		gbc.anchor = GridBagConstraints.LINE_START;
-//		top.add(new JLabel("Max Molecules/Species"), gbc);
-//		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.LINE_END;
-//		gbc.insets = new Insets(5, 4, 4, 10);
-//		top.add(maxMolTextField, gbc);
-
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
 		JScrollPane p = new JScrollPane(networkConstraintsTable);
 		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-//		TitledBorder ttt = BorderFactory.createTitledBorder(loweredBevelBorder, " Network Constraints ");
-//		ttt.setTitleJustification(TitledBorder.LEFT);
-//		ttt.setTitlePosition(TitledBorder.TOP);
-//		p.setBorder(ttt);
 		top.setLayout(new GridBagLayout());		// --- bottom
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -359,24 +297,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 		top.add(p, gbc);
 		
 		// ------------------------------------------- Populating the right group box ------------
-//		top = new JPanel();
-//		bottom = new JPanel();
-//		
-//		rightPanel.setLayout(new GridBagLayout());
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		rightPanel.add(top, gbc);
-//		
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 1;
-//		gbc.weightx = 1;
-//		gbc.weighty = 1;
-//		gbc.fill = GridBagConstraints.BOTH;
-//		rightPanel.add(bottom, gbc);
-		
 		bottom.setLayout(new GridBagLayout());		// --- top
 		int gridy = 0;
 		gbc = new GridBagConstraints();
@@ -572,9 +492,16 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	
 	private void runBioNetGen() {
-		
+		// TODO: do not delete the commented code below
+		// uncomment the next 6 lines to keep the data in the dialogs synchronized with the most recent reaction network
+//		if(viewSpeciesDialog != null) {
+//		viewSpeciesDialog.dispose();
+//	}
+//		if(viewReactionsDialog != null) {
+//		viewReactionsDialog.dispose();
+//	}
+
 		activateConsole();
-		
 //		currentIterationSpecies = 0;
 //		previousIterationSpecies = 0;
 		synchronized (this) {
@@ -619,20 +546,36 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			}
 		});
 	}
-
+	
 	private void viewGeneratedSpecies() {
 		System.out.println("viewGeneratedSpecies button pressed");
 		ViewGeneratedSpeciesPanel panel = new ViewGeneratedSpeciesPanel(this);
 		panel.setSpecies(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies());
 		panel.setPreferredSize(new Dimension(800,550));
-		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Species");
+
+//		if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
+//			viewSpeciesDialog.dispose();
+//		}
+		JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+		viewSpeciesDialog = pane.createDialog(this, "View Generated Species");
+		viewSpeciesDialog.setModal(false);
+		viewSpeciesDialog.setResizable(true);
+		viewSpeciesDialog.setVisible(true);
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
 		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel(this);
 		panel.setReactions(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions());
 		panel.setPreferredSize(new Dimension(800,550));
-		DialogUtils.showComponentCloseDialog(this, panel, "View Generated Reactions");
+		
+//		if(viewReactionsDialog != null) {
+//			viewReactionsDialog.dispose();
+//		}
+		JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
+		viewReactionsDialog = pane.createDialog(this, "View Generated Reactions");
+		viewReactionsDialog.setModal(false);
+		viewReactionsDialog.setResizable(true);
+		viewReactionsDialog.setVisible(true);
 	}
 	private void createModel() {
 
@@ -644,7 +587,6 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 	}
 	@Override
 	public boolean isInterrupted() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	@Override		// for testing/debugging purposes
