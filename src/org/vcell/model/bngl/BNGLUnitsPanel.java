@@ -180,7 +180,7 @@ public class BNGLUnitsPanel extends JPanel {
 		con.setSelected(true);		// select the "Concentration" button
 // --------------------------------------------------------------------- lower panels ------------------
 		lowerConPanel.setLayout(new GridBagLayout());
-		lowerConPanel.setPreferredSize(new Dimension(195,100));
+//		lowerConPanel.setPreferredSize(new Dimension(195,100));
 		
 		gridy = 0;
 		gbc = new GridBagConstraints();
@@ -217,7 +217,7 @@ public class BNGLUnitsPanel extends JPanel {
 		lowerConPanel.add(cTimeUnitsCombo, gbc);
 
 		lowerMolPanel.setLayout(new GridBagLayout());
-		lowerMolPanel.setPreferredSize(new Dimension(195,100));
+//		lowerMolPanel.setPreferredSize(new Dimension(195,100));
 		
 		gridy = 0;
 		gbc = new GridBagConstraints();
@@ -292,7 +292,7 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		add(lowerMolPanel, gbc);
 		
-		Dimension size = new Dimension(260,150);		// 195
+		Dimension size = new Dimension(300,150);
 		setPreferredSize(size);
 		setMaximumSize(size);
 		
