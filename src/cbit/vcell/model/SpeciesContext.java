@@ -406,17 +406,17 @@ public void checkComponentStateConsistency(IssueContext issueContext, List<Issue
 				}
 				if(!cspThis.isAny() || (cspThis.getComponentStateDefinition() != null)) {
 					String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " is in an invalid State.";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 				}
 			} else {						// we check if mcpThis has any of these states... it should!
 				if((cspThis == null) || cspThis.isAny() || (cspThis.getComponentStateDefinition() == null)) {
 					String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " must be in an explicit State.";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 				} else {
 					String csdNameThis = cspThis.getComponentStateDefinition().getName();
 					if(csdNameThis.isEmpty() || (mcThat.getComponentStateDefinition(csdNameThis) == null) ) {
 						String msg = "Invalid State " + csdNameThis + " for " + MolecularComponentPattern.typeName + " " + mcNameThis;
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+						issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
 					}
 				}
 			}
