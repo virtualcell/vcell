@@ -350,9 +350,9 @@ private static Application legacyType(boolean arg_isStoch, boolean arg_isRuleBas
  * Construct a new SimulationContext from an old SimulationContext.
  * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
  */
-public SimulationContext(SimulationContext oldSimulationContext,Geometry newClonedGeometry, boolean arg_isStoch, boolean arg_isRuleBased) throws PropertyVetoException {
+public SimulationContext(SimulationContext oldSimulationContext,Geometry newClonedGeometry, Application appType) throws PropertyVetoException {
 	
-	if(arg_isStoch)
+	if(appType == Application.NETWORK_STOCHASTIC) 
 	{
 		String msg = oldSimulationContext.getModel().isValidForStochApp();
 		if(!msg.equals(""))
@@ -372,7 +372,7 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 	this.fieldName = "copied_from_"+oldSimulationContext.getName();
 	this.fieldDescription = "(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription();
 	this.bioModel = oldSimulationContext.getBioModel();
-	applicationType = legacyType(arg_isStoch, arg_isRuleBased);
+	applicationType = appType; 
 	//
 	// copy electrical stimuli and ground
 	//
@@ -440,35 +440,18 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 
 /**
  * SimulationContext constructor.
+ * @deprecated use {@link #SimulationContext(Model, Geometry, MathDescription, Version, Application)
  * Please see new constructor which is in effect from Sept 28, 2006.
  * Creation date: (9/29/2006 9:53:45 AM)
  * @param model cbit.vcell.model.Model
  * @param geometry cbit.vcell.geometry.Geometry
  * @exception java.beans.PropertyVetoException The exception description.
  */
+@Deprecated
 public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans.PropertyVetoException
 {
-	this(argModel,argGeometry,false,false);
+	this(argModel,argGeometry,null,null,Application.NETWORK_DETERMINISTIC);
 }
-
-
-/**
- * @deprecated use {@link #SimulationContext(Model, Geometry, MathDescription, Version, Application)
- * SimulationContext constructor.
- * New constructor is in effect from sept 28,2006.
- * Creation date: (9/29/2006 9:44:57 AM)
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- * @param argMathDesc cbit.vcell.math.MathDescription
- * @param argVersion cbit.sql.Version
- * @exception java.beans.PropertyVetoException The exception description.
- */
-@Deprecated
-public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws java.beans.PropertyVetoException
-{
-	this(argModel,argGeometry,argMathDesc,argVersion,Application.NETWORK_DETERMINISTIC);
-}
-
 
 /**
  * @deprecated use {@link #SimulationContext(Model, Geometry, MathDescription, Version, Application)
@@ -518,10 +501,10 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
  * This constructor differs with the previous one with one more boolean input parameter, which specifies whether
  * the new application is a stochastic application or not.
  */
-@Deprecated
-public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
-	this(model,geometry,null,null,legacyType(bStoch, bRuleBased));
-}
+//@Deprecated
+//public SimulationContext(Model model, Geometry geometry, boolean bStoch, boolean bRuleBased) throws PropertyVetoException {
+//	this(model,geometry,null,null,legacyType(bStoch, bRuleBased));
+//}
 
 
 

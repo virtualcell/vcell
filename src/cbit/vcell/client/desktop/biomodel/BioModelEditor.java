@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Objects;
 
+import javax.help.UnsupportedOperationException;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
@@ -37,6 +39,7 @@ import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.constants.ApplicationActionCommand;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorPathwayCommonsPanel.PathwayData;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -53,6 +56,7 @@ import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -221,57 +225,28 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		}
 		break;
 	case add_new_app_deterministic:
+		newApplication(Application.NETWORK_DETERMINISTIC);
+		break;
 	case add_new_app_stochastic:
+		newApplication(Application.NETWORK_STOCHASTIC);
+		break;
 	case add_new_app_rulebased: {
-		AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
-				selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
-			}
-		};
-		boolean bRuleBased = false;
-		if(action == DocumentEditorPopupMenuAction.add_new_app_rulebased) {
-			bRuleBased = true;
-		}
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel, action == DocumentEditorPopupMenuAction.add_new_app_stochastic, bRuleBased);
-		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
-		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
-		tasks[newApplicationTasks.length] = task;
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);
+		newApplication(Application.RULE_BASED_STOCHASTIC);
 		break;
 	}
 	case copy_app:
-		if (actionCommand.equals(GuiConstants.ACTIONCMD_COPY_APPLICATION)) {
+		ApplicationActionCommand acc = ApplicationActionCommand.lookup(actionCommand);
+		switch (acc.actionType()) {
+		case COPY_AS_IS:
 			copyApplication();
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(false, true, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(false, false, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION)) {
-			boolean bRuleBased = true;
-			copyApplication(false, false, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(false, false, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(false, true, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_RULEBASED_APPLICATION)) {
-			boolean bRuleBased = true;
-			copyApplication(false, true, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(true, false, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION)) {
-			boolean bRuleBased = false;
-			copyApplication(true, true, bRuleBased);
-		} else if (actionCommand.equals(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION)) {
-			boolean bRuleBased = true;
-			copyApplication(true, true, bRuleBased);
+			break;
+		case COPY_CHANGE:
+			boolean bothSpatial = acc.isSourceSpatial() && acc.isDestSpatial();
+			copyApplication(bothSpatial,acc.getAppType());
+			break;
+		case CREATE:
+			//not used in this menu
+			throw new UnsupportedOperationException();
 		}
 		break;
 	case app_new_biomodel:
@@ -328,6 +303,26 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 	}
 }
 
+/**
+ * add new Application to BioModel
+ * @param appType type to add (non-null)
+ */
+private void newApplication(SimulationContext.Application appType) {
+	Objects.requireNonNull(appType);
+	AsynchClientTask task = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			SimulationContext newSimulationContext = (SimulationContext)hashTable.get("newSimulationContext");
+			selectionManager.setSelectedObjects(new Object[]{newSimulationContext});
+		}
+	};
+	AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel, appType);
+	AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
+	System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
+	tasks[newApplicationTasks.length] = task;
+	ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks);	
+}
 private void deleteSimulationcontexts(SimulationContext[] deleteTheseSimcontexts) throws PropertyVetoException{
 	for (int i = 0; i < deleteTheseSimcontexts.length; i++) {
 		Simulation[] simulations = deleteTheseSimcontexts[i].getSimulations();
@@ -345,7 +340,7 @@ private void copyApplication() {
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}
-	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.isStoch(), simulationContext.isRuleBased());
+	copyApplication(simulationContext.getGeometry().getDimension() > 0, simulationContext.getApplicationType());
 }
 
 private void createNewBiomodelFromApp(){
@@ -381,13 +376,13 @@ private void createNewBiomodelFromApp(){
 		PopupGenerator.showErrorDialog(this, "Error creating new BioModel from Application '"+simulationContext.getName()+"'\n"+e.getMessage());
 	}
 }
-private void copyApplication(final boolean bSpatial, final boolean bStochastic, final boolean bRuleBased) {		
+private void copyApplication(final boolean bSpatial, final SimulationContext.Application appType) {		
 	final SimulationContext simulationContext = getSelectedSimulationContext();
 	if (simulationContext == null) {
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}
-	if (bStochastic) {
+	if (appType == SimulationContext.Application.NETWORK_STOCHASTIC) {
 		//check validity if copy to stochastic application
 		String message = bioModel.getModel().isValidForStochApp();
 		if (!message.equals("")) {
@@ -395,7 +390,7 @@ private void copyApplication(final boolean bSpatial, final boolean bStochastic, 
 			return;
 		}
 	}
-	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, bStochastic, bRuleBased);
+	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, appType);
 	AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
 	System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
 	allTasks[allTasks.length - 1] = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {			
