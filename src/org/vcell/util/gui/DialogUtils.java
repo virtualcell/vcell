@@ -928,7 +928,6 @@ public static void showInfoDialog(final Component requester, final String title,
 	new SwingDispatcherSync (){
 		public Object runSwing() throws Exception{
 			final JDialog dialog = prepareInfoDialog(requester, title, message);
-			findScreen(dialog);
 			try{
 				DialogUtils.showModalJDialogOnTop(dialog, requester);
 			}finally{
