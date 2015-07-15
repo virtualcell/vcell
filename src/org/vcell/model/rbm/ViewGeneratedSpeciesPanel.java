@@ -259,7 +259,7 @@ public void setSpecies(BNGSpecies[] newValue) {
 		return;
 	}
 	speciess = newValue;
-	tableModel.setSpecies(newValue);
+	tableModel.setData(owner.getSimulationContext().getModel(), newValue);
 }
 
 @Override
