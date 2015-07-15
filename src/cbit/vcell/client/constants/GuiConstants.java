@@ -18,6 +18,8 @@ import javax.swing.border.LineBorder;
 
 import org.vcell.model.rbm.MolecularType;
 
+import cbit.vcell.mapping.SimulationContext.Application;
+
 public class GuiConstants {
 	
 	public final static String PARAMETER_ESTIMATION_TAB_PARAMETERS = "Parameters";
@@ -57,18 +59,24 @@ public class GuiConstants {
 	public static final String ACTIONCMD_OPEN_APPLICATION_MATH = "OpenApplicationMath";
 	public static final String ACTIONCMD_OPEN_APPLICATION_DETSTOCH = "OpenApplicationDetStoch";
 
-	public static final String ACTIONCMD_CREATE_STOCHASTIC_APPLICATION = "Create Stochastic Application";
-	public static final String ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION = "Create Non-stochastic Application";
-	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = "Create Network-Free Application";
+	public static final String ACTIONCMD_CREATE_STOCHASTIC_APPLICATION = 
+			new ApplicationActionCommand.Create("Create Stochastic Application",Application.NETWORK_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION = 
+			new ApplicationActionCommand.Create("Create Non-stochastic Application",Application.NETWORK_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = 
+			new ApplicationActionCommand.Create("Create Network-Free Application",Application.RULE_BASED_STOCHASTIC).getLabel();
 	public static final String ACTIONCMD_EXPORT = "Export";
 	
 	public static final String ACTIONCMD_OPEN_APPLICATION = "Open";
-	public static final String ACTIONCMD_COPY_APPLICATION = "Copy";
+	public static final String ACTIONCMD_COPY_APPLICATION = new ApplicationActionCommand.CopyAsIs("Copy").getLabel();
 	public static final String ACTIONCMD_RENAME_APPLICATION = "Rename";
 	public static final String ACTIONCMD_DELETE_APPLICATION = "Delete";
-	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION = "Non-Spatial Copy To Deterministic Application";
-	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION = "Non-Spatial Copy To Network-Free Application";
-	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION = "Non-Spatial Copy To Stochastic Application";
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_DETERMINISTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Non-Spatial Copy To Deterministic Application",false,false,Application.NETWORK_DETERMINISTIC).getLabel();
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_RULEBASED_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Non-Spatial Copy To Network-Free Application",false,false,Application.RULE_BASED_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_NON_SPATIAL_COPY_TO_STOCHASTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Non-Spatial Copy To Stochastic Application",false,false,Application.NETWORK_STOCHASTIC).getLabel();
 	
 	public static final String MENU_TEXT_APP_NEWBIOMODEL = "New BioModel From App";
 	public static final String MENU_TEXT_APP_COPY = "Copy";
@@ -79,13 +87,19 @@ public class GuiConstants {
 	public static final String MENU_TEXT_RULEBASED_APPLICATION = "Network-Free";
 	public static final String MENU_TEXT_STOCHASTIC_APPLICATION = "Stochastic";
 
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION = "Spatial Copy To NonSpatial Deterministic Application";
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION = "Spatial Copy To NonSpatial Stochastic Application";
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_RULEBASED_APPLICATION = "Spatial Copy To NonSpatial Rulebased Application";
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_DETERMINISTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To NonSpatial Deterministic Application",true,false,Application.NETWORK_DETERMINISTIC).getLabel();
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_STOCHASTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To NonSpatial Stochastic Application",true,false,Application.NETWORK_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_NON_SPATIAL_RULEBASED_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To NonSpatial Rulebased Application",true,false,Application.RULE_BASED_STOCHASTIC).getLabel();
 	
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION = "Spatial Copy To Spatial Deterministic Application";
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION = "Spatial Copy To Spatial Stochastic Application";
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION = "Spatial Copy To Spatial Rulebased Application";
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_DETERMINISTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Deterministic Application",true,true,Application.NETWORK_DETERMINISTIC).getLabel();
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Stochastic Application",true,true,Application.NETWORK_STOCHASTIC).getLabel();
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION = 
+			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Rulebased Application",true,true,Application.RULE_BASED_STOCHASTIC).getLabel();
 	
 	public static final String ACTIONCMD_CHANGE_GEOMETRY = "Change Geometry...";
 //	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
