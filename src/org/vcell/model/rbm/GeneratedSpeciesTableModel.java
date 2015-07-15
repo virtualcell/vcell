@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.vcell.pathway.BioPaxObject;
@@ -24,6 +25,8 @@ import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -31,27 +34,32 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpeciesTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 2;
+	public static final int colCount = 3;
 	public static final int iColIndex = 0;
-	public static final int iColExpression = 1;
+	public static final int iColOriginalName = 1;
+	public static final int iColExpression = 2;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 	protected String searchText = null;
 
 	private BNGSpecies[] speciess;
+	private Model model;
+	
 	private ArrayList<GeneratedSpeciesTableRow> allGeneratedSpeciesList;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedSpeciesTableModel(EditorScrollTable table) {
-		super(table, new String[] {"Index", "Expression"});
+		super(table, new String[] {"Index", "Name", "Expression"});
 		setMaxRowsPerPage(1000);
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
 		switch (iCol){		
 			case iColIndex:{
+				return String.class;
+			}case iColOriginalName:{
 				return String.class;
 			}case iColExpression:{
 				return String.class;
@@ -65,6 +73,9 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		switch(iCol) {
 			case iColIndex:{
 				return speciesTableRow.getIndex();
+			}
+			case iColOriginalName:{
+				return speciesTableRow.getOriginalName();
 			}
 			case iColExpression:{
 				return speciesTableRow.getExpression();
@@ -114,10 +125,41 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	private void refreshData() {
 		allGeneratedSpeciesList = new ArrayList<GeneratedSpeciesTableRow>();
 		
+		LinkedHashMap<String, String> scMap = new LinkedHashMap<String, String>();
 		for(int i = 0; i<speciess.length; i++) {
 			BNGSpecies species = speciess[i];
-			GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, species.toStringShort());
-			allGeneratedSpeciesList.add(newRow);
+			String key = species.getConcentration().infix();
+			String originalName = "";
+			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
+				originalName = key.substring(key.lastIndexOf("__")+2);
+				System.out.println(originalName);
+				scMap.put(originalName, originalName);
+				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, originalName, species.toStringShort());
+				allGeneratedSpeciesList.add(newRow);
+			}
+		}
+				
+		for(int i = 0; i<speciess.length; i++) {
+			BNGSpecies species = speciess[i];
+			String key = species.getConcentration().infix();
+			String originalName = "";
+			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
+				continue;					// we already dealt with these
+			} else {
+				int count = 0;				// generate unique name for the species
+				String speciesName = null;
+				String nameRoot = "s";
+				while (true) {
+					speciesName = nameRoot + count;	
+					if (Model.isNameUnused(speciesName, model) && !scMap.containsKey(speciesName)) {
+						break;
+					}	
+					count++;
+				}
+				scMap.put(speciesName, speciesName);
+				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, speciesName, species.toStringShort());
+				allGeneratedSpeciesList.add(newRow);
+			}
 		}
 		// apply text search function for particular columns
 		ArrayList<GeneratedSpeciesTableRow> speciesObjectList = new ArrayList<GeneratedSpeciesTableRow>();
@@ -135,8 +177,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		GuiUtils.flexResizeTableColumns(ownerTable);
 	}
 	
-	private GeneratedSpeciesTableRow createTableRow(BNGSpecies species, int index, String interactionLabel) {
-		GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(species);
+	private GeneratedSpeciesTableRow createTableRow(BNGSpecies species, int index, String originalName, String interactionLabel) {
+		GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(originalName, species);
 		
 		row.setIndex(index+" ");
 		row.setExpression(interactionLabel);
@@ -144,11 +186,12 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	}
 	
 	
-	public void setSpecies(BNGSpecies[] newValue) {
-		if (speciess == newValue) {
+	public void setData(Model model, BNGSpecies[] speciess) {
+		if (this.model == model && this.speciess == speciess) {
 			return;
 		}
-		speciess = newValue;
+		this.model = model;
+		this.speciess = speciess;
 		refreshData();
 	}
 	public ArrayList<GeneratedSpeciesTableRow> getTableRows() {
@@ -164,4 +207,5 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public SymbolTable getSymbolTable(int row, int column) {
 		return null;
 	}
+
 }

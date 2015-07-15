@@ -4,14 +4,22 @@ import cbit.vcell.bionetgen.BNGSpecies;
 
 public class GeneratedSpeciesTableRow {
 
+	private String originalName;
 	private BNGSpecies speciesObject;
 	private String index;
 	private String expression;
-	
-	public GeneratedSpeciesTableRow(BNGSpecies speciesObject) {
+
+	public GeneratedSpeciesTableRow(String originalName, BNGSpecies speciesObject) {
+		this.setOriginalName(originalName);
 		this.speciesObject = speciesObject;
 	}
 	
+	public String getOriginalName() {
+		return originalName;
+	}
+	public void setOriginalName(String originalName) {
+		this.originalName = originalName;
+	}
 	public BNGSpecies getSpeciesObject() {
 		return speciesObject;
 	}

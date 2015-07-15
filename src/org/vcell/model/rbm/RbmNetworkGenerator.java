@@ -101,6 +101,7 @@ public class RbmNetworkGenerator {
 			Expression initialConcentration = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
 			
 			String connectionKey = uniqueIdRoot + i;		// fake initial values for the seed species, we need to present them to bngl as parameters
+			connectionKey += "__" + sc.getName();			// we add at the end the original name of the species, to facilitate matching
 			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
 			speciesEquivalenceMap.put(connectionKey, p);
 			
