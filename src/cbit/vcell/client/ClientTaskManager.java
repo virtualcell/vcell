@@ -29,6 +29,7 @@ import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -46,8 +47,8 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class ClientTaskManager {
 	
-	public static AsynchClientTask[] newApplication(JComponent tempRequester, final BioModel bioModel, final boolean isStoch, final boolean isRuleBased) {		
-		if (isStoch) {
+	public static AsynchClientTask[] newApplication(JComponent tempRequester, final BioModel bioModel, final SimulationContext.Application simContextType) {		
+		if (simContextType ==SimulationContext.Application.NETWORK_STOCHASTIC) {
 			SmoldynSurfaceDiffusionWarning.acknowledgeWarning(tempRequester);
 		}
 		
@@ -56,7 +57,7 @@ public class ClientTaskManager {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				String newApplicationName = bioModel.getFreeSimulationContextName();
-				SimulationContext newSimulationContext = bioModel.addNewSimulationContext(newApplicationName, isStoch, isRuleBased);
+				SimulationContext newSimulationContext = bioModel.addNewSimulationContext(newApplicationName, simContextType);
 				hashTable.put("newSimulationContext", newSimulationContext);
 			}
 		};
@@ -71,7 +72,7 @@ public class ClientTaskManager {
 		return new AsynchClientTask[] {task0, task1};
 	}
 
-	public static AsynchClientTask[] copyApplication(final JComponent requester, final BioModel bioModel, final SimulationContext simulationContext, final boolean bSpatial, final boolean bStochastic, final boolean bRuleBased) {	
+	public static AsynchClientTask[] copyApplication(final JComponent requester, final BioModel bioModel, final SimulationContext simulationContext, final boolean bSpatial, final SimulationContext.Application appType) {	
 		//get valid application name
 		String newApplicationName = null;
 		String baseName = "Copy of " + simulationContext.getName();
@@ -93,7 +94,7 @@ public class ClientTaskManager {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, bStochastic, bRuleBased);
+				SimulationContext newSimulationContext = ClientTaskManager.copySimulationContext(simulationContext, newName, bSpatial, appType);
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
 					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
@@ -132,13 +133,15 @@ public class ClientTaskManager {
 		return new AsynchClientTask[] { task1, task2};			
 	}
 
-	public static SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, boolean bStoch, boolean bRuleBased) throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
+	public static 
+	SimulationContext copySimulationContext(SimulationContext srcSimContext, String newSimulationContextName, boolean bSpatial, SimulationContext.Application simContextType) 
+				throws java.beans.PropertyVetoException, ExpressionException, MappingException, GeometryException, ImageException {
 		Geometry newClonedGeometry = new Geometry(srcSimContext.getGeometry());
 		newClonedGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
 		//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
-		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, bStoch, bRuleBased);
-		if(srcSimContext.isStoch() && !srcSimContext.isUsingConcentration() && !bStoch)
+		SimulationContext destSimContext = new SimulationContext(srcSimContext,newClonedGeometry, simContextType);
+		if(srcSimContext.getApplicationType() == Application.NETWORK_STOCHASTIC && !srcSimContext.isUsingConcentration() && simContextType == Application.NETWORK_DETERMINISTIC)  
 		{
 			try {
 				destSimContext.convertSpeciesIniCondition(true);

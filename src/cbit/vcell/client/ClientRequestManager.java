@@ -2933,7 +2933,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 					boolean bStochastic = true;
 					boolean bRuleBased = true;
-					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("temp NFSim app", bStochastic, bRuleBased);
+					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("temp NFSim app", SimulationContext.Application.RULE_BASED_STOCHASTIC);
 					List<SimulationContext> appList = new ArrayList<SimulationContext>();
 					appList.add(ruleBasedSimContext);
 
@@ -3038,8 +3038,8 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					BngUnitSystem bngUnitSystem = (BngUnitSystem)hashTable.get(BNG_UNIT_SYSTEM);
 					BioModel bioModel = createDefaultBioModelDocument(bngUnitSystem);
 
-					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("NFSim app", true, true);
-					SimulationContext odeSimContext = bioModel.addNewSimulationContext("BioNetGen app", false, false);
+					SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("NFSim app", SimulationContext.Application.RULE_BASED_STOCHASTIC); 
+					SimulationContext odeSimContext = bioModel.addNewSimulationContext("BioNetGen app", SimulationContext.Application.NETWORK_DETERMINISTIC);
 					List<SimulationContext> appList = new ArrayList<SimulationContext>();
 					appList.add(ruleBasedSimContext);
 					appList.add(odeSimContext);

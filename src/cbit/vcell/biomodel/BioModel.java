@@ -108,8 +108,8 @@ Identifiable, IdentifiableProvider, IssueSource
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext addNewSimulationContext(String newSimulationContextName, boolean bStoch, boolean bRuleBased) throws java.beans.PropertyVetoException {
-	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), bStoch, bRuleBased);
+public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException {
+	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), null,null,app);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;
