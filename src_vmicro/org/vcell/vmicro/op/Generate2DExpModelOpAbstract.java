@@ -19,7 +19,6 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -139,7 +138,7 @@ public abstract class Generate2DExpModelOpAbstract {
 		}
 				
 		//create simulation context		
-		SimulationContext simContext = bioModel.addNewSimulationContext("simContext", false, false);
+		SimulationContext simContext = bioModel.addNewSimulationContext("simContext", SimulationContext.Application.NETWORK_DETERMINISTIC);
 		simContext.setGeometry(geometry);
 		
 		FeatureMapping cytosolFeatureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(cytosol);
@@ -147,7 +146,7 @@ public abstract class Generate2DExpModelOpAbstract {
 		
 		SubVolume cytSubVolume = geometry.getGeometrySpec().getSubVolume(CYTOSOL_NAME);
 		SubVolume exSubVolume = geometry.getGeometrySpec().getSubVolume(EXTRACELLULAR_NAME);
-		SurfaceClass pmSurfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(exSubVolume, cytSubVolume);
+		//unused? SurfaceClass pmSurfaceClass = geometry.getGeometrySurfaceDescription().getSurfaceClass(exSubVolume, cytSubVolume);
 		
 		cytosolFeatureMapping.setGeometryClass(cytSubVolume);
 		extracellularFeatureMapping.setGeometryClass(exSubVolume);
