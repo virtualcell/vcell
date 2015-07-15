@@ -107,14 +107,15 @@ public abstract class VCDocumentDecorator {
 			else {
 				sfList.add(SolverFeature.Feature_NonSpatial);
 			}
-			if (!sc.isStoch()) {
-				if(!sc.isRuleBased()) {
-					sfList.add(SolverFeature.Feature_Deterministic);
-					return sfList;
-				} else {
-					sfList.add(SolverFeature.Feature_Rulebased);
-					return sfList;
-				}
+			switch (sc.getApplicationType()) {
+			case NETWORK_DETERMINISTIC:
+				sfList.add(SolverFeature.Feature_Deterministic);
+				return sfList;
+			case RULE_BASED_STOCHASTIC: 
+				sfList.add(SolverFeature.Feature_Rulebased);
+				return sfList;
+			case NETWORK_STOCHASTIC: 
+				//more analysis to determine whether hybrid or (pure) stochastic
 			}
 			//stochastic could also be hybrid 
 			boolean continuous = false;
