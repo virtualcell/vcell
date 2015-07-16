@@ -60,6 +60,7 @@ import javax.swing.ListSelectionModel;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -69,6 +70,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -848,7 +850,11 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
 	}
-	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Applicaiton", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	if (simContext.isStoch()) {
+		SmoldynSurfaceDiffusionWarning.acknowledgeWarning(requester.getComponent());
+	}
+
+	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathModel newMathModel = new MathModel(null);
@@ -1729,7 +1735,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 						}
 					}
 				};
-				AsynchClientTask task2 = new AsynchClientTask("create math model from biomodel application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				AsynchClientTask task2 = new AsynchClientTask("find sim contexts in biomodel application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {		
 						// spatial or non-spatial
@@ -1753,8 +1759,9 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 							for (int i = 0; i < simContexts.length; i++){
 								simContextNames[i] = simContexts[i].getName();
 							}
+							Component component = requester.getComponent(); 
 							// Get the simContext names, so that user can choose which simContext math to import
-							String simContextChoice = (String)PopupGenerator.showListDialog(getMdiManager().getDatabaseWindowManager().getComponent(), simContextNames, "Please select Application");
+							String simContextChoice = (String)PopupGenerator.showListDialog(component, simContextNames, "Please select Application");
 							if (simContextChoice == null) {
 								throw UserCancelException.CANCEL_DB_SELECTION;
 							}
@@ -1765,6 +1772,11 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 									break;
 								}
 							}
+							VCAssert.assertValid(chosenSimContext);
+							if (SmoldynSurfaceDiffusionWarning.isSmoldynOrHybrid(chosenSimContext)) {
+								SmoldynSurfaceDiffusionWarning.acknowledgeWarning(component);
+							}
+							
 							BioModelInfo bioModelInfo = (BioModelInfo)hashTable.get("bioModelInfo");
 							//Get corresponding mathDesc to create new mathModel and return.
 							String newName = bioModelInfo.getVersion().getName()+"_"+chosenSimContext.getName();

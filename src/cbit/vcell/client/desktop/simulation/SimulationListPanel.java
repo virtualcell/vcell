@@ -55,7 +55,6 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.util.VCellErrorMessages;
 /**
  * Insert the type's description here.
@@ -636,7 +635,7 @@ private void newSimulation() {
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			int newSimIndex = getSimulationWorkspace().newSimulation();
+			int newSimIndex = getSimulationWorkspace().newSimulation(SimulationListPanel.this);
 			getScrollPaneTable().getSelectionModel().setSelectionInterval(newSimIndex, newSimIndex);
 			getScrollPaneTable().scrollRectToVisible(getScrollPaneTable().getCellRect(newSimIndex, 0, true));
 		}
