@@ -506,7 +506,7 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("MovieSettingsPanel");
-		setPreferredSize(new Dimension(215, 310));
+		setPreferredSize(new Dimension(215, 345));
 		setLayout(new java.awt.GridBagLayout());
 		setSize(188, 206);
 
