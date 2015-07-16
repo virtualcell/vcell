@@ -1999,6 +1999,9 @@ private void writeDiffusions() throws ExpressionBindingException,
 			try {
 				double diffConstant = subsituteFlattenToConstant(pp.getDiffusion());
 				printWriter.println(SmoldynKeyword.difc + " " + variableName + " " + diffConstant);
+				if (diffConstant != 0) {
+					tempDiffusingParticles.add(pp);
+				}
 			} catch (NotAConstantException ex) {
 				throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
 			}
