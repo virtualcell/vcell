@@ -96,7 +96,19 @@ public abstract class HtcProxy {
 		}
 	}
 	
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	//public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+	//temporary code for database switching test
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX; 
+	static {
+		//create alt prefix so other sites don't detect, update, or kill
+		String altPrefix = System.getProperty("vcell.simJobPrefix");
+		if (altPrefix == null) {
+			HTC_SIMULATION_JOB_NAME_PREFIX = "S_";
+		}
+		else {
+			HTC_SIMULATION_JOB_NAME_PREFIX = altPrefix; 
+		}
+	}
 	protected final CommandService commandService;
 	protected final String htcUser;
 
