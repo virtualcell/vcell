@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,6 +19,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -25,6 +29,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.VCellIcons;
@@ -101,10 +106,28 @@ public class IssuePanel extends DocumentEditorSubPanel {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					int row = issueTable.getSelectedRow();
-					if (row >= 0) {
-						Issue issue = issueTableModel.getValueAt(row);
+				final int row = issueTable.getSelectedRow();
+				final int column = issueTable.getSelectedColumn();
+				if (row >= 0) {
+					Issue issue = issueTableModel.getValueAt(row);
+					switch (e.getClickCount()) {
+					case 1:
+						if (column == IssueTableModel.COLUMN_URL) {
+							String url = issue.getHyperlink();
+							if (url != null) {
+								try {
+									URI uri = new URI(url);
+									Desktop.getDesktop().browse(uri);
+								} catch (URISyntaxException | IOException e1) {
+									BeanUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
+								}
+							}
+						}
+						break;
+					case 2:
+						if (column == IssueTableModel.COLUMN_URL) {
+							return;
+						}
 						Object object = issue.getSource();
 						if (object instanceof Parameter) {
 							followHyperlink(new ActiveView(null, DocumentEditorTreeFolderClass.BIOMODEL_PARAMETERS_NODE, ActiveViewID.parameters_functions),new Object[] {object});
@@ -170,6 +193,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 								}
 							}
 						}
+						break;
 					}
 				}
 			}			

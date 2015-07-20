@@ -11,6 +11,7 @@
 package org.vcell.util;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.sbml.libsbml.SBase;
 
@@ -60,6 +61,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	private Object source = null;
 	private IssueContext issueContext = null;
 	private int severity = -1;
+	private String hyperlink;
 
 	public static final int SEVERITY_INFO = 0;
 	public static final int SEVERITY_TIP = 1;
@@ -152,11 +154,16 @@ public class Issue implements java.io.Serializable, Matchable {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
 	public Issue(ReactionStep argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
-		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
+		this((Object)argSource, issueContext, argCategory, argMessage, null, argSeverity);
+		
+	}
+	public Issue(ReactionStep argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String tooltip,int argSeverity) {
+		this((Object)argSource, issueContext, argCategory, argMessage, tooltip, argSeverity);
 	}
 	public Issue(Structure argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
+	
 	
 	
 	//
@@ -282,8 +289,15 @@ private Issue(Object argSource, IssueContext issueContext, IssueCategory argCate
 	this.tooltip = argTooltip;
 	this.category = argCategory;
 	this.severity = argSeverity;
+	this.hyperlink = null;
 }
 
+/**
+ * @return hyperlink for more information may be null
+ */
+public String getHyperlink() {
+	return hyperlink;
+}
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
@@ -452,5 +466,12 @@ public static String getHtmlIssueMessage(List<Issue> issueList) {
 	}
 	sb.append("</html>");
 	return sb.toString();
+}
+/**
+ * @param string URL user can use to get more information (not null)
+ */
+public void setHyperlink(String url) {
+	Objects.requireNonNull(url);
+	hyperlink = url;
 }
 }
