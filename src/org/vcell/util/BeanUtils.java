@@ -97,7 +97,17 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * @author: 
  */
 public final class BeanUtils {
+	private static boolean bDebugMode = false;
+	private static UserLoginInfo loginInfo = null;
+	public static void setDebug(boolean isDebug) {
+		bDebugMode = isDebug;
+	}
 	
+	public static void setLoginInfo(UserLoginInfo loginInfo) {
+		BeanUtils.loginInfo = loginInfo;
+	}
+
+
 	/**
 	 * newline used in email of Content-Type: text/plain
 	 */
@@ -1174,22 +1184,33 @@ public final class BeanUtils {
 		return convertedLikeString;
 	}
 	
-	public static void sendRemoteLogMessage(final UserLoginInfo userLoginInfo,final String message){
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try{
-					AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+userLoginInfo.getUserName()+"_"+System.currentTimeMillis(), null,
-						new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())+"\n"+
-						"vers='"+VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString()+"' java='"+userLoginInfo.getJava_version()+"' os='"+userLoginInfo.getOs_name()+"' osvers='"+userLoginInfo.getOs_version()+"' arch='"+userLoginInfo.getOs_arch()+"'\n"+
-						message);
-				}catch(Exception e){
-					e.printStackTrace();
-					System.err.println("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message);
-					//ignore
+	/**
+	 * send message to Virtual Cell server, if not in debug mode
+	 * @param userLoginInfo; if null, user previously set info if available
+	 * @param message
+	 */
+	public static void sendRemoteLogMessage(UserLoginInfo argUserLoginInfo,final String message){
+		final UserLoginInfo userLoginInfo = argUserLoginInfo != null ? argUserLoginInfo : BeanUtils.loginInfo;
+		if (!bDebugMode && userLoginInfo != null) {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try{
+						final String formattedMessage = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())+"\n"+
+							"vers='"+VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString()+"' java='"+userLoginInfo.getJava_version()+"' os='"+userLoginInfo.getOs_name()+"' osvers='"+userLoginInfo.getOs_version()+"' arch='"+userLoginInfo.getOs_arch()+"'\n"+
+							message;
+						AmplistorUtils.uploadString(AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+userLoginInfo.getUserName()+"_"+System.currentTimeMillis(), null, formattedMessage);
+					}catch(Exception e){
+						e.printStackTrace();
+						System.err.println("Failed to upload message to Amplistor "+AmplistorUtils.DEFAULT_PROXY_AMPLI_VCELL_LOGS_URL+" : "+message);
+						//ignore
+					}
 				}
-			}
-		}).start();
+			}).start();
+		}
+		else {
+			System.err.println("Remote log message: " + message);
+		}
 	}
 	
 	/**
@@ -1346,6 +1367,7 @@ public final class BeanUtils {
 		public String requiredName() { return ""; }
 		public String actualName() { return ""; } 
 	}
+
 		
 	
 	

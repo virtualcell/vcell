@@ -65,6 +65,11 @@ public abstract class ReactionStep implements ModelProcess, BioModelEntityObject
 
 	public static final String PROPERTY_NAME_KINETICS = "kinetics";
 	
+	/**
+	 * not suitable for second order membrane discussion
+	 */
+	public static final String MASS_ACTION_ONLINE_DISCUSSION = "https://groups.google.com/forum/#!topic/vcell-discuss/bFgz-pItqMY";
+			
 	private String annotation = null;
 	
 	
@@ -274,7 +279,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
-				issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", Issue.SEVERITY_WARNING));
+				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", 
+							Issue.SEVERITY_WARNING);
+				issue.setHyperlink(MASS_ACTION_ONLINE_DISCUSSION);
+				issueList.add(issue);
 			}
 		}
 	}
