@@ -109,7 +109,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				final int row = issueTable.getSelectedRow();
 				final int column = issueTable.getSelectedColumn();
 				if (row >= 0) {
-					Issue issue = issueTableModel.getValueAt(row);
+					final Issue issue = issueTableModel.getValueAt(row);
 					switch (e.getClickCount()) {
 					case 1:
 						if (column == IssueTableModel.COLUMN_URL) {
