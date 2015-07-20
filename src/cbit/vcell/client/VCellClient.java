@@ -17,10 +17,11 @@ import javax.swing.JPanel;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import cbit.vcell.biomodel.BioModel;
@@ -298,6 +299,9 @@ public static void login(final RequestManager requestManager, final ClientServer
 					loginManager.close();
 					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
 						VCellClient.login(requestManager,clientServerInfo, currWindowManager);
+					}
+					else {
+						BeanUtils.setLoginInfo(clientServerInfo.getUserLoginInfo());
 					}
 				}
 			};

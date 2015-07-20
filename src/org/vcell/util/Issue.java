@@ -11,6 +11,7 @@
 package org.vcell.util;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,7 +32,8 @@ public class Issue implements java.io.Serializable, Matchable {
 	private IssueSource source = null;
 	private IssueSource source2 = null;
 	private IssueContext issueContext = null;
-	private Severity severity = Severity.INFO; 
+	private Severity severity = Severity.INFO;
+	private String hyperlink; 
 	public enum Severity {
 		INFO("info"),
 		TIP("tip"),
@@ -190,11 +192,18 @@ public class Issue implements java.io.Serializable, Matchable {
 		this.source2 = argSource2;
 		this.issueContext = issueContext;
 		this.message = argMessage;
-		this.tooltip = argTooltip;
-		this.category = argCategory;
-		this.severity = argSeverity;
-	}
+	this.tooltip = argTooltip;
+	this.category = argCategory;
+	this.severity = argSeverity;
+	this.hyperlink = null;
+}
 
+/**
+ * @return hyperlink for more information may be null
+ */
+public String getHyperlink() {
+	return hyperlink;
+}
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
@@ -399,5 +408,12 @@ public static String getHtmlIssueMessage(List<Issue> issueList) {
 	}
 	slist += "</html>";
 	return slist;
+}
+/**
+ * @param string URL user can use to get more information (not null)
+ */
+public void setHyperlink(String url) {
+	Objects.requireNonNull(url);
+	hyperlink = url;
 }
 }

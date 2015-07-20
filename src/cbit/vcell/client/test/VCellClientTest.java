@@ -61,6 +61,7 @@ public static void main(java.lang.String[] args) {
 		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
 	Logging.init();
+	BeanUtils.setDebug(IS_DEBUG);
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
 		List<String> newArgs = new ArrayList<String>();
 		newArgs.addAll(Arrays.asList(args));

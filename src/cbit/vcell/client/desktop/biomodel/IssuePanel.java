@@ -11,11 +11,15 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -25,6 +29,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
@@ -87,10 +92,29 @@ public class IssuePanel extends DocumentEditorSubPanel {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) {
-					int row = issueTable.getSelectedRow();
-					if (row >= 0) {
-						invokeHyperlink(row);
+				final int row = issueTable.getSelectedRow();
+				final int column = issueTable.getSelectedColumn();
+				if (row >= 0) {
+					final Issue issue = issueTableModel.getValueAt(row);
+					switch (e.getClickCount()) {
+					case 1:
+						if (column == IssueTableModel.COLUMN_URL) {
+							String url = issue.getHyperlink();
+							if (url != null) {
+								try {
+									URI uri = new URI(url);
+									Desktop.getDesktop().browse(uri);
+								} catch (URISyntaxException | IOException e1) {
+									BeanUtils.sendRemoteLogMessage(null, "Can't open IssuePanel URI "  + url + ' ' +e1.getMessage());
+								}
+							}
+						}
+						break;
+					case 2:
+						if (column == IssueTableModel.COLUMN_URL) {
+							return;
+						}
+						invokeHyperlink(issue);
 					}
 				}
 			}			
@@ -173,9 +197,8 @@ public class IssuePanel extends DocumentEditorSubPanel {
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {	
 	}	
 
-	private void invokeHyperlink(int row) {
+	private void invokeHyperlink(Issue issue) {
 		if (selectionManager != null) { //followHyperlink is no-op if selectionManger null, so no point in proceeding if it is
-			Issue issue = issueTableModel.getValueAt(row);
 			IssueContext issueContext = issue.getIssueContext();
 			IssueSource object = issue.getSource();
 
