@@ -51,9 +51,10 @@ import cbit.vcell.solver.Simulation;
 public class IssueTableModel extends VCellSortTableModel<Issue> implements IssueEventListener {
 
 	static final int COLUMN_DESCRIPTION = 0;
-	static final int COLUMN_SOURCE = 1;
-	static final int COLUMN_PATH = 2;
-	private static final String[] labels = {"Description", "Source", "Defined In:"};
+	static final int COLUMN_URL = 1;
+	static final int COLUMN_SOURCE = 2;
+	static final int COLUMN_PATH = 3;
+	private static final String[] labels = {"Description", "Url", "Source", "Defined In:"};
 	private boolean bShowWarning = true;
 	
 	public IssueTableModel(ScrollTable table) {
@@ -66,6 +67,14 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		switch (columnIndex) {
 		case COLUMN_DESCRIPTION:
 			return issue;
+		case COLUMN_URL:
+		{
+			String url = issue.getHyperlink();
+			if (url == null) {
+				return "";
+			}
+			return "<html><a href=\"" + url + "\">More</a></html>";
+		}
 		case COLUMN_SOURCE:
 			return getSourceObjectDescription(vcDocument,issue);
 		case COLUMN_PATH:
@@ -90,6 +99,13 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 						return scale * new Integer(s1).compareTo(new Integer(s2));
 					}
 				}
+				case COLUMN_URL: 
+				{
+					String u1 = o1.getHyperlink();
+					String u2 = o2.getHyperlink();
+					return u1 != null ? u1.compareTo(u2) : -1;
+				}
+					
 				case COLUMN_SOURCE:
 					return scale * getSourceObjectDescription(vcDocument,o1).compareTo(getSourceObjectDescription(vcDocument,o2));
 				case COLUMN_PATH:
@@ -105,6 +121,7 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 		switch (columnIndex) {
 		case COLUMN_DESCRIPTION:
 			return Issue.class;
+		case COLUMN_URL:
 		case COLUMN_SOURCE:
 		case COLUMN_PATH:
 			return String.class;
