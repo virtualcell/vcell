@@ -14,8 +14,8 @@ import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Path;
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
@@ -96,7 +96,7 @@ public class PotentialMapping {
 	//private Expression fieldDependentVoltageExpression[] = new Expression[0];
 	private Edge fieldEdges[] = new Edge[0];
 	private SimulationContext fieldSimContext = null;
-	private MathMapping fieldMathMapping = null;
+	private AbstractMathMapping fieldMathMapping = null;
 
 	public static boolean bSilent = true;
 
@@ -107,7 +107,7 @@ public class PotentialMapping {
 /**
  * PotentialMapping constructor comment.
  */
-public PotentialMapping(SimulationContext argSimContext, MathMapping argMathMapping) {
+public PotentialMapping(SimulationContext argSimContext, AbstractMathMapping argMathMapping) {
 	super();
 	this.fieldSimContext = argSimContext;
 	this.fieldMathMapping = argMathMapping;
@@ -716,7 +716,7 @@ public ElectricalDevice[] getElectricalDevices(Membrane membrane) {
  * @return cbit.vcell.parser.Expression
  * @param capacitiveDevice cbit.vcell.mapping.potential.ElectricalDevice
  */
-public Expression getOdeRHS(MembraneElectricalDevice capacitiveDevice, MathMapping mathMapping) throws ExpressionException, MappingException {
+public Expression getOdeRHS(MembraneElectricalDevice capacitiveDevice, AbstractMathMapping mathMapping) throws ExpressionException, MappingException {
 	NameScope nameScope = mathMapping.getNameScope();
 	Expression transMembraneCurrent = capacitiveDevice.getParameterFromRole(ElectricalDevice.ROLE_TransmembraneCurrent).getExpression().renameBoundSymbols(nameScope);
 	Expression totalCapacitance = new Expression(capacitiveDevice.getCapacitanceParameter(), nameScope);

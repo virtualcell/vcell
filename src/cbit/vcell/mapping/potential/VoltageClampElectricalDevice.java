@@ -9,8 +9,8 @@
  */
 
 package cbit.vcell.mapping.potential;
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameterType;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.model.ModelUnitSystem;
@@ -30,7 +30,7 @@ public class VoltageClampElectricalDevice extends ElectricalDevice {
  * Insert the method's description here.
  * Creation date: (4/7/2004 11:00:30 AM)
  */
-public VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, MathMapping argMathMapping) throws ExpressionException {
+public VoltageClampElectricalDevice(VoltageClampStimulus argVoltageClampStimulus, AbstractMathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argVoltageClampStimulus.getName(), argMathMapping);
 	this.voltageClampStimulus = argVoltageClampStimulus;
 	

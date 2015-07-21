@@ -25,6 +25,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
@@ -736,10 +737,10 @@ void updateFromMathDescription() {
 				//
 				// test for renamed initial condition constant (changed from _init to _init_uM)
 				//
-				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
+				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
 					String name_repaired_to_uM = name.replace(
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM);
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_uM);
 					if (mathDescriptionHash.contains(name_repaired_to_uM)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_uM;
@@ -753,10 +754,10 @@ void updateFromMathDescription() {
 				//
 				// test for renamed initial condition constant (changed from _init to _init_molecules_um_2)
 				//
-				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
+				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old)){
 					String name_repaired_to_molecule_per_um2 = name.replace(
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old, 
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
 					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_molecule_per_um2;
@@ -770,10 +771,10 @@ void updateFromMathDescription() {
 				//
 				// test for renamed initial condition constant (changed from _init_molecules_per_um2 to _init_molecules_um_2)
 				//
-				if (name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2)){
+				if (name.endsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2)){
 					String name_repaired_to_molecule_per_um2 = name.replace(
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2, 
-							MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_per_um2, 
+							DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_old_molecules_um_2);
 					if (mathDescriptionHash.contains(name_repaired_to_molecule_per_um2)){
 						Element element = overridesHash.remove(name);
 						element.name = name_repaired_to_molecule_per_um2;

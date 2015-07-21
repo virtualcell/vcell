@@ -11,13 +11,13 @@
 package cbit.vcell.mapping.potential;
 import org.vcell.util.BeanUtils;
 
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.mapping.TotalCurrentClampStimulus;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model.StructureTopology;
@@ -35,14 +35,14 @@ import cbit.vcell.units.VCUnitDefinition;
 public class CurrentClampElectricalDevice extends ElectricalDevice {
 	private ElectricalStimulus currentClampStimulus = null;
 
-public CurrentClampElectricalDevice(TotalCurrentClampStimulus argTotalCurrentClampStimulus, MathMapping argMathMapping) throws ExpressionException {
+public CurrentClampElectricalDevice(TotalCurrentClampStimulus argTotalCurrentClampStimulus, AbstractMathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argTotalCurrentClampStimulus.getName(), argMathMapping);
 	this.currentClampStimulus = argTotalCurrentClampStimulus;
 
 	initializeParameters();
 }
 
-public CurrentClampElectricalDevice(CurrentDensityClampStimulus argCurrentDensityClampStimulus, MathMapping argMathMapping) throws ExpressionException {
+public CurrentClampElectricalDevice(CurrentDensityClampStimulus argCurrentDensityClampStimulus, AbstractMathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argCurrentDensityClampStimulus.getName(), argMathMapping);
 	this.currentClampStimulus = argCurrentDensityClampStimulus;
 

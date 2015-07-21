@@ -23,7 +23,7 @@ import org.vcell.vis.vtk.VtkGridUtils;
 
 import vtk.vtkDoubleArray;
 import vtk.vtkUnstructuredGrid;
-import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VariableType.VariableDomain;
@@ -50,10 +50,10 @@ public class CartesianMeshVtkFileWriter {
 		if (dataID.getName().startsWith(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())){
 			bMeshVar = true;
 		}
-		if (dataID.getName().startsWith(MathMapping.PARAMETER_K_FLUX_PREFIX)){
+		if (dataID.getName().startsWith(DiffEquMathMapping.PARAMETER_K_FLUX_PREFIX)){
 			bMeshVar = true;
 		}
-		if (dataID.getName().startsWith(MathMapping.PARAMETER_SIZE_FUNCTION_PREFIX)){
+		if (dataID.getName().startsWith(DiffEquMathMapping.PARAMETER_SIZE_FUNCTION_PREFIX)){
 			bMeshVar = true;
 		}
 		return bMeshVar;

@@ -20,7 +20,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.util.gui.ButtonGroupCivilized;
 
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -723,7 +723,7 @@ private void refreshEquations() throws ExpressionException {
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
 			if(getMathDescription().isNonSpatialStoch() && 
-					function.getName().startsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
+					function.getName().startsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
 				try{
 					double value = exp.evaluateConstant();
 					expString = new String[] {function.getName()+" = "+Math.round(value)};
@@ -750,7 +750,7 @@ private void refreshEquations() throws ExpressionException {
 			exp = exp.flatten();
 			//stochastic variable initial value must be an int, therefore we must make it here.
 			if(getMathDescription().isNonSpatialStoch() && 
-					constant.getName().startsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
+					constant.getName().startsWith(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)) {
 				try{
 					double value = exp.evaluateConstant();
 					expString = new String[] {constant.getName()+" = "+Math.round(value)};

@@ -45,7 +45,7 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
-import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.ReservedVariable;
@@ -1204,7 +1204,7 @@ private synchronized void updateChoices(MyDataInterface myDataInterface) throws 
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
         if (cd.getParameterName() == null) {
-        	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
+        	if (!cd.getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME) && !cd.getName().contains(DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT)) {
         		variableColumnDescriptions.add(cd);
         	}
         } else {

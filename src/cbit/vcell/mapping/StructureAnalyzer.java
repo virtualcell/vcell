@@ -15,6 +15,7 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.mapping.AbstractMathMapping.MathMappingParameter;
 import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.matrix.RationalNumberMatrix;
@@ -46,7 +47,7 @@ public abstract class StructureAnalyzer {
  	//
  	// fundamental information about system (sim context stuff)
  	//
-	protected MathMapping mathMapping = null;
+	protected DiffEquMathMapping mathMapping = null;
 
 	//
 	// working list of reactions and speciesContexts for indexing
@@ -87,7 +88,7 @@ public abstract class StructureAnalyzer {
 /**
  * StructureAnalyzer constructor comment.
  */
-public StructureAnalyzer(MathMapping mathMapping) {
+public StructureAnalyzer(DiffEquMathMapping mathMapping) {
 	this.mathMapping = mathMapping;
 }
 
@@ -396,7 +397,7 @@ private void refreshTotalDependancies() throws Exception {
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
 		GeometryClass geometryClass = mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure()).getGeometryClass();
-		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS, totalMassUnit, geometryClass);
+		MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),DiffEquMathMapping.PARAMETER_ROLE_TOTALMASS, totalMassUnit, geometryClass);
 		//
 		// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 		//
@@ -412,7 +413,7 @@ private void refreshTotalDependancies() throws Exception {
  * @param vars java.lang.String[]
  */
 public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMatrix nullSpaceMatrix, SpeciesContextMapping[] speciesContextMappings, 
-		MathMapping argMathMapping, boolean bFast) throws Exception {
+		AbstractMathMapping argMathMapping, boolean bFast) throws Exception {
 
 //System.out.println("StructureAnalyzer.refreshTotalDependancies()");
 	SimulationContext argSimContext = argMathMapping.getSimulationContext();
@@ -468,7 +469,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					// first term of dependancy expression   ("K_CalciumCyt")
 					//
 					SpeciesContext firstSC = firstSCM.getSpeciesContext();
-					constantName = MathMapping.PARAMETER_MASS_CONSERVATION_PREFIX+firstSC.getName()+MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX;
+					constantName = DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_PREFIX+firstSC.getName()+DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX;
 					exp = new Expression(constantName);
 					el.add(exp);
 					//

@@ -17,8 +17,8 @@ public class MappingException extends Exception {
 /**
  * MappingException constructor comment.
  */
-public MappingException() {
-	super();
+public MappingException(String s, Exception e) {
+	super(s,e);
 }
 /**
  * MappingException constructor comment.
