@@ -18,6 +18,9 @@ public interface SimDataConstants {
 
 	public static final String KEEP_MOST = "KeepMost";
 	
+	public static final String PROPERTY_NAME_DATAIDENTIFIERS = "dataIdentifiers";
+	public static final String PDE_DATA_MANAGER_CHANGED = "PDE_DATA_MANAGER_CHANGED";
+	
 	public static final String ODE_DATA_IDENTIFIER = "ODEData logfile";
 	public static final String IDA_DATA_IDENTIFIER = "IDAData logfile";
 	public static final String NFSIM_DATA_IDENTIFIER = "NFSimData logfile";

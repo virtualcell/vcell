@@ -516,7 +516,7 @@ protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws Da
 
 	if (fire) {
 		fieldDataIdentifier = null;
-		firePropertyChange("dataIdentifiers", oldDataIdentifiers, newDataIdentifiers);
+		firePropertyChange(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS, oldDataIdentifiers, newDataIdentifiers);
 	}
 }
 

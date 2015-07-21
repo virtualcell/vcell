@@ -89,6 +89,7 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
@@ -239,7 +240,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC16(evt);
 			if (evt.getSource() == PDEExportDataPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
 				connEtoC18(evt);
-			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == PDEExportDataPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS))) 
 				connEtoC20(evt);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
