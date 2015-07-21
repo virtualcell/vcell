@@ -6,6 +6,8 @@ printusage() {
 	exit 3
 }
 
+#echo $@ >>/share/apps/vcell2/deployed/rel/configs/cva_test_cmd_line_args.txt
+
 # main code
 if [ "$#" != "1" ] ; then 
 	printusage
@@ -29,19 +31,19 @@ if [ $check_vcell_alive_checktype = "RMI_ONLY_0" ]; then
 	check_vcell_alive_crittimeout=60;
 elif [ $check_vcell_alive_checktype = "CONNECT_1" ];  then
         check_vcell_alive_warntimeout=20;
-        check_vcell_alive_crittimeout=60;
+        check_vcell_alive_crittimeout=90;
 elif [ $check_vcell_alive_checktype = "INFOS_2" ];  then
-        check_vcell_alive_warntimeout=20;
-        check_vcell_alive_crittimeout=90;
-elif [ $check_vcell_alive_checktype = "LOAD_3" ];  then
-        check_vcell_alive_warntimeout=30;
-        check_vcell_alive_crittimeout=90;
-elif [ $check_vcell_alive_checktype = "DATA_4" ];  then
-        check_vcell_alive_warntimeout=45;
-        check_vcell_alive_crittimeout=90;
-elif [ $check_vcell_alive_checktype = "RUN_5" ];  then
         check_vcell_alive_warntimeout=60;
         check_vcell_alive_crittimeout=120;
+elif [ $check_vcell_alive_checktype = "LOAD_3" ];  then
+        check_vcell_alive_warntimeout=120;
+        check_vcell_alive_crittimeout=120;
+elif [ $check_vcell_alive_checktype = "DATA_4" ];  then
+        check_vcell_alive_warntimeout=120;
+        check_vcell_alive_crittimeout=180;
+elif [ $check_vcell_alive_checktype = "RUN_5" ];  then
+        check_vcell_alive_warntimeout=120;
+        check_vcell_alive_crittimeout=300;
 else printusage;
 fi
 
