@@ -10,7 +10,7 @@
 
 package cbit.vcell.mapping;
 
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.SubVolume;
 /**
  * This type was created in VisualAge.
  */
@@ -21,7 +21,7 @@ public class VolumeStructureAnalyzer extends StructureAnalyzer {
  * @param mathMapping cbit.vcell.mapping.MathMapping
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public VolumeStructureAnalyzer(MathMapping mathMapping, cbit.vcell.geometry.SubVolume subVolume) {
+public VolumeStructureAnalyzer(DiffEquMathMapping mathMapping, cbit.vcell.geometry.SubVolume subVolume) {
 	super(mathMapping);
 	this.subVolume = subVolume;
 	//refresh();

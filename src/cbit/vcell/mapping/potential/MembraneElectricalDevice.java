@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.potential;
 
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.Expression;
@@ -27,7 +28,7 @@ public class MembraneElectricalDevice extends ElectricalDevice {
  * Insert the method's description here.
  * Creation date: (4/7/2004 10:58:47 AM)
  */
-public MembraneElectricalDevice(MembraneMapping argMembraneMapping, cbit.vcell.mapping.MathMapping argMathMapping) throws ExpressionException {
+public MembraneElectricalDevice(MembraneMapping argMembraneMapping, AbstractMathMapping argMathMapping) throws ExpressionException {
 	super("device_"+argMembraneMapping.getMembrane().getName(), argMathMapping);
 	this.membraneMapping = argMembraneMapping;
 

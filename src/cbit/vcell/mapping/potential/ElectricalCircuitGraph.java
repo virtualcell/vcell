@@ -4,10 +4,10 @@ import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.CurrentDensityClampStimulus;
 import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -33,7 +33,7 @@ public class ElectricalCircuitGraph {
 	 * @return cbit.vcell.mapping.potential.Graph
 	 * @param simContext cbit.vcell.mapping.SimulationContext
 	 */
-	public static Graph getCircuitGraph(SimulationContext simContext, MathMapping mathMapping) throws ExpressionException {
+	public static Graph getCircuitGraph(SimulationContext simContext, AbstractMathMapping mathMapping) throws ExpressionException {
 		Graph graph = new Graph();
 		
 		Model model = simContext.getModel();
@@ -142,7 +142,7 @@ public class ElectricalCircuitGraph {
 	 * @param simContext cbit.vcell.mapping.SimulationContext
 	 * @param membrane cbit.vcell.model.Membrane
 	 */
-	private static Expression getTotalMembraneCurrent(SimulationContext simContext, Membrane membrane, MathMapping mathMapping) throws ExpressionException {
+	private static Expression getTotalMembraneCurrent(SimulationContext simContext, Membrane membrane, AbstractMathMapping mathMapping) throws ExpressionException {
 		MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
 		if (!membraneMapping.getCalculateVoltage()){
 			return new Expression(0.0);

@@ -27,7 +27,6 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
-import org.vcell.util.VCAssert;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
@@ -35,6 +34,7 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -51,6 +51,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
@@ -158,7 +159,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 			if (super.isPeer(nameScope)){
 				return true;
 			}
-			return ((nameScope instanceof MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return ((nameScope instanceof MathMappingNameScope) && nameScope.isPeer(this));
 		}
 		@Override
 		public NamescopeType getNamescopeType() {
@@ -2370,7 +2371,7 @@ public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGen
 		mostRecentlyCreatedMathMapping = new RulebasedMathMapping(this, callback, null);
 		break;
 	case NETWORK_DETERMINISTIC: 
-		mostRecentlyCreatedMathMapping = new MathMapping(this, callback, networkGenReq);
+		mostRecentlyCreatedMathMapping = new DiffEquMathMapping(this, callback, networkGenReq);
 		break;
 	}
 	VCAssert.assertFalse(mostRecentlyCreatedMathMapping == null, "math mapping not generated" );

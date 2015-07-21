@@ -18,13 +18,12 @@ import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDocument;
 
-import Jama.Matrix;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -50,11 +49,11 @@ import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.SolutionTemplate;
@@ -782,7 +781,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				
 				while (origMathConstants.hasMoreElements()){
 					Constant constant = origMathConstants.nextElement();
-					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
 						initName = constant.getName();
 					}
 				}
@@ -826,7 +825,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				String initName = null;
 				while (origMathConstants.hasMoreElements()){
 					Constant constant = origMathConstants.nextElement();
-					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+					if (constant.getName().startsWith(varName+"_"+subDomain.getName()+DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
 						initName = constant.getName();
 					}
 				}
