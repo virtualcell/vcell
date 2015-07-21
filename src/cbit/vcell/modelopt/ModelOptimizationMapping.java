@@ -13,6 +13,7 @@ import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
@@ -30,7 +31,6 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
@@ -166,7 +166,13 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	Variable allVars[] = (Variable[])BeanUtils.getArray(origMathDesc.getVariables(),Variable.class);
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
-		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping.getGeometryClass());
+		String mathSymbol;
+		try {
+			mathSymbol = mathMapping.getMathSymbolMapping().getVariable(modelParameter).getName();
+		} catch (MatrixException | ExpressionException | ModelException e) {
+			e.printStackTrace();
+			throw new MappingException(e.getMessage(), e);
+		}
 		Variable mathVariable = origMathDesc.getVariable(mathSymbol);
 		if(mathVariable != null)
 		{
@@ -241,7 +247,8 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	}
 
 	Vector<Issue> issueList = new Vector<Issue>();
-	optSpec.gatherIssues(issueList);
+	IssueContext issueContext = new IssueContext();
+	optSpec.gatherIssues(issueContext,issueList);
 	for (int i = 0; i < issueList.size(); i++){
 		Issue issue = issueList.elementAt(i);
 		if (issue.getSeverity()==Issue.SEVERITY_ERROR){
@@ -356,8 +363,14 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	//
 	for (int i = 0; i < modelObjectList.size(); i++){
 		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
-		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping.getGeometryClass());
-		rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
+		String symbol;
+		try {
+			symbol = mathMapping.getMathSymbolMapping().getVariable(modelObject).getName();
+			rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
+		} catch (MathException | MatrixException | ExpressionException | ModelException e) {
+			e.printStackTrace();
+			throw new MappingException(e.getMessage(),e);
+		}
 	}
 
 	//

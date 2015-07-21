@@ -20,7 +20,6 @@ import java.util.Vector;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 import ucar.units.RationalNumber;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -61,7 +60,6 @@ import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -71,6 +69,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -80,7 +79,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
  */
-public class ParticleMathMapping extends MathMapping {
+public class ParticleMathMapping extends AbstractMathMapping {
 	
 /**
  * This method was created in VisualAge.
@@ -95,8 +94,7 @@ protected ParticleMathMapping(SimulationContext simContext, MathMappingCallback 
 /**
  * This method was created in VisualAge.
  */
-@Override
-protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
+private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	getSimulationContext().checkValidity();
 	
@@ -963,8 +961,7 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 /**
  * This method was created in VisualAge.
  */
-@Override
-protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
+private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
 	
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -1026,8 +1023,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
  * This method was created in VisualAge.
  * @Override
  */
-@Override
-protected void refreshVariables() throws MappingException {
+private void refreshVariables() throws MappingException {
 
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		
@@ -1088,7 +1084,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	reconcileWithOriginalModel();
 }
 
-protected void combineHybrid() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
+private void combineHybrid() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
 	ArrayList<SpeciesContext> continuousSpecies = new ArrayList<SpeciesContext>();
 	ArrayList<ParticleVariable> continuousSpeciesParticleVars = new ArrayList<ParticleVariable>();
 	ArrayList<SpeciesContext> stochSpecies = new ArrayList<SpeciesContext>();
@@ -1119,7 +1115,7 @@ protected void combineHybrid() throws MappingException, ExpressionException, Mat
 	//
 	// create continuous mathDescription ... add stochastic variables and processes to the continuous Math and use this.
 	//
-	MathMapping mathMapping = new MathMapping(getSimulationContext(),callback,networkGenerationRequirements);
+	DiffEquMathMapping mathMapping = new DiffEquMathMapping(getSimulationContext(),callback,networkGenerationRequirements);
 	mathMapping.refresh(null);
 	MathDescription contMathDesc = mathMapping.getMathDescription();
 	

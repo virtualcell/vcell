@@ -14,6 +14,7 @@ import java.util.Map;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
@@ -32,7 +33,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public abstract class ElectricalDevice implements ScopedSymbolTable {
 	private String name = null;
 	private ElectricalDeviceNameScope nameScope = new ElectricalDeviceNameScope();
-	protected MathMapping mathMapping = null; // for determining NameScope parent only
+	protected AbstractMathMapping mathMapping = null; // for determining NameScope parent only
 	private Expression dependentVoltageExpression = null;
 
 	public static final int ROLE_TotalCurrent					= 0;
@@ -188,7 +189,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 /**
  * ElectricalDevice constructor comment.
  */
-public ElectricalDevice(String argName, MathMapping argMathMapping) {
+public ElectricalDevice(String argName, AbstractMathMapping argMathMapping) {
 	this.name = argName;
 	this.mathMapping = argMathMapping;
 }

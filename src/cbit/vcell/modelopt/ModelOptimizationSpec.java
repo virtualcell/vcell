@@ -485,7 +485,7 @@ public void removeUncoupledParameters() {
 		paramMappingSpecsList.addAll(Arrays.asList(fieldParameterMappingSpecs));
 		for (int i = 0; i < paramMappingSpecsList.size(); i++){			
 			Parameter parameter = paramMappingSpecsList.get(i).getModelParameter();
-			String mathName = mathMapping.getMathSymbol(parameter,null);
+			String mathName = mathMapping.getMathSymbolMapping().getVariable(parameter).getName();
 			boolean bFoundInTree = false;
 			for (int j = 0; j < spanningTrees.length; j++){
 				Node node = spanningTrees[j].getNode(mathName);

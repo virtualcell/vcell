@@ -39,6 +39,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
@@ -74,6 +75,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
@@ -83,12 +85,14 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
  */
-public class RulebasedMathMapping extends MathMapping {
+public class RulebasedMathMapping extends AbstractStochMathMapping {
 
 /**
  * This method was created in VisualAge.
@@ -99,12 +103,10 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 	super(simContext, callback, networkGenerationRequirements);
 }
 
-
 /**
  * This method was created in VisualAge.
  */
-@Override
-protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
+private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException {
 
 	getSimulationContext().checkValidity();
 	
@@ -686,7 +688,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 	
 //	for (SeedSpecies seedSpecies : rbmModelContainer.getSeedSpeciesList()){
 	for (SpeciesContext sc : model.getSpeciesContexts()){
-		if(!sc.hasSpeciesPattern()) { continue; }
+		if(!sc.hasSpeciesPattern()) { 
+			throw new MappingException("species "+sc.getName()+" has no molecular pattern");
+		}
 		VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = speciesPatternMap.get(sc.getSpeciesPattern());
 		ArrayList<ParticleInitialCondition> particleInitialConditions = new ArrayList<ParticleProperties.ParticleInitialCondition>();
 		
@@ -1113,8 +1117,7 @@ System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]
 /**
  * This method was created in VisualAge.
  */
-@Override
-protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
+private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
 	
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -1176,8 +1179,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
  * This method was created in VisualAge.
  * @Override
  */
-@Override
-protected void refreshVariables() throws MappingException {
+private void refreshVariables() throws MappingException {
 
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 		

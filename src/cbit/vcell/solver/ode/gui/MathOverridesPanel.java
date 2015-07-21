@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.ode.gui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -33,7 +35,7 @@ import cbit.gui.TableCellEditorAutoCompletion;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
@@ -63,6 +65,9 @@ public class MathOverridesPanel extends JPanel {
 	private JLabel ivjJLabelTitle = null;
 	private JMenuItem ivjJMenuItemPaste = null;
 	private JMenuItem ivjJMenuItemPasteAll = null;
+	
+	private JButton removeUnusedButton = null;
+	
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -771,6 +776,26 @@ private void initialize() {
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
 		add(getJTableFixed().getEnclosingScrollPane(), gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.NONE;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		removeUnusedButton = new JButton();
+		removeUnusedButton.setForeground(Color.red);
+		removeUnusedButton.setText("remove unused parameter overrides");
+		removeUnusedButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MathOverrides mathOverrides = getMathOverrides();
+				if (mathOverrides!=null){
+					mathOverrides.removeUnusedOverrides();
+					removeUnusedButton.setVisible(false);
+				}
+			}
+		});
+		
+		add(removeUnusedButton, gridBagConstraints);
 
 		initConnections();
 		connEtoM1();
@@ -831,7 +856,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 							Enumeration<Constant> constants = mathDescription.getConstants();
 							while (constants.hasMoreElements()){
 								Constant constant = constants.nextElement();
-								if (constant.getName().startsWith(rvs.getPrimarySymbolTableEntries()[j].getName()+MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
+								if (constant.getName().startsWith(rvs.getPrimarySymbolTableEntries()[j].getName()+DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX)){
 									pastedConstant = new Constant(constant.getName(),rvs.getExpressionValues()[j]);
 								}
 							}
@@ -947,6 +972,11 @@ public void setEditable(boolean editable) {
 public void setMathOverrides(MathOverrides mathOverrides) {
 	MathOverrides oldValue = fieldMathOverrides;
 	fieldMathOverrides = mathOverrides;
+	if (fieldMathOverrides!=null && fieldMathOverrides.hasUnusedOverrides()){
+		this.removeUnusedButton.setVisible(true);
+	}else{
+		this.removeUnusedButton.setVisible(false);
+	}
 	firePropertyChange("mathOverrides", oldValue, mathOverrides);
 }
 

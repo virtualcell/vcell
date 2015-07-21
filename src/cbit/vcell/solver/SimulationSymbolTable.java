@@ -20,8 +20,8 @@ import org.vcell.util.BeanUtils;
 
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentRegionVariable;
@@ -466,7 +466,7 @@ public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 		if (!name.startsWith("Kflux_") &&
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_molecule_per_um2) && 
 //			!name.endsWith(MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONCENTRATION_uM) && 
-			!name.endsWith(MathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
+			!name.endsWith(DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX) &&
 			!name.equals(Simulation.PSF_FUNCTION_NAME)){
 			return true;
 		}else{

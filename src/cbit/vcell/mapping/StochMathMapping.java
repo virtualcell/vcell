@@ -43,22 +43,20 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
-import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
@@ -68,7 +66,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * @version 1.0 Beta
  * @author Tracy LI
  */
-public class StochMathMapping extends MathMapping {
+public class StochMathMapping extends AbstractStochMathMapping {
 
 	private static final String PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX = "_reverse";
 	private static final String PARAMETER_PROBABILITYRATE_PREFIX = "P_";
@@ -82,59 +80,6 @@ public class StochMathMapping extends MathMapping {
 	protected StochMathMapping(SimulationContext simContext, MathMappingCallback callback,	NetworkGenerationRequirements networkGenerationRequirements) {
 		super(simContext, callback, networkGenerationRequirements);
 	}
-
-/**
- * getExpressionConcToAmt : converts the concentration expression ('concExpr') to an expression of the number of particles. 
- * 		If argument 'speciesContext' is on a membrane, particlesExpr = concExpr * size_of_Mem. If 'speciesContext' is in 
- * 		feature, particlesExpr = (concExpr * size_of_Feature)/KMOLE.
- * @param concExpr
- * @param speciesContext
- * @return
- * @throws MappingException
- * @throws ExpressionException
- */
-private Expression getExpressionConcToExpectedCount(Expression concExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
-{
-	Expression exp = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize(), getNameScope()));
-	ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
-	VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(speciesContext.getStructure());
-	Expression unitFactor = getUnitFactor(unitSystem.getStochasticSubstanceUnit().divideBy(substanceUnit));
-	Expression particlesExpr = Expression.mult(exp, unitFactor);
-	return particlesExpr;
-}
-
-/**
- * getExpressionAmtToConc : converts the particles expression ('particlesExpr') to an expression for concentration. 
- * 		If argument 'speciesContext' is on a membrane, concExpr = particlesExpr/size_of_Mem. If 'speciesContext' is in 
- * 		feature, concExpr = (particlesExpr/size_of_Feature)*KMOLE.
- * @param particlesExpr
- * @param speciesContext
- * @return
- * @throws MappingException
- * @throws ExpressionException
- */
-private Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesContext speciesContext) throws MappingException, ExpressionException
-{
-	ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
-	VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(speciesContext.getStructure());
-	Expression unitFactor = getUnitFactor(substanceUnit.divideBy(unitSystem.getStochasticSubstanceUnit()));
-	Expression scStructureSize = new Expression(speciesContext.getStructure().getStructureSize(), getNameScope());
-	Expression concentrationExpr = Expression.mult(particlesExpr, Expression.div(unitFactor,scStructureSize));
-	return concentrationExpr;
-}
-
-
-	/**
-	 * This method returns the mathDeac if it is existing, otherwise it creates a mathDescription and returns it.
-	 * @return cbit.vcell.math.MathDescription
-	 */
-	public MathDescription getMathDescription() throws MappingException, MathException, MatrixException, ExpressionException, ModelException {
-		if (mathDesc==null){
-			refresh();
-		}
-		return mathDesc;
-	}
-
 
 /**
  * Get probability expression for the specific elementary reaction.
@@ -218,7 +163,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 /**
  * Basically the function clears the error list and calls to get a new mathdescription.
  */
-protected void refresh() throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
+protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
 	localIssueList.clear();
 	//refreshKFluxParameters();
 	
@@ -235,8 +180,7 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 	/**
 	 * set up a math description based on current simulationContext.
 	 */
-	@Override
-	protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
+	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
 		GeometryClass geometryClass = getSimulationContext().getGeometry().getGeometrySpec().getSubVolumes()[0];
 		Domain domain = new Domain(geometryClass);
@@ -439,42 +383,9 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 			}
 		}
 
-		//
-		// species initial values (either function or constant)
-		//
-		SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
-		for (int i = 0; i < speciesContextSpecs.length; i++){
-			SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;//can be concentration or amount
-			Expression iniExp = null;
-			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
-			if(speciesContextSpecs[i].getInitialConcentrationParameter() != null && speciesContextSpecs[i].getInitialConcentrationParameter().getExpression() != null)
-			{//use concentration, need to set up amount functions
-				initParam = speciesContextSpecs[i].getInitialConcentrationParameter();
-				iniExp = initParam.getExpression();
-				iniExp = getSubstitutedExpr(iniExp, true, !speciesContextSpecs[i].isConstant());
-				// now create the appropriate function or Constant for the speciesContextSpec.
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm.getGeometryClass()),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+		SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 
-				//add function for initial amount
-				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
-				Expression 	iniAmountExp = getExpressionConcToExpectedCount(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
-				// this is just going to add a var in math with iniCountSymbol, it is not actually write the expression to IniCountParameter.
-				varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm.getGeometryClass()),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm.getGeometryClass()),domain));
-			}
-			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
-			{// use amount
-				initParam = speciesContextSpecs[i].getInitialCountParameter();
-				iniExp = initParam.getExpression();
-				iniExp = getSubstitutedExpr(iniExp, false, !speciesContextSpecs[i].isConstant());
-				// now create the appropriate function or Constant for the speciesContextSpec.
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(initParam,sm.getGeometryClass()),getIdentifierSubstitutions(iniExp,initParam.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
-			}
-
-			//add spConcentration (concentration of species) to varHash as function or constant
-			SpeciesConcentrationParameter spConcParam = getSpeciesConcentrationParameter(speciesContextSpecs[i].getSpeciesContext());
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(spConcParam,sm.getGeometryClass()),getIdentifierSubstitutions(spConcParam.getExpression(), spConcParam.getUnitDefinition(), sm.getGeometryClass()),sm.getGeometryClass()));
-
-		}
+		addInitialConditions(domain, speciesContextSpecs, varHash);
 		
 		//
 		// constant species (either function or constant)
@@ -636,9 +547,9 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 					// reactions are of mass action form
 					exp = getProbabilityRate(reactionStep, forwardRate, true);
 					
-					MathMapping.ProbabilityParameter probParm = null;
+					ProbabilityParameter probParm = null;
 					try{
-						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp,MathMapping.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
+						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp, PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -687,9 +598,9 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 					// reactions are mass actions
 					exp = getProbabilityRate(reactionStep, reverseRate, false);
 					
-					MathMapping.ProbabilityParameter probRevParm = null;
+					ProbabilityParameter probRevParm = null;
 					try{
-						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,MathMapping.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
+						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -759,9 +670,9 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
-						MathMapping.ProbabilityParameter probParm = null;
+						ProbabilityParameter probParm = null;
 						try{
-							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,MathMapping.PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
+							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -809,9 +720,9 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 
 						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scExpr, Expression.div(scUnitFactor,scStructureSize));
 						
-						MathMapping.ProbabilityParameter probRevParm = null;
+						ProbabilityParameter probRevParm = null;
 						try{
-							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,MathMapping.PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
+							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -902,65 +813,13 @@ protected void refresh() throws MappingException, ExpressionException, MatrixExc
 	}
 
 /**
- * 
- * @param expr
- * @param bConcentration
- * @return
- * @throws ExpressionException
- */	
-private Expression getSubstitutedExpr(Expression expr, boolean bConcentration, boolean bIsInitialCondn) throws ExpressionException {
-	expr = new Expression(expr);
-	String[] symbols = expr.getSymbols();
-	// Check if 'expr' has other speciesContexts in its expression, need to replace it with 'spContext_init'
-	for (int j = 0; symbols != null && j < symbols.length; j++) {
-		// if symbol is a speciesContext, replacing it with a reference to initial condition for that speciesContext.
-		SpeciesContext spC = null;
-		SymbolTableEntry ste = expr.getSymbolBinding(symbols[j]);
-		if (ste instanceof ProxyParameter) {
-			// if expression is for speciesContextSpec or Kinetics, ste will be a ProxyParameter instance.
-			ProxyParameter spspp = (ProxyParameter)ste;
-			if (spspp.getTarget() instanceof SpeciesContext) {
-				spC = (SpeciesContext)spspp.getTarget();
-			}
-		} else if (ste instanceof SpeciesContext) {
-			// if expression is for a global parameter, ste will be a SpeciesContext instance. 
-			spC = (SpeciesContext)ste;
-		}
-		if (spC != null) {
-			SpeciesContextSpec spcspec = getSimulationContext().getReactionContext().getSpeciesContextSpec(spC);
-			Parameter spCParm = null;
-			if (bConcentration && bIsInitialCondn) {
-				// speciesContext has initConcentration set, so need to replace 'spContext' in 'expr' 'spContext_init'
-				spCParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-			} else if (!bConcentration && bIsInitialCondn) {
-				// speciesContext has initCount set, so need to replace 'spContext' in 'expr' 'spContext_initCount'
-				spCParm = spcspec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
-			} else if (bConcentration && !bIsInitialCondn) {
-				// need to replace 'spContext' in 'expr' 'spContext_Conc'
-				spCParm = getSpeciesConcentrationParameter(spC);
-			} else if (!bConcentration && !bIsInitialCondn) {
-				// need to replace 'spContext' in 'expr' 'spContext_Count'
-				spCParm = getSpeciesCountParameter(spC);
-			}
-			// need to get init condn expression, but can't get it from getMathSymbol() (mapping between bio and math), hence get it as below.
-			Expression scsInitExpr = new Expression(spCParm, getNameScope());
-//			scsInitExpr.bindExpression(this);
-			expr.substituteInPlace(new Expression(spC.getName()), scsInitExpr);
-		}
-	}
-	return expr;
-}
-	
-	
-/**
  * Insert the method's description here.
  * Creation date: (10/26/2006 11:47:26 AM)
  * @exception cbit.vcell.parser.ExpressionException The exception description.
  * @exception cbit.vcell.mapping.MappingException The exception description.
  * @exception cbit.vcell.math.MathException The exception description.
  */
-@Override
-protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
+private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
 {
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -997,7 +856,6 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
 				scm.setHasHybridReaction(true);
 			}
 		}
-		// We still want the stochastic constant species context to be a fixed function, but still stochvolumnVar.
 		// we don't eliminate variables for stochastic
 		scm.setDependencyExpression(null);
 		// We don't participant in fast reaction step for stochastic
@@ -1013,8 +871,7 @@ protected void refreshSpeciesContextMappings() throws ExpressionException, Mappi
  * Creation date: (10/25/2006 8:59:43 AM)
  * @exception cbit.vcell.mapping.MappingException The exception description.
  */
-@Override
-protected void refreshVariables() throws MappingException {
+private void refreshVariables() throws MappingException {
 	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 
 	//
@@ -1025,11 +882,11 @@ protected void refreshVariables() throws MappingException {
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		//stochastic variable is always a function of size.
-		MathMapping.SpeciesCountParameter spCountParm = null;
+		SpeciesCountParameter spCountParm = null;
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, MathMapping.PARAMETER_ROLE_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());
@@ -1040,7 +897,7 @@ protected void refreshVariables() throws MappingException {
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
 			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext());
 			concExp.bindExpression(this);
-			addSpeciesConcentrationParameter(concName, concExp, MathMapping.PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());

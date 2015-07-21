@@ -15,11 +15,9 @@ import java.util.Vector;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
@@ -40,7 +38,7 @@ public class MembraneStructureAnalyzer extends StructureAnalyzer {
  * @param mathMapping cbit.vcell.mapping.MathMapping
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public MembraneStructureAnalyzer(MathMapping mathMapping, SurfaceClass surfaceClass) {
+public MembraneStructureAnalyzer(DiffEquMathMapping mathMapping, SurfaceClass surfaceClass) {
 	super(mathMapping);
 	this.surfaceClass = surfaceClass;
 }

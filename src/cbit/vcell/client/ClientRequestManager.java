@@ -948,8 +948,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 //			}
 			
 			BioModel newBioModel = new BioModel(null);
-			SimulationContext sc = mm.getSimulationContext();
-			newBioModel.setModel(sc.getModel());
+			newBioModel.setModel(simContext.getModel());
 			//newBioModel.addSimulationContext(sc);
 			
 			for(SpeciesContext speciesContext : newBioModel.getModel().getSpeciesContexts()) {

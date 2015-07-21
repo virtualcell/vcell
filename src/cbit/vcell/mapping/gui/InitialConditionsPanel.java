@@ -44,6 +44,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -359,16 +360,21 @@ private ButtonGroup getButtonGroup()
 
 private void updateTopScrollPanel()
 {
-	if (getSimulationContext().isStoch()) {
+	switch (getSimulationContext().getApplicationType()){
+	case NETWORK_STOCHASTIC:
+	case RULE_BASED_STOCHASTIC:
 		getRadioButtonAndCheckboxPanel().setVisible(true);
 		boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
 		getConcentrationRadioButton().setSelected(bUsingConcentration);
 		getAmountRadioButton().setSelected(!bUsingConcentration);
 		// ' make randomizeInitialCondition' checkBox visible only if application is non-spatial stochastic
 		getRandomizeInitCondnCheckbox().setVisible(getSimulationContext().getGeometry().getDimension() == 0);
-		getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());	
-	} else {
+		getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());
+		break;
+	default:{
 		getRadioButtonAndCheckboxPanel().setVisible(false);
+		break;
+	}
 	}
 }
 
@@ -649,7 +655,7 @@ private void jMenuItemPaste_ActionPerformed(final java.awt.event.ActionEvent act
 										Variable localMathVariable = msm.findVariableByName(pastedMathVariable.getName());
 										if(localMathVariable == null){
 											// try if localMathVariable is a speciesContext init parameter
-											String initSuffix = MathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scs.getInitialConcentrationParameter().getUnitDefinition().getSymbol());
+											String initSuffix = DiffEquMathMapping.MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX + TokenMangler.fixTokenStrict(scs.getInitialConcentrationParameter().getUnitDefinition().getSymbol());
 											localMathVariable = msm.findVariableByName(pastedMathVariable.getName()+ initSuffix);
 										}
 										if(localMathVariable != null){
