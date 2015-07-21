@@ -64,6 +64,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
 /**
  * Insert the type's description here.
@@ -245,7 +246,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC9(evt);
 			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("customScaleRange"))) 
 				connEtoC5(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == PDEPlotControlPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS))) 
 				connEtoM8(evt);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
