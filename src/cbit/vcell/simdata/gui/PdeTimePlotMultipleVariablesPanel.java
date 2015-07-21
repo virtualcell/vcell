@@ -14,18 +14,23 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -39,6 +44,7 @@ import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.data.PDEDataViewer.DataInfoProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.geometry.SampledCurve;
@@ -48,23 +54,24 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 
-public class PdeTimePlotMultipleVariablesPanel extends JPanel {
+public class PdeTimePlotMultipleVariablesPanel extends JPanel implements PropertyChangeListener{
 	private PDEDataContext pdeDataContext = null;
-	private TSJobResultsNoStats tsJobResultsNoStats = null;
 	private PlotPane plotPane = null;
 	private Vector<SpatialSelection> pointVector = null;
-	private Vector<SpatialSelection> pointVector2 = null;
-	private JList variableJList = new JList();
+	private JList<DataIdentifier> variableJList = new JList<DataIdentifier>();
 	private EventHandler eventHandler = new EventHandler();
 	private Simulation simulation = null;
 	private PDEDataViewer pdeDataViewer = null;
-	private JList pointJList = new JList();
-	private ListCellRenderer listCellRenderer = null;
+	private JList<String> pointJList = new JList<String>();
+	private ListCellRenderer<DataIdentifier> listCellRenderer = null;
+	private DataInfoProvider dataInfoProvider;
+	private DataIdentifier initialDataIdentifier;
 	
 	private class EventHandler implements ListSelectionListener {
 
@@ -75,26 +82,32 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}
 		
 	}
-	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, ListCellRenderer lcr, Simulation sim, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
+	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, ListCellRenderer<DataIdentifier> lcr, Simulation sim, Vector<SpatialSelection> pv/*, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr*/,DataInfoProvider dataInfoProvider) {
 		pdeDataViewer = pdv;
 		listCellRenderer = lcr;
 		simulation = sim;
 		pdeDataContext = pdeDataViewer.getPdeDataContext();
+		this.initialDataIdentifier = pdeDataContext.getDataIdentifier();
 		pointVector = pv;
-		pointVector2 = pv2;
-		tsJobResultsNoStats = tsjr;
+		this.dataInfoProvider = dataInfoProvider;
 		
 		initialize();
 	}
 
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(evt.getSource() == pdeDataContext &&
+			(/*evt.getPropertyName().equals(SimDataConstants.PROPERTY_NAME_DATAIDENTIFIERS) || */evt.getPropertyName().equals(SimDataConstants.PDE_DATA_MANAGER_CHANGED))){
+			initVariableJList();
+			showTimePlot();
+		}
+	}
+
 	public void showTimePlot() {
-		VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
-		Object[] selectedValues = variableJList.getSelectedValues();
-		DataIdentifier[] selectedDataIdentifiers = new DataIdentifier[selectedValues.length];
-		System.arraycopy(selectedValues, 0, selectedDataIdentifiers, 0, selectedValues.length);
-		if (selectedDataIdentifiers.length > 1) {
+		List<DataIdentifier> selectedDataIdentifiers = variableJList.getSelectedValuesList();
+		if (selectedDataIdentifiers.size() > 1) {
 			for (DataIdentifier selectedDataIdentifier : selectedDataIdentifiers) {
-				if (!selectedDataIdentifier.getVariableType().getVariableDomain().equals(varType.getVariableDomain())) {
+				if (!selectedDataIdentifier.getVariableType().getVariableDomain().equals(initialDataIdentifier.getVariableType().getVariableDomain())) {
 					PopupGenerator.showErrorDialog(this, "Please choose VOLUME variables or MEMBRANE variables only");
 					variableJList.clearSelection();
 					variableJList.setSelectedValue(pdeDataContext.getVariableName(), true);
@@ -104,36 +117,46 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}		
 		
 		try {		
-			final int numSelectedVariables = selectedDataIdentifiers.length;
-			final int numSelectedSpatialPoints = pointVector.size();
-			int[][] indices = new int[numSelectedVariables][numSelectedSpatialPoints];
-			//
-			for (int i = 0; i < numSelectedSpatialPoints; i++){
-				for (int v = 0; v < numSelectedVariables; v ++) {
-					if (selectedDataIdentifiers[v].getVariableType().equals(varType)) {
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
-							indices[v][i] = ssv.getIndex(0);
-						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector.get(i);
-							indices[v][i] = ssm.getIndex(0);
-						}
-					} else {
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector2.get(i);
-							indices[v][i] = ssv.getIndex(0);
-						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector2.get(i);
-							indices[v][i] = ssm.getIndex(0);
-						}
+			HashMap<DataIdentifier,ArrayList<SpatialSelection>> mapDataIdentifierToMarkers = new HashMap<>();
+			for (int v = 0; v < selectedDataIdentifiers.size(); v ++) {
+				ArrayList<SpatialSelection> currentSpatialSelections = new ArrayList<SpatialSelection>();
+				VariableType selectedVariableType = selectedDataIdentifiers.get(v).getVariableType();
+				for(SpatialSelection spatialSelection:pointVector){
+					if((selectedVariableType.equals(VariableType.VOLUME) || selectedVariableType.equals(VariableType.VOLUME_REGION)) &&
+							spatialSelection instanceof SpatialSelectionVolume &&
+							(dataInfoProvider == null || dataInfoProvider.isDefined(selectedDataIdentifiers.get(v),((SpatialSelectionVolume)spatialSelection).getIndex(0)))){
+						currentSpatialSelections.add(spatialSelection);
+					}else if((selectedVariableType.equals(VariableType.MEMBRANE) || selectedVariableType.equals(VariableType.MEMBRANE_REGION)) &&
+							spatialSelection instanceof SpatialSelectionMembrane &&
+							(dataInfoProvider == null || dataInfoProvider.isDefined(selectedDataIdentifiers.get(v),((SpatialSelectionMembrane)spatialSelection).getIndex(0)))){
+						currentSpatialSelections.add(spatialSelection);
+					}else if(selectedVariableType.equals(VariableType.POSTPROCESSING) && spatialSelection instanceof SpatialSelectionVolume){
+						currentSpatialSelections.add(spatialSelection);						
 					}
 				}
+				if(currentSpatialSelections.size() > 0){
+					mapDataIdentifierToMarkers.put(selectedDataIdentifiers.get(v), currentSpatialSelections);
+				}
+			}
+			
+			final String[] selectedVarNames = new String[mapDataIdentifierToMarkers.size()];
+			final int[] plotCountHolder = new int[] {0};
+			final HashMap<String, DataIdentifier> mapVarNameToDataIdentifier = new HashMap<>();
+			int dataIdentifierCount = 0;
+			int[][] indices = new int[mapDataIdentifierToMarkers.size()][];
+			for (DataIdentifier dataIdentifier:mapDataIdentifierToMarkers.keySet()) {
+				selectedVarNames[dataIdentifierCount] = dataIdentifier.getName();
+				mapVarNameToDataIdentifier.put(dataIdentifier.getName(), dataIdentifier);
+				indices[dataIdentifierCount] = new int[mapDataIdentifierToMarkers.get(dataIdentifier).size()];
+				int spatialSelectionCount = 0;
+				for (SpatialSelection spatialSelection:mapDataIdentifierToMarkers.get(dataIdentifier)) {
+					indices[dataIdentifierCount][spatialSelectionCount] = spatialSelection.getIndex(0);
+					plotCountHolder[0]++;
+					spatialSelectionCount++;
+				}
+				dataIdentifierCount++;
 			}
 
-			final String[] selectedVarNames = new String[numSelectedVariables];
-			for (int i = 0; i < selectedVarNames.length; i++) {
-				selectedVarNames[i] = selectedDataIdentifiers[i].getName();
-			}
 			final double[] timePoints = pdeDataContext.getTimePoints();
 			TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(selectedVarNames,
 					indices, null, timePoints[0], 1, timePoints[timePoints.length-1],
@@ -152,18 +175,17 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobResults);
-					int plotCount = numSelectedVariables * numSelectedSpatialPoints;
-					SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotCount];
-					String[] plotNames = new String[plotCount];
-					double[][] plotDatas = new double[1 + plotCount][];
+					SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotCountHolder[0]];
+					String[] plotNames = new String[plotCountHolder[0]];
+					double[][] plotDatas = new double[1 + plotCountHolder[0]][];
 					plotDatas[0] = timePoints;
 					int plotIndex = 0;
-					for (int v = 0; v < numSelectedVariables; v ++) {
+					for (int v = 0; v < selectedVarNames.length; v ++) {
 						String varName = selectedVarNames[v];
 						double[][] data = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
 						for (int i = 1; i < data.length; i++) {
 							symbolTableEntries[plotIndex] = simulation.getMathDescription().getEntry(varName);
-							plotNames[plotIndex] = varName + " at P[" + (i-1) + "]";
+							plotNames[plotIndex] = "("+getDescription(mapDataIdentifierToMarkers.get(mapVarNameToDataIdentifier.get(varName)).get(i-1),null)+") "+varName;
 							plotDatas[plotIndex + 1] = data[i];
 							plotIndex ++;
 						}
@@ -174,7 +196,16 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				}						
 			};		
 			
-			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+			if(plotCountHolder[0] > 0){
+				ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+			}else{
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						plotPane.setPlot2D(null);
+					}
+				});
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -182,25 +213,70 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		
 	}
 
+	private static String getDescription(SpatialSelection spatialSelection,Integer geometryDimension){
+		String description = null;
+		Coordinate tp = null;
+		if(spatialSelection instanceof SpatialSelectionVolume){
+			SpatialSelectionVolume ssv = (SpatialSelectionVolume)spatialSelection;
+			tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
+			description = ssv.getCurveSelectionInfo().getCurve().getDescription();
+		}else if(spatialSelection instanceof SpatialSelectionMembrane){
+			SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)spatialSelection;
+			double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
+			tp = ((SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
+			description = ssm.getSelectionSource().getDescription();
+		}
+		return description +(geometryDimension!=null?(tp==null?"":" (" + niceCoordinateString(tp,geometryDimension)+")"):"");
+	}
+	
+	private void initVariableJList(){
+		List<DataIdentifier> currentlySelectedList = variableJList.getSelectedValuesList();
+		try{
+			variableJList.removeListSelectionListener(eventHandler);
+			DataIdentifier[] dis = DataIdentifier.collectSimilarDataTypes(initialDataIdentifier, pdeDataContext.getDataIdentifiers());		
+			Arrays.sort(dis, new Comparator<DataIdentifier>(){
+				public int compare(DataIdentifier o1, DataIdentifier o2) {
+					int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+					if (bEqualIgnoreCase == 0){
+						return o1.getDisplayName().compareTo(o2.getDisplayName());
+					}
+					return bEqualIgnoreCase;
+				}
+			});
+			variableJList.setListData(dis);
+			if(currentlySelectedList != null){
+				ArrayList<Integer> selectedIntegers = new ArrayList<>();
+				for(int i=0;i<variableJList.getModel().getSize();i++){
+					if(currentlySelectedList.contains(variableJList.getModel().getElementAt(i))){
+						selectedIntegers.add(i);
+					}
+				}
+				if(selectedIntegers.size() > 0){
+					int[] selectedIndices = new int[selectedIntegers.size()];
+					int selectCount = 0;
+					for(Integer selection:selectedIntegers){
+						selectedIndices[selectCount] = selection;
+						selectCount++;
+					}
+					variableJList.setSelectedIndices(selectedIndices);
+				}
+			}
+		}finally{
+			variableJList.addListSelectionListener(eventHandler);
+		}
+
+	}
 	private void initialize() {		
-		VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
+		VariableType varType = initialDataIdentifier.getVariableType();
 		String varName = pdeDataContext.getVariableName();
-		String[] plotNames = new String[pointVector.size()];
-		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotNames.length];
-		DefaultListModel pointListModel = new DefaultListModel();
+		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[pointVector.size()];
+		DefaultListModel<String> pointListModel = new DefaultListModel<String>();
 		for (int i = 0; i < pointVector.size(); i++){
-			Coordinate tp = null;
 			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
-				SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
-				tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
+				pointListModel.addElement(getDescription(pointVector.get(i), pdeDataContext.getCartesianMesh().getGeometryDimension()));
 			}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-				SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)pointVector.get(i);
-				double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
-				tp = ((SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
+				pointListModel.addElement(getDescription(pointVector.get(i), pdeDataContext.getCartesianMesh().getGeometryDimension()));
 			}			
-			plotNames[i] = varName + " at P[" + i +"]";
-			String point = "P[" + i +"]  (" + niceCoordinateString(tp)+")";
-			pointListModel.addElement(point);
 			if (simulation!=null){
 				symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
 			}else{
@@ -217,23 +293,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		pointJList.setSelectionForeground(Color.black);
 		
 		plotPane = new PlotPane();
-		double[][] plotDatas = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
-		Plot2D plot2D = new SingleXPlot2D(symbolTableEntries, null, ReservedVariable.TIME.getName(), plotNames, plotDatas, 
-				new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
-		plotPane.setPlot2D(plot2D);
-		
-		DataIdentifier[] dis = DataIdentifier.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
-		Arrays.sort(dis, new Comparator<DataIdentifier>(){
-			public int compare(DataIdentifier o1, DataIdentifier o2) {
-				int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-				if (bEqualIgnoreCase == 0){
-					return o1.getDisplayName().compareTo(o2.getDisplayName());
-				}
-				return bEqualIgnoreCase;
-			}
-		});
-		variableJList.setListData(dis);
-		variableJList.setSelectedValue(pdeDataContext.getDataIdentifier(), true);
+		initVariableJList();
 		variableJList.setCellRenderer(listCellRenderer);
 		
 		setLayout(new GridBagLayout());		
@@ -291,7 +351,10 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		add(sp, gbc);
 		
-		variableJList.addListSelectionListener(eventHandler);
+		variableJList.setSelectedValue(initialDataIdentifier, true);
+		if(variableJList.getSelectedIndex() == -1 && variableJList.getModel().getSize() > 0){
+			variableJList.setSelectedIndex(0);
+		}
 	}
 	
 
@@ -301,15 +364,15 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	 * @return java.lang.String
 	 * @param coord cbit.vcell.geometry.Coordinate
 	 */
-	private String niceCoordinateString(Coordinate coord) {
+	private static String niceCoordinateString(Coordinate coord,int geometryDimension) {
 
 		//reduce fraction digits of the form XX.xxxxxxxxxxxxxxy
 		//to something more reasonable
 
-		int dim = pdeDataContext.getCartesianMesh().getGeometryDimension();
+//		int dim = pdeDataContext.getCartesianMesh().getGeometryDimension();
 		final int MAX_CHARS = 3;
 		String result = "";
-		for(int i=0;i<dim;i+= 1){
+		for(int i=0;i<geometryDimension;i+= 1){
 			double xyz = -1;
 			if(i==0){xyz = coord.getX();}
 			else if(i==1){xyz = coord.getY();}
@@ -320,5 +383,4 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 
 		return result;
 	}
-
 }
