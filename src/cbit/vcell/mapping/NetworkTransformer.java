@@ -103,6 +103,10 @@ public class NetworkTransformer implements SimContextTransformer {
 		public double getConstantValue() throws ExpressionException {
 			throw new ExpressionException("can't evaluate to constant");
 		}
+		public SymbolTableEntry getSymbolTableEntry() {
+			return unmappedSymbol;
+		}
+		
 		@Override
 		public int getIndex() {
 			return 0;

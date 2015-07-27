@@ -1338,6 +1338,7 @@ private void updateLegend() {
 		final int head = 20;
 		final int tail = 0;
 		
+		String tooltipString = "";
 		String unitSymbol = "";
 		if (metadataResolver != null) {
 			DataSymbolMetadata metaData = metadataResolver.getDataSymbolMetadata(plotLabel);
@@ -1347,6 +1348,9 @@ private void updateLegend() {
 					unitSymbol += ud.getSymbolUnicode();
 				}
 			}
+			if (metaData != null && metaData.tooltipString != null){
+				tooltipString = metaData.tooltipString;
+			}
 		}
 		String shortLabel =  plotLabel;
 		if(shortLabel.length()>head+3+tail) {
@@ -1354,9 +1358,10 @@ private void updateLegend() {
 		}
 //		shortLabel = "<html>" + shortLabel + "<font color=\"red\">" + " [" + unitSymbol + "] " + "</font></html>";
 		shortLabel = "<html>" + shortLabel + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
+		tooltipString  = "<html>" + plotLabel + "<font color=\"#0000FF\">" + " " + tooltipString + " " + "</font></html>";
 		
 		((JLabel)legends[2 * i + 1]).setText(shortLabel);
-		((JLabel)legends[2 * i + 1]).setToolTipText(plotLabel);
+		((JLabel)legends[2 * i + 1]).setToolTipText(tooltipString);
 		legends[2 * i].setVisible(true);
 		legends[2 * i + 1].setVisible(true);
 	}

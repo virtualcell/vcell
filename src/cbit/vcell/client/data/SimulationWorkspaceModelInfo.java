@@ -15,6 +15,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -335,6 +336,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				addOutputFunctionsToMetaData(simulationContext, metadataMap);
 				boolean isSymbolsNotFound = false;
 				while (varEnum.hasMoreElements()){
+					String tooltipString = null;
 					Variable var = varEnum.nextElement();
 					SymbolTableEntry[] bioSymbols = mathSymbolMapping.getBiologicalSymbol(var);
 					if (bioSymbols != null && bioSymbols.length>0){
@@ -362,6 +364,15 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 							filterCategory = FilterCategoryType.Observables;
 						}else if (ste instanceof GeneratedSpeciesSymbolTableEntry){
 							filterCategory = FilterCategoryType.GeneratedSpecies;
+							
+							SymbolTableEntry unmappedSymbol = ((GeneratedSpeciesSymbolTableEntry)ste).getSymbolTableEntry();
+							if(unmappedSymbol instanceof SpeciesContext) {
+								SpeciesContext sc = (SpeciesContext)unmappedSymbol;
+								if(sc.hasSpeciesPattern()) {
+									SpeciesPattern sp = sc.getSpeciesPattern();
+									tooltipString = sp.toString();
+								}
+							}
 //						}else if (ste instanceof ReservedSymbol){		// TODO: never executed? var can't be reserved symbol
 //							ReservedSymbol rs = (ReservedSymbol)ste;
 //							if (rs.isTime() || rs.isX() || rs.isY() || rs.isZ()){
@@ -369,7 +380,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 //							}
 						}
 						VCUnitDefinition unit = bioSymbols[0].getUnitDefinition();
-						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit));
+						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit, tooltipString));
 					}else{
 						isSymbolsNotFound = true;
 //						System.out.println("couldn't find biological symbol for var "+var.getName());
@@ -382,7 +393,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				// add reserved symbols for x,y,z,t
 				//
 				ModelUnitSystem unitSystem = simulationContext.getModel().getUnitSystem();
-				metadataMap.put(ReservedVariable.TIME.getName(),new DataSymbolMetadata(null,unitSystem.getTimeUnit()));
+				metadataMap.put(ReservedVariable.TIME.getName(),new DataSymbolMetadata(null,unitSystem.getTimeUnit(), null));
 //				metadataMap.put(ReservedVariable.X.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Y.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
 //				metadataMap.put(ReservedVariable.Z.getName(),new DataSymbolMetadata(FilterCategoryType.ReservedXYZT,unitSystem.getLengthUnit()));
@@ -438,9 +449,11 @@ public static enum FilterCategoryType {
 public static class DataSymbolMetadata {
 	public final FilterCategoryType filterCategory;
 	public final VCUnitDefinition unit;
-	public DataSymbolMetadata(FilterCategoryType filterCategory, VCUnitDefinition unit){
+	public final String tooltipString;
+	public DataSymbolMetadata(FilterCategoryType filterCategory, VCUnitDefinition unit, String tooltipString){
 		this.filterCategory = filterCategory;
 		this.unit = unit;
+		this.tooltipString = tooltipString;
 	}
 	@Override
 	public String toString(){
@@ -464,7 +477,7 @@ private static void addOutputFunctionsToMetaData(SimulationContext simulationCon
 				if(simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()) != null){
 				metaDataMap.put(annotfunc.getName(),
 					new DataSymbolMetadata(FilterCategoryType.UserFunctions,
-						simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()).getUnitDefinition()));
+						simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()).getUnitDefinition(), null));
 				}
 			}
 		}
