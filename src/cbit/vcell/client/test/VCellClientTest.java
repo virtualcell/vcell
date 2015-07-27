@@ -25,6 +25,7 @@ import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.logging.ConsoleCapture;
 import org.vcell.util.logging.Logging;
 
 import cbit.util.xml.VCLogger;
@@ -58,7 +59,7 @@ public static void main(java.lang.String[] args) {
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
 	if (!IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
-		Logging.captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
+		ConsoleCapture.getInstance().captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
 	}
 	Logging.init();
 	BeanUtils.setDebug(IS_DEBUG);
