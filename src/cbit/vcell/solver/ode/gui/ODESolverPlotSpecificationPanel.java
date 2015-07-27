@@ -44,6 +44,8 @@ import org.vcell.util.gui.CollapsiblePanel;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadata;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
@@ -758,7 +760,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+@SuppressWarnings({ "serial", "unchecked" })
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
@@ -776,14 +778,15 @@ private void initConnections() throws java.lang.Exception {
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-			if (getMyDataInterface() == null) {
+			MyDataInterface mdi = getMyDataInterface();
+			if (mdi == null) {
 				return this;
 			}
 			
 			String varName = (String)value;
 			ColumnDescription cd = null;
 			try {
-				cd = getMyDataInterface().getColumnDescription(varName);
+				cd = mdi.getColumnDescription(varName);
 			} catch (ObjectNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -792,6 +795,15 @@ private void initConnections() throws java.lang.Exception {
 					function_icon = new ImageIcon(getClass().getResource("/icons/function_icon.png"));
 				}
 				setIcon(function_icon);
+			}
+			
+			if(mdi.getDataSymbolMetadataResolver() != null && mdi.getDataSymbolMetadataResolver().getDataSymbolMetadata(varName) != null) {
+				DataSymbolMetadata dsm = mdi.getDataSymbolMetadataResolver().getDataSymbolMetadata(varName);
+				String tooltipString = dsm.tooltipString;
+				if(tooltipString == null) {
+					tooltipString = varName;
+				}
+				setToolTipText(tooltipString);
 			}
 			return this;
 		}
@@ -1078,7 +1090,8 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 			if(getSymbolTable() != null && yNames != null && yNames.length > 0){
 				symbolTableEntries = new SymbolTableEntry[yNames.length];
 				for(int i=0;i<yNames.length;i+= 1){
-					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
+					SymbolTableEntry ste = getSymbolTable().getEntry(yNames[i]);
+					symbolTableEntries[i] = ste;
 				}
 				
 			}
