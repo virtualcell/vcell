@@ -1,9 +1,6 @@
 package org.vcell.util.logging;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -12,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.vcell.util.PropertyLoader;
 
 /**
  * location for startup of logging files
@@ -27,7 +23,9 @@ public class Logging {
 	 * {@link org.apache.log4j Log4J } configuration file
 	 */
 	public static final String PROP_FILE = "log4j.properties";
+	
 	static Logger lg = Logger.getLogger(Logging.class);
+	
 	/**
 	 * @return file specified on command line, if any, if it exists
 	 */
@@ -132,44 +130,6 @@ public class Logging {
 					ca.activateOptions();
 				}
 			}
-		}
-	}
-	
-	/**
-	 * redirect standard err and out to filename; if autoflush property not set add shutdown hook
-	 * @param logFile 
-	 * @throws IllegalArgumentException if logFile null
-	 */
-	public static void captureStandardOutAndError(File logFile) throws IllegalArgumentException {
-		if (logFile != null) {
-			boolean autoflush =  Boolean.parseBoolean(PropertyLoader.getProperty(PropertyLoader.autoflushStandardOutAndErr, Boolean.FALSE.toString()));
-			try {
-				FileOutputStream fos = new FileOutputStream(logFile);
-				BufferedOutputStream bos = new BufferedOutputStream(fos);
-				PrintStream output =  new  PrintStream(bos, autoflush);
-				System.setOut(output);
-				System.setErr(output);
-				if (!autoflush) {
-					Runtime.getRuntime().addShutdownHook(new FlushOnExit(output));
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return;
-		}
-		throw new IllegalArgumentException("null filename passed");
-	}
-
-	private static class FlushOnExit extends Thread {
-		final PrintStream printStream;
-		@Override
-		public void run() {
-			printStream.flush();
-			printStream.close();
-		}
-
-		public FlushOnExit(PrintStream printStream) {
-			this.printStream = printStream;
 		}
 	}
 }
