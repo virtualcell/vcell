@@ -284,7 +284,9 @@ public class ResourceUtil {
 			prefs.clear();
 		}
 	
-	}	/**
+	}	
+	
+	/**
 	 * @param basename name of executable without path or os specific extension
 	 * @param ll LicensedLibrary, may not be null 
 	 * @param firstLoad is the first exe loaded?
