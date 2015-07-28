@@ -30,6 +30,7 @@ import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.AbstractMathMapping.UnitFactorParameter;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.UnresolvedParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -460,6 +461,15 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			particleObservable.addParticleSpeciesPattern(vpsp);
 
 			varHash.addVariable(particleObservable);
+		}
+		
+		//
+		// include required UnitRateFactors
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+			}
 		}
 		
 		//
