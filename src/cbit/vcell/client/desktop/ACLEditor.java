@@ -187,6 +187,7 @@ private void actionACLState(java.awt.event.ItemEvent itemEvent) {
  */
 public void clearACLList() {
 	getJListACL().setListData(new Object[0]);
+	getVCellSupportCheckBox().setSelected(false);
 }
 /**
  * connEtoC1:  (ACLEditor.initialize() --> ACLEditor.aCLEditor_Initialize()V)
