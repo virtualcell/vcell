@@ -963,24 +963,18 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			
-//			MathMapping mm = simContext.getMostRecentlyCreatedMathMapping();
-//			if(mm == null) {
-				MathMappingCallback dummyCallback = new MathMappingCallback() {
+			MathMappingCallback dummyCallback = new MathMappingCallback() {
 					public void setProgressFraction(float percentDone) {}
 					public void setMessage(String message) {}
 					public boolean isInterrupted() { return false; }
 				};
-				MathMapping mm = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
-				simContext.setMathDescription(mm.getMathDescription());
-//			}
+			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+//			simContext.setMathDescription(transformedMathMapping.getMathDescription());
 			
 			BioModel newBioModel = new BioModel(null);
-			newBioModel.setModel(simContext.getModel());
-			//newBioModel.addSimulationContext(sc);
+			SimulationContext transformedSimContext = transformedMathMapping.getTransformation().transformedSimContext;
+			newBioModel.setModel(transformedSimContext.getModel());
 			
-			for(SpeciesContext speciesContext : newBioModel.getModel().getSpeciesContexts()) {
-//				speciesContext.setSpeciesPattern(null);
-			}
 			RbmModelContainer rbmmc = newBioModel.getModel().getRbmModelContainer();
 			for(RbmObservable o : rbmmc.getObservableList()) {
 				rbmmc.removeObservable(o);
@@ -988,9 +982,6 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 			for(ReactionRule r : rbmmc.getReactionRuleList()) {
 				rbmmc.removeReactionRule(r);
 			}
-//			for(MolecularType m : rbmmc.getMolecularTypeList()) {
-//				rbmmc.removeMolecularType(m);
-//			}
 			
 			hashTable.put("newBioModel", newBioModel);
 		}		
