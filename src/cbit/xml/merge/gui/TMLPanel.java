@@ -34,6 +34,7 @@ import cbit.vcell.xml.XmlReader;
 import cbit.xml.merge.ChangedNodeInfo;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 
 /**
 The panel that processes the XML compare and merge feature of VC
@@ -137,7 +138,7 @@ private void associate() {
 				NodeInfo result = null;
 				try {
 					//this diff tree is different from the instance variable.
-					XmlTreeDiff partialDiffTree = XmlHelper.compareMerge(firstNode.toXmlString(),secondNode.toXmlString(), XmlTreeDiff.COMPARE_DOCS_SAVED, fieldDiffTree.isIgnoringVersionInfo());
+					XmlTreeDiff partialDiffTree = XmlHelper.compareMerge(firstNode.toXmlString(),secondNode.toXmlString(), DiffConfiguration.COMPARE_DOCS_SAVED, fieldDiffTree.isIgnoringVersionInfo());
 					result = partialDiffTree.getMergedRootNode();
 				}catch (Throwable e){
 					//

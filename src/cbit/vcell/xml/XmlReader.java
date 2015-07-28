@@ -132,8 +132,10 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -3244,6 +3246,23 @@ public RateRule[] getRateRules(SimulationContext simContext, Element rateRulesEl
 }
 
 
+public ReactionRuleSpec[] getReactionRuleSpecs(SimulationContext simContext, Element reactionRuleSpecsElement) throws XmlParseException  {
+	List<Element> reactionRulesSpecIterator = reactionRuleSpecsElement.getChildren(XMLTags.ReactionRuleSpecTag, vcNamespace);
+	ArrayList<ReactionRuleSpec> reactionRuleSpecs = new ArrayList<ReactionRuleSpec>();
+	for (Element rrElement : reactionRulesSpecIterator){
+		String rrName = unMangle(rrElement.getAttributeValue(XMLTags.ReactionRuleRefAttrTag));
+		String rrMappingString = rrElement.getAttributeValue(XMLTags.ReactionRuleMappingAttrTag);
+		ReactionRuleMappingType rrMapping = ReactionRuleMappingType.fromDatabaseName(rrMappingString);
+		ReactionRule reactionRule = simContext.getModel().getRbmModelContainer().getReactionRule(rrName);
+	    ReactionRuleSpec reactionRuleSpec = new ReactionRuleSpec(reactionRule);
+	    reactionRuleSpec.setReactionRuleMapping(rrMapping);
+		reactionRuleSpecs.add(reactionRuleSpec);
+	}
+	
+	return reactionRuleSpecs.toArray(new ReactionRuleSpec[0]);
+}
+
+
 /*
 public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Model model) throws XmlParseException  {
 	Iterator<Element> rateRuleVarsIterator = rateRuleVarsElement.getChildren(XMLTags.RateRuleVariableTag, vcNamespace).iterator();
@@ -5267,7 +5286,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		
 		// set if randomizing init condition or not (for stochastic applications
 		if (bStoch) {
-			newsimcontext.setRandomizeInitCondition(bRandomizeInitCondition);
+			newsimcontext.setRandomizeInitConditions(bRandomizeInitCondition);
 		}
 		 
 	} catch(java.beans.PropertyVetoException e) {
@@ -5349,7 +5368,12 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 	}
 	
-	// Retrieve SpeciesContextSpecs
+	// Retrieve ReactionRuleSpecs
+	Element reactionRuleSpecsElement = tempelement.getChild(XMLTags.ReactionRuleSpecsTag);
+	if (reactionRuleSpecsElement != null){
+		getReactionRuleSpecs(newsimcontext, reactionRuleSpecsElement);
+	}
+	
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
 	getSpeciesContextSpecs(children, newsimcontext.getReactionContext(), biomodel.getModel());
 

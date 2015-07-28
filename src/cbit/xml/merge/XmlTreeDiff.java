@@ -33,8 +33,10 @@ public class XmlTreeDiff {
 	private HashMap<String, String> elementTable = new HashMap<String, String>();
 	private boolean ignoreVersionInfo = false;         //allows ignoring version info from the modified. 
 	private NodeInfo fieldRootNode;
-	public static final String COMPARE_DOCS_SAVED = "compare_wth_saved_version";
-	public static final String COMPARE_DOCS_OTHER = "compare_with_other";
+	public enum DiffConfiguration {
+		COMPARE_DOCS_SAVED,
+		COMPARE_DOCS_OTHER;
+	}
 
 /**
  * This class performs the comparision and merge of two XML documents..
@@ -169,9 +171,9 @@ public String getMangledName(Element param) throws java.lang.IllegalArgumentExce
  * @param docA org.jdom.Document
  * @param docB org.jdom.Document
  */
-public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, String comparisonSetting) throws java.io.IOException {
+public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, DiffConfiguration comparisonSetting) throws java.io.IOException {
 
-	if (XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting)|| XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) { // always use docA as baseline
+	if (DiffConfiguration.COMPARE_DOCS_SAVED == comparisonSetting || DiffConfiguration.COMPARE_DOCS_OTHER == comparisonSetting) { // always use docA as baseline
 		fieldRootNode = this.merge(docA.getRootElement(), docB.getRootElement(), comparisonSetting);
 	} else {
 		throw new IllegalArgumentException("Invalid comparison setting: " + comparisonSetting);
@@ -190,7 +192,7 @@ public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, String com
  */
 private cbit.xml.merge.NodeInfo merge(  
     org.jdom.Element parsedA,
-    org.jdom.Element parsedB, String comparisonSetting) throws java.io.IOException {
+    org.jdom.Element parsedB, DiffConfiguration comparisonSetting) throws java.io.IOException {
     NodeInfo parent = null; 
 
     if (parsedA == null || parsedB == null) {
@@ -249,7 +251,7 @@ private cbit.xml.merge.NodeInfo merge(
  * @param listA java.util.List
  * @param listB java.util.List
  */
-private List mergeAttrList(List listA, List listB, String comparisonSetting) {
+private List mergeAttrList(List listA, List listB, DiffConfiguration comparisonSetting) {
     List result = new java.util.ArrayList();    
     XmlElementComparator comparator = new XmlElementComparator(this);
 
@@ -257,7 +259,7 @@ private List mergeAttrList(List listA, List listB, String comparisonSetting) {
     while (i.hasNext()) {
         Attribute temp = (Attribute) (i.next());
         if (temp.getName().equals(XMLTags.KeyValueAttrTag) && ignoreVersionInfo) {
-	        if (XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting)) { 
+	        if (DiffConfiguration.COMPARE_DOCS_SAVED == comparisonSetting) { 
 	        	result.add(new NodeInfo(temp, NodeInfo.STATUS_NORMAL));
 	        }
 	        i.remove();
@@ -294,7 +296,7 @@ private List mergeAttrList(List listA, List listB, String comparisonSetting) {
         //these nodes only exists in ListB
         Attribute tempAtt = (Attribute)i.next();
         if (tempAtt.getName().equals(XMLTags.KeyValueAttrTag) && ignoreVersionInfo) {          //ignore keys in the modified
-	        if (XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
+	        if (DiffConfiguration.COMPARE_DOCS_OTHER == comparisonSetting) {
 				result.add(new NodeInfo((tempAtt), NodeInfo.STATUS_NORMAL));
 	        }
 			continue;
@@ -313,7 +315,7 @@ private List mergeAttrList(List listA, List listB, String comparisonSetting) {
  * @param listA java.util.List
  * @param listB java.util.List
  */
-private List mergeElementList(List list1, List list2, String comparisonSetting) throws java.io.IOException {
+private List mergeElementList(List list1, List list2, DiffConfiguration comparisonSetting) throws java.io.IOException {
 
 	//preliminary sorting.
 	ArrayList listA = new ArrayList(sortElementList(list1));
@@ -328,7 +330,7 @@ private List mergeElementList(List list1, List list2, String comparisonSetting) 
         Element temp = (Element) (i.next());
         //exclude all version nodes from comparison, and load the version of the baseline based on the comparison setting
 	 	if (temp.getName().equals(XMLTags.VersionTag) && ignoreVersionInfo) {
-		 	if (XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting)) { 
+		 	if (DiffConfiguration.COMPARE_DOCS_SAVED == comparisonSetting) { 
 		    	result.add(createNodes(temp, NodeInfo.STATUS_NORMAL, BASELINE_NODE));
 		 	}
 		 	i.remove();	
@@ -336,7 +338,7 @@ private List mergeElementList(List list1, List list2, String comparisonSetting) 
 		}
         int index = comparator.getindexof(temp, listB);
         if (index >= 0) { //try to get one equal
-	        if (XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting)) {
+	        if (DiffConfiguration.COMPARE_DOCS_SAVED == comparisonSetting) {
             	result.add(createNodes(temp, NodeInfo.STATUS_NORMAL, BASELINE_NODE));
         	} else {
             	result.add(createNodes((Element)listB.get(index), NodeInfo.STATUS_NORMAL, BASELINE_NODE));
@@ -367,7 +369,7 @@ private List mergeElementList(List list1, List list2, String comparisonSetting) 
 	    Element temp = (Element)i.next();
 	    //ignore the 'modified' version nodes.
 	 	if (temp.getName().equals(XMLTags.VersionTag) && ignoreVersionInfo) { 
-		 	if (XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) { 
+		 	if (DiffConfiguration.COMPARE_DOCS_OTHER == comparisonSetting) { 
 		    	result.add(createNodes(temp, NodeInfo.STATUS_NORMAL, BASELINE_NODE)); 
 		 	} 
 		 	continue; 

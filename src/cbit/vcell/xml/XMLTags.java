@@ -578,6 +578,11 @@ public class XMLTags {
 	public static final String RbmSaturableKsTag = "SaturableKs";
 	public static final String RbmReactantPatternsListTag = "ReactantPatternsList";
 	public static final String RbmProductPatternsListTag = "ProductPatternsList";
+	// reaction rule mapping in application components and application XML
+	public static final String ReactionRuleSpecsTag = "ReactionRuleSpecs";
+	public static final String ReactionRuleSpecTag = "ReactionRuleSpec";
+	public static final String ReactionRuleRefAttrTag = "ReactionRuleRef";
+	public static final String ReactionRuleMappingAttrTag = "ReactionRuleMapping";
 	// bngl (math)
 	public static final String StateAttrTag = "State";
 	public static final String BondAttrTag = "Bond";

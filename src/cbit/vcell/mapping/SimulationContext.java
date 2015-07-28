@@ -107,6 +107,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String PROPERTY_NAME_ANALYSIS_TASKS = "analysisTasks";
 	public static final String PROPERTY_NAME_BIOEVENTS = "bioevents";
 	public static final String PROPERTY_NAME_USE_CONCENTRATION = "UseConcentration";
+	public static final String PROPERTY_NAME_RANDOMIZE_INIT_CONDITIONS = "RandomizeInitConditions";
 	// for rate rule
 	public static final String PROPERTY_NAME_RATERULES = "raterules";
 	
@@ -2106,7 +2107,7 @@ public boolean isUsingConcentration() {
 }
 
 public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
-	if(applicationType == Application.NETWORK_STOCHASTIC) //do it only when it is stochastic application
+	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
 	{
 		boolean oldValue = bConcentration;
 		bConcentration = bUseConcentration;
@@ -2118,10 +2119,12 @@ public boolean isRandomizeInitCondition() {
 	return bRandomizeInitCondition;
 }
 
-public void setRandomizeInitCondition(boolean bRandomize) {
-	if(applicationType == Application.NETWORK_STOCHASTIC) //do it only when it is stochastic application
+public void setRandomizeInitConditions(boolean bRandomize) {
+	if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC)
 	{
+		boolean oldValue = bRandomizeInitCondition;
 		bRandomizeInitCondition = bRandomize;
+		firePropertyChange(PROPERTY_NAME_RANDOMIZE_INIT_CONDITIONS, oldValue, bRandomizeInitCondition);
 	}
 }
 

@@ -34,6 +34,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.RateRule;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextInfo;
 import cbit.vcell.math.MathDescription;
@@ -255,6 +256,13 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			throw new RuntimeException("Error generating XML for bioevents : " + e.getMessage());
 		}
 	}
+	
+	// ReactionRuleSpecs
+	ReactionRuleSpec[] reactionRuleSpecs = simContext.getReactionContext().getReactionRuleSpecs();
+	if (reactionRuleSpecs != null && reactionRuleSpecs.length > 0){
+		Element reactionRuleSpecsElement = xmlProducer.getXML(reactionRuleSpecs);
+		appComponentsElement.addContent(reactionRuleSpecsElement);
+	}
 
 	String appComponentsXMLStr = null; 
 	if (appComponentsElement.getContent() != null) {
@@ -315,7 +323,7 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 				if ((appRelatedFlags.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (appRelatedFlags.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
 					bRandomizeInitCondition = true;
 				}
-				simContext.setRandomizeInitCondition(bRandomizeInitCondition);
+				simContext.setRandomizeInitConditions(bRandomizeInitCondition);
 			}
 			
 			XmlReader xmlReader = new XmlReader(false);
@@ -335,6 +343,12 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 			if (rateRulesElement != null) {
 				RateRule[] rateRules = xmlReader.getRateRules(simContext, rateRulesElement);
 				simContext.setRateRules(rateRules);
+			}
+			// get reaction rule specs
+			Element reactionRuleSpecsElement = appComponentsElement.getChild(XMLTags.ReactionRuleSpecsTag);
+			if (reactionRuleSpecsElement != null) {
+				ReactionRuleSpec[] reactionRuleSpecs = xmlReader.getReactionRuleSpecs(simContext, reactionRuleSpecsElement);
+				simContext.getReactionContext().setReactionRuleSpecs(reactionRuleSpecs);
 			}
 		}
 	} catch (XmlParseException e) {

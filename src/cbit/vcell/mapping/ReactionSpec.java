@@ -9,7 +9,9 @@
  */
 
 package cbit.vcell.mapping;
+import java.awt.Component;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,7 @@ import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
+public class ReactionSpec implements ModelProcessSpec, ScopedSymbolTable, VetoableChangeListener {
 	private ReactionStep reactionStep = null;
 
 	public final static int INCLUDED = 0;
@@ -765,5 +767,11 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 		
 		return bContainsSpeciesContext && bHasForcedContinuous && bHasStochastic;
+	}
+
+
+	@Override
+	public ReactionStep getModelProcess() {
+		return reactionStep;
 	}
 }

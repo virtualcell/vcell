@@ -35,7 +35,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.gui.InitialConditionsPanel;
 import cbit.vcell.mapping.gui.MembraneConditionsPanel;
-import cbit.vcell.mapping.gui.ReactionSpecsPanel;
+import cbit.vcell.mapping.gui.ModelProcessSpecsPanel;
 
 @SuppressWarnings("serial")
 public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
@@ -152,18 +152,18 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	protected void initialize(){
 		super.initialize();	
 		InitialConditionsPanel initialConditionsPanel = new InitialConditionsPanel();
-		ReactionSpecsPanel reactionSpecsPanel = new ReactionSpecsPanel();
+		ModelProcessSpecsPanel modelProcessSpecsPanel = new ModelProcessSpecsPanel();
 		networkConstraintsPanel = new NetworkConstraintsPanel();
 		MembraneConditionsPanel membraneConditionsPanel = new MembraneConditionsPanel();
 		
 		//order of calls determines display order
 		setupTab("Species",initialConditionsPanel);
-		setupTab("Reaction",reactionSpecsPanel);
+		setupTab("Reaction",modelProcessSpecsPanel);
 		setupTab("Membrane",membraneConditionsPanel);
 		setupTab("Network",networkConstraintsPanel);
 		
 		activate(initialConditionsPanel);
-		activate(reactionSpecsPanel);
+		activate(modelProcessSpecsPanel);
 		if (System.getProperty("showMembrane") != null) {
 			activate(membraneConditionsPanel);
 		}

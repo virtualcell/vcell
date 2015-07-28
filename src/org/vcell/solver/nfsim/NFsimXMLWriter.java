@@ -1,8 +1,5 @@
 package org.vcell.solver.nfsim;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -12,25 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.jdom.Comment;
-import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-//import org.jdom.output.Format;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
-import org.vcell.solver.nfsim.NFsimXMLWriter.MappingOfReactionParticipants;
 
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
-import cbit.vcell.math.InteractionRadius;
 import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
@@ -42,7 +30,7 @@ import cbit.vcell.math.ParticleMolecularTypePattern;
 import cbit.vcell.math.ParticleObservable;
 import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
-import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
+import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.Variable;
@@ -54,7 +42,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.xml.XMLTags;
+//import org.jdom.output.Format;
 
 public class NFsimXMLWriter {
 	
@@ -835,23 +823,17 @@ public class NFsimXMLWriter {
 				throw new SolverException("multiple particle initial conditions not expected for "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName());
 			}
 			
-			// the initial conditions could be a concentration or a count (ParticleInitialConditionConcentration or ParticleInitialConditionCount)
-			if (!(particleInitialConditions.get(0) instanceof ParticleInitialConditionConcentration)){
-				throw new SolverException("expecting initial concentration for "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName());
+			// the initial conditions must be a count in math (ParticleInitialConditionCount)
+			if (!(particleInitialConditions.get(0) instanceof ParticleInitialConditionCount)){
+				throw new SolverException("expecting initial count for "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName());
 			}
-			ParticleInitialConditionConcentration initialConcentration = (ParticleInitialConditionConcentration)particleInitialConditions.get(0);
+			ParticleInitialConditionCount initialCount = (ParticleInitialConditionCount)particleInitialConditions.get(0);
 			try {
-				double value = evaluateConstant(initialConcentration.getDistribution(),simulationSymbolTable);
+				double value = evaluateConstant(initialCount.getCount(),simulationSymbolTable);
 				speciesElement.setAttribute("concentration",Double.toString(value));
-			} catch (DivideByZeroException e) {
+			} catch (ExpressionException | MathException e) {
 				e.printStackTrace();
-				throw new SolverException("error processing concentration of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-				throw new SolverException("error processing concentration of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage());
-			} catch (MathException e) {
-				e.printStackTrace();
-				throw new SolverException("error processing concentration of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage());
+				throw new SolverException("error processing initial count of "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName()+": "+e.getMessage());
 			}
 			HashMap<Bond,BondSites> bondSiteMapping = new HashMap<Bond,BondSites>();
 			Element listOfMoleculesElement = getListOfMolecules(speciesID, seedSpecies, bondSiteMapping);
