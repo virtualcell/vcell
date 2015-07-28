@@ -80,16 +80,32 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 					return simulationContext.getName();
 				} 
 				case COLUMN_MATH_TYPE: {
-					String str = "";
+					String spatialDescription = "";
 					int dimension = simulationContext.getGeometry().getDimension(); 
 					if (dimension == 0) {
-						str = "compartmental ";
+						spatialDescription = "compartmental";
 					} else {
 						String temp = simulationContext.getGeometry().getGeometrySpec().hasImage() ? "(image)" : "(analytic)";
-						str = dimension + "D " + temp + " spatial ";
+						spatialDescription = dimension + "D " + temp + " spatial ";
 					}					
-					str += simulationContext.isStoch() ? "stochastic" : "deterministic"; 
-					return str;
+					switch (simulationContext.getApplicationType()){
+					case NETWORK_DETERMINISTIC:{
+						return "explicit network model, "+spatialDescription+", determinstic (ODE)";
+					}
+					case NETWORK_STOCHASTIC:{
+						if (dimension == 0){
+							return "explicit network model, "+spatialDescription+", stochastic (SSA)";
+						}else{
+							return "explicit network model, "+spatialDescription+", stochastic (Particles)";
+						}
+					}
+					case RULE_BASED_STOCHASTIC:{
+						return "Agent-based model, "+spatialDescription+", stochastic (SSA)";
+					}
+					default:{
+						throw new RuntimeException("math type description not yet implemented");
+					}
+					}
 				} 
 				case COLUMN_ANNOTATION: {
 					return simulationContext.getDescription();

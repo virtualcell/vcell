@@ -21,12 +21,15 @@ import java.util.Vector;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -42,6 +45,7 @@ public  class ReactionContext implements Serializable, Matchable, PropertyChange
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ReactionSpec[] fieldReactionSpecs = new ReactionSpec[0];
+	private ReactionRuleSpec[] fieldReactionRuleSpecs = new ReactionRuleSpec[0];
 	private SpeciesContextSpec[] fieldSpeciesContextSpecs = new SpeciesContextSpec[0];
 	private Model fieldModel = null;
 	private SimulationContext simContext = null;
@@ -56,7 +60,11 @@ ReactionContext(ReactionContext reactionContext, SimulationContext argSimulation
 	this.simContext = argSimulationContext;
 	fieldReactionSpecs = new ReactionSpec[reactionContext.fieldReactionSpecs.length];
 	for (int i = 0; i < reactionContext.fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i), argSimulationContext);
+		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.fieldReactionSpecs[i], argSimulationContext);
+	}
+	fieldReactionRuleSpecs = new ReactionRuleSpec[reactionContext.fieldReactionRuleSpecs.length];
+	for (int i = 0; i < reactionContext.fieldReactionRuleSpecs.length; i++){
+		fieldReactionRuleSpecs[i] = new ReactionRuleSpec(reactionContext.fieldReactionRuleSpecs[i]);
 	}
 	fieldSpeciesContextSpecs = new SpeciesContextSpec[reactionContext.fieldSpeciesContextSpecs.length];
 	for (int i = 0; i < reactionContext.fieldSpeciesContextSpecs.length; i++){
@@ -91,26 +99,10 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 
 
 /**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(propertyName, listener);
-}
-
-
-/**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().addVetoableChangeListener(listener);
-}
-
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(propertyName, listener);
 }
 
 
@@ -139,25 +131,12 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 	
+	if (!Compare.isEqual(fieldReactionRuleSpecs, reactContext.fieldReactionRuleSpecs)){
+		return false;
+	}
+	
 	return true;
 }
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
-	getPropertyChange().firePropertyChange(evt);
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
@@ -166,31 +145,6 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(evt);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, int oldValue, int newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
@@ -198,26 +152,20 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/1/2005 9:44:36 AM)
  * @param issueVector java.util.Vector
  */
-public void gatherIssues(List<Issue> issueVector) {
+public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	for (int i = 0; fieldSpeciesContextSpecs!=null && i < fieldSpeciesContextSpecs.length; i++){
-		fieldSpeciesContextSpecs[i].gatherIssues(issueVector);
+		fieldSpeciesContextSpecs[i].gatherIssues(issueContext,issueVector);
 	}
 	for (int i = 0; fieldReactionSpecs!=null && i < fieldReactionSpecs.length; i++){
-		fieldReactionSpecs[i].gatherIssues(issueVector, this);
+		fieldReactionSpecs[i].gatherIssues(issueContext,issueVector, this);
+	}
+	for (int i = 0; fieldReactionRuleSpecs!=null && i < fieldReactionRuleSpecs.length; i++){
+		fieldReactionRuleSpecs[i].gatherIssues(issueContext,issueVector, this);
 	}
 }
 
@@ -230,21 +178,6 @@ public void gatherIssues(List<Issue> issueVector) {
 public Model getModel() {
 	return fieldModel;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/23/01 10:58:34 PM)
- * @return int
- */
-public int getNumReactionSpecs() {
-	if (fieldReactionSpecs==null){
-		return 0;
-	}else{
-		return fieldReactionSpecs.length;
-	}
-}
-
 
 /**
  * Accessor for the propertyChange field.
@@ -272,6 +205,21 @@ public ReactionSpec getReactionSpec(ReactionStep reactionStep) {
 	return null;
 }
 
+/**
+ * Gets the reactionRuleSpecs index property (cbit.vcell.mapping.ReactionRuleSpec) value.
+ * @return The reactionRuleSpecs property value.
+ * @param index The index value into the property array.
+ * @see #setReactionRuleSpecs
+ */
+public ReactionRuleSpec getReactionRuleSpec(ReactionRule reactionRule) {
+	for (int i=0;fieldReactionRuleSpecs!=null && i<fieldReactionRuleSpecs.length;i++){
+		if (fieldReactionRuleSpecs[i].getReactionRule() == reactionRule){
+			return fieldReactionRuleSpecs[i];
+		}
+	}
+	return null;
+}
+
 
 /**
  * Gets the reactionSpecs property (cbit.vcell.mapping.ReactionSpec[]) value.
@@ -282,17 +230,9 @@ public ReactionSpec[] getReactionSpecs() {
 	return fieldReactionSpecs;
 }
 
-
-/**
- * Gets the reactionSpecs index property (cbit.vcell.mapping.ReactionSpec) value.
- * @return The reactionSpecs property value.
- * @param index The index value into the property array.
- * @see #setReactionSpecs
- */
-public ReactionSpec getReactionSpecs(int index) {
-	return getReactionSpecs()[index];
+public ReactionRuleSpec[] getReactionRuleSpecs() {
+	return fieldReactionRuleSpecs;
 }
-
 
 /**
  * Insert the method's description here.
@@ -367,6 +307,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals("reactionSteps")){
 		refreshAll();
 	}
+	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)){
+		refreshAll();
+	}
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals("speciesContexts")){
 		refreshAll();
 	}
@@ -382,6 +325,7 @@ private void refreshAll()
 	try {
 		refreshSpeciesContextSpecs();
 		refreshReactionSpecs();
+		refreshReactionRuleSpecs();
 		if (simContext!=null){
 			refreshSpeciesContextSpecBoundaryUnits(simContext.getGeometryContext().getStructureMappings());
 		}
@@ -470,6 +414,61 @@ private void refreshReactionSpecs() throws java.beans.PropertyVetoException {
 	if (bChanged){
 		ReactionSpec[] newReactionSpecs = reactionSpecList.toArray(new ReactionSpec[reactionSpecList.size()]);
 		setReactionSpecs(newReactionSpecs);
+	}
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ */
+private void refreshReactionRuleSpecs() throws java.beans.PropertyVetoException {
+
+	//
+	// if any reactionStep deleted, remove reactionSpec (reaction mapping)
+	//
+	boolean bChanged = false;
+	ArrayList<ReactionRuleSpec> reactionRuleSpecList = null;
+	if (fieldReactionRuleSpecs!=null){
+		reactionRuleSpecList = new ArrayList<ReactionRuleSpec>(Arrays.asList(fieldReactionRuleSpecs));
+	}else{
+		reactionRuleSpecList = new ArrayList<ReactionRuleSpec>();
+	}
+	for (int i=0;fieldReactionRuleSpecs!=null && i<fieldReactionRuleSpecs.length;i++){
+		ReactionRuleSpec reactionRuleSpec = fieldReactionRuleSpecs[i];
+		ReactionRule reactionRule = getModel().getRbmModelContainer().getReactionRule(reactionRuleSpec.getReactionRule().getName());
+		//
+		// No longer in database or name changed. Discard reactionRule mapping
+		//
+		if (reactionRule == null) {
+			reactionRuleSpecList.remove(reactionRule);
+			bChanged = true;
+			continue;
+		}
+
+		//
+		// ReactionRule was different instance (edited or from database) 
+		// Keep same mapping, point to new reaction instance
+		//
+		if (reactionRule != reactionRuleSpec.getReactionRule()){
+			reactionRuleSpec.setReactionRule(reactionRule);
+			continue;
+		}
+	}
+
+	//
+	// update reactionSpec list if any reactionStep was added
+	//
+	for (ReactionRule reactionRule : fieldModel.getRbmModelContainer().getReactionRuleList()){
+		if (getReactionRuleSpec(reactionRule) == null) {
+			ReactionRuleSpec rSpec = new ReactionRuleSpec(reactionRule);
+			reactionRuleSpecList.add(rSpec);
+			bChanged = true;
+		}
+	}
+
+	if (bChanged){
+		ReactionRuleSpec[] newReactionRuleSpecs = reactionRuleSpecList.toArray(new ReactionRuleSpec[reactionRuleSpecList.size()]);
+		setReactionRuleSpecs(newReactionRuleSpecs);
 	}
 }
 
@@ -686,6 +685,7 @@ public void setModel(Model model) throws MappingException, java.beans.PropertyVe
 	}
 	refreshSpeciesContextSpecs();
 	refreshReactionSpecs();
+	refreshReactionRuleSpecs();
 	firePropertyChange("model", oldValue, model);
 }
 
@@ -704,18 +704,11 @@ public void setReactionSpecs(ReactionSpec[] reactionSpecs) throws java.beans.Pro
 }
 
 
-/**
- * Sets the reactionSpecs index property (cbit.vcell.mapping.ReactionSpec[]) value.
- * @param index The index value into the property array.
- * @param reactionSpecs The new value for the property.
- * @see #getReactionSpecs
- */
-public void setReactionSpecs(int index, ReactionSpec reactionSpecs) {
-	ReactionSpec oldValue = fieldReactionSpecs[index];
-	fieldReactionSpecs[index] = reactionSpecs;
-	if (oldValue != null && !oldValue.equals(reactionSpecs)) {
-		firePropertyChange("reactionSpecs", null, fieldReactionSpecs);
-	};
+public void setReactionRuleSpecs(ReactionRuleSpec[] reactionRuleSpecs) throws java.beans.PropertyVetoException {
+	ReactionRuleSpec[] oldValue = fieldReactionRuleSpecs;
+	fireVetoableChange("reactionRuleSpecs", oldValue, reactionRuleSpecs);
+	fieldReactionRuleSpecs = reactionRuleSpecs;
+	firePropertyChange("reactionRuleSpecs", oldValue, reactionRuleSpecs);
 }
 
 

@@ -121,7 +121,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 				concentrationRadioButton_actionPerformed();
 			} else if (e.getSource() == getRandomizeInitCondnCheckbox()) {
 				// only need to set simContext.isRandomizeInitCondn? 
-				getSimulationContext().setRandomizeInitCondition(getRandomizeInitCondnCheckbox().isSelected());
+				getSimulationContext().setRandomizeInitConditions(getRandomizeInitCondnCheckbox().isSelected());
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {

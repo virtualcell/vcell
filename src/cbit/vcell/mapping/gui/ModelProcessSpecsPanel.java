@@ -25,6 +25,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ReactionStep;
 
 /**
@@ -33,28 +34,28 @@ import cbit.vcell.model.ReactionStep;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsPanel extends DocumentEditorSubPanel implements ApplicationSpecificationsPanel.Specifier {
+public class ModelProcessSpecsPanel extends DocumentEditorSubPanel implements ApplicationSpecificationsPanel.Specifier {
 	private JSortTable ivjScrollPaneTable = null;
-	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
+	private ModelProcessSpecsTableModel ivjModelProcessSpecsTableModel = null;
 	private SimulationContext fieldSimulationContext = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ReactionSpecsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
-				getReactionSpecsTableModel().setSimulationContext(getSimulationContext());
+			if (evt.getSource() == ModelProcessSpecsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
+				getModelProcessSpecsTableModel().setSimulationContext(getSimulationContext());
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()) {
 				return;
 			}
 			if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
-				setSelectedObjectsFromTable(getScrollPaneTable(), getReactionSpecsTableModel());
+				setSelectedObjectsFromTable(getScrollPaneTable(), getModelProcessSpecsTableModel());
 			}
 		}
 	};
 	
-public ReactionSpecsPanel() {
+public ModelProcessSpecsPanel() {
 	super();
 	initialize();
 }
@@ -67,14 +68,14 @@ public ActiveViewID getActiveView() {
 
 
 public void setSearchText(String searchText){
-	ivjReactionSpecsTableModel.setSearchText(searchText);
+	ivjModelProcessSpecsTableModel.setSearchText(searchText);
 }
 /**
  * Initialize the class.
  */
 private void initialize() {
 	try {
-		setName("ReactionSpecsPanel");
+		setName("ModelProcessSpecsPanel");
 		setLayout(new BorderLayout());
 		//setSize(456, 539);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
@@ -85,19 +86,19 @@ private void initialize() {
 }
 
 /*
- * Return the ReactionSpecsTableModel property value.
- * @return cbit.vcell.mapping.gui.ReactionSpecsTableModel
+ * Return the ModelProcessSpecsTableModel property value.
+ * @return cbit.vcell.mapping.gui.ModelProcessSpecsTableModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private ReactionSpecsTableModel getReactionSpecsTableModel() {
-	if (ivjReactionSpecsTableModel == null) {
+private ModelProcessSpecsTableModel getModelProcessSpecsTableModel() {
+	if (ivjModelProcessSpecsTableModel == null) {
 		try {
-			ivjReactionSpecsTableModel = new ReactionSpecsTableModel(getScrollPaneTable());
+			ivjModelProcessSpecsTableModel = new ModelProcessSpecsTableModel(getScrollPaneTable());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjReactionSpecsTableModel;
+	return ivjModelProcessSpecsTableModel;
 }
 
 
@@ -147,14 +148,14 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
-	getScrollPaneTable().setModel(getReactionSpecsTableModel());
-	getScrollPaneTable().setDefaultRenderer(ReactionStep.class, new DefaultScrollTableCellRenderer() {
+	getScrollPaneTable().setModel(getModelProcessSpecsTableModel());
+	getScrollPaneTable().setDefaultRenderer(ModelProcess.class, new DefaultScrollTableCellRenderer() {
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
 		{
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			defaultToolTipText = null;
-			if (value instanceof ReactionStep) {
-				setText(((ReactionStep)value).getName());
+			if (value instanceof ModelProcess) {
+				setText(((ModelProcess)value).getName());
 				defaultToolTipText = getText();
 				setToolTipText(defaultToolTipText);
 			}
@@ -172,7 +173,7 @@ private void initConnections() throws java.lang.Exception {
 @Override
 public void setIssueManager(IssueManager issueManager) {
 	super.setIssueManager(issueManager);
-	ivjReactionSpecsTableModel.setIssueManager(issueManager);
+	ivjModelProcessSpecsTableModel.setIssueManager(issueManager);
 }
 
 /**
@@ -182,10 +183,10 @@ public void setIssueManager(IssueManager issueManager) {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		ReactionSpecsPanel aReactionSpecsPanel;
-		aReactionSpecsPanel = new ReactionSpecsPanel();
-		frame.setContentPane(aReactionSpecsPanel);
-		frame.setSize(aReactionSpecsPanel.getSize());
+		ModelProcessSpecsPanel aModelProcessSpecsPanel;
+		aModelProcessSpecsPanel = new ModelProcessSpecsPanel();
+		frame.setContentPane(aModelProcessSpecsPanel);
+		frame.setSize(aModelProcessSpecsPanel.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
 				System.exit(0);
@@ -214,7 +215,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
-	setTableSelections(selectedObjects, getScrollPaneTable(), getReactionSpecsTableModel());
+	setTableSelections(selectedObjects, getScrollPaneTable(), getModelProcessSpecsTableModel());
 }
 
 }

@@ -215,6 +215,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 import cbit.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.
@@ -588,12 +589,12 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 }
 
 
-private XmlTreeDiff compareDocuments(final VCDocument doc1, final VCDocument doc2, String comparisonSetting) throws Exception {
+private XmlTreeDiff compareDocuments(final VCDocument doc1, final VCDocument doc2, DiffConfiguration comparisonSetting) throws Exception {
 
 	VCellThreadChecker.checkCpuIntensiveInvocation();
 	
-	if (!XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting) && 
-		!XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) {
+	if ((DiffConfiguration.COMPARE_DOCS_SAVED != comparisonSetting) && 
+		(DiffConfiguration.COMPARE_DOCS_OTHER != comparisonSetting)) {
 		throw new RuntimeException("Unsupported comparison setting: " + comparisonSetting);
 	} 
 	if (doc1.getDocumentType() != doc2.getDocumentType()) { 
@@ -646,7 +647,7 @@ public XmlTreeDiff compareWithOther(final VCDocumentInfo docInfo1, final VCDocum
 		} else {
 			throw new IllegalArgumentException("The two documents are invalid or of different types.");
 		}
-		return compareDocuments(document1, document2, XmlTreeDiff.COMPARE_DOCS_OTHER);
+		return compareDocuments(document1, document2, DiffConfiguration.COMPARE_DOCS_OTHER);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
@@ -684,11 +685,37 @@ public XmlTreeDiff compareWithSaved(VCDocument document) {
 				break;
 			}
 		}
-		return compareDocuments(savedVersion, document, XmlTreeDiff.COMPARE_DOCS_SAVED);
+		return compareDocuments(savedVersion, document, DiffConfiguration.COMPARE_DOCS_SAVED);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());
 	}				
+}
+
+
+public XmlTreeDiff compareApplications(BioModel bioModel, String appName1, String appName2) throws Exception {
+	
+	// clone BioModel as bioModel1 and remove all but appName1
+	BioModel bioModel1 = (BioModel)BeanUtils.cloneSerializable(bioModel);
+	bioModel1.refreshDependencies();
+	SimulationContext[] allSimContexts1 = bioModel1.getSimulationContexts();
+	for (SimulationContext sc : allSimContexts1){
+		if (!sc.getName().equals(appName1)){
+			bioModel1.removeSimulationContext(sc);
+		}
+	}
+
+	// clone BioModel as bioModel2 and remove all but appName2
+	BioModel bioModel2 = (BioModel)BeanUtils.cloneSerializable(bioModel);
+	bioModel2.refreshDependencies();
+	SimulationContext[] allSimContexts2 = bioModel2.getSimulationContexts();
+	for (SimulationContext sc : allSimContexts2){
+		if (!sc.getName().equals(appName2)){
+			bioModel2.removeSimulationContext(sc);
+		}
+	}
+
+	return compareDocuments(bioModel1, bioModel2, DiffConfiguration.COMPARE_DOCS_SAVED);
 }
 
 

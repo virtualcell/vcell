@@ -10,10 +10,12 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -26,9 +28,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
+import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -38,10 +45,19 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.Xmlproducer;
+import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
+import cbit.xml.merge.gui.TMLPanel;
 
 @SuppressWarnings("serial")
 public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePanel<SimulationContext> {
+	private JButton compareButton = null;
 	private JButton moreActionsButton = null;
 	// application popup menu items
 	private JPopupMenu appsPopupMenu = null;
@@ -70,6 +86,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == moreActionsButton) {
 				moreActionsButtonPressed();
+			} else if (e.getSource() == compareButton) {
+				compareButtonPressed();
 			} else if (e.getSource() == appNewStochApp
 					|| e.getSource() == appNewDeterministicApp
 					|| e.getSource() == appNewRulebasedApp
@@ -96,7 +114,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		moreActionsButton = new JButton("More Copy Actions");
 		moreActionsButton.setIcon(new DownArrowIcon());
-		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);
+		moreActionsButton.setHorizontalTextPosition(SwingConstants.LEFT);		
+		compareButton = new JButton("Compare...");
 		
 		setLayout(new GridBagLayout());
 		int gridy = 0;
@@ -106,7 +125,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.gridy = gridy;
 		gbc.weighty = 1.0;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 6;
+		gbc.gridwidth = 7;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(table.getEnclosingScrollPane(), gbc);
 		
@@ -134,13 +153,20 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
+		gbc.insets = new Insets(4,4,4,20);
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_END;
+		add(compareButton, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 4;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		add(new JLabel("Search "), gbc);
 		
 		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
+		gbc.gridx = 5;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
@@ -149,6 +175,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		gbc.insets = new Insets(4,4,4,4);
 		add(textFieldSearch, gbc);
 						
+		compareButton.setEnabled(false);
+		compareButton.addActionListener(eventHandler);		
 		moreActionsButton.setEnabled(false);
 		moreActionsButton.addActionListener(eventHandler);		
 		getJMenuAppCopyAs().addActionListener(eventHandler);
@@ -186,6 +214,61 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		}
 	}
 	
+	private void compareButtonPressed() {
+		int[] rows = table.getSelectedRows();
+		if (rows == null || rows.length != 2) {
+			return;
+		}
+		try {
+			SimulationContext simContext1 = tableModel.getValueAt(rows[0]);
+			SimulationContext simContext2 = tableModel.getValueAt(rows[1]);
+			BioModel bioModel = simContext1.getBioModel();
+			MathMappingCallback callback = new MathMappingCallback() {
+				@Override
+				public void setProgressFraction(float fractionDone) {
+					Thread.dumpStack();
+					System.out.println("---> stdout mathMapping: progress = "+(fractionDone*100.0)+"% done");
+				}
+				
+				@Override
+				public void setMessage(String message) {
+					Thread.dumpStack();
+					System.out.println("---> stdout mathMapping: message = "+message);
+				}
+				
+				@Override
+				public boolean isInterrupted() {
+					return false;
+				}
+			};
+			simContext1.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullNetwork);
+			simContext2.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullNetwork);
+
+			Xmlproducer xmlProducer = new Xmlproducer(false);
+			String simContext1XML = XmlUtil.xmlToString(xmlProducer.getXML(simContext1,bioModel));
+			String simContext2XML = XmlUtil.xmlToString(xmlProducer.getXML(simContext2,bioModel));
+
+			DiffConfiguration comparisonSetting = DiffConfiguration.COMPARE_DOCS_OTHER;
+			XmlTreeDiff diffTree = XmlHelper.compareMerge(simContext1XML, simContext2XML, comparisonSetting , true);
+			String baselineDesc = "application "+simContext1.getName();
+			String modifiedDesc = "application "+simContext2.getName();
+			TMLPanel comparePanel = new TMLPanel();
+			comparePanel.setXmlTreeDiff(diffTree);
+			comparePanel.setBaselineVersionDescription(baselineDesc);
+			comparePanel.setModifiedVersionDescription(modifiedDesc);
+
+			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+			String title = "comparing application "+simContext1.getName()+" and "+simContext2.getName();
+			ChildWindow childWindow = childWindowManager.addChildWindow(comparePanel, diffTree, title, true);
+			childWindow.setSize(new Dimension(600,600));
+			childWindow.show();
+		} catch (XmlParseException e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "failed to compare applications: \n\n"+e.getMessage());
+		}
+		
+	}
+	
 	protected void deleteButtonPressed() {
 		int[] rows = table.getSelectedRows();
 		if (rows == null || rows.length == 0) {
@@ -221,6 +304,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	protected void tableSelectionChanged() {
 		super.tableSelectionChanged();
 		int[] rows = table.getSelectedRows();			
+		compareButton.setEnabled(rows != null && rows.length == 2);
 		moreActionsButton.setEnabled(rows != null && rows.length == 1);
 	}
 
