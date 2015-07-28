@@ -61,6 +61,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 
 /**
 This class represents the 'API' of the XML framework for all VC classes, outside that framework. Most of the methods of
@@ -136,7 +137,7 @@ public class XmlHelper {
 
 
 //default is to include version information in the comparison.
-	public static XmlTreeDiff compareMerge(String xmlBaseString, String xmlModifiedString, String comparisonSetting) throws XmlParseException {
+	public static XmlTreeDiff compareMerge(String xmlBaseString, String xmlModifiedString, DiffConfiguration comparisonSetting) throws XmlParseException {
 
 		return compareMerge(xmlBaseString, xmlModifiedString, comparisonSetting, false);
 	}
@@ -146,10 +147,10 @@ public class XmlHelper {
  * compareMerge method comment.
  */
 public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, String xmlModifiedString, 
-	                          String comparisonSetting, boolean ignoreVersionInfo) throws XmlParseException {
+		DiffConfiguration comparisonSetting, boolean ignoreVersionInfo) throws XmlParseException {
 	try {
 		if (xmlBaseString == null || xmlModifiedString == null || xmlBaseString.length() == 0 || xmlModifiedString.length() == 0 ||
-		    (!XmlTreeDiff.COMPARE_DOCS_SAVED.equals(comparisonSetting) && !XmlTreeDiff.COMPARE_DOCS_OTHER.equals(comparisonSetting)) ) {
+		    (!DiffConfiguration.COMPARE_DOCS_SAVED.equals(comparisonSetting) && !DiffConfiguration.COMPARE_DOCS_OTHER.equals(comparisonSetting)) ) {
 	        throw new XmlParseException("Invalid XML comparison params.");
 	    }
 		XMLSource xmlBaseSource = new XMLSource(xmlBaseString);

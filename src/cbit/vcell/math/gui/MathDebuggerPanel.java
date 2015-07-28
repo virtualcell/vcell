@@ -40,6 +40,7 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 import cbit.xml.merge.gui.TMLPanel;
 
 public class MathDebuggerPanel extends JPanel {
@@ -306,7 +307,7 @@ public class MathDebuggerPanel extends JPanel {
 			String math1XML = XmlHelper.mathModelToXML(mathModel1);
 			String math2XML = XmlHelper.mathModelToXML(mathModel2);
 			boolean ignoreVersion = true;
-			XmlTreeDiff diffTree = cbit.vcell.xml.XmlHelper.compareMerge(math1XML, math2XML, XmlTreeDiff.COMPARE_DOCS_OTHER, ignoreVersion);
+			XmlTreeDiff diffTree = cbit.vcell.xml.XmlHelper.compareMerge(math1XML, math2XML, DiffConfiguration.COMPARE_DOCS_OTHER, ignoreVersion);
 			getTMLPanel().setXmlTreeDiff(diffTree);
 		}else{
 			DialogUtils.showErrorDialog(MathDebuggerPanel.this, "failed");

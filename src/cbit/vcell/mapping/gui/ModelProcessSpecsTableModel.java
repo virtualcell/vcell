@@ -18,10 +18,15 @@ import java.util.List;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.ModelProcessSpec;
 import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.ModelProcess;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 /**
@@ -30,7 +35,7 @@ import cbit.vcell.model.SimpleReaction;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class ReactionSpecsTableModel extends VCellSortTableModel<ReactionSpec> implements java.beans.PropertyChangeListener {
+public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProcessSpec> implements java.beans.PropertyChangeListener {
 	public static final int COLUMN_NAME = 0;
 	public static final int COLUMN_TYPE = 1;
 	public static final int COLUMN_ENABLED = 2;
@@ -39,9 +44,9 @@ public class ReactionSpecsTableModel extends VCellSortTableModel<ReactionSpec> i
 	private SimulationContext fieldSimulationContext = null;
 	
 /**
- * ReactionSpecsTableModel constructor comment.
+ * ModelProcessSpecsTableModel constructor comment.
  */
-public ReactionSpecsTableModel(ScrollTable table) {
+public ModelProcessSpecsTableModel(ScrollTable table) {
 	super(table, LABELS);
 	addPropertyChangeListener(this);
 }
@@ -52,10 +57,11 @@ public void setSearchText(String searchText){
 	refreshData();
 }
 
-protected List<ReactionSpec> computeData() {
-	ArrayList<ReactionSpec> allParameterList = new ArrayList<ReactionSpec>();
+protected List<ModelProcessSpec> computeData() {
+	ArrayList<ModelProcessSpec> allParameterList = new ArrayList<ModelProcessSpec>();
 	if(getSimulationContext() != null){
 		allParameterList.addAll(Arrays.asList(getSimulationContext().getReactionContext().getReactionSpecs()));
+		allParameterList.addAll(Arrays.asList(getSimulationContext().getReactionContext().getReactionRuleSpecs()));
 	}else{
 		return null;
 	}
@@ -64,11 +70,11 @@ protected List<ReactionSpec> computeData() {
 		return allParameterList;
 	}
 	String lowerCaseSearchText = bSearchInactive ? null : searchText.toLowerCase();
-	ArrayList<ReactionSpec> parameterList = new ArrayList<ReactionSpec>();
-	for (ReactionSpec parameter : allParameterList) {
+	ArrayList<ModelProcessSpec> parameterList = new ArrayList<ModelProcessSpec>();
+	for (ModelProcessSpec parameter : allParameterList) {
 		if (bSearchInactive
-			|| parameter.getReactionStep().getName().toLowerCase().contains(lowerCaseSearchText)
-			|| parameter.getReactionStep().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
+			|| parameter.getModelProcess().getName().toLowerCase().contains(lowerCaseSearchText)
+			|| parameter.getModelProcess().getStructure().getName().toLowerCase().contains(lowerCaseSearchText)
 				/*|| parameter.getNameScope().getPathDescription().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getName().toLowerCase().contains(lowerCaseSearchText)
 				|| parameter.getExpression() != null && parameter.getExpression().infix().toLowerCase().contains(lowerCaseSearchText)
@@ -87,7 +93,7 @@ protected List<ReactionSpec> computeData() {
 public Class<?> getColumnClass(int column) {
 	switch (column){
 		case COLUMN_NAME:{
-			return ReactionStep.class;
+			return ModelProcess.class;
 		}
 		case COLUMN_TYPE:{
 			return String.class;
@@ -124,28 +130,22 @@ public SimulationContext getSimulationContext() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	ReactionSpec reactionSpec = getValueAt(row);
+	ModelProcessSpec modelProcessSpec = getValueAt(row);
 	switch (col){
 		case COLUMN_NAME:{
-			return reactionSpec.getReactionStep();
+			return modelProcessSpec.getModelProcess();
 		}
 		case COLUMN_TYPE:{
-			if (reactionSpec.getReactionStep() instanceof SimpleReaction){
-				return "Reaction";
-			}else if (reactionSpec.getReactionStep() instanceof FluxReaction){
-				return "Flux";
-			}else{
-				return null;
-			}
+			return modelProcessSpec.getModelProcess().getDisplayType();
 		}
 		case COLUMN_ENABLED:{
-			return new Boolean(!reactionSpec.isExcluded());
+			return new Boolean(!modelProcessSpec.isExcluded());
 		}
 		case COLUMN_FAST:{
-			if (reactionSpec.getReactionStep() instanceof FluxReaction){
+			if (!(modelProcessSpec.getModelProcess() instanceof SimpleReaction)){
 				return new Boolean(false);
 			}else{
-				return new Boolean(reactionSpec.isFast());
+				return new Boolean(modelProcessSpec.isFast());
 			}
 		}
 		default:{
@@ -165,11 +165,11 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if (columnIndex == COLUMN_ENABLED){
 		return true;
 	}else if (columnIndex == COLUMN_FAST && getSimulationContext()!=null){
-		ReactionSpec reactionSpec = getValueAt(rowIndex);
+		ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
 		//
 		// the "fast" column is only editable if not FluxReaction
 		//
-		return (!(reactionSpec.getReactionStep() instanceof FluxReaction));
+		return (ModelProcessSpec.getModelProcess() instanceof SimpleReaction);
 	}else{
 		return false;
 	}
@@ -184,13 +184,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		refreshData();
 		fireTableStructureChanged();
 	}
-	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionSpecs")) {
+	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("ModelProcessSpecs")) {
 		refreshData();
 	}
 	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if (evt.getSource() instanceof ReactionSpec) {
+	if (evt.getSource() instanceof ModelProcessSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
@@ -206,10 +206,15 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		oldValue.removePropertyChangeListener(this);
 		ReactionContext reactionContext = oldValue.getReactionContext();
 		reactionContext.removePropertyChangeListener(this);
-		ReactionSpec oldSpecs[] = reactionContext.getReactionSpecs();
-		for (int i=0;i<oldSpecs.length;i++){
-			oldSpecs[i].getReactionStep().removePropertyChangeListener(this);
-			oldSpecs[i].removePropertyChangeListener(this);
+		ReactionSpec oldReactionSpecs[] = reactionContext.getReactionSpecs();
+		for (int i=0;i<oldReactionSpecs.length;i++){
+			oldReactionSpecs[i].getReactionStep().removePropertyChangeListener(this);
+			oldReactionSpecs[i].removePropertyChangeListener(this);
+		}
+		ReactionRuleSpec oldReactionRuleSpecs[] = reactionContext.getReactionRuleSpecs();
+		for (int i=0;i<oldReactionRuleSpecs.length;i++){
+			oldReactionRuleSpecs[i].getReactionRule().removePropertyChangeListener(this);
+			oldReactionRuleSpecs[i].removePropertyChangeListener(this);
 		}
 	}
 	fieldSimulationContext = simulationContext;
@@ -217,40 +222,58 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		simulationContext.addPropertyChangeListener(this);
 		ReactionContext reactionContext = fieldSimulationContext.getReactionContext();
 		reactionContext.addPropertyChangeListener(this);
-		ReactionSpec newSpecs[] = reactionContext.getReactionSpecs();
-		for (int i=0;i<newSpecs.length;i++){
-			newSpecs[i].getReactionStep().addPropertyChangeListener(this);
-			newSpecs[i].addPropertyChangeListener(this);
+		ReactionSpec newReactionSpecs[] = reactionContext.getReactionSpecs();
+		for (int i=0;i<newReactionSpecs.length;i++){
+			newReactionSpecs[i].getReactionStep().addPropertyChangeListener(this);
+			newReactionSpecs[i].addPropertyChangeListener(this);
+		}
+		ReactionRuleSpec newReactionRuleSpecs[] = reactionContext.getReactionRuleSpecs();
+		for (int i=0;i<newReactionRuleSpecs.length;i++){
+			newReactionRuleSpecs[i].getReactionRule().addPropertyChangeListener(this);
+			newReactionRuleSpecs[i].addPropertyChangeListener(this);
 		}
 	}
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
 
 private void refreshData() {
-	List<ReactionSpec> rslist = computeData();
+	List<ModelProcessSpec> rslist = computeData();
 	setData(rslist);
 }
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	ReactionSpec reactionSpec = getValueAt(rowIndex);
+	ModelProcessSpec modelProcessSpec = getValueAt(rowIndex);
 	try {
 		switch (columnIndex){
 			case COLUMN_ENABLED:{
 				boolean bEnabled = ((Boolean)aValue).booleanValue();
-				if (bEnabled){
-					reactionSpec.setReactionMapping(ReactionSpec.INCLUDED);
-				}else{
-					reactionSpec.setReactionMapping(ReactionSpec.EXCLUDED);
+				if (modelProcessSpec instanceof ReactionSpec){
+					ReactionSpec reactionSpec = (ReactionSpec)modelProcessSpec;
+					if (bEnabled){
+						reactionSpec.setReactionMapping(ReactionSpec.INCLUDED);
+					}else{
+						reactionSpec.setReactionMapping(ReactionSpec.EXCLUDED);
+					}
+				}else if (modelProcessSpec instanceof ReactionRuleSpec){
+					ReactionRuleSpec reactionRuleSpec = (ReactionRuleSpec)modelProcessSpec;
+					if (bEnabled){
+						reactionRuleSpec.setReactionRuleMapping(ReactionRuleMappingType.INCLUDED);
+					}else{
+						reactionRuleSpec.setReactionRuleMapping(ReactionRuleMappingType.EXCLUDED);
+					}
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				break;
 			}
 			case COLUMN_FAST:{
 				boolean bFast = ((Boolean)aValue).booleanValue();
-				if (bFast){
-					reactionSpec.setReactionMapping(ReactionSpec.FAST);
-				}else{
-					reactionSpec.setReactionMapping(ReactionSpec.INCLUDED);
+				if (modelProcessSpec instanceof ReactionSpec){
+					ReactionSpec reactionSpec = (ReactionSpec)modelProcessSpec;
+					if (bFast){
+						reactionSpec.setReactionMapping(ReactionSpec.FAST);
+					}else{
+						reactionSpec.setReactionMapping(ReactionSpec.INCLUDED);
+					}
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
 				break;
@@ -261,40 +284,39 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	}
 }
 
-	public Comparator<ReactionSpec> getComparator(int col, boolean ascending) {
-		return new ReactionSpecComparator(col, ascending);
+	public Comparator<ModelProcessSpec> getComparator(int col, boolean ascending) {
+		return new ModelProcessSpecComparator(col, ascending);
 	}
 
-private class ReactionSpecComparator implements Comparator<ReactionSpec> {
+private class ModelProcessSpecComparator implements Comparator<ModelProcessSpec> {
 	protected int index;
 	protected boolean ascending;
 
-	public ReactionSpecComparator(int index, boolean ascending){
+	public ModelProcessSpecComparator(int index, boolean ascending){
 		this.index = index;
 		this.ascending = ascending;
 	}
 	
-	public int compare(ReactionSpec parm1, ReactionSpec parm2){
+	public int compare(ModelProcessSpec parm1, ModelProcessSpec parm2){
 		
 		switch (index) {
 			case COLUMN_NAME:{
-				int bCompare = parm1.getReactionStep().getName().compareToIgnoreCase(parm2.getReactionStep().getName());
+				int bCompare = parm1.getModelProcess().getName().compareToIgnoreCase(parm2.getModelProcess().getName());
 				return ascending ? bCompare : -bCompare;
 			}
 			case COLUMN_TYPE:{
-				String type1 = (parm1.getReactionStep() instanceof SimpleReaction) ? "Reaction" : "Flux";
-				String type2 = (parm2.getReactionStep() instanceof SimpleReaction) ? "Reaction" : "Flux";
+				String type1 = parm1.getModelProcess().getDisplayType();
+				String type2 = parm2.getModelProcess().getDisplayType();
 				int bCompare = type1.compareTo(type2);
 				return ascending ? bCompare : -bCompare;
-				
 			}
 			case COLUMN_ENABLED:{
 				int bCompare = new Boolean(!parm1.isExcluded()).compareTo(new Boolean(!parm2.isExcluded()));
 				return ascending ? bCompare : -bCompare;
 			}
 			case COLUMN_FAST:{
-				Boolean fast1 = (parm1.isFast() && !(parm1.getReactionStep() instanceof FluxReaction)) ? true : false;
-				Boolean fast2 = (parm2.isFast() && !(parm2.getReactionStep() instanceof FluxReaction)) ? true : false;
+				Boolean fast1 = (parm1.isFast() && (parm1.getModelProcess() instanceof SimpleReaction)) ? true : false;
+				Boolean fast2 = (parm2.isFast() && (parm2.getModelProcess() instanceof SimpleReaction)) ? true : false;
 				int bCompare = fast1.compareTo(fast2);
 				return ascending ? bCompare : -bCompare;
 			}

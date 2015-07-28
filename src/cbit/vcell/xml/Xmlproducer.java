@@ -115,6 +115,7 @@ import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -1442,7 +1443,12 @@ private Element getXML(ReactionContext param) {
 	for (int i =0; i<reactionarray.length ; i ++){
 		reactioncontext.addContent( getXML(reactionarray[i]) );
 	}
-
+	//Add ReactionRuleSpecs
+	ReactionRuleSpec[] reactionRuleArray = param.getReactionRuleSpecs();
+	if (reactionRuleArray.length>0){
+		reactioncontext.addContent( getXML(reactionRuleArray) );
+	}
+	
 	return reactioncontext;
 }
 
@@ -1463,6 +1469,19 @@ private Element getXML(ReactionSpec param) {
 	return reactionSpec;
 }
 
+//For rateRules in SimulationContext
+public Element getXML(ReactionRuleSpec[] reactionRuleSpecs) {
+	Element reactionRuleSpecsElement = new Element(XMLTags.ReactionRuleSpecsTag);
+	for (ReactionRuleSpec reactionRuleSpec : reactionRuleSpecs){
+		Element reactionRuleSpecElement = new Element(XMLTags.ReactionRuleSpecTag);
+		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleRefAttrTag, mangle(reactionRuleSpec.getReactionRule().getName()));
+		reactionRuleSpecElement.setAttribute(XMLTags.ReactionRuleMappingAttrTag, mangle(reactionRuleSpec.getReactionRuleMapping().getDatabaseName()));
+
+		reactionRuleSpecsElement.addContent(reactionRuleSpecElement);
+	}
+
+	return reactionRuleSpecsElement;
+}
 
 /**
  * This method returns a XML representation of a SimulationContext object.
@@ -1470,7 +1489,7 @@ private Element getXML(ReactionSpec param) {
  * @return Element
  * @param param cbit.vcell.mapping.SimulationContext
  */
-private Element getXML(SimulationContext param, BioModel bioModel) throws XmlParseException{
+public Element getXML(SimulationContext param, BioModel bioModel) throws XmlParseException{
 	Element simulationcontext = new Element(XMLTags.SimulationSpecTag);
 
 	//add attributes

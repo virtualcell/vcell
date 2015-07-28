@@ -182,11 +182,11 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 	 */
 	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
-		GeometryClass geometryClass = getSimulationContext().getGeometry().getGeometrySpec().getSubVolumes()[0];
-		Domain domain = new Domain(geometryClass);
-		
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
+		GeometryClass geometryClass = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
+		Domain domain = new Domain(geometryClass);
+
 		//local structure mapping list
 		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
@@ -195,10 +195,35 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 		{
 			throw new ModelException("Problem updating math description: "+ simContext.getName()+"\n"+stochChkMsg);
 		}
-		//All sizes must be set for new ODE models and ratios must be set for old ones.
+
 		simContext.checkValidity();
 		
-
+		//
+		// verify nonspatial
+		//
+		if (simContext.getGeometry().getDimension()>0){
+			throw new MappingException("nonspatial stochastic math mapping requires 0-dimensional geometry");
+		}
+		
+		//
+		// check that we aren't solving for electric potential.
+		//
+		for (int i = 0; i < structureMappings.length; i++){
+			if (structureMappings[i] instanceof MembraneMapping){
+				if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
+					throw new MappingException("electric potential not yet supported for particle models");
+				}
+			}	
+		}
+		
+		//
+		// fail if any events
+		//
+		BioEvent[] bioEvents = simContext.getBioEvents();
+		if (bioEvents!=null && bioEvents.length>0){
+			throw new MappingException("events not yet supported for particle-based models");
+		}
+		
 		//
 		// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 		//
@@ -432,25 +457,9 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 		//
 		// create subDomains
 		//
-		SubDomain subDomain = null;
-		subVolumes = simContext.getGeometryContext().getGeometry().getGeometrySpec().getSubVolumes();
-		for (int j=0;j<subVolumes.length;j++){
-			SubVolume subVolume = (SubVolume)subVolumes[j];
-			//
-			// get priority of subDomain
-			//
-			int priority;
-			if (simContext.getGeometryContext().getGeometry().getDimension()==0){
-				priority = CompartmentSubDomain.NON_SPATIAL_PRIORITY;
-			}else{
-				priority = j; // now does not have to match spatial feature, *BUT* needs to be unique
-			}
-			//
-			// create subDomain
-			//
-			subDomain = new CompartmentSubDomain(subVolume.getName(),priority);
-			mathDesc.addSubDomain(subDomain);
-		}
+		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
+		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
+		mathDesc.addSubDomain(subDomain);
 	
 		// set up jump processes
 		// get all the reactions from simulation context
@@ -825,7 +834,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 	// create a SpeciesContextMapping for each speciesContextSpec.
 	//
 	// set initialExpression from SpeciesContextSpec.
-	// set diffusing5
+	// set diffusing
 	// set variable (only if "Constant" or "Function", else leave it as null)-----why commented?
 	//
 
@@ -840,7 +849,6 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		getMathSymbol(parm,sm.getGeometryClass());
 	}
 
-	
 	getSpeciesContextMappingList().removeAllElements();
 	
 	SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
@@ -872,12 +880,11 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
  * @exception cbit.vcell.mapping.MappingException The exception description.
  */
 private void refreshVariables() throws MappingException {
-	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 
 	//
-	// non-constant independant variables require either a membrane or volume variable
+	// stochastic species need  species variables require either a membrane or volume variable
 	//
-	enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
@@ -903,9 +910,9 @@ private void refreshVariables() throws MappingException {
 			throw new MappingException(e.getMessage());
 		}
 		//we always add variables, all species are independent variables, no matter they are constant or not.
-		scm.setVariable(new StochVolVariable(getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass())));
+		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
+		scm.setVariable(new StochVolVariable(countMathSymbol));
 		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
-		
 	}
 }
 

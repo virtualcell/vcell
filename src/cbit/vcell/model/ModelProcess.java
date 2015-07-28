@@ -3,7 +3,10 @@ package cbit.vcell.model;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
-public interface ModelProcess {
+import org.vcell.util.Displayable;
+import org.vcell.util.Matchable;
+
+public interface ModelProcess extends Displayable, Matchable {
 
 	String getName();
 
@@ -12,7 +15,7 @@ public interface ModelProcess {
 	Structure getStructure();
 	
 	ModelProcessDynamics getDynamics();
-
+	
 	void setName(String inputValue) throws PropertyVetoException;
 
 	void setStructure(Structure s);
