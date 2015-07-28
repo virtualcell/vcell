@@ -17,6 +17,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Displayable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
@@ -198,6 +200,12 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
+				String mangled = TokenMangler.fixTokenStrict(inputString);
+				if(!mangled.equals(inputString)) {
+					String errMsg = ((Displayable)userObject).getDisplayType() + " '" + inputString + "' not legal identifier, try '" + mangled + "'";
+					throw new RuntimeException(errMsg);
+				}
+
 				if (userObject instanceof RbmObservable) {				//TODO: untested!!!
 					((RbmObservable) userObject).setName(inputString);
 				}
