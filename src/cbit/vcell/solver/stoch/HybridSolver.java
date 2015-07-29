@@ -523,33 +523,4 @@ public static void main(String[] args) {
 	
 }
 
-
-public Vector<AnnotatedFunction> createFunctionList() {
-	//
-	// add appropriate Function columns to result set
-	//
-	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
-	
-	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
-	
-	Function functions[] = simSymbolTable.getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			Domain domain = null;
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
-			funcList.add(af);
-		}
-	}
-	return funcList;
-}
 }

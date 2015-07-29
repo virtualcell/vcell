@@ -866,7 +866,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		}
 		else if (odeIdentifier.equals(NFSIM_DATA_IDENTIFIER))
 		{
-			odeSimData = ODESimData.readNFSIMDataFile(vcDataId, getODEDataFile());
+			odeSimData = ODESimData.readNFSIMDataFile(vcDataId, getODEDataFile(), getJobFunctionsFile());
 		}
 		else
 		{

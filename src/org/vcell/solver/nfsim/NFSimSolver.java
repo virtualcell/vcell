@@ -13,13 +13,11 @@ package org.vcell.solver.nfsim;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -91,6 +89,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		SessionLog sessionLog = getSessionLog();
 		sessionLog.print("NFSimSolver.initialize()");
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
+		writeFunctionsFile();
 
 		String inputFilename = getInputFilename();
 		sessionLog.print("NFSimSolver.initialize() inputFilename = " + getInputFilename()); 
@@ -261,39 +260,6 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				fireSolverPrinted(getCurrentTime());
 			}
 		}
-	}
-
-	public Vector<AnnotatedFunction> createFunctionList() {
-		//
-		// add appropriate Function columns to result set
-		//
-		Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
-
-		// SimulationSymbolTable simSymbolTable =
-		// simulationJob.getSimulationSymbolTable();
-		// Function functions[] = simSymbolTable.getFunctions();
-		// for (int i = 0; i < functions.length; i++){
-		// if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-		// Expression exp1 = new Expression(functions[i].getExpression());
-		// try {
-		// exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-		// } catch (MathException e) {
-		// e.printStackTrace(System.out);
-		// throw new
-		// RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-		// } catch (ExpressionException e) {
-		// e.printStackTrace(System.out);
-		// throw new
-		// RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-		// }
-		// Domain domain = null;
-		// AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(),
-		// exp1, domain, "", VariableType.NONSPATIAL,
-		// FunctionCategory.PREDEFINED);
-		// funcList.add(af);
-		// }
-		// }
-		return funcList;
 	}
 
 }

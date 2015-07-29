@@ -18,7 +18,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 
-public class DummyReactionStep extends SimpleReaction {
+public abstract class DummyReactionStep extends SimpleReaction {
 	public DummyReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
 		super(model, structure,name);
 		try {

@@ -10,6 +10,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -32,11 +33,11 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 	 * @throws MappingException
 	 * @throws ExpressionException
 	 */
-	protected Expression getExpressionConcToExpectedCount(Expression concExpr, SpeciesContext speciesContext)
+	protected Expression getExpressionConcToExpectedCount(Expression concExpr, Structure structure)
 			throws MappingException, ExpressionException {
-				Expression exp = Expression.mult(concExpr, new Expression(speciesContext.getStructure().getStructureSize(), getNameScope()));
+				Expression exp = Expression.mult(concExpr, new Expression(structure.getStructureSize(), getNameScope()));
 				ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
-				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(speciesContext.getStructure());
+				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(unitSystem.getStochasticSubstanceUnit().divideBy(substanceUnit));
 				Expression particlesExpr = Expression.mult(exp, unitFactor);
 				return particlesExpr;
@@ -52,12 +53,12 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 	 * @throws MappingException
 	 * @throws ExpressionException
 	 */
-	protected Expression getExpressionAmtToConc(Expression particlesExpr, SpeciesContext speciesContext)
+	protected Expression getExpressionAmtToConc(Expression particlesExpr, Structure structure)
 			throws MappingException, ExpressionException {
 				ModelUnitSystem unitSystem = getSimulationContext().getModel().getUnitSystem();
-				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(speciesContext.getStructure());
+				VCUnitDefinition substanceUnit = unitSystem.getSubstanceUnit(structure);
 				Expression unitFactor = getUnitFactor(substanceUnit.divideBy(unitSystem.getStochasticSubstanceUnit()));
-				Expression scStructureSize = new Expression(speciesContext.getStructure().getStructureSize(), getNameScope());
+				Expression scStructureSize = new Expression(structure.getStructureSize(), getNameScope());
 				Expression concentrationExpr = Expression.mult(particlesExpr, Expression.div(unitFactor,scStructureSize));
 				return concentrationExpr;
 			}
@@ -81,7 +82,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 			
 						//add function for initial amount
 						SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
-						Expression 	iniAmountExp = getExpressionConcToExpectedCount(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext());
+						Expression 	iniAmountExp = getExpressionConcToExpectedCount(new Expression(initParam, getNameScope()),speciesContextSpecs[i].getSpeciesContext().getStructure());
 						// this is just going to add a var in math with iniCountSymbol, it is not actually write the expression to IniCountParameter.
 						varHash.addVariable(new Function(getMathSymbol(initAmountParam, sm.getGeometryClass()),getIdentifierSubstitutions(iniAmountExp,initAmountParam.getUnitDefinition(),sm.getGeometryClass()),domain));
 					}

@@ -735,17 +735,27 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 	//
 	for (int i=0;i<scmList.size();i++){
 		SpeciesContextMapping scm = (SpeciesContextMapping)scmList.elementAt(i);
-		if (scm.isPDERequired() || simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isWellMixed()){
-			rsList.addElement(new DiffusionDummyReactionStep("DiffusionDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
-		}
-		if (scm.hasEventAssignment()){
-			rsList.addElement(new EventDummyReactionStep("EventDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
-		}
-		if (scm.hasHybridReaction()){
-			rsList.addElement(new HybridDummyReactionStep("HybridDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
-		}
-		if (simContext.isStoch() && simContext.getGeometry().getDimension()>0 && !simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isForceContinuous()){
-			rsList.addElement(new ParticleDummyReactionStep("ParticleDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		if (!simContext.isUsingMassConservationModelReduction()){
+			//
+			// break mass conservation on all species (disables model reduction).
+			//
+			rsList.addElement(new DisableModelReductionReactionStep("DisableModelReductionReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+		}else{
+			//
+			// break mass conservation only for those species where it is needed.
+			//
+			if (scm.isPDERequired() || simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isWellMixed()){
+				rsList.addElement(new DiffusionDummyReactionStep("DiffusionDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			}
+			if (scm.hasEventAssignment()){
+				rsList.addElement(new EventDummyReactionStep("EventDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			}
+			if (scm.hasHybridReaction()){
+				rsList.addElement(new HybridDummyReactionStep("HybridDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			}
+			if (simContext.isStoch() && simContext.getGeometry().getDimension()>0 && !simContext.getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext()).isForceContinuous()){
+				rsList.addElement(new ParticleDummyReactionStep("ParticleDummyReactionStep"+i, model, scm.getSpeciesContext().getStructure(), scm.getSpeciesContext()));
+			}
 		}
 	}
 	if (rsList.size()>0){

@@ -471,7 +471,7 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	return odeSimData;
 }
 
-public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile) throws DataAccessException, IOException {
+public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile, File functionsFile) throws DataAccessException, IOException {
 	System.out.println("reading NetCDF file : " + dataFile);
 	ODESimData odeSimData = new ODESimData();	
 	odeSimData.formatID = NETCDF_DATA_FORMAT_ID;
@@ -513,6 +513,31 @@ public static ODESimData readNFSIMDataFile(VCDataIdentifier vcdId, File dataFile
 		}
 		odeSimData.addRow(values);
 	}
+	
+	// read functions file
+	
+	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
+		Vector<AnnotatedFunction> funcList;
+		try {
+			funcList = FunctionFileGenerator.readFunctionsFile(functionsFile, vcdId.getID());
+			for (AnnotatedFunction func : funcList){
+				try {
+					Expression expression = new Expression(func.getExpression());
+					odeSimData.addFunctionColumn(new FunctionColumnDescription(expression, func.getName(), null, func.getName(), false));
+				} catch (ExpressionException e) {
+					throw new RuntimeException("Could not add function " + func.getName() + " to annotatedFunctionList");
+				}
+			}	
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		} catch (IOException e1) {
+			e1.printStackTrace(System.out);
+			throw new DataAccessException(e1.getMessage());
+		}
+	}
+
+
 	return odeSimData;
 }
 

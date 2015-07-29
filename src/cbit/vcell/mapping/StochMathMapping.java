@@ -893,7 +893,7 @@ private void refreshVariables() throws MappingException {
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());
@@ -902,9 +902,9 @@ private void refreshVariables() throws MappingException {
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
 		try{
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
-			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext());
+			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext().getStructure());
 			concExp.bindExpression(this);
-			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());

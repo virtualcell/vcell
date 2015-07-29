@@ -48,6 +48,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -290,6 +291,34 @@ public class UnitFactorParameter extends MathMappingParameter {
 }
 
 @SuppressWarnings("serial")
+public class ObservableConcentrationParameter extends MathMappingParameter {
+	private RbmObservable observable = null;
+	
+	protected ObservableConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, RbmObservable argObservable, GeometryClass geometryClass) {
+		super(argName,argExpression,argRole,argVCUnitDefinition,geometryClass);
+		this.observable = argObservable;
+	}
+
+	public RbmObservable getObservable() {
+		return observable;
+	}
+}
+
+@SuppressWarnings("serial")
+public class ObservableCountParameter extends MathMappingParameter {
+	private RbmObservable observable = null;
+	
+	protected ObservableCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, RbmObservable argObservable, GeometryClass geometryClass) {
+		super(argName,argExpression,argRole,argVCUnitDefinition,geometryClass);
+		this.observable = argObservable;
+	}
+
+	public RbmObservable getObservable() {
+		return observable;
+	}
+}
+
+@SuppressWarnings("serial")
 public class SpeciesConcentrationParameter extends MathMappingParameter {
 	private SpeciesContextSpec speciesContextSpec = null;
 	
@@ -368,8 +397,10 @@ static final String BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION = "_temp_Conc";
 protected static final Logger lg = Logger.getLogger(AbstractMathMapping.class);
 public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
 public static final int PARAMETER_ROLE_P = 3;
-public static final int PARAMETER_ROLE_CONCENRATION = 5;
-public static final int PARAMETER_ROLE_COUNT = 6;
+public static final int PARAMETER_ROLE_SPECIES_CONCENRATION = 5;
+public static final int PARAMETER_ROLE_SPECIES_COUNT = 6;
+public static final int PARAMETER_ROLE_OBSERVABLE_CONCENRATION = 7;
+public static final int PARAMETER_ROLE_OBSERVABLE_COUNT = 8;
 public static final int PARAMETER_ROLE_P_reverse = 4;
 public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
 public static final String PARAMETER_MASS_CONSERVATION_SUFFIX = "_total";
@@ -891,6 +922,14 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 				SpeciesCountParameter countParm = (SpeciesCountParameter)ste;
 				return countParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
 			}
+			if (ste instanceof ObservableConcentrationParameter){
+				ObservableConcentrationParameter concParm = (ObservableConcentrationParameter)ste;
+				return concParm.getObservable().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+			}
+			if (ste instanceof ObservableCountParameter){
+				ObservableCountParameter countParm = (ObservableCountParameter)ste;
+				return countParm.getObservable().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+			}
 			if (ste instanceof EventAssignmentOrRateRuleInitParameter){
 				EventAssignmentOrRateRuleInitParameter eventInitParm = (EventAssignmentOrRateRuleInitParameter)ste;
 				return eventInitParm.getName(); // + MATH_FUNC_SUFFIX_EVENTASSIGN_OR_RATE_INIT;
@@ -1224,6 +1263,44 @@ protected GeometryClass getDefaultGeometryClass(Expression expr)
 				}
 			}
 			return geometryClass;
+		}
+
+ObservableConcentrationParameter addObservableConcentrationParameter(String name, Expression expr, int role,
+		VCUnitDefinition unitDefn, RbmObservable argObservable) throws PropertyVetoException {
+		
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argObservable.getStructure()).getGeometryClass();
+			ObservableConcentrationParameter newParameter = new ObservableConcentrationParameter(name,expr,role,unitDefn,argObservable,geometryClass);
+			MathMappingParameter previousParameter = getMathMappingParameter(name);
+			if(previousParameter != null){
+				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+				if(!previousParameter.compareEqual(newParameter)){
+					throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
+				}
+				return (ObservableConcentrationParameter)previousParameter;
+			}
+			//expression.bindExpression(this);
+			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			setMathMapppingParameters(newParameters);
+			return newParameter;
+		}
+
+ObservableCountParameter addObservableCountParameter(String name, Expression expr, int role,
+		VCUnitDefinition unitDefn, RbmObservable argObservable) throws PropertyVetoException {
+		
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argObservable.getStructure()).getGeometryClass();
+			ObservableCountParameter newParameter = new ObservableCountParameter(name,expr,role,unitDefn,argObservable,geometryClass);
+			MathMappingParameter previousParameter = getMathMappingParameter(name);
+			if(previousParameter != null){
+				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
+				if(!previousParameter.compareEqual(newParameter)){
+					throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
+				}
+				return (ObservableCountParameter)previousParameter;
+			}
+			//expression.bindExpression(this);
+			MathMappingParameter newParameters[] = (MathMappingParameter[])BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+			setMathMapppingParameters(newParameters);
+			return newParameter;
 		}
 
 SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role,

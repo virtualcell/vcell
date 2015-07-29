@@ -467,7 +467,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		// include required UnitRateFactors
 		//
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+			if (fieldMathMappingParameters[i] instanceof SpeciesConcentrationParameter || fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
 			}
 		}
@@ -667,7 +667,7 @@ private void refreshVariables() throws MappingException {
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());
@@ -676,9 +676,9 @@ private void refreshVariables() throws MappingException {
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
 		try{
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
-			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext());
+			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm,getNameScope()), scs.getSpeciesContext().getStructure());
 			concExp.bindExpression(this);
-			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());
@@ -687,6 +687,34 @@ private void refreshVariables() throws MappingException {
 		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
 		scm.setVariable(new VolumeParticleVariable(countMathSymbol,defaultDomain));
 		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
+	}
+	
+	for (RbmObservable observable : simContext.getModel().getRbmModelContainer().getObservableList()){
+		//stochastic variable is always a function of size.
+		ObservableCountParameter observableCountParm = null;
+		try{
+			String countName = observable.getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
+			Expression countExp = new Expression(0.0);
+			observableCountParm = addObservableCountParameter(countName, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, simContext.getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
+		}catch(PropertyVetoException pve){
+			pve.printStackTrace();
+			throw new MappingException(pve.getMessage());
+		}
+		
+		//add concentration of species as MathMappingParameter - this will map to species concentration function
+		try{
+			String concName = observable.getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
+			Expression concExp = getExpressionAmtToConc(new Expression(observableCountParm,getNameScope()), observable.getStructure());
+			concExp.bindExpression(this);
+			addObservableConcentrationParameter(concName, concExp, PARAMETER_ROLE_OBSERVABLE_CONCENRATION, observable.getUnitDefinition(), observable);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new MappingException(e.getMessage());
+		}
+//		//we always add variables, all species are independent variables, no matter they are constant or not.
+//		String countMathSymbol = getMathSymbol(observableCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
+//		scm.setVariable(new VolumeParticleVariable(countMathSymbol,defaultDomain));
+//		mathSymbolMapping.put(observable,scm.getVariable().getName());
 	}
 }
 

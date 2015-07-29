@@ -16,7 +16,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -25,22 +24,17 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 
 /**
  * Gibson solver 
@@ -366,32 +360,5 @@ private void writeLogFile() throws SolverException {
 	}
 }
 
-public Vector<AnnotatedFunction> createFunctionList() {
-	//
-	// add appropriate Function columns to result set
-	//
-	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
-	
-	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
-	Function functions[] = simSymbolTable.getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			Domain domain = null;
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
-			funcList.add(af);
-		}
-	}
-	return funcList;
-}
 
 }
