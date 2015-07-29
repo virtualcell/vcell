@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -116,7 +117,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		}
 		@Override
-		public void mouseClicked(MouseEvent e) {			
+		public void mouseClicked(MouseEvent e) {
+//			System.out.println("click! " + e.getSource());
 		}
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -401,6 +403,22 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		};
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
+		
+		shapePanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent me) {
+				super.mouseClicked(me);
+				Point whereClicked = me.getPoint();
+				for (SpeciesPatternLargeShape sps : spsList) {
+					if (sps.contains(whereClicked)) {		//check if mouse is clicked within shape
+//						System.out.println("Inside " + sps.getClass().getName() + " at " + whereClicked.x + ", " + whereClicked.y);
+					} else {
+//						System.out.println("Outside " + sps.getClass().getName() + " at " + whereClicked.x + ", " + whereClicked.y);
+					}
+				}
+			}
+		});
+//		shapePanel.addMouseListener(eventHandler);		// alternately use this
 		
 		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
 		generalPanel.setBorder(annotationBorder);
