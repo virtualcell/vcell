@@ -164,6 +164,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	public void addEndText(final String string) {
 		this.endText = string;
 	}
+	
+	public boolean contains(Point point) {
+		return false;
+	}
 
 	public void paintSelf(Graphics g) {
 		final int offset = 18;			// initial height of vertical bar
@@ -278,12 +282,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
-		
-		
 		if(!endText.isEmpty()) {
 			g.drawString(endText, getRightEnd() + 15, yPos + 20);
 		}
 	}
-
-	
 }
