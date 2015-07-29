@@ -40,9 +40,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 
 	public enum Column {
 		name("Name"),
-		depiction("Depiction"),
-		species_pattern("BioNetGen Definition"),
-		type("Type");
+		depiction("Pattern Depiction"),
+		species_pattern("Pattern Definition"),
+		type("Count");
 		
 		String columeName;
 		Column(String col) {
@@ -278,12 +278,12 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
 			RbmModelContainer rbmModelContainer = (RbmModelContainer)(oldValue.getModel().getRbmModelContainer());
-			// TODO: listen to something ???
-//			rbmModelContainer.removePropertyChangeListener(this);
+			// TODO: listen to something ???  	rbmModelContainer.removePropertyChangeListener(this);
 			for (RbmObservable observable : rbmModelContainer.getObservableList()) {
 				observable.removePropertyChangeListener(this);
-				SpeciesPattern speciesPattern = observable.getSpeciesPattern(0);
-				RbmUtils.removePropertyChangeListener(speciesPattern, this);
+				for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
+					RbmUtils.removePropertyChangeListener(speciesPattern, this);
+				}
 			}			
 		}
 		BioModel newValue = (BioModel)evt.getNewValue();
@@ -292,8 +292,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 // TODO:			rbmModelContainer.addPropertyChangeListener(this);
 			for (RbmObservable observable : rbmModelContainer.getObservableList()) {
 				observable.addPropertyChangeListener(this);
-				SpeciesPattern speciesPattern = observable.getSpeciesPattern(0);
-				RbmUtils.addPropertyChangeListener(speciesPattern, this);							
+				for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
+					RbmUtils.addPropertyChangeListener(speciesPattern, this);
+				}
 			}
 		}
 	}
@@ -446,7 +447,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				break;
 			}
 			case type: {
-				RbmObservable.ObservableType ot = RbmObservable.ObservableType.valueOf((String) value);
+				RbmObservable.ObservableType ot = RbmObservable.ObservableType.getTypeFromName((String) value);
 				observable.setType(ot);
 				fireTableRowsUpdated(row, row);
 				break;

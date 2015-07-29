@@ -53,6 +53,13 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		public String toString(){
 			return name;
 		}
+		public static ObservableType getTypeFromName(String name) {
+			for (int i = 0; i < ObservableType.values().length; i++) {
+				if (name.equals(ObservableType.values()[i].name))
+					return ObservableType.values()[i];
+				}
+			throw new IllegalArgumentException("Unknown enum type named " + name + " for " + ObservableType.class.getSimpleName());
+		}
 	}
 	
 	private String name;
