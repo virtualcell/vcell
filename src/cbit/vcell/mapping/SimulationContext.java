@@ -296,6 +296,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 //	private boolean bStoch;
 //	private boolean bRuleBased;
 	private final Application applicationType;
+	private boolean bMassConservationModelReduction = true;
 	private boolean bConcentration = true;
 	private boolean bRandomizeInitCondition = false;
 	private DataContext dataContext = new DataContext(getNameScope());
@@ -2104,6 +2105,10 @@ public void checkValidity() throws MappingException
 }
 public boolean isUsingConcentration() {
 	return bConcentration;
+}
+
+public boolean isUsingMassConservationModelReduction() {
+	return bMassConservationModelReduction;
 }
 
 public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
