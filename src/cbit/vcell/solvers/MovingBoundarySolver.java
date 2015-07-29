@@ -10,34 +10,15 @@
 
 package cbit.vcell.solvers;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Vector;
 
 import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
-import org.vcell.util.NullSessionLog;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.SimResampleInfoProvider;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.math.Variable;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -93,33 +74,33 @@ public void cleanup() {
  * @return cbit.vcell.simdata.AnnotatedFunction[]
  * @param simulation cbit.vcell.solver.Simulation
  */
-@Override
-public Vector<AnnotatedFunction> createFunctionList() {
-	//Try to save existing user defined functions
-	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
-	try{
-		annotatedFunctionVector = simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
-		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
-		File existingFunctionFile = new File(functionFileName);
-		if(existingFunctionFile.exists()){
-			Vector<AnnotatedFunction> oldUserDefinedFunctions =
-				new Vector<AnnotatedFunction>();
-			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJob().getSimulationJobID());
-			for(int i = 0; i < allOldFunctionV.size(); i += 1){
-				if(allOldFunctionV.elementAt(i).isOldUserDefined()){
-					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
-				}
-			}
-			
-			annotatedFunctionVector.addAll(oldUserDefinedFunctions);
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-		//ignore
-	}
-	return annotatedFunctionVector;
-}
+//@Override
+//public Vector<AnnotatedFunction> createFunctionList() {
+//	//Try to save existing user defined functions
+//	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
+//	try{
+//		annotatedFunctionVector = simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
+//		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
+//		File existingFunctionFile = new File(functionFileName);
+//		if(existingFunctionFile.exists()){
+//			Vector<AnnotatedFunction> oldUserDefinedFunctions =
+//				new Vector<AnnotatedFunction>();
+//			Vector<AnnotatedFunction> allOldFunctionV =
+//				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJob().getSimulationJobID());
+//			for(int i = 0; i < allOldFunctionV.size(); i += 1){
+//				if(allOldFunctionV.elementAt(i).isOldUserDefined()){
+//					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
+//				}
+//			}
+//			
+//			annotatedFunctionVector.addAll(oldUserDefinedFunctions);
+//		}
+//	}catch(Exception e){
+//		e.printStackTrace();
+//		//ignore
+//	}
+//	return annotatedFunctionVector;
+//}
 /**
  * Insert the method's description here.
  * Creation date: (6/27/01 3:25:11 PM)

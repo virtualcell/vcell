@@ -17,12 +17,20 @@ import java.util.Vector;
 
 import org.vcell.util.SessionLog;
 
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 /**
@@ -212,7 +220,31 @@ public synchronized final void stopSolver() {
 }
 
 //Added Nov 2008.
-public abstract Vector<AnnotatedFunction> createFunctionList();
+public Vector<AnnotatedFunction> createFunctionList() {
+	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
+	
+	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
+	Function functions[] = simSymbolTable.getFunctions();
+	for (int i = 0; i < functions.length; i++){
+		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
+			Expression exp1 = new Expression(functions[i].getExpression());
+			try {
+				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
+			} catch (MathException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			}
+			Domain domain = null;
+			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
+			funcList.add(af);
+		}
+	}
+	return funcList;
+
+}
 
 
 //Added Nov 2008. For new mechanism of simulation data retrive. (No binary file is written for variables and functions from now on)

@@ -11,6 +11,9 @@
 package cbit.vcell.client.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,10 +21,17 @@ import java.util.HashSet;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.VCellThreadChecker;
 
+import com.ibm.icu.text.UTF16.StringComparator;
+
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.mapping.AbstractMathMapping.MathMappingParameter;
+import cbit.vcell.mapping.AbstractMathMapping.ObservableConcentrationParameter;
+import cbit.vcell.mapping.AbstractMathMapping.ObservableCountParameter;
+import cbit.vcell.mapping.AbstractMathMapping.SpeciesConcentrationParameter;
+import cbit.vcell.mapping.AbstractMathMapping.SpeciesCountParameter;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
@@ -311,6 +321,38 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 		return filters.toArray(new FilterCategoryType[0]);
 	}
 	
+	private SymbolTableEntry[] getSortedBiologicalSymbols(SymbolTableEntry[] bioSymbols){
+		if (bioSymbols.length==0){
+			return null;
+		}
+		if (bioSymbols.length==1){
+			return bioSymbols;
+		}
+		ArrayList<SymbolTableEntry> list = new ArrayList<SymbolTableEntry>();
+		list.addAll(Arrays.asList(bioSymbols));
+		list.sort(new Comparator<SymbolTableEntry>() {
+
+			@Override
+			public int compare(SymbolTableEntry o1, SymbolTableEntry o2) {
+				int typeRank1 = rankType(o1);
+				int typeRank2 = rankType(o2);
+				if (typeRank1 != typeRank2){
+					return Integer.compare(typeRank1, typeRank2);
+				}
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		return list.toArray(new SymbolTableEntry[0]);
+	}
+	
+	private int rankType(SymbolTableEntry ste){
+		if (ste instanceof MathMappingParameter){
+			return 0;
+		}else{
+			return 10;
+		}
+	}
+	
 	@Override
 	public void populateDataSymbolMetadata() {
 		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
@@ -324,6 +366,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<String,DataSymbolMetadata>();
 		
 		if(simulationOwner instanceof SimulationContext){
+ArrayList<String> mappings = new ArrayList<String>();
 			SimulationContext simulationContext = (SimulationContext)simulationOwner;
 			MathMapping mathMapping = simulationContext.getMostRecentlyCreatedMathMapping();
 			if (mathMapping==null){
@@ -338,34 +381,30 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				while (varEnum.hasMoreElements()){
 					String tooltipString = null;
 					Variable var = varEnum.nextElement();
-					SymbolTableEntry[] bioSymbols = mathSymbolMapping.getBiologicalSymbol(var);
-					if (bioSymbols != null && bioSymbols.length>0){
+String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
+					SymbolTableEntry[] bioSymbols1 = mathSymbolMapping.getBiologicalSymbol(var);
+					if (bioSymbols1 != null && bioSymbols1.length>0){
 						
-						SymbolTableEntry ste = bioSymbols[0];
-						if(ste instanceof KineticsProxyParameter) {
-							ste = ((KineticsProxyParameter) ste).getTarget();
-						}
-						for(SymbolTableEntry ss : bioSymbols) {
-							if(ss instanceof GeneratedSpeciesSymbolTableEntry) {
-								ste = ss;
-								break;
-							}
+						SymbolTableEntry[] sortedBioSymbols = getSortedBiologicalSymbols(bioSymbols1);
+						SymbolTableEntry bestBioSymbol = sortedBioSymbols[0];
+						if(bestBioSymbol instanceof KineticsProxyParameter) {
+							bestBioSymbol = ((KineticsProxyParameter) bestBioSymbol).getTarget();
 						}
 						FilterCategoryType filterCategory = FilterCategoryType.Other;
 						
-						if (ste instanceof SpeciesContext){
+						if (bestBioSymbol instanceof SpeciesContext || bestBioSymbol instanceof SpeciesConcentrationParameter || bestBioSymbol instanceof SpeciesCountParameter){
 							filterCategory = FilterCategoryType.Species;
-						}else if (ste instanceof KineticsParameter){
-							KineticsParameter kineticsParameter = (KineticsParameter)ste;
+						}else if (bestBioSymbol instanceof KineticsParameter){
+							KineticsParameter kineticsParameter = (KineticsParameter)bestBioSymbol;
 							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
 								filterCategory = FilterCategoryType.Reactions;
 							}
-						}else if (ste instanceof RbmObservable){
+						}else if (bestBioSymbol instanceof RbmObservable || bestBioSymbol instanceof ObservableConcentrationParameter || bestBioSymbol instanceof ObservableCountParameter){
 							filterCategory = FilterCategoryType.Observables;
-						}else if (ste instanceof GeneratedSpeciesSymbolTableEntry){
+						}else if (bestBioSymbol instanceof GeneratedSpeciesSymbolTableEntry){
 							filterCategory = FilterCategoryType.GeneratedSpecies;
 							
-							SymbolTableEntry unmappedSymbol = ((GeneratedSpeciesSymbolTableEntry)ste).getSymbolTableEntry();
+							SymbolTableEntry unmappedSymbol = ((GeneratedSpeciesSymbolTableEntry)bestBioSymbol).getSymbolTableEntry();
 							if(unmappedSymbol instanceof SpeciesContext) {
 								SpeciesContext sc = (SpeciesContext)unmappedSymbol;
 								if(sc.hasSpeciesPattern()) {
@@ -379,10 +418,25 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 //								filterCategory = FilterCategoryType.ReservedXYZT;
 //							}
 						}
-						VCUnitDefinition unit = bioSymbols[0].getUnitDefinition();
+						VCUnitDefinition unit = bestBioSymbol.getUnitDefinition();
+if (tooltipString==null){
+tooltipString = "<html>";
+}else{
+tooltipString = "<html>"+tooltipString+"<br/>";
+}
+tooltipString += mathInfo + "<br/>";
+for (SymbolTableEntry bioSymbol : sortedBioSymbols){
+String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+bioSymbol.getUnitDefinition().getSymbol()+"])  category="+filterCategory+", unit=["+unit.getSymbol()+"]";
+tooltipString += " ==> "+bioInfo + "<br/>";
+mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
+}
+tooltipString+="</html>";
 						metadataMap.put(var.getName(),new DataSymbolMetadata(filterCategory, unit, tooltipString));
 					}else{
 						isSymbolsNotFound = true;
+String bioInfo = "Biological Symbol Not Found";
+tooltipString = "<html>"+mathInfo+"<br/> ==> "+bioInfo+"</html>";
+mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 //						System.out.println("couldn't find biological symbol for var "+var.getName());
 					}
 				}
@@ -402,6 +456,13 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				throw new RuntimeException("Failed to determine metadata for data symbols: "+e.getMessage(), e);
 			}
 			savedMetadataMap = metadataMap;
+mappings.sort(null);
+StringBuffer buffer = new StringBuffer();
+buffer.append("SimulationWorkspaceModelInfo.populateDataSymbolMetadata(): \n");
+for (String line : mappings){
+buffer.append(line+"\n");
+}
+System.out.println(buffer.toString());
 		}else if (simulationOwner instanceof MathModel){
 			savedMetadataMap = metadataMap;
 		}else{

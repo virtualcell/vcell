@@ -119,39 +119,6 @@ public void cleanup() {
 
 /**
  * Insert the method's description here.
- * Creation date: (2/2/2004 5:31:41 PM)
- * @return cbit.vcell.simdata.AnnotatedFunction[]
- * @param simulation cbit.vcell.solver.Simulation
- */
-@Override
-public Vector<AnnotatedFunction> createFunctionList() {
-	//Try to save existing user defined functions
-	Vector<AnnotatedFunction> annotatedFunctionVector = new Vector<AnnotatedFunction>();
-	try{
-		annotatedFunctionVector = simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
-		String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
-		File existingFunctionFile = new File(functionFileName);
-		if(existingFunctionFile.exists()){
-			Vector<AnnotatedFunction> oldUserDefinedFunctions =
-				new Vector<AnnotatedFunction>();
-			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile, simTask.getSimulationJob().getSimulationJobID());
-			for(int i = 0; i < allOldFunctionV.size(); i += 1){
-				if(allOldFunctionV.elementAt(i).isOldUserDefined()){
-					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
-				}
-			}
-			
-			annotatedFunctionVector.addAll(oldUserDefinedFunctions);
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-		//ignore
-	}
-	return annotatedFunctionVector;
-}
-/**
- * Insert the method's description here.
  * Creation date: (6/27/01 3:25:11 PM)
  * @return cbit.vcell.solvers.ApplicationMessage
  * @param message java.lang.String
