@@ -1139,7 +1139,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == observablesTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
-				if(bioModel.getModel().getRbmModelContainer().hasRules()) {
+				if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 					return;
 				}
