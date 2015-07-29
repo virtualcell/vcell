@@ -807,7 +807,7 @@ public static class ErrorContext {
 		return userPreferences != null;
 	}
 	
-	private final String modelInfo;
+	final String modelInfo;
 	private final UserPreferences userPreferences;
 }
 
