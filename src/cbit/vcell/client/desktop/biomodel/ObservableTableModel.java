@@ -21,6 +21,8 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Displayable;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.EditorScrollTable.DefaultScrollTableComboBoxEditor;
@@ -71,6 +73,13 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		case name:
 			inputValue = inputValue.trim();
 			if (inputValue.length() > 0) {
+				String mangled = TokenMangler.fixTokenStrict(inputValue);
+				if(!mangled.equals(inputValue)) {
+					errMsg = RbmObservable.typeName + " '" + inputValue + "' not legal identifier, try '" + mangled + "'";
+					errMsg += VCellErrorMessages.PressEscToUndo;
+					errMsg = "<html>" + errMsg + "</html>";
+					return errMsg;
+				}
 				RbmObservable o = getModel().getRbmModelContainer().getObservable(inputValue);
 				if (o != null && o != selectedObservable) {
 					errMsg = "Observable '" + inputValue + "' already exists!";
