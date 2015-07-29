@@ -170,6 +170,9 @@ public class NetCDFWriter {
 					
 			//create an empty NetCDF-3 file
 			//define dimensions
+			
+			/* these sizes must match the buffers allocated in corresponding Fortran code -- see globalvariables.f90
+			in numerics Hy3S/src directory */
 			Dimension numTrial = ncfile.addDimension("NumTrials", (int)stochOpt.getNumOfTrials());
 			Dimension numSpecies = ncfile.addDimension("NumSpecies", vars.size());
 			Dimension numReactions = ncfile.addDimension("NumReactions", subDomain.getJumpProcesses().size());
