@@ -477,6 +477,9 @@ private void initialize() {
 					int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
 					defaultToolTipText = "<html>" + getText() + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
 					setToolTipText(defaultToolTipText);
+					if(unit != null) {
+						setText(defaultToolTipText);
+					}
 				}
 				
 				TableModel tableModel = table.getModel();
@@ -487,6 +490,7 @@ private void initialize() {
 				return this;
 			}
 		};
+
 		getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
 		getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
