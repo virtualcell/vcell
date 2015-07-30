@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 
@@ -115,7 +117,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		for(ReactionSpec reactionSpec : transformedSimulationContext.getReactionContext().getReactionSpecs()) {
 			
 			if (reactionSpec.isExcluded()){
-				continue;
+				continue;	// we create rules only from those reactions which are not excluded
 			}
 			ReactionStep rs = reactionSpec.getReactionStep();
 			String name = rs.getName();
@@ -162,6 +164,14 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
+		
+		// delete those rules which are disabled (excluded) in the Specifications / Reaction table
+		for(ReactionRuleSpec rrs : transformedSimulationContext.getReactionContext().getReactionRuleSpecs()) {
+			if(rrs != null && rrs.isExcluded()) {
+				newModel.getRbmModelContainer().removeReactionRule(rrs.getReactionRule());	// we delete those rules which are disabled (excluded)
+			}
+		}
+		
 		// TODO; for debug only, can be commented out once this code gets stable enough
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
