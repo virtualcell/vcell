@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -68,7 +69,7 @@ public class RbmNetworkGenerator {
 		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
 		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, false);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -110,7 +111,7 @@ public class RbmNetworkGenerator {
 			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
 			fakeParameterList.add(connectionKey + "\t\t1");
 		}
-		
+
 		// second we produce the bngl file
 		writer.println(BEGIN_MODEL);
 		writer.println();
@@ -144,7 +145,7 @@ public class RbmNetworkGenerator {
 		
 		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, simulationContext, true);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -206,10 +207,16 @@ public class RbmNetworkGenerator {
 			writer.println();
 		}
 	}
-	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer) {
+	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, boolean enabledOnly) {
 		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
 		for (ReactionRule rr : reactionList) {
+			if(enabledOnly && sc != null) {
+				ReactionRuleSpec rrs = sc.getReactionContext().getReactionRuleSpec(rr);
+				if(rrs != null && rrs.isExcluded()) {
+				continue;		// we skip those rules which are disabled (excluded)
+				}
+			}
 			writer.println(RbmUtils.toBnglStringLong(rr));
 		}
 		writer.println(END_REACTIONS);	
