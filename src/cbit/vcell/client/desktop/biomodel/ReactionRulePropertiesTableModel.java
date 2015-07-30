@@ -29,6 +29,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -201,6 +202,11 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}
 	Parameter parameter = (Parameter)o;
+	if(reactionRule != null && reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate)==parameter) {
+		if(!reactionRule.isReversible()) {
+			return false;		// disable Kr if rule is not reversible
+		}
+	}
 	switch (columnIndex) {
 	case COLUMN_NAME:
 		return parameter.isNameEditable();
