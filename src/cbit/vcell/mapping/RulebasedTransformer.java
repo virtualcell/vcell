@@ -97,7 +97,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				newsp.addMolecularTypePattern(newmtp);
 				sc.setSpeciesPattern(newsp);
 				
-				RbmObservable newo = new RbmObservable(sc.getName());
+				RbmObservable newo = new RbmObservable(sc.getName()+"_SeedSpeciesObservable");
 				newo.setType(RbmObservable.ObservableType.Molecules);
 				newo.setModel(newModel);
 				newo.addSpeciesPattern(newsp);
@@ -123,7 +123,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			String name = rs.getName();
 			Kinetics k = rs.getKinetics();
 			if(!(k instanceof MassActionKinetics)) {
-				throw new RuntimeException("Only Mass Action Kinetics supported at this time");
+				throw new RuntimeException("Only Mass Action Kinetics supported at this time, reaction \""+rs.getName()+"\" uses kinetic law type \""+rs.getKinetics().getName()+"\"");
 			}
 			
 			boolean bReversible = true;

@@ -4291,7 +4291,7 @@ public String isValidForStochApp()
 				"they are not suitable for stochastic application.\n\n" +
 				"Reactions described by mass action law(all) or General law(certain forms),\n" +
 				"or fluxes described by general desity function(certain forms) and general\n" +
-				"permeability(certain forms) can be inteprested to mass action form.\n\n"+
+				"permeability(certain forms) can be interpreted to mass action form.\n\n"+
 				"All rate laws that include electric current are not suitable for stochastic application.";
 	}
 	if(exceptionReacStr.length() > 0)
