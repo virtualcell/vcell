@@ -365,7 +365,9 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
 		String symbol;
 		try {
-			symbol = mathMapping.getMathSymbolMapping().getVariable(modelObject).getName();
+			MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+			Variable variable = mathSymbolMapping.getVariable(modelObject);
+			symbol = variable.getName();
 			rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
 		} catch (MathException | MatrixException | ExpressionException | ModelException e) {
 			e.printStackTrace();

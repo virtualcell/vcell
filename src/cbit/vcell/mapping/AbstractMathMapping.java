@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -49,6 +50,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -154,6 +156,17 @@ public class EventAssignmentOrRateRuleInitParameter extends MathMappingParameter
 	protected EventAssignmentOrRateRuleInitParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 		super(argName,argExpression,argRole,argVCUnitDefinition,null);
 	}
+	
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof EventAssignmentOrRateRuleInitParameter)){
+			return false;
+		}
+		return true;
+	}
 }
 
 @SuppressWarnings("serial")
@@ -176,6 +189,24 @@ public class KFluxParameter extends MathMappingParameter {
 		return targetStructureMapping;
 	}
 
+	
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof KFluxParameter)){
+			return false;
+		}
+		KFluxParameter other = (KFluxParameter)obj;
+		if (!Compare.isEqual(sourceStructureMapping, other.sourceStructureMapping)){
+			return false;
+		}
+		if (!Compare.isEqual(targetStructureMapping, other.targetStructureMapping)){
+			return false;
+		}
+		return true;
+	}
 }
 
 @SuppressWarnings("serial")
@@ -302,6 +333,21 @@ public class ObservableConcentrationParameter extends MathMappingParameter {
 	public RbmObservable getObservable() {
 		return observable;
 	}
+	
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof ObservableConcentrationParameter)){
+			return false;
+		}
+		ObservableConcentrationParameter other = (ObservableConcentrationParameter)obj;
+		if (!Compare.isEqual(observable, other.observable)){
+			return false;
+		}
+		return true;
+	}
 }
 
 @SuppressWarnings("serial")
@@ -315,6 +361,20 @@ public class ObservableCountParameter extends MathMappingParameter {
 
 	public RbmObservable getObservable() {
 		return observable;
+	}
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof ObservableCountParameter)){
+			return false;
+		}
+		ObservableCountParameter other = (ObservableCountParameter)obj;
+		if (!Compare.isEqual(observable, other.observable)){
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -330,6 +390,21 @@ public class SpeciesConcentrationParameter extends MathMappingParameter {
 	public SpeciesContextSpec getSpeciesContextSpec() {
 		return speciesContextSpec;
 	}
+	
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof SpeciesConcentrationParameter)){
+			return false;
+		}
+		SpeciesConcentrationParameter other = (SpeciesConcentrationParameter)obj;
+		if (!Compare.isEqual(speciesContextSpec, other.speciesContextSpec)){
+			return false;
+		}
+		return true;
+	}
 }
 
 
@@ -344,6 +419,20 @@ public class SpeciesCountParameter extends MathMappingParameter {
 
 	public SpeciesContextSpec getSpeciesContextSpec() {
 		return speciesContextSpec;
+	}
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof SpeciesCountParameter)){
+			return false;
+		}
+		SpeciesCountParameter other = (SpeciesCountParameter)obj;
+		if (!Compare.isEqual(speciesContextSpec, other.speciesContextSpec)){
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -361,13 +450,53 @@ public class ProbabilityParameter extends MathMappingParameter {
 		return fieldReactionSpec;
 	}
 
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof ProbabilityParameter)){
+			return false;
+		}
+		ProbabilityParameter other = (ProbabilityParameter)obj;
+		if (!Compare.isEqual(fieldReactionSpec, other.fieldReactionSpec)){
+			return false;
+		}
+		return true;
+	}
 }
 
 
 @SuppressWarnings("serial")
 public class RateRuleRateParameter extends MathMappingParameter {
-	protected RateRuleRateParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
-		super(argName,argExpression,argRole,argVCUnitDefinition,null);
+	//
+	// placeholder for the net reaction rate of this Reaction Rule. ... maybe not well defined now. and not used.
+	//
+	
+	private ReactionRule reactionRule = null;
+	
+	protected RateRuleRateParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, ReactionRule argReactionRule, GeometryClass geometryClass) {
+		super(argName,argExpression,argRole,argVCUnitDefinition,geometryClass);
+		this.reactionRule = argReactionRule;
+	}
+	
+	public ReactionRule getReactionRule(){
+		return this.reactionRule;
+	}
+	
+	@Override
+	public boolean compareEqual(Matchable obj){
+		if (!super.compareEqual(obj)){
+			return false;
+		}
+		if (!(obj instanceof RateRuleRateParameter)){
+			return false;
+		}
+		RateRuleRateParameter other = (RateRuleRateParameter)obj;
+		if (!Compare.isEqual(reactionRule, other.reactionRule)){
+			return false;
+		}
+		return true;
 	}
 }
 
@@ -1293,7 +1422,9 @@ ObservableCountParameter addObservableCountParameter(String name, Expression exp
 			if(previousParameter != null){
 				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
 				if(!previousParameter.compareEqual(newParameter)){
-					throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
+					if (!(previousParameter instanceof SpeciesCountParameter)){
+						throw new RuntimeException("MathMappingParameter addObservableConcentrationParameter found duplicate parameter for name '"+name+"'.");
+					}
 				}
 				return (ObservableCountParameter)previousParameter;
 			}

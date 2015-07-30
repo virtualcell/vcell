@@ -466,12 +466,21 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		//
 		// include required UnitRateFactors
 		//
+//		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+//			if (fieldMathMappingParameters[i] instanceof SpeciesConcentrationParameter || fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
+//				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+//			}
+//		}
+		
+		//
+		// include required UnitRateFactors
+		//
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof SpeciesConcentrationParameter || fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
 			}
 		}
-		
+
 		//
 		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 		//
@@ -569,20 +578,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			}
 			
 			reactionRuleNameDefault = TokenMangler.getNextEnumeratedToken(reactionRuleName);
-		}
-		
-		//
-		// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
-		//
-		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
-				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
-				}
-			}
-		}
-	
+		}	
 	
 		if (!mathDesc.isValid()){
 			System.out.println(mathDesc.getVCML_database());
