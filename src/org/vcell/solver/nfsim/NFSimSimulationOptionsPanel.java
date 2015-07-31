@@ -217,9 +217,9 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 					return;
 				}
 				maxMoleculesPerType = new Integer(text);
-				if(maxMoleculesPerType < 0 || maxMoleculesPerType > 1000000) {  // just some large number
-					throw new RuntimeException("Number must be positive and smaller than 1,000,000.");
-				}
+//				if(maxMoleculesPerType < 0 || maxMoleculesPerType > 1000000) {  // just some large number
+//					throw new RuntimeException("Number must be positive and smaller than 1,000,000.");
+//				}
 			} catch (NumberFormatException ex) {
 				DialogUtils.showErrorDialog(this, "Wrong number format: " + ex.getMessage());
 				maxMoleculesPerType = solverTaskDescription.getNFSimSimulationOptions().getMaxMoleculesPerType();
