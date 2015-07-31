@@ -44,9 +44,9 @@ import org.vcell.util.gui.CollapsiblePanel;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadata;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.client.data.DataSymbolMetadata;
+import cbit.vcell.client.data.ODEDataInterface;
+import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
@@ -90,7 +90,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JComboBox ivjXAxisComboBox = null;
 //	private boolean ivjConnPtoP2Aligning = false;
-	private MyDataInterface myDataInterface = null;
+	private ODEDataInterface oDEDataInterface = null;
 	
 	private static ImageIcon function_icon = null;
 	
@@ -122,8 +122,8 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				}else if(evt.getPropertyName().equals(ODE_FILTER_CHANGED)){
 					updateChoices(getMyDataInterface());
 				}else if(evt.getPropertyName().equals(ODESOLVERRESULTSET_CHANGED)){
-					MyDataInterface oldMyDataInterface = (MyDataInterface)evt.getOldValue();
-					MyDataInterface newMyDataInterface = (MyDataInterface)evt.getNewValue();
+					ODEDataInterface oldMyDataInterface = (ODEDataInterface)evt.getOldValue();
+					ODEDataInterface newMyDataInterface = (ODEDataInterface)evt.getNewValue();
 					boolean bUnfilteredColumnsChanged = false;
 					if(!((oldMyDataInterface == null && newMyDataInterface == null) || (oldMyDataInterface == newMyDataInterface))){
 						if(((oldMyDataInterface == null && newMyDataInterface != null) || (oldMyDataInterface != null && newMyDataInterface == null))
@@ -210,7 +210,7 @@ public ODESolverPlotSpecificationPanel() {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(MyDataInterface value) {
+private void connEtoC11(ODEDataInterface value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -505,8 +505,8 @@ private javax.swing.JLabel getMinLabel() {
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public MyDataInterface getMyDataInterface() {
-	return myDataInterface;
+public ODEDataInterface getMyDataInterface() {
+	return oDEDataInterface;
 }
 
 /**
@@ -778,7 +778,7 @@ private void initConnections() throws java.lang.Exception {
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-			MyDataInterface mdi = getMyDataInterface();
+			ODEDataInterface mdi = getMyDataInterface();
 			if (mdi == null) {
 				return this;
 			}
@@ -1150,17 +1150,17 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setMyDataInterface(MyDataInterface newMyDataInterface) {
-	MyDataInterface oldValue = myDataInterface;
+public void setMyDataInterface(ODEDataInterface newMyDataInterface) {
+	ODEDataInterface oldValue = oDEDataInterface;
 	/* Stop listening for events from the current object */
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(ivjEventHandler);
 	}
-	myDataInterface = newMyDataInterface;
-	if (myDataInterface != null) {
-		myDataInterface.addPropertyChangeListener(ivjEventHandler);
+	oDEDataInterface = newMyDataInterface;
+	if (oDEDataInterface != null) {
+		oDEDataInterface.addPropertyChangeListener(ivjEventHandler);
 	}
-	firePropertyChange(ODESOLVERRESULTSET_CHANGED, oldValue, myDataInterface);
+	firePropertyChange(ODESOLVERRESULTSET_CHANGED, oldValue, oDEDataInterface);
 }
 
 /**
@@ -1193,8 +1193,8 @@ private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescripti
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(MyDataInterface myDataInterface) throws ExpressionException,ObjectNotFoundException {
-	if (myDataInterface == null) {
+private synchronized void updateChoices(ODEDataInterface oDEDataInterface) throws ExpressionException,ObjectNotFoundException {
+	if (oDEDataInterface == null) {
 		return;
 	}
 	Object xAxisSelection = getXAxisComboBox_frm().getSelectedItem();
@@ -1233,7 +1233,7 @@ private synchronized void updateChoices(MyDataInterface myDataInterface) throws 
     	sortedColumndDescriptions.add(timeColumnDescription); // add time first
 	}
     
-    boolean bMultiTrialData = myDataInterface.isMultiTrialData();
+    boolean bMultiTrialData = oDEDataInterface.isMultiTrialData();
     
     sortedColumndDescriptions.addAll(variableColumnDescriptions);
     if(!bMultiTrialData)
@@ -1379,11 +1379,11 @@ private JPanel getPanel() {
 	return panel;
 }
 
-private HashMap<JCheckBox, FilterCategoryType> filterSettings;
+private HashMap<JCheckBox, ModelCategoryType> filterSettings;
 private JLabel yAxisJLabel;
-private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
+private JCheckBox getFilterSetting(ModelCategoryType filterCategory){
 	if(filterSettings == null){
-		filterSettings = new HashMap<JCheckBox, FilterCategoryType>();
+		filterSettings = new HashMap<JCheckBox, ModelCategoryType>();
 	}
 	for(JCheckBox jCheckBox:filterSettings.keySet()){
 		if(filterSettings.get(jCheckBox).equals(filterCategory)){
@@ -1403,8 +1403,8 @@ private JCheckBox getFilterSetting(FilterCategoryType filterCategory){
 		}
 		
 	};
-	newJCheckBox.setSelected(filterCategory.initialSelect);
-	newJCheckBox.setEnabled(filterCategory.enabled);
+	newJCheckBox.setSelected(filterCategory.isInitialSelect());
+	newJCheckBox.setEnabled(filterCategory.isEnabled());
 	filterSettings.put(newJCheckBox,filterCategory);
 	return newJCheckBox;		
 }
@@ -1415,10 +1415,10 @@ private void showFilterSettings() {
 		
 		getFilterPanel().getContentPanel().removeAll();
 		getFilterPanel().getContentPanel().setLayout(null);
-		HashMap<JCheckBox, FilterCategoryType> oldFilterSettings = filterSettings;
+		HashMap<JCheckBox, ModelCategoryType> oldFilterSettings = filterSettings;
 		filterSettings = null;
 
-		FilterCategoryType[] filterCategories = getMyDataInterface().getSupportedFilterCategories();
+		ModelCategoryType[] filterCategories = getMyDataInterface().getSupportedFilterCategories();
 		for (int i = 0; i < filterCategories.length; i++) {
 			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
 			if(oldFilterSettings != null){
@@ -1459,13 +1459,13 @@ private void showFilterSettings() {
 
 private void processFilterSelection(){
 	if(filterSettings != null){
-		ArrayList<FilterCategoryType> selectedFilterCategories = new ArrayList<FilterCategoryType>();
+		ArrayList<ModelCategoryType> selectedFilterCategories = new ArrayList<ModelCategoryType>();
 		for(JCheckBox jCheckBox:filterSettings.keySet()){
 			if(jCheckBox.isSelected()){
 				selectedFilterCategories.add(filterSettings.get(jCheckBox));
 			}
 		}
-		getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new FilterCategoryType[0]));
+		getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
 	}else{
 		getMyDataInterface().selectCategory(null);
 		

@@ -363,12 +363,17 @@ private ReferenceData getRemappedReferenceData(MathMapping mathMapping, Structur
 	//
 	for (int i = 0; i < modelObjectList.size(); i++){
 		SymbolTableEntry modelObject = (SymbolTableEntry)modelObjectList.elementAt(i);
-		String symbol;
 		try {
-			MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
-			Variable variable = mathSymbolMapping.getVariable(modelObject);
-			symbol = variable.getName();
-			rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
+			
+			Variable variable = mathMapping.getMathSymbolMapping().getVariable(modelObject);
+			if (variable!=null){
+				String symbol = variable.getName();
+				rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
+			}else if (modelObject instanceof Model.ReservedSymbol && ((Model.ReservedSymbol)modelObject).isTime()){
+				Model.ReservedSymbol time = (Model.ReservedSymbol)modelObject;
+				String symbol = time.getName();
+				rowColResultSet.addDataColumn(new ODESolverResultSetColumnDescription(symbol));
+			}
 		} catch (MathException | MatrixException | ExpressionException | ModelException e) {
 			e.printStackTrace();
 			throw new MappingException(e.getMessage(),e);

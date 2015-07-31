@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -73,6 +74,7 @@ import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.data.DataIdentifierFilter;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
@@ -121,13 +123,12 @@ import cbit.vcell.microscopy.gui.loaddatawizard.LoadFRAPData_SummaryDescriptor;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.Simulation;
@@ -1466,13 +1467,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				flourViewer.setSimulation(null);
 				flourViewer.setPdeDataContext(null);
 				flourViewer.setDataIdentifierFilter(
-				new PDEPlotControlPanel.DataIdentifierFilter(){
+				new DataIdentifierFilter(){
 					private String ALL_DATAIDENTIFIERS = "All";
 					private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
 					private String SIM_NORM_FLUOR = "Sim. Norm. Fluor";
 					private String DEFAULT_VIEW = "Default View (more...)";
 					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS, EXP_NORM_FLUOR, SIM_NORM_FLUOR, DEFAULT_VIEW};
-					public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+					public boolean accept(String filterSetName, List<AnnotatedFunction> functions, DataIdentifier dataidentifier) {
 						if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
 							return true;
 						}else if(filterSetName.equals(EXP_NORM_FLUOR)){
@@ -1512,7 +1513,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						return false;
 					}
 					@Override
-					public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers) {
+					public ArrayList<DataIdentifier> accept(String filterSetName, List<AnnotatedFunction> functions, DataIdentifier[] dataidentifiers) {
 						throw new RuntimeException("Not Implemented for FRAP");
 					}
 				}

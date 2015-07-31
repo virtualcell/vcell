@@ -111,7 +111,6 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.server.DataSetControllerProvider;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -287,6 +286,7 @@ public class PDEDataViewer extends DataViewer {
 	};
 
 	//
+	private boolean updatingMetaData = false;
 	private DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
 	private MeshDisplayAdapter.MeshRegionSurfaces meshRegionSurfaces = null;
 //	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
@@ -356,6 +356,40 @@ public class PDEDataViewer extends DataViewer {
 				handleException(ivjExc);
 			}
 		};
+		public void updateMetadata(){
+			if (updatingMetaData){
+				return;
+			}else{
+				try {
+					updatingMetaData = true;
+					AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							if(getSimulationModelInfo() != null){
+								SimulationModelInfo simulationWorkspaceModelInfo = (SimulationModelInfo)PDEDataViewer.this.getSimulationModelInfo();
+								simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+							}
+						}
+					};
+					AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+						@Override
+						public void run(Hashtable<String, Object> hashTable) throws Exception {
+							getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+							getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+							if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
+								getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
+							}
+						}
+					};
+					ClientTaskDispatcher.dispatch(PDEDataViewer.this, new Hashtable<String, Object>(),
+							new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+							false, false, false, null, true);
+				} finally {
+					updatingMetaData = false;
+				}
+			}
+
+		}
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			try {
 				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(SimDataConstants.PDE_DATA_MANAGER_CHANGED)){
@@ -368,9 +402,10 @@ public class PDEDataViewer extends DataViewer {
 					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
 						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
-							getPDEPlotControlPanel1().setDataIdentifierFilter(getPDEPlotControlPanel1().new DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
+						if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
+							getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
 						}
+						updateMetadata();
 					} else {
 						getPDEDataContextPanel1().setDataInfoProvider(null);
 						getPDEExportPanel1().setDataInfoProvider(null);
@@ -581,7 +616,7 @@ public PDEDataViewer() {
 	initialize();
 }
 
-public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dataIdentifierFilter){
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter){
 	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
 }
 
