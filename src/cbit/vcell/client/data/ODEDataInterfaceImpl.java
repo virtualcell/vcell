@@ -6,38 +6,36 @@ import java.util.ArrayList;
 
 import org.vcell.util.ObjectNotFoundException;
 
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadata;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.gui.MyDataInterface;
 import cbit.vcell.util.ColumnDescription;
 
-public class MyDataInterfaceImpl implements MyDataInterface {
+class ODEDataInterfaceImpl implements ODEDataInterface {
 	
 	private transient java.beans.PropertyChangeSupport propertyChange = new PropertyChangeSupport(this);
-	private FilterCategoryType[] selectedFilters = null;
-	private final SimulationWorkspaceModelInfo simulationWorkspaceModelInfo;
+	private ModelCategoryType[] selectedFilters = null;
+	private final SimulationModelInfo simulationModelInfo;
 	private ODESolverResultSet odeSolverResultSet;
 	
-	public MyDataInterfaceImpl(ODESolverResultSet odeSolverResultSet, SimulationWorkspaceModelInfo simulationWorkspaceModelInfo){
+	ODEDataInterfaceImpl(ODESolverResultSet odeSolverResultSet, SimulationModelInfo simulationModelInfo){
 		this.odeSolverResultSet = new ODESolverResultSet(odeSolverResultSet);
-		this.simulationWorkspaceModelInfo = simulationWorkspaceModelInfo;
+		this.simulationModelInfo = simulationModelInfo;
 	}
 	
 	@Override
-	public FilterCategoryType[] getSupportedFilterCategories() {
-		DataSymbolMetadataResolver resolver = (simulationWorkspaceModelInfo!=null)?simulationWorkspaceModelInfo.getDataSymbolMetadataResolver():null;
+	public ModelCategoryType[] getSupportedFilterCategories() {
+		DataSymbolMetadataResolver resolver = (simulationModelInfo!=null)?simulationModelInfo.getDataSymbolMetadataResolver():null;
 		if(resolver != null){
 			return resolver.getUniqueFilterCategories();
 		}
-		return new FilterCategoryType[0];
+		return new ModelCategoryType[0];
 	}
 
 	@Override
-	public void selectCategory(FilterCategoryType[] filterCategories) {
+	public void selectCategory(ModelCategoryType[] filterCategories) {
 		this.selectedFilters = filterCategories;
 		propertyChange.firePropertyChange("columnDescriptions", null, getFilteredColumnDescriptions());
 	}
@@ -107,13 +105,13 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 	
 	@Override
 	public ColumnDescription[] getFilteredColumnDescriptions() {
-		if (selectedFilters == null || simulationWorkspaceModelInfo == null){
+		if (selectedFilters == null || simulationModelInfo == null){
 			return getOdeSolverResultSet().getColumnDescriptions();
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
 			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
-				DataSymbolMetadata dataSymbolMetadata = simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().getDataSymbolMetadata(getOdeSolverResultSet().getColumnDescriptions()[i].getName());
-				FilterCategoryType selectedFilterCategory = null;
+				DataSymbolMetadata dataSymbolMetadata = simulationModelInfo.getDataSymbolMetadataResolver().getDataSymbolMetadata(getOdeSolverResultSet().getColumnDescriptions()[i].getName());
+				ModelCategoryType selectedFilterCategory = null;
 				if (dataSymbolMetadata!=null){
 					selectedFilterCategory = dataSymbolMetadata.filterCategory;
 				}
@@ -134,7 +132,7 @@ public class MyDataInterfaceImpl implements MyDataInterface {
 
 	@Override
 	public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
-		return (simulationWorkspaceModelInfo!=null?simulationWorkspaceModelInfo.getDataSymbolMetadataResolver():null);
+		return (simulationModelInfo!=null?simulationModelInfo.getDataSymbolMetadataResolver():null);
 	}
 
 }

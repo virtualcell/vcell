@@ -21,6 +21,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolVariable;
@@ -177,11 +178,12 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 		try {
 			initial.bindExpression(mathDesc);
 			defaultInitialCondition = initial.evaluateConstant();
+			pw.println("\t"+defaultInitialCondition+";\t\t% yinit("+(j+1)+") is the initial condition for '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+"'");
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
-			throw new RuntimeException("error evaluating initial condition for variable "+volVars[j].getName());
+			pw.println("\t"+initial.infix_Matlab()+";\t\t% yinit("+(j+1)+") is the initial condition for '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+"'");
+//			throw new RuntimeException("error evaluating initial condition for variable "+volVars[j].getName());
 		}
-		pw.println("\t"+defaultInitialCondition+";\t\t% yinit("+(j+1)+") is the initial condition for '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+"'");
 	}
 	pw.println("];");
 	pw.println("if nargin >= 2");

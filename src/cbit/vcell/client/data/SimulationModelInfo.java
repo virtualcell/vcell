@@ -10,7 +10,8 @@
 
 package cbit.vcell.client.data;
 
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.parser.SymbolTableEntry;
+
 
 /**
  * Insert the type's description here.
@@ -18,40 +19,34 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataRes
  * @author: Ion Moraru
  */
 public interface SimulationModelInfo {
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2005 11:04:15 AM)
- * @return java.lang.String
- */
-String getContextName();
+	
+	public interface ModelCategoryType {
+		// uses == semantics, must be implemented by an enumeration
+		String getName();
+		boolean isInitialSelect();
+		boolean isEnabled();
+	}
 
+	public interface DataSymbolMetadataResolver {
+		
+		DataSymbolMetadata getDataSymbolMetadata(SymbolTableEntry ste);
 
-/**
- * Insert the method's description here.
- * Creation date: (9/19/2005 1:28:34 PM)
- * @return java.lang.String
- * @param subVolumeIdIn int
- * @param subVolumeIdOut int
- */
-String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFromGeometry);
+		DataSymbolMetadata getDataSymbolMetadata(String symbolName);
+		
+		ModelCategoryType[] getUniqueFilterCategories();
+		
+		void populateDataSymbolMetadata();
+	}	
 
+	String getContextName();
 
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2005 11:18:34 AM)
- * @return java.lang.String
- */
-String getSimulationName();
+	String getMembraneName(int subVolumeIdIn, int subVolumeIdOut, boolean bFromGeometry);
 
+	String getSimulationName();
 
-/**
- * Insert the method's description here.
- * Creation date: (9/19/2005 1:29:15 PM)
- * @return java.lang.String
- * @param subVolumeID int
- */
-String getVolumeNamePhysiology(int subVolumeID);
-String getVolumeNameGeometry(int subVolumeID);
+	String getVolumeNamePhysiology(int subVolumeID);
 
-DataSymbolMetadataResolver getDataSymbolMetadataResolver();
+	String getVolumeNameGeometry(int subVolumeID);
+
+	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
 }

@@ -12,7 +12,6 @@ package cbit.vcell.client.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -20,8 +19,6 @@ import java.util.HashSet;
 
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.VCellThreadChecker;
-
-import com.ibm.icu.text.UTF16.StringComparator;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.GeometrySpec;
@@ -38,7 +35,6 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ReservedVariable;
@@ -48,7 +44,6 @@ import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
@@ -56,7 +51,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.units.VCUnitDefinition;
@@ -207,73 +201,66 @@ public String getVolumeNameGeometry(int subVolumeID) {
 	
 	return results;
 }
-public String[] getFilterNames(){
-	if(simulationOwner instanceof SimulationContext){
-		ArrayList<String> filterNames = new ArrayList<String>();
-		for(FilterType filterType:FilterType.values()){
-			filterNames.add(filterType.toString());
-		}
-		return filterNames.toArray(new String[0]);		
-	}
-	return null;
-}
-public boolean hasFilter(String filterName){
-	String[] filterNames = getFilterNames();
-	for (int i = 0; filterNames != null && i < filterNames.length; i++) {
-		if(filterNames[i].equals(filterName)){
-			return true;
-		}
-	}
-	return false;
-}
-public static enum FilterType {Species,Flux};
-public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifiers,FilterType filterType) throws Exception{
-	if(simulationOwner instanceof SimulationContext){
-		MathMapping mathMapping = ((SimulationContext)simulationOwner).getMostRecentlyCreatedMathMapping();
-		if (mathMapping==null){
-			mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
-		}
-		MathDescription mathDescription = mathMapping.getMathDescription();
-		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
-		ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
-		for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
-			Variable variable = mathDescription.getVariable(filterTheseDataIdentifiers[i].getName());
-			SymbolTableEntry[] symbolTableEntries = mathSymbolMapping.getBiologicalSymbol(variable);
-			System.out.println("-----DI="+filterTheseDataIdentifiers[i].getName()+" var="+variable);
-			if(symbolTableEntries != null){
-				for (int j = 0; j < symbolTableEntries.length; j++) {
-					System.out.println("        "+symbolTableEntries[j]);
-					if(filterType.equals(FilterType.Species) && symbolTableEntries[j] instanceof SpeciesContext){
-						acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
-						break;
-					}else if(filterType.equals(FilterType.Flux)  && symbolTableEntries[j] instanceof KineticsParameter){
-						KineticsParameter kineticsParameter = (KineticsParameter)symbolTableEntries[j];
-						if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
-							acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
-							break;
-						}
-					}
-				}
-			}			
-		}
-		if(acceptedDataIdentifiers.size() > 0){
-			return acceptedDataIdentifiers;
-		}
-		return null;
-	}else{
-		return null;
-//		MathDescription mathDescription = simulationOwner.getMathDescription();
-//		Variable variable = mathDescription.getVariable(dataName);
-//		System.out.println("-----"+variable);
-	}
-}
-
-public interface DataSymbolMetadataResolver {
-	DataSymbolMetadata getDataSymbolMetadata(SymbolTableEntry ste);
-	DataSymbolMetadata getDataSymbolMetadata(String symbolName);
-	FilterCategoryType[] getUniqueFilterCategories();
-	void populateDataSymbolMetadata();
-}
+//public String[] getFilterNames(){
+//	if(simulationOwner instanceof SimulationContext){
+//		ArrayList<String> filterNames = new ArrayList<String>();
+//		for(FilterType filterType:FilterType.values()){
+//			filterNames.add(filterType.toString());
+//		}
+//		return filterNames.toArray(new String[0]);		
+//	}
+//	return null;
+//}
+//public boolean hasFilter(String filterName){
+//	String[] filterNames = getFilterNames();
+//	for (int i = 0; filterNames != null && i < filterNames.length; i++) {
+//		if(filterNames[i].equals(filterName)){
+//			return true;
+//		}
+//	}
+//	return false;
+//}
+//public static enum FilterType {Species,Flux};
+//public ArrayList<DataIdentifier> filter(DataIdentifier[] filterTheseDataIdentifiers,FilterType filterType) throws Exception{
+//	if(simulationOwner instanceof SimulationContext){
+//		MathMapping mathMapping = ((SimulationContext)simulationOwner).getMostRecentlyCreatedMathMapping();
+//		if (mathMapping==null){
+//			mathMapping = ((SimulationContext)simulationOwner).createNewMathMapping();
+//		}
+//		MathDescription mathDescription = mathMapping.getMathDescription();
+//		MathSymbolMapping mathSymbolMapping = mathMapping.getMathSymbolMapping();
+//		ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
+//		for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
+//			Variable variable = mathDescription.getVariable(filterTheseDataIdentifiers[i].getName());
+//			SymbolTableEntry[] symbolTableEntries = mathSymbolMapping.getBiologicalSymbol(variable);
+//			System.out.println("-----DI="+filterTheseDataIdentifiers[i].getName()+" var="+variable);
+//			if(symbolTableEntries != null){
+//				for (int j = 0; j < symbolTableEntries.length; j++) {
+//					System.out.println("        "+symbolTableEntries[j]);
+//					if(filterType.equals(FilterType.Species) && symbolTableEntries[j] instanceof SpeciesContext){
+//						acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+//						break;
+//					}else if(filterType.equals(FilterType.Flux)  && symbolTableEntries[j] instanceof KineticsParameter){
+//						KineticsParameter kineticsParameter = (KineticsParameter)symbolTableEntries[j];
+//						if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
+//							acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+//							break;
+//						}
+//					}
+//				}
+//			}			
+//		}
+//		if(acceptedDataIdentifiers.size() > 0){
+//			return acceptedDataIdentifiers;
+//		}
+//		return null;
+//	}else{
+//		return null;
+////		MathDescription mathDescription = simulationOwner.getMathDescription();
+////		Variable variable = mathDescription.getVariable(dataName);
+////		System.out.println("-----"+variable);
+//	}
+//}
 
 private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataResolver {
 
@@ -306,11 +293,11 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 	}
 	
 	@Override
-	public FilterCategoryType[] getUniqueFilterCategories() {
+	public ModelCategoryType[] getUniqueFilterCategories() {
 		//
 		// if called before the map is populated, it will indicate an empty list of FilterCategoryTypes (not yet processed).
 		//
-		HashSet<FilterCategoryType> filters = new HashSet<FilterCategoryType>();
+		HashSet<ModelCategoryType> filters = new HashSet<ModelCategoryType>();
 		if (savedMetadataMap != null){
 			for (DataSymbolMetadata dsm : savedMetadataMap.values()){
 				if (dsm.filterCategory != null){
@@ -318,7 +305,7 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 				}
 			}
 		}	
-		return filters.toArray(new FilterCategoryType[0]);
+		return filters.toArray(new BioModelCategoryType[0]);
 	}
 	
 	private SymbolTableEntry[] getSortedBiologicalSymbols(SymbolTableEntry[] bioSymbols){
@@ -390,19 +377,19 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 						if(bestBioSymbol instanceof KineticsProxyParameter) {
 							bestBioSymbol = ((KineticsProxyParameter) bestBioSymbol).getTarget();
 						}
-						FilterCategoryType filterCategory = FilterCategoryType.Other;
+						BioModelCategoryType filterCategory = BioModelCategoryType.Other;
 						
 						if (bestBioSymbol instanceof SpeciesContext || bestBioSymbol instanceof SpeciesConcentrationParameter || bestBioSymbol instanceof SpeciesCountParameter){
-							filterCategory = FilterCategoryType.Species;
+							filterCategory = BioModelCategoryType.Species;
 						}else if (bestBioSymbol instanceof KineticsParameter){
 							KineticsParameter kineticsParameter = (KineticsParameter)bestBioSymbol;
 							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
-								filterCategory = FilterCategoryType.Reactions;
+								filterCategory = BioModelCategoryType.Reactions;
 							}
 						}else if (bestBioSymbol instanceof RbmObservable || bestBioSymbol instanceof ObservableConcentrationParameter || bestBioSymbol instanceof ObservableCountParameter){
-							filterCategory = FilterCategoryType.Observables;
+							filterCategory = BioModelCategoryType.Observables;
 						}else if (bestBioSymbol instanceof GeneratedSpeciesSymbolTableEntry){
-							filterCategory = FilterCategoryType.GeneratedSpecies;
+							filterCategory = BioModelCategoryType.GeneratedSpecies;
 							
 							SymbolTableEntry unmappedSymbol = ((GeneratedSpeciesSymbolTableEntry)bestBioSymbol).getSymbolTableEntry();
 							if(unmappedSymbol instanceof SpeciesContext) {
@@ -472,10 +459,10 @@ System.out.println(buffer.toString());
 
 }
 
-public static enum FilterCategoryType {
+private static enum BioModelCategoryType implements ModelCategoryType {
 	Species(true,true),
 	Reactions,
-	UserFunctions ,
+	UserFunctions,
 	Observables(true,true),
 	GeneratedSpecies,
 	ReservedXYZT(true,false),
@@ -483,16 +470,16 @@ public static enum FilterCategoryType {
 	/**
 	 * should this be selected initially on GUI?
 	 */
-	public final boolean initialSelect;
+	private final boolean initialSelect;
 	/**
 	 * should this be enabled so user can select / deselect?
 	 */
-	public final boolean enabled;
+	private final boolean enabled;
 	
 	/**
 	 * initialSelect is false, enabled is true
 	 */
-	private FilterCategoryType( ) {
+	private BioModelCategoryType( ) {
 		initialSelect = false;
 		enabled = true;
 	}
@@ -500,29 +487,25 @@ public static enum FilterCategoryType {
 	 * @param initialSelect display checked initially?
 	 * @param enabled allow user to edit? 
 	 */
-	private FilterCategoryType(boolean initialSelect, boolean enabled) {
+	private BioModelCategoryType(boolean initialSelect, boolean enabled) {
 		this.initialSelect = initialSelect;
 		this.enabled = enabled;
 	}
-
-};
-
-public static class DataSymbolMetadata {
-	public final FilterCategoryType filterCategory;
-	public final VCUnitDefinition unit;
-	public final String tooltipString;
-	public DataSymbolMetadata(FilterCategoryType filterCategory, VCUnitDefinition unit, String tooltipString){
-		this.filterCategory = filterCategory;
-		this.unit = unit;
-		this.tooltipString = tooltipString;
+	
+	@Override
+	public String getName(){
+		return name();
+	}
+	
+	@Override
+	public boolean isInitialSelect() {
+		return initialSelect;
 	}
 	@Override
-	public String toString(){
-		return "DataSymbolMetadata("+filterCategory+","+unit+")";
+	public boolean isEnabled() {
+		return enabled;
 	}
-}
-
-
+};
 
 @Override
 public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
@@ -537,7 +520,7 @@ private static void addOutputFunctionsToMetaData(SimulationContext simulationCon
 			for(AnnotatedFunction annotfunc:annotfuncs){
 				if(simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()) != null){
 				metaDataMap.put(annotfunc.getName(),
-					new DataSymbolMetadata(FilterCategoryType.UserFunctions,
+					new DataSymbolMetadata(BioModelCategoryType.UserFunctions,
 						simulationContext.getOutputFunctionContext().getEntry(annotfunc.getName()).getUnitDefinition(), null));
 				}
 			}

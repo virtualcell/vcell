@@ -469,34 +469,8 @@ public class ProbabilityParameter extends MathMappingParameter {
 
 @SuppressWarnings("serial")
 public class RateRuleRateParameter extends MathMappingParameter {
-	//
-	// placeholder for the net reaction rate of this Reaction Rule. ... maybe not well defined now. and not used.
-	//
-	
-	private ReactionRule reactionRule = null;
-	
-	protected RateRuleRateParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, ReactionRule argReactionRule, GeometryClass geometryClass) {
-		super(argName,argExpression,argRole,argVCUnitDefinition,geometryClass);
-		this.reactionRule = argReactionRule;
-	}
-	
-	public ReactionRule getReactionRule(){
-		return this.reactionRule;
-	}
-	
-	@Override
-	public boolean compareEqual(Matchable obj){
-		if (!super.compareEqual(obj)){
-			return false;
-		}
-		if (!(obj instanceof RateRuleRateParameter)){
-			return false;
-		}
-		RateRuleRateParameter other = (RateRuleRateParameter)obj;
-		if (!Compare.isEqual(reactionRule, other.reactionRule)){
-			return false;
-		}
-		return true;
+	protected RateRuleRateParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		super(argName,argExpression,argRole,argVCUnitDefinition,null);
 	}
 }
 

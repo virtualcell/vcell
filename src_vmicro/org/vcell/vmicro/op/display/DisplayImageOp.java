@@ -27,7 +27,7 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.VirtualMicroscopy.Image;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.geometry.RegionImage;
