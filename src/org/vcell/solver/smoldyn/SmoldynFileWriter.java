@@ -129,6 +129,10 @@ import cbit.vcell.solvers.MembraneElement;
  */
 public class SmoldynFileWriter extends SolverFileWriter 
 {
+	/**
+	 * allow easy on / off of disabling 
+	 */
+	private static final boolean SMOLDYN_SURFACE_DISABLED = false;
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "tri";
 	private static final Color bg = new Color(0x0);
 	private Color[] colors = null;
@@ -323,7 +327,7 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_file);
 	//SimulationWriter.write(SimulationJobToSmoldyn.convertSimulationJob(simulationJob, outputFile), printWriter, simulationJob);
 	//SMOLDYN-DISABLE
-	if (!tempMembranesWithParticles.isEmpty()) {
+	if (SMOLDYN_SURFACE_DISABLED && !tempMembranesWithParticles.isEmpty()) {
 		throw new DiffusingMembraneParticleException(tempMembranesWithParticles);
 	}
 }
@@ -1200,11 +1204,13 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
  * @param subDomain
  */
 private void tempCheckParticleSurfaceDiffusion(SubDomain subDomain) {
-	MembraneSubDomain msb = BeanUtils.downcast(MembraneSubDomain.class, subDomain);
-	if (msb != null) {
-		for (ParticleProperties pp : msb.getParticleProperties()) {
-			if (tempDiffusingParticles.contains(pp)) {
-				tempMembranesWithParticles.put(msb,pp);
+	if (SMOLDYN_SURFACE_DISABLED) {
+		MembraneSubDomain msb = BeanUtils.downcast(MembraneSubDomain.class, subDomain);
+		if (msb != null) {
+			for (ParticleProperties pp : msb.getParticleProperties()) {
+				if (tempDiffusingParticles.contains(pp)) {
+					tempMembranesWithParticles.put(msb,pp);
+				}
 			}
 		}
 	}
