@@ -312,12 +312,14 @@ private void displayTask() {
 	try {
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 		TimeStep timeStep = solverTaskDescription.getTimeStep();
-		getJLabelRelTol().setText("rel tol");
-		getJLabelAbsTol().setText("abs tol");
-		getJLabel12().setText("timestep");
+		getJLabelRelTol().setText("Rel tol");
+		getJLabelAbsTol().setText("Abs tol");
+		getJLabel12().setText("Timestep");
 		getJLabelRelTol().setEnabled(false);
 		getJLabelAbsTol().setEnabled(false);
 		getJLabel12().setEnabled(false);
+		getJLabel10().setText("Sensitivity Analysis");
+		getJLabel10().setEnabled(true);
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
@@ -330,11 +332,16 @@ private void displayTask() {
 				double interval = uots.getOutputTimeStep();
 				int steps = (int)Math.round(dtime/interval);
 				getJLabel12().setEnabled(true);
-				getJLabel12().setText("timepoints");		
+				getJLabel12().setText("Timepoints");		
 				getJLabelTimestep().setText(steps + "");
+			} else if(solverTaskDescription.getOutputTimeSpec() instanceof DefaultOutputTimeSpec) {
+				DefaultOutputTimeSpec uots = (DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+				getJLabel12().setEnabled(true);
+				getJLabel12().setText("End Time");		
+				getJLabelTimestep().setText(solverTaskDescription.getTimeBounds().getEndingTime()+"");
 			} else {
 				getJLabel12().setEnabled(false);
-				getJLabel12().setText("timepoints");		
+				getJLabel12().setText("End Time");		
 				getJLabelTimestep().setText("na");
 			}
 			
@@ -354,15 +361,15 @@ private void displayTask() {
 				gml = maxMoleculesPerType + "";
 			}
 			getJLabelAbsTol().setEnabled(true);
-			getJLabelAbsTol().setText("Max instances of each " + MolecularType.typeName);
+			getJLabelAbsTol().setText("Max # of each " + MolecularType.typeName);
 			getJLabelAbsTolValue().setText(gml);
 		} else if (solverDescription.isNonSpatialStochasticSolver()) {
 			getJLabel12().setEnabled(true);
-			getJLabel12().setText("timestep");		
+			getJLabel12().setText("Timestep");		
 			getJLabelTimestep().setText(timeStep.getDefaultTimeStep()+ "s");
 		} else if (solverDescription.hasVariableTimestep()) {
 			getJLabel12().setEnabled(true);
-			getJLabel12().setText("max timestep");
+			getJLabel12().setText("Max timestep");
 			getJLabelTimestep().setText(timeStep.getMaximumTimeStep()+ "s");
 			getJLabelRelTol().setEnabled(true);
 			getJLabelRelTolValue().setText("" + errorTolerance.getRelativeErrorTolerance());
@@ -370,7 +377,7 @@ private void displayTask() {
 			getJLabelAbsTolValue().setText("" + errorTolerance.getAbsoluteErrorTolerance());
 		} else {
 			getJLabel12().setEnabled(true);
-			getJLabel12().setText("timestep");
+			getJLabel12().setText("Timestep");
 			getJLabelTimestep().setText(timeStep.getDefaultTimeStep() + "s");
 			if (solverDescription.isSemiImplicitPdeSolver()) {
 				getJLabelRelTol().setEnabled(true);
@@ -392,13 +399,18 @@ private void displayTask() {
 		boolean bChomboSolver = solverDescription.isChomboSolver();
 		getJLabelTitleNumProcessors().setVisible(bChomboSolver);
 		getJLabelNumProcessors().setVisible(bChomboSolver);
-		if (bChomboSolver)
-		{
+		if (bChomboSolver) {
 			getJLabelNumProcessors().setText(String.valueOf(solverTaskDescription.getNumProcessors()));
 		}
 		if (getSimulation().isSpatial() || solverDescription.isNonSpatialStochasticSolver()) {
 			getJLabelSensitivity().setVisible(false);
 			getJLabel10().setVisible(false);
+		} else if(solverDescription.equals(SolverDescription.NFSim)) {
+			getJLabel10().setText("On-the-fly observ comp.");
+			NFsimSimulationOptions nfsso = solverTaskDescription.getNFSimSimulationOptions();
+			boolean goc = nfsso.getObservableComputationOff();
+			getJLabelSensitivity().setText(goc+"");
+			
 		} else {
 			getJLabelSensitivity().setVisible(true);
 			getJLabel10().setVisible(true);
@@ -501,7 +513,7 @@ private javax.swing.JLabel getJLabel10() {
 private javax.swing.JLabel getJLabelRelTol() {
 	if (labelRelTol == null) {
 		try {
-			labelRelTol = new javax.swing.JLabel("rel tol");
+			labelRelTol = new javax.swing.JLabel("Rel tol");
 			labelRelTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -513,7 +525,7 @@ private javax.swing.JLabel getJLabelRelTol() {
 private javax.swing.JLabel getJLabelAbsTol() {
 	if (labelAbsTol == null) {
 		try {
-			labelAbsTol = new javax.swing.JLabel("abs tol");
+			labelAbsTol = new javax.swing.JLabel("Abs tol");
 			labelAbsTol.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -547,7 +559,7 @@ private javax.swing.JLabel getJLabel11() {
 private javax.swing.JLabel getJLabel12() {
 	if (ivjJLabel12 == null) {
 		try {
-			ivjJLabel12 = new javax.swing.JLabel("timestep");
+			ivjJLabel12 = new javax.swing.JLabel("Timestep");
 			ivjJLabel12.setName("JLabel12");
 			ivjJLabel12.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		} catch (java.lang.Throwable ivjExc) {
@@ -782,7 +794,7 @@ private JPanel getSettingsPanel() {
 		constraintsJLabel13.fill = GridBagConstraints.BOTH;
 		constraintsJLabel13.ipadx = 12;
 		constraintsJLabel13.ipady = 4;
-		JLabel label = new JLabel("output", javax.swing.SwingConstants.CENTER);
+		JLabel label = new JLabel("Output", javax.swing.SwingConstants.CENTER);
 		settingsPanel.add(label, constraintsJLabel13); // output
 		label.setBorder(GuiConstants.TAB_PANEL_BORDER);
 		
