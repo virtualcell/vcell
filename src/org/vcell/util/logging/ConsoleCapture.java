@@ -8,7 +8,9 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.collections.CircularList;
 
 /**
  * Singleton to manage redirecting standard error and out to
@@ -113,6 +115,26 @@ public class ConsoleCapture {
 			} catch (IOException e) {
 			}
 		}
+		return new CurrentContent();
+	}
+	
+	/**
+	 * @param maxLines maximum lines to return; 
+	 * @return current log content, if available. 
+	 */
+	public CurrentContent getLastLines(int maxLines) {
+		CircularList<String> lines = new CircularList<>(maxLines);
+		if (redirectedStandardOutErr != null) {
+			redirectedOutput.flush();
+			LineIterator iter;
+			try {
+				iter = FileUtils.lineIterator(redirectedStandardOutErr, LOG_ENCODING);
+				while (iter.hasNext()) {
+					lines.add(iter.next());
+				}
+			return new CurrentContent(String.join("\n", lines) );
+			} catch (IOException e) {}
+		}		
 		return new CurrentContent();
 	}
 	
