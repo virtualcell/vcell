@@ -100,22 +100,21 @@ private void connPtoP1SetTarget() {
 		if (ivjConnPtoP1Aligning == false) {
 			ivjConnPtoP1Aligning = true;
 			
-			final String DATASYMBOL_METADATA_MAP = "DATASYMBOL_METADATA_MAP";
 			AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					if(ODEDataViewer.this.getSimulationModelInfo() != null){
-						SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = (SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo();
-						simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+						SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+						simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
 					}
 				}
 			};
 			AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					SimulationWorkspaceModelInfo simulationWorkspaceModelInfo = (SimulationWorkspaceModelInfo)ODEDataViewer.this.getSimulationModelInfo();
-					MyDataInterfaceImpl myDataInterfaceImpl = new MyDataInterfaceImpl(getOdeSolverResultSet(),simulationWorkspaceModelInfo);
-					getODESolverPlotSpecificationPanel1().setMyDataInterface(myDataInterfaceImpl);
+					SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+					ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
+					getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
 				}
 			};
 			ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),

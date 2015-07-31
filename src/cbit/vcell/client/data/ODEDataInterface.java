@@ -1,16 +1,16 @@
-package cbit.vcell.solver.ode.gui;
+package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeListener;
 
 import org.vcell.util.ObjectNotFoundException;
 
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.FilterCategoryType;
+import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.client.data.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.util.ColumnDescription;
 
-public interface MyDataInterface {
+public interface ODEDataInterface {
 
 	void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
@@ -32,9 +32,9 @@ public interface MyDataInterface {
 
 	int getRowCount();
 	
-	FilterCategoryType[] getSupportedFilterCategories();
+	ModelCategoryType[] getSupportedFilterCategories();
 
-	void selectCategory(FilterCategoryType[] filterCategories);
+	void selectCategory(ModelCategoryType[] filterCategories);
 	
 	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
 }

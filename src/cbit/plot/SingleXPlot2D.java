@@ -10,7 +10,7 @@
 
 package cbit.plot;
 
-import cbit.vcell.client.data.SimulationWorkspaceModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.client.data.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
