@@ -760,7 +760,7 @@ private void construcutPopupMenu() {
 					menuItemSpatialCopyAsSpatialRulebased.addActionListener(eventHandler);
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialDeterministic);
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialStochastic);
-					menuSpatialCopyAsNonSpatial.add(menuItemSpatialCopyAsSpatialRulebased);
+					//menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialRulebased);		// not supported yet, uncomment when time comes
 				}
 				menuAppCopyAs.add(menuSpatialCopyAsNonSpatial);
 				menuAppCopyAs.add(menuSpatialCopyAsSpatial);
