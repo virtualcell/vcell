@@ -151,6 +151,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 						showFilterSettings();
 						processFilterSelection();
 					}else{
+						processFilterSelection();
 						firePropertyChange(ODE_DATA_CHANGED, false, true);
 					}
 					enableLogSensitivity();
