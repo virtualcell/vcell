@@ -413,7 +413,9 @@ tooltipString = "<html>"+tooltipString+"<br/>";
 }
 tooltipString += mathInfo + "<br/>";
 for (SymbolTableEntry bioSymbol : sortedBioSymbols){
-String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+bioSymbol.getUnitDefinition().getSymbol()+"])  category="+filterCategory+", unit=["+unit.getSymbol()+"]";
+VCUnitDefinition unitDefinition = bioSymbol.getUnitDefinition();
+String unitSymbol = (unitDefinition!=null)?(unitDefinition.getSymbol()):("<null unit>");
+String bioInfo = bioSymbol.getClass().getSimpleName()+"("+bioSymbol.getName()+",["+unitSymbol+"])  category="+filterCategory+", unit=["+unitSymbol+"]";
 tooltipString += " ==> "+bioInfo + "<br/>";
 mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
