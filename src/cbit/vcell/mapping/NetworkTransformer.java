@@ -595,8 +595,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			}
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
 			RbmObservable originalObservable = model.getRbmModelContainer().getObservable(o.getObservableGroupName());
+			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
 			model.getRbmModelContainer().removeObservable(originalObservable);
-			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp, originalObservable.getUnitDefinition());
+			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
 
 			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
