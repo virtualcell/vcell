@@ -27,6 +27,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.vcell.model.rbm.NetworkConstraintsPanel;
+import org.vcell.model.rbm.NetworkFreePanel;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
@@ -52,6 +53,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 	private ReactionSpecsPanel reactionSpecsPanel;	
 	*/
 	private NetworkConstraintsPanel networkConstraintsPanel;	
+	private NetworkFreePanel networkFreePanel;	
 	//private MembraneConditionsPanel membraneConditionsPanel; 
 	private JTextField textField_1;
 	private static class SpecifierComponent {
@@ -154,6 +156,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		InitialConditionsPanel initialConditionsPanel = new InitialConditionsPanel();
 		ModelProcessSpecsPanel modelProcessSpecsPanel = new ModelProcessSpecsPanel();
 		networkConstraintsPanel = new NetworkConstraintsPanel();
+		networkFreePanel = new NetworkFreePanel();
 		MembraneConditionsPanel membraneConditionsPanel = new MembraneConditionsPanel();
 		
 		//order of calls determines display order
@@ -161,6 +164,7 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		setupTab("Reaction",modelProcessSpecsPanel);
 		setupTab("Membrane",membraneConditionsPanel);
 		setupTab("Network",networkConstraintsPanel);
+		setupTab("Network-Free",networkFreePanel);
 		
 		activate(initialConditionsPanel);
 		activate(modelProcessSpecsPanel);
@@ -235,9 +239,13 @@ public class ApplicationSpecificationsPanel extends ApplicationSubPanel {
 		for (SpecifierComponent spc : subPanels) {
 			spc.setter.setSimulationContext(newValue);
 		}
-		if(simulationContext.isRuleBased()) {
+		if(simulationContext.getApplicationType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC)) {
 			deactivate(networkConstraintsPanel);
-		} else {	// this panel only for flattened rule based applications
+			activate(networkFreePanel);
+			final int indexOfNetworkFreeTab = tabbedPane.indexOfComponent(networkFreePanel);
+			 tabbedPane.setEnabledAt(indexOfNetworkFreeTab, true);
+		} else {								// this panel only for flattened rule based applications
+			deactivate(networkFreePanel);
 			activate(networkConstraintsPanel);
 			
 			final int indexOfNetworkTab = tabbedPane.indexOfComponent(networkConstraintsPanel);

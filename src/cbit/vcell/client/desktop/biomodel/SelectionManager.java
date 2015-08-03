@@ -49,6 +49,7 @@ public class SelectionManager {
 		species_settings,
 		reaction_setting,
 		network_setting,
+		network_free_setting,
 		membrane_setting,
 		
 		events,
