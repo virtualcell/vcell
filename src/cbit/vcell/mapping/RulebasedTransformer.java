@@ -152,14 +152,20 @@ public class RulebasedTransformer implements SimContextTransformer {
 			ReactionParticipant[] pList = rs.getReactionParticipants();
 			for(ReactionParticipant p : pList) {
 				if(p instanceof Reactant) {
-					SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
-					ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, rr.getStructure());
-					rr.addReactant(reactantPattern);
+					int stoichiometry = p.getStoichiometry();
+					for(int i=0; i<stoichiometry; i++) {
+						SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
+						ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, rr.getStructure());
+						rr.addReactant(reactantPattern);
+					}
 					
 				} else if(p instanceof Product) {
-					SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
-					ProductPattern productPattern = new ProductPattern(speciesPattern, rr.getStructure());
-					rr.addProduct(productPattern);
+					int stoichiometry = p.getStoichiometry();
+					for(int i=0; i<stoichiometry; i++) {
+						SpeciesPattern speciesPattern = p.getSpeciesContext().getSpeciesPattern();
+						ProductPattern productPattern = new ProductPattern(speciesPattern, rr.getStructure());
+						rr.addProduct(productPattern);
+					}
 				}
 			}
 			newModel.getRbmModelContainer().addReactionRule(rr);
