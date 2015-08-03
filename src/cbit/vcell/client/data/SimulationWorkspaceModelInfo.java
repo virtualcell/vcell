@@ -333,8 +333,10 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 	}
 	
 	private int rankType(SymbolTableEntry ste){
-		if (ste instanceof MathMappingParameter){
+		if (ste instanceof GeneratedSpeciesSymbolTableEntry){
 			return 0;
+		}else if (ste instanceof MathMappingParameter){
+			return 5;
 		}else{
 			return 10;
 		}
