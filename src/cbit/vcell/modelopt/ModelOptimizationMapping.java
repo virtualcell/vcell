@@ -166,14 +166,17 @@ MathSymbolMapping computeOptimizationSpec() throws MathException, MappingExcepti
 	Variable allVars[] = (Variable[])BeanUtils.getArray(origMathDesc.getVariables(),Variable.class);
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
-		String mathSymbol;
-		try {
-			mathSymbol = mathMapping.getMathSymbolMapping().getVariable(modelParameter).getName();
-		} catch (MatrixException | ExpressionException | ModelException e) {
-			e.printStackTrace();
-			throw new MappingException(e.getMessage(), e);
+		String mathSymbol = null;
+		Variable mathVariable = null;
+		if (mathSymbolMapping!=null){
+			Variable variable = mathSymbolMapping.getVariable(modelParameter);
+			if (variable!=null){
+				mathSymbol = variable.getName();
+			}
+			if (mathSymbol!=null){
+				mathVariable = origMathDesc.getVariable(mathSymbol);
+			}
 		}
-		Variable mathVariable = origMathDesc.getVariable(mathSymbol);
 		if(mathVariable != null)
 		{
 			if (parameterMappingSpecs[i].isSelected()) {
