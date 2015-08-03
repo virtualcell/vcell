@@ -172,6 +172,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 		}
 		
+		// now that we generated the rules we can delete the reaction steps they're coming from
+		for(ReactionStep rs : newModel.getReactionSteps()) {
+			newModel.removeReactionStep(rs);
+		}
+		
 		// TODO; for debug only, can be commented out once this code gets stable enough
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
