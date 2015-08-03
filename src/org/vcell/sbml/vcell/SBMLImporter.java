@@ -3082,8 +3082,12 @@ public class SBMLImporter {
 					 * substance/time; bring it in (as is) as 'Lumped' kinetics.
 					 */
 
-					ListOfAdapter<Parameter> localParameters = 
-							new ListOfAdapter<>(kLaw.getListOfLocalParameters(), Parameter.class);
+					ListOfAdapter<Parameter> localParameters = null; 
+					if (kLaw.getLevel()<3){
+						localParameters = new ListOfAdapter<>(kLaw.getListOfParameters(), Parameter.class);
+					}else{
+						localParameters = new ListOfAdapter<>(kLaw.getListOfLocalParameters(), Parameter.class);
+					}
 					for (Parameter p: localParameters) {
 						String paramName = p.getId();
 						KineticsParameter kineticsParameter = kinetics.getKineticsParameter(paramName);
