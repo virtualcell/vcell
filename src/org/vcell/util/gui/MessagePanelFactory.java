@@ -11,7 +11,6 @@ import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -59,7 +58,7 @@ public class MessagePanelFactory {
 	 * @return new {@link DialogMessagePanel}
 	 */
 	public static DialogMessagePanel createExtended(String message, ErrorContext errorContext) {
-		return new JPanelWithSendOptions(message, errorContext);
+		return new JPanelWithSendOption(message, errorContext);
 	}
 
 	/**
@@ -115,47 +114,37 @@ public class MessagePanelFactory {
 
 	}
 
-	private static class JPanelWithSendOptions extends DialogMessagePanel {
+	private static class JPanelWithSendOption extends DialogMessagePanel {
 		private final ErrorContext errorContext;
 		private String logContent;
-		private boolean initialModelCheckboxState;
-		private final JCheckBox allowSendModel;
-		private final JCheckBox allowSendLog; 
-
-		JPanelWithSendOptions(String message, ErrorContext errorContext) {
+		private boolean bUserSaidYes;
+	
+		JPanelWithSendOption(String message, ErrorContext errorContext) {
 			commonConstructionCode(this,message);
 			this.errorContext = errorContext;
 			logContent = null;
-			initialModelCheckboxState = false;
-
-			JCheckBox cbModel = null;
-			JCheckBox cbLog = null;
+			bUserSaidYes = false;
 
 			final boolean haveContext = isHaveContext();
-			if (haveContext) {
-				//don't pay cost of getting this unless it's going to be used
-				initialModelCheckboxState = errorContext.userPreferences.getSendModelInfoInErrorReportPreference();
+			CurrentContent currentCapture = ConsoleCapture.getInstance().getLastLines(1000);
+			if (currentCapture.isAvailable) {
+				logContent = currentCapture.content;
 			}
-			CurrentContent currentCapture = ConsoleCapture.getInstance().getLogContent();
 			if (currentCapture.isAvailable || haveContext) {
 
 				FlowLayout fl = new FlowLayout(FlowLayout.TRAILING);
 				JPanel buttonPanel = new JPanel(fl);
 				add(buttonPanel, BorderLayout.SOUTH);
-				JLabel label = new JLabel("Send to VCell Support team:  ");
+				JLabel label = new JLabel("Send error report to VCell development team to assist debugging?"); 
 				buttonPanel.add(label);
-
-				if (haveContext) {
-					cbModel = new JCheckBox("Model info");
-					buttonPanel.add(cbModel);
-					cbModel.setSelected(initialModelCheckboxState);
-				}
-
-				if (currentCapture.isAvailable) {
-					cbLog = new JCheckBox("Local log file",true);
-					buttonPanel.add(cbLog);
-					logContent = currentCapture.content;
-				}
+				
+				JButton yes = new JButton("Yes");
+				yes.addActionListener( e -> answerIs(true) );
+				buttonPanel.add(yes);
+				
+				JButton no = new JButton("No");
+				no.addActionListener( e -> answerIs(false) );
+				buttonPanel.add(no);
 
 				JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
 				helpBtn.addActionListener(new ActionListener() {
@@ -166,8 +155,15 @@ public class MessagePanelFactory {
 				});
 				buttonPanel.add(helpBtn);
 			}	
-			allowSendModel = cbModel;
-			allowSendLog = cbLog;
+		}
+		
+		/**
+		 * record answer, close window
+		 * @param isYes
+		 */
+		private void answerIs(boolean isYes) {
+			bUserSaidYes = isYes;
+			setVisible(false);
 		}
 
 		private boolean isHaveContext( ) {
@@ -176,30 +172,20 @@ public class MessagePanelFactory {
 
 		@Override
 		public String getSupplemental() {
-			String logToSend = logContent; 
-			if (allowSendLog != null && !allowSendLog.isSelected()) {
-				logToSend = null; 
+			if (!bUserSaidYes) {
+				return null;
 			}
 			final boolean haveContext = isHaveContext();
-			if (haveContext || logToSend != null) {
+			if (haveContext || logContent != null) {
 				StringBuilder sb = new StringBuilder();
 				if (haveContext) {
-					final boolean userSelectedSendModel = allowSendModel.isSelected();
-					if (userSelectedSendModel != initialModelCheckboxState) {
-						errorContext.userPreferences.setSendModelInfoInErrorReportPreference(userSelectedSendModel);
-					}
-					if (userSelectedSendModel) {
+						Objects.requireNonNull(errorContext);
 						sb.append(errorContext.modelInfo);
 						sb.append('\n');
-						Objects.requireNonNull(errorContext);
-					}
-					else {
-						sb.append("User declined to share model\n");
-					}
 				}
-				if (logToSend != null) {
+				if (logContent != null) {
 					sb.append("Log file content:\n");
-					sb.append(logToSend);
+					sb.append(logContent);
 					sb.append('\n');
 				}
 				if (sb.length() > 0) {
