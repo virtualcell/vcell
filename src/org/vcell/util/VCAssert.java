@@ -1,5 +1,7 @@
 package org.vcell.util;
 
+import java.util.Objects;
+
 
 
 /**
@@ -36,14 +38,13 @@ public class VCAssert {
 		throw new ProgrammingException(MSG_PREFIX + message);
 	}
 	/**
-	 * object not null
+	 * use Objects#requireNotNull
 	 * @param obj
 	 * @throws NullPointerException if it is
+	 * @deprecated
 	 */
 	public static void assertValid(Object obj) {
-		if (obj == null) {
-			throw new NullPointerException();
-		}
+		Objects.requireNonNull(obj);
 	}
 	
 	/**
@@ -76,6 +77,17 @@ public class VCAssert {
 						+ " is instance of type " + clzz.getName() );
 			}
 			return;
+		}
+	}
+	
+	/**
+	 * check / indicate precondition
+	 * @param condition
+	 * @throws ProgrammingException if condition false
+	 */
+	public static void precondition(boolean condition) {
+		if (!condition) {
+			throw new ProgrammingException("Precondition failed");
 		}
 	}
 	
