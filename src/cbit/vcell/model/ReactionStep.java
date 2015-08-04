@@ -23,6 +23,7 @@ import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
+import org.vcell.util.VCAssert;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
@@ -276,15 +277,47 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
-				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, 
-						"A mass action rate law is not physically correct for bimolecular reactions in membranes (see more).",
-						Issue.SEVERITY_WARNING);
-				issue.setHyperlink(MASS_ACTION_ONLINE_DISCUSSION);
-				issueList.add(issue);
+				if (isForMembraneMembraneMassAction()) {
+					Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, 
+							"A mass action rate law is not physically correct for bimolecular reactions in membranes (see more).",
+							Issue.SEVERITY_WARNING);
+					issue.setHyperlink(MASS_ACTION_ONLINE_DISCUSSION);
+					issueList.add(issue);
+				}
 			}
 		}
 	}
 }
+/**
+* @param rp not null
+* @return true if rp is a {@link Reactant} on a {@link Membrane}
+*/
+private boolean isMembraneReactant(ReactionParticipant rp) {
+	if (rp instanceof Reactant) {
+		SpeciesContext sc = rp.getSpeciesContext();
+		Structure struct = sc.getStructure();
+		return struct instanceof Membrane;
+	}
+	return false;
+	
+}
+/**
+* @return true if another participant is also a membrane
+*/
+private boolean isForMembraneMembraneMassAction( ) {
+	VCAssert.precondition(structure instanceof Membrane);
+	VCAssert.precondition(fieldKinetics instanceof MassActionKinetics);
+	int membraneReactants = 0;
+	for ( ReactionParticipant rp : fieldReactionParticipants) {
+		if (isMembraneReactant(rp)) {
+			if (++membraneReactants == 2) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry localSTE = getLocalEntry(identifier);
 	if (localSTE != null && !(localSTE instanceof Kinetics.UnresolvedParameter)){
