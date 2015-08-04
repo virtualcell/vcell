@@ -276,8 +276,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
-				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", 
-							Issue.SEVERITY_WARNING);
+				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, 
+						"A mass action rate law is not physically correct for bimolecular reactions in membranes (see more).",
+						Issue.SEVERITY_WARNING);
 				issue.setHyperlink(MASS_ACTION_ONLINE_DISCUSSION);
 				issueList.add(issue);
 			}
