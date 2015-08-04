@@ -135,7 +135,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 
 	private JButton getCreateModelButton() {
 		if (createModelButton == null) {
-			createModelButton = new javax.swing.JButton(" Create new Network-Free VCell BioModel ");
+			createModelButton = new javax.swing.JButton(" Create new Rule-Based VCell BioModel ");
 			createModelButton.setName("CreateModelButton");
 		}
 		return createModelButton;
