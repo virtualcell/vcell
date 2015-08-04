@@ -26,6 +26,7 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
@@ -279,8 +280,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
-				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, "Mass Action Kinetics is not suitable for 2nd order Membrane reactions.", 
-							Issue.SEVERITY_WARNING);
+				Issue issue = new Issue(this, issueContext, IssueCategory.KineticsExpressionError, 
+						"A mass action rate law is not physically correct for bimolecular reactions in membranes (see more).",
+						Severity.WARNING);
 				issue.setHyperlink(MASS_ACTION_ONLINE_DISCUSSION);
 				issueList.add(issue);
 			}
