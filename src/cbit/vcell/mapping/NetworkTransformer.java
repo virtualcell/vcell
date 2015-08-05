@@ -496,6 +496,18 @@ public class NetworkTransformer implements SimContextTransformer {
 		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f*3.0f);
 		startTime = System.currentTimeMillis();
 		System.out.println("\nReactions :");
+		
+		Map<String, BNGReaction> directBNGReactionsMap = new HashMap<String, BNGReaction>();
+		Map<String, BNGReaction> reverseBNGReactionsMap = new HashMap<String, BNGReaction>();
+		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
+			BNGReaction r = outputSpec.getBNGReactions()[i];
+			if(!r.isRuleReversed()) {		// direct
+				directBNGReactionsMap.put(r.getKey(), r);
+			} else {
+				reverseBNGReactionsMap.put(r.getKey(), r);
+			}
+		}
+		
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
 			BNGReaction r = outputSpec.getBNGReactions()[i];

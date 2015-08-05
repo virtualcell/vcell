@@ -20,7 +20,8 @@ import cbit.vcell.parser.Expression;
  * @author: Jim Schaff
  */
 public class BNGReaction  implements Serializable {
-	private Expression paramExpression = null; 
+	private Expression paramExpression = null;
+	String matchingKey = null;
 	private BNGSpecies[] reactants = null;
 	private BNGSpecies[] products = null;
 	private String ruleName = null;
@@ -29,7 +30,7 @@ public class BNGReaction  implements Serializable {
 /**
  * BNGReaction constructor comment.
  */
-public BNGReaction(BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression argExpr, String ruleName, boolean bRuleReversed) {
+public BNGReaction(String reactantsSubkey, String productsSubkey, BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression argExpr, String ruleName, boolean bRuleReversed) {
 	super();
 	if (argReactants.length > 0) {
 		reactants = argReactants;
@@ -40,8 +41,17 @@ public BNGReaction(BNGSpecies[] argReactants, BNGSpecies[] argPdts, Expression a
 	paramExpression = argExpr;
 	this.ruleName = ruleName;
 	this.bRuleReversed = bRuleReversed;
+	
+	if(bRuleReversed == false) {
+		this.matchingKey = ruleName + "_" + reactantsSubkey + " " + productsSubkey;
+	} else {
+		this.matchingKey = ruleName + "_" + productsSubkey + " " + reactantsSubkey;
+	}
 }
 
+public String getKey() {
+	return matchingKey;
+}
 
 public String getRuleName() {
 	return ruleName;
