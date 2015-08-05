@@ -712,7 +712,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
 					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(null,null,rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{
 						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
@@ -866,7 +866,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				{
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(fluxRate, (FluxReaction)reactionStep);
+					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(null,null,fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
 					{

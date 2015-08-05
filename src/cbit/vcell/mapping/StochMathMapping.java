@@ -492,8 +492,14 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 					kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
+					Expression rateExp = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),getNameScope());
+					Parameter forwardRateParameter = null;
+					Parameter reverseRateParameter = null;
+					if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)){
+						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
+						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+					}
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{
 						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
@@ -514,7 +520,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				else if(kinetics.getKineticsDescription().equals(KineticsDescription.Macroscopic_irreversible) ||
 						kinetics.getKineticsDescription().equals(KineticsDescription.Microscopic_irreversible))
 				{
-					Expression Kon = getIdentifierSubstitutions(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KOn).getExpression(), 
+					Expression Kon = getIdentifierSubstitutions(new Expression(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KOn),getNameScope()), 
                             reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Binding_Radius).getUnitDefinition(), reactionStepGeometryClass);
 					if(Kon != null)
 					{
@@ -654,9 +660,16 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
 				{
-					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					Expression fluxRate = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),getNameScope());
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(fluxRate, (FluxReaction)reactionStep);
+					// forward and reverse rate parameters may be null
+					Parameter forwardRateParameter = null;
+					Parameter reverseRateParameter = null;
+					if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
+						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+					}
+					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(rsStructureMapping.getStructure().getStructureSize(), getNameScope());
 					Expression rsRateUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(reactionStep.getStructure())));

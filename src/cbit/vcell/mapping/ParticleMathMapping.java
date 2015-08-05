@@ -744,7 +744,16 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 			{
 				Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-				maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
+				Parameter forwardRateParameter = null;
+				Parameter reverseRateParameter = null;
+				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)){
+					forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
+					reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+				}else if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
+					forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+					reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+				}
+				maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
 				if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 				{
 					throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
