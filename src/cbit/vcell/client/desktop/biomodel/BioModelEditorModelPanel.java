@@ -1717,7 +1717,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					if (getModel().getReactionStep(reactionName) != null) {
 						throw new RuntimeException("Reaction '" + reactionName + "' already exists.");
 					}
-					ReactionStep simpleReaction = new SimpleReaction(model, reactionStructure, "dummy");
+					ReactionStep simpleReaction = new SimpleReaction(model, reactionStructure, "dummy", true);
 					ReactionParticipant[] rpArray = ModelProcessEquation.parseReaction(simpleReaction, getModel(), equationString);
 //					StructureTopology structTopology = getModel().getStructureTopology();
 //					for (ReactionParticipant reactionParticipant : rpArray) {

@@ -2913,6 +2913,10 @@ public class SBMLImporter {
 			for (Reaction sbmlRxn: reactions) {
 				ReactionStep vcReaction = null;
 				String rxnName = sbmlRxn.getId();
+				boolean bReversible = true;
+				if (sbmlRxn.isSetReversible()){
+					bReversible = sbmlRxn.getReversible();
+				}
 				// Check of reaction annotation is present; if so, does it have
 				// an embedded element (flux or simpleRxn).
 				// Create a fluxReaction or simpleReaction accordingly.
@@ -2938,7 +2942,7 @@ public class SBMLImporter {
 												+ ci.actualName()
 												+ ", not a membrane.");
 							}
-							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnName);
+							vcReaction = new FluxReaction(vcModel, ci.get(), null, rxnName, bReversible);
 							vcReaction.setModel(vcModel);
 							// Set the fluxOption on the flux reaction based on
 							// whether it is molecular, molecular & electrical,
@@ -2975,16 +2979,13 @@ public class SBMLImporter {
 							// if embedded element is a simple reaction, set
 							// simple reaction's structure from element
 							// attributes
-							vcReaction = new SimpleReaction(vcModel,
-									reactionStructure, rxnName);
+							vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
 						}
 					} else {
-						vcReaction = new SimpleReaction(vcModel,
-								reactionStructure, rxnName);
+						vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
 					}
 				} else {
-					vcReaction = new SimpleReaction(vcModel,
-							reactionStructure, rxnName);
+					vcReaction = new SimpleReaction(vcModel, reactionStructure, rxnName, bReversible);
 				}
 
 				// set annotations and notes on vcReactions[i]

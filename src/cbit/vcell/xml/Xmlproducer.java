@@ -3338,6 +3338,7 @@ private Element getXML(FluxReaction param) throws XmlParseException {
 	String versionName = (param.getName() != null) ? mangle(param.getName()) : "unnamed_fluxReaction";
 	fluxreaction.setAttribute(XMLTags.NameAttrTag, versionName);
 	fluxreaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
+	fluxreaction.setAttribute(XMLTags.ReversibleAttrTag, mangle(Boolean.valueOf(param.isReversible()).toString()));
 	
 	if (param.getPhysicsOptions() == FluxReaction.PHYSICS_ELECTRICAL_ONLY){
 		fluxreaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);
@@ -3949,6 +3950,7 @@ private Element getXML(SimpleReaction param) throws XmlParseException {
 	String nameStr = (param.getName()!=null)?(mangle(param.getName())):"unnamed_SimpleReaction";
 	simplereaction.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	simplereaction.setAttribute(XMLTags.NameAttrTag, nameStr);
+	simplereaction.setAttribute(XMLTags.ReversibleAttrTag, mangle(Boolean.valueOf(param.isReversible()).toString()));
 
 	if (param.getPhysicsOptions() == SimpleReaction.PHYSICS_ELECTRICAL_ONLY){
 		simplereaction.setAttribute(XMLTags.FluxOptionAttrTag, XMLTags.FluxOptionElectricalOnly);

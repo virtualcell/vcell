@@ -80,6 +80,8 @@ public abstract class ReactionStep implements ModelProcess, BioModelEntityObject
 	public final static int PHYSICS_ELECTRICAL_ONLY = 2;
 
 	private int fieldPhysicsOptions = PHYSICS_MOLECULAR_ONLY;
+	
+	private boolean bReversible = true;
 
 	private KeyValue key = null;
 	
@@ -134,7 +136,7 @@ public abstract class ReactionStep implements ModelProcess, BioModelEntityObject
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Model model, Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name, boolean bReversible, String annotation) throws java.beans.PropertyVetoException {
 	super();
 	
 	if (model != null) {
@@ -142,7 +144,7 @@ protected ReactionStep(Model model, Structure structure, KeyValue key, String na
 	} else {
 		throw new RuntimeException("Model cannot be null");
 	}
-	
+	this.bReversible = bReversible;
 	nameScope = new ReactionStep.ReactionNameScope();
 	setStructure(structure);
 	this.key = key;
@@ -154,14 +156,14 @@ protected ReactionStep(Model model, Structure structure, KeyValue key, String na
 	this.annotation = annotation;
 }
 
-protected ReactionStep(Model model, Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
-	this(model, structure,key,name,null);
+protected ReactionStep(Model model, Structure structure, KeyValue key, String name, boolean bReversible) throws java.beans.PropertyVetoException {
+	this(model, structure,key,name,bReversible,null);
 }
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Model model, Structure structure, String name) throws PropertyVetoException {
-	this(model, structure,null,name);
+protected ReactionStep(Model model, Structure structure, String name, boolean bReversible) throws PropertyVetoException {
+	this(model, structure,null,name,bReversible);
 }
 
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
@@ -230,6 +232,10 @@ protected boolean compareEqual0(ReactionStep rs) {
 	}
 
 	if (fieldPhysicsOptions != rs.fieldPhysicsOptions){
+		return false;
+	}
+	
+	if (bReversible != rs.bReversible){
 		return false;
 	}
 	
@@ -433,6 +439,10 @@ public NameScope getNameScope() {
  */
 public int getPhysicsOptions() {
 	return fieldPhysicsOptions;
+}
+
+public boolean isReversible() {
+	return bReversible;
 }
 /**
  * Accessor for the propertyChange field.
@@ -814,6 +824,15 @@ public void setPhysicsOptions(int physicsOptions) throws java.beans.PropertyVeto
 	fireVetoableChange("physicsOptions", new Integer(oldValue), new Integer(physicsOptions));
 	fieldPhysicsOptions = physicsOptions;
 	firePropertyChange("physicsOptions", new Integer(oldValue), new Integer(physicsOptions));
+}
+
+public void setReversible(boolean argReversible) {
+	if (this.bReversible==argReversible){
+		return;
+	}
+	boolean oldValue = this.bReversible;
+	this.bReversible = argReversible;
+	firePropertyChange("reversible", new Boolean(oldValue), new Boolean(this.bReversible));
 }
 
 public abstract void setReactionParticipantsFromDatabase(Model model, ReactionParticipant[] reactionParticipants) throws PropertyVetoException, DataAccessException;

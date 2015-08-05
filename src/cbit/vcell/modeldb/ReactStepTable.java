@@ -54,8 +54,10 @@ public class ReactStepTable extends cbit.sql.Table {
 	
 	public static final ReactStepTable table = new ReactStepTable();
 
-	private static final String REACTTYPE_FLUX = DatabaseConstants.REACTTYPE_FLUX;
-	private static final String REACTTYPE_SIMPLE = DatabaseConstants.REACTTYPE_SIMPLE;
+	private static final String REACTTYPE_FLUX_REVERSIBLE = DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE;
+	private static final String REACTTYPE_SIMPLE_REVERSIBLE = DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE;
+	private static final String REACTTYPE_FLUX_IRREVERSIBLE = DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE;
+	private static final String REACTTYPE_SIMPLE_IRREVERSIBLE = DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE;
 	//
 	static final int RXIDDN_BIOMODEL_NAME_INDEX = 3;
 	static final int RXIDDN_REACTSTEP_NAME_INDEX = 4;
@@ -102,10 +104,14 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 
 	ReactionStep rs = null;
 	try {
-		if (reactType.equals(ReactStepTable.REACTTYPE_FLUX)){
-			rs = new FluxReaction(model, (Membrane)structure, key,reactionStepName);
-		}else if (reactType.equals(ReactStepTable.REACTTYPE_SIMPLE)){
-			rs = new SimpleReaction(model, structure,key,reactionStepName);
+		if (reactType.equals(ReactStepTable.REACTTYPE_FLUX_REVERSIBLE)){
+			rs = new FluxReaction(model, (Membrane)structure, key,reactionStepName,true);
+		}else if (reactType.equals(ReactStepTable.REACTTYPE_FLUX_IRREVERSIBLE)){
+			rs = new FluxReaction(model, (Membrane)structure, key,reactionStepName,false);
+		}else if (reactType.equals(ReactStepTable.REACTTYPE_SIMPLE_REVERSIBLE)){
+			rs = new SimpleReaction(model, structure,key,reactionStepName,true);
+		}else if (reactType.equals(ReactStepTable.REACTTYPE_SIMPLE_IRREVERSIBLE)){
+			rs = new SimpleReaction(model, structure,key,reactionStepName,false);
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
@@ -204,9 +210,17 @@ public ReactionStep getReactionStep(Structure structure, Model model, KeyValue r
 private String getReactType(ReactionStep reactionStep) throws DataAccessException {
 	String reactionType = null;
 	if (reactionStep instanceof SimpleReaction){
-		reactionType = REACTTYPE_SIMPLE;
+		if (reactionStep.isReversible()){
+			reactionType = REACTTYPE_SIMPLE_REVERSIBLE;
+		}else{
+			reactionType = REACTTYPE_SIMPLE_IRREVERSIBLE;
+		}
 	}else if (reactionStep instanceof FluxReaction){
-		reactionType = REACTTYPE_FLUX;
+		if (reactionStep.isReversible()){
+			reactionType = REACTTYPE_FLUX_REVERSIBLE;
+		}else{
+			reactionType = REACTTYPE_FLUX_IRREVERSIBLE;
+		}
 	}else if (reactionStep == null){
 		throw new IllegalArgumentException("reactionStep is null");
 	}else{
