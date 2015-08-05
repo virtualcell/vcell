@@ -233,13 +233,14 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 		if (list == RXN_LIST) {
 			nextLine = new StringTokenizer(token1, blankDelimiters);
 			int i = 0;
+			String reactantsSubkey = null;
+			String productsSubkey = null;
 			BNGSpecies[] reactantsArray = null;
 			BNGSpecies[] productsArray = null;
 			Expression paramExpression = null;
 			String ruleName = null;
 			boolean ruleReversed = false;
-			
-			
+						
 			// 'nextLine' is the line with a reaction : reactants, products, rate consts.; the index can be ignored (for now)
 			while (nextLine.hasMoreTokens()) {
 				token2 = nextLine.nextToken();
@@ -251,6 +252,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 					i++;
 					continue;
 				} else if (i == 1) {
+					reactantsSubkey = token2;
 					// This string is a list of numbers (denoting species index) separated by commas, representing the reactant(s)
 					StringTokenizer nextPart = new StringTokenizer(token2, commaDelimiters);
 					String token3 = null;
@@ -270,6 +272,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 					reactantsArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(reactantVector, BNGSpecies.class);
 				} else if (i == 2) {
 					// This string is a list of numbers (species indices) separated by commas, representing the product(s)
+					productsSubkey = token2;
 					StringTokenizer nextPart = new StringTokenizer(token2, commaDelimiters);
 					String token3 = null;
 					int specNo = 0;
@@ -311,7 +314,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 			}
 			// After parsing reaction participants from the line, create a new BNGReaction and add it to rxnVector.
 			if (reactantsArray.length > 0 && productsArray.length > 0 && paramExpression != null) {
-				BNGReaction newRxn = new BNGReaction(reactantsArray, productsArray, paramExpression, ruleName, ruleReversed);
+				BNGReaction newRxn = new BNGReaction(reactantsSubkey, productsSubkey, reactantsArray, productsArray, paramExpression, ruleName, ruleReversed);
 				rxnVector.addElement(newRxn);
 			}
 		}
