@@ -213,15 +213,35 @@ public class MolecularTypeLargeShape implements LargeShape {
 		return componentShapes.get(index);
 	}
 	public MolecularComponentLargeShape getShape(MolecularComponentPattern mcpTo) {
-		for(MolecularComponentLargeShape mcls : componentShapes) {
-			MolecularComponentPattern mcpThis = mcls.getMolecularComponentPattern();
+		for(MolecularComponentLargeShape mcs : componentShapes) {
+			MolecularComponentPattern mcpThis = mcs.getMolecularComponentPattern();
 			if(mcpThis == mcpTo) {
-				return mcls;
+				return mcs;
 			}
 		}
 		return null;
 	}
 
+	@Override
+	public boolean contains(PointLocationInShapeContext locationContext) {
+		
+		// first we check if the point is inside a subcomponent of "this"
+		for(MolecularComponentLargeShape mcs : componentShapes) {
+			boolean found = mcs.contains(locationContext);
+			if(found) {
+				// since point is inside one of our components it's also inside "this"
+				locationContext.mts = this;
+				return true;	// if the point is inside a MolecularComponentLargeShape there's no need to check others
+			}
+		}
+		// even if the point it's not inside one of our subcomponents it may still be inside "this"
+		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
+		if(rect.contains(locationContext.point)) {
+			locationContext.mts = this;
+			return true;
+		}
+		return false;		// locationContext.mts remains null;
+	}
 	
 	@Override
 	public void paintSelf(Graphics g) {
@@ -313,4 +333,6 @@ public class MolecularTypeLargeShape implements LargeShape {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
+
+	
 }

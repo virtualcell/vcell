@@ -165,8 +165,21 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		this.endText = string;
 	}
 	
-	public boolean contains(Point point) {
-		return false;
+	@Override
+	public boolean contains(PointLocationInShapeContext locationContext) {
+		
+		// first we check if the point is inside a subcomponent of "this"
+		for(MolecularTypeLargeShape mts : speciesShapes) {
+			boolean found = mts.contains(locationContext);
+			if(found) {
+				// since point is inside one of our components it's also inside "this"
+				locationContext.sps = this;
+				return true;	// if the point is inside a MolecularTypeLargeShape there's no need to check others
+			}
+		}
+		
+		// even if the point it's not inside one of our subcomponents it may still be inside "this"
+		return false;		// for the case of SpeciesPatternLargeShape, it actually can't
 	}
 
 	public void paintSelf(Graphics g) {
