@@ -22,8 +22,8 @@ import cbit.vcell.modeldb.ReactStepDbDriver.Flux;
 public class FluxReaction extends ReactionStep {
 //	private Species fieldFluxCarrier = null;
 
-public FluxReaction(Model model, Membrane membrane, KeyValue argKey, String name) throws PropertyVetoException {
-    super(model, membrane, argKey, name);
+public FluxReaction(Model model, Membrane membrane, KeyValue argKey, String name, boolean reversible) throws PropertyVetoException {
+    super(model, membrane, argKey, name, reversible);
 	try {
 		setKinetics(new GeneralKinetics(this));
 	}catch (Exception e){

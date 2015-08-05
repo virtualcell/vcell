@@ -23,8 +23,8 @@ public class SimpleReaction extends ReactionStep
 {
 	private String fieldAnnotation = null;
 	
-public SimpleReaction(Model model, Structure structure, KeyValue key, String name, String argAnnotation) throws java.beans.PropertyVetoException {
-	super(model, structure,key,name);
+public SimpleReaction(Model model, Structure structure, KeyValue key, String name, boolean bReversible, String argAnnotation) throws java.beans.PropertyVetoException {
+	super(model, structure,key,name,bReversible);
 	this.fieldAnnotation = argAnnotation;
 	try {
 		setKinetics(new MassActionKinetics(this));
@@ -33,15 +33,15 @@ public SimpleReaction(Model model, Structure structure, KeyValue key, String nam
 		throw new RuntimeException(e.getMessage());
 	}
 }
-public SimpleReaction(Model model, Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
-	this(model, structure, key, name, null);
+public SimpleReaction(Model model, Structure structure, KeyValue key, String name, boolean bReversible) throws java.beans.PropertyVetoException {
+	this(model, structure, key, name, bReversible, null);
 }
 
-public SimpleReaction(Model model, Structure structure,String name, String argAnnotation) throws java.beans.PropertyVetoException {
-	this(model, structure, null, name, argAnnotation);
+public SimpleReaction(Model model, Structure structure,String name, boolean bReversible, String argAnnotation) throws java.beans.PropertyVetoException {
+	this(model, structure, null, name, bReversible, argAnnotation);
 }
-public SimpleReaction(Model model, Structure structure,String name) throws java.beans.PropertyVetoException {
-	this(model, structure, null, name, null);
+public SimpleReaction(Model model, Structure structure,String name, boolean bReversible) throws java.beans.PropertyVetoException {
+	this(model, structure, null, name, bReversible, null);
 }
 
 

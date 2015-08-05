@@ -12,7 +12,6 @@ package cbit.vcell.graph;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -31,11 +30,11 @@ import javax.swing.ListCellRenderer;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.task.AsynchClientTask;
@@ -424,9 +423,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			ReactionStep newReactionStep = null;
 
 			if (copyFromReactionStep instanceof SimpleReaction) {
-				newReactionStep = new SimpleReaction(pasteToModel, currentStruct, newName);
+				newReactionStep = new SimpleReaction(pasteToModel, currentStruct, newName, copyFromReactionStep.isReversible());
 			} else if (copyFromReactionStep instanceof FluxReaction && currentStruct instanceof Membrane) {
-				newReactionStep = new FluxReaction(pasteToModel, (Membrane)currentStruct, null, newName);
+				newReactionStep = new FluxReaction(pasteToModel, (Membrane)currentStruct, null, newName, copyFromReactionStep.isReversible());
 			}
 
 			pasteToModel.addReactionStep(newReactionStep);

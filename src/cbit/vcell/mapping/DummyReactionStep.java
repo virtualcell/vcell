@@ -20,7 +20,7 @@ import cbit.vcell.parser.ExpressionException;
 
 public abstract class DummyReactionStep extends SimpleReaction {
 	public DummyReactionStep(String name, Model model, Structure structure, SpeciesContext speciesContext) throws java.beans.PropertyVetoException {
-		super(model, structure,name);
+		super(model, structure,name,true);
 		try {
 			setKinetics(new GeneralKinetics(this));
 		} catch (ExpressionException e) {

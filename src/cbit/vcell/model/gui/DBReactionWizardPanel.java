@@ -339,9 +339,17 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 					lastReactStepSelection = getReactionStep0();
 					String rxType = null;
 					if(getReactionStep0() instanceof FluxReaction){
-						rxType = DatabaseConstants.REACTTYPE_FLUX;
+						if (getReactionStep0().isReversible()){
+							rxType = DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE;
+						}else{
+							rxType = DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE;
+						}
 					}else{
-						rxType = DatabaseConstants.REACTTYPE_SIMPLE;
+						if (getReactionStep0().isReversible()){
+							rxType = DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE;
+						}else{
+							rxType = DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE;
+						}
 					}
 					
 					KeyValue bmid = mapRXIDtoBMIDs.get(lastReactStepSelection.getKey());

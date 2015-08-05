@@ -1502,11 +1502,25 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 			"The membrane " + structureName + " could not be resolved in the dictionnary!");
 	}
 		
-	//-- Instantiate new FluxReaction --
+
+    //-- Instantiate new FluxReaction --
 	FluxReaction fluxreaction = null;
 	String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	
+    String reversibleAttributeValue = param.getAttributeValue(XMLTags.ReversibleAttrTag);
+    boolean bReversible = true;
+    if (reversibleAttributeValue != null){
+    	if (Boolean.TRUE.toString().equals(reversibleAttributeValue)){
+    		bReversible = true;
+    	} else if (Boolean.FALSE.toString().equals(reversibleAttributeValue)){
+    		bReversible = false;
+    	} else {
+    		throw new RuntimeException("unexpected value "+reversibleAttributeValue+" for reversible flag for reaction "+name);
+    	}
+    }
+    
 	try {
-		fluxreaction = new FluxReaction(model, structureref, key, name);
+		fluxreaction = new FluxReaction(model, structureref, key, name, bReversible);
 		fluxreaction.setModel(model);
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -5014,8 +5028,20 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
     SimpleReaction simplereaction = null;
     String name = unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
     
+    String reversibleAttributeValue = param.getAttributeValue(XMLTags.ReversibleAttrTag);
+    boolean bReversible = true;
+    if (reversibleAttributeValue != null){
+    	if (Boolean.TRUE.toString().equals(reversibleAttributeValue)){
+    		bReversible = true;
+    	} else if (Boolean.FALSE.toString().equals(reversibleAttributeValue)){
+    		bReversible = false;
+    	} else {
+    		throw new RuntimeException("unexpected value "+reversibleAttributeValue+" for reversible flag for reaction "+name);
+    	}
+    }
+    
     try {
-        simplereaction = new SimpleReaction(model, structureref, key, name);
+        simplereaction = new SimpleReaction(model, structureref, key, name, bReversible);
     } catch (java.beans.PropertyVetoException e) {
         e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name, e);

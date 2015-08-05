@@ -212,7 +212,6 @@ private void initialize() {
 		
 		isReversibleCheckBox = new JCheckBox("");
 		isReversibleCheckBox.addActionListener(eventHandler);
-		isReversibleCheckBox.setEnabled(false);		// not functional for now
 		isReversibleCheckBox.setBackground(Color.white);
 //		isReversibleCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 		
@@ -257,7 +256,7 @@ private void initialize() {
 		add(reactionElectricalPropertiesPanel, gbc);
 		
 		// ----------------------------------------------------------------
-		JPanel p = new JPanel();	// this way we can disable the checkbox while keeping "Reversible" not grayed
+		JPanel p = new JPanel();
 		p.setLayout(new GridBagLayout());
 		p.setBackground(Color.white);
 		int gridyy = 0;
@@ -424,7 +423,7 @@ public static void main(java.lang.String[] args) {
 }
 
 private void setReversible(boolean bReversible) {
-//	reactionStep.setReversible(bReversible);
+	reactionStep.setReversible(bReversible);
 }
 
 /**
@@ -736,13 +735,14 @@ protected void updateInterface() {
 		updateToggleButtonLabel();
 		nameTextField.setText(reactionStep.getName());
 		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
+		isReversibleCheckBox.setSelected(reactionStep.isReversible());
 	} else {
 		nameTextField.setText(null);
 		annotationTextArea.setText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
+		isReversibleCheckBox.setSelected(false);
 	}
-	isReversibleCheckBox.setSelected(true);
 	listLinkedPathwayObjects();
 }
 

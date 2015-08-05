@@ -510,10 +510,10 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
-			BNGReaction r = outputSpec.getBNGReactions()[i];
+			BNGReaction bngReaction = outputSpec.getBNGReactions()[i];
 //			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
 			int count=0;
-			String baseName = r.getRuleName();
+			String baseName = bngReaction.getRuleName();
 			String reactionName = null;
 			while (true) {
 //				reactionName = "r" + count;
@@ -524,43 +524,96 @@ public class NetworkTransformer implements SimContextTransformer {
 				}	
 				count++;
 			}
-			SimpleReaction sr = new SimpleReaction(model, model.getStructure(0), reactionName);
-			for (int j = 0; j < r.getReactants().length; j++){
-				BNGSpecies s = r.getReactants()[j];
-				String scName = speciesMap.get(s.getNetworkFileIndex());
-				SpeciesContext sc = model.getSpeciesContext(scName);
-				Reactant reactant = sr.getReactant(scName);
-				if(reactant == null) { 
-					int stoichiometry = 1;
-					sr.addReactant(sc, stoichiometry);
-				} else {
-					int stoichiometry = reactant.getStoichiometry();
-					stoichiometry += 1;
-					reactant.setStoichiometry(stoichiometry);
+			//
+			// if this is a direct reaction (forward through the rule), then create the forward reaction (either reversible or irreversible)
+			//
+			if (directBNGReactionsMap.containsValue(bngReaction)){
+				BNGReaction forwardBNGReaction = bngReaction;
+				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
+				boolean bReversible = reverseBNGReaction != null;
+				SimpleReaction sr = new SimpleReaction(model, model.getStructure(0), reactionName, bReversible);
+				for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
+					BNGSpecies s = forwardBNGReaction.getReactants()[j];
+					String scName = speciesMap.get(s.getNetworkFileIndex());
+					SpeciesContext sc = model.getSpeciesContext(scName);
+					Reactant reactant = sr.getReactant(scName);
+					if(reactant == null) { 
+						int stoichiometry = 1;
+						sr.addReactant(sc, stoichiometry);
+					} else {
+						int stoichiometry = reactant.getStoichiometry();
+						stoichiometry += 1;
+						reactant.setStoichiometry(stoichiometry);
+					}
 				}
-			}
-			for (int j = 0; j < r.getProducts().length; j++){
-				BNGSpecies s = r.getProducts()[j];
-				String scName = speciesMap.get(s.getNetworkFileIndex());
-				SpeciesContext sc = model.getSpeciesContext(scName);
-				Product product = sr.getProduct(scName);
-				if(product == null) { 
-					int stoichiometry = 1;
-					sr.addProduct(sc, stoichiometry);
-				} else {
-					int stoichiometry = product.getStoichiometry();
-					stoichiometry += 1;
-					product.setStoichiometry(stoichiometry);
+				for (int j = 0; j < forwardBNGReaction.getProducts().length; j++){
+					BNGSpecies s = forwardBNGReaction.getProducts()[j];
+					String scName = speciesMap.get(s.getNetworkFileIndex());
+					SpeciesContext sc = model.getSpeciesContext(scName);
+					Product product = sr.getProduct(scName);
+					if(product == null) { 
+						int stoichiometry = 1;
+						sr.addProduct(sc, stoichiometry);
+					} else {
+						int stoichiometry = product.getStoichiometry();
+						stoichiometry += 1;
+						product.setStoichiometry(stoichiometry);
+					}
 				}
+				MassActionKinetics k = new MassActionKinetics(sr);
+				sr.setKinetics(k);
+				KineticsParameter kforward = k.getForwardRateParameter();
+				sr.getKinetics().setParameterValue(kforward, forwardBNGReaction.getParamExpression());
+				if (reverseBNGReaction!=null){
+					KineticsParameter kReverse = k.getReverseRateParameter();
+					sr.getKinetics().setParameterValue(kReverse, reverseBNGReaction.getParamExpression());
+				}
+	//			String fieldParameterName = kforward.getName();
+	//			fieldParameterName += "_" + r.getRuleName();
+	//			kforward.setName(fieldParameterName);
+				reactionStepMap.put(reactionName, sr);
+			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())){
+				// reverse only (must be irreversible)
+				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
+				boolean bReversible = false;
+				SimpleReaction sr = new SimpleReaction(model, model.getStructure(0), reactionName, bReversible);
+				for (int j = 0; j < reverseBNGReaction.getReactants().length; j++){
+					BNGSpecies s = reverseBNGReaction.getReactants()[j];
+					String scName = speciesMap.get(s.getNetworkFileIndex());
+					SpeciesContext sc = model.getSpeciesContext(scName);
+					Reactant reactant = sr.getReactant(scName);
+					if(reactant == null) { 
+						int stoichiometry = 1;
+						sr.addReactant(sc, stoichiometry);
+					} else {
+						int stoichiometry = reactant.getStoichiometry();
+						stoichiometry += 1;
+						reactant.setStoichiometry(stoichiometry);
+					}
+				}
+				for (int j = 0; j < reverseBNGReaction.getProducts().length; j++){
+					BNGSpecies s = reverseBNGReaction.getProducts()[j];
+					String scName = speciesMap.get(s.getNetworkFileIndex());
+					SpeciesContext sc = model.getSpeciesContext(scName);
+					Product product = sr.getProduct(scName);
+					if(product == null) { 
+						int stoichiometry = 1;
+						sr.addProduct(sc, stoichiometry);
+					} else {
+						int stoichiometry = product.getStoichiometry();
+						stoichiometry += 1;
+						product.setStoichiometry(stoichiometry);
+					}
+				}
+				MassActionKinetics k = new MassActionKinetics(sr);
+				sr.setKinetics(k);
+				KineticsParameter kforward = k.getForwardRateParameter();
+				sr.getKinetics().setParameterValue(kforward, reverseBNGReaction.getParamExpression());
+	//			String fieldParameterName = kforward.getName();
+	//			fieldParameterName += "_" + r.getRuleName();
+	//			kforward.setName(fieldParameterName);
+				reactionStepMap.put(reactionName, sr);
 			}
-			MassActionKinetics k = new MassActionKinetics(sr);
-			sr.setKinetics(k);
-			KineticsParameter kforward = k.getForwardRateParameter();
-//			String fieldParameterName = kforward.getName();
-//			fieldParameterName += "_" + r.getRuleName();
-//			kforward.setName(fieldParameterName);
-			sr.getKinetics().setParameterValue(kforward, r.getParamExpression());
-			reactionStepMap.put(reactionName, sr);
 		}
 		for(ReactionStep rs : model.getReactionSteps()) {
 			reactionStepMap.put(rs.getName(), rs);
