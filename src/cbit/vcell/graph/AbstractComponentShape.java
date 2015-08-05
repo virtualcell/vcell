@@ -114,4 +114,8 @@ public abstract class AbstractComponentShape {
 		}
 		return false;
 	}
+	
+	public boolean contains(PointLocationInShapeContext locationContext) {
+		return false;		// default behavior is that the shape doesn't contain the point
+	}
 }
