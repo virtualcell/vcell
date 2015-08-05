@@ -4257,7 +4257,7 @@ public String isValidForStochApp()
 								reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 						{
 							try{
-								MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
+								MassActionSolver.solveMassAction(null, null, rateExp, reacSteps[i]);
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
@@ -4272,7 +4272,7 @@ public String isValidForStochApp()
 						{
 							Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 							try{
-								MassActionSolver.solveMassAction(rateExp, (FluxReaction)reacSteps[i]);
+								MassActionSolver.solveMassAction(null, null, rateExp, (FluxReaction)reacSteps[i]);
 							}catch(Exception e)
 							{
 								exceptionReacStr = exceptionReacStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";

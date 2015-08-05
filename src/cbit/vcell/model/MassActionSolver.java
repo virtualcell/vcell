@@ -22,6 +22,7 @@ import org.vcell.util.Matchable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -149,7 +150,7 @@ public class MassActionSolver {
 	}
 
 	
-	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
+	public static MassActionFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
 		MassActionFunction maFunc = new MassActionFunction();
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
@@ -365,6 +366,22 @@ public class MassActionSolver {
 			{
 				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
 			}
+			//
+			// if forwardExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
+			//
+			if (optionalForwardRateParameter!=null){
+				Expression forwardRateParameterCopy = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
+				try{
+					substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
+					if (forwardExpCopy.compareEqual(forwardRateParameterCopy)){
+						forwardExp = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
+					}
+				}catch(ExpressionException e){
+					// not expecting a problem because forwardExpCopy didn't have a problem, but in any case it is ok to swallow this exception
+					e.printStackTrace(System.out);
+				}
+			}
+			
 		}
 		if(reverseExp != null)
 		{
@@ -374,6 +391,22 @@ public class MassActionSolver {
 			}catch(ExpressionException e)
 			{
 				throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
+			}
+			
+			//
+			// if reverseExp is just flattened version of original Expression (orgExp), then keep orgExp so that Math Generation is readable.
+			//
+			if (optionalReverseRateParameter!=null){
+				Expression reverseRateParameterCopy = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
+				try{
+					substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
+					if (reverseExpCopy.compareEqual(reverseRateParameterCopy)){
+						reverseExp = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
+					}
+				}catch(ExpressionException e){
+					// not expecting a problem because reverseExpCopy didn't have a problem, but in any case it is ok to swallow this exception
+					e.printStackTrace(System.out);
+				}
 			}
 		}
 		maFunc.setForwardRate(forwardExp);
