@@ -192,6 +192,22 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 	}
 
 	// ----------------------------------------------------------------------------------------------
+	@Override
+	public boolean contains(PointLocationInShapeContext locationContext) {
+		
+		// there are no more subcomponents, we may want to check if point is over the status or bond text
+		// TODO: check if point is over the status or bond text
+		// ...
+		
+		// now check if the point is inside "this"
+		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
+		if(rect.contains(locationContext.point)) {
+			locationContext.mcs = this;
+			return true;
+		}
+		return false;		// point not inside this component shape, locationContext.mcs remains null;
+	}
+	
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
 	}

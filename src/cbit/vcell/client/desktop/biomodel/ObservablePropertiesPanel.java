@@ -80,6 +80,8 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape;
+import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
@@ -409,12 +411,24 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			public void mouseClicked(MouseEvent me) {
 				super.mouseClicked(me);
 				Point whereClicked = me.getPoint();
+				PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
 				for (SpeciesPatternLargeShape sps : spsList) {
-					if (sps.contains(whereClicked)) {		//check if mouse is clicked within shape
-//						System.out.println("Inside " + sps.getClass().getName() + " at " + whereClicked.x + ", " + whereClicked.y);
-					} else {
-//						System.out.println("Outside " + sps.getClass().getName() + " at " + whereClicked.x + ", " + whereClicked.y);
+					if (sps.contains(locationContext)) {		//check if mouse is inside shape
+						break;		// if mouse is inside a shape it can't be simultaneously in another one
 					}
+				}
+				// now show a menu or something
+				Object deepestShape = locationContext.getDeepestShape();
+				if(deepestShape == null) {
+					System.out.println("outside");
+				} else if(deepestShape instanceof MolecularComponentLargeShape) {
+					System.out.println("inside component");
+				} else if(deepestShape instanceof MolecularTypeLargeShape) {
+					System.out.println("inside molecule");
+				} else if(deepestShape instanceof SpeciesPatternLargeShape) {
+					System.out.println("inside species pattern");
+				} else {
+					System.out.println("inside something else?");
 				}
 			}
 		});

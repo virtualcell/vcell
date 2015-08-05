@@ -19,5 +19,7 @@ public interface LargeShape {
 	public abstract int getHeight();
 
 	public abstract void paintSelf(Graphics g);
+	
+	public abstract boolean contains(PointLocationInShapeContext locationContext);
 
 }
