@@ -343,6 +343,7 @@ public class XMLTags {
     public final static String ConstraintTag = "Constraint";
     public final static String ConstraintTypeAttrTag = "ConstraintType";
 
+    public final static String ReversibleAttrTag = "Reversible";
     public final static String FluxStepTag = "FluxStep";
     public final static String StructureAttrTag = "Structure";
     public final static String FluxCarrierAttrTag = "FluxCarrier";

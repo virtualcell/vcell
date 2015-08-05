@@ -57,8 +57,10 @@ public ReactionDescription(String argReactionName,String argReactionType,org.vce
 		throw new IllegalArgumentException("ReactionName cannot be null");
 	}
 	if(	!argReactionType.equals(this.UNKNOWN_REACTIONTYPE) &&
-		!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX) &&
-		!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE)){
+			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE) &&
+			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE) &&
+			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE) &&
+			!argReactionType.equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE)){
 			throw new IllegalArgumentException("Illegal reaction Type="+argReactionType);
 	}
 	this.reactionName = argReactionName;
@@ -86,7 +88,9 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
 		if(argStoich < 1){
 			throw new IllegalArgumentException("Stoichiometry can't be less than 1 for reactants or products");
 		}
-		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) && !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE)){
+		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) 
+				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE) 
+				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE)){
 			throw new IllegalArgumentException("Illegal Attempt to add non-flux to "+getReactionType()+ " reaction type");
 		}	
 	}
@@ -97,7 +101,9 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
 		if(argStoich != 1){
 			throw new IllegalArgumentException("Stoichiometry must be 1 for Fluxes");
 		}
-		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) && !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX)){
+		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) 
+				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_REVERSIBLE)
+				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_FLUX_IRREVERSIBLE)){
 			throw new IllegalArgumentException("Illegal Attempt to add flux to "+getReactionType()+ " reaction type");
 		}	
 	}
