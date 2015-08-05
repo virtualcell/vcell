@@ -17,6 +17,7 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.MassActionSolver;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.MassActionSolver.MassActionFunction;
@@ -99,7 +100,9 @@ public class TransformMassActions {
 			{
 				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 				try {
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
+					Parameter forwardRateParameter = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward);
+					Parameter reverseRateParameter = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, origRS);
 					// set transformed reaction step
 					transformedRS.setTransformType(TransformedReaction.TRANSFORMABLE_WITH_NOCHANGE);
 					transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
@@ -115,7 +118,9 @@ public class TransformMassActions {
 			{
 				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 				try {
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
+					Parameter forwardRateParameter = null;
+					Parameter reverseRateParameter = null;
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, origRS);
 				
 					// set transformed reaction step
 					transformedRS.setMassActionFunction(maFunc);
@@ -152,7 +157,14 @@ public class TransformMassActions {
 				{
 					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					try {
-						MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
+						// forward and reverse rate parameters may be null
+						Parameter forwardRateParameter = null;
+						Parameter reverseRateParameter = null;
+						if (origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
+							forwardRateParameter = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+							reverseRateParameter = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
+						}
+						MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, origRS);
 					
 						// set transformed reaction step
 						transformedRS.setMassActionFunction(maFunc);

@@ -12,6 +12,7 @@ package cbit.vcell.math;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -20,7 +21,9 @@ import org.vcell.util.Matchable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
 public class ParticleProperties implements Serializable, Matchable {
@@ -203,9 +206,19 @@ public class ParticleProperties implements Serializable, Matchable {
 		@Override
 		void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
 			count = Equation.getFlattenedExpression(mathSymbolTable, count, bRoundCoefficients);
-			locationX = Equation.getFlattenedExpression(mathSymbolTable, locationX, bRoundCoefficients);;
-			locationY = Equation.getFlattenedExpression(mathSymbolTable, locationY, bRoundCoefficients);;
-			locationZ = Equation.getFlattenedExpression(mathSymbolTable, locationZ, bRoundCoefficients);;
+			//
+			// uniform expressions consist simply of the special symbol "u" which is not in any symbol table.
+			// so for "uniform" location expressions, there is nothing to flatten and the symbolTable would throw an ExpressionBindingException
+			//
+			if (!isXUniform()){
+				locationX = Equation.getFlattenedExpression(mathSymbolTable, locationX, bRoundCoefficients);
+			}
+			if (!isYUniform()){
+				locationY = Equation.getFlattenedExpression(mathSymbolTable, locationY, bRoundCoefficients);
+			}
+			if (!isZUniform()){
+				locationZ = Equation.getFlattenedExpression(mathSymbolTable, locationZ, bRoundCoefficients);
+			}
 		}	
 	}
 	
