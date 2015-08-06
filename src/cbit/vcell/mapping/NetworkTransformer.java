@@ -6,9 +6,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmNetworkGenerator;
@@ -46,10 +48,9 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGExecutorService;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 
 /*
@@ -497,6 +498,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		startTime = System.currentTimeMillis();
 		System.out.println("\nReactions :");
 		
+		Map<String, HashSet<String>> ruleKeyMap = new HashMap<String, HashSet<String>>();
 		Map<String, BNGReaction> directBNGReactionsMap = new HashMap<String, BNGReaction>();
 		Map<String, BNGReaction> reverseBNGReactionsMap = new HashMap<String, BNGReaction>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
@@ -506,23 +508,34 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else {
 				reverseBNGReactionsMap.put(r.getKey(), r);
 			}
+			//
+			// for each rule name, store set of keySets (number of unique keysets are number of generated reactions from this ruleName).
+			//
+			HashSet<String> keySet = ruleKeyMap.get(r.getRuleName());
+			if (keySet == null){
+				keySet = new HashSet<String>();
+				ruleKeyMap.put(r.getRuleName(),keySet);
+			}
+			keySet.add(r.getKey());
 		}
 		
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
 			BNGReaction bngReaction = outputSpec.getBNGReactions()[i];
 //			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
-			int count=0;
 			String baseName = bngReaction.getRuleName();
 			String reactionName = null;
-			while (true) {
-//				reactionName = "r" + count;
-				reactionName = baseName + "_" + count;
-				
-				if (model.getReactionStep(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {	// we can reuse the reaction rule labels
-					break;
-				}	
-				count++;
+			HashSet<String> keySetsForThisRule = ruleKeyMap.get(bngReaction.getRuleName());
+			if (keySetsForThisRule.size()==1 && model.getReactionStep(bngReaction.getRuleName()) == null && !reactionStepMap.containsKey(bngReaction.getRuleName())) {	// we can reuse the reaction rule labels
+				reactionName = bngReaction.getRuleName();
+			}else{
+				reactionName = bngReaction.getRuleName()+"_0";
+				while (true) {
+					if (model.getReactionStep(reactionName) == null && !reactionStepMap.containsKey(reactionName)) {	// we can reuse the reaction rule labels
+						break;
+					}	
+					reactionName = TokenMangler.getNextEnumeratedToken(reactionName);
+				}
 			}
 			//
 			// if this is a direct reaction (forward through the rule), then create the forward reaction (either reversible or irreversible)

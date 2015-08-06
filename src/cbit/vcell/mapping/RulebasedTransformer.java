@@ -114,7 +114,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 				e.printStackTrace();
 			}
 		}
-		for(ReactionSpec reactionSpec : transformedSimulationContext.getReactionContext().getReactionSpecs()) {
+		ReactionSpec[] reactionSpecs = transformedSimulationContext.getReactionContext().getReactionSpecs();
+		for(ReactionSpec reactionSpec : reactionSpecs) {
 			
 			if (reactionSpec.isExcluded()){
 				continue;	// we create rules only from those reactions which are not excluded
@@ -168,6 +169,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					}
 				}
 			}
+			newModel.removeReactionStep(rs);
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
 		
