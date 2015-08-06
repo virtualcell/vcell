@@ -508,7 +508,7 @@ public class FRAPStudy implements Matchable{
 			//reaction with BMW rate, which should not be applied to binding site
 			if(!(species[i].getCommonName().equals(FRAPStudy.SPECIES_NAME_PREFIX_BINDING_SITE)))
 			{
-				SimpleReaction simpleReaction = new SimpleReaction(model, cytosol,speciesContexts[i].getName()+"_bleach");
+				SimpleReaction simpleReaction = new SimpleReaction(model, cytosol,speciesContexts[i].getName()+"_bleach", true);
 				model.addReactionStep(simpleReaction);
 				simpleReaction.addReactant(speciesContexts[i], 1);
 				MassActionKinetics massActionKinetics = new MassActionKinetics(simpleReaction);
@@ -519,7 +519,7 @@ public class FRAPStudy implements Matchable{
 		}
 
 		// add the binding reaction: F + BS <-> C
-		SimpleReaction simpleReaction2 = new SimpleReaction(model, cytosol,"reac_binding");
+		SimpleReaction simpleReaction2 = new SimpleReaction(model, cytosol,"reac_binding", true);
 		model.addReactionStep(simpleReaction2);
 		simpleReaction2.addReactant(speciesContexts[FREE_SPECIES_INDEX], 1);
 		simpleReaction2.addReactant(speciesContexts[BS_SPECIES_INDEX], 1);
