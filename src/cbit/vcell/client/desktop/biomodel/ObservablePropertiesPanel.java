@@ -104,19 +104,35 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (e.getSource() == getAddSpeciesPatternMenuItem()) {
+			if (e.getSource() == getAddSpeciesPatternFromTreeMenuItem()) {
 				addSpeciesPattern();
-			} else if (source == getDeleteMenuItem()) {
-				delete();
-			} else if (source == getRenameMenuItem()) {
+			} else if (source == getDeleteFromTreeMenuItem()) {
+				deleteFromTree();
+			} else if (source == getRenameFromTreeMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-			} else if (source == getAddMenu()) {
-				addNew();
-			} else if (source == getEditMenuItem()) {
+			} else if (source == getAddFromTreeMenu()) {
+				addNewFromTree();
+			} else if (source == getEditFromTreeMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-//			} else if (source == showDetailsCheckBox) {
-//				observableTreeModel.setShowDetails(showDetailsCheckBox.isSelected());
 			}
+				
+				
+				
+			if (e.getSource() == getAddSpeciesPatternFromShapeMenuItem()) {
+				addSpeciesPattern();
+			} else if (source == getDeleteFromShapeMenuItem()) {
+				deleteFromShape();
+			} else if (source == getRenameFromShapeMenuItem()) {
+				
+//				observableTree.startEditingAtPath(observableTree.getSelectionPath());
+			} else if (source == getAddFromShapeMenu()) {
+				addNewFromShape();
+			} else if (source == getEditFromShapeMenuItem()) {
+				
+//				observableTree.startEditingAtPath(observableTree.getSelectionPath());
+			}
+
+			
 		}
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -190,12 +206,19 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 	List<SpeciesPatternLargeShape> spsList = new ArrayList<SpeciesPatternLargeShape>();
 
-	private JPopupMenu popupMenu;
-	private JMenu addMenu;
-	private JMenuItem deleteMenuItem;	
-	private JMenuItem renameMenuItem;
-	private JMenuItem editMenuItem;
-	private JMenuItem addSpeciesPatternMenuItem;
+	private JPopupMenu popupFromTreeMenu;
+	private JMenu addFromTreeMenu;
+	private JMenuItem deleteFromTreeMenuItem;	
+	private JMenuItem renameFromTreeMenuItem;
+	private JMenuItem editFromTreeMenuItem;
+	private JMenuItem addSpeciesPatternFromTreeMenuItem;
+	
+	private JPopupMenu popupFromShapeMenu;
+	private JMenu addFromShapeMenu;
+	private JMenuItem deleteFromShapeMenuItem;	
+	private JMenuItem renameFromShapeMenuItem;
+	private JMenuItem editFromShapeMenuItem;
+	private JMenuItem addSpeciesPatternFromShapeMenuItem;
 //	private JCheckBox showDetailsCheckBox;
 	
 	private BioModel bioModel;
@@ -204,34 +227,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 
-	public void addNew() {
-		Object obj = observableTree.getLastSelectedPathComponent();
-		if (obj == null || !(obj instanceof BioModelNode)) {
-			return;
-		}
-		BioModelNode selectedNode = (BioModelNode) obj;
-		Object selectedUserObject = selectedNode.getUserObject();
-		if (selectedUserObject == observable){
-			for (MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
-				JMenuItem menuItem = new JMenuItem(mt.getName());
-				menuItem.addActionListener(new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						// TODO Auto-generated method stub
-						
-					}
-				});
-			}
-//			MolecularComponent molecularComponent = observable.createMolecularComponent();
-//			observable.addMolecularComponent(molecularComponent);
-//			jtree.startEditingAtPath(jtreeModel.findObjectPath(null, molecularComponent));
-		} else if (selectedUserObject instanceof MolecularComponent){
-//			MolecularComponent molecularComponent = (MolecularComponent) selectedUserObject;
-//			ComponentState componentState = molecularComponent.createComponentState();
-//			molecularComponent.addComponentState(componentState);
-//			jtree.startEditingAtPath(jtreeModel.findObjectPath(null, componentState));
-		}	
-	}
 	
 	public void addSpeciesPattern() {
 		SpeciesPattern sp = new SpeciesPattern();
@@ -244,8 +239,36 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		});
 	}
+	
+	public void addNewFromShape() {
+		
+	}
+	public void addNewFromTree() {
+		Object obj = observableTree.getLastSelectedPathComponent();
+		if (obj == null || !(obj instanceof BioModelNode)) {
+			return;
+		}
+		BioModelNode selectedNode = (BioModelNode) obj;
+		Object selectedUserObject = selectedNode.getUserObject();
+		if (selectedUserObject == observable){
+			for (MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+				JMenuItem menuItem = new JMenuItem(mt.getName());
+				menuItem.addActionListener(new ActionListener() {
+					
+					public void actionPerformed(ActionEvent e) {
+						;
+					}
+				});
+			}
+		} else if (selectedUserObject instanceof MolecularComponent){
+			;
+		}	
+	}
 
-	public void delete() {
+	public void deleteFromShape() {
+
+	}
+	public void deleteFromTree() {
 		Object obj = observableTree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
 			return;
@@ -417,19 +440,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 						break;		// if mouse is inside a shape it can't be simultaneously in another one
 					}
 				}
-				// now show a menu or something
-				Object deepestShape = locationContext.getDeepestShape();
-				if(deepestShape == null) {
-					System.out.println("outside");
-				} else if(deepestShape instanceof MolecularComponentLargeShape) {
-					System.out.println("inside component");
-				} else if(deepestShape instanceof MolecularTypeLargeShape) {
-					System.out.println("inside molecule");
-				} else if(deepestShape instanceof SpeciesPatternLargeShape) {
-					System.out.println("inside species pattern");
-				} else {
-					System.out.println("inside something else?");
-				}
+				showPopupMenu(me, locationContext);
 			}
 		});
 //		shapePanel.addMouseListener(eventHandler);		// alternately use this
@@ -480,44 +491,79 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		annotationTextArea.addMouseListener(eventHandler);
 	}
 	
-	private JMenu getAddMenu() {
-		if (addMenu == null) {
-			addMenu = new JMenu("Add");
-			addMenu.addActionListener(eventHandler);
+	private JMenu getAddFromTreeMenu() {
+		if (addFromTreeMenu == null) {
+			addFromTreeMenu = new JMenu("Add");
+			addFromTreeMenu.addActionListener(eventHandler);
 		}
-		return addMenu;
+		return addFromTreeMenu;
+	}
+	private JMenu getAddFromShapeMenu() {
+		if (addFromShapeMenu == null) {
+			addFromShapeMenu = new JMenu("Add");
+			addFromShapeMenu.addActionListener(eventHandler);
+		}
+		return addFromShapeMenu;
 	}
 	
-	private JMenuItem getRenameMenuItem() {
-		if (renameMenuItem == null) {
-			renameMenuItem = new JMenuItem("Rename");
-			renameMenuItem.addActionListener(eventHandler);
+	private JMenuItem getRenameFromTreeMenuItem() {
+		if (renameFromTreeMenuItem == null) {
+			renameFromTreeMenuItem = new JMenuItem("Rename");
+			renameFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return renameMenuItem;
+		return renameFromTreeMenuItem;
+	}
+	private JMenuItem getRenameFromShapeMenuItem() {
+		if (renameFromShapeMenuItem == null) {
+			renameFromShapeMenuItem = new JMenuItem("Rename");
+			renameFromShapeMenuItem.addActionListener(eventHandler);
+		}
+		return renameFromShapeMenuItem;
 	}
 	
-	private JMenuItem getDeleteMenuItem() {
-		if (deleteMenuItem == null) {
-			deleteMenuItem = new JMenuItem("Delete");
-			deleteMenuItem.addActionListener(eventHandler);
+	private JMenuItem getDeleteFromTreeMenuItem() {
+		if (deleteFromTreeMenuItem == null) {
+			deleteFromTreeMenuItem = new JMenuItem("Delete");
+			deleteFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return deleteMenuItem;
+		return deleteFromTreeMenuItem;
+	}
+	private JMenuItem getDeleteFromShapeMenuItem() {
+		if (deleteFromShapeMenuItem == null) {
+			deleteFromShapeMenuItem = new JMenuItem("Delete");
+			deleteFromShapeMenuItem.addActionListener(eventHandler);
+		}
+		return deleteFromShapeMenuItem;
 	}
 	
-	private JMenuItem getEditMenuItem() {
-		if (editMenuItem == null) {
-			editMenuItem = new JMenuItem("Edit");
-			editMenuItem.addActionListener(eventHandler);
+	private JMenuItem getEditFromTreeMenuItem() {
+		if (editFromTreeMenuItem == null) {
+			editFromTreeMenuItem = new JMenuItem("Edit");
+			editFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return editMenuItem;
+		return editFromTreeMenuItem;
+	}
+	private JMenuItem getEditFromShapeMenuItem() {
+		if (editFromShapeMenuItem == null) {
+			editFromShapeMenuItem = new JMenuItem("Edit");
+			editFromShapeMenuItem.addActionListener(eventHandler);
+		}
+		return editFromShapeMenuItem;
 	}
 	
-	private JMenuItem getAddSpeciesPatternMenuItem() {
-		if (addSpeciesPatternMenuItem == null) {
-			addSpeciesPatternMenuItem = new JMenuItem("Add Species Pattern");
-			addSpeciesPatternMenuItem.addActionListener(eventHandler);
+	private JMenuItem getAddSpeciesPatternFromTreeMenuItem() {
+		if (addSpeciesPatternFromTreeMenuItem == null) {
+			addSpeciesPatternFromTreeMenuItem = new JMenuItem("Add Species Pattern");
+			addSpeciesPatternFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return addSpeciesPatternMenuItem;
+		return addSpeciesPatternFromTreeMenuItem;
+	}
+	private JMenuItem getAddSpeciesPatternFromShapeMenuItem() {
+		if (addSpeciesPatternFromShapeMenuItem == null) {
+			addSpeciesPatternFromShapeMenuItem = new JMenuItem("Add Species Pattern");
+			addSpeciesPatternFromShapeMenuItem.addActionListener(eventHandler);
+		}
+		return addSpeciesPatternFromShapeMenuItem;
 	}
 	
 	@Override
@@ -569,7 +615,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(20, 20+75*i, sp, gc, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(20, 20+75*i, 75, sp, gc, observable);
 				spsList.add(sps);
 			}
 		}
@@ -594,26 +640,133 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
-	private void showPopupMenu(MouseEvent e){ 
-		if (!e.isPopupTrigger()) {
-			return;
-		}
-		if (popupMenu == null) {
-			popupMenu = new JPopupMenu();			
+	private void showPopupMenu(MouseEvent e, PointLocationInShapeContext locationContext) {
+		if (popupFromShapeMenu == null) {
+			popupFromShapeMenu = new JPopupMenu();			
 		}		
-		if (popupMenu.isShowing()) {
+		if (popupFromShapeMenu.isShowing()) {
 			return;
 		}
 		boolean bDelete = false;
 		boolean bAdd = false;
 		boolean bEdit = false;
 		boolean bRename = false;
-		popupMenu.removeAll();
+		popupFromShapeMenu.removeAll();
+		Point mousePoint = e.getPoint();
+
+		final Object deepestShape = locationContext.getDeepestShape();
+		final Object selectedObject;
+		
+		if(deepestShape == null) {
+			selectedObject = null;
+			System.out.println("outside");		// when cursor is outside any species pattern we offer to add a new one
+			popupFromShapeMenu.add(getAddSpeciesPatternFromShapeMenuItem());
+		} else if(deepestShape instanceof MolecularComponentLargeShape) {
+			selectedObject = ((MolecularComponentLargeShape)deepestShape).getMolecularComponentPattern();
+			System.out.println("inside component");
+		} else if(deepestShape instanceof MolecularTypeLargeShape) {
+			selectedObject = ((MolecularTypeLargeShape)deepestShape).getMolecularTypePattern();
+			System.out.println("inside molecule");
+		} else if(deepestShape instanceof SpeciesPatternLargeShape) {
+			selectedObject = ((SpeciesPatternLargeShape)deepestShape).getSpeciesPattern();
+			System.out.println("inside species pattern");
+		} else {
+			selectedObject = null;
+			System.out.println("inside something else?");
+			return;
+		}
+
+		if(selectedObject instanceof SpeciesPattern) {
+			getAddFromShapeMenu().setText(VCellErrorMessages.AddMolecularTypes);
+			getAddFromShapeMenu().removeAll();
+			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+				JMenuItem menuItem = new JMenuItem(mt.getName());
+				getAddFromShapeMenu().add(menuItem);
+				menuItem.addActionListener(new ActionListener() {
+					
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
+						((SpeciesPattern)selectedObject).addMolecularTypePattern(molecularTypePattern);
+						
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {				
+
+							}
+						});
+					}
+				});
+			}
+			JMenuItem deleteMenuItem = new JMenuItem("Delete");
+			deleteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					observable.getSpeciesPatternList().remove((SpeciesPattern)selectedObject);
+					
+					final TreePath path = observableTreeModel.findObjectPath(null, observable);
+					observableTree.setSelectionPath(path);
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							observableTreeModel.populateTree();			// repaint tree
+							observableTree.scrollPathToVisible(path);	// scroll back up to show the observable
+						}
+					});
+				}
+			});
+			popupFromShapeMenu.add(deleteMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
+			popupFromShapeMenu.add(getAddFromShapeMenu());
+			
+		} else if (selectedObject instanceof MolecularTypePattern) {
+			
+			JMenuItem deleteMenuItem = new JMenuItem("Delete");
+			deleteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+					SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+					sp.removeMolecularTypePattern(mtp);
+				}
+			});
+			popupFromShapeMenu.add(deleteMenuItem);
+			
+		} else if (selectedObject instanceof MolecularComponentPattern) {
+//			manageComponentPattern(observableTreeModel, observableTree, selectedNode, selectedObject);
+			bDelete = false;
+		}
+		if (bRename) {
+			popupFromShapeMenu.add(getRenameFromShapeMenuItem());
+		}
+		if (bDelete) {
+			popupFromShapeMenu.add(getDeleteFromShapeMenuItem());
+		}
+		if (bEdit) {
+			popupFromShapeMenu.add(getEditFromShapeMenuItem());
+		}
+		if (bAdd) {
+			popupFromShapeMenu.add(new JSeparator());
+			popupFromShapeMenu.add(getAddFromShapeMenu());
+		}
+		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
+	}
+	
+	private void showPopupMenu(MouseEvent e){ 
+		if (!e.isPopupTrigger()) {
+			return;
+		}
+		if (popupFromTreeMenu == null) {
+			popupFromTreeMenu = new JPopupMenu();			
+		}		
+		if (popupFromTreeMenu.isShowing()) {
+			return;
+		}
+		boolean bDelete = false;
+		boolean bAdd = false;
+		boolean bEdit = false;
+		boolean bRename = false;
+		popupFromTreeMenu.removeAll();
 		Point mousePoint = e.getPoint();
 		GuiUtils.selectClickTreePath(observableTree, e);		
 		TreePath clickPath = observableTree.getPathForLocation(mousePoint.x, mousePoint.y);
 	    if (clickPath == null) {
-	    	popupMenu.add(getAddSpeciesPatternMenuItem());
+	    	popupFromTreeMenu.add(getAddSpeciesPatternFromTreeMenuItem());
 	    	return;
 	    }
 		TreePath[] selectedPaths = observableTree.getSelectionPaths();
@@ -630,13 +783,13 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			final Object selectedObject = selectedNode.getUserObject();
 			
 			if (selectedObject instanceof RbmObservable) {
-				popupMenu.add(getAddSpeciesPatternMenuItem());
+				popupFromTreeMenu.add(getAddSpeciesPatternFromTreeMenuItem());
 			} else if(selectedObject instanceof SpeciesPatternLocal) {
-				getAddMenu().setText(VCellErrorMessages.AddMolecularTypes);
-				getAddMenu().removeAll();
+				getAddFromTreeMenu().setText(VCellErrorMessages.AddMolecularTypes);
+				getAddFromTreeMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
-					getAddMenu().add(menuItem);
+					getAddFromTreeMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
@@ -665,19 +818,19 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 //		popupMenu.removeAll();
 		// everything can be renamed
 		if (bRename) {
-			popupMenu.add(getRenameMenuItem());
+			popupFromTreeMenu.add(getRenameFromTreeMenuItem());
 		}
 		if (bDelete) {
-			popupMenu.add(getDeleteMenuItem());
+			popupFromTreeMenu.add(getDeleteFromTreeMenuItem());
 		}
 		if (bEdit) {
-			popupMenu.add(getEditMenuItem());
+			popupFromTreeMenu.add(getEditFromTreeMenuItem());
 		}
 		if (bAdd) {
-			popupMenu.add(new JSeparator());
-			popupMenu.add(getAddMenu());
+			popupFromTreeMenu.add(new JSeparator());
+			popupFromTreeMenu.add(getAddFromTreeMenu());
 		}
-		popupMenu.show(observableTree, mousePoint.x, mousePoint.y);
+		popupFromTreeMenu.show(observableTree, mousePoint.x, mousePoint.y);
 	}
 	
 	public void setBioModel(BioModel newValue) {
@@ -686,7 +839,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	}
 	public void manageComponentPattern(final ObservableTreeModel treeModel, final JTree tree,
 			BioModelNode selectedNode, final Object selectedObject) {
-		popupMenu.removeAll();
+		popupFromTreeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
 		//
@@ -723,7 +876,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 			}
-			popupMenu.add(editStateMenu);
+			popupFromTreeMenu.add(editStateMenu);
 		}
 		//
 		// --- Bonds
@@ -839,7 +992,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				}
 			});
 		}
-		popupMenu.add(editBondMenu);
+		popupFromTreeMenu.add(editBondMenu);
 	}
 
 }

@@ -106,12 +106,12 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 					public int getDimension() { return 0; }
 				}, sp);
 				Graphics panelContext = shapePanel.getGraphics();
-				spls = new SpeciesPatternLargeShape(20, 20, sp, panelContext, sc);
+				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, panelContext, sc);
 				shapePanel.repaint();
 				} catch (ParseException e1) {
 					e1.printStackTrace();
 					Graphics panelContext = shapePanel.getGraphics();
-					spls = new SpeciesPatternLargeShape(20, 20, panelContext, true);	// error (red circle)
+					spls = new SpeciesPatternLargeShape(20, 20, -1, panelContext, true);	// error (red circle)
 					shapePanel.repaint();
 				}
 			}
