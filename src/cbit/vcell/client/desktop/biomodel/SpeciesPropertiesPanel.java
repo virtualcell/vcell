@@ -672,7 +672,7 @@ private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
-		spls = new SpeciesPatternLargeShape(20, 5, sp, panelContext, fieldSpeciesContext);
+		spls = new SpeciesPatternLargeShape(20, 5, -1, sp, panelContext, fieldSpeciesContext);
 		shapePanel.repaint();
 	}
 }
