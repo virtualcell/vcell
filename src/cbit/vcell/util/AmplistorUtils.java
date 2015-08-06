@@ -11,9 +11,9 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -32,21 +32,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.omg.CosNaming.NamingContextExtPackage.URLStringHelper;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.Hex;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.SimulationData.AmplistorHelper;
 import cbit.vcell.solver.Simulation;
 
 public class AmplistorUtils {
@@ -130,17 +125,25 @@ public class AmplistorUtils {
 			}catch(NumberFormatException nfe){
 				nfe.printStackTrace();
 			}
-			BufferedInputStream bis = new BufferedInputStream(checkOPHelper.httpURLConnection.getInputStream());
-			byte[] tempBuffer = new byte[(int)Math.min(contentLength, Math.pow(8, 7))];
-			bos = new BufferedOutputStream(new FileOutputStream(toFile));
-	        while(true){
-	        	int numread = bis.read(tempBuffer,0,tempBuffer.length);
-	        	if(numread == -1){
-	        		break;
-	        	}
-	        	bos.write(tempBuffer,0,numread);
-	        }
-	        bos.flush();
+			if (contentLength > 0) { //zero-byte files have no data to transfer
+				int totalRead = 0;
+				BufferedInputStream bis = new BufferedInputStream(checkOPHelper.httpURLConnection.getInputStream());
+				byte[] tempBuffer = new byte[(int)Math.min(contentLength, Math.pow(8, 7))];
+				bos = new BufferedOutputStream(new FileOutputStream(toFile));
+				while(totalRead < contentLength){
+					int numread = bis.read(tempBuffer,0,tempBuffer.length);
+					if(numread == -1){
+						throw new IOException("Premature end of data transferring " + urlStr + " to " + toFile.getAbsolutePath()
+								+ ", " + totalRead + " bytes read, " + contentLength + " expected");
+					}
+					totalRead += numread;
+					bos.write(tempBuffer,0,numread);
+				}
+				bos.flush();
+			}
+			else { //if empty, simply create the file
+				toFile.createNewFile();
+			}
 	        if(checkOPHelper.httpURLConnection.getHeaderField(CUSTOM_FILE_MODIFICATION_DATE) != null){
 				Date customModificationDate = convertDateMetaData(checkOPHelper.httpURLConnection.getHeaderField(CUSTOM_FILE_MODIFICATION_DATE));
 				toFile.setLastModified(customModificationDate.getTime());
@@ -234,6 +237,7 @@ public class AmplistorUtils {
 //				}
 			if(listFiles[i].isFile()){
 				final File currentFile = listFiles[i];
+				@SuppressWarnings("unused")
 				int threadid = 0;
 				while((threadid = multiThreadCounter.getAccess()) == 0){Thread.sleep(100);}//wait for available thread
 //					System.out.println(threadid+" "+currentFile.getName());
@@ -512,7 +516,7 @@ public class AmplistorUtils {
 	}
 	private static ArrayList<String> listOrDelete0(String userURL,HashSet<KeyValue> doNotDeleteTheseSimKeys,boolean bDelete,AmplistorCredential amplistorCredential) throws Exception{
 		ArrayList<String> affectedFileNames = new ArrayList<String>();
-		long resultCount = 0;
+//		long resultCount = 0;
 		int count = 0;
 		String marker = null;
 		while(true){
@@ -520,6 +524,7 @@ public class AmplistorUtils {
 //				Document responseDoc = getXMLDirList(userURL+(marker!=null?"?marker="+marker+"&limit=1000":""));
 			if(checkOpHelper != null && checkOpHelper.responseDoc != null){
 				int currentCount = 0;
+				@SuppressWarnings("unchecked")
 				List<Element> dirEntryElements = checkOpHelper.responseDoc.getRootElement().getChildren();
 				for(Element dirEntry:dirEntryElements){
 					String fileName = dirEntry.getText();
@@ -546,7 +551,7 @@ public class AmplistorUtils {
 						if(parsedSimIDKey != null && !doNotDeleteTheseSimKeys.contains(parsedSimIDKey)){
 //							System.out.println("Amplistor  "+(bDelete?"delete":"list")+"= "+fileName);
 							affectedFileNames.add(fileName);
-							resultCount++;
+//							resultCount++;
 							if(bDelete){
 								ampliCheckOP(new URL(userURL+"/"+fileName), amplistorCredential, AMPLI_OP_METHOD.DELETE, null, AMPLI_OP_KIND.FILE,null);
 							}
@@ -556,7 +561,7 @@ public class AmplistorUtils {
 						}
 					}else{
 						affectedFileNames.add(fileName);
-						resultCount++;
+//						resultCount++;
 						if(bDelete){
 							ampliCheckOP(new URL(userURL+"/"+fileName), amplistorCredential, AMPLI_OP_METHOD.DELETE, null, AMPLI_OP_KIND.FILE,null);									
 						}
@@ -656,6 +661,7 @@ public class AmplistorUtils {
 			urlCon.setRequestMethod("GET");
 			urlCon.setRequestProperty("Date", getRFC1123FormattedDate());
 			
+			@SuppressWarnings("unused")
 			int responseCode = urlCon.getResponseCode();
 //			System.out.println("\nSending 'GET' request to URL : " + url);
 //			System.out.println("Response Code : " + responseCode);
