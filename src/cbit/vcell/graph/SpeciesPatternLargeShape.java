@@ -30,6 +30,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	
 	private int xPos = 0;
 	private int yPos = 0;
+	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
 
 	final Graphics graphicsContext;
@@ -43,11 +44,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternLargeShape(int xPos, int yPos, Graphics graphicsContext, boolean isError) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, Graphics graphicsContext, boolean isError) {
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
 		this.yPos = yPos;
+		this.height = height;
 		this.graphicsContext = graphicsContext;
 		this.isError = true;
 
@@ -55,11 +57,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, null);
 		speciesShapes.add(stls);
 	}
-	public SpeciesPatternLargeShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
 		this.yPos = yPos;
+		this.height = height;
 		this.graphicsContext = graphicsContext;
 
 		int xPattern = xPos;
@@ -179,6 +182,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		}
 		
 		// even if the point it's not inside one of our subcomponents it may still be inside "this"
+		int y = locationContext.point.y;
+		if(height > 0 && y > yPos && y < yPos + height) {
+			locationContext.sps = this;
+			return true;
+		}
 		return false;		// for the case of SpeciesPatternLargeShape, it actually can't
 	}
 
