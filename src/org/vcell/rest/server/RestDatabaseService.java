@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -414,6 +413,16 @@ public class RestDatabaseService {
 			
 		}
 	   	return bioModelReps;
+	}
+	
+	public String query(BiomodelVCMLServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		KeyValue bioModelKey = new KeyValue(bioModelID);
+		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
+		return vcmlBigString.toString();
 	}
 	
 	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	

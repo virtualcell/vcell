@@ -27,6 +27,7 @@ import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
 import org.vcell.rest.server.BiomodelSimulationStartServerResource;
 import org.vcell.rest.server.BiomodelSimulationStopServerResource;
+import org.vcell.rest.server.BiomodelVCMLServerResource;
 import org.vcell.rest.server.BiomodelsServerResource;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.rest.server.SimDataServerResource;
@@ -100,6 +101,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMTASK = "simtask";
 	public static final String SIMTASKID = "simtaskid";
 	
+	public static final String VCML_DOWNLOAD = "vcml";
 	public static final String SIMULATION = "simulation";
 	public static final String SIMULATIONID = "simulationid";
 	
@@ -233,6 +235,7 @@ public class VCellApiApplication extends WadlApplication {
 	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
