@@ -17,6 +17,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -205,6 +206,7 @@ private void resample(){
 
 
 private void exportGeometry(/*String exportType*/){
+	Objects.requireNonNull(documentWindowManager);
 	AsynchClientTask computeSurface = new AsynchClientTask("computing Surface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -221,8 +223,8 @@ private void exportGeometry(/*String exportType*/){
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("documentToExport",getGeometry());
-	hash.put("userPreferences",(documentWindowManager==null?null:documentWindowManager.getUserPreferences()));
-	hash.put("documentManager",(documentWindowManager==null?null:documentWindowManager.getRequestManager().getDocumentManager()));
+	hash.put("userPreferences",documentWindowManager.getUserPreferences());
+	hash.put("documentManager",documentWindowManager.getRequestManager().getDocumentManager());
 	hash.put("component", this);
 	ClientTaskDispatcher.dispatch(this, hash, tasks, false);
 }
@@ -641,17 +643,23 @@ public void setGeometry(Geometry newValue) {
 				} else {
 					getJButtonReplace().setText(REPLACE_GEOMETRY_SPATIAL_LABEL);
 					getJButtonChangeDomain().setEnabled(true);
-					getJButtonExport().setEnabled(true);
+					getJButtonExport().setEnabled(documentWindowManager != null);
 					getIvjButtonEditImage().setEnabled(true);
 					tabbedPane.setVisible(true);
 				}
 				if (getGeometryOwner() instanceof SimulationContext){
 					SimulationContext sc = (SimulationContext)getGeometryOwner();
-					if(sc.isRuleBased()) {
-						getJButtonReplace().setEnabled(false);
-					} else {
-						getJButtonReplace().setEnabled(true);
+					boolean replaceEnabled = false;
+					switch (sc.getApplicationType()) {
+					case RULE_BASED_STOCHASTIC:
+						replaceEnabled = false;
+						break;
+					case NETWORK_DETERMINISTIC:
+					case NETWORK_STOCHASTIC:
+						replaceEnabled = true;
+						break;
 					}
+					getJButtonReplace().setEnabled(replaceEnabled);
 				}
 				updateSurfaceView();
 			}
