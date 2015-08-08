@@ -3,6 +3,7 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -857,6 +858,18 @@ protected void refreshLocalNameCount() {
 			}
 		}
 	}
+	List<ReactionRule> reactionRules = simContext.getModel().getRbmModelContainer().getReactionRuleList();
+	for (ReactionRule reactionRule : reactionRules){
+		LocalParameter[] params = reactionRule.getKineticLaw().getLocalParameters();
+		for (LocalParameter kp : params){
+			String name = kp.getName();
+			if (localNameCountHash.containsKey(name)) {
+				localNameCountHash.put(name, localNameCountHash.get(name) + 1);
+			} else {
+				localNameCountHash.put(name, 1);
+			}
+		}
+	}
 	SpeciesContext scs[] = simContext.getModel().getSpeciesContexts();
 	for (SpeciesContext sc : scs) {
 		String name = sc.getName();
@@ -1005,6 +1018,18 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 				Integer count = localNameCountHash.get(steName);
 				if (count == null) {
 					throw new MappingException("KineticsParameter " + steName + " not found in local name count");
+				}
+				if (count>1 || steName.equals("J")){
+					return steName+"_"+ste.getNameScope().getName();
+					//return getNameScope().getSymbolName(ste);
+				}else{
+					return steName;
+				}
+			}
+			if (ste instanceof LocalParameter && ((LocalParameter)ste).getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
+				Integer count = localNameCountHash.get(steName);
+				if (count == null) {
+					throw new MappingException("Reaction Rule Parameter " + steName + " not found in local name count");
 				}
 				if (count>1 || steName.equals("J")){
 					return steName+"_"+ste.getNameScope().getName();

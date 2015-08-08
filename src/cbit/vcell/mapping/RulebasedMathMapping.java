@@ -15,6 +15,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -26,7 +27,6 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -48,6 +48,7 @@ import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
 import cbit.vcell.math.StochVolVariable;
+import cbit.vcell.math.Variable;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
@@ -57,7 +58,6 @@ import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
 import cbit.vcell.math.VolumeParticleObservable;
@@ -66,6 +66,8 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -98,11 +100,11 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 	/**
 	 * This method was created in VisualAge.
 	 */
-	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
+	@Override
+	protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
-		Model model = simContext.getModel();
 		GeometryClass geometryClass = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
 		Domain domain = new Domain(geometryClass);
 
@@ -176,7 +178,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}
 		
 		//
-		// gather only those reactionSteps that are not "excluded"
+		// gather only those reactionRules that are not "excluded"
 		//
 		ArrayList<ReactionRule> rrList = new ArrayList<ReactionRule>();
 		for (ReactionRuleSpec reactionRuleSpec : simContext.getReactionContext().getReactionRuleSpecs()){
@@ -184,8 +186,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				rrList.add(reactionRuleSpec.getReactionRule());
 			}
 		}
-		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
-		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		
 		//
 		// fail if any unresolved parameters
@@ -203,7 +203,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				throw new MappingException("In Application '" + simContext.getName() + "', " + reactionRule.getDisplayType()+" '"+reactionRule.getName()+"' contains unresolved identifier(s): "+buffer);
 			}
 		}
-	
+			
 		//
 		// create new MathDescription (based on simContext's previous MathDescription if possible)
 		//
@@ -218,16 +218,16 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}else{
 			mathDesc = new MathDescription(simContext.getName()+"_generated");
 		}
-	
+
 		//
-		// temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
+		// temporarily place all variables in a hashtable (before binding) and discarding duplicates
 		//
 		VariableHash varHash = new VariableHash();
 		
 		//
 		// conversion factors
 		//
-		ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+		Model model = simContext.getModel();
 		varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null), getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null), getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
@@ -235,7 +235,15 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT_NMOLE(),null), getIdentifierSubstitutions(model.getFARADAY_CONSTANT_NMOLE().getExpression(),model.getFARADAY_CONSTANT_NMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getGAS_CONSTANT(),null), getIdentifierSubstitutions(model.getGAS_CONSTANT().getExpression(),model.getGAS_CONSTANT().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getTEMPERATURE(),null), getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()), model.getTEMPERATURE().getUnitDefinition(),null)));
-	
+		
+		Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
+		while (enum1.hasMoreElements()){
+			SpeciesContextMapping scm = enum1.nextElement();
+			if (scm.getVariable() instanceof StochVolVariable){
+				varHash.addVariable(scm.getVariable());
+			}
+		}
+
 		// deals with model parameters
 		ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
 		for (int j=0;j<modelParameters.length;j++){
@@ -269,26 +277,42 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				}
 			}
 		}
-			
+		
 		//
 		// kinetic parameters (functions or constants)
 		//
 		for (ReactionRule reactionRule : rrList){
-	//		if (getSimulationContext().getReactionContext().getReactionSpec(rs).isExcluded()){
-	//			continue;
-	//		}
-			LocalParameter localParameters[] = reactionRule.getKineticLaw().getLocalParameters();
-			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(reactionRule.getStructure());
-			for (LocalParameter localParameter : localParameters){
-				//Reaction rate, and null parameters are not going to displayed in the particle math description.
-				if ((localParameter.getRole() == RbmKineticLawParameterType.RuleRate) || (localParameter.getExpression()==null)){
+//			if (reactionRule.getKineticLaw() instanceof LumpedKinetics){
+//				throw new RuntimeException("Lumped Kinetics not yet supported for RuleBased Modeling");
+//			}
+			LocalParameter parameters[] = reactionRule.getKineticLaw().getLocalParameters();
+			for (LocalParameter parameter : parameters){
+				//
+				// skip current density if not used.
+				//
+//				if ((parameter.getRole() == RbmKineticLawParameterType.ROLE_CurrentDensity) &&
+//					(parameter.getExpression()==null || parameter.getExpression().isZero())){
+//					continue;
+//				}
+				//
+				// don't add rate, we'll do it later when creating the jump processes
+				//
+				if ((parameter.getRole() == RbmKineticLawParameterType.RuleRate)){
 					continue;
 				}
-				Expression expr = getSubstitutedExpr(localParameter.getExpression(), true, false);
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(localParameter,sm.getGeometryClass()), getIdentifierSubstitutions(expr,localParameter.getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
+				
+				//
+				// don't add mass action reverse parameter if irreversible
+				//
+				if (!reactionRule.isReversible() && parameter.getRole() == RbmKineticLawParameterType.MassActionReverseRate){
+					continue;
+				}
+
+				Expression expr = getSubstitutedExpr(parameter.getExpression(), true, false);
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameter,geometryClass), getIdentifierSubstitutions(expr,parameter.getUnitDefinition(),geometryClass),geometryClass));
 			}
 		}
-	
+		
 		//geometic mapping
 		//the parameter "Size" is already put into mathsymbolmapping in refreshSpeciesContextMapping()
 		for (int i=0;i<structureMappings.length;i++){
@@ -307,13 +331,217 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			}
 		}
 
-		SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
-		
+		SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+
 		addInitialConditions(domain, speciesContextSpecs, varHash);
-	
+		
 		//
+		// geometry
+		//
+		if (simContext.getGeometryContext().getGeometry() != null){
+			try {
+				mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				throw new MappingException("failure setting geometry "+e.getMessage());
+			}
+		}else{
+			throw new MappingException("Geometry must be defined in Application "+simContext.getName());
+		}
+
+		//
+		// create subDomains
+		//
+		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
+		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
+		mathDesc.addSubDomain(subDomain);
+
+		//
+		// define all molecules and unique species patterns (add molecules to mathDesc and speciesPatterns to varHash).
+		//
+		HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap = addSpeciesPatterns(domain, rrList);
+		HashSet<VolumeParticleSpeciesPattern> uniqueParticleSpeciesPatterns = new HashSet<>(speciesPatternMap.values());
+		for (VolumeParticleSpeciesPattern volumeParticleSpeciesPattern : uniqueParticleSpeciesPatterns){
+			varHash.addVariable(volumeParticleSpeciesPattern);
+		}
+
+		//
+		// define observables (those explicitly declared and those corresponding to seed species.
+		//
+		List<ParticleObservable> observables = addObservables(geometryClass, domain, speciesPatternMap);
+		for (ParticleObservable particleObservable : observables){
+			varHash.addVariable(particleObservable);
+		}
+
+		addParticleJumpProcesses(geometryClass, subDomain, speciesPatternMap);	
+
+		//
+		// include required UnitRateFactors
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+			}
+		}
+
+		//
+		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+		//
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+		
+		//
+		// set up particle initial conditions in subdomain
+		//
+		for (SpeciesContext sc : model.getSpeciesContexts()){
+			if(!sc.hasSpeciesPattern()) { 
+				throw new MappingException("species "+sc.getName()+" has no molecular pattern");
+			}
+			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = speciesPatternMap.get(sc.getSpeciesPattern());
+			ArrayList<ParticleInitialCondition> particleInitialConditions = new ArrayList<ParticleProperties.ParticleInitialCondition>();
+			
+			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);	// initial conditions from scs
+			Parameter initialCountParameter = scs.getInitialCountParameter();
+			Expression e = getIdentifierSubstitutions(new Expression(initialCountParameter,getNameScope()),initialCountParameter.getUnitDefinition(),geometryClass);
+			particleInitialConditions.add(new ParticleInitialConditionCount(e,new Expression(0.0),new Expression(0.0),new Expression(0.0)));
+			
+			ParticleProperties particleProperies = new ParticleProperties(volumeParticleSpeciesPattern,new Expression(0.0),new Expression(0.0),new Expression(0.0),new Expression(0.0),particleInitialConditions);
+			subDomain.addParticleProperties(particleProperies);
+		}
+
+		//
+		// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+				if (mathDesc.getVariable(variable.getName())==null){
+					mathDesc.addVariable(variable);
+				}
+			}
+		}
+
+		if (!mathDesc.isValid()){
+			System.out.println(mathDesc.getVCML_database());
+			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
+		}
+	}
+
+	private void addParticleJumpProcesses(GeometryClass geometryClass, SubDomain subDomain, HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap) throws ExpressionException, MappingException, MathException {
+
+		ArrayList<ReactionRule> rrList = new ArrayList<>();
+		for (ReactionRuleSpec rrSpec : getSimulationContext().getReactionContext().getReactionRuleSpecs()){
+			if (!rrSpec.isExcluded()){
+				rrList.add(rrSpec.getReactionRule());
+			}
+		}
+
+		String reactionRuleNameDefault = "reactionRule0";	// We only use this as a safety feature, each reaction rule should have its own unique name
+		String reactionRuleName = null;
+		for (ReactionRule reactionRule : rrList){
+			if (reactionRule.getKineticLaw().getRateLawType() != RbmKineticLaw.RateLawType.MassAction){
+				throw new RuntimeException("rule-based math generation unsupported for kinetic law "+reactionRule.getKineticLaw().getRateLawType());
+			}
+			if((reactionRule.getName() != null) && (!reactionRule.getName().isEmpty())) {
+				reactionRuleName = reactionRule.getName();
+			} else {
+				reactionRuleName = reactionRuleNameDefault;
+			}
+			LocalParameter forwardRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+			Expression forwardRate = getIdentifierSubstitutions(forwardRateParameter.getExpression(), forwardRateParameter.getUnitDefinition(), geometryClass);
+			ArrayList<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
+			for (ReactantPattern reactantSpeciesPattern : reactionRule.getReactantPatterns()){
+				reactantParticles.add(speciesPatternMap.get(reactantSpeciesPattern.getSpeciesPattern()));
+			}
+			ArrayList<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
+			for (ProductPattern productSpeciesPattern : reactionRule.getProductPatterns()){
+				productParticles.add(speciesPatternMap.get(productSpeciesPattern.getSpeciesPattern()));
+			}
+			ArrayList<Action> forwardActions = new ArrayList<Action>();
+			ArrayList<Action> reverseActions = new ArrayList<Action>();
+			for (ParticleVariable reactant : reactantParticles) {
+				forwardActions.add(new Action(reactant,Action.ACTION_DESTROY,new Expression(1.0)));
+				reverseActions.add(new Action(reactant,Action.ACTION_CREATE,new Expression(1.0)));
+			}
+			for (ParticleVariable product : productParticles) {
+				forwardActions.add(new Action(product,Action.ACTION_CREATE,new Expression(1.0)));
+				reverseActions.add(new Action(product,Action.ACTION_DESTROY,new Expression(1.0)));
+			}
+			
+			// forward reaction
+			String forwardName = reactionRuleName+"_forward";
+			JumpProcessRateDefinition forwardRateDefinition = new MacroscopicRateConstant(forwardRate);
+			ParticleJumpProcess forwardParticleJumpProcess = new ParticleJumpProcess(forwardName,reactantParticles,forwardRateDefinition,forwardActions);
+			subDomain.addParticleJumpProcess(forwardParticleJumpProcess);
+	
+			// reverse reaction
+			LocalParameter reverseRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
+			if (reactionRule.isReversible() && reverseRateParameter!=null){
+				Expression reverseRate = getIdentifierSubstitutions(reverseRateParameter.getExpression(), reverseRateParameter.getUnitDefinition(), geometryClass);
+				String reverseName = reactionRuleName+"_reverse";
+				JumpProcessRateDefinition reverseRateDefinition = new MacroscopicRateConstant(reverseRate);
+				ParticleJumpProcess reverseParticleJumpProcess = new ParticleJumpProcess(reverseName,productParticles,reverseRateDefinition,reverseActions);
+				subDomain.addParticleJumpProcess(reverseParticleJumpProcess);
+			}
+			
+			reactionRuleNameDefault = TokenMangler.getNextEnumeratedToken(reactionRuleName);
+		}
+	}
+
+	private List<ParticleObservable> addObservables(
+			GeometryClass geometryClass,
+			Domain domain,
+			HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> speciesPatternMap)
+			throws MappingException, MathException {
+		
+		ArrayList<ParticleObservable> observables = new ArrayList<>();
+		//
+		// Particle Observables from Observables defined in Model
+		//
+		Model model = getSimulationContext().getModel();
+		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
+		for(RbmObservable observable : observableList) {
+			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, geometryClass),domain);
+			try {
+			if(observable.getType() == RbmObservable.ObservableType.Molecules) {
+				particleObservable.setType(ParticleObservable.ObservableType.Molecules);
+			} else {
+				particleObservable.setType(ParticleObservable.ObservableType.Species);
+			}
+			} catch (PropertyVetoException e) {
+				e.printStackTrace();
+			}
+			for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
+				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
+				particleObservable.addParticleSpeciesPattern(vpsp);
+			}
+			observables.add(particleObservable);
+		}
+		//
+		// Particle observables from Seed species
+		//
+		for (SpeciesContext sc : model.getSpeciesContexts()){
+			if(!sc.hasSpeciesPattern()) { continue; }
+			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(sc, geometryClass),domain);
+			try {
+				particleObservable.setType(ParticleObservable.ObservableType.Species);
+			} catch (PropertyVetoException e) {
+				e.printStackTrace();
+			}
+			SpeciesPattern speciesPattern = sc.getSpeciesPattern();
+			VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
+			particleObservable.addParticleSpeciesPattern(vpsp);
+
+			observables.add(particleObservable);
+		}
+		return observables;
+	}
+
+	private HashMap<SpeciesPattern, VolumeParticleSpeciesPattern> addSpeciesPatterns(Domain domain, List<ReactionRule> rrList) throws MathException {
 		// Particle Molecular Types
 		//
+		Model model = getSimulationContext().getModel();
+		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
+		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		for (MolecularType molecularType : molecularTypeList){
 			ParticleMolecularType particleMolecularType = new ParticleMolecularType(molecularType.getName());
 			for (MolecularComponent molecularComponent : molecularType.getComponentList()){
@@ -417,193 +645,26 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			VolumeParticleSpeciesPattern uniqueVolumeParticleSpeciesPattern = speciesPatternVCMLMap.get(speciesPatternVCML);
 			if (uniqueVolumeParticleSpeciesPattern==null){
 				speciesPatternVCMLMap.put(speciesPatternVCML, volumeParticleSpeciesPattern);
-				varHash.addVariable(volumeParticleSpeciesPattern);
 				speciesPatternName = TokenMangler.getNextEnumeratedToken(speciesPatternName);
 				speciesPatternMap.put(speciesPattern,volumeParticleSpeciesPattern);		
 			}else{
 				speciesPatternMap.put(speciesPattern,uniqueVolumeParticleSpeciesPattern);
 			}
 		}
-		
-		//
-		// Particle Observables from Observables defined in Model
-		//
-		for(RbmObservable observable : observableList) {
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, geometryClass),domain);
-			try {
-			if(observable.getType() == RbmObservable.ObservableType.Molecules) {
-				particleObservable.setType(ParticleObservable.ObservableType.Molecules);
-			} else {
-				particleObservable.setType(ParticleObservable.ObservableType.Species);
-			}
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-			}
-			for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
-				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
-				particleObservable.addParticleSpeciesPattern(vpsp);
-			}
-			varHash.addVariable(particleObservable);
-		}
-		//
-		// Particle observables from Seed species
-		//
-		for (SpeciesContext sc : model.getSpeciesContexts()){
-			if(!sc.hasSpeciesPattern()) { continue; }
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(sc, geometryClass),domain);
-			try {
-				particleObservable.setType(ParticleObservable.ObservableType.Species);
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-			}
-			SpeciesPattern speciesPattern = sc.getSpeciesPattern();
-			VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
-			particleObservable.addParticleSpeciesPattern(vpsp);
-
-			varHash.addVariable(particleObservable);
-		}
-		
-		//
-		// include required UnitRateFactors
-		//
-//		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-//			if (fieldMathMappingParameters[i] instanceof SpeciesConcentrationParameter || fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
-//				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
-//			}
-//		}
-		
-		//
-		// include required UnitRateFactors
-		//
-		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
-			}
-		}
-
-		//
-		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-		//
-		try {
-			mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-		} catch (Exception e1){
-			throw new MathException("Problem generating math in application "+simContext.getName()+": "+e1.getMessage(),e1);
-		}
-		
-		
-		//
-		// geometry
-		//
-		if (simContext.getGeometryContext().getGeometry() != null){
-			try {
-				mathDesc.setGeometry(simContext.getGeometryContext().getGeometry());
-			}catch (java.beans.PropertyVetoException e){
-				e.printStackTrace(System.out);
-				throw new MappingException("failure setting geometry "+e.getMessage());
-			}
-		}else{
-			throw new MappingException("Geometry must be defined in Application "+simContext.getName());
-		}
-	
-		//
-		// create subDomain
-		//
-		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
-		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
-		mathDesc.addSubDomain(subDomain);
-	
-	//	for (SeedSpecies seedSpecies : rbmModelContainer.getSeedSpeciesList()){
-		for (SpeciesContext sc : model.getSpeciesContexts()){
-			if(!sc.hasSpeciesPattern()) { 
-				throw new MappingException("species "+sc.getName()+" has no molecular pattern");
-			}
-			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = speciesPatternMap.get(sc.getSpeciesPattern());
-			ArrayList<ParticleInitialCondition> particleInitialConditions = new ArrayList<ParticleProperties.ParticleInitialCondition>();
-			
-			SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);	// initial conditions from scs
-			Parameter initialCountParameter = scs.getInitialCountParameter();
-			Expression e = getIdentifierSubstitutions(new Expression(initialCountParameter,getNameScope()),initialCountParameter.getUnitDefinition(),geometryClass);
-			particleInitialConditions.add(new ParticleInitialConditionCount(e,new Expression(0.0),new Expression(0.0),new Expression(0.0)));
-			
-			ParticleProperties particleProperies = new ParticleProperties(volumeParticleSpeciesPattern,new Expression(0.0),new Expression(0.0),new Expression(0.0),new Expression(0.0),particleInitialConditions);
-			subDomain.addParticleProperties(particleProperies);
-		}
-		
-		String reactionRuleNameDefault = "reactionRule0";	// We only use this as a safety feature, each reaction rule should have its own unique name
-		String reactionRuleName = null;
-		for (ReactionRule reactionRule : rrList){
-			if (reactionRule.getKineticLaw().getRateLawType() != RbmKineticLaw.RateLawType.MassAction){
-				throw new RuntimeException("rule-based math generation unsupported for kinetic law "+reactionRule.getKineticLaw().getRateLawType());
-			}
-			if((reactionRule.getName() != null) && (!reactionRule.getName().isEmpty())) {
-				reactionRuleName = reactionRule.getName();
-			} else {
-				reactionRuleName = reactionRuleNameDefault;
-			}
-			LocalParameter forwardRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-			Expression forwardRate = getIdentifierSubstitutions(forwardRateParameter.getExpression(), forwardRateParameter.getUnitDefinition(), geometryClass);
-			ArrayList<ParticleVariable> reactantParticles = new ArrayList<ParticleVariable>();
-			for (ReactantPattern reactantSpeciesPattern : reactionRule.getReactantPatterns()){
-				reactantParticles.add(speciesPatternMap.get(reactantSpeciesPattern.getSpeciesPattern()));
-			}
-			ArrayList<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
-			for (ProductPattern productSpeciesPattern : reactionRule.getProductPatterns()){
-				productParticles.add(speciesPatternMap.get(productSpeciesPattern.getSpeciesPattern()));
-			}
-			ArrayList<Action> forwardActions = new ArrayList<Action>();
-			ArrayList<Action> reverseActions = new ArrayList<Action>();
-			for (ParticleVariable reactant : reactantParticles) {
-				forwardActions.add(new Action(reactant,Action.ACTION_DESTROY,new Expression(1.0)));
-				reverseActions.add(new Action(reactant,Action.ACTION_CREATE,new Expression(1.0)));
-			}
-			for (ParticleVariable product : productParticles) {
-				forwardActions.add(new Action(product,Action.ACTION_CREATE,new Expression(1.0)));
-				reverseActions.add(new Action(product,Action.ACTION_DESTROY,new Expression(1.0)));
-			}
-			
-			// forward reaction
-			String forwardName = reactionRuleName+"_forward";
-			JumpProcessRateDefinition forwardRateDefinition = new MacroscopicRateConstant(forwardRate);
-			ParticleJumpProcess forwardParticleJumpProcess = new ParticleJumpProcess(forwardName,reactantParticles,forwardRateDefinition,forwardActions);
-			subDomain.addParticleJumpProcess(forwardParticleJumpProcess);
-	
-			// reverse reaction
-			LocalParameter reverseRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
-			if (reactionRule.isReversible() && reverseRateParameter!=null){
-				Expression reverseRate = getIdentifierSubstitutions(reverseRateParameter.getExpression(), reverseRateParameter.getUnitDefinition(), geometryClass);
-				String reverseName = reactionRuleName+"_reverse";
-				JumpProcessRateDefinition reverseRateDefinition = new MacroscopicRateConstant(reverseRate);
-				ParticleJumpProcess reverseParticleJumpProcess = new ParticleJumpProcess(reverseName,productParticles,reverseRateDefinition,reverseActions);
-				subDomain.addParticleJumpProcess(reverseParticleJumpProcess);
-			}
-			
-			reactionRuleNameDefault = TokenMangler.getNextEnumeratedToken(reactionRuleName);
-		}	
-	
-		if (!mathDesc.isValid()){
-			System.out.println(mathDesc.getVCML_database());
-			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
-		}
-		
-	
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string begin ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
-	System.out.println(mathDesc.getVCML());
-	System.out.println("]]]]]]]]]]]]]]]]]]]]]] VCML string end ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]");
+		return speciesPatternMap;
 	}
 
-/**
- * This method was created in VisualAge.
- */
-private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException {
-	
+@Override
+protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
+{
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
 	//
 	// set initialExpression from SpeciesContextSpec.
 	// set diffusing
-	// set variable (only if "Constant" or "Function", else leave it as null)
+	// set variable (only if "Constant" or "Function", else leave it as null)-----why commented?
 	//
-	
+
 	//
 	// have to put geometric paras into mathsymbolmapping, since species initial condition needs the volume size symbol.
 	// and the parameters later on were added into contants or functions in refreshMathDescription()
@@ -614,8 +675,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
 		getMathSymbol(parm,sm.getGeometryClass());
 	}
-	
-	speciesContextMappingList.removeAllElements();
+
+	getSpeciesContextMappingList().removeAllElements();
 	
 	SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i=0;i<speciesContextSpecs.length;i++){
@@ -623,22 +684,19 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		SpeciesContextMapping scm = new SpeciesContextMapping(scs.getSpeciesContext());
 		scm.setPDERequired(false);
-		scm.setHasEventAssignment(false);	
-		
-		//
-		// no support for hybrid reactions in RuleBased applications (for now).
-		//
+		scm.setHasEventAssignment(false);
 		scm.setHasHybridReaction(false);
 //		for (ReactionRuleSpec reactionRuleSpec : getSimulationContext().getReactionContext().getReactionRuleSpecs()){
 //			if (!reactionRuleSpec.isExcluded() && reactionRuleSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
 //				scm.setHasHybridReaction(true);
 //			}
 //		}
-			
+		// we don't eliminate variables for stochastic
 		scm.setDependencyExpression(null);
+		// We don't participant in fast reaction step for stochastic
 		scm.setFastParticipant(false);
-
-		speciesContextMappingList.addElement(scm);
+		
+		getSpeciesContextMappingList().addElement(scm);
 	}
 }
 
@@ -647,7 +705,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
  * This method was created in VisualAge.
  * @Override
  */
-private void refreshVariables() throws MappingException {
+@Override
+protected void refreshVariables() throws MappingException {
 
 	Domain defaultDomain = new Domain(this.getSimulationContext().getGeometry().getGeometryClasses()[0]);
 
@@ -714,22 +773,5 @@ private void refreshVariables() throws MappingException {
 	}
 }
 
-
-@Override
-protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException {
-	VCellThreadChecker.checkCpuIntensiveInvocation();
-	
-	localIssueList.clear();
-	//refreshKFluxParameters();
-	refreshSpeciesContextMappings();
-	//refreshStructureAnalyzers();
-	if(callback != null) {
-		callback.setProgressFraction(52.0f/100.0f);
-	}
-	refreshVariables();
-	refreshLocalNameCount();
-	refreshMathDescription();
-	reconcileWithOriginalModel();
-}
 
 }

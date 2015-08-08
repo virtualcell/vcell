@@ -131,14 +131,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public ReactionRule(Model model, String name, Structure structure, boolean reversible) {
 		super();
 		this.model = model;
-		if((name == null) || name.isEmpty()) {
-			this.name = model.getReactionName();
-		} else if (Model.isNameUnused(name, model)){
-			this.name = name;
-		} else {
-			this.name = model.getReactionName();
+		if (name == null || name.length()==0){
+			throw new IllegalArgumentException("reaction rule name is null or empty");
 		}
-		this.bReversible = reversible;
+		this.name = name;
 		this.structure = structure;
 		this.kineticLaw = new RbmKineticLaw(this,RbmKineticLaw.RateLawType.MassAction);
 	}

@@ -42,7 +42,9 @@ import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.MassActionSolver;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -54,7 +56,9 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.VCUnitDefinition;
@@ -159,28 +163,11 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	return probExp;
 }
 
-
-/**
- * Basically the function clears the error list and calls to get a new mathdescription.
- */
-protected void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
-	localIssueList.clear();
-	//refreshKFluxParameters();
-	
-	refreshSpeciesContextMappings();
-	//refreshStructureAnalyzers();
-	refreshVariables();
-	
-	refreshLocalNameCount();
-	refreshMathDescription();
-	reconcileWithOriginalModel();
-}
-
-
 	/**
 	 * set up a math description based on current simulationContext.
 	 */
-	private void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
+	@Override
+	protected void refreshMathDescription() throws MappingException, MatrixException, MathException, ExpressionException, ModelException
 	{
 		//use local variable instead of using getter all the time.
 		SimulationContext simContext = getSimulationContext();
@@ -266,14 +253,12 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				rsList.add(reactionSpecs[i].getReactionStep());
 			}
 		}
-		ReactionStep reactionSteps[] = new ReactionStep[rsList.size()];
-		rsList.copyInto(reactionSteps);	
 		
 		//
 		// fail if any unresolved parameters
 		//
-		for (int i = 0; i < reactionSteps.length; i++){
-			Kinetics.UnresolvedParameter unresolvedParameters[] = reactionSteps[i].getKinetics().getUnresolvedParameters();
+		for (ReactionStep reactionStep : rsList){
+			Kinetics.UnresolvedParameter unresolvedParameters[] = reactionStep.getKinetics().getUnresolvedParameters();
 			if (unresolvedParameters!=null && unresolvedParameters.length>0){
 				StringBuffer buffer = new StringBuffer();
 				for (int j = 0; j < unresolvedParameters.length; j++){
@@ -282,7 +267,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 					}
 					buffer.append(unresolvedParameters[j].getName());
 				}
-				throw new MappingException(reactionSteps[i].getDisplayType()+" '"+reactionSteps[i].getName()+"' contains unresolved identifier(s): "+buffer);
+				throw new MappingException("In Application '" + simContext.getName() + "', " + reactionStep.getDisplayType()+" '"+reactionStep.getName()+"' contains unresolved identifier(s): "+buffer);
 			}
 		}
 			
@@ -310,8 +295,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 		// conversion factors
 		//
 		Model model = simContext.getModel();
-    	ModelUnitSystem modelUnitSystem = model.getUnitSystem();
-    	varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(getMathSymbol(model.getKMOLE(), null), getIdentifierSubstitutions(model.getKMOLE().getExpression(),model.getKMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getN_PMOLE(), null), getIdentifierSubstitutions(model.getN_PMOLE().getExpression(),model.getN_PMOLE().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getPI_CONSTANT(),null), getIdentifierSubstitutions(model.getPI_CONSTANT().getExpression(),model.getPI_CONSTANT().getUnitDefinition(),null)));
 		varHash.addVariable(new Constant(getMathSymbol(model.getFARADAY_CONSTANT(),null), getIdentifierSubstitutions(model.getFARADAY_CONSTANT().getExpression(),model.getFARADAY_CONSTANT().getUnitDefinition(),null)));
@@ -361,35 +345,41 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 			}
 		}
 		
-		
 		//
 		// kinetic parameters (functions or constants)
 		//
-		for (int j=0;j<reactionSteps.length;j++){
-			ReactionStep rs = reactionSteps[j];
-			if (simContext.getReactionContext().getReactionSpec(rs).isExcluded()){
-				continue;
-			}
+		for (ReactionStep rs : rsList){
 			if (rs.getKinetics() instanceof LumpedKinetics){
 				throw new RuntimeException("Lumped Kinetics not yet supported for Stochastic Math Generation");
 			}
 			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
-			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
-			if (parameters != null){
-				for (int i=0;i<parameters.length;i++){
-					if ((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
-						continue;
-					}
-					//don't add rate, we'll do it later when creating the jump processes
-					if (parameters[i].getRole() != Kinetics.ROLE_ReactionRate) {
-						Expression expr = getSubstitutedExpr(parameters[i].getExpression(), true, false);
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameters[i],sm.getGeometryClass()), getIdentifierSubstitutions(expr,parameters[i].getUnitDefinition(),sm.getGeometryClass()),sm.getGeometryClass()));
-					}
+			for (KineticsParameter parameter : parameters){
+				//
+				// skip current density if not used.
+				//
+				if ((parameter.getRole() == Kinetics.ROLE_CurrentDensity) &&
+					(parameter.getExpression()==null || parameter.getExpression().isZero())){
+					continue;
 				}
+				//
+				// don't add rate, we'll do it later when creating the jump processes
+				//
+				if (parameter.getRole() == Kinetics.ROLE_ReactionRate) {
+					continue;
+				}
+				
+				//
+				// don't add mass action reverse parameter if irreversible
+				//
+//				if (!rs.isReversible() && parameters[i].getRole() == Kinetics.ROLE_KReverse){
+//					continue;
+//				}
+
+				Expression expr = getSubstitutedExpr(parameter.getExpression(), true, false);
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(parameter,geometryClass), getIdentifierSubstitutions(expr,parameter.getUnitDefinition(),geometryClass),geometryClass));
 			}
 		}
 		
-
 		//geometic mapping
 		//the parameter "Size" is already put into mathsymbolmapping in refreshSpeciesContextMapping()
 		for (int i=0;i<structureMappings.length;i++){
@@ -423,7 +413,6 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 			}
 		}
 
-					
 		//
 		// geometry
 		//
@@ -435,10 +424,16 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				throw new MappingException("failure setting geometry "+e.getMessage());
 			}
 		}else{
-			throw new MappingException("geometry must be defined");
+			throw new MappingException("Geometry must be defined in Application "+simContext.getName());
 		}
 
-
+		//
+		// create subDomains
+		//
+		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
+		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
+		mathDesc.addSubDomain(subDomain);
+	
 		//
 		// functions: species which is not a variable, but has dependency expression
 		//
@@ -454,24 +449,83 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 			}
 		}
 
+		addJumpProcesses(varHash, subDomain);
+
 		//
-		// create subDomains
+		// include required UnitRateFactors
 		//
-		SubVolume subVolume = simContext.getGeometry().getGeometrySpec().getSubVolumes()[0];
-		SubDomain subDomain = new CompartmentSubDomain(subVolume.getName(),0);
-		mathDesc.addSubDomain(subDomain);
-	
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
+			}
+		}
+
+		//
+		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
+		//
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+		
+		//
+		// set up variable initial conditions in subDomain
+		//
+		SpeciesContextSpec scSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
+		for (int i = 0; i < speciesContextSpecs.length; i++){
+			//get stochastic variable by name
+			SpeciesCountParameter spCountParam = getSpeciesCountParameter(speciesContextSpecs[i].getSpeciesContext());
+			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
+			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
+
+			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
+			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
+			//stochastic variables initial expression.
+			if (initParm!=null)
+			{
+				VarIniCondition varIni = null;
+				if(!scSpecs[i].isConstant() && getSimulationContext().isRandomizeInitCondition())
+				{
+					varIni = new VarIniPoissonExpectedCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
+				}
+				else 
+				{
+					varIni = new VarIniCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
+				}
+				
+				subDomain.addVarIniCondition(varIni);
+			}
+		}
+
+		//
+		// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
+		//
+		for (int i = 0; i < fieldMathMappingParameters.length; i++){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+				if (mathDesc.getVariable(variable.getName())==null){
+					mathDesc.addVariable(variable);
+				}
+			}
+		}
+
+		if (!mathDesc.isValid()){
+			System.out.println(mathDesc.getVCML_database());
+			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
+		}
+	}
+
+	private void addJumpProcesses(VariableHash varHash, SubDomain subDomain) throws ExpressionException, ModelException, MappingException, MathException {
 		// set up jump processes
 		// get all the reactions from simulation context
 		// ReactionSpec[] reactionSpecs = simContext.getReactionContext().getReactionSpecs();---need to take a look here!
-		for (int i = 0; i < reactionSpecs.length; i++)
+		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+		ReactionSpec[] reactionSpecs = getSimulationContext().getReactionContext().getReactionSpecs();
+		for (ReactionSpec reactionSpec : reactionSpecs)
 		{
-			if (reactionSpecs[i].isExcluded()) {
+			if (reactionSpec.isExcluded()) {
 				continue;
 			}
 						
 			// get the reaction
-			ReactionStep reactionStep = reactionSpecs[i].getReactionStep();
+			ReactionStep reactionStep = reactionSpec.getReactionStep();
 			Kinetics kinetics = reactionStep.getKinetics();
 			// the structure where reaction happens
 			StructureMapping rsStructureMapping = simContext.getGeometryContext().getStructureMapping(reactionStep.getStructure());
@@ -564,7 +618,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 					
 					ProbabilityParameter probParm = null;
 					try{
-						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp, PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
+						probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, exp, PARAMETER_ROLE_P, probabilityParamUnit,reactionSpec);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -615,7 +669,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 					
 					ProbabilityParameter probRevParm = null;
 					try{
-						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
+						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,exp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpec);
 					}catch(PropertyVetoException pve){
 						pve.printStackTrace();
 						throw new MappingException(pve.getMessage());
@@ -694,7 +748,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 						ProbabilityParameter probParm = null;
 						try{
-							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionSpecs[i]);
+							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionSpec);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -744,7 +798,7 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 						
 						ProbabilityParameter probRevParm = null;
 						try{
-							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpecs[i]);
+							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionSpec);
 						}catch(PropertyVetoException pve){
 							pve.printStackTrace();
 							throw new MappingException(pve.getMessage());
@@ -774,74 +828,10 @@ protected void refresh(MathMappingCallback callback) throws MappingException, Ex
 				}
 			}//end of if (simplereaction)...else if(fluxreaction)
 		} // end of reaction step loop
-			
-		//
-		// include required UnitRateFactors
-		//
-		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
-				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
-			}
-		}
-
-		//
-		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
-		//
-		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
-		
-		// set up variable initial conditions in subDomain
-		SpeciesContextSpec scSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
-		for (int i = 0; i < speciesContextSpecs.length; i++){
-			//get stochastic variable by name
-			SpeciesCountParameter spCountParam = getSpeciesCountParameter(speciesContextSpecs[i].getSpeciesContext());
-			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());
-			String varName = getMathSymbol(spCountParam, sm.getGeometryClass()); 
-
-			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
-			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
-			//stochastic variables initial expression.
-			if (initParm!=null)
-			{
-				VarIniCondition varIni = null;
-				if(!scSpecs[i].isConstant() && getSimulationContext().isRandomizeInitCondition())
-				{
-					varIni = new VarIniPoissonExpectedCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
-				}
-				else 
-				{
-					varIni = new VarIniCount(var,new Expression(getMathSymbol(initParm, sm.getGeometryClass())));
-				}
-				
-				subDomain.addVarIniCondition(varIni);
-			}
-		}
-		
-		//
-		// add any missing unit conversion factors (they don't depend on anyone else ... can do it at the end)
-		//
-		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
-				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
-				if (mathDesc.getVariable(variable.getName())==null){
-					mathDesc.addVariable(variable);
-				}
-			}
-		}
-		
-
-		if (!mathDesc.isValid()){
-			throw new MappingException("generated an invalid mathDescription: "+mathDesc.getWarning());
-		}
 	}
 
-/**
- * Insert the method's description here.
- * Creation date: (10/26/2006 11:47:26 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
- * @exception cbit.vcell.mapping.MappingException The exception description.
- * @exception cbit.vcell.math.MathException The exception description.
- */
-private void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
+@Override
+protected void refreshSpeciesContextMappings() throws ExpressionException, MappingException, MathException 
 {
 	//
 	// create a SpeciesContextMapping for each speciesContextSpec.
@@ -872,11 +862,11 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 		scm.setPDERequired(false);
 		scm.setHasEventAssignment(false);
 		scm.setHasHybridReaction(false);
-		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
-			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
-				scm.setHasHybridReaction(true);
-			}
-		}
+//		for (ReactionSpec reactionSpec : getSimulationContext().getReactionContext().getReactionSpecs()){
+//			if (!reactionSpec.isExcluded() && reactionSpec.hasHybrid(getSimulationContext(), scs.getSpeciesContext())){
+//				scm.setHasHybridReaction(true);
+//			}
+//		}
 		// we don't eliminate variables for stochastic
 		scm.setDependencyExpression(null);
 		// We don't participant in fast reaction step for stochastic
@@ -892,7 +882,8 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
  * Creation date: (10/25/2006 8:59:43 AM)
  * @exception cbit.vcell.mapping.MappingException The exception description.
  */
-private void refreshVariables() throws MappingException {
+@Override
+protected void refreshVariables() throws MappingException {
 
 	//
 	// stochastic species need  species variables require either a membrane or volume variable
@@ -915,7 +906,7 @@ private void refreshVariables() throws MappingException {
 		//add concentration of species as MathMappingParameter - this will map to species concentration function
 		try{
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
-			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm.getName()), scs.getSpeciesContext().getStructure());
+			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm,getNameScope()), scs.getSpeciesContext().getStructure());
 			concExp.bindExpression(this);
 			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
