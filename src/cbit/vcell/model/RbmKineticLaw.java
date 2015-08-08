@@ -35,9 +35,9 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 	
 	public static enum RbmKineticLawParameterType implements ParameterRoleEnum {
 		RuleRate("ruleRate","rule rate"),
-		MassActionForwardRate("kf","forward rate"),
-		MassActionReverseRate("kr","reverse rate"),
-		MichaelisMentenKcat("kcat","enzymatic rate??"),
+		MassActionForwardRate("Kf","forward rate"),
+		MassActionReverseRate("Kr","reverse rate"),
+		MichaelisMentenKcat("Kcat","enzymatic rate??"),
 		MichaelisMentenKm("Km","saturating concentration"),
 		SaturableVmax("Vmax","max rate"),
 		SaturableKs("Ks","saturating concentration"),

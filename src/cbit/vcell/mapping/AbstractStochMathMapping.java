@@ -1,11 +1,15 @@
 package cbit.vcell.mapping;
 
+import org.vcell.util.VCellThreadChecker;
+
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableHash;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
@@ -22,6 +26,34 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 		super(simContext, callback, networkGenerationRequirements);
 		// TODO Auto-generated constructor stub
 	}
+
+	/**
+	 * Basically the function clears the error list and calls to get a new mathdescription.
+	 */
+	@Override
+	protected final void refresh(MathMappingCallback callback) throws MappingException, ExpressionException, MatrixException, MathException, ModelException{
+		VCellThreadChecker.checkCpuIntensiveInvocation();
+		
+		localIssueList.clear();
+		//refreshKFluxParameters();
+		
+		refreshSpeciesContextMappings();
+		//refreshStructureAnalyzers();
+		if(callback != null) {
+			callback.setProgressFraction(52.0f/100.0f);
+		}
+		refreshVariables();
+		
+		refreshLocalNameCount();
+		refreshMathDescription();
+		reconcileWithOriginalModel();
+	}
+
+	protected abstract void refreshMathDescription()  throws MappingException, MatrixException, MathException, ExpressionException, ModelException;
+
+	protected abstract void refreshVariables() throws MappingException;
+
+	protected abstract void refreshSpeciesContextMappings()  throws ExpressionException, MappingException, MathException;
 
 	/**
 	 * getExpressionConcToAmt : converts the concentration expression ('concExpr') to an expression of the number of particles. 
