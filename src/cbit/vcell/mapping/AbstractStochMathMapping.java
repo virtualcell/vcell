@@ -22,6 +22,10 @@ import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 
+	static final String PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX = "_reverse";
+	static final String PARAMETER_PROBABILITYRATE_PREFIX = "P_";
+
+
 	public AbstractStochMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 		super(simContext, callback, networkGenerationRequirements);
 		// TODO Auto-generated constructor stub
