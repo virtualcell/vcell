@@ -135,6 +135,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			throw new IllegalArgumentException("reaction rule name is null or empty");
 		}
 		this.name = name;
+		this.bReversible = reversible;
 		this.structure = structure;
 		this.kineticLaw = new RbmKineticLaw(this,RbmKineticLaw.RateLawType.MassAction);
 	}

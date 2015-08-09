@@ -48,6 +48,7 @@ import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
@@ -440,15 +441,15 @@ public class SpeciesCountParameter extends MathMappingParameter {
 @SuppressWarnings("serial")
 public class ProbabilityParameter extends MathMappingParameter {
 	
-	private ReactionSpec fieldReactionSpec = null;
+	private ModelProcess modelProcess = null;
 
-	protected ProbabilityParameter(String argName, Expression argExpression, int Role,VCUnitDefinition argVCUnitDefinition, ReactionSpec argReactionSpec, GeometryClass geometryClass) {
+	protected ProbabilityParameter(String argName, Expression argExpression, int Role,VCUnitDefinition argVCUnitDefinition, ModelProcess modelProcess, GeometryClass geometryClass) {
 		super(argName,argExpression,Role,argVCUnitDefinition,geometryClass);
-		this.fieldReactionSpec = argReactionSpec;
+		this.modelProcess = modelProcess;
 	}
 
-	public ReactionSpec getReactionSpec() {
-		return fieldReactionSpec;
+	public ModelProcess getModelProcess() {
+		return modelProcess;
 	}
 
 	@Override
@@ -460,7 +461,7 @@ public class ProbabilityParameter extends MathMappingParameter {
 			return false;
 		}
 		ProbabilityParameter other = (ProbabilityParameter)obj;
-		if (!Compare.isEqual(fieldReactionSpec, other.fieldReactionSpec)){
+		if (!Compare.isEqual(modelProcess, other.modelProcess)){
 			return false;
 		}
 		return true;
@@ -1479,14 +1480,14 @@ protected SpeciesCountParameter addSpeciesCountParameter(String name, Expression
  * @param role int
  */
 ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
-		VCUnitDefinition unitDefinition, ReactionSpec argReactionSpec) throws java.beans.PropertyVetoException,
+		VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException,
 		ExpressionBindingException {
 		
 			GeometryClass geometryClass = null;
-			if (argReactionSpec.getReactionStep().getStructure()!=null){
-				geometryClass = simContext.getGeometryContext().getStructureMapping(argReactionSpec.getReactionStep().getStructure()).getGeometryClass();
+			if (argModelProcess.getStructure()!=null){
+				geometryClass = simContext.getGeometryContext().getStructureMapping(argModelProcess.getStructure()).getGeometryClass();
 			}
-			ProbabilityParameter newParameter = new ProbabilityParameter(name,expression,role,unitDefinition,argReactionSpec,geometryClass);
+			ProbabilityParameter newParameter = new ProbabilityParameter(name,expression,role,unitDefinition,argModelProcess,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
 				System.out.println("MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);

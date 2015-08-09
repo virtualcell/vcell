@@ -4,6 +4,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.units.VCUnitDefinition;
+
 public abstract class ReactionRuleParticipant implements ModelProcessParticipant {
 	private final SpeciesPattern speciesPattern;
 	private final Structure structure;
@@ -22,6 +24,15 @@ public abstract class ReactionRuleParticipant implements ModelProcessParticipant
 	
 	public Structure getStructure(){
 		return this.structure;
+	}
+	
+	public VCUnitDefinition getUnitDefinition(){
+		Model model = structure.getModel();
+		if (model!=null){
+			return model.getUnitSystem().getConcentrationUnit(structure);
+		}
+		System.err.println("ReactionRuleParticipant.getUnitDefinition() returned null, structure.getModel() for "+structure.getName()+" was null");
+		return null;
 	}
 
 	@Override
