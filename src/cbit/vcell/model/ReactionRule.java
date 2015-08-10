@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -509,8 +510,57 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		if(molecularTypeMappings == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.SEVERITY_WARNING));
 		}
-
-
+		
+		// match management
+		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
+		Map<String, MolecularTypePattern> rMatches = new LinkedHashMap<String, MolecularTypePattern>();
+		for (ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(!mtp.hasExplicitParticipantMatch()) {
+					continue;
+				}
+				String key = mtp.getParticipantMatchLabel();
+				if(rMatches.containsKey(key)) {					// no duplicates in reactants allowed
+					String message = "Multiple Reactants with the same match id " + key + " are not allowed.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+				} else {
+					rMatches.put(key, mtp);
+				}
+			}
+		}
+		Map<String, MolecularTypePattern> pMatches = new LinkedHashMap<String, MolecularTypePattern>();
+		for (ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(!mtp.hasExplicitParticipantMatch()) {
+					continue;
+				}
+				String key = mtp.getParticipantMatchLabel();
+				if(pMatches.containsKey(key)) {					// no duplicates in products allowed
+					String message = "Multiple Products with the same match id " + key + " are not allowed.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+				} else {
+					pMatches.put(key, mtp);
+				}
+			}
+		}
+		
+		// no orphan matches allowed
+		for(String key : rMatches.keySet()) {
+			if(pMatches.containsKey(key)) {
+				rMatches.remove(key);
+				pMatches.remove(key);
+			}
+		}
+		for(String key : rMatches.keySet()) {
+			String message = "No product shares the match id " + key + " with the reactant molecule " + rMatches.get(key).getDisplayName();
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+		}
+		for(String key : pMatches.keySet()) {
+			String message = "No reactant shares the match id " + key + " with the product molecule " + pMatches.get(key).getDisplayName();
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+		}
 	}
 
 	public RbmKineticLaw getKineticLaw() {

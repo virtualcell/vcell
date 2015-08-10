@@ -548,6 +548,7 @@ public class XMLTags {
 	public static final String RbmReactionRuleListTag = "ReactionRuleList";
 	public static final String RbmMolecularTypeTag = "MolecularType";
 	public static final String RbmMolecularTypePatternTag = "MolecularTypePattern";
+	public static final String RbmParticipantPatternMatchTag = "ParticipantMatch";
 	public static final String RbmMolecularComponentTag = "MolecularComponent";
 	public static final String RbmMolecularComponentStatePatternTag = "ComponentStatePattern";
 	public static final String RbmMolecularComponentStateDefinitionTag = "ComponentStateDefinition";
