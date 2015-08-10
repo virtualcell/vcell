@@ -2,6 +2,7 @@ package cbit.vcell.client;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import javax.help.UnsupportedOperationException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 
@@ -366,7 +368,10 @@ public class ChildWindowManager {
 				Container cp = impl.getContentPane();
 				cp.setLayout(new BorderLayout());
 				JMenuBar mb = new JMenuBar();
-				mb.add( LWTopFrame.createWindowMenu(false) );			
+				mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+				JMenu mw = LWTopFrame.createWindowMenu(false);			
+				mw.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+				mb.add(mw);
 				cp.add(mb,BorderLayout.NORTH);
 				cp.add(contentPane, BorderLayout.CENTER);
 			}
