@@ -140,6 +140,15 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		this.kineticLaw = new RbmKineticLaw(this,RbmKineticLaw.RateLawType.MassAction);
 	}
 	
+	public boolean isReactant(SpeciesPattern candidate) {
+		for(ReactantPattern rp : reactantPatterns) {
+			if(rp.getSpeciesPattern() != null && rp.getSpeciesPattern() == candidate) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void addReactant(ReactantPattern reactant) {
 		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 		newValue.add(reactant);

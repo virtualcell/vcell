@@ -97,7 +97,14 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
 		BioModelNode node = new BioModelNode(molecularTypePattern, true);
+		
+		if(molecularTypePattern.hasExplicitParticipantMatch()) {
+			ParticipantMatchLabelLocal pmll = new ParticipantMatchLabelLocal(molecularTypePattern.getParticipantMatchLabel());
+			BioModelNode nm = new BioModelNode(pmll, true);
+			node.add(nm);
+		}
 		for (MolecularComponent mc : molecularType.getComponentList()) {
+			// dead code, we don't show state and bond
 			if (bShowDetails || molecularTypePattern.getMolecularComponentPattern(mc).isbVisible()) {
 				BioModelNode n = createMolecularComponentPatternNode(molecularTypePattern.getMolecularComponentPattern(mc));
 				if(n != null) {

@@ -16,6 +16,7 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
@@ -101,6 +102,11 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				BondLocal bl = (BondLocal)userObject;
 				text = toHtml(bl,sel);
 				toolTip = toHtmlWithTip(bl,true);
+				icon = VCellIcons.rbmBondIcon;
+			} else if (userObject instanceof ParticipantMatchLabelLocal) {
+				ParticipantMatchLabelLocal pmll = (ParticipantMatchLabelLocal)userObject;
+				text = toHtml(pmll,sel);
+				toolTip = toHtmlWithTip(pmll,true);
 				icon = VCellIcons.rbmBondIcon;
 			} else {
 				if(userObject != null) {
