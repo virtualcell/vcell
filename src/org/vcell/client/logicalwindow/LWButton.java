@@ -23,7 +23,7 @@ public class LWButton extends JButton implements ActionListener {
 	/**
 	 * icon used by both LWTopFrame menu (optionally) and this button
 	 */
-	static final Icon SHOW_WINDOW_MENU_ICON = VCellIcons.copySimIcon;
+	static final Icon SHOW_WINDOW_MENU_ICON = VCellIcons.SHOW_WINDOWS;
 
 	public LWButton(Container owner) {
 		super(SHOW_WINDOW_MENU_ICON);

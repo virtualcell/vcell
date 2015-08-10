@@ -586,6 +586,9 @@ Credits:  Steven Spencer, JavaWorld magazine (Java Tip 66)  Ron B. Yeh, Zero
 
 The Jama, GIFUtils and RPI-graphdrawing packages in /Vcell/vcellClientThirdParty.jar are in the Public Domain.
 
+# # #
+<div>"Show Windows" Icon made by Freepik from www.flaticon.com> is licensed under CC BY 3.0.
+
  # # #
 
 CCAM is currently unable to distribute the following files due to licensing restrictions:

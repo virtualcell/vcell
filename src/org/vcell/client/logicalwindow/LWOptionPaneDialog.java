@@ -1,6 +1,7 @@
 package org.vcell.client.logicalwindow;
 
 import java.awt.BorderLayout;
+import java.awt.ComponentOrientation;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
@@ -27,6 +28,7 @@ public abstract class LWOptionPaneDialog extends LWDialog {
 		Objects.requireNonNull(optionPane);
 		JPanel contentPane = new JPanel(new BorderLayout());
 		JMenuBar mb = new JMenuBar();
+		mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		mb.add( LWTopFrame.createWindowMenu(false) );
 		contentPane.add(mb, BorderLayout.NORTH);
 		contentPane.add(optionPane,BorderLayout.CENTER);
