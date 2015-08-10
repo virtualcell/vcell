@@ -4254,6 +4254,11 @@ private MolecularTypePattern getRbmMolecularTypePattern(Element e, Model newMode
 	if(index!=null && !index.isEmpty()) {
 		tp.setIndex(Integer.parseInt(index));
 	}
+	String match = e.getAttributeValue(XMLTags.RbmParticipantPatternMatchTag);
+	if(match!=null && !match.isEmpty()) {
+		tp.setIndex(Integer.parseInt(index));
+		tp.setParticipantMatchLabel(match);
+	}
 	List<MolecularComponentPattern> cpl = new ArrayList<MolecularComponentPattern>();
 	List<Element> children = e.getChildren(XMLTags.RbmMolecularComponentPatternTag, vcNamespace);
 	for (Element e2 : children) {
