@@ -56,5 +56,14 @@ public class RbmDefaultTreeModel extends DefaultTreeModel {
 			return mcp;
 		}
 	}
+	static class ParticipantMatchLabelLocal {
+		private String participantMatchLabel;
+		ParticipantMatchLabelLocal(String participantMatchLabel) {
+			this.participantMatchLabel = participantMatchLabel;
+		}
+		public String getParticipantMatchLabel() {
+			return participantMatchLabel;
+		}
+	}
 
 }

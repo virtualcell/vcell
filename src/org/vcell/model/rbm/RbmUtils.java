@@ -1204,6 +1204,9 @@ public class RbmUtils {
 			bAddComma = true;
 		}
 		buffer.append(")");
+		if(molecularTypePattern.hasExplicitParticipantMatch()) {
+			buffer.append("%" + molecularTypePattern.getParticipantMatchLabel());
+		}
 		return buffer.toString();
 	}
 

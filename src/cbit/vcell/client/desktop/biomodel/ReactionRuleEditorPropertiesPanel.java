@@ -52,6 +52,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
@@ -546,7 +547,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 10, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 15, -1, sp, gc, reactionRule);
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
 				} else {
@@ -567,7 +568,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 10, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 15, -1, sp, gc, reactionRule);
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
@@ -644,6 +645,27 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						bAdd = true;
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularTypePattern) {
+						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+						if(mtp.hasExplicitParticipantMatch()) {
+							JMenuItem removeMatchMenuItem = new JMenuItem("Remove match");
+							removeMatchMenuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									mtp.setParticipantMatchLabel("*");
+									reactantTreeModel.populateTree();
+
+								}
+							});
+							popupMenu.add(removeMatchMenuItem);
+						} else {
+							JMenuItem addMatchMenuItem = new JMenuItem("Add match");
+							addMatchMenuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									mtp.setParticipantMatchLabel("1");
+									reactantTreeModel.populateTree();
+								}
+							});
+							popupMenu.add(addMatchMenuItem);
+						}
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularComponentPattern) {
 						manageComponentPattern(reactantTreeModel, reactantTree, selectedNode, selectedObject);
@@ -671,7 +693,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					final Object selectedObject = selectedNode.getUserObject();
 					if (selectedObject instanceof ReactionRule) {
 						popupMenu.add(getAddProductMenuItem());
-					} else 					if (selectedObject instanceof ReactionRuleParticipantLocal) {
+					} else if (selectedObject instanceof ReactionRuleParticipantLocal) {
 						getAddMenu().setText(VCellErrorMessages.SpecifyMolecularTypes);
 						getAddMenu().removeAll();
 //						List<MolecularTypePattern> missingMoleculesInProducts = reactionRule.getMissingMoleculesInProducts();
@@ -700,6 +722,26 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						bAdd = true;
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularTypePattern) {
+						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+						if(mtp.hasExplicitParticipantMatch()) {
+							JMenuItem removeMatchMenuItem = new JMenuItem("Remove match");
+							removeMatchMenuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									mtp.setParticipantMatchLabel("*");
+									productTreeModel.populateTree();
+								}
+							});
+							popupMenu.add(removeMatchMenuItem);
+						} else {
+							JMenuItem addMatchMenuItem = new JMenuItem("Add match");
+							addMatchMenuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									mtp.setParticipantMatchLabel("1");
+									productTreeModel.populateTree();
+								}
+							});
+							popupMenu.add(addMatchMenuItem);
+						}
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularComponentPattern) {
 						manageComponentPattern(productTreeModel, productTree, selectedNode, selectedObject);
