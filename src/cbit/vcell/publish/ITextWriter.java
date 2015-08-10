@@ -52,6 +52,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.graph.ReactionContainerShape;
+import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.graph.structures.MembraneStructureSuite;
 import cbit.vcell.graph.structures.SingleStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
@@ -454,6 +455,63 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 				
 		return bos;
 	}
+
+	//pretty similar to its static counterpart
+	public static BufferedImage generateDocReactionsImage(Model model, String resolution) throws Exception {
+			                                                       
+	    if (model == null || !isValidResolutionSetting(resolution)) {
+	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for  model: " + model.getName());
+	    }
+	    ByteArrayOutputStream bos;
+		ReactionCartoon rcartoon = new ReactionCartoon();
+		rcartoon.setModel(model);
+		StructureSuite structureSuite = new AllStructureSuite(new Model.Owner() {
+			@Override
+			public Model getModel() {
+				return model;
+			}
+		});
+//		if(struct instanceof Membrane && model.getStructureTopology().getOutsideFeature((Membrane)struct) != null && model.getStructureTopology().getInsideFeature((Membrane)struct) != null) {
+//			layout = new MembraneStructureSuite(model.getStructureTopology().getOutsideFeature((Membrane)struct), ((Membrane) struct), model.getStructureTopology().getInsideFeature((Membrane)struct));
+//		} else {
+//			layout = new SingleStructureSuite(struct);
+//		}
+//		StructureSuite structureSuite = layout;
+		rcartoon.setStructureSuite(structureSuite);
+		rcartoon.refreshAll();
+		//dummy settings to get the real dimensions.
+		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
+		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
+		int width = (int)prefDim.getWidth()*110/100;
+		int height = (int)prefDim.getHeight()*110/100;
+		
+		int MAX_IMAGE_HEIGHT = 532;
+		
+		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
+			width = ITextWriter.DEF_IMAGE_WIDTH;
+		} 
+		
+		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
+			height = ITextWriter.DEF_IMAGE_HEIGHT;
+		} else if (height > MAX_IMAGE_HEIGHT) {
+			height = MAX_IMAGE_HEIGHT;
+		}
+			
+		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		while (true) {
+			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
+			containerLayout.layout(rcartoon, g, new Dimension(width,height));
+			break;
+		}
+		rcartoon.paint(g, null);
+		bos = encodeJPEG(bufferedImage);
+				
+		return bufferedImage;
+	}
+
 
 
 	public static ByteArrayOutputStream encodeJPEG(BufferedImage bufferedImage) throws Exception{
