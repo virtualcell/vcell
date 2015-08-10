@@ -101,6 +101,28 @@ public interface LWNamespace {
 		int y = reference.getY() + insets.top;
 		positioned.setLocation(x,y);
 	}
+	/**
+	 * find specific type window owner of component, if any
+	 * @param swingParent could be null
+	 * @return or null
+	 */
+	public static <T> T findOwnerOfType(Class<? extends T> clzz,Component swingParent) {
+		final Logger lg = LGHolder.LG; 
+		T t = BeanUtils.downcast(clzz, swingParent);
+		if (t != null) {
+			return t;
+		}
+		if (lg.isEnabledFor(Level.WARN)) {
+			lg.warn(ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
+			
+		}
+		Container up = swingParent.getParent();
+		if (up == null) {
+			lg.error("top level object " + ExecutionTrace.justClassName(swingParent) + " does not implement "  + ExecutionTrace.justClassName(clzz));
+			return null;
+		}
+		return findOwnerOfType(clzz,up);
+	}
 
 	/**
 	 * find logical window owner of component, if any
@@ -108,6 +130,8 @@ public interface LWNamespace {
 	 * @return logical owner or null
 	 */
 	public static LWContainerHandle findLWOwner(Component swingParent) {
+		return findOwnerOfType(LWContainerHandle.class, swingParent);
+		/*
 		final Logger lg = LGHolder.LG; 
 		LWContainerHandle lwch = BeanUtils.downcast(LWContainerHandle.class, swingParent);
 		if (lwch != null) {
@@ -123,8 +147,13 @@ public interface LWNamespace {
 			return null;
 		}
 		return findLWOwner(up);
+		*/
 	}
 	
+	/**
+	 * @param dialog not null
+	 * @return {@link LWModality} that best matches current dialog swing modality
+	 */
 	public static LWModality getEquivalentModality(Dialog dialog) {
 		Objects.requireNonNull(dialog);
 		final Logger lg = LGHolder.LG; 
@@ -144,11 +173,11 @@ public interface LWNamespace {
 	}
 
 	/**
-	 * create menu bar for child windows
+	 * create menu bar for windows that don't have one
 	 * 	right justified, iconic
 	 * @return new menu bar
 	 */
-	public static JMenuBar createChildWindowMenuBar() {
+	public static JMenuBar createRightSideIconMenuBar() {
 		JMenuBar mb = new JMenuBar();
 		mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		mb.add( LWTopFrame.createWindowMenu(false));
