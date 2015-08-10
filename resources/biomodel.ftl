@@ -3,6 +3,7 @@
 <title>Biomodel</title>
 </head>
 <body>
+<#assign diagramlink="/biomodel/${biomodel.bmKey}/diagram">
 <#assign vcmllink="/biomodel/${biomodel.bmKey}/vcml">
 <#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
 <#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on">
@@ -13,6 +14,7 @@
 <br>owner: ${biomodel.ownerName!""}</br>
 <br>saved: ${biomodel.savedDate?number_to_date!""}</br>
 <br><a href="${vcmllink}" type="application/vcml+xml" download="Biomodel_${biomodel.bmKey}">dowload vcml</a></br>
+<br><img src="${diagramlink}" type="image/png"/></br>
 
 <br/><h3>Applications</h3>
 <#if biomodel.applications??>

@@ -425,6 +425,16 @@ public class RestDatabaseService {
 		return vcmlBigString.toString();
 	}
 	
+	public String query(BiomodelDiagramServerResource resource, User vcellUser) throws SQLException, DataAccessException {			
+		if (vcellUser==null){
+			vcellUser = VCellApiApplication.DUMMY_USER;
+		}
+		String bioModelID = (String)resource.getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+		KeyValue bioModelKey = new KeyValue(bioModelID);
+		BigString vcmlBigString = databaseServerImpl.getBioModelXML(vcellUser, bioModelKey);
+		return vcmlBigString.toString();
+	}
+	
 	public BioModelRep query(BiomodelServerResource resource, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {	
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;

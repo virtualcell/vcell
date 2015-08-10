@@ -22,6 +22,7 @@ import org.restlet.routing.Router;
 import org.vcell.rest.UserVerifier.AuthenticationStatus;
 import org.vcell.rest.auth.CustomAuthHelper;
 import org.vcell.rest.server.AccessTokenServerResource;
+import org.vcell.rest.server.BiomodelDiagramServerResource;
 import org.vcell.rest.server.BiomodelServerResource;
 import org.vcell.rest.server.BiomodelSimulationSaveServerResource;
 import org.vcell.rest.server.BiomodelSimulationServerResource;
@@ -102,6 +103,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMTASKID = "simtaskid";
 	
 	public static final String VCML_DOWNLOAD = "vcml";
+	public static final String DIAGRAM_DOWNLOAD = "diagram";
 	public static final String SIMULATION = "simulation";
 	public static final String SIMULATIONID = "simulationid";
 	
@@ -236,6 +238,7 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);  
+		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
 		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
