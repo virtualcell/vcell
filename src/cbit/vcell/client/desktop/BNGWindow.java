@@ -10,10 +10,13 @@
 
 package cbit.vcell.client.desktop;
 
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTopFrame;
 
 import cbit.vcell.client.ChildWindowManager;
+
 import javax.swing.JMenuBar;
+
 import java.awt.BorderLayout;
 
 /**
@@ -112,9 +115,8 @@ private void initialize() {
 		setSize(612, 612);
 		getContentPane().add(getJFrameContentPane());
 		
-		JMenuBar menuBar = new JMenuBar();
-		menuBar.add( createWindowMenu(false) );
-		getContentPane().add(menuBar, BorderLayout.NORTH);
+		JMenuBar menuBar = LWNamespace.createRightSideIconMenuBar();
+		getContentPane().add(menuBar,BorderLayout.NORTH);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

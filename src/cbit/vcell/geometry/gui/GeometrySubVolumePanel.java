@@ -402,7 +402,7 @@ private void addAnalyticSubVolume() {
 			main.setLayout(mainBoxLayout);
 			
 			JPanel menuPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-			menuPanel.add( LWNamespace.createChildWindowMenuBar( ) );
+			menuPanel.add( LWNamespace.createRightSideIconMenuBar( ) );
 			main.add(menuPanel);
 			
 			JPanel addCancelJPanel = new JPanel();
