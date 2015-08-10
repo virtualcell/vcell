@@ -15,6 +15,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.BondLocal;
+import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
@@ -377,6 +378,18 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 		htmlText = "<html>" + htmlText + "</html>";
 		return htmlText;
 	}
+	
+	public static final String toHtml(ParticipantMatchLabelLocal pmll, boolean bSelected) {
+		String text = toHtmlWork(pmll, bSelected);
+		String htmlText = "<html>" + text + "</html>";
+		return htmlText;
+	}
+	public static final String toHtmlWithTip(ParticipantMatchLabelLocal pmll, boolean bSelected) {
+		String text = toHtmlWork(pmll, bSelected);
+		String htmlText = text;
+		htmlText = "<html>" + htmlText + "</html>";
+		return htmlText;
+	}
 
 	private static final String toHtmlWork(StateLocal sl, boolean bShowWords) {
 		String stateText = "";
@@ -445,6 +458,9 @@ public class RbmTreeCellRenderer extends DefaultTreeCellRenderer {
 			}
 		}
 		return bondText;
+	}
+	private static final String toHtmlWork(ParticipantMatchLabelLocal pmll, boolean bSelected) {
+		return "Match <b>" + pmll.getParticipantMatchLabel() + "</b>";
 	}
 	private static final String toHtmlWorkShort(BondLocal bl) {			// used for tooltips
 		MolecularComponentPattern mcp = bl.getMolecularComponentPattern();

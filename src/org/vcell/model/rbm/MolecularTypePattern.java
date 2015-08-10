@@ -26,9 +26,10 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	private MolecularType molecularType;
 	private List<MolecularComponentPattern> componentPatternList = new ArrayList<MolecularComponentPattern>();
 	private int index = 0; // purely for displaying purpose, since molecule can bind to itself
+	private String participantMatchLabel = "*";	// reactant-product match label, to avoid ambiguity
 	private Map<String,ArrayList<MolecularComponent>> processedMolecularComponentsMultiMap = new HashMap<String,ArrayList<MolecularComponent>>();
-	 
-	public MolecularTypePattern(MolecularType molecularType) {
+	
+	 	public MolecularTypePattern(MolecularType molecularType) {
 		// TODO: this works as long as there can only be one component pattern in the molecular type pattern for each component in the molecular type
 		// TODO: this will have to be redesigned once we accept multiple component patterns with the same name
 		this(molecularType, true);
@@ -128,9 +129,21 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	public final int getIndex() {
 		return index;
 	}
-
 	public final void setIndex(int index) {
 		this.index = index;
+	}
+	public String getParticipantMatchLabel() {
+		return participantMatchLabel;
+	}
+	public void setParticipantMatchLabel(String participantMatchLabel) {
+		this.participantMatchLabel = participantMatchLabel;
+	}
+	public boolean hasExplicitParticipantMatch() {
+		if(participantMatchLabel.equals("*")) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	public MolecularComponent getFirstUnprocessedMolecularComponent(String name, MolecularComponent[] molecularComponents) {

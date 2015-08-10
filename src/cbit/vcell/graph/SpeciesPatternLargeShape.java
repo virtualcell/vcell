@@ -22,6 +22,7 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.model.ReactionRule;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape {
 
@@ -200,6 +201,47 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
+		
+		// matches between molecular types - only within reaction rules
+		if(owner instanceof ReactionRule) {
+			Graphics2D g2 = (Graphics2D)g;
+			Color colorOld = g2.getColor();
+			Font fontOld = g.getFont();
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Color fontColor = Color.gray;
+			Color lineColor = Color.lightGray;
+			g2.setFont(font);
+			g2.setColor(fontColor);
+			for(MolecularTypeLargeShape mtls : speciesShapes) {
+				MolecularTypePattern mtp = mtls.getMolecularTypePattern();
+				if(!mtp.hasExplicitParticipantMatch()) {
+					continue;				// nothing to do if no explicit match
+				}
+				int x = mtls.getX()+10;
+				int y = mtls.getY()-7;
+				if(((ReactionRule)owner).isReactant(sp)) {					// line to right
+					g2.drawLine(x, y, x, y+6);
+					g2.drawLine(x+1, y, x+1, y+6);
+					
+					g2.drawLine(x, y, x+10, y);
+					g2.drawLine(x, y+1, x+10, y+1);
+					
+					g2.drawString(mtp.getParticipantMatchLabel(), x+12, y+4);
+				} else {
+					g2.drawLine(x, y, x, y+6);
+					g2.drawLine(x+1, y, x+1, y+6);
+
+					g2.drawLine(x, y, x-10, y);
+					g2.drawLine(x, y+1, x-10, y+1);
+					
+					g2.drawString(mtp.getParticipantMatchLabel(), x+3, y+4);
+				}
+			}
+			g2.setFont(fontOld);
+			g2.setColor(colorOld);
+		}
+
+		// bonds between components
 		for(int i=0; i<bondSingles.size(); i++) {
 			BondSingle bs = bondSingles.get(i);
 			Graphics2D g2 = (Graphics2D)g;
