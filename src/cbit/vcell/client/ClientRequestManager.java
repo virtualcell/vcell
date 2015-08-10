@@ -3490,12 +3490,6 @@ public void revertToSaved(DocumentWindowManager documentWindowManager) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 2:29:35 AM)
- * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public SimulationStatus runSimulation(final SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException{
 
 	SimulationStatus simStatus = getClientServerManager().getJobManager().startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(), numSimulationScanJobs);
@@ -3503,12 +3497,6 @@ public SimulationStatus runSimulation(final SimulationInfo simInfo, int numSimul
 }		
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 2:29:35 AM)
- * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulations cbit.vcell.solver.Simulation[]
- */
 public void runSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
 	DocumentWindowManager documentWindowManager = clientSimManager.getDocumentWindowManager();
 	/*	run some quick checks to see if we need to do a SaveAs */
@@ -3898,12 +3886,7 @@ public void startExport(final OutputContext outputContext,final TopLevelWindowMa
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/2/2004 2:29:35 AM)
- * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulations cbit.vcell.solver.Simulation[]
- */
+
 public void stopSimulations(final ClientSimManager clientSimManager, final Simulation[] simulations) {
 	// stop is single step operation, don't bother with tasks, thread inline
 	AsynchClientTask task1 = new AsynchClientTask("stopping simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
