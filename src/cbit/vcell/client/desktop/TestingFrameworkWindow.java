@@ -15,11 +15,12 @@ package cbit.vcell.client.desktop;
  * Creation date: (7/15/2004 12:00:01 PM)
  * @author: Anuradha Lakshminarayana
  */
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;
-public class TestingFrameworkWindow extends javax.swing.JFrame implements TopLevelWindow {
+public class TestingFrameworkWindow extends LWTopFrame implements TopLevelWindow {
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JPanel ivjJFrameContentPane = null;
 	private javax.swing.JMenuItem ivjAddTSMenuItem = null;
@@ -29,6 +30,7 @@ public class TestingFrameworkWindow extends javax.swing.JFrame implements TopLev
 	private javax.swing.JMenuItem ivjExitMenuItem = null;
 	private javax.swing.JSeparator ivjJSeparator1 = null;
 	private ChildWindowManager childWindowManager = null;
+	private final String menuDesc;
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -39,13 +41,22 @@ class IvjEventHandler implements java.awt.event.ActionListener {
 		};
 	};
 /**
- * TestingFrameworkWindow constructor comment.
+ * TestingFrameworkWindow constructor comment
  */
 public TestingFrameworkWindow() {
 	super();
 	childWindowManager = new ChildWindowManager(this);
 	initialize();
+	menuDesc = LWTopFrame.nextSequentialDescription("Testing framework");
 }
+
+
+@Override
+public String menuDescription() {
+	return menuDesc; 
+}
+
+
 /**
  * Comment
  */

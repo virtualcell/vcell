@@ -9,6 +9,7 @@ import java.rmi.RemoteException;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -69,8 +70,18 @@ import cbit.vcell.solvers.CartesianMesh;
 
 public class DisplayTimeSeriesOp {
 	
-	public static class TopLevelFrame extends JFrame implements TopLevelWindow {
+	@SuppressWarnings("serial")
+	public static class TopLevelFrame extends LWTopFrame implements TopLevelWindow {
+		private final String menuDesc;
+		TopLevelFrame( ) {
+			menuDesc = LWTopFrame.nextSequentialDescription("Display Time Series");
+		}
 		
+		@Override
+		public String menuDescription() {
+			return menuDesc; 
+		}
+
 		ChildWindowManager childWindowManager = new ChildWindowManager(this);
 
 		@Override

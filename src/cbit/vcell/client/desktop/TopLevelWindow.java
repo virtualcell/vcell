@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.client.desktop;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+
 import cbit.vcell.client.*;
 import cbit.vcell.client.server.*;
 /**
@@ -16,7 +18,7 @@ import cbit.vcell.client.server.*;
  * Creation date: (5/24/2004 3:37:07 PM)
  * @author: Ion Moraru
  */
-public interface TopLevelWindow {
+public interface TopLevelWindow extends LWContainerHandle {
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 3:38:00 PM)

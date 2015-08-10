@@ -50,6 +50,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
@@ -81,7 +82,7 @@ import cbit.vcell.microscopy.batchrun.gui.VirtualFrapBatchRunFrame;
 
 /** The main frame of the application. */
 @SuppressWarnings("serial")
-public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, TopLevelWindow
+public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListener, TopLevelWindow
 {
 	private final ChildWindowManager childWindowManager;
 	
@@ -149,6 +150,7 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 	//for drag and drop action 
 	@SuppressWarnings("unused")
 	private DropTarget dt;
+	private final String menuDesc;
 	//Inner class AFileFilter
 	//This class implements both ava.io.FileFilter and javax.swing.filechooser.FileFilter.
 	public static class AFileFilter extends FileFilter  implements java.io.FileFilter {
@@ -479,7 +481,13 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 
 		dt = new DropTarget(frapStudyPanel, this);
 		setVisible(true);
+		menuDesc = nextSequentialDescription("Virtual Frap");
 	}// end of constructor
+
+	@Override
+	public String menuDescription() {
+		return menuDesc; 
+	}
 
 	public static void updateStatus(final String newStatusMessage){
 		SwingUtilities.invokeLater(new Runnable(){public void run(){statusBarNew.showStatus(newStatusMessage);}});
@@ -598,6 +606,8 @@ public class VirtualFrapMainFrame extends JFrame implements DropTargetListener, 
 
 		mBatchRun.addActionListener(menuHandler);
 		toolsMenu.add(mBatchRun);
+		
+		mb.add( createWindowMenu(true ) );
 
 		//Help Menu
 		JMenu helpMenu =new JMenu("Help");

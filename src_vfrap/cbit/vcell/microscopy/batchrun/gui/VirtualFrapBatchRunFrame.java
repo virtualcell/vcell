@@ -45,6 +45,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.optimization.ProfileData;
 import org.vcell.util.PropertyLoader;
@@ -83,7 +84,7 @@ import cbit.vcell.opt.Parameter;
  * Created in Dec 2009.
  */
 @SuppressWarnings("serial")
-public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListener, TopLevelWindow
+public class VirtualFrapBatchRunFrame extends LWTopFrame implements DropTargetListener, TopLevelWindow
 {
 	//the application has one local workspace and one FRAP workspace
 	private LocalWorkspace localWorkspace = null;
@@ -132,6 +133,8 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	//for drag and drop action 
 	@SuppressWarnings("unused")
 	private DropTarget dt;
+	
+	private final String menuDesc;
 	
     private class BatchRunMenuHandler implements ActionListener
 	{
@@ -310,9 +313,15 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 	    addWindowListener(createAppCloser());
 	    dt = new DropTarget(getMainSplitPane(), this);
+	    menuDesc = nextSequentialDescription("Virtual Batch Frame");
 	  }// end of constructor
 
-	  public static void updateStatus(final String newStatusMessage){
+	  @Override
+	public String menuDescription() {
+		return menuDesc; 
+	}
+
+	public static void updateStatus(final String newStatusMessage){
 		  SwingUtilities.invokeLater(new Runnable(){public void run(){statusBarNew.showStatus(newStatusMessage);}});
 	  }
 	  public static void updateProgress(final int percentProgress){
@@ -417,6 +426,8 @@ public class VirtualFrapBatchRunFrame extends JFrame implements DropTargetListen
 	    mViewJob.setSelected(true);
 	    mViewJob.addActionListener(menuHandler);
 	    viewMenu.add(mViewJob);
+	    
+	    mb.add( createWindowMenu(true) );
 	    
 	    //Help Menu
 	    JMenu helpMenu =new JMenu("Help");
