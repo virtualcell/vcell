@@ -2,24 +2,21 @@ package cbit.vcell.client;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import javax.help.UnsupportedOperationException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -27,14 +24,13 @@ import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.client.logicalwindow.LWHandle;
-import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
-import org.vcell.client.logicalwindow.LWTopFrame;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.desktop.DocumentWindow;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 import edu.uchc.connjur.wb.ExecutionTrace;
 
@@ -46,20 +42,45 @@ public class ChildWindowManager {
 	private JFrame parent = null;
 	private LWContainerHandle owner = null; 
 	private static final Logger LG = Logger.getLogger(ChildWindowManager.class);
+	private interface ManagedChild {
+		ChildWindowManager getChildWindowManager(); 
+	}
 	
 	@SuppressWarnings("serial")
-	private static class TitledChild extends LWChildFrame {
+	private static class ModelessChild extends LWChildFrame implements ManagedChild {
+		private final ChildWindowManager childWindowManager;
 
-		private TitledChild(LWContainerHandle parent, String title)
+		private ModelessChild(ChildWindowManager cwm,LWContainerHandle parent, String title)
 				throws HeadlessException {
 			super(parent, title);
-			
+			Objects.requireNonNull(cwm);
+			childWindowManager = cwm;
 		}
 
 		@Override
 		public String menuDescription() {
 			return getTitle( );
 		}
+
+		public ChildWindowManager getChildWindowManager() {
+			return childWindowManager; 
+		}
+	}
+	@SuppressWarnings("serial")
+	private static class ParentModalChild extends DialogUtils.TitledDialog implements ManagedChild {
+		private final ChildWindowManager childWindowManager;
+
+		public ParentModalChild(ChildWindowManager cwm, LWContainerHandle parent, String title) {
+			super(parent, title);
+			Objects.requireNonNull(cwm);
+			childWindowManager = cwm;
+		}
+
+		@Override
+		public ChildWindowManager getChildWindowManager() {
+			return childWindowManager; 
+		}
+		
 	}
 	
 	/**
@@ -89,6 +110,7 @@ public class ChildWindowManager {
 			}
 		}
 	}
+	
 
 	/**
 	 * @param title not null
@@ -99,9 +121,9 @@ public class ChildWindowManager {
 		if (owner != null) {
 			switch (modality) {
 			case MODELESS:
-				return new TitledChild(owner, title);
+				return new ModelessChild(this,owner, title);
 			case PARENT_ONLY:
-				return new DialogUtils.TitledDialog(owner,title);
+				return new ParentModalChild(this,owner, title);
 			}
 		}
 		else { //remove eventually
@@ -367,11 +389,7 @@ public class ChildWindowManager {
 			{ //assemble pieces
 				Container cp = impl.getContentPane();
 				cp.setLayout(new BorderLayout());
-				JMenuBar mb = new JMenuBar();
-				mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-				JMenu mw = LWTopFrame.createWindowMenu(false);			
-				mw.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-				mb.add(mw);
+				JMenuBar mb = LWNamespace.createRightSideIconMenuBar(); 
 				cp.add(mb,BorderLayout.NORTH);
 				cp.add(contentPane, BorderLayout.CENTER);
 			}
@@ -429,20 +447,26 @@ public class ChildWindowManager {
 		}
 	};   
 	
+	/**
+	 * @param component not null 
+	 * @return ChildWindowManager
+	 * @throws ProgrammingException if unable to find ChildWindowManager
+	 */
 	public static ChildWindowManager findChildWindowManager(Component component){
-		ChildWindowManager childWindowManager = null;
-		Frame topLevelFrame = JOptionPane.getFrameForComponent(component);
-		if (topLevelFrame instanceof TopLevelWindow){
-			childWindowManager = ((TopLevelWindow)topLevelFrame).getChildWindowManager();
+		ManagedChild mc = LWNamespace.findOwnerOfType(ManagedChild.class, component);
+		if (mc != null) {
+			return mc.getChildWindowManager( );
+		}
+		if (LG.isDebugEnabled()) {
+			LG.debug(ExecutionTrace.justClassName(component) + " does not have ManagedChild parent");
 		}
 		
-		if (childWindowManager==null){
-			System.err.println("ChildWindowManager.findChildWindowManager(Component) could not find a ChildWindowManager for component: "+component.getName()+" which is a "+component.getClass().getCanonicalName());
-			Thread.dumpStack();
-			System.err.println();
+		DocumentWindow dw = LWNamespace.findOwnerOfType(DocumentWindow.class, component);
+		if (dw != null) {
+			return dw.getChildWindowManager();
 		}
 		
-		return childWindowManager;
+		throw new ProgrammingException("ChildWindowManager.findChildWindowManager(Component) could not find a ChildWindowManager for component: "+component.getName()+" which is a "+component.getClass().getCanonicalName());
 	}
 	
 	public ChildWindowManager(JFrame parent){
