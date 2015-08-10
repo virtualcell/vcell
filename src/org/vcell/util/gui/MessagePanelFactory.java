@@ -29,10 +29,13 @@ import org.vcell.util.logging.ConsoleCapture.CurrentContent;
  */
 @SuppressWarnings("serial") 
 public class MessagePanelFactory {
+	/**
+	 * message to user about why we want information
+	 */
 	public final static String SHARE_MODEL_TEXT =
-			"Sending your model information and/or log file will improve the ability of the Virtual Cell Support team to diagnose " +
-					"and repair transient software bugs which have escaped release testing. We may use the information you send to " +
-					"for the sole purpose of reproducing the bugs you've encountered.";
+			//per Ann Cowan email 8/5/2015
+		"Sending your model information and log file allows VCell Support to reproduce an issue and repair potential software bugs "
+		+ "that may have escaped release testing; the information will not be used for any other purpose. ";
 
 	public static abstract class DialogMessagePanel extends JPanel {
 		/**
