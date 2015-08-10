@@ -16,6 +16,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWJDialogDecorator;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 
@@ -684,6 +687,7 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 	}
 	dialogToShow.pack();
 	BeanUtils.centerOnComponent(dialogToShow, reference);
+	LWJDialogDecorator.decoratorFor(dialogToShow);
 	dialogToShow.setVisible(true);  // modal; blocks until OK'd or closed
 	return isClosedOK();
 }

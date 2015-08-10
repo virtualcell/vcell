@@ -23,11 +23,9 @@ JFrame blockWindow(String windowID);
 
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 11:15:19 AM)
- * @param windowID java.lang.String
+ * @return number of visible windows remaining 
  */
-int closeWindow(String windowID);
+long closeWindow(String windowID);
 
 
 /**
@@ -79,12 +77,7 @@ TestingFrameworkWindowManager getTestingFrameworkWindowManager();
 TopLevelWindowManager getWindowManager(String windowID);
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:08:38 PM)
- * @return java.util.Enumeration
- */
-Enumeration<TopLevelWindowManager> getWindowManagers();
+Collection<TopLevelWindowManager> getWindowManagers();
 
 
 /**

@@ -15,19 +15,17 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Desktop.Action;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -49,14 +47,20 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.vcell.util.BeanUtils;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWDialog;
+import org.vcell.client.logicalwindow.LWJDialogDecorator;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWOptionPaneDialog;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCellThreadChecker;
+import org.vcell.util.gui.VCSwingFunction.Doer;
+import org.vcell.util.gui.VCSwingFunction.Producer;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.UserMessage;
@@ -66,6 +70,7 @@ import cbit.vcell.client.test.VCellClientTest;
 import cbit.vcell.server.VCellConnection;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 3:16:43 AM)
@@ -73,103 +78,74 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
  */
 public class DialogUtils {
 	public final static String SHARE_MODEL_TEXT =
-		"Sending your model information will improve the ability of the Virtual Cell Support team to diagnose " +
-		"and repair transient software bugs which have escaped release testing. We may use the information you send to " +
-		"make copies of your models for the sole purpose of reproducing the bugs you've encountered.";
+			"Sending your model information will improve the ability of the Virtual Cell Support team to diagnose " +
+					"and repair transient software bugs which have escaped release testing. We may use the information you send to " +
+					"make copies of your models for the sole purpose of reproducing the bugs you've encountered.";
+
+
+	/**
+	 * {@link LWDialog} that uses dialog title for menu 
+	 */
+	@SuppressWarnings("serial")
+	public static class TitledDialog extends LWDialog {
 	
-	private static abstract class SwingDispatcherSync {
-
-		private Object returnValue = null;
-		
-		@SuppressWarnings("serial")
-		static class SwingDispatchException extends RuntimeException{
-			public SwingDispatchException(Throwable e){
-				super(e);
-			}
-		};
-		
-		public abstract Object runSwing() throws Exception;
-
-		private static Exception handleThrowableAsException(Throwable throwable){
-			if (throwable instanceof Exception){
-				return (Exception) throwable;
-			}
-			throw (Error) throwable;
-		}
-		private static RuntimeException handleThrowableAsRuntimeException(Throwable throwable) {
-			if (throwable instanceof RuntimeException){
-				return (RuntimeException) throwable;
-			}
-			if (throwable instanceof Exception){
-				return new RuntimeException(throwable.getMessage(),throwable);
-			}
-			throw (Error) throwable;
+		/**
+		 * @param parent could be null
+		 * @param title could be null
+		 */
+		public TitledDialog(LWContainerHandle parent, String title) {
+			super(parent, title);
 		}
 		
-		private Object dispatch() throws Throwable{
-			if (SwingUtilities.isEventDispatchThread()) {
-				return runSwing();
-			}			
-			Runnable runnable =	new Runnable(){
-				public void run(){
-					try{
-						returnValue = runSwing();
-					}catch(Throwable e){
-						throw new SwingDispatchException(e);
-					}
-				}
-			};
-			try {
-				SwingUtilities.invokeAndWait(runnable);
-				return returnValue;
-			} catch(Throwable e) {
-				if (e instanceof InvocationTargetException){
-					if (e.getCause() instanceof SwingDispatchException){
-						throw e.getCause().getCause();
-					}
-					if (e.getCause() != null){
-						throw e.getCause();
-					}
-				}
-				throw e;
-			}
-		}	
+		@Override
+		public String menuDescription() {
+			return getTitle( );
+		}
+	}
+	/**
+	 * {@link LWOptionPaneDialog} that uses dialog title for menu 
+	 */
+	@SuppressWarnings("serial")
+	public static class TitledOptionPaneDialog extends LWOptionPaneDialog {
+	
+		private TitledOptionPaneDialog(LWContainerHandle parent, String title,
+				JOptionPane optionPane) {
+			super(parent, title, optionPane);
+		}
 
-		public Object dispatchWithException() throws Exception{
-			try{
-				return dispatch();
-			} catch(Throwable throwable){
-				printStack(throwable);
-				throw handleThrowableAsException(throwable);
-			}
+		@Override
+		public String menuDescription() {
+			return getTitle( );
 		}
-		public Object dispatchWrapRuntime(){
-			try{
-				return dispatch();
-			}catch(Throwable throwable){
-				printStack(throwable);
-				throw handleThrowableAsRuntimeException(throwable);
-			}
-		}
-		public Object dispatchConsumeException(){
-			try{
-				return dispatch();
-			}catch(Throwable throwable){
-				printStack(throwable);
-				return null;
-			}
-		}
-		private void printStack(Throwable throwable){
-			if(!(throwable instanceof UserCancelException || throwable instanceof UtilCancelException)){
-				throwable.printStackTrace(System.out);
-			}
-		}
+	}
+	
+	/**
+	 * Virtual Cell variant of {@link JOptionPane#createDialog(Component, String)} 
+	 * @param parent null acceptable but discouraged
+	 * @param pane not null
+	 * @param title null okay
+	 * @return new dialog
+	 */
+	public static LWDialog createDialog(LWContainerHandle parent, JOptionPane pane, String title) {
+		return new TitledOptionPaneDialog(parent, title, pane);
+	}
+	
+	/**
+	 * Virtual Cell variant of {@link JOptionPane#createDialog(Component, String)} 
+	 * @param parent null acceptable but discouraged
+	 * @param pane not null
+	 * @param title null okay
+	 * @return new dialog
+	 */
+	public static LWDialog createDialog(Component parent, JOptionPane pane, String title) {
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(parent);
+		return new TitledOptionPaneDialog(lwParent, title, pane);
 	}
 	
 	private interface OKEnabler{
 		void setJOptionPane(JOptionPane joptionPane);
 	}
-	
+
 	/**
 	 * safely convert any object to String; equivalent to
 	 * cast to String for String objects or call {@link #toString()}
@@ -183,9 +159,8 @@ public class DialogUtils {
 		}
 		return null;
 	}
-	
-	
-	
+
+
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (5/21/2004 3:23:18 AM)
@@ -196,58 +171,56 @@ public class DialogUtils {
 	 * @param preferenceName java.lang.String
 	 */
 	protected static String showDialog(final Component requester, final UserPreferences preferences, final UserMessage userMessage, final String replacementText, final int jOptionPaneMessageType) {
-		Object obj = new SwingDispatcherSync() {
-			public Object runSwing() throws Exception{
-				//
-				// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
-				//
-				if (userMessage.getUserPreferenceWarning() > -1 && preferences!=null && !preferences.getShowWarning(userMessage.getUserPreferenceWarning())){
-					return userMessage.getDefaultSelection();
-				}
-
-				
-				String message = userMessage.getMessage(replacementText);
-				JPanel panel = createMessagePanel(message);
-				JCheckBox checkBox = null;
-				if (userMessage.getUserPreferenceWarning() >= 0){
-					checkBox = new JCheckBox("Do not show this warning again");
-					panel.add(checkBox, BorderLayout.SOUTH);
-				}
-				JOptionPane pane = new JOptionPane(panel, jOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
-				final JDialog dialog = pane.createDialog(requester, "");
-				switch (jOptionPaneMessageType) {
-					case JOptionPane.WARNING_MESSAGE: {
-						dialog.setTitle("WARNING:");
-						break;
-					}
-					case JOptionPane.ERROR_MESSAGE: {
-						dialog.setTitle("ERROR:");
-						break;
-					}
-					case JOptionPane.INFORMATION_MESSAGE: {
-						dialog.setTitle("INFO:");
-						break;
-					}
-				}
-				dialog.setResizable(true);
-				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-				try {
-					DialogUtils.showModalJDialogOnTop(dialog,requester);
-					if (checkBox!=null){
-						preferences.setShowWarning(userMessage.getUserPreferenceWarning(), ! checkBox.isSelected());
-					}
-					Object selectedValue = pane.getValue();
-					if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
-						return UserMessage.OPTION_CANCEL;
-					} else {
-						return (String)selectedValue;
-					}
-				}finally {
-					dialog.dispose();
-				}
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Producer<String> prod = ( ) ->  {
+			//
+			// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
+			//
+			if (userMessage.getUserPreferenceWarning() > -1 && preferences!=null && !preferences.getShowWarning(userMessage.getUserPreferenceWarning())){
+				return userMessage.getDefaultSelection();
 			}
-		}.dispatchWrapRuntime();
-		return objectToString(obj);
+
+			String message = userMessage.getMessage(replacementText);
+			JPanel panel = createMessagePanel(message);
+			JCheckBox checkBox = null;
+			if (userMessage.getUserPreferenceWarning() >= 0){
+				checkBox = new JCheckBox("Do not show this warning again");
+				panel.add(checkBox, BorderLayout.SOUTH);
+			}
+			JOptionPane pane = new JOptionPane(panel, jOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
+			String title;
+			switch (jOptionPaneMessageType) {
+			case JOptionPane.WARNING_MESSAGE: 
+				title = "WARNING:";
+				break;
+			case JOptionPane.ERROR_MESSAGE: 
+				title = "ERROR:";
+				break;
+			case JOptionPane.INFORMATION_MESSAGE: 
+				title = "INFO:";
+				break;
+			default:
+					title = null;
+			}
+			LWDialog dialog = new TitledOptionPaneDialog(lwParent, title,pane); 
+			dialog.setResizable(true);
+			try {
+				dialog.setVisible(true);
+				if (checkBox!=null){
+					preferences.setShowWarning(userMessage.getUserPreferenceWarning(), ! checkBox.isSelected());
+				}
+				Object selectedValue = pane.getValue();
+				if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+					return UserMessage.OPTION_CANCEL;
+				} else {
+					return objectToString(selectedValue);
+				}
+			}finally {
+				dialog.dispose();
+			}
+		};
+		return VCSwingFunction.executeAsRuntimeException(prod);
 	}
 
 	/**
@@ -272,7 +245,7 @@ public class DialogUtils {
 		}
 		catch (Exception e) {
 			String msg = "Sorry, your local WWW Browser could not be automatically launched.\n" + 
-							"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'";
+					"Error Type=" + e.getClass().getName() + "\nError Info='" + e.getMessage()+"'";
 			if (messageToUserIfFail != null) {
 				msg = messageToUserIfFail + "\n\n" + msg;
 			}
@@ -281,71 +254,71 @@ public class DialogUtils {
 	}
 
 
-@SuppressWarnings("serial")
-private static class JPanelWithCb extends JPanel {
-	JPanelWithCb( ) {
-		super(new BorderLayout());
+	@SuppressWarnings("serial")
+	private static class JPanelWithCb extends JPanel {
+		JPanelWithCb( ) {
+			super(new BorderLayout());
+		}
+		JCheckBox allowSendCb;
 	}
-	JCheckBox allowSendCb;
-}
 
-private static JPanelWithCb createMessagePanel(final String message) {
-	JTextPane textArea = new JTextPane();
-	if (message != null && message.contains("<html>")) {
-		textArea.setContentType("text/html");
+	private static JPanelWithCb createMessagePanel(final String message) {
+		JTextPane textArea = new JTextPane();
+		if (message != null && message.contains("<html>")) {
+			textArea.setContentType("text/html");
+		}
+		textArea.setText(message);
+		textArea.setCaretPosition(0);
+		textArea.setEditable(false);
+		textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
+		textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+		//
+		// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
+		// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
+		//
+		Dimension textAreaPreferredSize = textArea.getPreferredSize();
+		Dimension screenSize = getScreenSize( );
+		final int horizBorderSize = 90;
+		final int vertBorderSize = 40;
+		int w = Math.min(textAreaPreferredSize.width + horizBorderSize, screenSize.width - horizBorderSize);
+		int h = Math.min(textAreaPreferredSize.height + vertBorderSize, screenSize.height - vertBorderSize);
+		Dimension preferredSize = new Dimension(w,h);
+
+		JScrollPane scroller = new JScrollPane();
+		JPanelWithCb panel = new JPanelWithCb();
+		scroller.setViewportView(textArea);
+		scroller.getViewport().setPreferredSize(preferredSize);
+		panel.add(scroller, BorderLayout.CENTER);
+		return panel;
 	}
-	textArea.setText(message);
-	textArea.setCaretPosition(0);
-	textArea.setEditable(false);
-	textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
-	textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
-	//
-	// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
-	// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
-	//
-	Dimension textAreaPreferredSize = textArea.getPreferredSize();
-	Dimension screenSize = getScreenSize( );
-	final int horizBorderSize = 90;
-	final int vertBorderSize = 40;
-	int w = Math.min(textAreaPreferredSize.width + horizBorderSize, screenSize.width - horizBorderSize);
-	int h = Math.min(textAreaPreferredSize.height + vertBorderSize, screenSize.height - vertBorderSize);
-	Dimension preferredSize = new Dimension(w,h);
-	
-	JScrollPane scroller = new JScrollPane();
-	JPanelWithCb panel = new JPanelWithCb();
-	scroller.setViewportView(textArea);
-	scroller.getViewport().setPreferredSize(preferredSize);
-	panel.add(scroller, BorderLayout.CENTER);
-	return panel;
-}
+	/**
+	 * get screensize including multi monitor environment 
+	 * @return
+	 */
+	public static Dimension getScreenSize( ) {
+		//http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		int width = gd.getDisplayMode().getWidth();
+		int height = gd.getDisplayMode().getHeight();	
+		return new Dimension(width, height);
+	}
 
-/**
- * get screensize including multi monitor environment 
- * @return
- */
-public static Dimension getScreenSize( ) {
-	//http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
-	GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-	int width = gd.getDisplayMode().getWidth();
-	int height = gd.getDisplayMode().getHeight();	
-	return new Dimension(width, height);
-}
-
-/**
- * add send model info to VCellSupport panel to JPanelWithCb (see {@link #createMessagePanel(String)}
- * @param panel
- * @param initialCheckboxState
- */
-private static void addModelSendInformation(JPanelWithCb panel, boolean initialCheckboxState) {
+	/**
+	 * add send model info to VCellSupport panel to JPanelWithCb (see {@link #createMessagePanel(String)}
+	 * @param panel
+	 * @param initialCheckboxState
+	 */
+	private static void addModelSendInformation(JPanelWithCb panel, boolean initialCheckboxState) {
 		JPanel buttonPanel = new JPanel();
 		panel.add(buttonPanel, BorderLayout.SOUTH);
 		JPanel sendModelPanel = new JPanel();
 		buttonPanel.add(sendModelPanel);
-		
+
 		panel.allowSendCb = new JCheckBox("Send model info to VCell support team");
 		sendModelPanel.add(panel.allowSendCb);
-		
+
 		JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
 		helpBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -355,68 +328,35 @@ private static void addModelSendInformation(JPanelWithCb panel, boolean initialC
 		});
 		sendModelPanel.add(helpBtn);
 		panel.allowSendCb.setSelected(initialCheckboxState);
-}
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/23/2005 2:01:06 PM)
+	 * @param jop javax.swing.JOptionPane
+	 * @param bEnabled boolean
+	 */
+	private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled) {
+		Component[] componentsArr = jop.getComponents();
+		for(int i=0;i<componentsArr.length;i+= 1){
+			if(componentsArr[i] instanceof Container){
+				for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
+					if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
+							!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase(getCancelText())){
+						if(bEnabled){
+							((Container)componentsArr[i]).getComponent(j).setEnabled(true);
+						}else{
+							((Container)componentsArr[i]).getComponent(j).setEnabled(false);
+						}
+					}
+				}
+			}
+		}
+	}
 
-private static JDialog prepareWarningDialog(final Component requester,final String message) {
-	JPanel panel = createMessagePanel(message);
-	JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
-	JDialog dialog = pane.createDialog(requester, "Warning:");
-	dialog.setResizable(true);
-	return dialog;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 3:01:00 AM)
- * @param message java.lang.Object
- */
-private static JDialog prepareInfoDialog(final Component requester,final String title, final String message) {
-	JPanel panel = createMessagePanel(message);
-	JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-	JDialog dialog = pane.createDialog(requester, title);
-	dialog.setResizable(true);
-	return dialog;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/23/2005 2:01:06 PM)
- * @param jop javax.swing.JOptionPane
- * @param bEnabled boolean
- */
-private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled) {
-  	Component[] componentsArr = jop.getComponents();
-  	for(int i=0;i<componentsArr.length;i+= 1){
-	  	if(componentsArr[i] instanceof Container){
-		  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
-			  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
-				  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase(getCancelText())){
-				  	if(bEnabled){
-					  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
-				  	}else{
-					  	((Container)componentsArr[i]).getComponent(j).setEnabled(false);
-				  	}
-			  	}
-		  	}
-	  	}
-  	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-public static String showAnnotationDialog(final Component requester, final String oldAnnotation) throws Exception{
-	Object obj = 
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	public static String showAnnotationDialog(final Component requester, final String oldAnnotation) throws Exception{
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Producer<String> prod = ( ) -> {
 			JPanel panel = new JPanel(new BorderLayout());
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			JTextArea textArea = new JTextArea(oldAnnotation, 8, 60);
@@ -429,14 +369,14 @@ public static String showAnnotationDialog(final Component requester, final Strin
 			panel.add(scroller, BorderLayout.CENTER);
 
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			final JDialog dialog = pane.createDialog(requester, "Edit Annotation:");
+			final LWDialog dialog = new TitledOptionPaneDialog(lwParent,"Edit Annotation:", pane);
 			dialog.setResizable(true);
 			try {
-				DialogUtils.showModalJDialogOnTop(dialog,requester);
+				dialog.setVisible(true);
 				Object selectedValue = pane.getValue();
 				if(selectedValue == null ||
-					(((Integer)selectedValue).intValue() == JOptionPane.CLOSED_OPTION) ||
-					(((Integer)selectedValue).intValue() == JOptionPane.CANCEL_OPTION)) {
+						(((Integer)selectedValue).intValue() == JOptionPane.CLOSED_OPTION) ||
+						(((Integer)selectedValue).intValue() == JOptionPane.CANCEL_OPTION)) {
 					throw UtilCancelException.CANCEL_GENERIC;
 				}else {
 					return textArea.getText();
@@ -444,128 +384,125 @@ public static String showAnnotationDialog(final Component requester, final Strin
 			}finally {
 				dialog.dispose();
 			}
-		}
-	}.dispatchWithException();
-	return objectToString(obj);
-}
+		};
 
+		return VCSwingFunction.execute( prod );
+	}
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static void showComponentCloseDialog(final Component requester,final Component stayOnTopComponent,final String title) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:17:45 AM)
+	 * @param owner java.awt.Component
+	 * @param message java.lang.Object
+	 */
+	public static void showComponentCloseDialog(final Component requester,final Component stayOnTopComponent,final String title) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Doer doer = ( ) -> {
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
-			final JDialog d = inputDialog.createDialog(requester, title);
+			final JDialog d = new TitledOptionPaneDialog(lwParent, title, inputDialog);
 			d.setResizable(true);
 			try {
-				DialogUtils.showModalJDialogOnTop(d, requester);				
+				d.setVisible(true);
 			}finally {
 				d.dispose();
 			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
-
-}
-
-public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent, final String title) {
-	return (Integer)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{	
-			return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
-		}
-	}.dispatchWrapRuntime();
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
-	 return showComponentOKCancelDialog(requester,stayOnTopComponent,title,okEnabler, true);
- }
-
-public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler, boolean isResizeable) {
-	Component newRequester = requester;
-	if (requester instanceof JTable) {
-		newRequester = BeanUtils.findTypeParentOfComponent(requester, Window.class);
+		}; 
+		VCSwingFunction.executeAsRuntimeException(doer);
 	}
-	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
-	JDialog d = inputDialog.createDialog(newRequester, title);
-	d.setResizable(isResizeable);
-	if (okEnabler != null) {
-		okEnabler.setJOptionPane(inputDialog);
+
+	public static int showComponentOKCancelDialogx(final Component requester,final Component stayOnTopComponent, final String title) {
+		return 0;
+
 	}
-	try {
-		DialogUtils.showModalJDialogOnTop(d, newRequester);
-		if(inputDialog.getValue() instanceof String){
-			if(inputDialog.getValue().equals(getOKText())){
-				return JOptionPane.OK_OPTION;
-			}if(inputDialog.getValue().equals(getCancelText())){
-				return JOptionPane.CANCEL_OPTION;
+	public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent, final String title) {
+		return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:17:45 AM)
+	 * @param owner java.awt.Component
+	 * @param message java.lang.Object
+	 */
+	public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler) {
+		return showComponentOKCancelDialog(requester,stayOnTopComponent,title,okEnabler, true);
+	}
+
+	public static int showComponentOKCancelDialog(final Component requester,final Component stayOnTopComponent,final String title,final OKEnabler okEnabler, boolean isResizeable) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+
+		Producer<Integer> prod = ( ) -> {
+			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
+			JDialog d = new TitledOptionPaneDialog(lwParent,title,inputDialog);
+			d.setResizable(isResizeable);
+			if (okEnabler != null) {
+				okEnabler.setJOptionPane(inputDialog);
 			}
-		}else if(inputDialog.getValue() == null){
-			return JOptionPane.CLOSED_OPTION;
-		}else if(inputDialog.getValue().equals(JOptionPane.UNINITIALIZED_VALUE)){
-			return JOptionPane.CLOSED_OPTION;
-		}
-		throw new RuntimeException("Unexpected return value="+inputDialog.getValue().toString());
-	}finally {
-		d.dispose();
+			try {
+				d.setVisible(true);
+				if(inputDialog.getValue() instanceof String){
+					if(inputDialog.getValue().equals(getOKText())){
+						return JOptionPane.OK_OPTION;
+					}if(inputDialog.getValue().equals(getCancelText())){
+						return JOptionPane.CANCEL_OPTION;
+					}
+				}else if(inputDialog.getValue() == null){
+					return JOptionPane.CLOSED_OPTION;
+				}else if(inputDialog.getValue().equals(JOptionPane.UNINITIALIZED_VALUE)){
+					return JOptionPane.CLOSED_OPTION;
+				}
+				throw new RuntimeException("Unexpected return value="+inputDialog.getValue().toString());
+			}finally {
+				d.dispose();
+			}
+		};
+
+		return VCSwingFunction.executeAsRuntimeException( prod ); 
 	}
-}
 
-private static String getOKText(){
-	return UIManager.getString("OptionPane.okButtonText",Locale.getDefault());
-}
-private static String getCancelText(){
-	return UIManager.getString("OptionPane.cancelButtonText",Locale.getDefault());
-}
+	private static String getOKText(){
+		return UIManager.getString("OptionPane.okButtonText",Locale.getDefault());
+	}
+	private static String getCancelText(){
+		return UIManager.getString("OptionPane.cancelButtonText",Locale.getDefault());
+	}
 
-public static int[] showComponentOKCancelTableList(final Component requester,final String title,
-		final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode)
-			throws UserCancelException{
-	return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null,null).selectedTableRows;
-}
-public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
-		final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
-		final ListSelectionListener listSelectionListener,
-		final String[] options,final String initOption,final Comparator<Object> rowSortComparator)
-			throws UserCancelException{
-	return showComponentOptionsTableList(requester, title, columnNames, rowDataOrig, listSelectionModel_SelectMode, listSelectionListener,options,initOption,rowSortComparator,true);
-}
-public static class  TableListResult{
-	public String selectedOption;
-	public int[] selectedTableRows;
-}
+	public static int[] showComponentOKCancelTableList(final Component requester,final String title,
+			final String[] columnNames,final Object[][] rowData,final Integer listSelectionModel_SelectMode)
+					throws UserCancelException{
+		return showComponentOptionsTableList(requester, title, columnNames, rowData, listSelectionModel_SelectMode, null,null,null,null).selectedTableRows;
+	}
+	public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
+			final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
+			final ListSelectionListener listSelectionListener,
+			final String[] options,final String initOption,final Comparator<Object> rowSortComparator)
+					throws UserCancelException{
+		return showComponentOptionsTableList(requester, title, columnNames, rowDataOrig, listSelectionModel_SelectMode, listSelectionListener,options,initOption,rowSortComparator,true);
+	}
+	public static class  TableListResult{
+		public String selectedOption;
+		public int[] selectedTableRows;
+	}
 
-public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
-		final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
-		final ListSelectionListener listSelectionListener,
-		final String[] options,final String initOption,final Comparator<Object> rowSortComparator,final boolean bModal)
-			throws UserCancelException{
-	
-//	//Create hidden column with original row index so original row index can
-//	//be returned for user selections even if rows are sorted
-//	final int hiddenColumnIndex = rowDataOrig[0].length;
-//	final Object[][] rowDataHiddenIndex = new Object[rowDataOrig.length][hiddenColumnIndex+1];
-//	for (int i = 0; i < rowDataHiddenIndex.length; i++) {
-//		for (int j = 0; j < rowDataOrig[i].length; j++) {
-//			rowDataHiddenIndex[i][j] = rowDataOrig[i][j];
-//		}
-//		rowDataHiddenIndex[i][hiddenColumnIndex] = i;
-//	}
-	return (TableListResult)
-	new SwingDispatcherSync (){
-		@SuppressWarnings("serial")
-		public Object runSwing() throws Exception{
+	public static TableListResult showComponentOptionsTableList(final Component requester,final String title,
+			final String[] columnNames,final Object[][] rowDataOrig,final Integer listSelectionModel_SelectMode,
+			final ListSelectionListener listSelectionListener,
+			final String[] options,final String initOption,final Comparator<Object> rowSortComparator,final boolean bModal)
+					throws UserCancelException{
+
+		//	//Create hidden column with original row index so original row index can
+		//	//be returned for user selections even if rows are sorted
+		//	final int hiddenColumnIndex = rowDataOrig[0].length;
+		//	final Object[][] rowDataHiddenIndex = new Object[rowDataOrig.length][hiddenColumnIndex+1];
+		//	for (int i = 0; i < rowDataHiddenIndex.length; i++) {
+		//		for (int j = 0; j < rowDataOrig[i].length; j++) {
+		//			rowDataHiddenIndex[i][j] = rowDataOrig[i][j];
+		//		}
+		//		rowDataHiddenIndex[i][hiddenColumnIndex] = i;
+		//	}
+		Producer<TableListResult> prod = ( ) -> {
 			//Create hidden column with original row index so original row index can
 			//be returned for user selections even if rows are sorted
 			int hiddenColumnIndex = rowDataOrig[0].length;
@@ -579,6 +516,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 					rowDataHiddenIndex[i][hiddenColumnIndex] = i;
 				}
 			}
+			@SuppressWarnings("serial")
 			VCellSortTableModel<Object[]> tableModel = new VCellSortTableModel<Object[]>(columnNames, rowDataOrig.length) {
 				@Override
 				public boolean isSortable(int col) {
@@ -605,7 +543,7 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 			};
 			final JSortTable table = new JSortTable();
-//			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			//			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 			table.setModel(tableModel);
 			tableModel.setData(Arrays.asList(rowDataHiddenIndex));
 			if(listSelectionModel_SelectMode != null){
@@ -616,11 +554,11 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 			table.disableUneditableForeground();
-						
+
 			OKEnabler tableListOKEnabler = null;
 			if(listSelectionModel_SelectMode != null){
 				tableListOKEnabler = new OKEnabler(){
-				private JOptionPane jop;
+					private JOptionPane jop;
 					public void setJOptionPane(JOptionPane joptionPane) {
 						jop = joptionPane;
 						setInternalOKEnabled(joptionPane, false);
@@ -636,18 +574,18 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 										}
 									}
 								}
-						);
+								);
 
 					}
 				};
 			}			
-			
+
 			if(listSelectionListener != null){
 				table.getSelectionModel().addListSelectionListener(listSelectionListener);
 			}
 			TableListResult tableListResult = new TableListResult();
-			
-			
+
+
 			// HACK to fix horizontal scrollbar not showing for large horizontal tables
 			// workaround code from: http://bugs.sun.com/view_bug.do?bug_id=4127936
 			final JScrollPane[] jScrollPaneArr = new JScrollPane[1];
@@ -660,18 +598,18 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 			}
 			if(jScrollPaneArr[0] != null){
 				jScrollPaneArr[0].addComponentListener(new ComponentAdapter() {
-				@Override
-				public void componentResized(ComponentEvent e) {
-					super.componentResized(e);
-					if (table.getPreferredSize().width <= jScrollPaneArr[0].getViewport().getExtentSize().width){
-						table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-					} else {
-						table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+					@Override
+					public void componentResized(ComponentEvent e) {
+						super.componentResized(e);
+						if (table.getPreferredSize().width <= jScrollPaneArr[0].getViewport().getExtentSize().width){
+							table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+						} else {
+							table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+						}
 					}
-				}
 				});
 			}
-			
+
 			if(options == null){
 				if(bModal){
 					if(showComponentOKCancelDialog(requester, table.getEnclosingScrollPane(), title,tableListOKEnabler) != JOptionPane.OK_OPTION){
@@ -699,131 +637,149 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				}
 			}
 			return tableListResult;
-		}
-	}.dispatchWrapRuntime();
-}
+		};
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-private static String showDialog(final Component requester, String title, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
-	String message = userMessage.getMessage(replacementText);
-	JPanel panel = createMessagePanel(message);
-	JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
-	final JDialog dialog = pane.createDialog(requester, title);
-	dialog.setResizable(true);
-	dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	dialog.pack();
-	try {
-		DialogUtils.showModalJDialogOnTop(dialog, requester);
-		Object selectedValue = pane.getValue();
-		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
-			return SimpleUserMessage.OPTION_CANCEL;
-		} else {
-			return selectedValue.toString();
-		}
-	}finally {
-		dialog.dispose();
+		return VCSwingFunction.executeAsRuntimeException(prod);
 	}
-}
 
-private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler,String dialogTitle) {
 
-	JOptionPane pane = new JOptionPane(showComponent, JOptionPaneMessageType, 0, null, options, initOption);
-	final JDialog dialog = pane.createDialog(requester, "");
-	if(dialogTitle != null){
-		dialog.setTitle(dialogTitle);
-	}
-	dialog.setResizable(true);
-	dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	if (okEnabler != null) {
-		okEnabler.setJOptionPane(pane);
-	}
-	try {
-		DialogUtils.showModalJDialogOnTop(dialog, requester);
-		Object selectedValue = pane.getValue();
-		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
-			return SimpleUserMessage.OPTION_CANCEL;
-		} else {
-			return selectedValue.toString();
-		}
-	}finally {
-		dialog.dispose();
-	}
-}
-
-public static void showErrorDialog(final Component requester,final String message) {
-	showErrorDialog(requester, message, null);
-}
-
-/**
- * show error dialog in standard way
- * @param requester parent Component, may be null
- * @param message message to display
- * @param exception exception to dialog and possibility email to VCellSupport; may be null
- */
-public static void showErrorDialog(final Component requester, final String message, final Throwable exception) {
-	showErrorDialog(requester,message,exception,null);
-}
-
-public static class ErrorContext {
 	/**
-	 * information for enhanced ErrorDialog 
-	 * @param modelInfo may not be null
-	 * @param userPreferences may be null, will use {@link UserPreferences#getLastUserPreferences()}
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
 	 */
-	public ErrorContext(String modelInfo, UserPreferences userPreferences) {
-		if (modelInfo == null) {
-			throw new IllegalArgumentException("null point passed to ErrorContextInformation");
-		}
-		this.modelInfo = modelInfo;
-		if (userPreferences != null) {
-			this.userPreferences = userPreferences;
-		}
-		else {
-			this.userPreferences = UserPreferences.getLastUserPreferences();
+	private static String showDialog(final Component requester, String title, final SimpleUserMessage userMessage, final String replacementText, final int JOptionPaneMessageType) {
+		VCellThreadChecker.checkSwingInvocation();
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		
+		String message = userMessage.getMessage(replacementText);
+		JPanel panel = createMessagePanel(message);
+		JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
+		final JDialog dialog = new TitledOptionPaneDialog(lwParent, title, pane);
+		dialog.setResizable(true);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.pack();
+		try {
+			dialog.setVisible(true);
+			Object selectedValue = pane.getValue();
+			if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+				return SimpleUserMessage.OPTION_CANCEL;
+			} else {
+				return selectedValue.toString();
+			}
+		}finally {
+			dialog.dispose();
 		}
 	}
+
+	private static String showOptionsDialog(final Component requester,Component showComponent,final int JOptionPaneMessageType,String[] options,String initOption,OKEnabler okEnabler,String title) {
+		VCellThreadChecker.checkSwingInvocation();
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		
+		JOptionPane pane = new JOptionPane(showComponent, JOptionPaneMessageType, 0, null, options, initOption);
+		final JDialog dialog =  new TitledOptionPaneDialog(lwParent, title, pane);
+		dialog.setResizable(true);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		if (okEnabler != null) {
+			okEnabler.setJOptionPane(pane);
+		}
+		try {
+			dialog.setVisible(true);
+			Object selectedValue = pane.getValue();
+			if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
+				return SimpleUserMessage.OPTION_CANCEL;
+			} else {
+				return selectedValue.toString();
+			}
+		}finally {
+			dialog.dispose();
+		}
+	}
+
+	public static void showErrorDialog(final Component requester,final String message) {
+		showErrorDialog(requester, message, null);
+	}
+
 	/**
-	 * information for enhanced ErrorDialog 
-	 * @param modelInfo may not be null
+	 * show error dialog in standard way
+	 * @param requester parent Component, may be null
+	 * @param message message to display
+	 * @param exception exception to dialog and possibility email to VCellSupport; may be null
 	 */
-	public ErrorContext(String modelInfo) {
-		this(modelInfo,null);
+	public static void showErrorDialog(final Component requester, final String message, final Throwable exception) {
+		showErrorDialog(requester,message,exception,null);
+	}
+
+	public static class ErrorContext {
+		/**
+		 * information for enhanced ErrorDialog 
+		 * @param modelInfo may not be null
+		 * @param userPreferences may be null, will use {@link UserPreferences#getLastUserPreferences()}
+		 */
+		public ErrorContext(String modelInfo, UserPreferences userPreferences) {
+			if (modelInfo == null) {
+				throw new IllegalArgumentException("null point passed to ErrorContextInformation");
+			}
+			this.modelInfo = modelInfo;
+			if (userPreferences != null) {
+				this.userPreferences = userPreferences;
+			}
+			else {
+				this.userPreferences = UserPreferences.getLastUserPreferences();
+			}
+		}
+		/**
+		 * information for enhanced ErrorDialog 
+		 * @param modelInfo may not be null
+		 */
+		public ErrorContext(String modelInfo) {
+			this(modelInfo,null);
+		}
+
+		/**
+		 * can this ErrorContext be used? 
+		 * @return true if it can
+		 */
+		public boolean canUse( ) {
+			return userPreferences != null;
+		}
+
+		final String modelInfo;
+		final UserPreferences userPreferences;
 	}
 	
 	/**
-	 * can this ErrorContext be used? 
-	 * @return true if it can
+	 * set visible to true, then dispose (implies modal dialog)
+	 * @param c not null
 	 */
-	public boolean canUse( ) {
-		return userPreferences != null;
+	private static void showOnce(Dialog c) {
+		try {
+			c.setVisible(true);
+		}
+		finally {
+			c.dispose( );
+		}
 	}
-	
-	final String modelInfo;
-	final UserPreferences userPreferences;
-}
 
-
-/**
- * show error dialog in standard way. If modelInfo is not null user is prompted to allow sending of context information
- * @param requester parent Component, may be null
- * @param message message to display
- * @param exception exception to dialog and possibility email to VCellSupport; may be null
- * @param modelInfo information to include in email to VCellSupport; may be null 
- */
-public static void showErrorDialog(final Component requester, final String message, final Throwable exception, 
-		final ErrorContext errorContext) {
-		final VCellConnection.ExtraContext extraContext = new VCellConnection.ExtraContext();
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	/**
+	 * show error dialog in standard way. If modelInfo is not null user is prompted to allow sending of context information
+	 * @param requester parent Component, may be null
+	 * @param message message to display
+	 * @param exception exception to dialog and possibility email to VCellSupport; may be null
+	 * @param modelInfo information to include in email to VCellSupport; may be null 
+	 */
+	public static void showErrorDialog(final Component requester, final String message, final Throwable exception, final ErrorContext errorContext) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		
+		Doer doer = ( ) -> {
+			final VCellConnection.ExtraContext extraContext = new VCellConnection.ExtraContext();
 			final boolean haveContext = errorContext != null && errorContext.canUse();
 			String errMsg = message;
 			boolean sendErrorReport = false;
@@ -838,7 +794,7 @@ public static void showErrorDialog(final Component requester, final String messa
 					|| exception instanceof Error) {
 				sendErrorReport = true;
 			}
-			
+
 			boolean initialCheckState = false;
 			final boolean goingToEmail = sendErrorReport && VCellClientTest.getVCellClient() != null;
 			JPanelWithCb panel = createMessagePanel(errMsg);
@@ -852,12 +808,12 @@ public static void showErrorDialog(final Component requester, final String messa
 				sp.setSuggestedSolution(suggestions);
 				panel.add(sp,BorderLayout.NORTH);
 			}
-				
+
 			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = pane.createDialog(requester, "Error");
+			JDialog dialog = new TitledOptionPaneDialog(lwParent, "Error", pane);
 			dialog.setResizable(true);
 			try{
-				DialogUtils.showModalJDialogOnTop(dialog, requester);
+				dialog.setVisible(true);
 				if (goingToEmail) {
 					if (haveContext) {
 						Throwable throwableToSend = null; 
@@ -878,187 +834,173 @@ public static void showErrorDialog(final Component requester, final String messa
 						assert(haveContext == false);
 						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception, extraContext);
 					}
-					
+
 				}
 			} finally{
 				dialog.dispose();
 			}
-			return null;
-		}
-	}.dispatchConsumeException();
-}
+		};
 
-/**
- * subclass to carry supplemental information about context of exception
- * currently unused until deployed in postprocessors
- */
-@SuppressWarnings({ "serial", "unused" })
-private static class ContextCarrierException extends RuntimeException {
-	ContextCarrierException(String msg, Throwable payload) {
-		super(msg,payload);
+		VCSwingFunction.executeConsumeException(doer);
 	}
-}
 
-public static void showWarningDialog(final Component requester, final String message) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareWarningDialog(requester, message);
-			try{
-				DialogUtils.showModalJDialogOnTop(dialog, requester);
-			}finally{
-				dialog.dispose();
-			}
-			return null;
+	/**
+	 * subclass to carry supplemental information about context of exception
+	 * currently unused until deployed in postprocessors
+	 */
+	@SuppressWarnings({ "serial", "unused" })
+	private static class ContextCarrierException extends RuntimeException {
+		ContextCarrierException(String msg, Throwable payload) {
+			super(msg,payload);
 		}
-	}.dispatchConsumeException();
-}
-
-public static void showInfoDialog(final Component requester, final String message) {
-	showInfoDialog(requester, "Info", message);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:17:45 AM)
- * @param owner java.awt.Component
- * @param message java.lang.Object
- */
-public static void showInfoDialog(final Component requester, final String title, final String message) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareInfoDialog(requester, title, message);
-			try{
-				DialogUtils.showModalJDialogOnTop(dialog, requester);
-			}finally{
-				dialog.dispose();
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
-}
-public static void showInfoDialogAndResize(final Component requester, final String title, final String message) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
-			final JDialog dialog = prepareInfoDialog(requester, title, message);
-
-//			It may be better to tune the size based on the number of characters to display
-//			Rectangle currentScreen = getCurrentScreenBounds(requester);
-//			int currentScreenWidth = currentScreen.width;
-//			int currentScreenHeight = currentScreen.height;
-			
-			Dimension d = new Dimension(800, 350);
-			dialog.setSize(d);
-			Point location = requester.getLocationOnScreen();
-			dialog.setLocation(location.x, 400);
-
-			try{
-				DialogUtils.showModalJDialogOnTop(dialog, requester);
-			}finally{
-				dialog.dispose();
-			}
-			return null;
-		}
-	}.dispatchWrapRuntime();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-public static String showInputDialog0(final Component requester,final  String message,final  String initialValue) throws UtilCancelException{
-	try{
-		return (String) new SwingDispatcherSync() {
-			public Object runSwing() throws Exception{
-				JPanel panel = new JPanel(new BorderLayout());
-				JOptionPane inputDialog = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-				if(message.indexOf('\n') == -1){
-					panel.add(new JLabel(message), BorderLayout.NORTH);
-				}else{
-					JPanel msgPanel = createMessagePanel(message);
-					panel.add(msgPanel, BorderLayout.NORTH);
-				}
-				inputDialog.setMessage(panel);
-				inputDialog.setWantsInput(true);
-				if (initialValue!=null){
-					inputDialog.setInitialSelectionValue(initialValue);
-				}
-				final JDialog d = inputDialog.createDialog(requester, "INPUT:");
-				d.setResizable(false);
-				String id = Long.toString(System.currentTimeMillis());
-				Hashtable<String, Object> choices  = new Hashtable<String, Object>();
-				try {
-					DialogUtils.showModalJDialogOnTop(d,requester);				
-					if(inputDialog.getValue() instanceof Integer && ((Integer)inputDialog.getValue()).intValue() == JOptionPane.CANCEL_OPTION){
-						throw UtilCancelException.CANCEL_GENERIC;
-					}
-					
-					choices.put(id, inputDialog.getInputValue());
-				} catch (Exception exc) {
-					if(exc instanceof UtilCancelException){
-						throw (UtilCancelException)exc;
-					}
-					exc.printStackTrace(System.out);
-					choices.put(id, JOptionPane.UNINITIALIZED_VALUE);
-				} finally {
-					d.dispose();
-				}
-				String input = (String)choices.get(id);
-				return input == JOptionPane.UNINITIALIZED_VALUE ? null : input;
-			}
-		}.dispatchWithException();
-	}catch(Exception e){
-		if(e instanceof UtilCancelException){
-			throw (UtilCancelException)e;
-		}
-		if(e instanceof RuntimeException){
-			throw (RuntimeException)e;
-		}
-		throw new RuntimeException(e.getMessage(),e);
 	}
-}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-public static Object showListDialog(final Component requester, Object[] names, String dialogTitle) {
-	return showListDialog(requester,names,dialogTitle,null);
-}
+	public static void showWarningDialog(final Component requester, final String message) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Doer doer = ( ) -> {
+			JPanel panel = createMessagePanel(message);
+			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
+			LWDialog dialog = new TitledOptionPaneDialog(lwParent, "Warning", pane);
+			dialog.setResizable(true);
+			showOnce(dialog);
+		};
+		VCSwingFunction.executeAsRuntimeException(doer);
+	}
+
+	public static void showInfoDialog(final Component requester, final String message) {
+		showInfoDialog(requester, "Info", message);
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-@SuppressWarnings("rawtypes")
-public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer listCellRenderer) {
-	try{
-	return
-	new SwingDispatcherSync (){
-		@SuppressWarnings({ "unchecked" })
-		public Object runSwing() throws Exception{
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:17:45 AM)
+	 * @param owner java.awt.Component
+	 * @param message java.lang.Object
+	 */
+	public static void showInfoDialog(final Component requester, final String title, final String message) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Doer doer = ( ) -> {
+			JPanel panel = createMessagePanel(message);
+			JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+			LWDialog dialog = new TitledOptionPaneDialog(lwParent,title,pane);
+			dialog.setResizable(true);
+			showOnce(dialog);
+		};
+
+		VCSwingFunction.executeAsRuntimeException(doer);
+	}
+
+	/**
+	 * use showInfoDialog
+	 * @param requester
+	 * @param title
+	 * @param message
+	 */
+	@Deprecated
+	public static void showInfoDialogAndResize(final Component requester, final String title, final String message) {
+		showInfoDialog(requester,title,message);
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	public static String showInputDialog0(final Component requester,final  String message,final  String initialValue) throws UtilCancelException{
+		//TODO: rename showInputDialog after trunk merge
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Producer<String> prod = ( ) -> {
+			JPanel panel = new JPanel(new BorderLayout());
+			JOptionPane inputDialog = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+			if(message.indexOf('\n') == -1){
+				panel.add(new JLabel(message), BorderLayout.NORTH);
+			}else{
+				JPanel msgPanel = createMessagePanel(message);
+				panel.add(msgPanel, BorderLayout.NORTH);
+			}
+			inputDialog.setMessage(panel);
+			inputDialog.setWantsInput(true);
+			if (initialValue!=null){
+				inputDialog.setInitialSelectionValue(initialValue);
+			}
+			final JDialog d = new TitledOptionPaneDialog(lwParent, "INPUT:", inputDialog);
+			d.setResizable(false);
+			String id = Long.toString(System.currentTimeMillis());
+			Hashtable<String, Object> choices  = new Hashtable<String, Object>();
+			try {
+				d.setVisible(true);
+				if(inputDialog.getValue() instanceof Integer && ((Integer)inputDialog.getValue()).intValue() == JOptionPane.CANCEL_OPTION){
+					throw UtilCancelException.CANCEL_GENERIC;
+				}
+
+				choices.put(id, inputDialog.getInputValue());
+			} catch (Exception exc) {
+				if(exc instanceof UtilCancelException){
+					throw (UtilCancelException)exc;
+				}
+				exc.printStackTrace(System.out);
+				choices.put(id, JOptionPane.UNINITIALIZED_VALUE);
+			} finally {
+				d.dispose();
+			}
+			String input = (String)choices.get(id);
+			return input == JOptionPane.UNINITIALIZED_VALUE ? null : input;
+		};
+		try {
+			return VCSwingFunction.execute(prod);
+		}catch(Exception e){
+			if(e instanceof UtilCancelException){
+				throw (UtilCancelException)e;
+			}
+			if(e instanceof RuntimeException){
+				throw (RuntimeException)e;
+			}
+			throw new RuntimeException(e.getMessage(),e);
+		}
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	public static Object showListDialog(final Component requester, Object[] names, String dialogTitle) {
+		return showListDialog(requester,names,dialogTitle,null);
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	public static Object showListDialog(final Component requester,final  Object[] names,final  String dialogTitle,final  ListCellRenderer<Object> listCellRenderer) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Producer<Object> prod = ( ) -> {
 			JPanel panel = new JPanel(new BorderLayout());
 			final JOptionPane pane = new JOptionPane(null, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			final JList list = new JList(names);
+			final JList<Object> list = new JList<>(names);
 			if (listCellRenderer!=null){
 				list.setCellRenderer(listCellRenderer);
 			}
@@ -1074,19 +1016,19 @@ public static Object showListDialog(final Component requester,final  Object[] na
 
 			setInternalOKEnabled(pane,false);
 			list.addListSelectionListener(
-				new javax.swing.event.ListSelectionListener(){
-					  public void valueChanged(javax.swing.event.ListSelectionEvent e){
-						  if(!e.getValueIsAdjusting()){
-						  	DialogUtils.setInternalOKEnabled(pane,list.getSelectedIndex() != -1);
-						  }
-					  }
-				}
-			);
-			
-			final JDialog dialog = pane.createDialog(requester, dialogTitle);
+					new javax.swing.event.ListSelectionListener(){
+						public void valueChanged(javax.swing.event.ListSelectionEvent e){
+							if(!e.getValueIsAdjusting()){
+								DialogUtils.setInternalOKEnabled(pane,list.getSelectedIndex() != -1);
+							}
+						}
+					}
+					);
+
+			final JDialog dialog = new TitledOptionPaneDialog(lwParent, dialogTitle,pane);
 			dialog.setResizable(true);
 			try {
-				DialogUtils.showModalJDialogOnTop(dialog,requester);
+				dialog.setVisible(true);
 				Object selectedValue = pane.getValue();
 				if(selectedValue == null || (((Integer)selectedValue).intValue() == JOptionPane.CLOSED_OPTION) || (((Integer)selectedValue).intValue() == JOptionPane.CANCEL_OPTION)) {
 					return null;
@@ -1100,26 +1042,24 @@ public static Object showListDialog(final Component requester,final  Object[] na
 			}finally {
 				dialog.dispose();
 			}
-		}
-	}.dispatchWithException();
-	}catch(Exception e){
-		return null;
+		};
+		return VCSwingFunction.executeAsRuntimeException(prod);
 	}
-}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-protected static void showReportDialog(final Component requester, final String reportText) {
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	protected static void showReportDialog(final Component requester, final String reportText) {
+		checkForNull(requester);
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+		Doer doer = ( ) -> {
 			JPanel panel = new JPanel(new BorderLayout());
 			JScrollPane scroller = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			JTextArea textArea = new JTextArea(reportText);
@@ -1127,118 +1067,130 @@ protected static void showReportDialog(final Component requester, final String r
 			scroller.getViewport().setPreferredSize(new Dimension(600, 400));
 			panel.add(scroller, BorderLayout.CENTER);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION); 
-			final JDialog dialog = pane.createDialog(requester, "Complete Report");
-			try {
-				DialogUtils.showModalJDialogOnTop(dialog, requester);
-				return null;
-			}finally {
-				dialog.dispose();
-			}
-		}
-	}.dispatchWrapRuntime();
-}
+			final JDialog dialog = new TitledOptionPaneDialog(lwParent, "Complete Report",pane);
+			showOnce(dialog);
+		};
+		VCSwingFunction.executeAsRuntimeException(doer);
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 3:23:18 AM)
- * @return int
- * @param owner java.awt.Component
- * @param message java.lang.String
- * @param preferences cbit.vcell.client.UserPreferences
- * @param preferenceName java.lang.String
- */
-public static String showWarningDialog(final Component parentComponent,final  String message,final  String[] options,final  String defaultOption) {
-	return showWarningDialog(parentComponent, "", message, options, defaultOption);
-}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/21/2004 3:23:18 AM)
+	 * @return int
+	 * @param owner java.awt.Component
+	 * @param message java.lang.String
+	 * @param preferences cbit.vcell.client.UserPreferences
+	 * @param preferenceName java.lang.String
+	 */
+	public static String showWarningDialog(final Component parentComponent,final  String message,final  String[] options,final  String defaultOption) {
+		return showWarningDialog(parentComponent, "", message, options, defaultOption);
+	}
 
-public static String showWarningDialog(final Component parentComponent,final String title, final String message, final  String[] options,final  String defaultOption) {
-	return (String)
-	new SwingDispatcherSync (){
-		public Object runSwing() throws Exception{
+	public static String showWarningDialog(final Component parentComponent,final String title, final String message, final  String[] options,final  String defaultOption) {
+		Producer<String> prod = ( ) -> {
 			if (parentComponent==null){
 				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 			}
 			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message,options,defaultOption);
 			return showDialog(parentComponent, title, simpleUserMessage, null,JOptionPane.WARNING_MESSAGE);
-		}
-	}.dispatchWrapRuntime();
-
-}
-
-public static String showOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
-	if (parentComponent==null){
-		throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
+		};
+		return VCSwingFunction.executeConsumeException(prod);
 	}
-	SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
-	if (SwingUtilities.isEventDispatchThread()) {
-		return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
-	}
-	else {
-		return (String)
-				new SwingDispatcherSync (){
-			public Object runSwing() throws Exception{
-				return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+
+	public static String showOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
+		Producer<String> prod = ( ) -> {
+			if (parentComponent==null){
+				throw new IllegalArgumentException("PopupGenerator.showWarningDialog() parentComponent cannot be null");
 			}
-		}.dispatchWrapRuntime();	
+			SimpleUserMessage simpleUserMessage = new SimpleUserMessage(message, new String[] {SimpleUserMessage.OPTION_OK, SimpleUserMessage.OPTION_CANCEL}, SimpleUserMessage.OPTION_OK);
+			return showDialog(parentComponent, title, simpleUserMessage, null, JOptionPane.WARNING_MESSAGE);
+		};
+		return VCSwingFunction.executeAsRuntimeException(prod);
 	}
-}
-/**
- * call {@link #showOKCancelWarningDialog(Component, String, String)}, return true if user presses okay
- * @param parentComponent
- * @param title
- * @param message
- * @return true if user says OK
- */
-public static boolean queryOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
-	String ret = showOKCancelWarningDialog(parentComponent, title, message);
-	return ret == SimpleUserMessage.OPTION_OK;
-}
 
-public static void showModalJDialogOnTop(JDialog jdialog, Component component) {
-	jdialog.setModal(true);
-	jdialog.setVisible(true);
-}
+	/**
+	 * call {@link #showOKCancelWarningDialog(Component, String, String)}, return true if user presses okay
+	 * @param parentComponent
+	 * @param title
+	 * @param message
+	 * @return true if user says OK
+	 */
+	public static boolean queryOKCancelWarningDialog(final Component parentComponent, final String title, final String message) {
+		String ret = showOKCancelWarningDialog(parentComponent, title, message);
+		return ret == SimpleUserMessage.OPTION_OK;
+	}
 
-public static Icon swingIcon(int optionPaneValue){
-	String key;
-	switch (optionPaneValue) {
-	case JOptionPane.QUESTION_MESSAGE:
-		key= "questionIcon";
-		break;
-	case JOptionPane.WARNING_MESSAGE:
-		key= "warningIcon";
-		break;
-	case JOptionPane.ERROR_MESSAGE:
-		key= "errorIcon";
-		break;
-	case JOptionPane.INFORMATION_MESSAGE:
-		key= "informationIcon";
-		break;
+	/**
+	 * @deprecated -- use setVisible on LWDialog
+	 * @param jdialog
+	 * @param component 
+	 */
+	public static void showModalJDialogOnTop(JDialog jdialog, Component component) {
+		if (jdialog instanceof LWDialog) {
+			jdialog.setVisible(true);
+			return;
+		}
+		LWContainerHandle lwParent = LWNamespace.findLWOwner(component);
+		LWJDialogDecorator deco = LWJDialogDecorator.decoratorFor(jdialog);
+		lwParent.manage(deco);
+		deco.getWindow().setVisible(true);
+	}
+
+	public static Icon swingIcon(int optionPaneValue){
+		String key;
+		switch (optionPaneValue) {
+		case JOptionPane.QUESTION_MESSAGE:
+			key= "questionIcon";
+			break;
+		case JOptionPane.WARNING_MESSAGE:
+			key= "warningIcon";
+			break;
+		case JOptionPane.ERROR_MESSAGE:
+			key= "errorIcon";
+			break;
+		case JOptionPane.INFORMATION_MESSAGE:
+			key= "informationIcon";
+			break;
 		default:
 			throw new UnsupportedOperationException("DialogUtils.swingIcon value " + optionPaneValue);
+		}
+		Icon i = UIManager.getIcon("OptionPane." + key);
+		return i;
 	}
-	Icon i = UIManager.getIcon("OptionPane." + key);
-	return i;
-}
 
-public static int findScreen(JDialog dialog) {
-	GraphicsConfiguration config = dialog.getGraphicsConfiguration();
-	GraphicsDevice myScreen = config.getDevice();
-	GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-	GraphicsDevice[] allScreens = env.getScreenDevices();
-	int myScreenIndex = -1;
-	for (int i = 0; i < allScreens.length; i++) {
-		if (allScreens[i].equals(myScreen)) {
-			myScreenIndex = i;
-			break;
+	public static int findScreen(JDialog dialog) {
+		GraphicsConfiguration config = dialog.getGraphicsConfiguration();
+		GraphicsDevice myScreen = config.getDevice();
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] allScreens = env.getScreenDevices();
+		int myScreenIndex = -1;
+		for (int i = 0; i < allScreens.length; i++) {
+			if (allScreens[i].equals(myScreen)) {
+				myScreenIndex = i;
+				break;
+			}
+		}
+		System.out.println("Dialog is on screen " + myScreenIndex);
+		return myScreenIndex;
+	}
+	public static Rectangle getCurrentScreenBounds(Component component) {
+		return component.getGraphicsConfiguration().getBounds();
+	}
+	
+	/**
+	 * temporarily print error message for null input Components -- should eventually be an Exception
+	 * @param c
+	 */
+	private static void checkForNull(Component c) {
+		if (c == null) {
+			StringBuilder sb = new StringBuilder("Null component passed to DialogUtils");
+			for (StackTraceElement ste :Thread.currentThread().getStackTrace()) {
+				sb.append(ste);
+				sb.append('\n');
+			}
+			System.err.println(sb.toString());
 		}
 	}
-	System.out.println("Dialog is on screen " + myScreenIndex);
-	return myScreenIndex;
-}
-public static Rectangle getCurrentScreenBounds(Component component) {
-    return component.getGraphicsConfiguration().getBounds();
-}
 
 }

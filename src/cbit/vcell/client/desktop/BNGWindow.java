@@ -10,17 +10,23 @@
 
 package cbit.vcell.client.desktop;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
+
 import cbit.vcell.client.ChildWindowManager;
+import javax.swing.JMenuBar;
+import java.awt.BorderLayout;
 
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2006 11:06:11 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class BNGWindow extends javax.swing.JFrame implements TopLevelWindow {
+@SuppressWarnings("serial")
+public class BNGWindow extends LWTopFrame implements TopLevelWindow {
 	private javax.swing.JPanel ivjJFrameContentPane = null;
 	private cbit.vcell.client.BNGWindowManager fieldBngWindowManager = null;
 	private final ChildWindowManager childWindowManager;
+	private final String menuDesc;
 
 /**
  * BNGWindow constructor comment.
@@ -29,7 +35,14 @@ public BNGWindow() {
 	super();
 	initialize();
 	childWindowManager = new ChildWindowManager(this);
+	menuDesc = LWTopFrame.nextSequentialDescription("BioNetGen");
 }
+
+@Override
+public String menuDescription() {
+	return menuDesc; 
+}
+
 
 /**
  * Gets the bngWindowManager property (cbit.vcell.client.BNGWindowManager) value.
@@ -97,38 +110,17 @@ private void initialize() {
 		setName("BNGWindow");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setSize(612, 612);
-		add(getJFrameContentPane());
+		getContentPane().add(getJFrameContentPane());
+		
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.add( createWindowMenu(false) );
+		getContentPane().add(menuBar, BorderLayout.NORTH);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
 	// user code begin {2}
 	// user code end
 }
-
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		BNGWindow aBNGWindow;
-		aBNGWindow = new BNGWindow();
-		aBNGWindow.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		aBNGWindow.show();
-		java.awt.Insets insets = aBNGWindow.getInsets();
-		aBNGWindow.setSize(aBNGWindow.getWidth() + insets.left + insets.right, aBNGWindow.getHeight() + insets.top + insets.bottom);
-		aBNGWindow.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JFrame");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * Sets the bngWindowManager property (cbit.vcell.client.BNGWindowManager) value.
