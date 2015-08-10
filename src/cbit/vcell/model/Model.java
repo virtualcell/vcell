@@ -1408,7 +1408,8 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		}
 		
 		public ReactionRule createReactionRule(Structure structure) {
-			return createReactionRule("", structure, true);
+			String name = getReactionName();
+			return createReactionRule(name, structure, true);
 		}
 		
 		public ReactionRule createReactionRule(String label, Structure structure, boolean bReversible) {		
