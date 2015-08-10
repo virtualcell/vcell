@@ -9,12 +9,14 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
 import org.apache.thrift.TException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
@@ -61,28 +63,24 @@ public VCellProxyHandler(VCellClient vcellClient) {
 @Override 
 public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.client.pyvcellproxy.ThriftDataAccessException, org.apache.thrift.TException {
 	ArrayList<SimulationDataSetRef> simulationDataSetRefs = new ArrayList<SimulationDataSetRef>();
-	TopLevelWindowManager windowManager = null;
-	Enumeration<TopLevelWindowManager> windowManagers = vcellClient.getMdiManager().getWindowManagers();
 
-	while (windowManagers.hasMoreElements()) {
-		windowManager = windowManagers.nextElement();
+	for ( TopLevelWindowManager windowManager :  vcellClient.getMdiManager().getWindowManagers() ) {
 		Simulation[] simulations = null;
 		VCDocument modelDocument = null;
-		int simOwnerCount = 0;
 		
 		if (windowManager instanceof BioModelWindowManager){
 			BioModelWindowManager selectedBioWindowManager = (BioModelWindowManager)windowManager;
 			BioModel bioModel = selectedBioWindowManager.getBioModel();
 			simulations = bioModel.getSimulations();
 			modelDocument = bioModel;
-			simOwnerCount = bioModel.getNumSimulationContexts();
+//			simOwnerCount = bioModel.getNumSimulationContexts();
 			
 		}else if (windowManager instanceof MathModelWindowManager){
 			MathModelWindowManager selectedMathWindowManager = (MathModelWindowManager)windowManager; 
 			MathModel mathModel = selectedMathWindowManager.getMathModel();
 			simulations = mathModel.getSimulations();
 			modelDocument = mathModel;
-			simOwnerCount = 1;
+//			simOwnerCount = 1;
 		}
 		if (simulations != null){
 			for (Simulation simulation : simulations){
@@ -420,8 +418,14 @@ public void displayPostProcessingDataInVCell(SimulationDataSetRef simulationData
 		}
 		 final ClientPDEDataContext newClientPDEDataContext = pdeDataManager.getPDEDataContext();
 		
-		Enumeration<TopLevelWindowManager> windowManagers = vcellClient.getMdiManager().getWindowManagers();
-		final Window window = FindWindow.getWindow(windowManagers.nextElement().getComponent());
+//		 this was the code before the windows refactoring; appears to just always get the first window???
+//		Enumeration<TopLevelWindowManager> windowManagers = vcellClient.getMdiManager().getWindowManagers();
+//		final Window window = FindWindow.getWindow(windowManagers.nextElement().getComponent());
+		 
+		Optional<TopLevelWindowManager> first = vcellClient.getMdiManager().getWindowManagers().stream( ).findFirst();
+		VCAssert.assertTrue(first.isPresent(), "window manager not present?" );
+		
+		final Window window = FindWindow.getWindow(first.get().getComponent());
 	
 		AsynchClientTask task = new AsynchClientTask("Display Post Processing Statistics", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING,false,false) {
 			

@@ -19,15 +19,20 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.RootPaneContainer;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.VCDocument;
@@ -57,9 +62,13 @@ public class ClientMDIManager implements MDIManager {
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
 	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
+	private static interface Creator {
+		void create( );
+	}
 	private RequestManager requestManager = null;
-	private Hashtable<String, TopLevelWindow> windowsHash = new Hashtable<String, TopLevelWindow>();
-	private Hashtable<String, TopLevelWindowManager> managersHash = new Hashtable<String, TopLevelWindowManager>();
+	private Map<String, TopLevelWindow> windowsHash = new HashMap<String, TopLevelWindow>();
+	private Map<String, TopLevelWindowManager> managersHash = new HashMap<String, TopLevelWindowManager>();
+	private Map<String,Creator> creators = new HashMap<>();
 	private int numCreatedDocumentWindows = 0;
 	
 	private WindowAdapter windowListener = new WindowAdapter() {
@@ -103,34 +112,10 @@ public static Window blockWindow(Component component) {
 
 /**
  * Insert the method's description here.
- * Creation date: (5/25/2004 2:03:47 AM)
- * @return int
- */
-void cleanup() {
-	if (numberOfWindowsShowing() == 0) {
-		// last window was closed, hash still contains recyclables
-		Enumeration<TopLevelWindowManager> recyclableWindowManagers = getManagersHash().elements();
-		while (recyclableWindowManagers.hasMoreElements()) {
-			String managerID = recyclableWindowManagers.nextElement().getManagerID();
-			JFrame window = (JFrame)getWindowsHash().get(managerID);
-			getManagersHash().remove(managerID);
-			getWindowsHash().remove(managerID);
-			window.removeWindowListener(windowListener);
-			window.dispose();
-		}
-		// dispose of reusable dialogs
-		// getDatabaseWindowManager().cleanup();
-		// we are clean now... all our threads *should* die and JVM should exit if no other application running
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/24/2004 11:20:58 AM)
  * @param windowID java.lang.String
  */
-public int closeWindow(String windowID) {
+public long closeWindow(String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame window = (JFrame)getWindowsHash().get(windowID);
 		if (window.isShowing()) {
@@ -154,6 +139,13 @@ public int closeWindow(String windowID) {
 	}
 	// others need to know... (e.g. last window was closed)
 	return numberOfWindowsShowing();
+}
+
+/**
+ * @return number of top level windows
+ */
+private long numberOfWindowsShowing( ) {
+	return LWTopFrame.liveWindows().count();
 }
 
 /**
@@ -186,8 +178,8 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:07:12 PM)
  */
-private DocumentWindow createDocumentWindow() {	
-	DocumentWindow documentWindow = new DocumentWindow();
+private DocumentWindow createDocumentWindow(String menuDesc) {	
+	DocumentWindow documentWindow = new DocumentWindow(menuDesc);
 	// stagger 90% screen size windows
 	documentWindow.setSize(JFRAME_SIZE);
 	BeanUtils.centerOnScreen(documentWindow);
@@ -217,12 +209,13 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	// used for opening new document windows
 	// assumes caller checked for having this document already open
 
-	// make the window
-	DocumentWindow documentWindow = createDocumentWindow();
-	documentWindow.setWorkArea(windowManager.getComponent());
-	
 	// keep track of things
 	String windowID = windowManager.getManagerID();
+	
+	// make the window
+	DocumentWindow documentWindow = createDocumentWindow(windowID);
+	documentWindow.setWorkArea(windowManager.getComponent());
+	
 	getWindowsHash().put(windowID, documentWindow);
 	getManagersHash().put(windowID, windowManager);
 	// wire manager to events
@@ -239,6 +232,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	documentWindow.setVisible(true);
 }
 
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 12:55:28 PM)
@@ -252,15 +246,16 @@ void createRecyclableWindows() {
 		// keep track of things
 		getManagersHash().put(DATABASE_WINDOW_ID, windowManager);
 	}
-	/* testing framework */
-	//...
-	//cbit.vcell.server.User currentUser = null;
-	//if (getRequestManager().getDocumentManager()!=null){
-		//currentUser = getRequestManager().getDocumentManager().getUser();
-	//}
+	creators.put(TESTING_FRAMEWORK_WINDOW_ID, this::createTestingFramework); 
+	creators.put(BIONETGEN_WINDOW_ID,this::createBioNetGen);
+	creators.put(FIELDDATA_WINDOW_ID,this::createFieldData);
+}
+
+private void createTestingFramework( ) {
+
 	if (! getWindowsHash().containsKey(TESTING_FRAMEWORK_WINDOW_ID) /*&& currentUser!=null && currentUser.isTestAccount()*/) {
 		// make the window
-		TestingFrameworkWindow testingFrameworkWindow = new TestingFrameworkWindow();
+		TestingFrameworkWindow testingFrameworkWindow = new TestingFrameworkWindow(); 
 		TestingFrameworkWindowPanel testingFrameworkWindowPanel = new TestingFrameworkWindowPanel();
 		testingFrameworkWindow.setWorkArea(testingFrameworkWindowPanel);
 		testingFrameworkWindow.setSize(JFRAME_SIZE);
@@ -276,19 +271,21 @@ void createRecyclableWindows() {
 		testingFrameworkWindow.setTestingFrameworkWindowManager(windowManager);
 		testingFrameworkWindowPanel.setTestingFrameworkWindowManager(windowManager);
 		blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
-		
+
 		// wiring up export and simStatus listener to update viewing simulations
 		getRequestManager().getAsynchMessageManager().addSimStatusListener(windowManager);
 		getRequestManager().getAsynchMessageManager().addExportListener(windowManager);
 		getRequestManager().getAsynchMessageManager().addDataJobListener(windowManager);
-		
+
 		// listen for event when user clicks window close button
 		testingFrameworkWindow.addWindowListener(windowListener);
 	}
+}
+private void createBioNetGen( ) {
 
 	if (! getWindowsHash().containsKey(BIONETGEN_WINDOW_ID) ) {
 		// make the window
-		BNGWindow bngWindow = new BNGWindow();
+		BNGWindow bngWindow = new BNGWindow(); 
 		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
 		bngWindow.setWorkArea(bngOutputPanel);
 		bngWindow.setSize(JFRAME_SIZE);
@@ -304,12 +301,14 @@ void createRecyclableWindows() {
 		// set bngService for bngOutputPanel - thro' clientServerManager or separate manager for bionetgen?
 		bngWindow.setBngWindowManager(windowManager);
 		bngOutputPanel.setBngWindowManager(windowManager);
-//		blockWindow(BIONETGEN_WINDOW_ID);
-		
+		//		blockWindow(BIONETGEN_WINDOW_ID);
+
 		// listen for event when user clicks window close button
 		bngWindow.addWindowListener(windowListener);
 	}
-	
+}
+
+private void createFieldData( ) {
 	if (! getWindowsHash().containsKey(FIELDDATA_WINDOW_ID) ) {
 		// make the window
 		FieldDataWindow fieldDataWindow = new FieldDataWindow();
@@ -320,7 +319,7 @@ void createRecyclableWindows() {
 		BeanUtils.centerOnScreen(fieldDataWindow);
 		// make the manager
 		FieldDataWindowManager fieldDataWindowManager =
-			new FieldDataWindowManager(fieldDataGUIPanel,getRequestManager());
+				new FieldDataWindowManager(fieldDataGUIPanel,getRequestManager());
 		// keep track of things
 		getWindowsHash().put(FIELDDATA_WINDOW_ID, fieldDataWindow);
 		getManagersHash().put(FIELDDATA_WINDOW_ID, fieldDataWindowManager);
@@ -334,14 +333,30 @@ void createRecyclableWindows() {
 	}
 }
 
+/**
+ * lazily get window from hash; build recyclable window on demand
+ * @param key not null
+ * @return existing window, or new recyclable window, or null
+ */
+public TopLevelWindow getWindow(String key) {
+	TopLevelWindow w = windowsHash.get(key);
+	if (w != null) {
+		return w;
+	}
+	Creator c = creators.get(key);
+	if (c != null) {
+		c.create();
+	}
 
+	return windowsHash.get(key);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 8:57:53 PM)
  * @return cbit.vcell.client.desktop.DatabaseWindowManager
  */
 public BNGWindowManager getBNGWindowManager() {
-	return (BNGWindowManager)getManagersHash().get(BIONETGEN_WINDOW_ID);
+	return (BNGWindowManager)getWindowManager(BIONETGEN_WINDOW_ID);
 }
 
 
@@ -351,19 +366,19 @@ public BNGWindowManager getBNGWindowManager() {
  * @return cbit.vcell.client.desktop.DatabaseWindowManager
  */
 public DatabaseWindowManager getDatabaseWindowManager() {
-	return (DatabaseWindowManager)getManagersHash().get(DATABASE_WINDOW_ID);
+	return (DatabaseWindowManager)getWindowManager(DATABASE_WINDOW_ID);
 }
 
 
 public FieldDataWindowManager getFieldDataWindowManager() {
-	return (FieldDataWindowManager)getManagersHash().get(FIELDDATA_WINDOW_ID);
+	return (FieldDataWindowManager)getWindowManager(FIELDDATA_WINDOW_ID);
 }
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 12:48:08 PM)
  * @return java.util.Hashtable
  */
-private Hashtable<String, TopLevelWindowManager> getManagersHash() {
+private Map<String, TopLevelWindowManager> getManagersHash() {
 	return managersHash;
 }
 
@@ -392,37 +407,41 @@ private RequestManager getRequestManager() {
  * @return cbit.vcell.client.desktop.DatabaseWindowManager
  */
 public TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
-	return (TestingFrameworkWindowManager)getManagersHash().get(TESTING_FRAMEWORK_WINDOW_ID);
+	return (TestingFrameworkWindowManager)getWindowManager(TESTING_FRAMEWORK_WINDOW_ID);
 }
 
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 7:55:59 PM)
- * @return cbit.vcell.client.desktop.TopLevelWindowManager
- * @param windowID java.lang.String
+ * lazily get / create TopLevelWindowManager
+ * @return existing or new window manager
  */
 public TopLevelWindowManager getWindowManager(java.lang.String windowID) {
-	return (TopLevelWindowManager)getManagersHash().get(windowID);
+	TopLevelWindowManager tlwm = managersHash.get(windowID);
+	if (tlwm != null) {
+		return tlwm;
+	}
+	Creator c = creators.get(windowID);
+	if (c != null) {
+		c.create();
+	}
+	return managersHash.get(windowID);
 }
 
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:08:49 PM)
- * @return java.util.Enumeration
+ * @return unmodifiable collection of managers
  */
-public Enumeration<TopLevelWindowManager> getWindowManagers() {
-	return getManagersHash().elements();
+public Collection<TopLevelWindowManager> getWindowManagers( ) {
+	return Collections.unmodifiableCollection(managersHash.values());
+	
 }
-
 
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 11:21:31 AM)
  * @return java.util.Hashtable
  */
-private Hashtable<String, TopLevelWindow> getWindowsHash() {
+private Map<String, TopLevelWindow> getWindowsHash() {
 	return windowsHash;
 }
 
@@ -461,24 +480,9 @@ public TopLevelWindowManager getFocusedWindowManager() {
  * @param windowID java.lang.String
  */
 public boolean haveWindow(java.lang.String windowID) {
-	return getWindowsHash().containsKey(windowID);
+	TopLevelWindow w = getWindow(windowID);
+	return w != null;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/25/2004 2:03:47 AM)
- * @return int
- */
-private int numberOfWindowsShowing() {
-	int i = 0;
-	Enumeration<TopLevelWindow> en = getWindowsHash().elements();
-	while (en.hasMoreElements()) {
-		i = ((JFrame)en.nextElement()).isShowing() ? i + 1 : i;
-	}
-	return i;
-}
-
 
 /**
  * Insert the method's description here.
@@ -584,14 +588,11 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 //		blockWindow(BIONETGEN_WINDOW_ID);
 		blockWindow(FIELDDATA_WINDOW_ID);
 	}
-	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
-	while (windows.hasMoreElements()) {
-		TopLevelWindow window = windows.nextElement();
+	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateConnectionStatus(connectionStatus);
 	}
-	Enumeration<TopLevelWindowManager> managers = getWindowManagers();
-	while (managers.hasMoreElements()) {
-		TopLevelWindowManager topLevelWindowManager = managers.nextElement();
+	
+	for (TopLevelWindowManager topLevelWindowManager : managersHash.values()) { 
 		if (topLevelWindowManager instanceof DocumentWindowManager) {
 			((DocumentWindowManager) topLevelWindowManager).updateConnectionStatus(connectionStatus);
 		}
@@ -622,9 +623,7 @@ public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
  * @param totalBytes long
  */
 public void updateMemoryStatus(long freeBytes, long totalBytes) {
-	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
-	while (windows.hasMoreElements()) {
-		TopLevelWindow window = windows.nextElement();
+	for (TopLevelWindow window : windowsHash.values()) { 
 		window.updateMemoryStatus(freeBytes, totalBytes);
 	}
 }
@@ -636,9 +635,7 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {
  * @param progress int
  */
 public void updateWhileInitializing(int progress) {
-	Enumeration<TopLevelWindow> windows = getWindowsHash().elements();
-	while (windows.hasMoreElements()) {
-		TopLevelWindow window = windows.nextElement();
+	for (TopLevelWindow window : windowsHash.values()) { 
 		window.updateWhileInitializing(progress);
 	}
 }

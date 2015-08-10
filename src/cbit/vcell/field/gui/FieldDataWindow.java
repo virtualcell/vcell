@@ -15,18 +15,21 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
+
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 
-public class FieldDataWindow extends JFrame implements TopLevelWindow {
+public class FieldDataWindow extends LWTopFrame implements TopLevelWindow {
 	private FieldDataWindowManager fieldDataWindowManger;
 	private javax.swing.JPanel ivjJFrameContentPane = null;
 	
 	private boolean bTreeNeedsUpdate = true;
 	private boolean bWindowOpened = false;
 	private final ChildWindowManager childWindowManager;
+	private final String  menuDesc;
 
 /**
  * FieldDataWindow constructor comment.
@@ -44,7 +47,14 @@ public FieldDataWindow() {
 			}
 	);
 	childWindowManager = new ChildWindowManager(this);
+	menuDesc = nextSequentialDescription("Field Data Window");
 }
+
+@Override
+public String menuDescription() {
+	return menuDesc; 
+}
+
 
 /**
  * Insert the method's description here.

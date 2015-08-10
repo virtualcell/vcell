@@ -3,32 +3,117 @@ package cbit.vcell.client;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.HeadlessException;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
+import javax.help.UnsupportedOperationException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWChildFrame;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWFrameOrDialog;
+import org.vcell.client.logicalwindow.LWHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWHandle.LWModality;
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgrammingException;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.desktop.TopLevelWindow;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
+import edu.uchc.connjur.wb.ExecutionTrace;
 
 
 
 public class ChildWindowManager {
-	 
-	// matches the modality constants that are new to JDialog in Java 1.6 
-	private JDialog createJDialog(Frame owner, String title, boolean modal) {
-		return new JDialog(owner, title, modal);
+	private final ArrayList<ChildWindow> childWindows = new ArrayList<ChildWindow>();
+	
+	private JFrame parent = null;
+	private LWContainerHandle owner = null; 
+	private static final Logger LG = Logger.getLogger(ChildWindowManager.class);
+	
+	@SuppressWarnings("serial")
+	private static class TitledChild extends LWChildFrame {
+
+		private TitledChild(LWContainerHandle parent, String title)
+				throws HeadlessException {
+			super(parent, title);
+			
+		}
+
+		@Override
+		public String menuDescription() {
+			return getTitle( );
+		}
 	}
 	
+	/**
+	 * transition dialog for hiearchies without logicalwindow parents 
+	 */
+	@SuppressWarnings("serial")
+	private static class JDiagAdapter extends JDialog implements LWFrameOrDialog {
+
+		private JDiagAdapter(Window owner, String title, ModalityType modalityType) {
+			super(owner, title, modalityType);
+		}
+
+		@Override
+		public LWModality getLWModality() {
+			ModalityType smt = getModalityType( );
+			switch (smt) {
+			case MODELESS:
+				return LWModality.MODELESS;
+			case DOCUMENT_MODAL:
+				return LWModality.PARENT_ONLY;
+			default:
+				if (LG.isEnabledFor(Level.WARN)) {
+					LG.warn(ExecutionTrace.justClassName(this) + " titled " + getTitle() + 
+							" using unsupported modality "  + smt);
+				}
+				return LWModality.PARENT_ONLY;
+			}
+		}
+	}
+
+	/**
+	 * @param title not null
+	 * @param modality not null
+	 * @return implementing class
+	 */
+	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality) {
+		if (owner != null) {
+			switch (modality) {
+			case MODELESS:
+				return new TitledChild(owner, title);
+			case PARENT_ONLY:
+				return new DialogUtils.TitledDialog(owner,title);
+			}
+		}
+		else { //remove eventually
+			switch (modality) {
+			case MODELESS:
+				return new JDiagAdapter(parent, title, ModalityType.MODELESS);
+			case PARENT_ONLY:
+				return new JDiagAdapter(parent, title, ModalityType.DOCUMENT_MODAL);
+			}
+		}		
+		//this shouldn't happen
+		throw new UnsupportedOperationException("Modality " + modality + " no supported");
+	}
+
 	public class ChildWindow {
 		
 		private WindowListener windowListener = new WindowListener(){
@@ -57,7 +142,7 @@ public class ChildWindowManager {
 		private boolean bModal;
 		private Container contentPane;
 		private Object contextObject;
-		private JDialog dialog;
+		private LWFrameOrDialog impl;
 		
 		private String title = null;
 		private Point location = null;
@@ -77,55 +162,18 @@ public class ChildWindowManager {
 			this.title = title;
 		}
 					
-		private void initDialog(){
-			dialog.addWindowListener(windowListener);
-			dialog.getContentPane().setLayout(new BorderLayout());
-			dialog.getContentPane().add(contentPane);
-			dialog.setAlwaysOnTop(false);
-			if (location!=null){
-				dialog.setLocation(location);
-			}
-			if (preferredSize != null){
-				dialog.setPreferredSize(preferredSize);
-			}
-			if (pack!=null && pack){
-				dialog.pack();
-			}
-			
-			if (resizable != null){
-				dialog.setResizable(resizable);
-			}
-			if (size != null){
-				dialog.setSize(size);
-			}
-			
-			if (isCenteredOnScreen !=null) {
-				dialog.setLocationRelativeTo(null);
-			}
-			
-			if (isCenteredOnParent != null) {
-				dialog.setLocationRelativeTo(dialog.getParent());
-				
-			dialog.toFront();
-			//dialog.requestFocus();
-			}
-			
-			System.out.println("Making a child window.  My parent is a "+this.getParent().getName());
-		}
-		
-		
 		public void setLocationRelativeToParent(int x, int y) {
-			if (dialog!=null){
-				dialog.setLocationRelativeTo(dialog.getParent());
-				dialog.setLocation(x, y);
+			if (impl!=null){
+				impl.setLocationRelativeTo(impl.getParent());
+				impl.setLocation(x, y);
 				isCenteredOnScreen = false;
 				isCenteredOnParent = false;
 			}
 		}
 		
 		public void setLocationRelativeToComponent(Component component) {
-			if (dialog!=null){
-				dialog.setLocationRelativeTo(component);
+			if (impl!=null){
+				impl.setLocationRelativeTo(component);
 				isCenteredOnScreen = false;
 				isCenteredOnParent = false;
 			}
@@ -134,8 +182,8 @@ public class ChildWindowManager {
 		public void setIsCenteredOnParent(){
 			isCenteredOnParent = true;
 			isCenteredOnScreen = false;
-			if (dialog!=null){
-				dialog.setLocationRelativeTo(dialog.getParent());
+			if (impl!=null){
+				impl.setLocationRelativeTo(impl.getParent());
 				
 			}
 		}
@@ -143,8 +191,8 @@ public class ChildWindowManager {
 		public void setIsCenteredOnScreen(){
 			isCenteredOnParent = false;
 			isCenteredOnScreen = true;
-			if (dialog!=null){
-				dialog.setLocationRelativeTo(null);  // as specified in java.awt.Window javadocs 
+			if (impl!=null){
+				impl.setLocationRelativeTo(null);  // as specified in java.awt.Window javadocs 
 			}
 		}
 		
@@ -157,10 +205,10 @@ public class ChildWindowManager {
 		}
 		
 		private void dispose(){			
-			if (dialog != null){
-				dialog.setVisible(false);
-				dialog.dispose();
-				dialog = null;
+			if (impl != null){
+				impl.setVisible(false);
+				impl.dispose();
+				impl = null;
 			} else {
 				//DebugUtils.stop("ChildWindowManager.ChildWindow.dispose(): I was just asked to displose of a null JDialog ");
 			}
@@ -175,16 +223,16 @@ public class ChildWindowManager {
 		}
 				
 		public Point getLocation(){
-			if (dialog!=null){
-				return dialog.getLocation();
+			if (impl!=null){
+				return impl.getLocation();
 			}else{
 				return location;
 			}
 		}
 		
 		public Point getLocationOnScreen(){
-			if (dialog!=null){
-				return dialog.getLocationOnScreen();
+			if (impl!=null){
+				return impl.getLocationOnScreen();
 			}else{
 				return null;
 			}
@@ -199,23 +247,23 @@ public class ChildWindowManager {
 		}
 		
 		public String getTitle() {
-			if (dialog!=null){
-				return dialog.getTitle();
+			if (impl!=null){
+				return impl.getTitle();
 			}else{
 				return title;
 			}
 		}
 		public void hide(){
-			if (dialog!=null && dialog.isVisible()){
-				dialog.setVisible(false);
+			if (impl!=null && impl.isVisible()){
+				impl.setVisible(false);
 				for (ChildWindowListener listener : listeners){
 					listener.closed(this);
 				}
 			}
 		}
 		public boolean isShowing() {
-			if (dialog!=null){
-				return dialog.isShowing();
+			if (impl!=null){
+				return impl.isShowing();
 			}else{
 				return false;
 			}
@@ -225,15 +273,15 @@ public class ChildWindowManager {
 		}
 		
 		public void requestFocus(){
-			if (dialog!=null){
-				dialog.requestFocus();
+			if (impl!=null){
+				impl.requestFocus();
 			}
 		}
 		
 		public boolean requestFocusInWindow(){
 			boolean isLikelyToSucceed = false;
-			if (dialog!=null){
-				isLikelyToSucceed = dialog.requestFocusInWindow();
+			if (impl!=null){
+				isLikelyToSucceed = impl.requestFocusInWindow();
 			}
 			return isLikelyToSucceed;
 		}
@@ -244,83 +292,136 @@ public class ChildWindowManager {
 		
 		public void setLocation(Point point){
 			location = point;
-			if (dialog!=null){
-				dialog.setLocation(point);
+			if (impl!=null){
+				impl.setLocation(point);
 			}
 		}
 		
 		public void setPreferredSize(Dimension preferredSize){
 			this.preferredSize = preferredSize;
-			if (dialog!=null){
-				dialog.setPreferredSize(preferredSize);
+			if (impl!=null){
+				impl.setPreferredSize(preferredSize);
 			}
 		}
 		
 		public void setResizable(boolean resizable){
 			this.resizable = resizable;
-			if (dialog!=null){
-				dialog.setResizable(resizable);
+			if (impl!=null){
+				impl.setResizable(resizable);
 			}
 		}
 
 		public void pack(){
 			this.pack = true;
-			if (dialog!=null){
-				dialog.pack();
+			if (impl!=null){
+				impl.pack();
 			}
 		}
 		
+		/**
+		 * @deprecated doesn't do anything
+		 */
 		public void setPosition(int i, int j) {
 			
 		}
 		
 		public void setSize(int i, int j) {
 			this.size = new Dimension(i,j);
-			if (dialog!=null){
-				dialog.setSize(i,j);
+			if (impl!=null){
+				impl.setSize(i,j);
 			}
 		}
 		
 		public void setSize(Dimension dim){
 			this.size = dim;
-			if (dialog!=null){
-				dialog.setSize(dim);
+			if (impl!=null){
+				impl.setSize(dim);
 			}
 		}
-
 		public void setTitle(String title) {
 			this.title = title;
-			if (dialog!=null){
-				dialog.setTitle(title);
+			if (impl!=null){
+				impl.setTitle(title);
 			}
 		}
+		
+		/**
+		 * show with specified modality 
+		 * @throws ProgrammingException if previously shown with different modality 
+		 */
+		public void show(LWModality modality) {
+			if (impl != null)  {
+				if (impl.getLWModality() != modality) {
+					throw new ProgrammingException("Requested modality " + modality + " is different from previous " + impl.getLWModality());
+				}
+				impl.setVisible(true);
+				return;
+			}
+			if (LG.isDebugEnabled()) {
+				LG.debug(ExecutionTrace.justClassName(ChildWindowManager.this) + " making a child window.  My parent is a "+ this.getParent().getName());
+			}	
+			impl = createContainerImplementation(title,modality);
+			impl.addWindowListener(windowListener);
+			{ //assemble pieces
+				Container cp = impl.getContentPane();
+				cp.setLayout(new BorderLayout());
+				JMenuBar mb = new JMenuBar();
+				mb.add( LWTopFrame.createWindowMenu(false) );			
+				cp.add(mb,BorderLayout.NORTH);
+				cp.add(contentPane, BorderLayout.CENTER);
+			}
 
+			impl.setAlwaysOnTop(false);
+			if (location!=null){
+				impl.setLocation(location);
+			}
+			if (preferredSize != null){
+				impl.setPreferredSize(preferredSize);
+			}
+			if (pack!=null && pack){
+				impl.pack();
+			}
+
+			if (resizable != null){
+				impl.setResizable(resizable);
+			}
+			if (size != null){
+				impl.setSize(size);
+			}
+
+			if (isCenteredOnScreen !=null) {
+				impl.setLocationRelativeTo(null);
+			}
+
+			if (isCenteredOnParent != null) {
+				impl.setLocationRelativeTo(impl.getParent());
+			}
+			impl.toFront();
+			impl.setVisible(true);
+			return;
+		}
+
+		/**
+		 * show as {@link LWHandle.LWModality#MODELESS}
+		 * @throws ProgrammingException if {@link #showModal()} previously called
+		 */
 		public void show(){
-			if (dialog==null){
-				dialog = createJDialog(parent, title, false);
-				initDialog();
-				dialog.setVisible(true);
-			}else if (!dialog.isVisible()){
-				dialog.setVisible(true);
-			}
+			show(LWModality.MODELESS);
 		}
 
+		/**
+		 * show as {@link LWHandle.LWModality#PARENT_ONLY}
+		 * @throws ProgrammingException if {@link #show()} previously called
+		 */
 		public void showModal() {
-			if (dialog==null){
-				dialog = createJDialog(parent, title, true);
-				initDialog();
-				dialog.setVisible(true);
-			}else if (!dialog.isVisible()){
-				dialog.setVisible(true);
-			}
+			show(LWModality.PARENT_ONLY);
 		}
 
 		public void toFront() {
-			if(dialog != null){
-				dialog.toFront();
+			if(impl != null){
+				impl.toFront();
 			}
 		}
-
 	};   
 	
 	public static ChildWindowManager findChildWindowManager(Component component){
@@ -339,15 +440,12 @@ public class ChildWindowManager {
 		return childWindowManager;
 	}
 	
-	private final ArrayList<ChildWindow> childWindows = new ArrayList<ChildWindow>();
-	
-	private JFrame parent = null;
-	
 	public ChildWindowManager(JFrame parent){
 		this.parent = parent;
+		owner = LWNamespace.findLWOwner(parent);
 		BeanUtils.addCloseWindowKeyboardAction(this.parent.getRootPane());
 	}
-		
+	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title){
 		if (getChildWindowFromContentPane(contentPane)!=null){
 			throw new IllegalArgumentException("child window with content pane already exists");
@@ -439,59 +537,6 @@ public class ChildWindowManager {
 //		}
 	}	
 	
-	public static void main(String args[]){
-		try {
-			
-			
-			
-			
-			
-			JFrame frame = new JFrame();
-			frame.add(new JLabel("main frame"));
-			frame.pack();
-			frame.setLocation(400,400);
-//			frame.addWindowListener(new WindowListener() {
-//				public void windowActivated(WindowEvent e) {}
-//				public void windowClosed(WindowEvent e) {}
-//				public void windowClosing(WindowEvent e) {
-//					System.exit(0);
-//				}
-//				public void windowDeactivated(WindowEvent e) {}
-//				public void windowDeiconified(WindowEvent e) {}
-//				public void windowIconified(WindowEvent e) {}
-//				public void windowOpened(WindowEvent e) {}
-//			});
-			frame.setVisible(true);
-			
-//			JDialog aJDialog = (JDialog)ChildWindowManager.JDialogFactory.createJDialog(frame, ChildWindowManager.ModalityType.DOCUMENT_MODAL);
-//			aJDialog.setVisible(true);
-//			
-//			ChildWindowManager windowManager = new ChildWindowManager(frame);
-//			
-//			String child1Obj = "child1";
-//			JPanel child1 = new JPanel();
-//			child1.add(new JLabel("child1"));
-//			ChildWindow childWindow1 = windowManager.addChildWindow(child1, child1Obj, "child1 title");
-//			childWindow1.show();
-//			childWindow1.setLocation(new Point(200,200));
-//			
-//			String child2Obj = "child2";
-//			JPanel child2 = new JPanel();
-//			child2.add(new JLabel("child2"));
-//			ChildWindow childWindow2 = windowManager.addChildWindow(child2, child2Obj, "child2 title");
-//			childWindow2.show();
-//			childWindow2.setLocation(new Point(300,300));
-//			
-//			
-//			Thread.sleep(5000);
-//			
-//			windowManager.closeAllChildWindows();
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 }
 	

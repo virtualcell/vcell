@@ -483,9 +483,7 @@ public boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDo
  * Creation date: (6/16/2004 11:17:18 AM)
  */
 private boolean closeAllWindows(boolean duringExit) {
-	Enumeration<TopLevelWindowManager> en = getMdiManager().getWindowManagers();
-	while (en.hasMoreElements()) {
-		TopLevelWindowManager windowManager = (TopLevelWindowManager)en.nextElement();
+	for (TopLevelWindowManager windowManager :getMdiManager().getWindowManagers()) {
 		boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
 		if (!closed) {
 			// user canceled, don't keep going...
@@ -523,7 +521,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 						getMdiManager().unBlockWindow(windowID);
 						getMdiManager().showWindow(windowID);
 					} else {
-						int openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
+						long openWindows = getMdiManager().closeWindow(windowManager.getManagerID());
 						if (exitIfLast && (openWindows == 0)) {
 							setBExiting(true);
 							exitApplication();
@@ -545,7 +543,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 			saveDocument((DocumentWindowManager)windowManager, true, closeTask);
 			return true; 
 		} else {
-			int openWindows = getMdiManager().closeWindow(windowID);
+			long openWindows = getMdiManager().closeWindow(windowID);
 			if (exitIfLast && (openWindows == 0)) {
 				setBExiting(true);
 				exitApplication();
@@ -554,7 +552,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 		}
 	} else if (windowManager instanceof DatabaseWindowManager) {
 		// nothing to check here, just close it
-		int openWindows = getMdiManager().closeWindow(windowID);
+		long openWindows = getMdiManager().closeWindow(windowID);
 		if (exitIfLast && (openWindows == 0)) {
 			setBExiting(true);
 			exitApplication();
@@ -562,7 +560,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 		return true;
 	} else if (windowManager instanceof TestingFrameworkWindowManager) {
 		// nothing to check here, just close it
-		int openWindows = getMdiManager().closeWindow(windowID);
+		long openWindows = getMdiManager().closeWindow(windowID);
 		if (exitIfLast && (openWindows == 0)) {
 			setBExiting(true);
 			exitApplication();
@@ -570,7 +568,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 		return true;
 	} else if (windowManager instanceof BNGWindowManager) {
 		// nothing to check here, just close it
-		int openWindows = getMdiManager().closeWindow(windowID);
+		long openWindows = getMdiManager().closeWindow(windowID);
 		if (exitIfLast && (openWindows == 0)) {
 			setBExiting(true);
 			exitApplication();
@@ -578,7 +576,7 @@ public boolean closeWindow(final java.lang.String windowID, final boolean exitIf
 		return true;
 	} else if (windowManager instanceof FieldDataWindowManager) {
 		// nothing to check here, just close it
-		int openWindows = getMdiManager().closeWindow(windowID);
+		long openWindows = getMdiManager().closeWindow(windowID);
 		if (exitIfLast && (openWindows == 0)) {
 			setBExiting(true);
 			exitApplication();
@@ -742,7 +740,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
 					// wait until all windows are closed.
 					long startTime = System.currentTimeMillis();
 					while (true) {
-						int numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
+						long numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
 						if (numOpenWindows == 0) {
 							break;
 						}
@@ -3978,9 +3976,7 @@ public void updateStatusNow() {
 
 public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulations) throws DataAccessException{
 	Vector<OpenModelInfoHolder> simInfoHolderV = new Vector<OpenModelInfoHolder>();
-	Enumeration<TopLevelWindowManager> dwmEnum = getMdiManager().getWindowManagers();
-	while(dwmEnum.hasMoreElements()){
-		TopLevelWindowManager tlwm = dwmEnum.nextElement();
+	for (TopLevelWindowManager tlwm : getMdiManager().getWindowManagers() ) {
 		if(tlwm instanceof DocumentWindowManager){
 			DocumentWindowManager dwm = (DocumentWindowManager)tlwm;
 			VCDocument vcDoc = dwm.getVCDocument();
