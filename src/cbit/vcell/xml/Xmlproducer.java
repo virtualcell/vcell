@@ -3633,7 +3633,9 @@ private Element getXML(SpeciesPattern param) {
 }
 private Element getXML(MolecularTypePattern param) {
 	Element e = new Element(XMLTags.RbmMolecularTypePatternTag);
-	//e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
+	if(param.hasExplicitParticipantMatch()) {
+		e.setAttribute(XMLTags.RbmParticipantPatternMatchTag, mangle(param.getParticipantMatchLabel()));
+	}
 	e.setAttribute(XMLTags.RbmIndexAttrTag, Integer.toString(param.getIndex()));
 	Element e1 = new Element(XMLTags.RbmMolecularTypeTag);
 	MolecularType mt = param.getMolecularType();
