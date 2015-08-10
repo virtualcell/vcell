@@ -45,8 +45,10 @@ public abstract class LWChildFrame extends JFrame implements LWFrameOrDialog, LW
 	 * @param parent
 	 */
 	private void lwInit(LWContainerHandle parent) {
+		if (parent != null) {
 		parent.manage(this);
 		LWContainerHandle.stagger(parent.getWindow(),this);
+		}
 	}
 
 	@Override

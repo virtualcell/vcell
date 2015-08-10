@@ -158,6 +158,9 @@ public abstract class VCellIcons {
 	public final static Icon statusDetailscon = new ImageIcon(VCellIcons.class.getResource("/icons/sim_status_details.gif"));
 	public final static Icon odeQuickRunIcon = new ImageIcon(VCellIcons.class.getResource("/icons/ode_quick_run.png"));
 	
+	//Window Manager
+	public final static Icon SHOW_WINDOWS = new ImageIcon(VCellIcons.class.getResource("/icons/showWindows.png"));
+	
 	
 	public final static Icon addIcon = new ImageIcon(VCellIcons.class.getResource("/images/add.gif"));
 	public final static Icon deleteIcon = new ImageIcon(VCellIcons.class.getResource("/images/delete.gif"));

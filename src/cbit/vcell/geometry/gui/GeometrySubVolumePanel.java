@@ -13,6 +13,7 @@ package cbit.vcell.geometry.gui;
 import java.awt.Component;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,7 +28,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -35,8 +35,9 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.documentation.VcellHelpViewer;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
@@ -392,13 +393,17 @@ private void addAnalyticSubVolume() {
 	while(true){
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
-			final JDialog d = new JDialog(JOptionPane.getFrameForComponent(GeometrySubVolumePanel.this));
-			BeanUtils.centerOnComponent(d, GeometrySubVolumePanel.this);
-			d.setTitle("Define New Subdomain Shape");
+			LWContainerHandle lwParent = LWNamespace.findLWOwner(GeometrySubVolumePanel.this);
+			final JDialog d = new DialogUtils.TitledDialog(lwParent,"Define New Subdomain Shape");
+//			BeanUtils.centerOnComponent(d, GeometrySubVolumePanel.this);
 			
 			JPanel main = new JPanel();
 			BoxLayout mainBoxLayout = new BoxLayout(main,BoxLayout.Y_AXIS);
 			main.setLayout(mainBoxLayout);
+			
+			JPanel menuPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+			menuPanel.add( LWNamespace.createChildWindowMenuBar( ) );
+			main.add(menuPanel);
 			
 			JPanel addCancelJPanel = new JPanel();
 			addCancelJPanel.setBorder(new EmptyBorder(10,10,10,10));

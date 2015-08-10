@@ -189,8 +189,6 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
@@ -483,7 +481,9 @@ public boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDo
  * Creation date: (6/16/2004 11:17:18 AM)
  */
 private boolean closeAllWindows(boolean duringExit) {
-	for (TopLevelWindowManager windowManager :getMdiManager().getWindowManagers()) {
+	//create copy to avoid ConcurrentModification exception caused by closing window 
+	ArrayList<TopLevelWindowManager> modificationSafeCopy = new ArrayList<>(getMdiManager().getWindowManagers());
+	for (TopLevelWindowManager windowManager  : modificationSafeCopy) {
 		boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
 		if (!closed) {
 			// user canceled, don't keep going...

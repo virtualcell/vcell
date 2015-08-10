@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import org.vcell.client.logicalwindow.LWButton;
 import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
+import java.awt.ComponentOrientation;
 
 @SuppressWarnings("serial")
 public class TestChildWindow extends LWChildFrame implements ProofOfConceptContainer {
@@ -21,6 +22,7 @@ public class TestChildWindow extends LWChildFrame implements ProofOfConceptConta
 		TestPanel tp = new TestPanel();
 		tp.setHwindow(this);
 		JMenuBar menuBar = new JMenuBar();
+		menuBar.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		getContentPane().add(menuBar, BorderLayout.NORTH);
 		
 		menuBar.add( LWTopFrame.createWindowMenu(false) );

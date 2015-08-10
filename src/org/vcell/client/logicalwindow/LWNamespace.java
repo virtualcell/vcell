@@ -1,6 +1,7 @@
 package org.vcell.client.logicalwindow;
 
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -8,6 +9,8 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.Dialog.ModalityType;
 import java.util.Objects;
+
+import javax.swing.JMenuBar;
 
 import org.apache.commons.logging.impl.Log4JLogger;
 import org.apache.log4j.Level;
@@ -138,5 +141,17 @@ public interface LWNamespace {
 			}
 			return LWModality.PARENT_ONLY;
 		}
+	}
+
+	/**
+	 * create menu bar for child windows
+	 * 	right justified, iconic
+	 * @return new menu bar
+	 */
+	public static JMenuBar createChildWindowMenuBar() {
+		JMenuBar mb = new JMenuBar();
+		mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		mb.add( LWTopFrame.createWindowMenu(false));
+		return mb;
 	}
 }
