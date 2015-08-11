@@ -131,25 +131,25 @@ public interface LWNamespace {
 	 */
 	public static LWContainerHandle findLWOwner(Component swingParent) {
 		return findOwnerOfType(LWContainerHandle.class, swingParent);
-		/*
-		final Logger lg = LGHolder.LG; 
-		LWContainerHandle lwch = BeanUtils.downcast(LWContainerHandle.class, swingParent);
-		if (lwch != null) {
-			return lwch;
-		}
-		if (lg.isEnabledFor(Level.WARN)) {
-			lg.warn(ExecutionTrace.justClassName(swingParent) + " does not implement LWContainerHandle");
-			
-		}
-		Container up = swingParent.getParent();
-		if (up == null) {
-			lg.error("top level object " + ExecutionTrace.justClassName(swingParent) + " does not implement LWContainerHandle");
-			return null;
-		}
-		return findLWOwner(up);
-		*/
 	}
 	
+	/**
+	 * @param awtModality not null
+	 * @return {@link LWModality} that best matches awt modality 
+	 */
+	public static LWModality bestModalityMatch(ModalityType awtModality) {
+		Objects.requireNonNull(awtModality);
+		switch (awtModality) {
+		case MODELESS:
+			return LWModality.MODELESS;
+		case DOCUMENT_MODAL:
+		case APPLICATION_MODAL:
+		case TOOLKIT_MODAL: 
+			return LWModality.PARENT_ONLY;
+		default:
+			return LWModality.PARENT_ONLY;
+		}
+	}
 	/**
 	 * @param dialog not null
 	 * @return {@link LWModality} that best matches current dialog swing modality
@@ -171,7 +171,7 @@ public interface LWNamespace {
 			return LWModality.PARENT_ONLY;
 		}
 	}
-
+	
 	/**
 	 * create menu bar for windows that don't have one
 	 * 	right justified, iconic

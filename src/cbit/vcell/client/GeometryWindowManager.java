@@ -148,7 +148,7 @@ private void hideGeometryViewer(){
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(geoViewer);
 	if (childWindow != null){
-		childWindow.hide();
+		childWindow.close();
 	}
 }
 
@@ -156,7 +156,7 @@ private void hideSurfaceViewer(){
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContentPane(surfaceViewer);
 	if (childWindow != null){
-		childWindow.hide();
+		childWindow.close();
 	}
 }
 
@@ -173,8 +173,6 @@ private void showGeometryViewer() {
 		childWindow.addChildWindowListener(new ChildWindowListener() {
 			public void closing(ChildWindow childWindow) {
 				getGeometryEditor().setToggleButtonSelected("Geometry Editor", false);
-			}
-			public void closed(ChildWindow childWindow) {
 			}
 		});
 	}
@@ -195,12 +193,9 @@ private void showSurfaceViewer() {
 	if (childWindow == null){
 		childWindow = childWindowManager.addChildWindow(surfaceViewer, surfaceViewer, surfaceViewerTitle);
 		childWindow.setSize(600, 600);
-		childWindow.setPosition(300, 100);
 		childWindow.addChildWindowListener(new ChildWindowListener() {
 			public void closing(ChildWindow childWindow) {
 				getGeometryEditor().setToggleButtonSelected("Surface Viewer", false);
-			}
-			public void closed(ChildWindow childWindow) {
 			}
 		});
 	}

@@ -99,14 +99,6 @@ public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocu
 public abstract void addResultsFrame(SimulationWindow simWindow);
 
 
-/**
- * Comment
- */
-public void cascadeWindows() {
-	ChildWindowManager.findChildWindowManager(getComponent()).cascadeWindows();
-}
-
-
 ///**
 // * Insert the method's description here.
 // * Creation date: (6/1/2004 2:50:14 AM)
@@ -866,14 +858,6 @@ public void showTestingFrameworkWindow() {
 public void startExport(
 		OutputContext outputContext,ExportSpecs exportSpecs) {
 	getRequestManager().startExport(outputContext,this, exportSpecs);
-}
-
-
-/**
- * Comment
- */
-public void tileWindows(boolean horizontal) {
-	ChildWindowManager.findChildWindowManager(getComponent()).tileWindows(horizontal);
 }
 
 public abstract void updateConnectionStatus(ConnectionStatus connStatus);

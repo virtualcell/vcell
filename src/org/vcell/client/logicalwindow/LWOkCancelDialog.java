@@ -13,11 +13,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
+
 @SuppressWarnings("serial")
 public class LWOkCancelDialog extends LWDialog {
 	private static final int QUESTION_TRUNCATE_LIMIT = 40;
 	final private String question;
 	private boolean saidYes = false;
+	private static final LWTraits trait = new LWTraits(InitialPosition.CENTERED_ON_PARENT);
 
 	/**
 	 * @wbp.parser.constructor
@@ -46,6 +49,11 @@ public class LWOkCancelDialog extends LWDialog {
 		return getTitle( ) + ' ' + questionStub;
 	}
 	
+	@Override
+	public LWTraits getTraits() {
+		return trait;
+	}
+
 	public boolean isSaidYes() {
 		return saidYes;
 	}

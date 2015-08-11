@@ -27,7 +27,6 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.desktop.RegistrationPanel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -213,7 +212,7 @@ public class UserRegistrationManager {
 						}
 						UserRegistrationOP.NewPasswordUserInfo newUserInfo = registrationPanel.getUserInfo();
 						
-						if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
+						if(userAction.equals(LoginManager.USERACTION_EDITINFO)){
 							//User editing registration info but did not enter new clear text password in gui,
 							//set existing digestPassword
 							if(newUserInfo.digestedPassword0 == null && originalUserInfoHolder.digestedPassword0 != null){
@@ -324,7 +323,7 @@ public class UserRegistrationManager {
 
 	private static boolean checkUserInfo(DocumentWindowManager currWindowManager, UserInfo origUserInfo,UserRegistrationOP.NewPasswordUserInfo newUserInfo,String userAction) throws Exception{
 		TokenMangler.checkLoginID(newUserInfo.userid);
-		boolean bEditing = userAction.equals(LoginDialog.USERACTION_EDITINFO);
+		boolean bEditing = userAction.equals(LoginManager.USERACTION_EDITINFO);
 		String emptyMessge = " can not be empty";	
 		if(newUserInfo.userid == null || newUserInfo.userid.length() == 0){throw new Exception("Registration Info: userid" + emptyMessge);}
 		if(newUserInfo.digestedPassword0 == null || !newUserInfo.digestedPassword0.equals(newUserInfo.otherDigestedPassword)){
@@ -379,5 +378,6 @@ public class UserRegistrationManager {
 			return true;
 		}
 	}
+
 
 }

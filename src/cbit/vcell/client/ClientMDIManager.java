@@ -178,8 +178,8 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:07:12 PM)
  */
-private DocumentWindow createDocumentWindow(String menuDesc) {	
-	DocumentWindow documentWindow = new DocumentWindow(menuDesc);
+private DocumentWindow createDocumentWindow() {	
+	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
 	documentWindow.setSize(JFRAME_SIZE);
 	BeanUtils.centerOnScreen(documentWindow);
@@ -213,7 +213,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	String windowID = windowManager.getManagerID();
 	
 	// make the window
-	DocumentWindow documentWindow = createDocumentWindow(windowID);
+	DocumentWindow documentWindow = createDocumentWindow();
 	documentWindow.setWorkArea(windowManager.getComponent());
 	
 	getWindowsHash().put(windowID, documentWindow);

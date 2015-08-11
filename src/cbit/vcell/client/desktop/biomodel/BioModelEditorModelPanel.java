@@ -1464,7 +1464,6 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				public void closing(ChildWindow childWindow) {
 					reactionCartoonEditorPanel.setFloatingRequested(false);
 				}				
-				public void closed(ChildWindow childWindow) {}
 			});
 
 			childWindow.show();

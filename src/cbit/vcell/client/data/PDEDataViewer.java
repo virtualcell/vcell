@@ -2561,7 +2561,6 @@ private void showSpatialPlot() {
 					childWindow.setIsCenteredOnParent();
 					childWindow.pack();
 					childWindow.show();
-					System.out.println("Spatial plot requesting focus.  Result is: "+childWindow.requestFocusInWindow());
 				}
 			}
 		}
@@ -2611,10 +2610,7 @@ private void showTimePlot() {
 					public void closing(ChildWindow childWindow) {
 						PDEDataViewer.this.getPdeDataContext().removePropertyChangeListener(pdeTimePlotPanel);
 					}
-					@Override
-					public void closed(ChildWindow childWindow) {
-						PDEDataViewer.this.getPdeDataContext().removePropertyChangeListener(pdeTimePlotPanel);
-					}
+					
 				});
 				childWindow.setSize(900, 550);
 				childWindow.setIsCenteredOnParent();

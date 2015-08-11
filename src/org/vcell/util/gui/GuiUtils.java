@@ -12,6 +12,7 @@ package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.HeadlessException;
 import java.awt.Point;
@@ -29,9 +30,14 @@ import javax.swing.table.TableColumn;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 
 import cbit.vcell.desktop.BioModelNode;
+import edu.uchc.connjur.wb.ExecutionTrace;
 
 public class GuiUtils {
 	public static Window getWindowForComponent(Component parentComponent) 
@@ -202,6 +208,36 @@ public class GuiUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * recursively transcribe preferred sizes to destination
+	 * @param destination not null
+	 * @param level recursion level
+	 * @param cmpnt not null
+	 */
+	private static void prefSize(StringBuilder destination, int level, Component cmpnt) {
+		Dimension dim = cmpnt.getPreferredSize();
+		destination.append(StringUtils.repeat(' ', level) + ExecutionTrace.justClassName(cmpnt) + " prefers " + dim);
+		destination.append('\n');
+		Container container = BeanUtils.downcast(Container.class, cmpnt);
+		if (container != null) {
+			for ( Component c : container.getComponents()) {
+				prefSize(destination, level + 1, c);
+			}
+		}
+	}
+	
+	/**
+	 * get preferred sizes of components. May not be valid if Component has not been displayed yet
+	 * @param container
+	 * @return nested String with components and sizes
+	 */
+	public static String getPreferredSizes(Component container) {
+		StringBuilder sb = new StringBuilder(1024);
+		prefSize(sb,0,container);
+		return sb.toString();
+	}
+	
 	
 	
 }

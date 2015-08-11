@@ -319,7 +319,7 @@ public class VirtualFrapMainFrame extends LWTopFrame implements DropTargetListen
 					{
 						VcellHelpViewer hviewer = new VcellHelpViewer(VcellHelpViewer.VFRAP_DOC_URL);
 						helpViewerWindow = getChildWindowManager().addChildWindow(hviewer,HELP_VIEWER_CONTEXT_OBJECT,"Virtual FRAP Help", false);
-						BeanUtils.addCloseWindowKeyboardAction((JComponent)helpViewerWindow.getContentPane());
+						BeanUtils.addCloseWindowKeyboardAction(hviewer);
 						helpViewerWindow.setIsCenteredOnParent();
 						helpViewerWindow.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH,VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
 						helpViewerWindow.pack();
