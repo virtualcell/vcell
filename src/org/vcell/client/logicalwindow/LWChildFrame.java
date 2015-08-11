@@ -7,6 +7,8 @@ import java.util.Iterator;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
+
 /**
  * base class for logical child windows of LWTopFrames
  *
@@ -16,6 +18,7 @@ import javax.swing.JMenuItem;
 public abstract class LWChildFrame extends JFrame implements LWFrameOrDialog, LWContainerHandle {
 
 	private final LWManager lwManager;
+	protected LWTraits traits;
 
 	/**
 	 * see {@link JFrame#JFrame()}
@@ -45,9 +48,10 @@ public abstract class LWChildFrame extends JFrame implements LWFrameOrDialog, LW
 	 * @param parent
 	 */
 	private void lwInit(LWContainerHandle parent) {
+		traits = new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
 		if (parent != null) {
-		parent.manage(this);
-		LWContainerHandle.stagger(parent.getWindow(),this);
+			parent.manage(this);
+			LWContainerHandle.stagger(parent.getWindow(),this);
 		}
 	}
 
@@ -91,4 +95,13 @@ public abstract class LWChildFrame extends JFrame implements LWFrameOrDialog, LW
 		return LWMenuItemFactory.menuFor(level, this);
 	}
 
+	@Override
+	public LWTraits getTraits() {
+		return traits; 
+	}
+	
+	@Override
+	public Window self() {
+		return this;
+	}
 }

@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.WindowListener;
 
 import javax.swing.JDialog;
@@ -19,6 +20,7 @@ import cbit.vcell.client.ChildWindowManager;
  */
 public interface LWFrameOrDialog {
 
+	//existing JFrame / JDialog methods
 	public void addWindowListener(WindowListener windowListener);
 	public void dispose();
 	public Container getContentPane();
@@ -42,6 +44,7 @@ public interface LWFrameOrDialog {
 	public void setTitle(String title);
 	public void setVisible(boolean b);
 	public void toFront();
+	//end of existing
 	
 	
 	/**
@@ -49,4 +52,9 @@ public interface LWFrameOrDialog {
 	 * see {@link LWHandle#getLWModality()}
 	 */
 	public LWModality getLWModality( );
+	/**
+	 * @return implementation as {@link Window} 
+	 */
+	public Window self( );
+	public LWTraits getTraits();
 }

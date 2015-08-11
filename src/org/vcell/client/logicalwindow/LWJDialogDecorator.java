@@ -1,6 +1,5 @@
 package org.vcell.client.logicalwindow;
 
-import java.awt.Dialog.ModalityType;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -13,16 +12,15 @@ import java.util.Map;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import edu.uchc.connjur.wb.ExecutionTrace;
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 public class LWJDialogDecorator implements LWHandle {
 	private static final Map<JDialog, LWJDialogDecorator>  decorators = new HashMap<>( );
-	private static final Logger LG = Logger.getLogger(LWJDialogDecorator.class);
+	static final Logger LG = Logger.getLogger(LWJDialogDecorator.class);
 	
 	private final JDialog jdialog;
+	private static final LWTraits traits = new LWTraits(InitialPosition.CENTERED_ON_PARENT);
 
 	private LWJDialogDecorator(JDialog jdialog) {
 		super();
@@ -46,6 +44,11 @@ public class LWJDialogDecorator implements LWHandle {
 		jdialog.addWindowListener(closeListener);
 		decorators.put(jdialog, deco);
 		return deco.modalityNormalized();
+	}
+
+	@Override
+	public LWTraits getTraits() {
+		return traits;
 	}
 
 	@Override
@@ -97,22 +100,7 @@ public class LWJDialogDecorator implements LWHandle {
 	 * @return this (for chaining)
 	 */
 	private LWJDialogDecorator modalityNormalized( ) {
-		switch (jdialog.getModalityType()) {
-		case MODELESS:
-			if (LG.isEnabledFor(Level.WARN)) {
-				//we want our modeless windows to be LWChildWindows, not Dialogs
-				LG.warn(ExecutionTrace.justClassName(jdialog) + ' ' + jdialog.getTitle() + " invalid modeless dialog");
-			}
-			break;
-		case DOCUMENT_MODAL:
-			//this is what we want
-			break;
-		case APPLICATION_MODAL:
-		case TOOLKIT_MODAL: 
-			//fix
-			jdialog.setModalityType(ModalityType.DOCUMENT_MODAL);
-			break;
-		}
+		LWDialog.normalizeModality(jdialog);
 		return this;
 	}
 	

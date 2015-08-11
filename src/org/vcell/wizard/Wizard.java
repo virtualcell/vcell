@@ -14,11 +14,15 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+
 import java.awt.Frame;
+
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 /**
@@ -108,10 +112,11 @@ public class Wizard extends WindowAdapter implements PropertyChangeListener {
      */
     public Wizard(Frame owner) {
         wizardModel = new WizardModel();
-        wizardDialog = new JDialog(owner);         
+//        wizardDialog = new JDialog(owner);         
+        LWContainerHandle lwParent = LWNamespace.findLWOwner(owner);
+        wizardDialog = new DialogUtils.TitledDialog(lwParent, "Wizard") ;
         initComponents();
     }
-    
     /**
      * Returns an instance of the JDialog that this class created. 
      */    
