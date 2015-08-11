@@ -26,7 +26,6 @@ import java.util.Hashtable;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -36,7 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
 
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
@@ -88,7 +86,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow {
 	private final ChildWindowManager childWindowManager;
 	
 	private JMenuItem ivjAbout_BoxMenuItem = null;
-	private JMenuItem ivjCascadeMenuItem = null;
 	private JMenuItem ivjChange_UserMenuItem = null;
 	private JMenuItem ivjUpdate_UserMenuItem = null;
 	private JMenuItem ivjCloseMenuItem = null;
@@ -110,8 +107,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow {
 	private JMenu ivjServerMenu = null;
 	private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
 	private JPanel ivjStatusBarPane = null;
-	private JMenuItem ivjTile_HorizontallyMenuItem = null;
-	private JMenuItem ivjTile_VerticallyMenuItem = null;
 	//--------------------------------------
 	private JMenu ivjViewMenu = null;
 	private JSeparator ivjJSeparator6 = null;
@@ -194,12 +189,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC19(e);
 			if (e.getSource() == DocumentWindow.this.getLocalMenuItem()) 
 				connEtoC20(e);
-			if (e.getSource() == DocumentWindow.this.getTile_HorizontallyMenuItem()) 
-				connEtoC21(e);
-			if (e.getSource() == DocumentWindow.this.getTile_VerticallyMenuItem()) 
-				connEtoC22(e);
-			if (e.getSource() == DocumentWindow.this.getCascadeMenuItem()) 
-				connEtoC23(e);
 			if (e.getSource() == DocumentWindow.this.getMinimize_AllMenuItem()) 
 				connEtoC24(e);
 			if (e.getSource() == DocumentWindow.this.getJMenuItemServer()) 
@@ -254,30 +243,20 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 	};
 	private JMenuItem ivjJMenuItemFieldData = null;
 	private JMenuItem jMenuItemMIRIAM = null;
-	private String menuDesc = null;
 	
 /**
  * DocumentWindow constructor comment.
  */
-public DocumentWindow(String menuDesc) {
+public DocumentWindow() {
 	super();
 	initialize();
 	childWindowManager = new ChildWindowManager(this);
-	this.menuDesc = menuDesc;
 }
 
 @Override
 public String menuDescription() {
 	return getTitle( );
 }
-
-/**
- * Comment
- */
-private void cascadeWindows() {
-	getWindowManager().cascadeWindows();
-}
-
 
 /**
  * Comment
@@ -532,66 +511,6 @@ private void connEtoC20(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.notYet();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC21:  (Tile_HorizontallyMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC21(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		boolean bHorizontal = true;
-		getChildWindowManager().tileWindows(bHorizontal);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC22:  (Tile_VerticallyMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC22(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		boolean bHorizontal = false;
-		getChildWindowManager().tileWindows(bHorizontal);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC23:  (CascadeMenuItem.action.actionPerformed(java.awt.event.ActionEvent) --> DocumentWindow.notYet()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC23(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.cascadeWindows();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -994,30 +913,6 @@ private javax.swing.JMenuItem getTransMAMenuItem() {
 	}
 	return transMAMenuItem;
 }
-
-/**
- * Return the CascadeMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getCascadeMenuItem() {
-	if (ivjCascadeMenuItem == null) {
-		try {
-			ivjCascadeMenuItem = new javax.swing.JMenuItem();
-			ivjCascadeMenuItem.setName("CascadeMenuItem");
-			ivjCascadeMenuItem.setText("Cascade");
-			//ivjCascadeMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjCascadeMenuItem;
-}
-
 
 /**
  * Return the Change_UserMenuItem property value.
@@ -2144,52 +2039,6 @@ private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
 
 
 /**
- * Return the Tile_HorizontallyMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getTile_HorizontallyMenuItem() {
-	if (ivjTile_HorizontallyMenuItem == null) {
-		try {
-			ivjTile_HorizontallyMenuItem = new javax.swing.JMenuItem();
-			ivjTile_HorizontallyMenuItem.setName("Tile_HorizontallyMenuItem");
-			ivjTile_HorizontallyMenuItem.setText("Tile Horizontally");
-			//ivjTile_HorizontallyMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTile_HorizontallyMenuItem;
-}
-
-/**
- * Return the Tile_VerticallyMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getTile_VerticallyMenuItem() {
-	if (ivjTile_VerticallyMenuItem == null) {
-		try {
-			ivjTile_VerticallyMenuItem = new javax.swing.JMenuItem();
-			ivjTile_VerticallyMenuItem.setName("Tile_VerticallyMenuItem");
-			ivjTile_VerticallyMenuItem.setText("Tile Vertically");
-			//ivjTile_VerticallyMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTile_VerticallyMenuItem;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (5/24/2004 3:38:47 PM)
  * @return cbit.vcell.client.desktop.TopLevelWindowManager
@@ -2276,9 +2125,6 @@ private void initConnections() throws java.lang.Exception {
 	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
 	getReconnectMenuItem().addActionListener(ivjEventHandler);
 	getLocalMenuItem().addActionListener(ivjEventHandler);
-	getTile_HorizontallyMenuItem().addActionListener(ivjEventHandler);
-	getTile_VerticallyMenuItem().addActionListener(ivjEventHandler);
-	getCascadeMenuItem().addActionListener(ivjEventHandler);
 	getMinimize_AllMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemServer().addActionListener(ivjEventHandler);
 	getJMenuItemOptions().addActionListener(ivjEventHandler);

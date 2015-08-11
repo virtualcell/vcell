@@ -7,14 +7,24 @@ import java.util.Iterator;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
+
+import edu.uchc.connjur.wb.ExecutionTrace;
+
 /**
  * base class for logical dialog windows 
  *
+ * defaults to {@link LWTraits.InitialPosition#CENTERED_ON_PARENT}
+ * 
  * implements all {@link LWHandle} methods except {@link LWHandle#menuDescription()}  
  */
 @SuppressWarnings("serial")
 public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHandle {
+	private static final Logger LG = Logger.getLogger(LWDialog.class);
 	private final LWContainerHandle lwParent;
+	protected LWTraits traits;
 	
 	/**
 	 * see {@link JDialog#JDialog(String title)}
@@ -28,9 +38,19 @@ public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHan
 		if (parent != null) {
 			parent.manage(this);
 		}
+		traits = new LWTraits(InitialPosition.CENTERED_ON_PARENT);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	}
 	
+	@Override
+	public LWTraits getTraits() {
+		return traits;
+	}
+
+	public void setTraits(LWTraits traits) {
+		this.traits = traits;
+	}
+
 	/**
 	 * see {@link JDialog#JDialog()}
 	 * @param parent logical owner, not null
@@ -73,6 +93,45 @@ public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHan
 	@Override
 	public JMenuItem menuItem(int level) {
 		return LWMenuItemFactory.menuFor(level, this);
+	}
+
+	@Override
+	public Window self() {
+		return this;
+	}
+
+	@Override
+	public void setModal(boolean modal) {
+		super.setModal(modal);
+		LWDialog.normalizeModality(this);
+	}
+
+	@Override
+	public void setModalityType(ModalityType type) {
+		super.setModalityType(type);
+		LWDialog.normalizeModality(this);
+	}
+
+	/**
+	 * remove application / toolkit modality
+	 */
+	static void normalizeModality(JDialog jdialog ) {
+		switch (jdialog.getModalityType()) {
+		case MODELESS:
+			if (LG.isEnabledFor(Level.WARN)) {
+				//we want our modeless windows to be LWChildWindows, not Dialogs
+				LG.warn(ExecutionTrace.justClassName(jdialog) + ' ' + jdialog.getTitle() + " invalid modeless dialog");
+			}
+			break;
+		case DOCUMENT_MODAL:
+			//this is what we want
+			break;
+		case APPLICATION_MODAL:
+		case TOOLKIT_MODAL: 
+			//fix
+			jdialog.setModalityType(ModalityType.DOCUMENT_MODAL);
+			break;
+		}
 	}
 	
 //	private static class AncestorModal implements ComponentListener {

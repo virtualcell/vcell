@@ -3,11 +3,13 @@ package org.vcell.client.logicalwindow;
 import java.awt.Color;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.vcell.client.logicalwindow.LWInteractionContext;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.DialogUtils;
 
 @SuppressWarnings("serial")
 public class TestPanel extends JPanel {
@@ -44,11 +46,16 @@ public class TestPanel extends JPanel {
 		panel.add(btnSub);
 		btnSub.addActionListener( a -> { childW( ); } ); 
 		
+		JButton btnChoose = new JButton("Choose");
+		add(btnChoose);
+		btnChoose.addActionListener( a -> { chooseFile( ); } ); 
+		
 		JButton btnExit = new JButton("Exit App");
 		panel.add(btnExit);
 		btnExit.addActionListener( a ->  System.exit(0) );
 	}
 	
+
 	public void setHwindow(ProofOfConceptContainer hwindow) {
 		this.hwindow = hwindow;
 	}	
@@ -104,6 +111,15 @@ public class TestPanel extends JPanel {
 		else {
 			JOptionPane.showMessageDialog(this, "So negative...", "No?",JOptionPane.WARNING_MESSAGE);
 		}
+	}
+	
+	private void chooseFile() {
+		JFileChooser jfc = new LWFileChooser();
+		int r = jfc.showOpenDialog(hwindow.getWindow());
+		if (r == JFileChooser.APPROVE_OPTION) {
+			DialogUtils.showInfoDialog(hwindow.getWindow(), "User choose " + jfc.getSelectedFile().getAbsolutePath());
+		}
+		
 	}
 
 }

@@ -1,5 +1,6 @@
 package org.vcell.client.logicalwindow;
 
+import java.awt.Dialog.ModalityType;
 import java.awt.Frame;
 import java.awt.Window;
 import java.util.Iterator;
@@ -14,6 +15,7 @@ public interface LWHandle extends Iterable<LWHandle>{
 		MODELESS,
 		PARENT_ONLY,
 		//ANCESTOR
+		;
 	}
 	
 	public LWModality getLWModality( );
@@ -53,6 +55,11 @@ public interface LWHandle extends Iterable<LWHandle>{
 	 * @return String for use in menu
 	 */
 	public String menuDescription( );
+	
+	/**
+	 * @return non-null Traits
+	 */
+	public LWTraits getTraits();
 	
 	
 	/**

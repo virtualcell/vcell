@@ -6,9 +6,6 @@ import java.awt.HeadlessException;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
-import org.vcell.client.logicalwindow.LWTopFrame;
-import org.vcell.client.logicalwindow.LWTrait;
-
 @SuppressWarnings("serial")
 public class TopLevel extends LWTopFrame implements ProofOfConceptContainer {
 	private static int TLCounter = 1;
@@ -61,9 +58,6 @@ public class TopLevel extends LWTopFrame implements ProofOfConceptContainer {
 	}
 
 	public static void main(String[] args) {
-		if (args.length > 0 && args[0].equalsIgnoreCase("modea") ) {
-			LWTrait.COT_MODE = false;
-		}
 		topLevel( );
 	}
 	

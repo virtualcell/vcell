@@ -91,12 +91,7 @@ public class LWMenuItemFactory {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (!LWTrait.COT_MODE) {
-				LWContainerHandle.positionChildren(handle);
-			}
-			else {
-				LWContainerHandle.positionTopDownTo(handle);
-			}
+			LWContainerHandle.positionTopDownTo(handle);
 		}
 		
 	}

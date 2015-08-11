@@ -8,8 +8,10 @@ import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Window;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -24,11 +26,14 @@ import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.client.logicalwindow.LWHandle;
+import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DocumentWindow;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
@@ -49,19 +54,18 @@ public class ChildWindowManager {
 	@SuppressWarnings("serial")
 	private static class ModelessChild extends LWChildFrame implements ManagedChild {
 		private final ChildWindowManager childWindowManager;
-
-		private ModelessChild(ChildWindowManager cwm,LWContainerHandle parent, String title)
-				throws HeadlessException {
+		private ModelessChild(ChildWindowManager cwm,LWContainerHandle parent, String title, LWTraits tr) throws HeadlessException {
 			super(parent, title);
 			Objects.requireNonNull(cwm);
 			childWindowManager = cwm;
+			traits = tr; 
 		}
 
 		@Override
 		public String menuDescription() {
 			return getTitle( );
 		}
-
+		
 		public ChildWindowManager getChildWindowManager() {
 			return childWindowManager; 
 		}
@@ -70,10 +74,11 @@ public class ChildWindowManager {
 	private static class ParentModalChild extends DialogUtils.TitledDialog implements ManagedChild {
 		private final ChildWindowManager childWindowManager;
 
-		public ParentModalChild(ChildWindowManager cwm, LWContainerHandle parent, String title) {
+		public ParentModalChild(ChildWindowManager cwm, LWContainerHandle parent, String title, LWTraits tr) {
 			super(parent, title);
 			Objects.requireNonNull(cwm);
 			childWindowManager = cwm;
+			traits = tr; 
 		}
 
 		@Override
@@ -84,14 +89,23 @@ public class ChildWindowManager {
 	}
 	
 	/**
-	 * transition dialog for hiearchies without logicalwindow parents 
+	 * transition dialog for hierarchies without logicalwindow parents 
 	 */
 	@SuppressWarnings("serial")
 	private static class JDiagAdapter extends JDialog implements LWFrameOrDialog {
+		private final LWTraits traits;
 
-		private JDiagAdapter(Window owner, String title, ModalityType modalityType) {
+		private JDiagAdapter(Window owner, String title, ModalityType modalityType, LWTraits tr) {
 			super(owner, title, modalityType);
+			traits = tr; 
 		}
+		
+
+		@Override
+		public LWTraits getTraits() {
+			return traits;
+		}
+
 
 		@Override
 		public LWModality getLWModality() {
@@ -109,29 +123,34 @@ public class ChildWindowManager {
 				return LWModality.PARENT_ONLY;
 			}
 		}
+
+		@Override
+		public Window self() {
+			return this;
+		}
 	}
 	
-
 	/**
 	 * @param title not null
 	 * @param modality not null
 	 * @return implementing class
 	 */
-	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality) {
+	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered) {
+		LWTraits traits = parentCentered ? new LWTraits(InitialPosition.CENTERED_ON_PARENT) : new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
 		if (owner != null) {
 			switch (modality) {
 			case MODELESS:
-				return new ModelessChild(this,owner, title);
+				return new ModelessChild(this,owner, title,traits);
 			case PARENT_ONLY:
-				return new ParentModalChild(this,owner, title);
+				return new ParentModalChild(this,owner, title,traits);
 			}
 		}
 		else { //remove eventually
 			switch (modality) {
 			case MODELESS:
-				return new JDiagAdapter(parent, title, ModalityType.MODELESS);
+				return new JDiagAdapter(parent, title, ModalityType.MODELESS,traits);
 			case PARENT_ONLY:
-				return new JDiagAdapter(parent, title, ModalityType.DOCUMENT_MODAL);
+				return new JDiagAdapter(parent, title, ModalityType.DOCUMENT_MODAL,traits);
 			}
 		}		
 		//this shouldn't happen
@@ -140,14 +159,9 @@ public class ChildWindowManager {
 
 	public class ChildWindow {
 		
-		private WindowListener windowListener = new WindowListener(){
-			public void windowActivated(WindowEvent e) {}
-			public void windowClosed(WindowEvent e) {
-				for (ChildWindowListener listener : listeners){
-					listener.closed(ChildWindow.this);
-				}
-				
-			}
+		private WindowListener windowListener = new WindowAdapter(){
+//			public void windowActivated(WindowEvent e) {}
+//			public void windowClosed(WindowEvent e) { }
 			public void windowClosing(WindowEvent e) {
 				for (ChildWindowListener listener : listeners){
 					listener.closing(ChildWindow.this);
@@ -156,25 +170,22 @@ public class ChildWindowManager {
 					closeChildWindow(ChildWindow.this);
 				}
 			}
-			public void windowDeactivated(WindowEvent e) {}
-			public void windowDeiconified(WindowEvent e) {}
-			public void windowIconified(WindowEvent e) {}
-			public void windowOpened(WindowEvent e) {}
+//			public void windowDeactivated(WindowEvent e) {}
+//			public void windowDeiconified(WindowEvent e) {}
+//			public void windowIconified(WindowEvent e) {}
+//			public void windowOpened(WindowEvent e) {}
 		};
 
 		
-		private boolean bModal;
 		private Container contentPane;
 		private Object contextObject;
 		private LWFrameOrDialog impl;
 		
 		private String title = null;
-		private Point location = null;
 		private Dimension preferredSize = null;
 		private Boolean resizable = null;
 		private Boolean pack = null;
 		private Dimension size = null;
-		private Boolean isCenteredOnScreen = null;
 		private Boolean isCenteredOnParent = true;
 		
 		
@@ -185,39 +196,13 @@ public class ChildWindowManager {
 			this.contextObject = aContextObject;
 			this.title = title;
 		}
-					
-		public void setLocationRelativeToParent(int x, int y) {
-			if (impl!=null){
-				impl.setLocationRelativeTo(impl.getParent());
-				impl.setLocation(x, y);
-				isCenteredOnScreen = false;
-				isCenteredOnParent = false;
-			}
-		}
-		
-		public void setLocationRelativeToComponent(Component component) {
-			if (impl!=null){
-				impl.setLocationRelativeTo(component);
-				isCenteredOnScreen = false;
-				isCenteredOnParent = false;
-			}
-		}
 		
 		public void setIsCenteredOnParent(){
-			isCenteredOnParent = true;
-			isCenteredOnScreen = false;
-			if (impl!=null){
-				impl.setLocationRelativeTo(impl.getParent());
-				
+			if (impl==null){
+				isCenteredOnParent = true;
+				return;
 			}
-		}
-		
-		public void setIsCenteredOnScreen(){
-			isCenteredOnParent = false;
-			isCenteredOnScreen = true;
-			if (impl!=null){
-				impl.setLocationRelativeTo(null);  // as specified in java.awt.Window javadocs 
-			}
+			throw new IllegalStateException("must be called before show( )");
 		}
 		
 		public void addChildWindowListener(ChildWindowListener childWindowListener) {
@@ -231,6 +216,9 @@ public class ChildWindowManager {
 		private void dispose(){			
 			if (impl != null){
 				impl.setVisible(false);
+				if (LG.isTraceEnabled()) {
+					LG.trace(impl.getTitle() + " sizes\n" + GuiUtils.getPreferredSizes(impl.self()));
+				}
 				impl.dispose();
 				impl = null;
 			} else {
@@ -238,86 +226,23 @@ public class ChildWindowManager {
 			}
 		}
 		
-		public Container getContentPane() {
+		private Container getContentPane() {
 			return this.contentPane;
 		}
 		
-		public Object getContextObject() {
+		private Object getContextObject() {
 			return contextObject;
 		}
 				
-		public Point getLocation(){
-			if (impl!=null){
-				return impl.getLocation();
-			}else{
-				return location;
-			}
-		}
-		
-		public Point getLocationOnScreen(){
-			if (impl!=null){
-				return impl.getLocationOnScreen();
-			}else{
-				return null;
-			}
-		}
-		
-		public boolean getModal(){
-			return bModal;
-		}
-		
 		public JFrame getParent() {
 			return parent;
 		}
 		
-		public String getTitle() {
-			if (impl!=null){
-				return impl.getTitle();
-			}else{
-				return title;
-			}
-		}
-		public void hide(){
-			if (impl!=null && impl.isVisible()){
-				impl.setVisible(false);
-				for (ChildWindowListener listener : listeners){
-					listener.closed(this);
-				}
-			}
-		}
-		public boolean isShowing() {
+		boolean isShowing() {
 			if (impl!=null){
 				return impl.isShowing();
 			}else{
 				return false;
-			}
-		}
-		public void removehildWindowListener(ChildWindowListener childWindowListener) {
-			listeners.remove(childWindowListener);
-		}
-		
-		public void requestFocus(){
-			if (impl!=null){
-				impl.requestFocus();
-			}
-		}
-		
-		public boolean requestFocusInWindow(){
-			boolean isLikelyToSucceed = false;
-			if (impl!=null){
-				isLikelyToSucceed = impl.requestFocusInWindow();
-			}
-			return isLikelyToSucceed;
-		}
-
-		public void setContextObject(Object context) {
-			this.contextObject = context;
-		}
-		
-		public void setLocation(Point point){
-			location = point;
-			if (impl!=null){
-				impl.setLocation(point);
 			}
 		}
 		
@@ -328,7 +253,7 @@ public class ChildWindowManager {
 			}
 		}
 		
-		public void setResizable(boolean resizable){
+		void setResizable(boolean resizable){
 			this.resizable = resizable;
 			if (impl!=null){
 				impl.setResizable(resizable);
@@ -342,13 +267,13 @@ public class ChildWindowManager {
 			}
 		}
 		
+	
 		/**
-		 * @deprecated doesn't do anything
+		 * @Deprecated -- use layout manager
+		 * @param i
+		 * @param j
 		 */
-		public void setPosition(int i, int j) {
-			
-		}
-		
+		@Deprecated
 		public void setSize(int i, int j) {
 			this.size = new Dimension(i,j);
 			if (impl!=null){
@@ -356,6 +281,11 @@ public class ChildWindowManager {
 			}
 		}
 		
+		/**
+		 * @deprecated -- use layout manager
+		 * @param dim
+		 */
+		@Deprecated
 		public void setSize(Dimension dim){
 			this.size = dim;
 			if (impl!=null){
@@ -368,7 +298,7 @@ public class ChildWindowManager {
 				impl.setTitle(title);
 			}
 		}
-		
+	
 		/**
 		 * show with specified modality 
 		 * @throws ProgrammingException if previously shown with different modality 
@@ -384,7 +314,7 @@ public class ChildWindowManager {
 			if (LG.isDebugEnabled()) {
 				LG.debug(ExecutionTrace.justClassName(ChildWindowManager.this) + " making a child window.  My parent is a "+ this.getParent().getName());
 			}	
-			impl = createContainerImplementation(title,modality);
+			impl = createContainerImplementation(title,modality,isCenteredOnParent);
 			impl.addWindowListener(windowListener);
 			{ //assemble pieces
 				Container cp = impl.getContentPane();
@@ -395,14 +325,14 @@ public class ChildWindowManager {
 			}
 
 			impl.setAlwaysOnTop(false);
-			if (location!=null){
-				impl.setLocation(location);
-			}
 			if (preferredSize != null){
 				impl.setPreferredSize(preferredSize);
 			}
 			if (pack!=null && pack){
 				impl.pack();
+				if (LG.isTraceEnabled()) {
+					
+				}
 			}
 
 			if (resizable != null){
@@ -412,15 +342,12 @@ public class ChildWindowManager {
 				impl.setSize(size);
 			}
 
-			if (isCenteredOnScreen !=null) {
-				impl.setLocationRelativeTo(null);
-			}
-
 			if (isCenteredOnParent != null) {
 				impl.setLocationRelativeTo(impl.getParent());
 			}
 			impl.toFront();
 			impl.setVisible(true);
+			
 			return;
 		}
 
@@ -495,12 +422,10 @@ public class ChildWindowManager {
 	}
 	
 	public void closeAllChildWindows(){
-		while (childWindows.size()>0){
-			ChildWindow child = childWindows.get(0);
-			child.hide();
-			child.dispose();
-			childWindows.remove(child);
+		for (ChildWindow c : childWindows) {
+			c.dispose();
 		}
+		childWindows.clear( );
 	}
 	
 	public void closeChildWindow(ChildWindow childWindow){
@@ -532,40 +457,6 @@ public class ChildWindowManager {
 		}
 		return null;
 	}
-
-	public void cascadeWindows() {
-		Dimension sizeOfCurrentDisplay = new Dimension(1000,1000);
-		int countShownWindows = 0;
-		for (ChildWindow childWindow : childWindows){
-			if (childWindow.isShowing()){
-				countShownWindows++;
-			}
-		}
-		if (countShownWindows==0){
-			return;
-		}
-		
-		double dx = sizeOfCurrentDisplay.getWidth() / countShownWindows / 4;
-		double dy = sizeOfCurrentDisplay.getHeight() / countShownWindows / 4;
-		int count = 0;
-		for (ChildWindow childWindow : childWindows){
-			if (childWindow.isShowing()){
-				childWindow.setLocation(new Point((int)(dx*count),(int)(dy*count)));
-				childWindow.show();
-				count++;
-			}
-		}
-	}
-
-	public void tileWindows(boolean horizontal) {
-//		JInternalFrame[] iframes = getOpenWindows();
-//		Rectangle[] bounds = BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
-//		for (int i=0;i<iframes.length;i++) {
-//			iframes[i].setBounds(bounds[i]);
-//			iframes[i].show();
-//		}
-	}	
-	
 
 }
 	

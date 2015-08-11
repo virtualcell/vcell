@@ -9,6 +9,9 @@ import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
+import org.vcell.util.ProgrammingException;
+
 /**
  * mix-in class that supports {@link LWContainerHandle} API
  */
@@ -30,9 +33,6 @@ class LWManager extends WindowAdapter{
 		return lwParent;
 	}
 
-
-
-
 	/**
 	 * @return iterator to visible windows
 	 */
@@ -49,7 +49,7 @@ class LWManager extends WindowAdapter{
 		Window childW = child.getWindow();
 		children.add(child);
 		childW.addWindowListener(this);
-		childW.addComponentListener( new WindowPositioner(parent.getWindow(), childW));
+		childW.addComponentListener( new WindowPositioner(parent.getWindow(), child));
 	}
 	
 	/**
@@ -89,15 +89,27 @@ class LWManager extends WindowAdapter{
 	 */
 	private class WindowPositioner extends ComponentAdapter {
 		final Container parent;
-		final Window child;
+		final LWHandle hndl;
 
-		WindowPositioner(Container parent, Window child) {
+		WindowPositioner(Container parent, LWHandle child) {
 			this.parent = parent;
-			this.child = child;
+			this.hndl = child;
 		}
 
 		public void componentShown(ComponentEvent e) {
-			LWContainerHandle.stagger(parent, child);
+			Window child = hndl.getWindow();
+			LWTraits traits = hndl.getTraits();
+			InitialPosition position = traits.getInitialPosition();
+			switch (position) {
+			case STAGGERED_ON_PARENT:
+				LWContainerHandle.stagger(parent, child);
+				break;
+			case CENTERED_ON_PARENT:
+				child.setLocationRelativeTo(parent);
+				break;
+			case NOT_LW_MANAGED:
+				//leave it alone
+			}
 			child.removeComponentListener(this);
 		}
 	}

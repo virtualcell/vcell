@@ -21,6 +21,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 /**
  * base class for logical top level frames 
@@ -44,12 +45,19 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	
 	private static Map<String,MutableInt> titleSequenceNumbers = new HashMap<>();
 	
+	private static final LWTraits traits = new LWTraits(InitialPosition.NOT_LW_MANAGED);
+	
 	protected LWTopFrame( ) {
 		lwManager = new LWManager(null,this);
 		tops.addFirst(new WeakReference<LWTopFrame>(this));
 		addWindowFocusListener(new FocusWatch());
 	}
 	
+	@Override
+	public LWTraits getTraits() {
+		return traits;
+	}
+
 	/**
 	 * @param bTextMenu if true, make top menu item text; if false, use icon 
 	 * @return Window menu for adding a JMenuBar

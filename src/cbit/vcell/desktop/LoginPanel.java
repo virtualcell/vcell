@@ -9,15 +9,16 @@
  */
 
 package cbit.vcell.desktop;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Frame;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.*;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -26,19 +27,12 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.ChildWindowListener;
-import cbit.vcell.client.ChildWindowManager;
-import cbit.vcell.client.ChildWindowManager.ChildWindow;
-
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.SystemColor;
-
 /**
  * Insert the type's description here.
  * Creation date: (1/26/2001 1:59:33 AM)
  * @author: Ion Moraru
  */
+@SuppressWarnings("serial")
 public class LoginPanel extends JPanel {
 	
 	public static final String DIALOG_TITLE = "Virtual Cell Login";
@@ -59,8 +53,7 @@ public class LoginPanel extends JPanel {
 	private LoginDelegate loginDelegate;
 	private JEditorPane dtrpnUseThisLink;
 
-
-class IvjEventHandler implements java.awt.event.ActionListener {
+	class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || e.getSource() == LoginPanel.this.getJButtonOK()) {
 				updateFields();
@@ -86,6 +79,10 @@ public LoginPanel(LoginDelegate loginDelegate) {
 	super();
 	this.loginDelegate = loginDelegate;
     initialize();
+}
+
+LoginPanel( ) {
+	this(null);
 }
 
 
@@ -397,7 +394,7 @@ private void updateFields() {
 			dtrpnUseThisLink.setContentType("text/html");
 			String s =
 					"<html><body bgcolor=\"#"+Hex.toString(new byte[] {(byte)(getBackground().getRed()&0xFF),(byte)(getBackground().getGreen()&0xFF),(byte)(getBackground().getBlue()&0xFF)})+
-					"\"><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database.</font></body></html>";
+					"\"><font size=5 face=Arial>Use <a href=\"http://vcell.org/vcell_models/how_submit_publication.html\">this link</a> for details on how to<br>acknowledge Virtual Cell in your<br>publication and how to share your<br>published research through<br>the VCell database.</font></body></html>";
 //			System.out.println(s);
 			dtrpnUseThisLink.setText(s);
 			dtrpnUseThisLink.setEditable(false);

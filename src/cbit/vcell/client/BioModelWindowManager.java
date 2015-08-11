@@ -19,6 +19,7 @@ import java.util.Hashtable;
 
 import javax.swing.JPanel;
 
+import org.vcell.util.VCAssert;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -54,6 +55,9 @@ import cbit.vcell.xml.gui.MIRIAMAnnotationViewer;
  * @author: Ion Moraru
  */
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {	
+	/**
+	 * context for ChildWindowManager
+	 */
 	private static final String MIRIAM_WINDOW = "MIRIAM_WINDOW";
 	private BioModel bioModel = null;
 	private Hashtable<SimulationContext, ApplicationComponents> applicationsHash = new Hashtable<SimulationContext, ApplicationComponents>();
@@ -610,10 +614,10 @@ public void showMIRIAMWindow() {
 		childWindow.setSize(600,400);
 		childWindow.setResizable(true);
 	}
-
-	if(!childWindow.isShowing()){
-		((MIRIAMAnnotationViewer)childWindow.getContentPane()).setBiomodel(bioModel);
+	else {
+		VCAssert.assertTrue(childWindow.isShowing(), "Invisible MIRIAM Window");
 	}
+
 	childWindow.show();
 }
 
