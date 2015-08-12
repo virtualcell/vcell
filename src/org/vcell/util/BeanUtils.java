@@ -844,6 +844,20 @@ public final class BeanUtils {
 		pw.close();
 		return out.getBuffer().toString();
 	}
+	
+	/**
+	 * @return String for current stack trace
+	 */
+	public static String getStackTrace() {
+		StackTraceElement[] stackTraceArray = Thread.currentThread().getStackTrace();
+		StringBuilder sb = new StringBuilder();
+		//0 and 1 are "getStackTrace" -- start with callers invocation
+		for (int i = 2; i < stackTraceArray.length; i++) {
+			sb.append(stackTraceArray[i]);
+			sb.append('\n');
+		}
+		return sb.toString();
+	}
 	/**
 	 * recursive assemble exception message
 	 * @param throwable

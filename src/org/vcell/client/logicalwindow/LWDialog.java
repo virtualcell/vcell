@@ -18,7 +18,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  *
  * defaults to {@link LWTraits.InitialPosition#CENTERED_ON_PARENT}
  * 
- * implements all {@link LWHandle} methods except {@link LWHandle#menuDescription()}  
+ * implements all {@link LWHandle} methods 
  */
 @SuppressWarnings("serial")
 public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHandle {
@@ -115,7 +115,7 @@ public abstract class LWDialog extends JDialog implements LWFrameOrDialog, LWHan
 	/**
 	 * remove application / toolkit modality
 	 */
-	static void normalizeModality(JDialog jdialog ) {
+	public static void normalizeModality(JDialog jdialog ) {
 		switch (jdialog.getModalityType()) {
 		case MODELESS:
 			if (LG.isEnabledFor(Level.WARN)) {

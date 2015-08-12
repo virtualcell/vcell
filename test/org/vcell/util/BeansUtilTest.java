@@ -13,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.junit.Test;
 
@@ -78,6 +77,7 @@ public class BeansUtilTest {
 		java.util.concurrent.TimeUnit tu = BeanUtils.lookupEnum(TimeUnit.class, 3);
 		System.out.println(tu);
 	}
+	
 	@Test
 	public void downcast( ) {
 		Integer i = 3;
@@ -88,6 +88,24 @@ public class BeansUtilTest {
 		assertTrue(fail == null);
 		Double notThere =  BeanUtils.downcast(Double.class,null);
 		assertTrue(notThere == null);
+	}
+	
+	private void eenie( ) {
+		meenie( );
+	}
+	
+	private void meenie( ) {
+		mo( );
+		
+	}
+	
+	private void mo( ) {
+		System.out.println(BeanUtils.getStackTrace());
+	}
+	
+	@Test
+	public void stackTrace( ) {
+		eenie( );
 	}
 
 }

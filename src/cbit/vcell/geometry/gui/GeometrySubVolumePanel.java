@@ -37,6 +37,7 @@ import javax.swing.border.EtchedBorder;
 
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
@@ -394,7 +395,7 @@ private void addAnalyticSubVolume() {
 		try {
 			final boolean[] acceptFlag = new boolean[] {false};
 			LWContainerHandle lwParent = LWNamespace.findLWOwner(GeometrySubVolumePanel.this);
-			final JDialog d = new DialogUtils.TitledDialog(lwParent,"Define New Subdomain Shape");
+			final JDialog d = new LWTitledDialog(lwParent,"Define New Subdomain Shape");
 //			BeanUtils.centerOnComponent(d, GeometrySubVolumePanel.this);
 			
 			JPanel main = new JPanel();

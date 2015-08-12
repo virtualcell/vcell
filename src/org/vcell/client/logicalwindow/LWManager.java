@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
-import org.vcell.util.ProgrammingException;
 
 /**
  * mix-in class that supports {@link LWContainerHandle} API
@@ -19,7 +18,8 @@ class LWManager extends WindowAdapter{
 	
 	private final LWContainerHandle lwParent;
 	
-	/**
+	
+	 /**
 	 * storage of children
 	 */
 	private LinkedList<LWHandle> children = new LinkedList<>();

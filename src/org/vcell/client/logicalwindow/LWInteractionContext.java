@@ -2,6 +2,9 @@ package org.vcell.client.logicalwindow;
 
 import org.vcell.hlglue.InteractionContext;
 
+/**
+ * graphical implementation of {@link InteractionContext}
+ */
 public class LWInteractionContext implements InteractionContext {
 	private final LWContainerHandle parent;
 
