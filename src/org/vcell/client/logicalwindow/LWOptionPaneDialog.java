@@ -16,9 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
- * Replacement for {@link JOptionPane#createDialog(java.awt.Component, String)
- * @author GWeatherby
- *
+ * Replacement for {@link JOptionPane#createDialog(java.awt.Component, String)}
  */
 @SuppressWarnings("serial")
 public abstract class LWOptionPaneDialog extends LWDialog {
