@@ -17,8 +17,8 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWJDialogDecorator;
 import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.VCAssert;
 

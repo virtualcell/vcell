@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -15,6 +13,9 @@ import javax.swing.JTextPane;
 
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
+/**
+ * OK / Cancel dialog -- uses question as basis for menu title
+ */
 @SuppressWarnings("serial")
 public class LWOkCancelDialog extends LWDialog {
 	private static final int QUESTION_TRUNCATE_LIMIT = 40;
@@ -58,18 +59,6 @@ public class LWOkCancelDialog extends LWDialog {
 		return saidYes;
 	}
 
-	/**
-	 * get screensize including multi monitor environment 
-	 * @return
-	 */
-	public static Dimension getScreenSize( ) {
-		//http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		int width = gd.getDisplayMode().getWidth();
-		int height = gd.getDisplayMode().getHeight();	
-		return new Dimension(width, height);
-	}
-	
 	private JPanel createMessagePanel(final String message) {
 		JTextPane textArea = new JTextPane();
 		if (message != null && message.contains("<html>")) {
@@ -86,7 +75,7 @@ public class LWOkCancelDialog extends LWDialog {
 		// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
 		//
 		Dimension textAreaPreferredSize = textArea.getPreferredSize();
-		Dimension screenSize = getScreenSize( );
+		Dimension screenSize = LWNamespace.getScreenSize( );
 		final int horizBorderSize = 90;
 		final int vertBorderSize = 40;
 		int w = Math.min(textAreaPreferredSize.width + horizBorderSize, screenSize.width - horizBorderSize);

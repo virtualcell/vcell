@@ -96,9 +96,9 @@ public class LWMenuItemFactory {
 		
 	}
 
-	
-	
-
+	/**
+	 * prohibit construction
+	 */
 	private LWMenuItemFactory() { }
 
 }

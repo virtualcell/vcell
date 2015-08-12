@@ -4,7 +4,10 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.Dialog.ModalityType;
@@ -20,6 +23,9 @@ import org.vcell.util.BeanUtils;
 
 import edu.uchc.connjur.wb.ExecutionTrace;
 
+/**
+ * utility methods for package
+ */
 public interface LWNamespace {
 	/**
 	 * holder for {@link Log4JLogger}
@@ -57,6 +63,10 @@ public interface LWNamespace {
 		return lastW;
 	}
 
+	/**
+	 * arrange children from logically topmost to specified 
+	 * @param to child to stop at (not null)
+	 */
 	public static void positionTopDownTo(LWHandle to) {
 		LWHandle starting = to;
 		LWHandle p = starting.getlwParent();
@@ -68,27 +78,24 @@ public interface LWNamespace {
 	}
 
 	/**
-		 * arrange children
-		 * @param from handle to arrange for, not null
-		 * @param to handle to stop at  
-		 * @return last Window positioned
-		 */
-		public static Window positionChildrenTo(LWHandle from, LWHandle to) {
-			from.unIconify();
-			Window lastW = from.getWindow();
-			lastW.toFront();
-			if (from != to) {
+	 * arrange children
+	 * @param from handle to arrange for, not null
+	 * @param to handle to stop at  
+	 * @return last Window positioned
+	 */
+	public static Window positionChildrenTo(LWHandle from, LWHandle to) {
+		from.unIconify();
+		Window lastW = from.getWindow();
+		lastW.toFront();
+		if (from != to) {
 			for (LWHandle childHw : from ) {
 				Window child = childHw.getWindow();
 				stagger(lastW,child);
-				lastW = child;
-	//			if (lastW != to.getWindow()) {
-					lastW = positionChildrenTo(childHw,to);
-	//			}
+				lastW = positionChildrenTo(childHw,to);
 			}
-			}
-			return lastW;
 		}
+		return lastW;
+	}
 
 	/**
 	 * position window relative another window
@@ -114,7 +121,7 @@ public interface LWNamespace {
 		}
 		if (lg.isEnabledFor(Level.WARN)) {
 			lg.warn(ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
-			
+
 		}
 		Container up = swingParent.getParent();
 		if (up == null) {
@@ -132,7 +139,7 @@ public interface LWNamespace {
 	public static LWContainerHandle findLWOwner(Component swingParent) {
 		return findOwnerOfType(LWContainerHandle.class, swingParent);
 	}
-	
+
 	/**
 	 * @param awtModality not null
 	 * @return {@link LWModality} that best matches awt modality 
@@ -171,7 +178,7 @@ public interface LWNamespace {
 			return LWModality.PARENT_ONLY;
 		}
 	}
-	
+
 	/**
 	 * create menu bar for windows that don't have one
 	 * 	right justified, iconic
@@ -182,5 +189,17 @@ public interface LWNamespace {
 		mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		mb.add( LWTopFrame.createWindowMenu(false));
 		return mb;
+	}
+
+	/**
+	 * get screensize including multi monitor environment 
+	 * @return
+	 */
+	public static Dimension getScreenSize( ) {
+		//http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		int width = gd.getDisplayMode().getWidth();
+		int height = gd.getDisplayMode().getHeight();	
+		return new Dimension(width, height);
 	}
 }
