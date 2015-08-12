@@ -78,8 +78,6 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	if (true)
-		throw new NullPointerException();
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
 	File exportFile = fetch(hashTable,EXPORT_FILE,File.class, true);
 	SelectorExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,SelectorExtensionFilter.class, true);
