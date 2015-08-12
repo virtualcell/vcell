@@ -57,10 +57,10 @@ public class VCellClientTest {
  */
 public static void main(java.lang.String[] args) {
 	final boolean  IS_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
-//	if (!IS_DEBUG) {
+	if (!IS_DEBUG) {
 		String siteName = VCellSoftwareVersion.fromSystemProperty().getSite().name().toLowerCase();
 		ConsoleCapture.getInstance().captureStandardOutAndError(new File(ResourceUtil.getLogDir(),"vcellrun_"+siteName+".log"));
-//	}
+	}
 	Logging.init();
 	BeanUtils.setDebug(IS_DEBUG);
 	if(args != null &&  args.length >= 1 && args[0].equals("-console")){//remove install4j parameter
