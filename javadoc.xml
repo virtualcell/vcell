@@ -19,7 +19,6 @@ standalone="no"?>
 		sourcepath="UserDocumentation:src_vfrap:resources_vfrap:src_vmicro:src:resources" 
 		splitindex="true" 
 		use="true" 
-		verbose="true" 
 		version="true">
 		</javadoc>
     </target>
