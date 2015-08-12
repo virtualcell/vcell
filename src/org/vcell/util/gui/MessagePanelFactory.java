@@ -42,6 +42,11 @@ public class MessagePanelFactory {
 		 * @return supplemental information or null if none
 		 */
 		public abstract String getSupplemental( );
+
+		/**
+		 * @return message type for {@link JOptionPane#JOptionPane(Object, int,int)} constructor
+		 */
+		public abstract int optionType() ;
 	}
 
 	/**
@@ -106,6 +111,7 @@ public class MessagePanelFactory {
 	}
 
 	private static class NonSending extends DialogMessagePanel {
+		
 		NonSending(String message) {
 			commonConstructionCode(this, message);
 		}
@@ -114,19 +120,21 @@ public class MessagePanelFactory {
 		public String getSupplemental() {
 			return null;
 		}
-
+		
+		@Override
+		public int optionType() {
+			return JOptionPane.DEFAULT_OPTION; 
+		}
 	}
 
 	private static class JPanelWithSendOption extends DialogMessagePanel {
 		private final ErrorContext errorContext;
 		private String logContent;
-		private boolean bUserSaidYes;
 	
 		JPanelWithSendOption(String message, ErrorContext errorContext) {
 			commonConstructionCode(this,message);
 			this.errorContext = errorContext;
 			logContent = null;
-			bUserSaidYes = false;
 
 			final boolean haveContext = isHaveContext();
 			CurrentContent currentCapture = ConsoleCapture.getInstance().getLastLines(1000);
@@ -140,14 +148,6 @@ public class MessagePanelFactory {
 				add(buttonPanel, BorderLayout.SOUTH);
 				JLabel label = new JLabel("Send error report to VCell development team to assist debugging?"); 
 				buttonPanel.add(label);
-				
-				JButton yes = new JButton("Yes");
-				yes.addActionListener( e -> answerIs(true) );
-				buttonPanel.add(yes);
-				
-				JButton no = new JButton("No");
-				no.addActionListener( e -> answerIs(false) );
-				buttonPanel.add(no);
 
 				JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
 				helpBtn.addActionListener(new ActionListener() {
@@ -160,24 +160,17 @@ public class MessagePanelFactory {
 			}	
 		}
 		
-		/**
-		 * record answer, close window
-		 * @param isYes
-		 */
-		private void answerIs(boolean isYes) {
-			bUserSaidYes = isYes;
-			setVisible(false);
+		@Override
+		public int optionType() {
+			return JOptionPane.YES_NO_OPTION; 
 		}
-
+		
 		private boolean isHaveContext( ) {
 			return errorContext != null && errorContext.canUse();
 		}
 
 		@Override
 		public String getSupplemental() {
-			if (!bUserSaidYes) {
-				return null;
-			}
 			final boolean haveContext = isHaveContext();
 			if (haveContext || logContent != null) {
 				StringBuilder sb = new StringBuilder();

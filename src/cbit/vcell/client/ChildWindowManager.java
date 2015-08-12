@@ -6,12 +6,10 @@ import java.awt.Container;
 import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
-import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -26,13 +24,13 @@ import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
 import org.vcell.client.logicalwindow.LWHandle;
-import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTitledDialog;
+import org.vcell.client.logicalwindow.LWTraits;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DocumentWindow;
@@ -71,7 +69,7 @@ public class ChildWindowManager {
 		}
 	}
 	@SuppressWarnings("serial")
-	private static class ParentModalChild extends DialogUtils.TitledDialog implements ManagedChild {
+	private static class ParentModalChild extends LWTitledDialog implements ManagedChild {
 		private final ChildWindowManager childWindowManager;
 
 		public ParentModalChild(ChildWindowManager cwm, LWContainerHandle parent, String title, LWTraits tr) {

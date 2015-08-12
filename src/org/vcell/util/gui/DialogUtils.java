@@ -17,13 +17,10 @@ import java.awt.Desktop;
 import java.awt.Desktop.Action;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Arrays;
@@ -44,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -53,12 +49,14 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWDialog;
-import org.vcell.client.logicalwindow.LWJDialogDecorator;
 import org.vcell.client.logicalwindow.LWNamespace;
-import org.vcell.client.logicalwindow.LWOptionPaneDialog;
+import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
+import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCellThreadChecker;
+import org.vcell.util.gui.MessagePanelFactory.DialogMessagePanel;
 import org.vcell.util.gui.VCSwingFunction.Doer;
 import org.vcell.util.gui.VCSwingFunction.Producer;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -67,7 +65,6 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.server.VCellConnection;
 
 import com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -77,48 +74,7 @@ import com.centerkey.utils.BareBonesBrowserLaunch;
  * @author: Ion Moraru
  */
 public class DialogUtils {
-	public final static String SHARE_MODEL_TEXT =
-			"Sending your model information will improve the ability of the Virtual Cell Support team to diagnose " +
-					"and repair transient software bugs which have escaped release testing. We may use the information you send to " +
-					"make copies of your models for the sole purpose of reproducing the bugs you've encountered.";
 
-
-	/**
-	 * {@link LWDialog} that uses dialog title for menu 
-	 */
-	@SuppressWarnings("serial")
-	public static class TitledDialog extends LWDialog {
-	
-		/**
-		 * @param parent could be null
-		 * @param title could be null
-		 */
-		public TitledDialog(LWContainerHandle parent, String title) {
-			super(parent, title);
-		}
-		
-		@Override
-		public String menuDescription() {
-			return getTitle( );
-		}
-	}
-	/**
-	 * {@link LWOptionPaneDialog} that uses dialog title for menu 
-	 */
-	@SuppressWarnings("serial")
-	public static class TitledOptionPaneDialog extends LWOptionPaneDialog {
-	
-		private TitledOptionPaneDialog(LWContainerHandle parent, String title,
-				JOptionPane optionPane) {
-			super(parent, title, optionPane);
-		}
-
-		@Override
-		public String menuDescription() {
-			return getTitle( );
-		}
-	}
-	
 	/**
 	 * Virtual Cell variant of {@link JOptionPane#createDialog(Component, String)} 
 	 * @param parent null acceptable but discouraged
@@ -127,7 +83,7 @@ public class DialogUtils {
 	 * @return new dialog
 	 */
 	public static LWDialog createDialog(LWContainerHandle parent, JOptionPane pane, String title) {
-		return new TitledOptionPaneDialog(parent, title, pane);
+		return new LWTitledOptionPaneDialog(parent, title, pane);
 	}
 	
 	/**
@@ -139,7 +95,7 @@ public class DialogUtils {
 	 */
 	public static LWDialog createDialog(Component parent, JOptionPane pane, String title) {
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(parent);
-		return new TitledOptionPaneDialog(lwParent, title, pane);
+		return new LWTitledOptionPaneDialog(lwParent, title, pane);
 	}
 	
 	private interface OKEnabler{
@@ -182,7 +138,7 @@ public class DialogUtils {
 			}
 
 			String message = userMessage.getMessage(replacementText);
-			JPanel panel = createMessagePanel(message);
+			JPanel panel = MessagePanelFactory.createSimple(message);
 			JCheckBox checkBox = null;
 			if (userMessage.getUserPreferenceWarning() >= 0){
 				checkBox = new JCheckBox("Do not show this warning again");
@@ -203,7 +159,7 @@ public class DialogUtils {
 			default:
 					title = null;
 			}
-			LWDialog dialog = new TitledOptionPaneDialog(lwParent, title,pane); 
+			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title,pane); 
 			dialog.setResizable(true);
 			try {
 				dialog.setVisible(true);
@@ -254,45 +210,6 @@ public class DialogUtils {
 	}
 
 
-	@SuppressWarnings("serial")
-	private static class JPanelWithCb extends JPanel {
-		JPanelWithCb( ) {
-			super(new BorderLayout());
-		}
-		JCheckBox allowSendCb;
-	}
-
-	private static JPanelWithCb createMessagePanel(final String message) {
-		JTextPane textArea = new JTextPane();
-		if (message != null && message.contains("<html>")) {
-			textArea.setContentType("text/html");
-		}
-		textArea.setText(message);
-		textArea.setCaretPosition(0);
-		textArea.setEditable(false);
-		textArea.setFont(textArea.getFont().deriveFont(Font.BOLD));
-		textArea.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-
-		//
-		// determine "natural" TextArea prefered size (what it would like if it didn't wrap lines)
-		// and try to set size accordingly (within limits ... e.g. 400<=X<=500 and 100<=Y<=400).
-		//
-		Dimension textAreaPreferredSize = textArea.getPreferredSize();
-		Dimension screenSize = getScreenSize( );
-		final int horizBorderSize = 90;
-		final int vertBorderSize = 40;
-		int w = Math.min(textAreaPreferredSize.width + horizBorderSize, screenSize.width - horizBorderSize);
-		int h = Math.min(textAreaPreferredSize.height + vertBorderSize, screenSize.height - vertBorderSize);
-		Dimension preferredSize = new Dimension(w,h);
-
-		JScrollPane scroller = new JScrollPane();
-		JPanelWithCb panel = new JPanelWithCb();
-		scroller.setViewportView(textArea);
-		scroller.getViewport().setPreferredSize(preferredSize);
-		panel.add(scroller, BorderLayout.CENTER);
-		return panel;
-	}
-
 	/**
 	 * get screensize including multi monitor environment 
 	 * @return
@@ -305,30 +222,6 @@ public class DialogUtils {
 		return new Dimension(width, height);
 	}
 
-	/**
-	 * add send model info to VCellSupport panel to JPanelWithCb (see {@link #createMessagePanel(String)}
-	 * @param panel
-	 * @param initialCheckboxState
-	 */
-	private static void addModelSendInformation(JPanelWithCb panel, boolean initialCheckboxState) {
-		JPanel buttonPanel = new JPanel();
-		panel.add(buttonPanel, BorderLayout.SOUTH);
-		JPanel sendModelPanel = new JPanel();
-		buttonPanel.add(sendModelPanel);
-
-		panel.allowSendCb = new JCheckBox("Send model info to VCell support team");
-		sendModelPanel.add(panel.allowSendCb);
-
-		JButton helpBtn = new JButton(DialogUtils.swingIcon(JOptionPane.QUESTION_MESSAGE));
-		helpBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Component c = (Component) e.getSource();
-				DialogUtils.showInfoDialog(c,SHARE_MODEL_TEXT);
-			}
-		});
-		sendModelPanel.add(helpBtn);
-		panel.allowSendCb.setSelected(initialCheckboxState);
-	}
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (6/23/2005 2:01:06 PM)
@@ -369,7 +262,7 @@ public class DialogUtils {
 			panel.add(scroller, BorderLayout.CENTER);
 
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-			final LWDialog dialog = new TitledOptionPaneDialog(lwParent,"Edit Annotation:", pane);
+			final LWDialog dialog = new LWTitledOptionPaneDialog(lwParent,"Edit Annotation:", pane);
 			dialog.setResizable(true);
 			try {
 				dialog.setVisible(true);
@@ -400,7 +293,7 @@ public class DialogUtils {
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		Doer doer = ( ) -> {
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
-			final JDialog d = new TitledOptionPaneDialog(lwParent, title, inputDialog);
+			final JDialog d = new LWTitledOptionPaneDialog(lwParent, title, inputDialog);
 			d.setResizable(true);
 			try {
 				d.setVisible(true);
@@ -435,7 +328,7 @@ public class DialogUtils {
 
 		Producer<Integer> prod = ( ) -> {
 			JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION,null,new String[] {getOKText(),getCancelText()});
-			JDialog d = new TitledOptionPaneDialog(lwParent,title,inputDialog);
+			JDialog d = new LWTitledOptionPaneDialog(lwParent,title,inputDialog);
 			d.setResizable(isResizeable);
 			if (okEnabler != null) {
 				okEnabler.setJOptionPane(inputDialog);
@@ -658,9 +551,9 @@ public class DialogUtils {
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		
 		String message = userMessage.getMessage(replacementText);
-		JPanel panel = createMessagePanel(message);
+		JPanel panel = MessagePanelFactory.createSimple(message);
 		JOptionPane pane = new JOptionPane(panel, JOptionPaneMessageType, 0, null, userMessage.getOptions(), userMessage.getDefaultSelection());
-		final JDialog dialog = new TitledOptionPaneDialog(lwParent, title, pane);
+		final JDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
 		dialog.setResizable(true);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.pack();
@@ -683,7 +576,7 @@ public class DialogUtils {
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		
 		JOptionPane pane = new JOptionPane(showComponent, JOptionPaneMessageType, 0, null, options, initOption);
-		final JDialog dialog =  new TitledOptionPaneDialog(lwParent, title, pane);
+		final JDialog dialog =  new LWTitledOptionPaneDialog(lwParent, title, pane);
 		dialog.setResizable(true);
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		if (okEnabler != null) {
@@ -779,8 +672,6 @@ public class DialogUtils {
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		
 		Doer doer = ( ) -> {
-			final VCellConnection.ExtraContext extraContext = new VCellConnection.ExtraContext();
-			final boolean haveContext = errorContext != null && errorContext.canUse();
 			String errMsg = message;
 			boolean sendErrorReport = false;
 			if (errMsg == null || errMsg.trim().length() == 0) {
@@ -795,46 +686,40 @@ public class DialogUtils {
 				sendErrorReport = true;
 			}
 
-			boolean initialCheckState = false;
 			final boolean goingToEmail = sendErrorReport && VCellClientTest.getVCellClient() != null;
-			JPanelWithCb panel = createMessagePanel(errMsg);
-			if (goingToEmail && haveContext) {
-				initialCheckState = errorContext.userPreferences.getSendModelInfoInErrorReportPreference();
-				addModelSendInformation(panel, initialCheckState);
+			DialogMessagePanel dialogMessagePanel;
+			if (goingToEmail) {
+				dialogMessagePanel = MessagePanelFactory.createExtended(errMsg, errorContext);
 			}
+			else {
+				dialogMessagePanel = MessagePanelFactory.createNonSending(errMsg);
+			}
+				
+			
 			Collection<String> suggestions = ExceptionInterpreter.instance().suggestions(message);
 			if (suggestions != null) {
 				SuggestionPanel sp = new SuggestionPanel();
 				sp.setSuggestedSolution(suggestions);
-				panel.add(sp,BorderLayout.NORTH);
+				dialogMessagePanel.add(sp,BorderLayout.NORTH);
 			}
 
-			JOptionPane pane =  new JOptionPane(panel, JOptionPane.ERROR_MESSAGE);
-			JDialog dialog = new TitledOptionPaneDialog(lwParent, "Error", pane);
+			JOptionPane pane =  new JOptionPane(dialogMessagePanel, JOptionPane.ERROR_MESSAGE,dialogMessagePanel.optionType( ) );
+			JDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Error", pane);
 			dialog.setResizable(true);
 			try{
 				dialog.setVisible(true);
-				if (goingToEmail) {
-					if (haveContext) {
-						Throwable throwableToSend = null; 
-						final boolean userSelectedSendModel = panel.allowSendCb.isSelected();
-						if (userSelectedSendModel) {
-							assert(errorContext != null);
-							throwableToSend = new RuntimeException(errorContext.modelInfo,exception);
+				if (goingToEmail ) {
+					Object ro = pane.getValue( );
+					Integer reply = BeanUtils.downcast(Integer.class, ro);
+					boolean userSaidYes = reply != null ? reply == JOptionPane.YES_OPTION : false;
+					if (userSaidYes) {
+						Throwable throwableToSend = exception; 
+						String extra = dialogMessagePanel.getSupplemental();
+						if (extra != null) {
+							throwableToSend = new RuntimeException(extra, exception);
 						}
-						else {
-							throwableToSend = new RuntimeException("User declined to share model",exception);
-						}
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend, extraContext);
-						if (userSelectedSendModel != initialCheckState) {
-							errorContext.userPreferences.setSendModelInfoInErrorReportPreference(userSelectedSendModel);
-						}
+						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(throwableToSend);
 					}
-					else {
-						assert(haveContext == false);
-						VCellClientTest.getVCellClient().getClientServerManager().sendErrorReport(exception, extraContext);
-					}
-
 				}
 			} finally{
 				dialog.dispose();
@@ -860,9 +745,9 @@ public class DialogUtils {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		Doer doer = ( ) -> {
-			JPanel panel = createMessagePanel(message);
+			JPanel panel = MessagePanelFactory.createSimple(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.WARNING_MESSAGE);
-			LWDialog dialog = new TitledOptionPaneDialog(lwParent, "Warning", pane);
+			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Warning", pane);
 			dialog.setResizable(true);
 			showOnce(dialog);
 		};
@@ -884,9 +769,9 @@ public class DialogUtils {
 		checkForNull(requester);
 		LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
 		Doer doer = ( ) -> {
-			JPanel panel = createMessagePanel(message);
+			JPanel panel = MessagePanelFactory.createSimple(message);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-			LWDialog dialog = new TitledOptionPaneDialog(lwParent,title,pane);
+			LWDialog dialog = new LWTitledOptionPaneDialog(lwParent,title,pane);
 			dialog.setResizable(true);
 			showOnce(dialog);
 		};
@@ -925,7 +810,7 @@ public class DialogUtils {
 			if(message.indexOf('\n') == -1){
 				panel.add(new JLabel(message), BorderLayout.NORTH);
 			}else{
-				JPanel msgPanel = createMessagePanel(message);
+				JPanel msgPanel = MessagePanelFactory.createSimple(message);
 				panel.add(msgPanel, BorderLayout.NORTH);
 			}
 			inputDialog.setMessage(panel);
@@ -933,7 +818,7 @@ public class DialogUtils {
 			if (initialValue!=null){
 				inputDialog.setInitialSelectionValue(initialValue);
 			}
-			final JDialog d = new TitledOptionPaneDialog(lwParent, "INPUT:", inputDialog);
+			final JDialog d = new LWTitledOptionPaneDialog(lwParent, "INPUT:", inputDialog);
 			d.setResizable(false);
 			String id = Long.toString(System.currentTimeMillis());
 			Hashtable<String, Object> choices  = new Hashtable<String, Object>();
@@ -1025,7 +910,7 @@ public class DialogUtils {
 					}
 					);
 
-			final JDialog dialog = new TitledOptionPaneDialog(lwParent, dialogTitle,pane);
+			final JDialog dialog = new LWTitledOptionPaneDialog(lwParent, dialogTitle,pane);
 			dialog.setResizable(true);
 			try {
 				dialog.setVisible(true);
@@ -1067,7 +952,7 @@ public class DialogUtils {
 			scroller.getViewport().setPreferredSize(new Dimension(600, 400));
 			panel.add(scroller, BorderLayout.CENTER);
 			JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION); 
-			final JDialog dialog = new TitledOptionPaneDialog(lwParent, "Complete Report",pane);
+			final JDialog dialog = new LWTitledOptionPaneDialog(lwParent, "Complete Report",pane);
 			showOnce(dialog);
 		};
 		VCSwingFunction.executeAsRuntimeException(doer);

@@ -1,6 +1,5 @@
 package org.vcell.client.logicalwindow;
 
-import java.awt.Dialog.ModalityType;
 import java.awt.Frame;
 import java.awt.Window;
 import java.util.Iterator;
@@ -11,8 +10,17 @@ import javax.swing.JMenuItem;
  * represent logical connection between windows. May be implemented by frames or modal dialogs
  */
 public interface LWHandle extends Iterable<LWHandle>{
+	/**
+	 * supported modalities. <i>ANCESTOR</i> could be added but omitted per YAGNI
+	 */
 	public enum LWModality {
+		/**
+		 * blocks nothing
+		 */
 		MODELESS,
+		/**
+		 * only blocks logical parent
+		 */
 		PARENT_ONLY,
 		//ANCESTOR
 		;

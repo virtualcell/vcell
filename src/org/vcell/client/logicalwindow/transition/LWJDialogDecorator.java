@@ -1,4 +1,4 @@
-package org.vcell.client.logicalwindow;
+package org.vcell.client.logicalwindow.transition;
 
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
@@ -13,8 +13,18 @@ import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 
 import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWDialog;
+import org.vcell.client.logicalwindow.LWHandle;
+import org.vcell.client.logicalwindow.LWMenuItemFactory;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTraits;
+import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
+/**
+ * Decorator which adds Logical Window functionality to existing {@link JDialog}; using {@link LWDialog} preferred
+ */
 public class LWJDialogDecorator implements LWHandle {
 	private static final Map<JDialog, LWJDialogDecorator>  decorators = new HashMap<>( );
 	static final Logger LG = Logger.getLogger(LWJDialogDecorator.class);
