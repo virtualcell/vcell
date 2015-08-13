@@ -864,6 +864,21 @@ ASTMolecularTypePattern MolecularTypePattern() :
 /*@egen*/
 }
 
+/*
+ASTMolecularTypePattern MolecularTypePattern() :
+{ Token t; Token label=null; }
+{
+  t = <IDENTIFIER> [ Components() ] [<VARIABLE_ATTRIBUTE>  ( (label=<INTEGER> ) | (label=<IDENTIFIER>) ) ]
+  { 
+  	jjtThis.setName(t.image); 
+  	if (label != null){
+  		jjtThis.setMatchLabel(label.image);
+  	}
+  	return jjtThis;
+  }
+}
+*/
+
 void Components()       :
 {}
 {

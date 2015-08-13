@@ -5,6 +5,7 @@ package org.vcell.model.bngl;
 public class ASTMolecularTypePattern extends SimpleNode {
 
 	public String name;
+	public String label = null;
 
 	public ASTMolecularTypePattern(int id) {
 		super(id);
@@ -28,6 +29,9 @@ public class ASTMolecularTypePattern extends SimpleNode {
 			}
 		}
 		buffer.append(")");
+		if (label!=null && !label.isEmpty()){
+			buffer.append("%"+label);
+		}
 		return buffer.toString();
 	}
 
@@ -38,5 +42,9 @@ public class ASTMolecularTypePattern extends SimpleNode {
 
 	public final String getName() {
 		return name;
+	}
+
+	public void setMatchLabel(String image) {
+		this.label = image;
 	}
 }
