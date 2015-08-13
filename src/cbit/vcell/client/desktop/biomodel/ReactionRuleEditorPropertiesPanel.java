@@ -384,6 +384,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			
 			public void run() {				
 				reactantTree.scrollPathToVisible(path);
+//				productTreeModel.populateTree();
 			}
 		});
 	}
@@ -397,6 +398,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			
 			public void run() {				
 				productTree.scrollPathToVisible(path);
+//				reactantTreeModel.populateTree();
 			}
 		});
 	}
@@ -433,6 +435,12 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			if (parentObject instanceof ReactionRuleParticipantLocal) {
 				ReactionRuleParticipantLocal rrp = (ReactionRuleParticipantLocal) parentObject;
 				rrp.speciesPattern.getSpeciesPattern().removeMolecularTypePattern(mtp);
+
+				if(rrp.type == ReactionRuleParticipantType.Reactant) {	// we reset the "opposite" tree because it too might have changed
+					productTreeModel.populateTree();
+				} else if(rrp.type == ReactionRuleParticipantType.Product) {
+					reactantTreeModel.populateTree();
+				}
 			}
 // delete site doesn't make sense for a reaction rule
 //		} else if (selectedUserObject instanceof MolecularComponentPattern) {
@@ -637,6 +645,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 										
 										public void run() {				
 											reactantTree.scrollPathToVisible(path);
+											productTreeModel.populateTree();
 										}
 									});
 								}
@@ -647,24 +656,35 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					} else if (selectedObject instanceof MolecularTypePattern) {
 						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 						if(mtp.hasExplicitParticipantMatch()) {
-							JMenuItem removeMatchMenuItem = new JMenuItem("Remove match");
-							removeMatchMenuItem.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									mtp.setParticipantMatchLabel("*");
-									reactantTreeModel.populateTree();
-
+							String newKey = mtp.getParticipantMatchLabel();
+							List<String> keyCandidates = new ArrayList<String>();
+							List<MolecularTypePattern> mtpReactantList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Reactant);
+							List<MolecularTypePattern> mtpProductList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Product);
+							for(MolecularTypePattern mtpCandidate : mtpReactantList) {	// we can look for indexes in any list, we should find the same
+								if(mtpCandidate.hasExplicitParticipantMatch() && !mtpCandidate.getParticipantMatchLabel().equals(newKey)) {
+									keyCandidates.add(mtpCandidate.getParticipantMatchLabel());
 								}
-							});
-							popupMenu.add(removeMatchMenuItem);
-						} else {
-							JMenuItem addMatchMenuItem = new JMenuItem("Add match");
-							addMatchMenuItem.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									mtp.setParticipantMatchLabel("1");
-									reactantTreeModel.populateTree();
+							}
+							if(!keyCandidates.isEmpty()) {
+								JMenu reassignMatchMenuItem = new JMenu();
+								reassignMatchMenuItem.setText("Reassign match");
+								for(int i=0; i<keyCandidates.size(); i++) {
+									JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
+									reassignMatchMenuItem.add(menuItem);
+									menuItem.addActionListener(new ActionListener() {
+										public void actionPerformed(ActionEvent e) {
+											String oldKey = e.getActionCommand();
+											MolecularTypePattern productToReassign = reactionRule.findMatch(oldKey, mtpProductList);
+											MolecularTypePattern orphanProduct = reactionRule.findMatch(newKey, mtpProductList);
+											productToReassign.setParticipantMatchLabel(newKey);
+											orphanProduct.setParticipantMatchLabel(oldKey);
+											reactantTreeModel.populateTree();
+											productTreeModel.populateTree();
+										}
+									});
 								}
-							});
-							popupMenu.add(addMatchMenuItem);
+								popupMenu.add(reassignMatchMenuItem);
+							}
 						}
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularComponentPattern) {
@@ -714,6 +734,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 										
 										public void run() {				
 											productTree.scrollPathToVisible(path);
+											reactantTreeModel.populateTree();
+
 										}
 									});
 								}
@@ -724,23 +746,35 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					} else if (selectedObject instanceof MolecularTypePattern) {
 						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 						if(mtp.hasExplicitParticipantMatch()) {
-							JMenuItem removeMatchMenuItem = new JMenuItem("Remove match");
-							removeMatchMenuItem.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									mtp.setParticipantMatchLabel("*");
-									productTreeModel.populateTree();
+							String newKey = mtp.getParticipantMatchLabel();
+							List<String> keyCandidates = new ArrayList<String>();
+							List<MolecularTypePattern> mtpReactantList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Reactant);
+							List<MolecularTypePattern> mtpProductList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Product);
+							for(MolecularTypePattern mtpCandidate : mtpReactantList) {	// we can look for indexes in any list, we should find the same
+								if(mtpCandidate.hasExplicitParticipantMatch() && !mtpCandidate.getParticipantMatchLabel().equals(newKey)) {
+									keyCandidates.add(mtpCandidate.getParticipantMatchLabel());
 								}
-							});
-							popupMenu.add(removeMatchMenuItem);
-						} else {
-							JMenuItem addMatchMenuItem = new JMenuItem("Add match");
-							addMatchMenuItem.addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									mtp.setParticipantMatchLabel("1");
-									productTreeModel.populateTree();
+							}
+							if(!keyCandidates.isEmpty()) {
+								JMenu reassignMatchMenuItem = new JMenu();
+								reassignMatchMenuItem.setText("Reassign match");
+								for(int i=0; i<keyCandidates.size(); i++) {
+									JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
+									reassignMatchMenuItem.add(menuItem);
+									menuItem.addActionListener(new ActionListener() {
+										public void actionPerformed(ActionEvent e) {
+											String oldKey = e.getActionCommand();
+											MolecularTypePattern reactantToReassign = reactionRule.findMatch(oldKey, mtpReactantList);
+											MolecularTypePattern orphanReactant = reactionRule.findMatch(newKey, mtpReactantList);
+											reactantToReassign.setParticipantMatchLabel(newKey);
+											orphanReactant.setParticipantMatchLabel(oldKey);
+											reactantTreeModel.populateTree();
+											productTreeModel.populateTree();
+										}
+									});
 								}
-							});
-							popupMenu.add(addMatchMenuItem);
+								popupMenu.add(reassignMatchMenuItem);
+							}
 						}
 						bDelete = true;
 					} else if (selectedObject instanceof MolecularComponentPattern) {
