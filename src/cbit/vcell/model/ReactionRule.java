@@ -181,6 +181,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 //		checkReactantPatterns(null);
 //		checkProductPatterns(null);
 		getKineticLaw().refreshUnits();
+		resolveMatches();
 	}
 	
 	public void checkReactantPatterns(IssueContext issueContext, List<Issue> issueList) {
@@ -314,6 +315,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		firePropertyChange(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS, oldValue, newValue);
 //		checkProductPatterns(null);
 		getKineticLaw().refreshUnits();
+		resolveMatches();
 	}
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;
@@ -360,6 +362,151 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			participant.getSpeciesPattern().resolveBonds();
 		}
 	}
+	private void resolveMatches() {
+		
+		// for each molecular type, make a lists of all corresponding molecular type patterns, one for reactants, one for products
+		Map <MolecularType, List<MolecularTypePattern>> reactantMap = new LinkedHashMap<MolecularType, List<MolecularTypePattern>>();
+		Map <MolecularType, List<MolecularTypePattern>> productMap = new LinkedHashMap<MolecularType, List<MolecularTypePattern>>();
+		
+		for(MolecularType mt : model.getRbmModelContainer().getMolecularTypeList()) {
+			List<MolecularTypePattern> mtpReactantList = populateMaps(mt, ReactionRuleParticipantType.Reactant);
+			reactantMap.put(mt, mtpReactantList);
+			List<MolecularTypePattern> mtpProductList = populateMaps(mt, ReactionRuleParticipantType.Product);
+			productMap.put(mt, mtpProductList);
+		}
+		
+		// we'll build a list with all tha mapped pairs so that we won't have to worry about them
+		Map <String, MolecularTypePattern> pairAlreadyMapped = new LinkedHashMap <String, MolecularTypePattern>();
+
+		// if, for a certain MolecularType, we have 0 or 1 MoleculartypePatterns both in reactant and product we ignore because it's trivial
+		for(MolecularType mt : model.getRbmModelContainer().getMolecularTypeList()) {
+			if(reactantMap.get(mt).size() < 2 && productMap.get(mt).size() < 2) {
+				// we make sure that the match flag is "*" (indifferent) for these
+				if(reactantMap.get(mt).size() == 1) {
+					reactantMap.get(mt).get(0).setParticipantMatchLabel("*");
+				}
+				if(productMap.get(mt).size() == 1) {
+					productMap.get(mt).get(0).setParticipantMatchLabel("*");
+				}
+				continue;
+			}
+			
+			// those patterns with a valid match we take out from this lists and we put them in separate lists
+			// if we find orphans either in the reactant or product list we set them to indifferent / any
+			
+			List<MolecularTypePattern> mtpReactantList = reactantMap.get(mt);
+			List<MolecularTypePattern> mtpProductList = productMap.get(mt);
+			List<MolecularTypePattern> mtpReactantsToRemove = new ArrayList<MolecularTypePattern>();
+			for(MolecularTypePattern mtpr : mtpReactantList) {
+				if(mtpr.hasExplicitParticipantMatch()) {
+					String matchKey = mtpr.getParticipantMatchLabel();
+					MolecularTypePattern mtpp = findMatch(matchKey, mtpProductList);	// we look for a match in the products
+					if(mtpp == null) {							// no product has the matching key, so this reactant must be orphan
+						mtpr.setParticipantMatchLabel("*");		// we set it to any
+					} else {									// we add this pair to the map of already mapped pairs and take it out from here
+						if(pairAlreadyMapped.containsKey(matchKey)) {			// key already in use, we generate a new one
+							matchKey = generateNewMatchKey(pairAlreadyMapped);
+							mtpr.setParticipantMatchLabel(matchKey);
+							mtpp.setParticipantMatchLabel(matchKey);
+						}
+						mtpReactantsToRemove.add(mtpr);					// we'll remove the reactants after finishing the iterations
+						mtpProductList.remove(mtpp);
+						pairAlreadyMapped.put(matchKey, mtpr);
+					}
+				}
+			}
+			for(MolecularTypePattern mtpr : mtpReactantsToRemove) {		// now we can remove the reactants without generating concurrent exceptions
+				mtpReactantList.remove(mtpr);
+			}
+			// mtpReactantList now is empty or contains orphans (with match flag set to any)
+			// mtpProductList may still contain orphans with match flag set to something not "any", we need to fix them
+			for(MolecularTypePattern mtpp : mtpProductList) {
+				if(mtpp.hasExplicitParticipantMatch()) {
+					String matchKey = mtpp.getParticipantMatchLabel();
+					MolecularTypePattern mtpr = findMatch(matchKey, mtpReactantList);	// we look for a match in the reactants
+					if(mtpr == null) {							// no reactant has the matching key, so this product must be orphan
+						mtpp.setParticipantMatchLabel("*");		// we set it to any
+					} else {
+						throw new RuntimeException("Found a reactant match for an orphan product, this should not be possible.");
+					}
+				}
+			}
+			// we try to match orphaned reactant mtp and product mtp of the same kind, as long neither list is empty
+			for(MolecularTypePattern mtpr : mtpReactantList) {
+				if(mtpProductList.isEmpty()) {
+					break;		// nothing left to match
+				}
+				MolecularTypePattern mtpp = mtpProductList.get(0);
+				if(mtpp != null) {
+					// these 2 are orphans and can be matched to each other
+					String matchKey = generateNewMatchKey(pairAlreadyMapped);
+					mtpr.setParticipantMatchLabel(matchKey);
+					mtpp.setParticipantMatchLabel(matchKey);
+//					mtpReactantList.remove(mtpr);		// we can't remove them because of concurrent exception and actually we don't need to
+					mtpProductList.remove(mtpp);
+					pairAlreadyMapped.put(matchKey, mtpr);
+				}
+			}
+		}
+	}
+	private String generateNewMatchKey(Map <String, MolecularTypePattern> pairAlreadyMapped) {
+		final int MatchingKeyLimit = 100;
+		for(int i=1; i<MatchingKeyLimit; i++) {
+			if(pairAlreadyMapped.containsKey(i+"")) {
+				continue;
+			}
+			return i+"";
+		}
+		throw new RuntimeException("Unable to generate a matching key larger than " + MatchingKeyLimit + ".");
+	}
+	public MolecularTypePattern findMatch(String key, List<MolecularTypePattern> mtpList) {
+		for(MolecularTypePattern mtp : mtpList) {
+			if(mtp.hasExplicitParticipantMatch() && key.equals(mtp.getParticipantMatchLabel())) {
+				return mtp;
+			}
+		}
+		return null;
+	}
+	public List<MolecularTypePattern> populateMaps(MolecularType mt, ReactionRuleParticipantType type) {
+		List<MolecularTypePattern> mtpList = new ArrayList<MolecularTypePattern>();
+		List<? extends ReactionRuleParticipant> patterns = (type == ReactionRuleParticipantType.Reactant) ? reactantPatterns : productPatterns;
+		for (ReactionRuleParticipant participant : patterns) {
+			List<MolecularTypePattern> molecularTypePatterns = participant.getSpeciesPattern().getMolecularTypePatterns();
+			for (MolecularTypePattern mtp : molecularTypePatterns) {
+				if(mtp.getMolecularType() == mt) {
+					mtpList.add(mtp);
+				}
+			}
+		}
+		return mtpList;
+	}
+	public void removeMatch(String keyToRemove) {				// no need to specify where the key is, we remove it from everywhere
+		if(keyToRemove == null || keyToRemove.equals("*")) {	// nothing to remove if key is bad or no key
+			return;
+		}
+		int matches = 0;
+		for(ReactionRuleParticipant participant : reactantPatterns) {
+			List<MolecularTypePattern> molecularTypePatterns = participant.getSpeciesPattern().getMolecularTypePatterns();
+			for (MolecularTypePattern mtp : molecularTypePatterns) {
+				if(mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(keyToRemove)) {
+					mtp.setParticipantMatchLabel("*");
+					matches++;
+				}
+			}
+		}
+		for(ReactionRuleParticipant participant : productPatterns) {
+			List<MolecularTypePattern> molecularTypePatterns = participant.getSpeciesPattern().getMolecularTypePatterns();
+			for (MolecularTypePattern mtp : molecularTypePatterns) {
+				if(mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(keyToRemove)) {
+					mtp.setParticipantMatchLabel("*");
+					matches++;
+				}
+			}
+		}
+		if(matches > 1) {
+			throw new RuntimeException("Found more than one MolecularTypePatterns to remove matching the key " + keyToRemove);
+		}
+	}
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() instanceof SpeciesPattern && evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
@@ -378,6 +525,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 					return;
 				}
 			}
+			resolveMatches();
 		}		
 	}
 	
@@ -546,21 +694,22 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			}
 		}
 		
-		// no orphan matches allowed
-		for(String key : rMatches.keySet()) {
-			if(pMatches.containsKey(key)) {
-				rMatches.remove(key);
-				pMatches.remove(key);
-			}
-		}
-		for(String key : rMatches.keySet()) {
-			String message = "No product shares the match id " + key + " with the reactant molecule " + rMatches.get(key).getDisplayName();
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
-		}
-		for(String key : pMatches.keySet()) {
-			String message = "No reactant shares the match id " + key + " with the product molecule " + pMatches.get(key).getDisplayName();
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
-		}
+//		// no orphan matches allowed
+//		for(String key : rMatches.keySet()) {
+//			if(pMatches.containsKey(key)) {
+//				rMatches.remove(key);
+//				pMatches.remove(key);
+//			}
+//		}
+		
+//		for(String key : rMatches.keySet()) {
+//			String message = "No product shares the match id " + key + " with the reactant molecule " + rMatches.get(key).getDisplayName();
+//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+//		}
+//		for(String key : pMatches.keySet()) {
+//			String message = "No reactant shares the match id " + key + " with the product molecule " + pMatches.get(key).getDisplayName();
+//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+//		}
 	}
 
 	public RbmKineticLaw getKineticLaw() {
