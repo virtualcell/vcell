@@ -44,6 +44,13 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			}
 		}
 	}
+	public MolecularTypePattern(MolecularTypePattern mtp) {
+		this.molecularType = mtp.getMolecularType();
+		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+			componentPatternList.add(new MolecularComponentPattern(mcp));
+		}
+	}
+	
 	public boolean hasMolecularComponentPattern(MolecularComponent mc) {
 		for (MolecularComponentPattern mcp : componentPatternList) {
 			if (mcp.getMolecularComponent() == mc) {
