@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -61,7 +62,7 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 		Document config = builder.build(xml);
 		
 		String deployFilename = null;
-		List<SiteConifg> sites = new ArrayList<>();
+		List<SiteConfig> sites = new ArrayList<>();
 		
 		{
 			Element r = config.getRootElement();
@@ -74,7 +75,9 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 			@SuppressWarnings("unchecked")
 			List<Element> children = s.getChildren("site");;
 			for (Element child :children) {
-				sites.add(parseMonitor(child));
+				SiteConfig sc = parseMonitor(child);
+				LG.info(sc);
+				sites.add(sc);
 			}
 		}
 		
@@ -87,7 +90,7 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 		Runtime.getRuntime().addShutdownHook(new Thread(sd));
 		String now = dateFormat.format(new Date( ));
 		
-		for (SiteConifg siteConfig: sites) {
+		for (SiteConfig siteConfig: sites) {
 			SiteUrl su = parseSite(jmsProv, siteConfig.name);
 			if (LG.isTraceEnabled()) {
 				LG.trace(jmsProv.getName() + " parsed to " + su);
@@ -149,44 +152,53 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 	/**
 	 * data from activemqmonitor XML file
 	 */
-	private static class SiteConifg {
+	private static class SiteConfig {
 		final String name;
 		final int timestampSeconds;
 		final int flushSeconds;
-		public SiteConifg(String name, int timestampSeconds, int flushSeconds) {
+		public SiteConfig(String name, int timestampSeconds, int flushSeconds) {
 			super();
 			this.name = name;
 			this.timestampSeconds = timestampSeconds;
 			this.flushSeconds = flushSeconds;
 		}
+		@Override
+		public String toString() {
+			return "SiteConfig [name=" + name + ", timestampSeconds="
+					+ timestampSeconds + ", flushSeconds=" + flushSeconds + "]";
+		}
+		
 	}
 	
 	/**
-	 * get integer value from element
+	 * get integer value from attribute
 	 * @param site
 	 * @param name
 	 * @return value or 0 if not present
 	 * @throws IllegalArgumentException if invalid string in file
 	 */
 	private static int intValue(Element site, String name) {
-		 Element e = site.getChild(name);
+		 Attribute e = site.getAttribute(name);
 		 if (e != null) {
 			 try {
-				 return Integer.parseInt(e.getText());
+				 return Integer.parseInt(e.getValue());
 			 }
 			 catch (NumberFormatException nfe) {
-				 throw new IllegalArgumentException("Invalid integer " + e.getText(  ) + " for " + name);
+				 throw new IllegalArgumentException("Invalid integer " + e.getValue(  ) + " for " + name);
 			 }
 		 }
 		 return 0;
 	}
 	
-	private static SiteConifg parseMonitor(Element site) {
+	private static SiteConfig parseMonitor(Element site) {
+			String name = site.getAttributeValue("name");
+			if (name == null) {
+				throw new IllegalArgumentException("site element missing name");
+			}
 		try {
-			String name = site.getTextTrim();
 			int tstamp = intValue(site,"timestamp");
 			int flush = intValue(site,"flush");
-			return new SiteConifg(name,tstamp,flush);
+			return new SiteConfig(name,tstamp,flush);
 		} catch (Exception e) {
 			throw new RuntimeException("error parsing " + site, e);
 		}
