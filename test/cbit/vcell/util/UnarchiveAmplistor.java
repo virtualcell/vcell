@@ -11,6 +11,16 @@ import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 
 public class UnarchiveAmplistor {
 	/**
+	 * user to retrieve for
+	 */
+	private static final String USER ="matsuutu";
+	/**
+	 * user files names
+	 */
+	private static final String[] USER_FILE_NAMES = new String[] {
+					"SimID_95744128_00.hdf5"
+			};
+	/**
 	 * file in $HOME to stash password
 	 */
 	private static final String PASSWORD_FILE = ".unarchivepw";
@@ -20,7 +30,6 @@ public class UnarchiveAmplistor {
 			String amplistorCredentialCleartextPassword = null;  //can set directly here, or
 			if (amplistorCredentialCleartextPassword == null) {
 				amplistorCredentialCleartextPassword = readFromHomeDirectory();
-				
 			}
 			
 			if (amplistorCredentialCleartextPassword == null) {
@@ -34,21 +43,13 @@ public class UnarchiveAmplistor {
 			// /share/apps/vcell2/users/boris/SimID_87497385_0_.smoldynOutput
 			// /share/apps/vcell2/users/boris/SimID_87497385_0_.tid
 			// /share/apps/vcell2/users/boris/SimID_87497385_0_.vcg
-			String[] fileNames = new String[] {
-					"SimID_87497385_0__0.simtask.xml",
-					"SimID_87497385_0_.fvinput",
-					"SimID_87497385_0_.smoldynInput",
-					"SimID_87497385_0_.smoldynOutput",
-					"SimID_87497385_0_.tid",
-					"SimID_87497385_0_.vcg"
-			};
 			String amplistorCredentialUser = "vcell";
 			AmplistorCredential amplistorCredential = new AmplistorCredential(amplistorCredentialUser, amplistorCredentialCleartextPassword);
-			for(String fileName:fileNames){
+			for(String fileName:USER_FILE_NAMES){
 				//not sure where isolon is anymore
-				File destinationFile = new File("\\\\cfs02\\raid\\vcell\\users\\boris\\"+fileName);
+				File destinationFile = new File("\\\\cfs02\\raid\\vcell\\" + USER + '\\' +fileName);
 				AmplistorUtils.getObjectDataPutInFile(
-						AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+"/boris/"+fileName,amplistorCredential, destinationFile);
+						AmplistorUtils.DEFAULT_AMPLI_SERVICE_VCELL_URL+'/' + USER + '/'+fileName,amplistorCredential, destinationFile);
 			}
 		}catch(Exception e){
 			e.printStackTrace();
