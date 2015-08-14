@@ -64,6 +64,12 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		}
 	}
 	
+	public MolecularComponentPattern(MolecularComponentPattern mcp) {
+		super();
+		this.molecularComponent = mcp.getMolecularComponent();
+		this.componentStatePattern = mcp.getComponentStatePattern();	// TODO: here we get lazy and don't create new state
+	}
+
 	public  boolean isFullyDefined(){
 		return !componentStatePattern.isAny();
 	}

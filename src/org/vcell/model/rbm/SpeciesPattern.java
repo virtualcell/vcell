@@ -146,6 +146,11 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	
 	public SpeciesPattern() {
 	}
+	public SpeciesPattern(SpeciesPattern sp) {		// copy constructor
+		for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+			molecularTypePatterns.add(new MolecularTypePattern(mtp));
+		}
+	}
 	
 	public void addMolecularTypePattern(MolecularTypePattern molecularTypePattern) {
 		List<MolecularTypePattern> newValue = new ArrayList<MolecularTypePattern>(molecularTypePatterns);
