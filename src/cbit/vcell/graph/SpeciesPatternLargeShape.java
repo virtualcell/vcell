@@ -1,11 +1,14 @@
 package cbit.vcell.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -152,9 +155,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		return yPos;
 	}
 	public int getRightEnd(){		// get the x of the right end of the species pattern
+		
+		if(speciesShapes.isEmpty()) {
+			return xPos + MolecularTypeLargeShape.getDummyWidth();
+		}
+		
 		int xRightmostMolecularType = 0;
 		int widthRightmostMolecularType = 0;
-		
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			int xCurrentMolecularType = stls.getX();
 			if(xRightmostMolecularType < xCurrentMolecularType) {
@@ -198,6 +205,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
 
+		if(speciesShapes.isEmpty()) {		// paint empty dummy
+			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
+		}
+		
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
