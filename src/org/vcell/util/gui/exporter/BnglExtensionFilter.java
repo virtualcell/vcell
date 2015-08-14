@@ -44,13 +44,10 @@ public class BnglExtensionFilter extends SelectorExtensionFilter {
 	}
 
 	@Override
-	public void writeBioModel(DocumentManager documentManager,
-			BioModel bioModel, File exportFile,
-			SimulationContext simulationContext) throws Exception {
-		//RbmModelContainer rbmModelContainer = bioModel.getModel().getRbmModelContainer();
+	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext simulationContext) throws Exception {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl(bioModel, pw);
+		RbmNetworkGenerator.writeBngl(simulationContext, pw, false);
 		String resultString = bnglStringWriter.toString();
 		FileUtils.writeStringToFile(exportFile, resultString);
 	}

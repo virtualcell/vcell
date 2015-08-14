@@ -29,6 +29,11 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.TimeBounds;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 
 import java.util.StringTokenizer;
 
@@ -53,8 +58,9 @@ public class RbmNetworkGenerator {
 
 	public static final String uniqueIdRoot = "unique_id_used_as_fake_parameter_";
 
+@Deprecated
 	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
-		SimulationContext sc = bioModel.getSimulationContexts()[0];	// TODO: we assume one single simulation context which may not be the case
+		SimulationContext sc = bioModel.getSimulationContexts()[0];	// we assume one single simulation context which may not be the case
 		writeBngl(sc, writer, false);
 	}
 	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions) {
@@ -78,7 +84,8 @@ public class RbmNetworkGenerator {
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
-	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, NetworkGenerationRequirements networkGenerationRequirements) {
+	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
+			NetworkGenerationRequirements networkGenerationRequirements) {
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
 		if(!callerClassName.equals(networkTransformerClassName)) {
@@ -223,6 +230,39 @@ public class RbmNetworkGenerator {
 		writer.println();
 	}
 	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
+		if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_DETERMINISTIC)) {
+			generateNetwork(writer, rbmModelContainer, networkGenerationRequirements);
+		} else if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_STOCHASTIC)) {
+			generateNetwork(writer, rbmModelContainer, networkGenerationRequirements);
+		} else if(sc.getApplicationType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC)) {
+			runNFSim(writer, rbmModelContainer, sc, networkGenerationRequirements);
+		}
+	}
+	public static void runNFSim(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
+		// ex: simulate_nf({t_end=>100,n_steps=>50});
+		writer.print("simulate_nf({");
+		if(sc.getBioModel() == null || sc.getSimulations() == null || sc.getSimulations().length == 0) {
+			writer.print("t_end=>100,n_steps=>50");
+			writer.println("})");
+			return;
+		}
+		// we just pick whatever the first simulation has, it'll get too complicated to offer the user a list of simulations and ask him to choose
+		SolverTaskDescription solverTaskDescription = sc.getSimulations(0).getSolverTaskDescription();
+		TimeBounds tb = solverTaskDescription.getTimeBounds();
+		double dtime = tb.getEndingTime() - tb.getStartingTime();
+		if(solverTaskDescription.getOutputTimeSpec() instanceof UniformOutputTimeSpec) {
+			UniformOutputTimeSpec uots = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
+			double interval = uots.getOutputTimeStep();
+			int steps = (int)Math.round(dtime/interval);
+			writer.print("t_end=>" + dtime + ",n_steps=>" + steps);
+		} else if(solverTaskDescription.getOutputTimeSpec() instanceof DefaultOutputTimeSpec) {		// currently unsupported, but some old simulations have it
+			writer.print("t_end=>" + dtime + ",n_steps=>50");
+		} else {
+			writer.print("t_end=>100,n_steps=>50");
+		}
+		writer.println("})");
+	}
+	public static void generateNetwork(PrintWriter writer, RbmModelContainer rbmModelContainer, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
 		writer.print("generate_network({");
@@ -254,7 +294,7 @@ public class RbmNetworkGenerator {
 		writer.print(",overwrite=>1");
 		writer.println("})");
 	}
-	
+
 	private static class ReactionLine {
 		String no;
 		String reactants;
