@@ -53,5 +53,9 @@ public class SiteMonitor  {
             connection.close();
         }
     }
+
+	public PrintWriter getWriter() {
+		return writer;
+	}
    
 }

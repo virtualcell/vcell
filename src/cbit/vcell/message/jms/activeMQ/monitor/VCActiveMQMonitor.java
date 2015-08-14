@@ -132,8 +132,10 @@ public class VCActiveMQMonitor  implements VCJmsConfig{
 	 */
 	private void closeMonitors() {
 		LG.info("Shutting down monitors");
+		String msg = "Monitor shut down at " + dateFormat.format(new Date( ));
 		for (SiteMonitor sm : siteMonitors) {
 			try {
+				sm.getWriter().println(msg);
 				sm.stop();
 			} catch (Exception e) {
 				e.printStackTrace();
