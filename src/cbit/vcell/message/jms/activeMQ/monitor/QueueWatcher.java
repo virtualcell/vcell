@@ -14,7 +14,11 @@ import org.apache.activemq.advisory.AdvisorySupport;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQTopic;
 
+/**
+ * watch a specific queue
+ */
 public class QueueWatcher {
+	//note -- see SVN history for examples of watching specific queues
 	private Session session;
 	private final Destination queue;
 	private final PrintWriter writer;
@@ -26,14 +30,6 @@ public class QueueWatcher {
 	}
 
 	public void start( ) throws JMSException {
-		/*
-		Destination consumer = session.createTopic(AdvisorySupport.getConsumerAdvisoryTopic(queue).getPhysicalName()); 
-		listenTo(consumer, msg -> messageConsumer(msg) );
-
-		Destination producer = session.createTopic(AdvisorySupport.getProducerAdvisoryTopic(queue).getPhysicalName()); 
-		listenTo(producer, msg -> messageProducer(msg) );
-		*/
-		
 		ActiveMQTopic[] tpcs = AdvisorySupport.getAllDestinationAdvisoryTopics(queue);
 		for (ActiveMQTopic tp : tpcs) {
 			writer.println("watching " + tp.getTopicName());
@@ -41,11 +37,6 @@ public class QueueWatcher {
 			MessageConsumer c = session.createConsumer(ds);
 			c.setMessageListener(new AdvListener(tp.getTopicName()) );
 		}
-	}
-
-	private void listenTo(Destination subj, MessageListener listener) throws JMSException {
-		MessageConsumer c = session.createConsumer(subj);
-		c.setMessageListener( listener );
 	}
 	
 	private void showProperties(Message msg) throws JMSException {
@@ -59,24 +50,6 @@ public class QueueWatcher {
 		writer.println(' ' + aMsg.getDataStructure().toString());
 	}
 
-	private void messageProducer(Message msg) {
-		try {
-			writer.println("PRODUCER");
-			showProperties(msg);
-		} catch (JMSException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void messageConsumer(Message msg) {
-		try {
-			writer.println("CONSUMER");
-			showProperties(msg);
-		} catch (JMSException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	private class AdvListener implements MessageListener {
 		private final String topicName;
 
