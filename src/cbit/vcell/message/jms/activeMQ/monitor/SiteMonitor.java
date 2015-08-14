@@ -13,6 +13,9 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 
+/**
+ * watch the queues of a specific site
+ */
 public class SiteMonitor  {
 
     private static final String QNAMES[] = { "dbReq","simDataReq","simJob","simReq","workerEvent"};
@@ -50,17 +53,5 @@ public class SiteMonitor  {
             connection.close();
         }
     }
-    
-//    public static void main(String[] args) {
-//    	Logging.init();
-//    	PrintWriter writer = new  PrintWriter(new OutputStreamWriter(System.out),true);
-//    	SiteMonitor t4 = new SiteMonitor("Test4", writer, "failover:(tcp://code2.cam.uchc.edu:61616)");
-//    	try {
-//			t4.start( );
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//    }
-
    
 }
