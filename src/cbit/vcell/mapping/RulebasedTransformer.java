@@ -103,7 +103,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 				newo.addSpeciesPattern(newsp);
 				newo.setStructure(sc.getStructure());
 				newModel.getRbmModelContainer().addObservable(newo);
-				
+				SpeciesPattern sp = new SpeciesPattern();
+				newo.addSpeciesPattern(sp);
+
 				em = new ModelEntityMapping(originalModel.getSpeciesContext(sc.getName()), newo);	// map new observable to old species context
 				entityMappings.add(em);
 			} catch (ModelException e) {
