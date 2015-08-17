@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -189,6 +190,8 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 					}
 					RbmObservable o = model.getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
 					model.getRbmModelContainer().addObservable(o);
+					SpeciesPattern sp = new SpeciesPattern();
+					o.addSpeciesPattern(sp);
 					newObject = o;
 					break;
 				case SIMULATIONS_NODE:

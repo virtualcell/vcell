@@ -76,7 +76,6 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		speciesPatternList = new ArrayList<SpeciesPattern>();
 //		speciesPatternList.addPropertyChangeListener(this);
 	}
-	// TODO: this is wrong, get rid of it
 	public RbmObservable(String name) {
 		this(null, name, null, null);
 	}
