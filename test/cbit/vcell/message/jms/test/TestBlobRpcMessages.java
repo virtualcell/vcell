@@ -14,7 +14,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
@@ -58,8 +57,8 @@ public class TestBlobRpcMessages {
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
 	        for (int i=0;i<NUM_COMSUMERS;i++){
-	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellQueue.JimQueue, log);
-				VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
+	        	VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, log);
+				VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Thread "+i, 1);
 	        	messagingService.addMessageConsumer(rpcConsumer);
 	        }
 	    		        
@@ -84,7 +83,7 @@ public class TestBlobRpcMessages {
 			        	// send request and block for response (or timeout).
 			        	// RPC invocations don't need commits.
 			        	//
-			        	Object returnValue = session.sendRpcMessage(VCellQueue.JimQueue, rpcRequest, true, 20000, null, null, null);
+			        	Object returnValue = session.sendRpcMessage(VCellTestQueue.JimQueue, rpcRequest, true, 20000, null, null, null);
 			        	
 			        	//
 			        	// print result.

@@ -11,7 +11,6 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.VCellQueue;
 
 /**
  * Hello world!
@@ -52,7 +51,7 @@ public class TestQueues {
 	        		sum ++;
 	        		VCMessageSession session = sessions.get(s);
 		        	VCMessage message = session.createTextMessage("message "+i+" from session "+s);
-		        	session.sendQueueMessage(VCellQueue.JimQueue, message, false, 100000L);
+		        	session.sendQueueMessage(VCellTestQueue.JimQueue, message, false, 100000L);
 		        	session.commit();
 		        }
 	        	Thread.sleep(2000);
@@ -73,7 +72,7 @@ public class TestQueues {
 						calculator.add(1);
 					}
 				};
-				VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellQueue.JimQueue, listener, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
+				VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, listener, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
 	        	messagingService.addMessageConsumer(queueConsumer);
 	        }
 	        
