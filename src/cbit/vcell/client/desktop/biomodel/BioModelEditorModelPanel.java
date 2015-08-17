@@ -1195,6 +1195,12 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				try {
 				rr.setReversible(false);
 				bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
+				SpeciesPattern sp = new SpeciesPattern();
+				ReactantPattern rp = new ReactantPattern(sp, rr.getStructure());
+				rr.addReactant(rp);
+				sp = new SpeciesPattern();
+				ProductPattern pp = new ProductPattern(sp, rr.getStructure());
+				rr.addProduct(pp);
 				newObject = rr;
 				} catch (Exception e){
 					e.printStackTrace();
