@@ -9,8 +9,6 @@ public class VCellQueue implements VCDestination {
 	public final static VCellQueue SimReqQueue = new VCellQueue(PropertyLoader.jmsSimReqQueue,null);
 	public final static VCellQueue WorkerEventQueue = new VCellQueue(PropertyLoader.jmsWorkerEventQueue,null);
 
-	public final static VCellQueue JimQueue = new VCellQueue("JimQueue");
-
 	private String vcellPropertyName;
 	private String queueName;
 	

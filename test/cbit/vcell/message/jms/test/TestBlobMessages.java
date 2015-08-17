@@ -11,7 +11,6 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.jms.VCMessageJms;
 
 /**
@@ -51,7 +50,7 @@ public class TestBlobMessages {
 	        		VCMessageSession session = sessions.get(s);
 		        	VCMessage message = session.createObjectMessage(new byte[40000*(i+1)]);
 //		        	VCMessage message = session.createObjectMessage(new byte[100000000]);
-		        	session.sendQueueMessage(VCellQueue.JimQueue, message, false, 100000L);
+		        	session.sendQueueMessage(VCellTestQueue.JimQueue, message, false, 100000L);
 		        	session.commit();
 		        }
 	        }
@@ -73,7 +72,7 @@ public class TestBlobMessages {
 	        			System.out.println("timestampMS="+vcMessage.getTimestampMS()+", "+toString()+",  elapsedTimeS="+((System.currentTimeMillis()-vcMessage.getTimestampMS())/1000.0)+", Received: "+byteArray.length+": "+blobInfo);
 	        		}
 	        	};
-	        	VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellQueue.JimQueue, listener, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
+	        	VCQueueConsumer queueConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, listener, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== Consumer Thread "+i,1);
 	        	messagingService.addMessageConsumer(queueConsumer);
 	        }
 	        
