@@ -1,5 +1,6 @@
 package cbit.vcell.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -8,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
@@ -209,15 +211,12 @@ public class MolecularTypeSmallShape {
 				}
 			}
 		}
-		
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + finalHeight/2, Color.WHITE, true);
 		g2.setPaint(p);
 
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, finalHeight, cornerArc, cornerArc);
 		g2.fill(rect);
-
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, finalHeight-2, cornerArc-3, cornerArc-3);
-
 		g2.setPaint(Color.black);
 		g2.draw(rect);
 		
@@ -226,5 +225,30 @@ public class MolecularTypeSmallShape {
 			mcss.paintSelf(g);
 		}
 		g.setColor(colorOld);
+	}
+	
+	public static void paintDummy(Graphics g, int xPos, int yPos) {
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Stroke strokeOld = g2.getStroke();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		final float dash1[] = { 2.0f };
+		final BasicStroke dashed = new BasicStroke(2.0f,BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f);
+		g2.setStroke(dashed);
+		int w = getDummyWidth();
+		int h = baseHeight;
+		int c = cornerArc;
+		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos+1, yPos+1, w-1, h-1, c-3, c);
+//		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, w-2, h-2, c-3, c-3);
+//		g2.setPaint(Color.LIGHT_GRAY);
+//		g2.draw(inner);
+		g2.setPaint(Color.LIGHT_GRAY);
+		g2.draw(rect);
+		g2.setColor(colorOld);
+		g2.setStroke(strokeOld);
+	}
+	public static int getDummyWidth() {
+		return baseWidth+7;
 	}
 }
