@@ -14,7 +14,6 @@ import cbit.vcell.message.VCPooledQueueConsumer;
 import cbit.vcell.message.VCQueueConsumer;
 import cbit.vcell.message.VCRpcMessageHandler;
 import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.ServiceSpec.ServiceType;
 
 /**
@@ -47,10 +46,10 @@ public class TestRPC {
 	        // reading message and computing sum
 	        // create N comsumers
 	        MyRpcServer myRpcServer = new MyRpcServer();
-			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellQueue.JimQueue, log);
+			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellTestQueue.JimQueue, log);
 			VCPooledQueueConsumer pooledQueueConsumer = new VCPooledQueueConsumer(rpcMessageHandler, log, NUM_THREADS, messagingService.createProducerSession());
 			pooledQueueConsumer.initThreadPool();
-			VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellQueue.JimQueue, pooledQueueConsumer, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Master Thread ", 1000);
+			VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellTestQueue.JimQueue, pooledQueueConsumer, null, "Queue["+VCellTestQueue.JimQueue.getName()+"] ==== RPC Consumer Master Thread ", 1000);
 
 //			VCRpcMessageHandler rpcMessageHandler = new VCRpcMessageHandler(myRpcServer, VCellQueue.JimQueue, log);
 //			VCQueueConsumer rpcConsumer = new VCQueueConsumer(VCellQueue.JimQueue, rpcMessageHandler, null, "Queue["+VCellQueue.JimQueue.getName()+"] ==== RPC Consumer Master Thread ", 1000);
@@ -80,7 +79,7 @@ public class TestRPC {
 	    		        	// send request and block for response (or timeout).
 	    		        	// RPC invocations don't need commits.
 	    		        	//
-	    		        	Object returnValue = messageSession.sendRpcMessage(VCellQueue.JimQueue, rpcRequest, true, 20000, null, null, null);
+	    		        	Object returnValue = messageSession.sendRpcMessage(VCellTestQueue.JimQueue, rpcRequest, true, 20000, null, null, null);
 	    		        	
 	    		        	//
 	    		        	// print result.
