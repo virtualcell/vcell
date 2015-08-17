@@ -1112,16 +1112,17 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		return true;
 		}
 
-		public boolean isDeleteAllowed(MolecularType mt) {
+		public boolean isDeleteAllowed(MolecularType mt, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
+			boolean isAllowed = true;
 			for(ReactionRule rrr : getReactionRuleList()) {
 				for(ProductPattern ppp : rrr.getProductPatterns()) {
-					if(!canDelete(mt, ppp.getSpeciesPattern().getMolecularTypePatterns())) {
-						return false;
+					if(!canDelete(ppp, mt, ppp.getSpeciesPattern(), usedHere)) {
+						isAllowed = false;
 					}
 				}
 				for(ReactantPattern rpp : rrr.getReactantPatterns()) {
-					if(!canDelete(mt, rpp.getSpeciesPattern().getMolecularTypePatterns())) {
-						return false;
+					if(!canDelete(rpp, mt, rpp.getSpeciesPattern(), usedHere)) {
+						isAllowed = false;
 					}
 				}
 			}
@@ -1129,26 +1130,33 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				if(!sc.hasSpeciesPattern()) {
 					continue;
 				}
-				if(!canDelete(mt, sc.getSpeciesPattern().getMolecularTypePatterns())) {
-					return false;
+				if(!canDelete(sc, mt, sc.getSpeciesPattern(), usedHere)) {
+					isAllowed = false;
 				}
 			}
 			for(RbmObservable o : getObservableList()) {
 				for(SpeciesPattern sp : o.getSpeciesPatternList()) {
-					if(!canDelete(mt, sp.getMolecularTypePatterns())) {
-						return false;
+					if(!canDelete(o, mt, sp, usedHere)) {
+						isAllowed = false;
 					}
 				}
 			}
-			return true;
+			return isAllowed;
 		}
-		private boolean canDelete(MolecularType mt, List<MolecularTypePattern> mtpList) {
-			for(MolecularTypePattern mtp : mtpList) {
-				if(mt.compareEqual(mtp.getMolecularType())) {
-					return false;
+		private boolean canDelete(Displayable o, MolecularType mt, SpeciesPattern sp, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
+			boolean can = true;
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mt == mtp.getMolecularType()) {
+					String key = sp.getDisplayName();
+					key = o.getDisplayType() + o.getDisplayName() + key;
+					usedHere.put(key, new Pair<Displayable, SpeciesPattern>(o, sp));
+
+					
+					
+					can = false;
 				}
 			}
-			return true;
+			return can;
 		}
 		
 		public void addMolecularType(MolecularType molecularType, boolean makeObservable) throws ModelException, PropertyVetoException {
