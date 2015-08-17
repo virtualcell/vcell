@@ -358,6 +358,6 @@ public class MolecularTypeLargeShape implements LargeShape {
 		g2.setStroke(strokeOld);
 	}
 	public static int getDummyWidth() {
-		return baseWidth+25;
+		return baseWidth+30;
 	}
 }
