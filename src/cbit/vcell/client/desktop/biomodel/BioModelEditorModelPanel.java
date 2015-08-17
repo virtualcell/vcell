@@ -30,7 +30,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -63,6 +65,8 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
 import org.vcell.relationship.RelationshipObject;
+import org.vcell.util.Displayable;
+import org.vcell.util.Pair;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
@@ -1139,7 +1143,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			}
 		} else if (currentSelectedTable == observablesTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
-				if(!bioModel.getModel().getRbmModelContainer().hasRules()) {
+				if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 					return;
 				}
@@ -1356,9 +1360,27 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 						ReactionRule rr = (ReactionRule)object;
 						bioModel.getModel().getRbmModelContainer().removeReactionRule(rr);
 					} else if(object instanceof MolecularType) {
+						Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
 						MolecularType mt = (MolecularType)object;
-						if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(mt)) {
-							throw new RuntimeException(mt.getDisplayType() + " '" + mt + "' cannot be deleted because it's already being used.");
+						if(!bioModel.getModel().getRbmModelContainer().isDeleteAllowed(mt, usedHere)) {
+							String errMsg = mt.getDisplayType() + " <b>'" + mt + "'</b> cannot be deleted because it's already being used by:<br>";
+							final int MaxListSize = 7;
+							int count = 0;
+							for(String key : usedHere.keySet()) {
+								System.out.println(key);
+								if(count >= MaxListSize) {
+									errMsg += "<br> ... and more.";
+									break;
+								}
+								Pair<Displayable, SpeciesPattern> o = usedHere.get(key);
+								Displayable e = o.one;
+								SpeciesPattern sp = o.two;
+								errMsg += "<br> - " + e.getDisplayType().toLowerCase() + " <b>" + e.getDisplayName() + "</b>";
+								errMsg += ", " + sp.getDisplayType().toLowerCase() + " " + " <b>" + sp.getDisplayName() + "</b>";
+								count++;
+							}
+							errMsg = "<html>" + errMsg + "</html>";
+							throw new RuntimeException(errMsg);
 						}
 						bioModel.getModel().getRbmModelContainer().removeMolecularType(mt);
 					} else if(object instanceof RbmObservable) {
