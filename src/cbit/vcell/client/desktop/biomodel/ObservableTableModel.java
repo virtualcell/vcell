@@ -435,6 +435,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 					}
 					o.setStructure(structure);
 					getModel().getRbmModelContainer().addObservable(o);
+					SpeciesPattern sp = new SpeciesPattern();	// we add an empty species pattern
+					o.addSpeciesPattern(sp);
+
 				} else {					// renaming existing observable
 					observable.setName(inputValue);
 				}
@@ -451,7 +454,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 					SpeciesPattern speciesPattern = RbmUtils.parseSpeciesPattern(token, bioModel.getModel());
 					speciesPatternList.add(speciesPattern);
 				}
-				observable.setSpeciesPatternList(speciesPatternList);
+				if(!speciesPatternList.isEmpty()) {
+					observable.setSpeciesPatternList(speciesPatternList);
+				}
 				fireTableRowsUpdated(row, row);
 				break;
 			}

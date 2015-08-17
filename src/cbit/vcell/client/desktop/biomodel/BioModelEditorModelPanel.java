@@ -1145,6 +1145,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				}
 				RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
 				bioModel.getModel().getRbmModelContainer().addObservable(o);
+				SpeciesPattern sp = new SpeciesPattern();
+				o.addSpeciesPattern(sp);
 				newObject = o;
 			}
 		} else if (currentSelectedTable == structuresTable) {
