@@ -201,7 +201,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	public void paintSelf(Graphics g) {
 		final int offset = 18;			// initial height of vertical bar
 		final int separ = 5;			// y distance between 2 adjacent bars
-		
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
 
