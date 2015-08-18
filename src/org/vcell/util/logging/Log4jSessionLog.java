@@ -31,11 +31,17 @@ public class Log4jSessionLog implements SessionLog {
 	 * @param userid
 	 */
 	public Log4jSessionLog(String userid) {
-		super();
 		if (userid == null) {
 			userid = "default";
 		}
 		lg = Logger.getLogger(userid);
+	}
+	/**
+	 * create logger using existing {@link Logger}
+	 * @param lg
+	 */
+	public Log4jSessionLog(Logger lg) {
+		this.lg = lg;
 	}
 	
 	/**
