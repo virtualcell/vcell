@@ -1,7 +1,5 @@
 package cbit.vcell.message.jms;
 
-import cbit.vcell.message.jms.activeMQ.monitor.VCActiveMQMonitor;
-
 /**
  * XML properties shared between {@link VCActiveMQMonitor} and DeployVCell
  */
