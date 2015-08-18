@@ -3,7 +3,6 @@ package cbit.vcell.mongodb;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.PropertyLoader;
@@ -81,7 +80,7 @@ public class VCMongoDbDriver implements Runnable {
 	        	// error handling?? ... if couldn't save, then log it locally
 	        	//
 	        	String errorString = writeResult.getError();////???????
-	        	if (StringUtils.isNotEmpty(errorString) && LG.isEnabledFor(Level.WARN)) {
+	        	if (isNotEmpty(errorString) && LG.isEnabledFor(Level.WARN)) {
         			LG.warn("VCMongoMessage failedToSend : "+ errorString);
 	        	}else if (LG.isDebugEnabled()){
 	        		LG.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
@@ -104,6 +103,14 @@ public class VCMongoDbDriver implements Runnable {
 			}
     	}
      }
+	/**
+	 * standin for StringUtils.isNotEmpty
+	 * @param s
+	 * @return true if not null and not empty
+	 */
+	private boolean isNotEmpty(String s) {
+		return s != null  && s.length() > 0;
+	}
     
     public void run()
     {
