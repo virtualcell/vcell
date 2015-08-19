@@ -27,6 +27,7 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +44,7 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -58,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
@@ -70,7 +73,6 @@ import org.vcell.util.Issue;
 import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.VCAssert;
 import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
@@ -1772,7 +1774,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 									break;
 								}
 							}
-							VCAssert.assertValid(chosenSimContext);
+							Objects.requireNonNull(chosenSimContext);
 							if (SmoldynSurfaceDiffusionWarning.isSmoldynOrHybrid(chosenSimContext)) {
 								SmoldynSurfaceDiffusionWarning.acknowledgeWarning(component);
 							}
@@ -2026,7 +2028,10 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 	}
 }
 
-
+/**
+ * hashtable key for data bytes of file
+ */
+private final static String BYTES_KEY = "bytes";
 /**
  * Comment
  */
@@ -2046,17 +2051,19 @@ public static void downloadExportedData(final Component requester, final UserPre
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// get it
 		    URLConnection connection = url.openConnection();
-		    byte[] bytes = new byte[connection.getContentLength()];
-		    java.io.InputStream is = connection.getInputStream();
-		    int bytesRead = 0;
-		    int offset = 0;
-		    while (bytesRead >= 0 && offset<(bytes.length-1)) {
-		        //System.out.println("offset: " + offset + ", bytesRead: " + bytesRead);
-		        bytesRead = is.read(bytes, offset, bytes.length - offset);
-		        offset += bytesRead;
+		    int size = connection.getContentLength(); //may be -1, see "HTTP chunked decoding"
+		    ByteArrayOutputStream baos;
+		    if (size > 0) {
+		    	baos = new ByteArrayOutputStream(size);
 		    }
-		    is.close();
-		    hashTable.put("bytes", bytes);
+		    else {
+		    	baos = new ByteArrayOutputStream( );
+		    }
+		    
+		    try (java.io.InputStream is = connection.getInputStream()) {
+		    	IOUtils.copy(is, baos);
+		    }
+		    hashTable.put(BYTES_KEY, baos.toByteArray()); 
 		}		
 	};
 	AsynchClientTask task2 = new AsynchClientTask("selecting file to save", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -2155,7 +2162,7 @@ public static void downloadExportedData(final Component requester, final UserPre
 					return;
 				}
 			}
-			byte[] bytes = (byte[])hashTable.get("bytes");
+			byte[] bytes = (byte[])hashTable.get(BYTES_KEY);
             FileOutputStream fo = new FileOutputStream(selectedFile);
             fo.write(bytes);
             fo.close();
