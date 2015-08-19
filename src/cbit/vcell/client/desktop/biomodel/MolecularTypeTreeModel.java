@@ -121,18 +121,25 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 				if (inputString == null || inputString.length() == 0) {
 					return;
 				}
-				String mangled = TokenMangler.fixTokenStrict(inputString);
-				if(!mangled.equals(inputString)) {
-					String errMsg = ((Displayable)userObject).getDisplayType() + " '" + inputString + "' not legal identifier, try '" + mangled + "'";
-					throw new RuntimeException(errMsg);
-				}
 				
 				if (userObject instanceof MolecularType) {
+					String mangled = TokenMangler.fixTokenStrict(inputString);
+					if(!mangled.equals(inputString)) {
+						String errMsg = ((Displayable)userObject).getDisplayType() + " '" + inputString + "' not legal identifier, try '" + mangled + "'";
+						throw new RuntimeException(errMsg);
+					}
 					((MolecularType) userObject).setName(inputString);
 				} else if (userObject instanceof MolecularComponent) {
+					String mangled = TokenMangler.fixTokenStrict(inputString);
+					if(!mangled.equals(inputString)) {
+						String errMsg = ((Displayable)userObject).getDisplayType() + " '" + inputString + "' not legal identifier, try '" + mangled + "'";
+						throw new RuntimeException(errMsg);
+					}
 					((MolecularComponent) userObject).setName(inputString);
 				} else if (userObject instanceof ComponentStateDefinition) {
-					((ComponentStateDefinition) userObject).setName(inputString);
+					if(inputString.matches("[A-Z_a-z0-9]+")) {
+						((ComponentStateDefinition) userObject).setName(inputString);
+					}
 				}
 			} 
 		} catch (Exception ex) {
