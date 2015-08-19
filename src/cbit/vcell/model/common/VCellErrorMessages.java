@@ -96,6 +96,8 @@ public class VCellErrorMessages {
 	public static final String MustNotBeRuleBased = "Feature available for non Network-Free models only.";
 	public static final String OneStructureOnly = "Currently Network-Free modeling is only available for single structure.";
 
+	public static final String NFSimAppNotAllowedForMultipleStructures = "Unable to create a Network-Free Application when multiple Structures are present.";
+	
 	// ========== BioModel end =======================//
 	
 	
