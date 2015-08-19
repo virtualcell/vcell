@@ -1116,12 +1116,12 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			boolean isAllowed = true;
 			for(ReactionRule rrr : getReactionRuleList()) {
 				for(ProductPattern ppp : rrr.getProductPatterns()) {
-					if(!canDelete(ppp, mt, ppp.getSpeciesPattern(), usedHere)) {
+					if(!canDelete(rrr, mt, ppp.getSpeciesPattern(), usedHere)) {
 						isAllowed = false;
 					}
 				}
 				for(ReactantPattern rpp : rrr.getReactantPatterns()) {
-					if(!canDelete(rpp, mt, rpp.getSpeciesPattern(), usedHere)) {
+					if(!canDelete(rrr, mt, rpp.getSpeciesPattern(), usedHere)) {
 						isAllowed = false;
 					}
 				}
