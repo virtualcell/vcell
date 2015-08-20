@@ -19,7 +19,7 @@ import cbit.vcell.solver.SimulationJob;
 @SuppressWarnings("serial")
 public class NfsimExtensionFilter extends SelectorExtensionFilter {
 	public NfsimExtensionFilter() {
-		super(".xml", 	"NFSim (BNGL) file (*.xml)",
+		super(".xml", 	"NFSim XML file (*.xml)",
 			Selector.SPATIAL,Selector.NONSPATIAL,Selector.STOCHASTIC,Selector.DETERMINISTIC); //specifies requires single application of any type
 	}
 
