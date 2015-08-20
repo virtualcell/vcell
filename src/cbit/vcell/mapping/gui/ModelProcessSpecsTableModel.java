@@ -187,6 +187,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("ModelProcessSpecs")) {
 		refreshData();
 	}
+	if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("reactionRuleSpecs")) {
+		refreshData();
+	}
+	if(evt.getSource() instanceof ReactionRule) {
+		System.out.println("Reaction Rule event, property " + evt.getPropertyName());
+		refreshData();
+	}
 	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
