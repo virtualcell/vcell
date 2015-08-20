@@ -440,7 +440,7 @@ private void refreshReactionRuleSpecs() throws java.beans.PropertyVetoException 
 		// No longer in database or name changed. Discard reactionRule mapping
 		//
 		if (reactionRule == null) {
-			reactionRuleSpecList.remove(reactionRule);
+			reactionRuleSpecList.remove(reactionRuleSpec);
 			bChanged = true;
 			continue;
 		}
