@@ -266,12 +266,16 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			gbc.weightx = 1.0;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			add(getKineticsTypeComboBox(), gbc);
+			getKineticsTypeComboBox().setEnabled(false);
 			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
 			gbc.gridy = gridy;
 			gbc.insets = new java.awt.Insets(0, 4, 4, 4);
 			add(getJToggleButton(), gbc);
+			getJToggleButton().setEnabled(false);
+//			getJToggleButton().setVisible(false);
+			
 			// --------------------------------------------------------------
 			gridy ++;
 			gbc = new java.awt.GridBagConstraints();
