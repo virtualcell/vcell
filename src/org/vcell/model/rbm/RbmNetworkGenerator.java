@@ -61,9 +61,10 @@ public class RbmNetworkGenerator {
 @Deprecated
 	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
 		SimulationContext sc = bioModel.getSimulationContexts()[0];	// we assume one single simulation context which may not be the case
-		writeBngl(sc, writer, false);
+		writeBngl(sc, writer, false, false);	// don't apply the app filters
 	}
-	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions) {
+	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, 
+			boolean applyApplicationFilters) {
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
@@ -75,7 +76,7 @@ public class RbmNetworkGenerator {
 		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
 		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, false);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, applyApplicationFilters);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -214,11 +215,11 @@ public class RbmNetworkGenerator {
 			writer.println();
 		}
 	}
-	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, boolean enabledOnly) {
+	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, boolean applyApplicationFilters) {
 		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
 		for (ReactionRule rr : reactionList) {
-			if(enabledOnly && sc != null) {
+			if(applyApplicationFilters && sc != null) {
 				ReactionRuleSpec rrs = sc.getReactionContext().getReactionRuleSpec(rr);
 				if(rrs != null && rrs.isExcluded()) {
 				continue;		// we skip those rules which are disabled (excluded)
