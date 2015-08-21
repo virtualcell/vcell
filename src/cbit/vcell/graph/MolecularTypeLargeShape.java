@@ -44,6 +44,7 @@ public class MolecularTypeLargeShape implements LargeShape {
 	private int height = baseHeight;
 
 	final Graphics graphicsContext;
+	private boolean highlight = false;
 	
 	private final String name;
 	private final MolecularType mt;
@@ -313,10 +314,17 @@ public class MolecularTypeLargeShape implements LargeShape {
 		g2.fill(rect);
 
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-3, cornerArc-3);
-		g2.setPaint(Color.GRAY);
-		g2.draw(inner);
-		g2.setPaint(Color.DARK_GRAY);
-		g2.draw(rect);
+		if(highlight) {
+			g2.setPaint(Color.RED);
+			g2.draw(inner);
+			g2.setPaint(Color.BLACK);
+			g2.draw(rect);
+		} else {
+			g2.setPaint(Color.GRAY);
+			g2.draw(inner);
+			g2.setPaint(Color.DARK_GRAY);
+			g2.draw(rect);
+		}
 		
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
@@ -359,5 +367,18 @@ public class MolecularTypeLargeShape implements LargeShape {
 	}
 	public static int getDummyWidth() {
 		return baseWidth+30;
+	}
+	
+	public void setHighlight(boolean b) {
+		this.highlight  = b;
+	}
+	public boolean isHighlighted() {
+		return highlight;
+	}
+	public void turnHighlightOffRecursive() {
+		this.highlight  = false;
+		for(MolecularComponentLargeShape mcls : componentShapes) {
+			mcls.turnHighlightOffRecursive();
+		}
 	}
 }

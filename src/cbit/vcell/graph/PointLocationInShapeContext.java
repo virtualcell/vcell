@@ -1,6 +1,11 @@
 package cbit.vcell.graph;
 
+import java.awt.Graphics;
 import java.awt.Point;
+
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 
 public class PointLocationInShapeContext {
 	// Hierarchy of shapes containing a Point
@@ -31,8 +36,56 @@ public class PointLocationInShapeContext {
 		if(sps != null) {
 			return sps;
 		}
-		
-		
 		return null;
 	}
+	
+	public MolecularComponentPattern getMolecularComponentPattern() {
+		if(mcs != null) {
+			return mcs.getMolecularComponentPattern();
+		}
+		return null;
+	}
+	public MolecularTypePattern getMolecularTypePattern() {
+		if(mts != null) {
+			return mts.getMolecularTypePattern();
+		}
+		return null;
+	}
+	public SpeciesPattern getSpeciesPattern() {
+		if(sps != null) {
+			return sps.getSpeciesPattern();
+		}
+		return null;
+	}
+	
+	public void highlightDeepestShape() {
+		if(mcs != null) {
+			mcs.setHighlight(true);
+			return;
+		}
+		if(mts != null) {
+			mts.setHighlight(true);
+			return;
+		}
+		if(sps != null) {
+			sps.setHighlight(true);
+			return;
+		}
+	}
+
+	public void paintDeepestShape(Graphics graphics) {
+		if(mcs != null) {
+			mcs.paintSelf(graphics);
+			return;
+		}
+		if(mts != null) {
+			mts.paintSelf(graphics);
+			return;
+		}
+		if(sps != null) {
+//			sps.paintSelf(sps.graphicsContext);
+//			return;
+		}
+	}
+	
 }
