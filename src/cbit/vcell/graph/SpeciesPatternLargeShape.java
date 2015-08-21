@@ -25,6 +25,7 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape {
@@ -46,6 +47,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
+	private boolean highlight = false;
 
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
 	public SpeciesPatternLargeShape(int xPos, int yPos, int height, Graphics graphicsContext, boolean isError) {
@@ -200,16 +202,18 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 
 	public void paintSelf(Graphics g) {
 		final int offset = 18;			// initial height of vertical bar
-		final int separ = 5;			// y distance between 2 adjacent bars
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
+		int separ = 5;					// default y distance between 2 adjacent bars
 
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
 		}
-		
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
+		}
+		if(owner instanceof RbmObservable) {
+			endText = "Right click in this area to add a molecule.";
 		}
 		
 		// matches between molecular types - only within reaction rules
@@ -322,6 +326,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
+		
+		switch(bondPairs.size()) {		// variable distance on y between bonds, we draw them closer when there are many of them
+		case 1:
+		case 2:
+			separ = 5; 
+			break;
+		case 3:	
+		case 4:
+			separ = 4;
+			break;
+		case 5:	
+		case 6:
+		case 7:
+			separ = 3;
+			break;
+		default:
+			separ = 2;
+		}
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
 			
@@ -359,4 +381,17 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g.drawString(endText, getRightEnd() + 15, yPos + 20);
 		}
 	}
+	public void setHighlight(boolean b) {
+		this.highlight = b;
+	}
+	public boolean isHighlighted() {
+		return highlight;
+	}
+	public void turnHighlightOffRecursive() {
+		this.highlight  = false;
+		for(MolecularTypeLargeShape mtls : speciesShapes) {
+			mtls.turnHighlightOffRecursive();
+		}
+	}
+
 }

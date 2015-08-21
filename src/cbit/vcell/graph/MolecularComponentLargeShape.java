@@ -28,9 +28,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 	public static final int baseWidth = 16;
 	public static final int baseHeight = 17;
 	public static final int cornerArc = 17;
-
 	
 	final Graphics graphicsContext;
+	private boolean highlight = false;
 	
 	private boolean pattern;					// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
@@ -279,6 +279,15 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		
 		g.setFont(fontOld);
 		g.setColor(colorOld);
+	}
+	public void setHighlight(boolean b) {
+		this.highlight = b;
+	}
+	public boolean isHighlighted() {
+		return highlight;
+	}
+	public void turnHighlightOffRecursive() {	// not really recursive, no subchildren (for now)
+		this.highlight  = false;
 	}
 
 }
