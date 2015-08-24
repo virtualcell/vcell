@@ -431,13 +431,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		
 		shapePanel.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent me) {
-				super.mouseClicked(me);
-				if(me.getButton() == 1) {		// left click selects the object (we highlight it)
-					Point whereClicked = me.getPoint();
+			public void mouseClicked(MouseEvent e) {
+				super.mouseClicked(e);
+				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
+					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+					Graphics g = shapePanel.getGraphics();
 					for (SpeciesPatternLargeShape sps : spsList) {
-						sps.turnHighlightOffRecursive();
+						sps.turnHighlightOffRecursive(g);
 					}
 					for (SpeciesPatternLargeShape sps : spsList) {
 						if (sps.contains(locationContext)) {		//check if mouse is inside shape
@@ -445,17 +446,21 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 						}
 					}
 					locationContext.highlightDeepestShape();
-					Graphics gc = shapePanel.getGraphics();
-					locationContext.paintDeepestShape(gc);
-				} else {						// right click invokes popup menu (only if the object is highlighted)
-					Point whereClicked = me.getPoint();
+					locationContext.paintDeepestShape(g);
+				} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
+					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
 					for (SpeciesPatternLargeShape sps : spsList) {
 						if (sps.contains(locationContext)) {		//check if mouse is inside shape
 							break;		// if mouse is inside a shape it can't be simultaneously in another one
 						}
 					}
-					showPopupMenu(me, locationContext);
+					if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
+						// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
+						
+						// return;
+					}					
+					showPopupMenu(e, locationContext);
 				}
 			}
 		});

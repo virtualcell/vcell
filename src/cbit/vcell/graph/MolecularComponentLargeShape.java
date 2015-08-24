@@ -13,6 +13,7 @@ import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 
@@ -22,7 +23,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularComponentLargeShape extends AbstractComponentShape {
+public class MolecularComponentLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 	
 	public static final int componentSeparation = 6;	// distance between components
 	public static final int baseWidth = 16;
@@ -30,7 +31,6 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 	public static final int cornerArc = 17;
 	
 	final Graphics graphicsContext;
-	private boolean highlight = false;
 	
 	private boolean pattern;					// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
@@ -158,35 +158,36 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 	}
 
 	private Color setComponentColor() {
+		boolean highlight = isHighlighted();
 		if(owner == null) {
-			return componentBad;
+			return highlight == true ? componentBad.brighter() : componentBad;
 		}
-		Color componentColor = componentBad;
+		Color componentColor = highlight == true ? componentBad.brighter() : componentBad;
 		if(owner instanceof MolecularType) {
-			componentColor = componentGreen;
+			componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 		} else if(owner instanceof SpeciesContext) {
-			componentColor = componentGreen;
+			componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 		} else if(mcp != null && owner instanceof RbmObservable) {
-			componentColor = componentHidden;
+			componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
 			if(mcp.isbVisible()) {
-				componentColor = componentGreen;
+				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
 			if(csp != null && !csp.isAny()) {
-				componentColor = componentGreen;
+				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 			}
 		} else if(owner instanceof ReactionRule) {
-			componentColor = componentHidden;
+			componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
 			if(mcp.isbVisible()) {
-				componentColor = componentGreen;
+				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 			}
 			ComponentStatePattern csp = mcp.getComponentStatePattern();
 			if(csp != null && !csp.isAny()) {
-				componentColor = componentGreen;
+				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 			}
 		}
 		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
-			componentColor = componentBad;
+			componentColor = highlight == true ? componentBad.brighter() : componentBad;
 		}
 		return componentColor;
 	}
@@ -280,14 +281,39 @@ public class MolecularComponentLargeShape extends AbstractComponentShape {
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
+	
+	@Override
 	public void setHighlight(boolean b) {
-		this.highlight = b;
+		if(owner instanceof RbmObservable) {
+			mcp.setHighlighted(b);
+		} else if(owner instanceof MolecularType) {
+			mc.setHighlighted(b);
+		} else if(owner instanceof SpeciesPattern) {
+			mcp.setHighlighted(b);
+		} else if(owner instanceof MolecularComponent) {
+			mcp.setHighlighted(b);
+		}
 	}
+	@Override
 	public boolean isHighlighted() {
-		return highlight;
+		if(owner instanceof RbmObservable) {
+			return mcp.isHighlighted();
+		} else if(owner instanceof MolecularType) {
+			return mc.isHighlighted();
+		} else if(owner instanceof SpeciesPattern) {
+			return mcp.isHighlighted();
+		} else if(owner instanceof MolecularComponent) {
+			return mcp.isHighlighted();
+		}
+		return false;
 	}
-	public void turnHighlightOffRecursive() {	// not really recursive, no subchildren (for now)
-		this.highlight  = false;
+	@Override
+	public void turnHighlightOffRecursive(Graphics g) {	// not really recursive, no subchildren (for now)
+		boolean oldHighlight = isHighlighted();
+		setHighlight(false);
+		if(oldHighlight == true) {
+			paintSelf(g);			// paint self not highlighted if previously highlighted
+		}
 	}
 
 }

@@ -28,6 +28,7 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	private String name;	
 	private List<MolecularComponent> componentList = new ArrayList<MolecularComponent>();
 	private transient Model model = null;
+	private transient boolean bHighlighted = false;
 	
 	public MolecularType(String name, Model model) {
 		this.name = name;
@@ -184,6 +185,13 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		
 	}
 	
+	public boolean isHighlighted() {
+		return bHighlighted;
+	}
+	public void setHighlighted(boolean isHighlighted) {
+		this.bHighlighted = isHighlighted;
+	}
+
 	public static final String typeName = "Molecule";
 	@Override
 	public final String getDisplayName() {
