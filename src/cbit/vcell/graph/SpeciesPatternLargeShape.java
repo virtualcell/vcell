@@ -28,7 +28,7 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 
-public class SpeciesPatternLargeShape extends AbstractComponentShape {
+public class SpeciesPatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
 	public static final int yLetterOffset = 11;			// y position of Bond id and/or State name
 	public static final int separationWidth = 1;		// width between 2 molecular type patterns
@@ -47,7 +47,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 	
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
-	private boolean highlight = false;
 
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
 	public SpeciesPatternLargeShape(int xPos, int yPos, int height, Graphics graphicsContext, boolean isError) {
@@ -200,6 +199,22 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		return false;		// for the case of SpeciesPatternLargeShape, it actually can't
 	}
 
+	public void paintContour(Graphics g) {
+		if(isHighlighted()) {
+			if(height == -1) {
+				height = 80;
+			}
+			Graphics2D g2 = (Graphics2D)g;
+			Color colorOld = g2.getColor();
+			g2.setColor(Color.gray);
+			
+			g2.drawLine(xPos-20, yPos-3, xPos-20, yPos+height-6);
+			g2.drawLine(xPos-20, yPos-3, xPos+1000, yPos-3);
+			g2.drawLine(xPos-20, yPos+height-6, xPos+1000, yPos+height-6);
+			
+			g2.setColor(colorOld);
+		}
+	}
 	public void paintSelf(Graphics g) {
 		final int offset = 18;			// initial height of vertical bar
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
@@ -215,6 +230,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 		if(owner instanceof RbmObservable) {
 			endText = "Right click in this area to add a molecule.";
 		}
+		paintContour(g);
 		
 		// matches between molecular types - only within reaction rules
 		if(owner instanceof ReactionRule) {
@@ -381,16 +397,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape {
 			g.drawString(endText, getRightEnd() + 15, yPos + 20);
 		}
 	}
+
+	@Override
 	public void setHighlight(boolean b) {
-		this.highlight = b;
+		sp.setHighlighted(b);
 	}
+	@Override
 	public boolean isHighlighted() {
-		return highlight;
+		return sp.isHighlighted();
 	}
-	public void turnHighlightOffRecursive() {
-		this.highlight  = false;
+	@Override
+	public void turnHighlightOffRecursive(Graphics g) {
+		boolean oldHighlight = isHighlighted();
+		setHighlight(false);
+		if(oldHighlight == true) {
+			paintSelf(g);			// paint self not highlighted if previously highlighted
+		}
 		for(MolecularTypeLargeShape mtls : speciesShapes) {
-			mtls.turnHighlightOffRecursive();
+			mtls.turnHighlightOffRecursive(g);
 		}
 	}
 

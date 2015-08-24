@@ -25,7 +25,7 @@ public class PointLocationInShapeContext {
 	
 	
 	
-	public Object getDeepestShape() {
+	public HighlightableShapeInterface getDeepestShape() {
 		
 		if(mcs != null) {
 			return mcs;
@@ -61,10 +61,13 @@ public class PointLocationInShapeContext {
 	public void highlightDeepestShape() {
 		if(mcs != null) {
 			mcs.setHighlight(true);
+			mts.setHighlight(false);	// we don't highlight the mts because it's overkill - too much color
+			sps.setHighlight(true);		// we always highlight the sps
 			return;
 		}
 		if(mts != null) {
 			mts.setHighlight(true);
+			sps.setHighlight(true);
 			return;
 		}
 		if(sps != null) {
@@ -76,15 +79,17 @@ public class PointLocationInShapeContext {
 	public void paintDeepestShape(Graphics graphics) {
 		if(mcs != null) {
 			mcs.paintSelf(graphics);
+			sps.paintContour(graphics);
 			return;
 		}
 		if(mts != null) {
 			mts.paintSelf(graphics);
+			sps.paintContour(graphics);
 			return;
 		}
 		if(sps != null) {
-//			sps.paintSelf(sps.graphicsContext);
-//			return;
+			sps.paintContour(graphics);
+			return;
 		}
 	}
 	

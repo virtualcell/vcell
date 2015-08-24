@@ -13,8 +13,7 @@ import org.vcell.util.Matchable;
 
 
 @SuppressWarnings("serial")
-public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource,
-	Displayable
+public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable
 {
 	public static final String PROPERTY_NAME_COMPONENT_STATE = "componentStatePattern";
 	public static final String PROPERTY_NAME_BOND_TYPE = "bondType";
@@ -27,6 +26,7 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	private Bond bond = null;
 	private int bondId = -1;                // used in BNGL for mapping notation (e.g. 1, 2, 3)
 	private BondType bondType = BondType.Possible;
+	private transient boolean bHighlighted = false;
 	
 	public enum BondType {
 		Specified(""), // numbers
@@ -181,6 +181,13 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		} else {
 			//componentStatePattern.gatherIssues(issueContext, issueList);		// we call this somewhere else already
 		}
+	}
+
+	public boolean isHighlighted() {
+		return bHighlighted;
+	}
+	public void setHighlighted(boolean isHighlighted) {
+		this.bHighlighted = isHighlighted;
 	}
 
 	public static final String typeName = "Site";		// normally would be site pattern but we try to simplify and get rid of the "pattern" part
