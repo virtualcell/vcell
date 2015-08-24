@@ -25,13 +25,14 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularTypeLargeShape implements LargeShape {
+public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
 	
 	private static final int baseWidth = 25;
 	private static final int baseHeight = 30;
@@ -44,7 +45,6 @@ public class MolecularTypeLargeShape implements LargeShape {
 	private int height = baseHeight;
 
 	final Graphics graphicsContext;
-	private boolean highlight = false;
 	
 	private final String name;
 	private final MolecularType mt;
@@ -297,13 +297,14 @@ public class MolecularTypeLargeShape implements LargeShape {
 				int index = mtList.indexOf(mt);
 				index = index%6;
 				switch(index) {
-				case 0:  primaryColor = Color.red.darker().darker(); break;
-				case 1:  primaryColor = Color.blue.darker().darker(); break;
-				case 2:  primaryColor = Color.pink.darker().darker(); break;
-				case 3:  primaryColor = Color.cyan.darker().darker(); break;
-				case 4:  primaryColor = Color.orange.darker().darker(); break;
-				case 5:  primaryColor = Color.magenta.darker().darker(); break;
-				default: primaryColor = Color.blue.darker().darker(); break;
+				case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
+				case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter() : Color.blue.darker().darker(); break;
+				case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
+				case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
+				case 4:  primaryColor = isHighlighted() == true ? Color.red : Color.orange.darker().darker(); break;
+				case 5:  primaryColor = isHighlighted() == true ? Color.magenta : Color.magenta.darker().darker(); break;
+				case 6:  primaryColor = isHighlighted() == true ? Color.green : Color.green.darker().darker(); break;
+				default: primaryColor = isHighlighted() == true ? Color.blue : Color.blue.darker().darker(); break;
 				}
 			}
 		}
@@ -314,17 +315,17 @@ public class MolecularTypeLargeShape implements LargeShape {
 		g2.fill(rect);
 
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-3, cornerArc-3);
-		if(highlight) {
-			g2.setPaint(Color.RED);
-			g2.draw(inner);
-			g2.setPaint(Color.BLACK);
-			g2.draw(rect);
-		} else {
+//		if(highlight) {
+//			g2.setPaint(Color.RED);
+//			g2.draw(inner);
+//			g2.setPaint(Color.BLACK);
+//			g2.draw(rect);
+//		} else {
 			g2.setPaint(Color.GRAY);
 			g2.draw(inner);
 			g2.setPaint(Color.DARK_GRAY);
 			g2.draw(rect);
-		}
+//		}
 		
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
@@ -369,16 +370,40 @@ public class MolecularTypeLargeShape implements LargeShape {
 		return baseWidth+30;
 	}
 	
+	@Override
 	public void setHighlight(boolean b) {
-		this.highlight  = b;
+		if(owner instanceof RbmObservable) {
+			mtp.setHighlighted(b);
+		} else if(owner instanceof MolecularType) {
+			mt.setHighlighted(b);
+		} else if(owner instanceof SpeciesPattern) {
+			mtp.setHighlighted(b);
+		} else if(owner instanceof MolecularComponent) {
+			mtp.setHighlighted(b);
+		}
 	}
+	@Override
 	public boolean isHighlighted() {
-		return highlight;
+		if(owner instanceof RbmObservable) {
+			return mtp.isHighlighted();
+		} else if(owner instanceof MolecularType) {
+			return mt.isHighlighted();
+		} else if(owner instanceof SpeciesPattern) {
+			return mtp.isHighlighted();
+		} else if(owner instanceof MolecularComponent) {
+			return mtp.isHighlighted();
+		}
+		return false;
 	}
-	public void turnHighlightOffRecursive() {
-		this.highlight  = false;
+	@Override
+	public void turnHighlightOffRecursive(Graphics g) {
+		boolean oldHighlight = isHighlighted();
+		setHighlight(false);
+		if(oldHighlight == true) {
+			paintSelf(g);			// paint self not highlighted if previously highlighted
+		}
 		for(MolecularComponentLargeShape mcls : componentShapes) {
-			mcls.turnHighlightOffRecursive();
+			mcls.turnHighlightOffRecursive(g);
 		}
 	}
 }

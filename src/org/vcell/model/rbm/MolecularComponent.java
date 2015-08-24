@@ -25,7 +25,8 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 	private String name;                                  // binding site or phosphosite, motif, extracdomain (e.g. tyrosine 77) 
 	private List<ComponentStateDefinition> componentStateDefinitions = new ArrayList<ComponentStateDefinition>();    // allowable states (e.g. Phosphorylated, Unphosphorylated)
 	private int index = 0; 
-	
+	private transient boolean bHighlighted = false;
+
 	public MolecularComponent(String name) {
 		super();
 		this.name = name;
@@ -168,7 +169,6 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 		return errMsg;
 	}
 
-	
 	@Override
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		if(name == null) {
@@ -185,6 +185,14 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 			}
 		}
 	}
+
+	public boolean isHighlighted() {
+		return bHighlighted;
+	}
+	public void setHighlighted(boolean isHighlighted) {
+		this.bHighlighted = isHighlighted;
+	}
+
 	public static final String typeName = "Site";
 	@Override
 	public final String getDisplayName() {
