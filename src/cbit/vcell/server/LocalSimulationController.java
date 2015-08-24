@@ -51,12 +51,9 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdent
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
 		simulationControllerImpl.startSimulation(simulation,sessionLog);
 		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-	}catch (DataAccessException e){
+	}catch (Exception e){
 		sessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException("startSimluation" + vcSimulationIdentifier.getID() + " " + numSimulationScanJobs + " scan jobs",e);
 	}
 }
 
