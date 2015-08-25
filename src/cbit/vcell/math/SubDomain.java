@@ -18,6 +18,7 @@ import java.util.Vector;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.EqualsUtil;
 import org.vcell.util.Issue.IssueOrigin;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
@@ -173,16 +174,10 @@ public void addBoundaryConditionSpec(BoundaryConditionSpec newBoundaryConditionS
  * @param object java.lang.Object
  */
 protected boolean compareEqual0(Object object) {
-	
-	SubDomain subDomain = null;
-	if (object == null){
+	if (!super.equals(object)) {
 		return false;
 	}
-	if (!(object instanceof SubDomain)){
-		return false;
-	}else{
-		subDomain = (SubDomain)object;
-	}
+	SubDomain subDomain = (SubDomain)object;
 
 	//
 	// compare name
@@ -583,46 +578,62 @@ public void trimTrivialEquations(MathDescription mathDesc) {
  * @return VCMLProvider
  */
 public VCMLProvider getVCMLProvider(int spatialDimension) {
-	return new ProviderAdapter(spatialDimension);
+	return new ProviderAdapter(this,spatialDimension);
 }
 
 /**
  * adapt SubDomain.getVCML(int) API to VCMLProvider.getVCML( )
  */
 private class ProviderAdapter implements VCMLProvider {
+	private final SubDomain subDomain;
 	private final int spatialDimension;
 
-	ProviderAdapter(int spatialDimension) {
+	ProviderAdapter(SubDomain subDomain, int spatialDimension) {
 		super();
+		this.subDomain = subDomain;
 		this.spatialDimension = spatialDimension;
 	}
 
 	@Override
 	public String getBeforeComment() {
-		return SubDomain.this.getBeforeComment();
+		return subDomain.getBeforeComment();
 	}
 
 	@Override
 	public void setBeforeComment(String comment) {
-		SubDomain.this.setBeforeComment(comment);
+		subDomain.setBeforeComment(comment);
 
 	}
 
 	@Override
 	public String getAfterComment() {
-		return SubDomain.this.getAfterComment();
+		return subDomain.getAfterComment();
 	}
 
 	@Override
 	public void setAfterComment(String comment) {
-		SubDomain.this.setAfterComment(comment);
+		subDomain.setAfterComment(comment);
 	}
 
 	@Override
 	public String getVCML() throws MathException {
-		return SubDomain.this.getVCML(spatialDimension);
+		return subDomain.getVCML(spatialDimension);
 	}
 
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ Integer.hashCode(spatialDimension);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		Boolean b = EqualsUtil.typeCompare(this, obj);
+		if (b != null) {
+			return b;
+		}
+		ProviderAdapter pa = (ProviderAdapter) obj;
+		return spatialDimension == pa.spatialDimension && subDomain.compareEqual(pa.subDomain);
+	}
 }
 
 
