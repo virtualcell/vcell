@@ -288,9 +288,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			mcp.setHighlighted(b);
 		} else if(owner instanceof MolecularType) {
 			mc.setHighlighted(b);
-		} else if(owner instanceof SpeciesPattern) {
+		} else if(owner instanceof SpeciesContext) {
 			mcp.setHighlighted(b);
-		} else if(owner instanceof MolecularComponent) {
+		} else if(owner instanceof ReactionRule) {
 			mcp.setHighlighted(b);
 		}
 	}
@@ -300,9 +300,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return mcp.isHighlighted();
 		} else if(owner instanceof MolecularType) {
 			return mc.isHighlighted();
-		} else if(owner instanceof SpeciesPattern) {
+		} else if(owner instanceof SpeciesContext) {
 			return mcp.isHighlighted();
-		} else if(owner instanceof MolecularComponent) {
+		} else if(owner instanceof ReactionRule) {
 			return mcp.isHighlighted();
 		}
 		return false;

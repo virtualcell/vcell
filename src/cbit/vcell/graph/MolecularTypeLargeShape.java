@@ -30,6 +30,7 @@ import org.vcell.util.Displayable;
 
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 
 public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
@@ -297,14 +298,22 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				int index = mtList.indexOf(mt);
 				index = index%7;
 				switch(index) {
-				case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
-				case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
-				case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
-				case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
-				case 4:  primaryColor = isHighlighted() == true ? Color.red : Color.orange.darker().darker(); break;
-				case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
-				case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
-				default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
+//				case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
+//				case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
+//				case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
+//				case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
+//				case 4:  primaryColor = isHighlighted() == true ? Color.red : Color.orange.darker().darker(); break;
+//				case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
+//				case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
+//				default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
+				case 0:  primaryColor = isHighlighted() == true ? Color.white : Color.red.darker().darker(); break;
+				case 1:  primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
+				case 2:  primaryColor = isHighlighted() == true ? Color.white : Color.pink.darker().darker(); break;
+				case 3:  primaryColor = isHighlighted() == true ? Color.white : Color.cyan.darker().darker(); break;
+				case 4:  primaryColor = isHighlighted() == true ? Color.white : Color.orange.darker().darker(); break;
+				case 5:  primaryColor = isHighlighted() == true ? Color.white : Color.magenta.darker().darker(); break;
+				case 6:  primaryColor = isHighlighted() == true ? Color.white : Color.green.darker().darker(); break;
+				default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
 				}
 			}
 		}
@@ -376,9 +385,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			mtp.setHighlighted(b);
 		} else if(owner instanceof MolecularType) {
 			mt.setHighlighted(b);
-		} else if(owner instanceof SpeciesPattern) {
+		} else if(owner instanceof SpeciesContext) {
 			mtp.setHighlighted(b);
-		} else if(owner instanceof MolecularComponent) {
+		} else if(owner instanceof ReactionRule) {
 			mtp.setHighlighted(b);
 		} else {
 			System.out.println("Unexpected owner: " + owner);
@@ -390,9 +399,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return mtp.isHighlighted();
 		} else if(owner instanceof MolecularType) {
 			return mt.isHighlighted();
-		} else if(owner instanceof SpeciesPattern) {
+		} else if(owner instanceof SpeciesContext) {
 			return mtp.isHighlighted();
-		} else if(owner instanceof MolecularComponent) {
+		} else if(owner instanceof ReactionRule) {
 			return mtp.isHighlighted();
 		} else {
 			System.out.println("Unexpected owner: " + owner);
