@@ -295,16 +295,16 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 				List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 				int index = mtList.indexOf(mt);
-				index = index%6;
+				index = index%7;
 				switch(index) {
 				case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
-				case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter() : Color.blue.darker().darker(); break;
+				case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
 				case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
 				case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
 				case 4:  primaryColor = isHighlighted() == true ? Color.red : Color.orange.darker().darker(); break;
-				case 5:  primaryColor = isHighlighted() == true ? Color.magenta : Color.magenta.darker().darker(); break;
-				case 6:  primaryColor = isHighlighted() == true ? Color.green : Color.green.darker().darker(); break;
-				default: primaryColor = isHighlighted() == true ? Color.blue : Color.blue.darker().darker(); break;
+				case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
+				case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
+				default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
 				}
 			}
 		}
@@ -315,17 +315,17 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		g2.fill(rect);
 
 		RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-3, cornerArc-3);
-//		if(highlight) {
-//			g2.setPaint(Color.RED);
-//			g2.draw(inner);
-//			g2.setPaint(Color.BLACK);
-//			g2.draw(rect);
-//		} else {
+		if(isHighlighted()) {
+			g2.setPaint(Color.BLACK);
+			g2.draw(inner);
+			g2.setPaint(Color.BLACK);
+			g2.draw(rect);
+		} else {
 			g2.setPaint(Color.GRAY);
 			g2.draw(inner);
 			g2.setPaint(Color.DARK_GRAY);
 			g2.draw(rect);
-//		}
+		}
 		
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
@@ -380,6 +380,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			mtp.setHighlighted(b);
 		} else if(owner instanceof MolecularComponent) {
 			mtp.setHighlighted(b);
+		} else {
+			System.out.println("Unexpected owner: " + owner);
 		}
 	}
 	@Override
@@ -392,6 +394,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return mtp.isHighlighted();
 		} else if(owner instanceof MolecularComponent) {
 			return mtp.isHighlighted();
+		} else {
+			System.out.println("Unexpected owner: " + owner);
 		}
 		return false;
 	}
