@@ -29,6 +29,7 @@ import java.util.zip.ZipEntry;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -37,14 +38,12 @@ import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCKeyDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 
@@ -888,11 +887,8 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		throw new DataAccessException("error getting dataset times: "+e.getMessage());
 	}
 	ODEDataInfo odeDataInfo = new ODEDataInfo(vcDataId.getOwner(), vcDataId.getID(), lastModified);
-	if (odeSimData != null) {
-		return new ODEDataBlock(odeDataInfo, odeSimData);
-	} else {
-		return null;
-	}
+	VCAssert.assertFalse(odeSimData == null, "should have returned null already");
+	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
 
@@ -1395,7 +1391,10 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 				VariableType varType = null;
 				try {
 					varType = VariableType.getVariableTypeFromInteger(varTypeInts[i]);
-				}catch (Throwable e){
+				}catch (IllegalArgumentException e){
+					if (LG.isEnabledFor(Level.WARN)) {
+						LG.warn("Exception typing " + varNames[i] + " has unsupported type " + varTypeInts[i] + ": " + e.getMessage());
+					}
 					varType = SimulationData.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
 				Domain domain = Variable.getDomainFromCombinedIdentifier(varNames[i]);
