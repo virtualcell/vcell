@@ -5,9 +5,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -200,26 +203,40 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 
 	public void paintContour(Graphics g) {
-		if(isHighlighted()) {
-			if(height == -1) {
-				height = 80;
-			}
-			Graphics2D g2 = (Graphics2D)g;
-			Color colorOld = g2.getColor();
-			g2.setColor(Color.gray);
-			
-			g2.drawLine(xPos-20, yPos-3, xPos-20, yPos+height-6);
-			g2.drawLine(xPos-20, yPos-3, xPos+1000, yPos-3);
-			g2.drawLine(xPos-20, yPos+height-6, xPos+1000, yPos+height-6);
-			
-			g2.setColor(colorOld);
+		
+		if(height == -1) {
+			height = 80;
 		}
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint oldPaint = g2.getPaint();
+			
+		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
+
+		Rectangle2D rect = new Rectangle2D.Double(xPos-20, yPos-3, 3000, height-2);
+		
+		if(isHighlighted()) {
+			g2.setPaint(paleBlue);
+			g2.fill(rect);
+			g2.setColor(Color.gray);
+			g2.draw(rect);
+		} else {
+			g2.setPaint(Color.white);
+			g2.fill(rect);
+			g2.setColor(Color.white);
+			g2.draw(rect);
+		}
+			
+	    g2.setPaint(oldPaint);
+		g2.setColor(colorOld);
 	}
 	public void paintSelf(Graphics g) {
 		final int offset = 18;			// initial height of vertical bar
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
 		int separ = 5;					// default y distance between 2 adjacent bars
+
+		paintContour(g);
 
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
@@ -230,7 +247,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		if(owner instanceof RbmObservable) {
 			endText = "Right click in this area to add a molecule.";
 		}
-		paintContour(g);
 		
 		// matches between molecular types - only within reaction rules
 		if(owner instanceof ReactionRule) {

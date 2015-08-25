@@ -78,17 +78,19 @@ public class PointLocationInShapeContext {
 
 	public void paintDeepestShape(Graphics graphics) {
 		if(mcs != null) {
-			mcs.paintSelf(graphics);
-			sps.paintContour(graphics);
+			//mcs.paintSelf(graphics);
+			sps.paintSelf(graphics);
 			return;
 		}
 		if(mts != null) {
-			mts.paintSelf(graphics);
-			sps.paintContour(graphics);
+//			mts.paintSelf(graphics);
+//			sps.paintContour(graphics);
+			sps.paintSelf(graphics);
 			return;
 		}
 		if(sps != null) {
-			sps.paintContour(graphics);
+//			sps.paintContour(graphics);
+			sps.paintSelf(graphics);
 			return;
 		}
 	}
