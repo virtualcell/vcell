@@ -12,6 +12,7 @@ package cbit.vcell.simdata;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
@@ -29,6 +30,7 @@ import cbit.vcell.xml.XmlParseException;
  * This type was created in VisualAge.
  */
 public abstract class VCData implements SimDataConstants,SymbolTable {
+	protected static Logger LG = Logger.getLogger(VCData.class);
 
 /**
  * SimResults constructor comment.
