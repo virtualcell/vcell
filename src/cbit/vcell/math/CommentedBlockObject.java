@@ -1,6 +1,7 @@
 package cbit.vcell.math;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Token;
@@ -12,6 +13,7 @@ import cbit.vcell.parser.ExpressionException;
  * @author gweatherby
  *
  */
+@SuppressWarnings("serial")
 public abstract class CommentedBlockObject extends CommentedObject {
 	
 	private final String name;
@@ -24,10 +26,17 @@ public abstract class CommentedBlockObject extends CommentedObject {
 	public final String getName(){
 		return this.name;
 	}
-	/**
-	 * no-arg constructor to support serialized subclasses
-	 */
-//	protected CommentedBlockObject() { }
+	
+
+	@Override
+	public int hashCode() {
+		return super.hashCode() ^ Objects.hashCode(name);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj) && Objects.equals(name, obj);
+	}
 
 	/**
 	 * partially construct -- verify tag and set name

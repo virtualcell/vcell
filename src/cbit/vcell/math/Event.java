@@ -297,10 +297,7 @@ public class Event extends CommentedBlockObject implements Matchable, Serializab
 		return delay;
 	}
 	public boolean compareEqual(Matchable obj) {
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof Event)) {
+		if (!super.equals(obj)) {
 			return false;
 		}
 		

@@ -1,14 +1,17 @@
 package cbit.vcell.math;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.vcell.util.Commented;
+import org.vcell.util.EqualsUtil;
 
 /**
  * a default implementation of Commented
  * @author gweatherby
  *
  */
+@SuppressWarnings("serial")
 public abstract class CommentedObject implements Serializable, Commented {
 	
 	private String beforeComment;
@@ -41,4 +44,23 @@ public abstract class CommentedObject implements Serializable, Commented {
 	public void setAfterComment(String afterComment) {
 		this.afterComment = afterComment;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(afterComment,beforeComment);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		Boolean b = EqualsUtil.typeCompare(this,obj);
+		if (b != null ) {
+			return b;
+		}
+		CommentedObject other = (CommentedObject) obj;
+		if (!Objects.equals(afterComment, other.afterComment))  {
+			return false;
+		}
+		return Objects.equals(beforeComment, other.beforeComment); 
+	}
+	
 }

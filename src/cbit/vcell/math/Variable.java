@@ -121,7 +121,7 @@ public static Domain getDomainFromCombinedIdentifier(String combinedIdentifier){
 }
 
 public final boolean compareEqual(Matchable object){
-	return compareEqual(object,false);	
+	return super.equals(object) && compareEqual(object,false);	
 }
 
 public abstract boolean compareEqual(Matchable object, boolean bIgnoreMissingDomains);
