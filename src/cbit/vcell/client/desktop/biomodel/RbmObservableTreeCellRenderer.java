@@ -23,15 +23,18 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLoca
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.model.RbmObservable;
 
 @SuppressWarnings("serial")
 public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 
 	Object obj = null;
+	Component owner = null;
 	
-	public RbmObservableTreeCellRenderer() {
+	public RbmObservableTreeCellRenderer(Component owner) {
 		super();
+		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
 	
@@ -67,7 +70,12 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);
 				toolTip = toHtmlWithTip(molecularTypePattern, true);
-				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
+				if(owner == null) {
+					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
+				} else {
+					Graphics gc = owner.getGraphics();
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), gc, molecularTypePattern.getMolecularType());
+				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
 				text = toHtml(mcp, true);
