@@ -421,7 +421,7 @@ private void initialize() {
 		speciesPropertiesTreeModel = new SpeciesPropertiesTreeModel(speciesPropertiesTree);
 //		speciesPropertiesTreeModel.setBioModel(bioModel);
 		speciesPropertiesTree.setModel(speciesPropertiesTreeModel);
-		RbmSpeciesContextTreeCellRenderer crsc = new RbmSpeciesContextTreeCellRenderer();
+		RbmSpeciesContextTreeCellRenderer crsc = new RbmSpeciesContextTreeCellRenderer(speciesPropertiesTree);
 		speciesPropertiesTree.setCellRenderer(crsc);
 		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(speciesPropertiesTree, (crsc));
 		speciesPropertiesTree.setCellEditor(dtce);
@@ -951,7 +951,7 @@ private void updateShape() {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 					menuItem.setIcon(icon);
 					getAddMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {

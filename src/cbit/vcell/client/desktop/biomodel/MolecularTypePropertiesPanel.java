@@ -312,7 +312,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTreeModel = new MolecularTypeTreeModel(molecularTypeTree);
 		molecularTypeTree.setModel(molecularTypeTreeModel);
 		molecularTypeTree.setEditable(true);
-		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer());
+		molecularTypeTree.setCellRenderer(new RbmMolecularTypeTreeCellRenderer(molecularTypeTree));
 		molecularTypeTree.setCellEditor(new RbmMolecularTypeTreeCellEditor(molecularTypeTree));
 		
 		int rowHeight = molecularTypeTree.getRowHeight();
