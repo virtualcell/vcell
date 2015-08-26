@@ -355,7 +355,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		observableTree.setModel(observableTreeModel);
 		observableTreeModel.setShowDetails(true);
 		
-		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer();
+		RbmObservableTreeCellRenderer cro = new RbmObservableTreeCellRenderer(observableTree);
 		observableTree.setCellRenderer(cro);
 		DisabledTreeCellEditor dtce =  new DisabledTreeCellEditor(observableTree, (cro));
 		observableTree.setCellEditor(dtce);
@@ -717,7 +717,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = splitPane.getRightComponent().getGraphics();
-				Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -962,7 +962,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 					menuItem.setIcon(icon);
 					getAddFromTreeMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
