@@ -228,7 +228,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			reactantTreeModel = new ReactionRulePropertiesTreeModel(reactantTree, ReactionRuleParticipantType.Reactant);
 			reactantTree.setModel(reactantTreeModel);
 			reactantTree.setEditable(true);
-			RbmReactionParticipantTreeCellRenderer crr = new RbmReactionParticipantTreeCellRenderer();
+			RbmReactionParticipantTreeCellRenderer crr = new RbmReactionParticipantTreeCellRenderer(reactantTree);
 			reactantTree.setCellRenderer(crr);
 			reactantTree.setCellEditor( new DisabledTreeCellEditor(reactantTree, (RbmReactionParticipantTreeCellRenderer)reactantTree.getCellRenderer()) );
 			reactantTree.setEditable(false);
@@ -253,8 +253,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			productTree.setModel(productTreeModel);
 			productTree.setLargeModel(true);
 			productTree.setEditable(true);
-			productTree.setCellRenderer(new RbmReactionParticipantTreeCellRenderer());
-			RbmReactionParticipantTreeCellRenderer crp = new RbmReactionParticipantTreeCellRenderer();
+			RbmReactionParticipantTreeCellRenderer crp = new RbmReactionParticipantTreeCellRenderer(productTree);
 			productTree.setCellRenderer(crp);
 			productTree.setCellEditor( new DisabledTreeCellEditor(productTree, (RbmReactionParticipantTreeCellRenderer)productTree.getCellRenderer()) );
 			productTree.setEditable(false);
@@ -636,7 +635,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
 							Graphics gc = reactantPanel.getGraphics();
-							Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+							Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 							menuItem.setIcon(icon);
 							getAddMenu().add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
@@ -728,7 +727,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
 							Graphics gc = productPanel.getGraphics();
-							Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+							Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 							menuItem.setIcon(icon);
 							getAddMenu().add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
