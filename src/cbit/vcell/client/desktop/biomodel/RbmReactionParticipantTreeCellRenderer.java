@@ -21,6 +21,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRulePartic
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.StateLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.AbstractComponentShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 
@@ -28,9 +29,11 @@ import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer {
 
 	Object obj = null;
+	Component owner = null;
 
-	public RbmReactionParticipantTreeCellRenderer() {
+	public RbmReactionParticipantTreeCellRenderer(Component owner) {
 		super();
+		this.owner = owner;
 		setBorder(new EmptyBorder(0, 2, 0, 0));		
 	}
 
@@ -66,7 +69,12 @@ public class RbmReactionParticipantTreeCellRenderer extends RbmTreeCellRenderer 
 				MolecularTypePattern molecularTypePattern = (MolecularTypePattern) userObject;
 				text = toHtml(molecularTypePattern, true);
 				toolTip = toHtmlWithTip(molecularTypePattern, true);
-				icon = VCellIcons.rbmMolecularTypeSimpleIcon;
+				if(owner == null) {
+					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
+				} else {
+					Graphics gc = owner.getGraphics();
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), gc, molecularTypePattern.getMolecularType());
+				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;
 				text = toHtml(mcp, true);
