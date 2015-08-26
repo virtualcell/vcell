@@ -44,6 +44,7 @@ import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -112,6 +113,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.model.RbmObservable;
@@ -906,6 +908,9 @@ private void updateShape() {
 	    	
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
+//				Graphics gc = splitPane.getRightComponent().getGraphics();
+//				Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+//				menuItem.setIcon(icon);
 				getAddMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
 					
@@ -945,6 +950,9 @@ private void updateShape() {
 				getAddMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
+					Graphics gc = splitPane.getRightComponent().getGraphics();
+					Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+					menuItem.setIcon(icon);
 					getAddMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						
