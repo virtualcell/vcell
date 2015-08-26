@@ -312,7 +312,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				case 3:  primaryColor = isHighlighted() == true ? Color.white : Color.cyan.darker().darker(); break;
 				case 4:  primaryColor = isHighlighted() == true ? Color.white : Color.orange.darker().darker(); break;
 				case 5:  primaryColor = isHighlighted() == true ? Color.white : Color.magenta.darker().darker(); break;
-				case 6:  primaryColor = isHighlighted() == true ? Color.white : Color.green.darker().darker(); break;
+				case 6:  primaryColor = isHighlighted() == true ? Color.white : Color.green.darker().darker().darker(); break;
 				default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
 				}
 			}
