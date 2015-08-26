@@ -2,6 +2,7 @@ package cbit.vcell.graph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GradientPaint;
@@ -19,6 +20,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Icon;
+
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
@@ -27,7 +30,7 @@ import org.vcell.util.Displayable;
 
 import cbit.vcell.model.Model.RbmModelContainer;
 
-public class MolecularTypeSmallShape {
+public class MolecularTypeSmallShape implements Icon {
 	
 	private static final int baseWidth = 11;
 	private static final int baseHeight = 9;
@@ -199,7 +202,7 @@ public class MolecularTypeSmallShape {
 				RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
 				List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 				int index = mtList.indexOf(mt);
-				index = index%6;
+				index = index%7;
 				switch(index) {
 				case 0:  primaryColor = Color.red.darker().darker(); break;
 				case 1:  primaryColor = Color.blue.darker().darker(); break;
@@ -207,6 +210,7 @@ public class MolecularTypeSmallShape {
 				case 3:  primaryColor = Color.cyan.darker().darker(); break;
 				case 4:  primaryColor = Color.orange.darker().darker(); break;
 				case 5:  primaryColor = Color.magenta.darker().darker(); break;
+				case 6:  primaryColor = Color.green.darker().darker().darker(); break;
 				default: primaryColor = Color.blue.darker().darker(); break;
 				}
 			}
@@ -250,5 +254,20 @@ public class MolecularTypeSmallShape {
 	}
 	public static int getDummyWidth() {
 		return baseWidth+7;
+	}
+	
+	
+	
+	@Override
+	public void paintIcon(Component c, Graphics g, int x, int y) {
+		paintSelf(g);
+	}
+	@Override
+	public int getIconWidth() {
+		return width;
+	}
+	@Override
+	public int getIconHeight() {
+		return height;
 	}
 }
