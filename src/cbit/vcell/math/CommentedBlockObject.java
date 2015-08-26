@@ -1,6 +1,5 @@
 package cbit.vcell.math;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 import org.vcell.util.CommentStringTokenizer;
@@ -33,6 +32,9 @@ public abstract class CommentedBlockObject extends CommentedObject {
 		return super.hashCode() ^ Objects.hashCode(name);
 	}
 
+	/**
+	 * semantic equality
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		return super.equals(obj) && Objects.equals(name, obj);
