@@ -15,7 +15,8 @@ package org.vcell.util;
  */
 public interface Matchable {
 /**
- * Checks for internal representation of objects, not keys from database
+ * Checks for internal representation of objects, not keys from database<br>
+ * @see {@link Object#equals(Object)}  
  * @return boolean
  * @param obj java.lang.Object not null
  */
