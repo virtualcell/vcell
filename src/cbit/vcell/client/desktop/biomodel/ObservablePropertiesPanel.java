@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -73,6 +74,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -81,6 +83,7 @@ import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLoca
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
@@ -713,6 +716,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			getAddFromShapeMenu().removeAll();
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
+				Graphics gc = splitPane.getRightComponent().getGraphics();
+				Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
 					
@@ -955,6 +961,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				getAddFromTreeMenu().removeAll();
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
+					Graphics gc = splitPane.getRightComponent().getGraphics();
+					Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+					menuItem.setIcon(icon);
 					getAddFromTreeMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
 						

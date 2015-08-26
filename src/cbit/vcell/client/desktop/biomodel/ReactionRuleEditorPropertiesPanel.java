@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -55,6 +56,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
@@ -633,6 +635,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						getAddMenu().removeAll();
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
+							Graphics gc = reactantPanel.getGraphics();
+							Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+							menuItem.setIcon(icon);
 							getAddMenu().add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
 								
@@ -722,6 +727,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 //						}
 						for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 							JMenuItem menuItem = new JMenuItem(mt.getName());
+							Graphics gc = productPanel.getGraphics();
+							Icon icon = new MolecularTypeSmallShape(0, 0, mt, gc, mt);
+							menuItem.setIcon(icon);
 							getAddMenu().add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
 								
