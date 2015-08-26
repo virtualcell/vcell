@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import org.vcell.util.Commented;
 import org.vcell.util.EqualsUtil;
-import org.vcell.util.ObjectToMatchable;
+import org.vcell.util.Matchable;
 
 /**
  * a default implementation of Commented
@@ -13,7 +13,7 @@ import org.vcell.util.ObjectToMatchable;
  *
  */
 @SuppressWarnings("serial")
-public abstract class CommentedObject implements Serializable, Commented, ObjectToMatchable {
+public abstract class CommentedObject implements Serializable, Commented, Matchable {
 	
 	private String beforeComment;
 	private String afterComment;
@@ -55,7 +55,7 @@ public abstract class CommentedObject implements Serializable, Commented, Object
 	 * semantic equality
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean compareEqual(Matchable obj) {
 		Boolean b = EqualsUtil.typeCompare(this,obj);
 		if (b != null ) {
 			return b;

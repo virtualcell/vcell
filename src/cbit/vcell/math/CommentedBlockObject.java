@@ -3,6 +3,7 @@ package cbit.vcell.math;
 import java.util.Objects;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Matchable;
 import org.vcell.util.Token;
 
 import cbit.vcell.parser.ExpressionException;
@@ -26,18 +27,12 @@ public abstract class CommentedBlockObject extends CommentedObject {
 		return this.name;
 	}
 	
-
-	@Override
-	public int hashCode() {
-		return super.hashCode() ^ Objects.hashCode(name);
-	}
-
 	/**
 	 * semantic equality
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		return super.equals(obj) && Objects.equals(name, obj);
+	public boolean compareEqual(Matchable obj) {
+		return super.compareEqual(obj) && Objects.equals(name, obj);
 	}
 
 	/**
