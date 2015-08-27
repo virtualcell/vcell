@@ -5,7 +5,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
@@ -43,6 +45,41 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
+	private final List <ComponentStateLargeShape> stateShapes = new ArrayList<ComponentStateLargeShape> ();
+	
+	//---------------------------------------------------------------------------------------------------
+	private class ComponentStateLargeShape {
+
+		final Graphics graphicsContext;
+		
+		private int xPos = 0;
+		private int yPos = 0;
+		private int width;
+		private int height;
+
+		ComponentStateDefinition cs;			// ComponentStateDefinition
+		private final Displayable owner;
+
+		private String displayName;
+		
+		public ComponentStateLargeShape(int x, int y, ComponentStateDefinition cs, Graphics graphicsContext, Displayable owner) {
+			this.xPos = x;
+			this.yPos = y;
+			
+			this.owner = owner;
+			this.cs = cs;
+			this.graphicsContext = graphicsContext;
+			
+			this.displayName = "~" + adjustForSize(cs.getDisplayName());
+			Font font = deriveStateFont();
+			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			height = fm.getHeight();
+			width = fm.stringWidth(displayName);
+		}
+		
+		
+		
+	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
 	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
@@ -54,8 +91,11 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		displayName = adjustForSize(mc.getDisplayName());
 		
 		String longestName = "";	// we find the longest State name
+		Font font = deriveStateFont();
+		int stateHeight = getStringHeight(font);
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
-			String stateName = mc.getComponentStateDefinitions().get(i).getDisplayName();
+			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
+			String stateName = csd.getDisplayName();
 			stateName = adjustForSize(stateName);
 			longestName = stateName.length() > longestName.length() ? stateName : longestName;
 		}
@@ -68,6 +108,11 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
+		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos+7, yPos + height + stateHeight*(i+1), csd, graphicsContext, owner);
+			stateShapes.add(csls);
+		}
 	}
 	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
@@ -83,29 +128,19 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
 			stateName = adjustForSize(csd.getDisplayName());
 			stateName = "~" + stateName;
-//			stateName = "10" + stateName;	// the State must be written to the right of the Bond, we simulate a 2 digit bond label
 		}
 		int displayNameWidth = getStringWidth(displayName);
 		int stateNameWidth = getStringWidth(stateName);
 		
 		textWidth = displayNameWidth > stateNameWidth ? displayNameWidth : stateNameWidth;
-		
-//		
-//		// no more than 1 state possible, we show the component name and state on the same row, inside the shape
-//		// as componentName + "~" + stateName
-//		String componentName = adjustForSize(mc.getDisplayName());
-//		ComponentStatePattern csp = mcp.getComponentStatePattern();
-//		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
-//			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
-//			String stateName = adjustForSize(csd.getDisplayName());
-//			displayName = componentName + "~" + stateName;
-//		} else {
-//			displayName = componentName;
-//		}
-//		textWidth = getStringWidth(displayName);
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
+		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset, csd, graphicsContext, owner);
+			stateShapes.add(csls);
+		}
 	}
 
 	public MolecularComponentPattern getMolecularComponentPattern() {
@@ -216,6 +251,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		
 		boolean hidden = AbstractComponentShape.isHidden(owner, mcp);
 		Graphics2D g2 = (Graphics2D)g;
+		Font fontOld = g.getFont();
+		Color colorOld = g.getColor();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		Color componentColor = setComponentColor();
 		g2.setColor(componentColor);
@@ -236,8 +274,6 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		g2.draw(rect);
 //		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
 		
-		Font fontOld = g.getFont();
-		Color colorOld = g.getColor();
 //		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
 		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);
@@ -254,19 +290,25 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		g.setFont(font);
 		g.setColor(Color.black);
 		if(pattern == false) {			// component of a molecular type, we display all its states
-			for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
-				ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
-				String s = adjustForSize(csd.getDisplayName());
-				s = "~" + s;
-				g.drawString(s, xPos+7, yPos + height + getStringHeight(font)*(i+1));
+//			for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
+//				ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
+//				String s = adjustForSize(csd.getDisplayName());
+//				s = "~" + s;
+//				g.drawString(s, xPos+7, yPos + height + getStringHeight(font)*(i+1));
+//			}
+			for(ComponentStateLargeShape csls : stateShapes) {
+				g.drawString(csls.displayName, csls.xPos, csls.yPos);
 			}
 		} else {						// component pattern, we display its state, if any
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
-				ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
-				String s = adjustForSize(csd.getDisplayName());
-				s = "~" + s;
-				g.drawString(s, xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset);
+//			ComponentStatePattern csp = mcp.getComponentStatePattern();
+//			if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+//				ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
+//				String s = adjustForSize(csd.getDisplayName());
+//				s = "~" + s;
+//				g.drawString(s, xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset);
+//			}
+			for(ComponentStateLargeShape csls : stateShapes) {			// only one or none at all
+				g.drawString(csls.displayName, csls.xPos, csls.yPos);
 			}
 		}
 		
