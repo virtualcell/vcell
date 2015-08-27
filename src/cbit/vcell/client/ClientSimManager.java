@@ -471,7 +471,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	tasks[tasks.length - 1] = new AsynchClientTask("starting particle view", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 		
 		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
+		public void run(@SuppressWarnings("unused") Hashtable<String, Object> hashTable) throws Exception {
 			File exes[] = SolverUtilities.getExes(SolverDescription.Smoldyn);
 			assert exes.length == 1 : "one and only one smoldyn solver expected";
 			File smoldynExe = exes[0];
@@ -499,7 +499,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			final Process process = processBuilder.start();
 			getClientTaskStatusSupport().addProgressDialogListener(new ProgressDialogListener() {
 
-				public void cancelButton_actionPerformed(EventObject newEvent) {
+				public void cancelButton_actionPerformed(@SuppressWarnings("unused") EventObject newEvent) {
 					process.destroy();
 				}
 			});
@@ -537,8 +537,8 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
 }
 
-@SuppressWarnings("serial")
-private class TempSimulation extends Simulation {
+@SuppressWarnings("serial") 
+static class TempSimulation extends Simulation {
 	final private SimulationVersion tempSimVersion = SimulationVersion.createTempSimulationVersion();
 	public TempSimulation(Simulation simulation, boolean bCloneMath) {
 		super(simulation, bCloneMath);
@@ -615,7 +615,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 					int progress = (int)(event.getProgress() * 100);
 					getClientTaskStatusSupport().setProgress(progress);
 				}
-				public void solverPrinted(SolverEvent event) {
+				public void solverPrinted(@SuppressWarnings("unused") SolverEvent event) {
 					getClientTaskStatusSupport().setMessage("Running...");
 				}
 				public void solverFinished(SolverEvent event) {
@@ -672,7 +672,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 }
 
 
-private Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
+static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
