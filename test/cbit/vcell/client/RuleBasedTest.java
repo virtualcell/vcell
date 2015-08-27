@@ -1,4 +1,4 @@
-package cbit.vcell.model;
+package cbit.vcell.client;
 
 import java.io.File;
 import java.io.IOException;
