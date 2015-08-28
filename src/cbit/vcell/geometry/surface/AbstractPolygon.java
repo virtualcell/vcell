@@ -16,14 +16,10 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.vcell.util.VCAssert;
-//import org.apache.commons.lang.StringUtils;
-
-
-
 
 import cbit.vcell.geometry.concept.PolygonConcept;
 import cbit.vcell.geometry.concept.ThreeSpacePoint;
+//import org.apache.commons.lang.StringUtils;
 
 
 /**
