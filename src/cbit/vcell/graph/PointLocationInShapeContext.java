@@ -13,17 +13,14 @@ public class PointLocationInShapeContext {
 	
 	public Point point = null;
 	
-	
 	public SpeciesPatternLargeShape sps = null;
 	public MolecularTypeLargeShape mts = null;
 	public MolecularComponentLargeShape mcs = null;
-	
+	public MolecularComponentLargeShape.ComponentStateLargeShape csls = null;
 
 	public PointLocationInShapeContext(Point point) {
 		this.point = point;
 	}
-	
-	
 	
 	public HighlightableShapeInterface getDeepestShape() {
 		
