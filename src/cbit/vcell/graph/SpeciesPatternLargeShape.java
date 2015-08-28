@@ -209,16 +209,16 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
-		Paint oldPaint = g2.getPaint();
+		Paint paintOld = g2.getPaint();
 			
 		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
-
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
 		Rectangle2D rect = new Rectangle2D.Double(xPos-20, yPos-3, 3000, height-2);
 		
 		if(isHighlighted()) {
 			g2.setPaint(paleBlue);
 			g2.fill(rect);
-			g2.setColor(Color.gray);
+			g2.setColor(darkerBlue);
 			g2.draw(rect);
 		} else {
 			g2.setPaint(Color.white);
@@ -226,8 +226,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.setColor(Color.white);
 			g2.draw(rect);
 		}
-			
-	    g2.setPaint(oldPaint);
+	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
 	public void paintSelf(Graphics g) {
@@ -235,9 +234,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
 		int separ = 5;					// default y distance between 2 adjacent bars
-
+		
+		Graphics2D g2 = (Graphics2D)g;
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
 		paintContour(g);
-
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
 		}
@@ -245,12 +246,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			stls.paintSelf(g);
 		}
 		if(owner instanceof RbmObservable) {
-			endText = "Right click in this area to add a molecule.";
+			endText = "Right click here to add a molecule.";
 		}
 		
 		// matches between molecular types - only within reaction rules
 		if(owner instanceof ReactionRule) {
-			Graphics2D g2 = (Graphics2D)g;
 			Color colorOld = g2.getColor();
 			Font fontOld = g.getFont();
 			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
@@ -290,7 +290,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		// bonds between components
 		for(int i=0; i<bondSingles.size(); i++) {
 			BondSingle bs = bondSingles.get(i);
-			Graphics2D g2 = (Graphics2D)g;
 			Color colorOld = g2.getColor();
 			Font fontOld = g.getFont();
 			
@@ -354,12 +353,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //				g2.drawLine(bs.from.x-3, bs.from.y-2+vo, bs.from.x+4, bs.from.y+2+vo);
 //				g2.setColor(Color.gray);
 //				g2.drawLine(bs.from.x-3, bs.from.y-1+vo, bs.from.x+4, bs.from.y+3+vo);
+				
+				// below commented out: small horizontal red line
+				g2.setColor(lineColor);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+7);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+7);
+				
+				int vo = 4;
+				g2.setColor(Color.red);
+				g2.drawLine(bs.from.x-2, bs.from.y+vo+2, bs.from.x+3, bs.from.y+vo+2);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x-2, bs.from.y+vo+3, bs.from.x+3, bs.from.y+vo+3);
 			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
 		}
 		
-		switch(bondPairs.size()) {		// variable distance on y between bonds, we draw them closer when there are many of them
+		switch(bondPairs.size()) {	// variable distance on y between bonds, we draw them closer when there are many of them
 		case 1:
 		case 2:
 			separ = 5; 
@@ -370,16 +381,19 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			break;
 		case 5:	
 		case 6:
-		case 7:
 			separ = 3;
 			break;
-		default:
+		case 7:
+		case 8:
+		case 9:
 			separ = 2;
+			break;
+		default:
+			separ = 1;
 		}
 		for(int i=0; i<bondPairs.size(); i++) {
 			BondPair bp = bondPairs.get(i);
 			
-			Graphics2D g2 = (Graphics2D)g;
 			Color colorOld = g2.getColor();
 			Font fontOld = g.getFont();
 //			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
