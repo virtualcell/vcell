@@ -612,6 +612,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		observable = newValue;
 		observableTreeModel.setObservable(observable);
+		if(observable != null) {
+			observable.setHighlightedRecursively(false);
+		}
 		updateInterface();
 	}
 	
