@@ -467,5 +467,26 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	public final String getDisplayType() {
 		return typeName;
 	}
+	public void setHighlightedRecursively(boolean b) {
+		if(b == true) {
+			return;		// doesn't make any sense to highlight everything
+		}
+		for(SpeciesPattern sp : speciesPatternList) {
+			sp.setHighlighted(b);
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				mtp.setHighlighted(b);
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					mcp.setHighlighted(b);
+					if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
+						mcp.getComponentStatePattern().getComponentStateDefinition().setHighlighted(b);
+					}
+					if(mcp.getBond() != null) {
+						mcp.getBond().setHighlighted(b);
+					}
+				}
+			}
+		}
+		
+	}
 
 }

@@ -191,6 +191,18 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public void setHighlighted(boolean isHighlighted) {
 		this.bHighlighted = isHighlighted;
 	}
+	public void setHighlightedRecursively(boolean isHighlighted) {
+		if(isHighlighted == true) {
+			return;		// doesn't make any sense to highlight everything
+		}
+		this.bHighlighted = isHighlighted;
+		for(MolecularComponent mc : componentList) {
+			mc.setHighlighted(isHighlighted);
+			for(ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				csd.setHighlighted(isHighlighted);
+			}
+		}
+	}
 
 	public static final String typeName = "Molecule";
 	@Override
@@ -201,5 +213,6 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public final String getDisplayType() {
 		return typeName;
 	}
+
 
 }
