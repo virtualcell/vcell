@@ -25,8 +25,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
@@ -292,6 +295,7 @@ private void init() throws SolverException {
 }
 
 
+@SuppressWarnings("unused")
 @Override
 public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException, ImageException, PropertyVetoException, GeometryException {	
 	init();
@@ -1337,13 +1341,20 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 		int triangleGlobalCount = 0;
 		int membraneIndex = -1;
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
+		
+		//pre-allocate collections used repeatedly in following loops; clear before reusing
+		HashMap<Node, Set<String>> nodeTriMap = new HashMap<>();
+		ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
+		//use a sorted set to ensure neighbors written out is same order for reproducibility
+		SortedSet<String> neighborsForCurrentNode = new TreeSet<String>();
+		
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
-			HashMap<Node, HashSet<String>> nodeTriMap = new HashMap<Node, HashSet<String>>();
+			nodeTriMap.clear();
+			triList.clear();
 			
 			int triLocalCount = 0;
 			SurfaceClass surfaceClass = surfaceClasses[sci];			
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
-			ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
 				VolumeGeometricRegion volRegion0 = (VolumeGeometricRegion)sgr.getAdjacentGeometricRegions()[0];
@@ -1442,7 +1453,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					{
 						continue;
 					}
-					HashSet<String> triNameSet = nodeTriMap.get(node);
+					Set<String> triNameSet = nodeTriMap.get(node);
 					if(triNameSet == null)
 					{
 						triNameSet = new HashSet<String>();
@@ -1497,26 +1508,21 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 
 			for(TrianglePanel triPanel : triList)
 			{
-				HashSet<String> neighbors = new HashSet<String>();
+				neighborsForCurrentNode.clear();
 				for(Node node : triPanel.triangle.getNodes())
 				{
 					if(node == null)
 					{
 						continue;
 					}
-					neighbors.addAll(nodeTriMap.get(node));
+					neighborsForCurrentNode.addAll(nodeTriMap.get(node));
 				}
+				neighborsForCurrentNode.remove(triPanel.name);
 				//printWriter.print(SmoldynKeyword.neighbors + " " +triPanel.name);
 				int maxNeighborCount = 4; //to allow smoldyn read line length as 256, chop the neighbors to multiple lines
-				List<String> neighs = new ArrayList<String>();
-				for(String nghb : neighbors)
-				{
-					if(nghb.equals(triPanel.name)) continue;
-					else neighs.add(nghb);
-				}
-
+//
 				int count = 0;
-				for(String neigh:neighs)
+				for(String neigh:neighborsForCurrentNode)
 				{
 					if(count%maxNeighborCount == 0)
 					{
@@ -2073,7 +2079,7 @@ private void writeJms(Simulation simulation) {
  * @param triList panels to evaluated not null
  */
 private void findClosestTriangles(MembraneSubDomain membraneSubDomain, ArrayList<TrianglePanel> triList) {
-	VCAssert.assertValid(membraneSubDomain);
+	Objects.requireNonNull(membraneSubDomain);
 	for ( ClosestTriangle ct : closestTriangles) {
 		if (ct.membrane == membraneSubDomain) {
 			for (TrianglePanel tp : triList) {
