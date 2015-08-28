@@ -25,6 +25,8 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	public static class Bond implements Serializable {
 		public MolecularTypePattern molecularTypePattern;
 		public MolecularComponentPattern molecularComponentPattern;
+		private transient boolean bHighlighted = false;
+		
 		private Bond(MolecularTypePattern molecularTypePattern,		// keep this constructor private!!!
 				MolecularComponentPattern molecularComponentPattern) {
 			super();
@@ -142,6 +144,12 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		public String getId() {
 			System.err.println("Bond.getId() ... need to implement something good here ... not yet implemented well.");
 			return "BondId_"+hashCode();
+		}
+		public boolean isHighlighted() {
+			return bHighlighted;
+		}
+		public void setHighlighted(boolean isHighlighted) {
+			this.bHighlighted = isHighlighted;
 		}
 	}
 	
