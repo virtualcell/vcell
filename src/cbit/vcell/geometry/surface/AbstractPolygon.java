@@ -13,10 +13,12 @@ package cbit.vcell.geometry.surface;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.VCAssert;
 //import org.apache.commons.lang.StringUtils;
+
 
 
 
@@ -178,12 +180,12 @@ public String toString() {
 }
 
 /**
- * return total distance squared to all points on polgon 
+ * return total distance squared to all points on polygon 
  * @param point not null
  * @return total distance
  */
 public double totalDistanceSquared(Node point) {
-	VCAssert.assertValid(point);
+	Objects.requireNonNull(point);
 	double sum = 0;
 	for (Node  n : fieldNodes) {
 		sum += point.distanceSquared(n);
