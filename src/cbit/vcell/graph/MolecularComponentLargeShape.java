@@ -5,7 +5,9 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,37 +50,129 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	private final List <ComponentStateLargeShape> stateShapes = new ArrayList<ComponentStateLargeShape> ();
 	
 	//---------------------------------------------------------------------------------------------------
-	private class ComponentStateLargeShape {
+	class ComponentStateLargeShape implements LargeShape, HighlightableShapeInterface {
 
 		final Graphics graphicsContext;
-		
-		private int xPos = 0;
-		private int yPos = 0;
+		private final Font font;
+		private int xPos;
+		private int yPos;
 		private int width;
-		private int height;
+		private final int height;
 
-		ComponentStateDefinition cs;			// ComponentStateDefinition
+		private ComponentStateDefinition csd;			// ComponentStateDefinition
 		private final Displayable owner;
-
 		private String displayName;
 		
-		public ComponentStateLargeShape(int x, int y, ComponentStateDefinition cs, Graphics graphicsContext, Displayable owner) {
+		public ComponentStateLargeShape(int x, int y, ComponentStateDefinition cs, Graphics gc, Displayable owner) {
 			this.xPos = x;
 			this.yPos = y;
 			
 			this.owner = owner;
-			this.cs = cs;
-			this.graphicsContext = graphicsContext;
+			this.csd = cs;
+			this.graphicsContext = gc;
 			
-			this.displayName = "~" + adjustForSize(cs.getDisplayName());
-			Font font = deriveStateFont();
+			this.displayName = "~" + adjustForSize(csd.getDisplayName());
+			this.font = deriveStateFont();
 			FontMetrics fm = graphicsContext.getFontMetrics(font);
 			height = fm.getHeight();
 			width = fm.stringWidth(displayName);
 		}
 		
-		
-		
+		public boolean contains(PointLocationInShapeContext locationContext) {
+			Rectangle2D rect = makeStateRectangle();
+			if(rect.contains(locationContext.point)) {
+				locationContext.csls = this;
+				return true;
+			}
+			return false;		// point not inside this component shape, locationContext.mcs remains null;
+		}
+		// the rectangle is a bit wider and somewhat centered around the text
+		private Rectangle2D makeStateRectangle() {
+			final int xOffsetLeft = 3;
+			final int xOffsetWidth = 4;
+			final int yOffset = 2;
+			return new Rectangle2D.Double(xPos-xOffsetLeft, yPos-height+yOffset, width+xOffsetWidth, height);
+		}
+
+		@Override
+		public void setX(int xPos) {
+			this.xPos = xPos;
+		}
+		@Override
+		public int getX() {
+			return xPos;
+		}
+		@Override
+		public void setY(int yPos) {
+			this.yPos = yPos;
+		}
+		@Override
+		public int getY() {
+			return yPos;
+		}
+		public void forceDifferentWidth(int width) {
+			// use this to force a different with, for instance if we want all the rectangles used
+			// for contains() to be equal
+			// we don't allow reducing the width below the width of the text
+			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			int minWidth = fm.stringWidth(displayName);
+			if(width > minWidth) {
+				this.width = width;
+			}
+		}
+		@Override
+		public int getWidth() {
+			return width;
+		}
+		@Override
+		public int getHeight() {
+			return height;
+		}
+		@Override
+		public void paintSelf(Graphics g) {
+			Graphics2D g2 = (Graphics2D)g;
+			Font fontOld = g.getFont();
+			Color colorOld = g.getColor();
+			Paint paintOld = g2.getPaint();
+
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			Color paleBlue = Color.getHSBColor(0.6f, 0.03f, 1.0f);
+			Color darkerBlue = Color.getHSBColor(0.6f, 0.18f, 1.0f);	// a bit darker for border
+			Rectangle2D rect = makeStateRectangle();
+			
+			if(isHighlighted()) {
+				g2.setPaint(paleBlue);
+				g2.fill(rect);
+				g2.setColor(darkerBlue);
+				g2.draw(rect);
+			} else {
+				g2.setPaint(Color.white);
+				g2.fill(rect);
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			}
+
+			g.setFont(font);
+			g.setColor(Color.black);
+			g.drawString(displayName, xPos, yPos);
+			
+			g2.setPaint(paintOld);
+			g.setFont(fontOld);
+			g.setColor(colorOld);
+		}
+
+		@Override
+		public boolean isHighlighted() {
+			return true;
+		}
+		@Override
+		public void setHighlight(boolean highlight) {
+			
+		}
+		@Override
+		public void turnHighlightOffRecursive(Graphics g) {
+			
+		}
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
@@ -110,7 +204,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		yPos = y;
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
 			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos+7, yPos + height + stateHeight*(i+1), csd, graphicsContext, owner);
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos+8, yPos + height + stateHeight*(i+1), csd, graphicsContext, owner);
 			stateShapes.add(csls);
 		}
 	}
@@ -231,11 +325,16 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	@Override
 	public boolean contains(PointLocationInShapeContext locationContext) {
 		
-		// there are no more subcomponents, we may want to check if point is over the status or bond text
-		// TODO: check if point is over the status or bond text
-		// ...
-		
-		// now check if the point is inside "this"
+		// first we check if the point is inside a subcomponent of "this"
+		for(ComponentStateLargeShape csls : stateShapes) {
+			boolean found = csls.contains(locationContext);
+			if(found) {
+				// since point is inside one of our components it's also inside "this"
+				locationContext.mcs = this;
+				return true;	// if the point is inside a ComponentStateLargeShape there's no need to check others
+			}
+		}
+		// even if the point it's not inside one of our subcomponents it may still be inside "this"
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
 		if(rect.contains(locationContext.point)) {
 			locationContext.mcs = this;
@@ -258,23 +357,23 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		Color componentColor = setComponentColor();
 		g2.setColor(componentColor);
 		
-		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
-		g2.fill(rect);
-//		g2.fillOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
-//		g2.fillArc(xPos, yPos, componentDiameter + textWidth, componentDiameter,0,180);		// fill half of the oval
-		if(hidden == false) {
-			g.setColor(Color.black);
-		} else {
-			g.setColor(Color.gray);
-		}
+		RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
+		RoundRectangle2D outerRectangle = new RoundRectangle2D.Float(xPos-1, yPos-1, width+2, baseHeight+2, cornerArc+2, cornerArc+2);
+		g2.fill(normalRectangle);
 		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			g2.setColor(Color.red);
+		} else {
+			if(hidden == false) {
+				g.setColor(Color.black);
+			} else {
+				g.setColor(Color.gray);
+			}
 		}
-		
-		g2.draw(rect);
-//		g2.drawOval(xPos, yPos, componentDiameter + textWidth, componentDiameter);
-		
-//		Font font = fontOld.deriveFont((float) (componentDiameter*3/5)).deriveFont(Font.BOLD);
+		g2.draw(normalRectangle);
+		if(isHighlighted()) {
+			g2.draw(outerRectangle);
+		}
+
 		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);
 		if(hidden == false) {
@@ -283,33 +382,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g.setColor(Color.gray);
 		}
 		g2.drawString(displayName, xPos+1+baseWidth/2, yPos+5+baseHeight/2);
-		g.setFont(fontOld);
-		g.setColor(colorOld);
-		
-		font = deriveStateFont();
-		g.setFont(font);
-		g.setColor(Color.black);
-		if(pattern == false) {			// component of a molecular type, we display all its states
-//			for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
-//				ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
-//				String s = adjustForSize(csd.getDisplayName());
-//				s = "~" + s;
-//				g.drawString(s, xPos+7, yPos + height + getStringHeight(font)*(i+1));
-//			}
-			for(ComponentStateLargeShape csls : stateShapes) {
-				g.drawString(csls.displayName, csls.xPos, csls.yPos);
-			}
-		} else {						// component pattern, we display its state, if any
-//			ComponentStatePattern csp = mcp.getComponentStatePattern();
-//			if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
-//				ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
-//				String s = adjustForSize(csd.getDisplayName());
-//				s = "~" + s;
-//				g.drawString(s, xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset);
-//			}
-			for(ComponentStateLargeShape csls : stateShapes) {			// only one or none at all
-				g.drawString(csls.displayName, csls.xPos, csls.yPos);
-			}
+
+		for(ComponentStateLargeShape csls : stateShapes) {	// text of the State(s), if any
+			csls.paintSelf(g);
 		}
 		
 		// the smaller "State" yellow circle
