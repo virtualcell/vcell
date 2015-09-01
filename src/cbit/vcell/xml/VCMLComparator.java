@@ -9,13 +9,17 @@
  */
 
 package cbit.vcell.xml;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -23,12 +27,11 @@ import org.jdom.Namespace;
 import org.jdom.Parent;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
+import org.vcell.util.collections.VCCollections;
+import org.vcell.util.collections.VCCollections.Delta;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.xml.XMLMetaData;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 
 /**
@@ -40,23 +43,21 @@ this class does not extend java.util.Comparator
  */
 public class VCMLComparator {
 
-	private static boolean VERBOSE_MODE = true;	                //for now...
-	public static boolean DEBUG_MODE = false;
-	private static boolean ERROR_RECORDED = false;
 	
-	private static PrintStream ps;
-	public static PrintStream getPs() {
-		return ps;
-	}
-
-
-	public static void setPs(PrintStream ps) {
-		VCMLComparator.ps = ps;
-	}
-
 	private static Hashtable<String, String> map;
-
 	private static final Namespace RDF_NS_JDOM = Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+
+	/**
+	 * existing errors logged yet?
+	 */
+	private static boolean errorRecorded = false;
+	private static Logger LG = Logger.getLogger(VCMLComparator.class);
+	public static void setLogLevel(Level newLevel) {
+		LG.setLevel(newLevel);
+	}
+	public static Level getLogLevel( ) {
+		return LG.getLevel();
+	}
 	
 	public static class VCMLElementSorter implements Comparator<Element> {
 	
@@ -166,73 +167,67 @@ public class VCMLComparator {
 		
 		map.put(XMLMetaData.NONRDF_ANNOTATION_TAG, XMLMetaData.VCID_ATTR_TAG);
 		map.put(XMLMetaData.FREETEXT_TAG, "TEXT");
-		ps = System.out;
 	}
 	
-	private static boolean compareAtts(Element source,Element target) {
-
-	    @SuppressWarnings("unchecked")
-		ArrayList<Attribute> list1 = new ArrayList<Attribute>(source.getAttributes());
-	    @SuppressWarnings("unchecked")
-		ArrayList<Attribute> list2 = new ArrayList<Attribute>(target.getAttributes());
-
-	    //not sure of Attribute.equals(). For now, only name and value are compared.
-	    /*class AttComparator implements Comparator {
-
-	        public int compare(Object o1, Object o2) {
-
-	            int result = -1;
-
-	            Attribute a1 = (Attribute) o1;
-	            Attribute a2 = (Attribute) o2; 
-
-	            if (a1.getName().equals(a2.getName()))
-	                if (a1.getValue().equals(a2.getValue()))
-	                    result = 0;
-
-	            return result;
-	        }
-	    }
-	    */
-	    
-	    int result;
-	    boolean attFlag = true;
-	    //AttComparator attComp = new AttComparator();
-
-	    Attribute atts1[] = (Attribute[]) list1.toArray(new Attribute[list1.size()]);
-	    Attribute atts2[] = (Attribute[]) list2.toArray(new Attribute[list2.size()]);
-
-	    if (atts1.length != atts2.length) {
+	private static boolean compareAtts(Element source,Element target, boolean bSkipMetadata) {
+		@SuppressWarnings("unchecked")
+		List<Attribute> slist = source.getAttributes();
+		@SuppressWarnings("unchecked")
+		List<Attribute> tlist = target.getAttributes();
+		Comparator<Attribute> cmp = (a,b) -> { return attributeCompare(a,b,bSkipMetadata); };
+		
+		boolean debugLogging = LG.isDebugEnabled();
+		List<VCCollections.Delta<Attribute>> diffs = debugLogging ? new ArrayList<>( ) : null;
+		boolean equal = VCCollections.equal(slist, tlist, cmp, diffs); 
+	    if (!equal && debugLogging) {
 	    	printInfo(source, target);
-		    return false;
+	    	for ( Delta<Attribute> dt : diffs) {
+	    		LG.debug("diff: " + dt);
+	    	}
 	    }
-	    
-	    for (int i = 0; i < atts1.length; i++) {
-	        //result = Arrays.binarySearch(atts2, atts1[i], attComp);
-	        result = -1;
-	        for (int j = 0; j < atts2.length; j++) {
-	            if (atts2[j].getName().equals(atts1[i].getName())
-	                && atts2[j].getValue().equals(atts1[i].getValue())) {
-	                result = 0;
-	                break;
-	            }
-	        }
-	        if (result < 0) {
-	            ps.println(
-	                "Attribute: "
-	                    + atts1[i].getName()
-	                    + " for element: "
-	                    + atts1[i].getParent()
-	                    + " not equal/found.");
-	            attFlag = false;
-	        }
-	    }
-	    if(!attFlag){
-	    	printInfo(source, target);
-	    }
-	    return attFlag;
+	    return equal;
 	}
-
+	
+	/**
+	 * identify Attribute for log messages
+	 * @param a not null
+	 * @return String with name and parent
+	 */
+	private static String ident(Attribute a) {
+        return "Attribute: " + a.getName() + " for element: " + a.getParent();
+	}
+	
+	/**
+	 * compare name and value
+	 * @param a
+	 * @param b
+	 * @param bSkipMetadata 
+	 * @return see {@link String#compareTo(String)} 
+	 */
+	private static int attributeCompare(Attribute a, Attribute b, boolean bSkipMetadata) {
+		Objects.requireNonNull(a);
+		Objects.requireNonNull(b);
+		String name = a.getName();
+		int nameCmp = name.compareTo(b.getName());
+		if (nameCmp != 0) {
+			if (LG.isDebugEnabled()) {
+				LG.debug(ident(a) + " not equal name " + b.getName());
+			}
+			return nameCmp;
+		}
+		
+		int rval = a.getValue().compareTo(b.getValue( ));
+		if (rval != 0) {
+			if (name.equals(XMLTags.VersionTag)) {
+				return 0;
+			}
+		if (LG.isDebugEnabled()) {
+				LG.debug(ident(a) + " value " + a.getValue() + " not equal "  + b.getValue());
+		}
+		}
+		return rval;
+	}
+	
 	public static boolean compareEquals(String xmlStr1, String xmlStr2, boolean bSkipVCMetaData) throws XmlParseException {
 //		System.out.println("-----VCMLComparator.DEBUG_MODE="+VCMLComparator.DEBUG_MODE);
 		if (xmlStr1 == null || xmlStr1.length() == 0 ||
@@ -243,56 +238,58 @@ public class VCMLComparator {
 	}
 
 
-	public static boolean compareMatchables(Matchable m1, Matchable m2, String type, boolean bSkipVCMetaData) {
-
-		Element source = null, target = null; 
-		try { 
-			Xmlproducer producer = new Xmlproducer(true);
-			if (type.equals(XMLTags.BioModelTag)) {
-				source = producer.getXML((BioModel)m1);
-				target = producer.getXML((BioModel)m2);
-			} else if (type.equals(XMLTags.MathModelTag)) {
-				source = producer.getXML((MathModel)m1);
-				target = producer.getXML((MathModel)m2);
-			} else {
-				throw new IllegalArgumentException("Accepted matchable types are biomodel and mathmodel");
-			}
-			String sourceXMLStr = XmlUtil.xmlToString(source);
-			String targetXMLStr = XmlUtil.xmlToString(target);
-			boolean result = compareXML(sourceXMLStr, targetXMLStr, true, bSkipVCMetaData);
-			if (!result && VERBOSE_MODE) {
-				ps.println(sourceXMLStr);
-				ps.println(targetXMLStr);
-			}
-			return result;
-		} catch (Exception e) {         					//ExpressionException, XmlParseException 
-			e.printStackTrace();
-			return false;
-		}
-	}
+//	public static boolean compareMatchables(Matchable m1, Matchable m2, String type, boolean bSkipVCMetaData) {
+//
+//		Element source = null, target = null; 
+//		try { 
+//			Xmlproducer producer = new Xmlproducer(true);
+//			if (type.equals(XMLTags.BioModelTag)) {
+//				source = producer.getXML((BioModel)m1);
+//				target = producer.getXML((BioModel)m2);
+//			} else if (type.equals(XMLTags.MathModelTag)) {
+//				source = producer.getXML((MathModel)m1);
+//				target = producer.getXML((MathModel)m2);
+//			} else {
+//				throw new IllegalArgumentException("Accepted matchable types are biomodel and mathmodel");
+//			}
+//			String sourceXMLStr = XmlUtil.xmlToString(source);
+//			String targetXMLStr = XmlUtil.xmlToString(target);
+//			boolean result = compareXML(sourceXMLStr, targetXMLStr, true, bSkipVCMetaData);
+//			if (!result && LG.isTraceEnabled()) {
+//				LG.trace(sourceXMLStr);
+//				LG.trace(targetXMLStr);
+//			}
+//			return result;
+//		} catch (Exception e) {         					//ExpressionException, XmlParseException 
+//			e.printStackTrace();
+//			return false;
+//		}
+//	}
 
 	private static void printInfo(Element source, Element target){
 		//
 //		System.out.println("VCMLComparator.DEBUG_MODE="+VCMLComparator.DEBUG_MODE);
-		if(VCMLComparator.DEBUG_MODE &&  !VCMLComparator.ERROR_RECORDED){
-			VCMLComparator.ERROR_RECORDED = true;
-			System.err.println("-source parent="+source.getParent());
-			System.err.println("-target parent="+target.getParent());
+//		if(VCMLComparator.DEBUG_MODE &&  !VCMLComparator.ERROR_RECORDED){
+		if(LG.isDebugEnabled() && !errorRecorded) {
+			VCMLComparator.errorRecorded = true;
+			LG.debug("-source parent="+source.getParent());
+			LG.debug("-target parent="+target.getParent());
 
-			System.err.println("--source ="+source);
-			System.err.println("--target ="+target);
-
-			printAttributeList("source",source);
-			printAttributeList("target",target);
+			LG.debug("--source ="+source);
+			LG.debug("--target ="+target);
+			LG.debug(printAttributeList("source",source));
+			LG.debug(printAttributeList("target",target));
 			
-			System.out.println("failed");
+			LG.debug("failed");
 		}
 	}
 
-	private static void printAttributeList(String originator,Element element){
+	private static String printAttributeList(String originator,Element element){
+		StringWriter swrit = new StringWriter();
+		PrintWriter sw = new PrintWriter(swrit);
 		@SuppressWarnings("unchecked")
 		List<Attribute> attributeList = element.getAttributes();
-		System.err.print("--"+originator+" Attributes("+(attributeList == null?0:attributeList.size())+") = ");
+		sw.print("--"+originator+" Attributes("+(attributeList == null?0:attributeList.size())+") = ");
 		if(attributeList != null && attributeList.size() != 0){
 			Attribute[] attrArr = attributeList.toArray(new Attribute[0]);
 			Arrays.sort(attrArr,new Comparator<Attribute>() {
@@ -307,12 +304,13 @@ public class VCMLComparator {
 				if(attrNameVal.length() > PRINTSIZE){
 					attrNameVal = attrNameVal.substring(0,PRINTSIZE-PRINTSIZEWARN.length())+PRINTSIZEWARN;
 				}
-				System.err.print(BeanUtils.forceStringSize(attrNameVal,PRINTSIZE, "", false)+(i==(attrArr.length-1)?"":" , "));
+				sw.print(BeanUtils.forceStringSize(attrNameVal,PRINTSIZE, "", false)+(i==(attrArr.length-1)?"":" , "));
 			}
-			System.err.println();
+			sw.println();
 		}else{
-			System.err.println("empty");
+			sw.println("empty");
 		}
+		return swrit.toString();
 	}
 	//the testAll boolean indicate whether to cover all elements in the test, even if the test fails. 
 	private static boolean compareVCML(Element source, Element target, boolean testAll, boolean bSkipVCMetaData) {
@@ -321,15 +319,18 @@ public class VCMLComparator {
 	    VCMLElementSorter elementSorter = new VCMLElementSorter();
 
 	    if (!source.getName().equals(target.getName())) {           //wrong element.
-	        ps.println("Element: "  + source.getName() + " with parent: " + source.getParent() + " is lost.");
-	        printInfo(source, target);
+	    	if (LG.isDebugEnabled()) {
+		        LG.debug("Element: "  + source.getName() + " with parent: " + source.getParent() + " is lost.");
+		        printInfo(source, target);
+	    	}
 			elementFlag = false;
 			if (!testAll) {
 				return elementFlag;
 			}
 	    }
 	    if (!source.getTextTrim().equals(target.getTextTrim())) {
-	    	ps.println("Element: "
+	    	if (LG.isDebugEnabled()) {
+	    	LG.debug("Element: "
 	                    + source.getName()
 	                    + " with parent: "
 	                    + getPathToRoot(source)
@@ -337,18 +338,21 @@ public class VCMLComparator {
 	                    + source.getTextTrim()
 	                    + " is lost.");
 	    	printInfo(source, target);
+	    	}
 	        textFlag = false;
 	        if (!testAll) {
 				return textFlag;
 			}
 	    }
-	    attFlag = compareAtts(source,target);
+	    attFlag = compareAtts(source,target,bSkipVCMetaData);
 
 	    if (bSkipVCMetaData) {
+	    	source.removeChild(XMLTags.VersionTag);
 	    	source.removeChild(XMLTags.AnnotationTag);
 	    	target.removeChild(XMLTags.AnnotationTag);
 	    	
 	    	source.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
+	    	source.removeChild(XMLTags.VersionTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	target.removeChild(XMLTags.AnnotationTag, Namespace.getNamespace(XMLTags.VCML_NS));
 	    	
 //	    	// legacy sbmlAnnotation "annotation" attribute??
@@ -367,10 +371,12 @@ public class VCMLComparator {
 	        //sometimes will fail, but better than nothing
 	        if (pkName == null)
 	            pkName = XMLTags.NameAttrTag;
-	        ps.println("Element's children: " + source.getName() + ": "
+	        if (LG.isDebugEnabled()) {
+	        LG.debug("Element's children: " + source.getName() + ": "
 	                + source.getAttributeValue(pkName)
 	                + " are partially/completely lost");
 	        printInfo(source, target);
+	        }
 	        return false;
 	    }
 	    Element e1[] = (Element[]) children1.toArray(new Element[children1.size()]);
@@ -404,7 +410,7 @@ public class VCMLComparator {
 
 
 	private static boolean compareXML(String xmlStr1, String xmlStr2, boolean testAll, boolean bSkipVCMetaData) throws XmlParseException {
-		VCMLComparator.ERROR_RECORDED = false;
+		VCMLComparator.errorRecorded = false;
 		if (xmlStr1.equals(xmlStr2)) {
 //			ps.println("The xml strings are identical.");
 			return true;
@@ -412,7 +418,9 @@ public class VCMLComparator {
 		Element sRoot = XmlUtil.stringToXML(xmlStr1, null).getRootElement();
 		Element tRoot = XmlUtil.stringToXML(xmlStr2, null).getRootElement();
 		if (compareVCML(sRoot, tRoot, testAll, bSkipVCMetaData)) {
-			ps.println("The two xml trees: " + sRoot.getName() + " are identical with different ordering.");
+			if (LG.isDebugEnabled()) {
+				LG.debug("The two xml trees: " + sRoot.getName() + " are identical with different ordering.");
+			}
 			return true;
 		}
 		return false;

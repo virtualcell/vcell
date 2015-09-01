@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.StringTokenizer;
 
 import org.vcell.util.Compare;
+import org.vcell.util.EqualsUtil;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
@@ -133,15 +134,11 @@ public abstract boolean compareEqual(Matchable object, boolean bIgnoreMissingDom
  * @param object java.lang.Object
  */
 protected boolean compareEqual0(Matchable object, boolean bIgnoreMissingDomain) {
-	Variable var = null;
-	if (object == null){
-		return false;
+	Boolean tc = EqualsUtil.typeCompare(this, object);
+	if (tc != null) {
+		return tc;
 	}
-	if (!(object instanceof Variable)){
-		return false;
-	}else{
-		var = (Variable)object;
-	}
+	Variable var = (Variable)object;
 
 	//
 	// compare names

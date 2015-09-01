@@ -12,8 +12,10 @@ package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -236,6 +238,28 @@ public class GuiUtils {
 		StringBuilder sb = new StringBuilder(1024);
 		prefSize(sb,0,container);
 		return sb.toString();
+	}
+	
+	/**
+	 * attempt to describe window
+	 * @param w could be null
+	 * @return null or description String (e.g. title) 
+	 */
+	public static String describe(Window w) {
+		if (w != null) {
+			String className = ExecutionTrace.justClassName(w) + " ";
+			Frame f = BeanUtils.downcast(Frame.class, w);
+			if (f != null) {
+				return className + f.getTitle();
+			}
+			Dialog d = BeanUtils.downcast(Dialog.class, w);
+			if (d != null) {
+				return className + d.getTitle();
+			}
+			return className; 
+		}
+		return "null";
+		
 	}
 	
 	

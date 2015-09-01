@@ -42,6 +42,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
@@ -126,7 +128,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		private JTextField currentValueTextField = null;
 		private JLabel progressLabel;
 		private JLabel numRunsLabel;
-		RunStatusProgressDialog(Frame owner) {
+		RunStatusProgressDialog(LWContainerHandle owner) {
 			super(owner);
 			initialize();
 		}	
@@ -238,7 +240,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 
 		@Override
-		public void setMessage(String message) {
+		public void setMessageImpl(String message) {
 		}
 		@Override
 		public void setProgress(int progress) {
@@ -728,8 +730,9 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 	}
 	
 	private RunStatusProgressDialog getRunStatusDialog() {
+		LWContainerHandle ch = LWNamespace.findLWOwner(this);
 		if (runStatusDialog == null) {
-			runStatusDialog = new RunStatusProgressDialog(JOptionPane.getFrameForComponent(this));
+			runStatusDialog = new RunStatusProgressDialog(ch);
 		}	
 		return runStatusDialog;
 	}

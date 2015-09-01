@@ -233,8 +233,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			}
 			else {
 				int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
-				new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 				log = new StdoutSessionLog(serviceInstanceStatus.getID());
+				new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
 			}
      
 			KeyFactory keyFactory = new OracleKeyFactory();

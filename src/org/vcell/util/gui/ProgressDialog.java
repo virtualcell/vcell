@@ -10,14 +10,16 @@
 
 package org.vcell.util.gui;
 import java.awt.Container;
-import java.awt.Frame;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
+import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWDialog;
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.ProgressDialogListener;
 
 import cbit.vcell.client.desktop.DocumentWindow;
@@ -27,17 +29,19 @@ import cbit.vcell.client.desktop.DocumentWindow;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public abstract class ProgressDialog extends JDialog {
+public abstract class ProgressDialog extends LWDialog {
 	
 	protected final static int GRAPHIC_SIZE = 60;			// size of rotating "wait" image panel
 	protected final static int DialogWidth = 350;
 	protected final static int MaxLen = 50;					// message truncation if too long
 	protected final static int TruncTailLen = 0;
 	protected final static int TruncHeaderLen = MaxLen - (TruncTailLen + 2);
+	protected final static Logger LG = Logger.getLogger(ProgressDialog.class);
 	
 	protected JProgressBar progressBar = null;
 	protected transient ProgressDialogListener fieldProgressDialogListenerEventMulticaster = null;
 	private JButton cancelButton = null;
+	protected String message = "progress";
 
 	// the thread will display a message on the status bar and then delete it after a few seconds
 	protected static class StatusBarMessageThread implements Runnable {
@@ -81,8 +85,9 @@ public abstract class ProgressDialog extends JDialog {
  * Creation date: (5/19/2004 6:08:36 PM)
  * @param owner java.awt.Frame
  */
-public ProgressDialog(Frame owner) {
-	super(owner);
+public ProgressDialog(LWContainerHandle parent) {
+	super(parent);
+	LWTopFrame.registerTransientDialog(this);
 	getCancelButton().addActionListener(new ActionListener() {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getCancelButton()) {
@@ -90,6 +95,11 @@ public ProgressDialog(Frame owner) {
 			}
 		};
 	});
+}
+
+@Override
+public String menuDescription() {
+	return message; 
 }
 
 public void setToVisible( ) {
@@ -129,12 +139,10 @@ public void removeProgressDialogListener(ProgressDialogListener newListener) {
 	return;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/19/2004 1:06:46 PM)
- * @param message java.lang.String
- */
-public abstract void setMessage(String message);
+public final void setMessage(String message) {
+	setMessageImpl(message);
+}
+protected abstract void setMessageImpl(String message);
 
 
 /**

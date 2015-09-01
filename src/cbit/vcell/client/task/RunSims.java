@@ -127,8 +127,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	Hashtable<Simulation, Throwable> failures = new Hashtable<Simulation, Throwable>();
 	if (simulations != null && simulations.length > 0) {
 		// we need to get the new ones if a save occurred...
-		if (hashTable.containsKey("savedDocument")) {
-			VCDocument savedDocument = (VCDocument)hashTable.get("savedDocument");
+		if (hashTable.containsKey(SaveDocument.DOC_KEY)) {
+			VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 			Simulation[] allSims = null;
 			if (savedDocument instanceof BioModel) {
 				allSims = ((BioModel)savedDocument).getSimulations();

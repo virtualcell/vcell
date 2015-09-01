@@ -18,10 +18,10 @@ import cbit.vcell.solver.Simulation;
 
 /**
  * class to replace Virtual Cell tessellation of surface with spherical.
- * Detects Simluations that:
+ * Detects Simulations that:
  * <ul>
  * <li> have "sphereN" in name of Simulation</li>
- * <li> have comment line specifiying sphere: /* sphere = (5,5,5) r=4.5   ...   </li>
+ * <li> have comment line specifying sphere: /* sphere = (5,5,5) r=4.5   ...   </li>
  * </ul>
  */
 public class SphereTestFixture {

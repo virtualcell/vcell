@@ -3,8 +3,10 @@ package cbit.vcell.math;
 import java.util.Objects;
 
 import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.EqualsUtil;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
+import org.vcell.util.VCAssert;
 
 import cbit.vcell.parser.ExpressionException;
 
@@ -32,7 +34,12 @@ public abstract class CommentedBlockObject extends CommentedObject {
 	 */
 	@Override
 	public boolean compareEqual(Matchable obj) {
-		return super.compareEqual(obj) && Objects.equals(name, obj);
+		if (super.compareEqual(obj)) {
+			VCAssert.ofType(obj, CommentedBlockObject.class);
+			CommentedBlockObject cbo = (CommentedBlockObject) obj;
+			return Objects.equals(name, cbo.name);
+		}
+		return false;
 	}
 
 	/**

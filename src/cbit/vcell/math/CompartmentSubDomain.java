@@ -15,6 +15,7 @@ import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
+import org.vcell.util.VCAssert;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -60,15 +61,11 @@ protected String startToken() {
  * @param object java.lang.Object
  */
 public boolean compareEqual(Matchable object) {
-	if (!super.compareEqual0(object)){
+	if (!super.compareEqual0(object)){ //verifies object type
 		return false;
 	}
-	CompartmentSubDomain csd = null;
-	if (!(object instanceof CompartmentSubDomain)){
-		return false;
-	}else{
-		csd = (CompartmentSubDomain)object;
-	}
+	VCAssert.ofType(object,CompartmentSubDomain.class);
+	CompartmentSubDomain csd = (CompartmentSubDomain)object;
 	//
 	// compare boundaryConditions
 	//

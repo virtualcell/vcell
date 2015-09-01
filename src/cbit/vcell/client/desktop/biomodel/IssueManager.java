@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.Timer;
 
@@ -29,6 +30,7 @@ import cbit.vcell.model.SimpleBoundsIssue;
 
 @SuppressWarnings("serial")
 public class IssueManager {
+	private static final long LAST_DIRTY_MILLISECONDS = TimeUnit.SECONDS.toMillis(2);
 	private List<Issue> issueList = Collections.synchronizedList(new ArrayList<Issue>());
 	private VCDocument vcDocument = null;
 	private int numErrors, numWarnings;
@@ -37,12 +39,12 @@ public class IssueManager {
 	
 	public IssueManager(){
 		
-		int delay = 1000; //  check each second ... wait 2 seconds after the last dirty
+		int delay = 1000; //  check each second ... wait LAST_DIRTY_MILLISECONDS after the last dirty
 		
-		timer = new Timer(delay,new ActionListener() {
+		timer = new javax.swing.Timer(delay,new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					updateIssues0();
+					updateIssues0(false);
 				}catch (Exception ex){
 					ex.printStackTrace(System.out);
 				}
@@ -87,16 +89,21 @@ public class IssueManager {
 	
 	private List<IssueEventListener> issueEventListeners = new ArrayList<IssueEventListener>();
 	
-	private void updateIssues0() {
+	/**
+	 * @param immediate update now, skip check of {@link #LAST_DIRTY_MILLISECONDS}
+	 */
+	private void updateIssues0(boolean immediate) {
 		if (vcDocument==null){
 			return;
 		}
-		if (dirtyTimestamp==0){
-			return;
-		}
-		long elapsedTime = System.currentTimeMillis() - dirtyTimestamp;
-		if (elapsedTime<2000) {
-			return;
+		if (!immediate) {
+			if (dirtyTimestamp==0){
+				return;
+			}
+			long elapsedTime = System.currentTimeMillis() - dirtyTimestamp;
+			if (elapsedTime<LAST_DIRTY_MILLISECONDS) {
+				return;
+			}
 		}
 		try {
 			VCDocumentDecorator decorator = VCDocumentDecorator.getDecorator(vcDocument);
@@ -128,8 +135,7 @@ public class IssueManager {
 		}
 	}
 	public void updateIssues() {
-		dirtyTimestamp = System.currentTimeMillis() - 3000; // force update
-		updateIssues0();
+		updateIssues0(true);
 	}
 	public void setVCDocument(VCDocument newValue) {
 		if (newValue == vcDocument) {

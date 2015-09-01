@@ -131,6 +131,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
@@ -139,6 +140,7 @@ import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsyncClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
@@ -2958,9 +2960,9 @@ static public class BngUnitSystem {
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 9:37:46 PM)
+ * DocumentWindowManager hash table key
  */
+private final static String WIN_MGR_KEY = "WIN_MGR_KY";
 private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindowManager requester, final boolean inNewWindow) {
 
 	final String DOCUMENT_INFO = "documentInfo";
@@ -3224,7 +3226,6 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			hashTable.put("doc", doc);
 		}
 	};
-	final String WIN_MGR_KEY = "WIN_MGR_KY";
 	AsynchClientTask task2 = new AsynchClientTask("Showing document", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -3235,7 +3236,6 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					DocumentWindowManager windowManager = null;
 					if (inNewWindow) {
 						windowManager = createDocumentWindowManager(doc);
-						hashTable.put(WIN_MGR_KEY, windowManager);
 						// request was to create a new top-level window with this doc
 						getMdiManager().createNewDocumentWindow(windowManager);						
 //						if (windowManager instanceof BioModelWindowManager) {
@@ -3247,6 +3247,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						getMdiManager().setCanonicalTitle(requester.getManagerID());
 						windowManager.resetDocument(doc);
 					}
+					hashTable.put(WIN_MGR_KEY, windowManager);
 				}
 			} finally {
 				if (!inNewWindow) {
@@ -3271,7 +3272,21 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			}
 		}
 	};
-	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3}, false);
+	AsynchClientTask task4 = new AsyncClientTaskFunction(ClientRequestManager::setWindowFocus, "Set window focus", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false); 
+	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3, task4}, false);
+}
+
+/**
+ * raise issue tab if error is present
+ * @param hashTable
+ * @throws Exception
+ */
+private static void setWindowFocus(Hashtable<String, Object> hashTable) throws Exception {
+	DocumentWindowManager windowManager = (DocumentWindowManager)hashTable.get(WIN_MGR_KEY);
+	DocumentEditor de = windowManager.getDocumentEditor();
+	if (de != null) {
+		de.setWindowFocus();
+	}
 }
 
 private DocumentWindowManager createDocumentWindowManager(final VCDocument doc){
