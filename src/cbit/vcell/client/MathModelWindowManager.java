@@ -22,6 +22,7 @@ import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -431,6 +432,12 @@ public final SimulationWorkspace getSimulationWorkspace() {
 @Override
 public void updateConnectionStatus(ConnectionStatus connStatus) {
 	mathModelEditor.updateConnectionStatus(connStatus);	
+}
+
+
+@Override
+public DocumentEditor getDocumentEditor() {
+	return mathModelEditor; 
 }
 
 }

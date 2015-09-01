@@ -23,6 +23,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
@@ -36,7 +37,7 @@ import cbit.vcell.solver.SimulationInfo;
 public class CheckBeforeDelete extends AsynchClientTask {
 	
 	public CheckBeforeDelete() {
-		super("Checking for successfull save and possible lost results", TASKTYPE_NONSWING_BLOCKING);
+		super("Checking for successful save and possible lost results", TASKTYPE_NONSWING_BLOCKING);
 	}
 
 
@@ -201,7 +202,9 @@ private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySav
 				//
 				// ignore if only Simulation has been edited (same MathDescription)
 				//
-				if (correspondingSimulation.getMathDescription().getKey().equals(oldSimulation.getMathDescription().getKey())){
+				MathDescription mdCorr = correspondingSimulation.getMathDescription();
+				MathDescription mdOld = oldSimulation.getMathDescription();
+				if (mdCorr.getKey( ).equals(mdOld.getKey())) {
 					bIgnore = true;
 				}
 
@@ -236,7 +239,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 //	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
-	if (! hashTable.containsKey("savedDocument")) {
+	if (! hashTable.containsKey(SaveDocument.DOC_KEY)) {
 		throw new RuntimeException("CheckBeforeDelete task called although SaveDocument task did not complete - should have aborted!!");
 	}
 
@@ -249,7 +252,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	Simulation simulations[] = (Simulation[])hashTable.get("simulations");
-	VCDocument savedDocument = (VCDocument)hashTable.get("savedDocument");
+	VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 	// just to make sure, verify that we actually did save a new edition
 	Version oldVersion = currentDocument.getVersion();
 	Version newVersion = savedDocument.getVersion();
@@ -269,9 +272,9 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			simulationsWithLostResults = checkLostResults((MathModel)currentDocument, (MathModel)savedDocument, documentManager, simulations);
 			break;
 		}
-		case GEOMETRY_DOC: {
+		case GEOMETRY_DOC: 
+		default:
 			return; // nothing to check for in this case
-		}
 	}
 	boolean bLost = simulationsWithLostResults != null && simulationsWithLostResults.length > 0;
 	if (bLost) {
@@ -279,6 +282,10 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		if (choice.equals(UserMessage.OPTION_SAVE_AS_NEW_EDITION)){
 			// user canceled deletion
 			throw UserCancelException.CANCEL_DELETE_OLD;
+		}
+		if (choice.equals(UserMessage.OPTION_CANCEL) ) {
+			throw UserCancelException.CANCEL_GENERIC;
+			
 		}
 	}
 }

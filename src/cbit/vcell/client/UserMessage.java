@@ -68,7 +68,7 @@ public class UserMessage {
 			new String[] {OPTION_DELETE, OPTION_CANCEL},					OPTION_DELETE,			UserPreferences.WARN_DELETE_APPLICATION);
 
 	public final static UserMessage question_LostResults = new UserMessage("Saving the model will erase all existing simulation results. Save model and discard simulation results or create a new model edition?",
-				new String[] {OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION},		OPTION_DISCARD_RESULTS,		-1);
+				new String[] {OPTION_CANCEL, OPTION_DISCARD_RESULTS, OPTION_SAVE_AS_NEW_EDITION},		OPTION_CANCEL,		-1);
 
 	public final static UserMessage warn_RevertToSaved = new UserMessage("Are you sure you want to discard changes and revert to saved version?",
 				new String[] {OPTION_DISCARD_CHANGES, OPTION_CANCEL}, 			OPTION_DISCARD_CHANGES,	UserPreferences.WARN_REVERT_TO_SAVED);

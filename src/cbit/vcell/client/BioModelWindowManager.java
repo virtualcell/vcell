@@ -33,6 +33,7 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ConnectionStatus;
@@ -636,6 +637,10 @@ public DataImporter getPathwayImporter() { return pathwayImporter; }
 public void importPathway(PathwayImportOption pathwayImportOption) {
 	pathwayImportPanel.showDialog(getComponent(), pathwayImportOption);
 
+}
+@Override
+public DocumentEditor getDocumentEditor() {
+	return bioModelEditor; 
 }
 
 }

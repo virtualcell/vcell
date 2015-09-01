@@ -173,8 +173,8 @@ public void addBoundaryConditionSpec(BoundaryConditionSpec newBoundaryConditionS
  * @return boolean
  * @param object java.lang.Object
  */
-protected boolean compareEqual0(Object object) {
-	if (!super.equals(object)) {
+protected boolean compareEqual0(Matchable object) {
+	if (!super.compareEqual(object)) {
 		return false;
 	}
 	SubDomain subDomain = (SubDomain)object;
@@ -620,20 +620,6 @@ private class ProviderAdapter implements VCMLProvider {
 		return subDomain.getVCML(spatialDimension);
 	}
 
-	@Override
-	public int hashCode() {
-		return super.hashCode() ^ Integer.hashCode(spatialDimension);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		Boolean b = EqualsUtil.typeCompare(this, obj);
-		if (b != null) {
-			return b;
-		}
-		ProviderAdapter pa = (ProviderAdapter) obj;
-		return spatialDimension == pa.spatialDimension && subDomain.compareEqual(pa.subDomain);
-	}
 }
 
 

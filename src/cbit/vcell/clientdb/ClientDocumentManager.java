@@ -1907,11 +1907,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			if (mathModelXML==null){
 				mathModelXML = XmlHelper.mathModelToXML(mathModel);
 			}
-			if (VCMLComparator.compareEquals(savedMathModelXML.getXmlString(),mathModelXML, false)){
-				return false;
-			}else{
-				return true;
-			}
+			return !VCMLComparator.compareEquals(savedMathModelXML.getXmlString(),mathModelXML, true);
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());

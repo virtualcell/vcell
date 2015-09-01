@@ -22,7 +22,7 @@ import cbit.vcell.client.MDIManager;
 public class FinishSave extends AsynchClientTask {
 	
 	public FinishSave() {
-		super("Updating the workspace", TASKTYPE_SWING_BLOCKING, false, false);
+		super("Updating the workspace", TASKTYPE_SWING_BLOCKING, false, true);
 	}
 
 /**
@@ -34,8 +34,8 @@ public class FinishSave extends AsynchClientTask {
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	MDIManager mdiManager= (MDIManager)hashTable.get("mdiManager");
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
-	if (hashTable.containsKey("savedDocument")) {
-		VCDocument savedDocument = (VCDocument)hashTable.get("savedDocument");
+	if (hashTable.containsKey(SaveDocument.DOC_KEY)) {
+		VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 		documentWindowManager.resetDocument(savedDocument);
 	}
 	mdiManager.unBlockWindow(documentWindowManager.getManagerID());

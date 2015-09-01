@@ -25,6 +25,7 @@ import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -861,4 +862,9 @@ public void startExport(
 }
 
 public abstract void updateConnectionStatus(ConnectionStatus connStatus);
+/**
+ * @return Document Editor, if present, or null
+ */
+public abstract DocumentEditor getDocumentEditor( );
 }
+

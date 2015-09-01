@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import org.vcell.util.document.VCDocument;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.desktop.geometry.GeometryEditor;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -335,5 +336,11 @@ public void surfaceViewerButtonPressed(boolean bSurfaceViewerButtonSelected) {
 public void updateConnectionStatus(ConnectionStatus connStatus) {
 	// TODO Auto-generated method stub
 	
+}
+
+
+@Override
+public DocumentEditor getDocumentEditor() {
+	return null;
 }
 }

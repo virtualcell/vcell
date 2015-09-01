@@ -1,17 +1,13 @@
 package org.vcell.util.gui;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -20,9 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.help.UnsupportedOperationException;
@@ -33,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.util.BeanUtils;
 
 @SuppressWarnings("serial")
@@ -48,7 +42,7 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 	
 	private String currentMessage = "Working";
 
-	public LinearDefiniteProgressDialog(Frame owner) {
+	public LinearDefiniteProgressDialog(LWContainerHandle owner) {
 		super(owner);
 		setLocationRelativeTo(null);
 		setContentPane(new JPanel( ));
@@ -87,7 +81,6 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 		if (!isVisible()) {
 			displayTimer.start();
 		}
-		System.err.println("vad " + System.currentTimeMillis());
 	}
 	
 	@Override
@@ -99,7 +92,6 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (!isVisible()) {
-			System.err.println("ap  " + System.currentTimeMillis());
 			displayTimer.stop( );
 			super.setVisible(true);
 		}
@@ -125,7 +117,7 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 		setTitle(progressString);
 	}
 	@Override
-	public void setMessage(String s) {
+	public void setMessageImpl(String s) {
 		
 //		DocumentWindow dw = getMainFrame();
 //		if(dw != null) {
@@ -210,7 +202,6 @@ public class LinearDefiniteProgressDialog extends ProgressDialog implements Acti
 			g2d.setPaint(greentowhite);
 			g2d.fill(filled);		// draw the progress bar
 			
-			final double dcurx_width = 8;
 			double dcurx_start = curx * (double)width / 100.0;
 			if(pauseTicks == 0 && curx <= progress && dcurx_start < extent) {
 				Paint greentowhite2 = new GradientPaint(0, 0, Color.white, (int)dcurx_start, 0, Color.green);	// paint for watchdog inner bar
