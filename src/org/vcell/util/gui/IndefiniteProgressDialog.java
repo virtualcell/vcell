@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.util.BeanUtils;
 
 @SuppressWarnings("serial")
@@ -38,10 +39,10 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	private final static int SHOW_DELAY_TIME_MILLIS = 1000; 
 
 	private JLabel lblMessage;
-	private Timer displayTimer;
-	private Timer workingPanelTimer;
+	private javax.swing.Timer displayTimer;
+	private javax.swing.Timer workingPanelTimer;
 
-	public IndefiniteProgressDialog(Frame owner) {
+	public IndefiniteProgressDialog(LWContainerHandle owner) {
 		super(owner);
 		setLocationRelativeTo(null);
 		setContentPane(new JPanel( ));
@@ -83,7 +84,6 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 		if (!isVisible()) {
 			displayTimer.start();
 		}
-		System.err.println("vad " + System.currentTimeMillis());
 	}
 	
 	@Override
@@ -95,7 +95,6 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (!isVisible()) {
-			System.err.println("ap  " + System.currentTimeMillis());
 			displayTimer.stop( );
 			super.setVisible(true);
 		}
@@ -105,6 +104,10 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 	public void dispose( ) {
 		workingPanelTimer.stop();
 		super.dispose( );
+		if (LG.isTraceEnabled()) {
+			LG.trace(getClass( ).getName() + " " + message + " disposed");
+		}
+		
 	}
 	/**
 	 * @throws UnsupportedOperationException (always)
@@ -118,7 +121,7 @@ public class IndefiniteProgressDialog extends ProgressDialog implements ActionLi
 		setTitle(progressString);
 	}
 	@Override
-	public void setMessage(String s) {
+	public void setMessageImpl(String s) {
 		
 //		DocumentWindow dw = getMainFrame();
 //		if(dw != null) {

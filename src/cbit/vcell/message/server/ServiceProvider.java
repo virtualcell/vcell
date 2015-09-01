@@ -174,7 +174,7 @@ public static OutputStream initLog(ServiceInstanceStatus serviceInstanceStatus, 
 	if (logDirectory != null && !logDirectory.trim().equals("-")) {
 		File logdir = new File(logDirectory);
 		if (!logdir.exists()) {
-			throw new RuntimeException("Log directory doesn't exist");
+			throw new RuntimeException("Log directory " + logDirectory + " doesn't exist");
 		}
 			
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_kkmmss");

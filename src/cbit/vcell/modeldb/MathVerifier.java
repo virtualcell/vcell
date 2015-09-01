@@ -22,6 +22,7 @@ import java.util.Vector;
 
 import javax.swing.JFrame;
 
+import org.apache.log4j.Level;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -1017,6 +1018,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 	Long loadUnresolvedTime = null;
 	
 	if(documentInfo instanceof BioModelInfo){
+		Level existingLogLevel = VCMLComparator.getLogLevel();
 		try {
 			String xmlRndTrip0 = XmlHelper.bioModelToXML((BioModel)vcDocumentFromDBCache);
 			BioModel bioModelRndTrip0 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip0));
@@ -1024,7 +1026,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			BioModel bioModelRndTrip1 = XmlHelper.XMLToBioModel(new XMLSource(xmlRndTrip1));
 			if(Compare.logger != null){
 				Compare.loggingEnabled = true;
-				VCMLComparator.DEBUG_MODE = true;
+				VCMLComparator.setLogLevel(Level.DEBUG);
 			}
 			bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
 			System.out.println("----------XML same="+bSameSelfCachedRoundtrip);
@@ -1037,7 +1039,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			bSameSelfXMLCachedRoundtripExc = e;
 		}finally{
 			Compare.loggingEnabled = false;
-			VCMLComparator.DEBUG_MODE = false;
+			VCMLComparator.setLogLevel(existingLogLevel);
 		}
 		
 		String fromDBBioModelUnresolvedXML = null;
@@ -1065,6 +1067,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			}
 		}
 	}else{
+		Level existingLogLevel = VCMLComparator.getLogLevel();
 		try {
 			String xmlRndTrip0 = XmlHelper.mathModelToXML((MathModel)vcDocumentFromDBCache);
 			MathModel mathModelRndTrip0 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip0));
@@ -1072,7 +1075,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			MathModel mathModelRndTrip1 = XmlHelper.XMLToMathModel(new XMLSource(xmlRndTrip1));
 			if(Compare.logger != null){
 				Compare.loggingEnabled = true;
-				VCMLComparator.DEBUG_MODE = true;
+				VCMLComparator.setLogLevel(Level.DEBUG);
 			}
 			bSameSelfCachedRoundtrip = VCMLComparator.compareEquals(xmlRndTrip0,xmlRndTrip1, true);
 			bSameSelfCachedRoundtrip = bSameSelfCachedRoundtrip && mathModelRndTrip0.compareEqual(mathModelRndTrip1);
@@ -1082,7 +1085,7 @@ private void testDocumentLoad(boolean bUpdateDatabase, User user, SessionLog use
 			bSameSelfXMLCachedRoundtripExc = e;
 		}finally{
 			Compare.loggingEnabled = false;
-			VCMLComparator.DEBUG_MODE = false;
+			VCMLComparator.setLogLevel(existingLogLevel);
 		}
 
 		String fromDBMathModelUnresolvedXML = null;

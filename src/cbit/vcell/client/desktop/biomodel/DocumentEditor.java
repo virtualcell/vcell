@@ -19,6 +19,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -45,6 +46,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.gui.DialogUtils;
@@ -79,6 +83,7 @@ public abstract class DocumentEditor extends JPanel {
 	public static final String TAB_TITLE_PROBLEMS = "Problems";
 	private static final String TAB_TITLE_OBJECT_PROPERTIES = "Object Properties";
 	protected static final String generalTreeNodeDescription = "Select only one object (e.g. species, reaction, simulation) to view/edit properties.";
+	protected static final Logger LG = Logger.getLogger(DocumentEditor.class);
 	
 	protected enum DocumentEditorTabID {
 		object_properties,
@@ -147,7 +152,7 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem menuItemSpatialCopyAsSpatialRulebased = null;
 	
 	private class ProblemSignalling {
-		private Timer timer = null;
+		private javax.swing.Timer timer = null;
 		private int counter = 0;
 		private final int MaxBlinks = 5;
 		
@@ -326,9 +331,9 @@ public abstract class DocumentEditor extends JPanel {
 			int oldNumWarnings = 0;
 			for(Issue issue : issueEvent.getOldValue()) {
 				Severity severity = issue.getSeverity();
-				if (severity == Issue.SEVERITY_ERROR) {
+				if (severity == Severity.ERROR) {
 					oldNumErrors ++;
-				} else if (severity == Issue.SEVERITY_WARNING) {
+				} else if (severity == Severity.WARNING) { 
 					oldNumWarnings ++;
 				}
 			}
@@ -817,6 +822,19 @@ public SelectionManager getSelectionManager() { return selectionManager; }
 
 public final JTabbedPane getRightBottomTabbedPane() {
 	return rightBottomTabbedPane;
+}
+
+public void setWindowFocus( ) {
+	if (issueManager.getNumErrors() > 0) {
+		rightBottomTabbedPane.setSelectedIndex(DocumentEditorTabID.problems.ordinal( ));
+	}
+	Window w = LWNamespace.findOwnerOfType(Window.class, getParent( ));
+	if (w != null) {
+		w.toFront( );
+	}
+	if (LG.isEnabledFor(Level.WARN)) {
+		LG.warn("can't find window owner");
+	}
 }
 
 }

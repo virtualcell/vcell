@@ -48,7 +48,7 @@ public class VCAssert {
 	}
 	
 	/**
-	 * validate object is not null and of specified type
+	 * validate object is not null and of specified type, including subtypes
 	 * @param obj
 	 * @param clzz required type; non null
 	 * @throws ProgrammingException if null or not of expected type

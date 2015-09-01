@@ -49,6 +49,7 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
@@ -511,6 +512,11 @@ private static class OutputFunctionViewer extends JPanel{
 			public RequestManager getRequestManager() {
 				// TODO Auto-generated method stub
 				return OutputFunctionViewer.this.fieldDataWindowManager.getRequestManager();
+			}
+
+			@Override
+			public DocumentEditor getDocumentEditor() {
+				return null;
 			}
 			
 		};

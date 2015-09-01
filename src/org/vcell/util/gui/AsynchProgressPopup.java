@@ -18,6 +18,8 @@ import java.util.EventObject;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
@@ -164,7 +166,7 @@ public AsynchProgressPopup(Component requester, ProgressDialog customDialog, Thr
  */
 protected ProgressDialog getDialog() {
 	if (dialog == null) {
-		Frame owner = JOptionPane.getFrameForComponent(requester);
+		LWContainerHandle owner = LWNamespace.findLWOwner(requester);
 		if (knowsProgress) {
 			dialog = new LinearDefiniteProgressDialog(owner);
 		}
@@ -177,7 +179,7 @@ protected ProgressDialog getDialog() {
 		}else{
 			dialog.setCancelButtonVisible(false);
 		}
-		BeanUtils.centerOnComponent(dialog, owner);
+		BeanUtils.centerOnComponent(dialog, owner.getWindow());
 		dialog.setResizable(false);
 		if (title != null) {
 			dialog.setTitle(title);

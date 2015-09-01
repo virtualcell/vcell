@@ -77,6 +77,11 @@ class LWManager extends WindowAdapter{
 	private class ChildCloser extends WindowAdapter {
 
 		@Override
+		public void windowOpened(WindowEvent e) {
+			e.getWindow().toFront();
+		}
+
+		@Override
 		public void windowClosing(WindowEvent e) {
 			closeRecursively();
 		}

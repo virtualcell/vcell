@@ -13,6 +13,8 @@ import java.awt.Frame;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.vcell.client.logicalwindow.LWContainerHandle;
 /**
  * Insert the type's description here.
  * Creation date: (5/18/2004 1:14:29 AM)
@@ -28,7 +30,7 @@ public class DefaultProgressDialog extends ProgressDialog {
  * Creation date: (5/19/2004 6:08:36 PM)
  * @param owner java.awt.Frame
  */
-public DefaultProgressDialog(Frame owner) {
+public DefaultProgressDialog(LWContainerHandle owner) {
 	super(owner);
 	initialize();
 }
@@ -115,7 +117,7 @@ private void initialize() {
  * Creation date: (5/19/2004 1:06:46 PM)
  * @param message java.lang.String
  */
-public void setMessage(String message) {
+public void setMessageImpl(String message) {
 	getMessageLabel().setText(message);
 }
 

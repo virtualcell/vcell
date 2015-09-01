@@ -34,6 +34,8 @@ import cbit.vcell.solver.Simulation;
  */
 public class SaveDocument extends AsynchClientTask {
 	
+	public static final String DOC_KEY = "savedDocument";
+
 	public SaveDocument() {
 		super("Saving document to database", TASKTYPE_NONSWING_BLOCKING);
 	}
@@ -115,7 +117,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	}
 	documentWindowManager.prepareDocumentToLoad(savedDocument, false);
 	
-	hashTable.put("savedDocument", savedDocument);
+	hashTable.put(SaveDocument.DOC_KEY, savedDocument);
 	
 	// generate PerformanceMonitorEvent
 	long l2 = System.currentTimeMillis();
