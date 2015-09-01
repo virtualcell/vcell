@@ -104,20 +104,26 @@ public static void main(java.lang.String[] args) {
 	}else if (args.length==0){
 		// this is ok
 	}else if (args.length==1){
-		hosts[0] = args[0];
+		//Check if arg is drag-n-drop file or a 'hostname'
+		try{
+			//drag and drop file on install4j VCell launcher will pass filepath as single arg to VCell
+			File openThisVCellFile = new File(args[0]);
+			if(openThisVCellFile.exists()){
+				initialDocument = startupWithOpen(args[0]);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			//continue to hostname check
+		}
+		//If startup file not exist assume arg is a hostname
+		if(initialDocument == null){
+			hosts[0] = args[0];
+		}
+		//If install4j drag-n-drop, hosts[0] stays null and host is assumed to be loaded from a client property
+		
 	}else if (args.length==2 && args[0].equals("-open")){
 //		hosts[0] = "-local";
-		String filename = args[1];
-		try {
-			Document xmlDoc = XmlUtil.readXML(new File(filename));
-			String vcmlString = XmlUtil.xmlToString(xmlDoc, false);
-			java.awt.Component parent = null;
-			VCLogger vcLogger = new TranslationLogger(parent);
-			initialDocument = XmlHelper.XMLToDocument(vcLogger,vcmlString);
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-			JOptionPane.showMessageDialog(null,e.getMessage(),"vcell startup error",JOptionPane.ERROR_MESSAGE);
-		}
+		initialDocument = startupWithOpen(args[1]);
 	}else{
 		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | (-open filename) )");
 		System.exit(1);
@@ -158,6 +164,22 @@ public static void main(java.lang.String[] args) {
 		System.err.println("Exception occurred in main() of VCellApplication");
 		exception.printStackTrace(System.out);
 	}
+}
+
+
+private static VCDocument startupWithOpen(String fileName) {
+	VCDocument initialDocument = null;
+	try {
+		Document xmlDoc = XmlUtil.readXML(new File(fileName));
+		String vcmlString = XmlUtil.xmlToString(xmlDoc, false);
+		java.awt.Component parent = null;
+		VCLogger vcLogger = new TranslationLogger(parent);
+		initialDocument = XmlHelper.XMLToDocument(vcLogger,vcmlString);
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		JOptionPane.showMessageDialog(null,e.getMessage(),"vcell startup error",JOptionPane.ERROR_MESSAGE);
+	}
+	return initialDocument;
 }
 
 /**
