@@ -108,7 +108,7 @@ public static void main(java.lang.String[] args) {
 		try{
 			//drag and drop file on install4j VCell launcher will pass filepath as single arg to VCell
 			File openThisVCellFile = new File(args[0]);
-			if(openThisVCellFile.exists()){
+			if(openThisVCellFile.exists() && openThisVCellFile.isFile()){
 				initialDocument = startupWithOpen(args[0]);
 			}
 		}catch(Exception e){
@@ -125,7 +125,7 @@ public static void main(java.lang.String[] args) {
 //		hosts[0] = "-local";
 		initialDocument = startupWithOpen(args[1]);
 	}else{
-		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | (-open filename) )");
+		System.out.println("usage: VCellClientTest ( ((-local|host[:port]) [userid password]) | ([-open] filename) )");
 		System.exit(1);
 	}
 	if (hosts[0]!=null && hosts[0].equalsIgnoreCase("-local")) {
