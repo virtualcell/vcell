@@ -110,7 +110,7 @@ public final String getCreateSQL() {
  * This method was created in VisualAge.
  * @return cbit.sql.Field[]
  */
-protected Field[] getFields() {
+public Field[] getFields() {
 	Field[] allFields =  new Field[fields.size()];
 	fields.copyInto(allFields);
 	return allFields;
@@ -122,16 +122,31 @@ protected Field[] getFields() {
  * @return java.lang.String
  */
 public String getSQLColumnList() {
+	return getSQLColumnList(false, true, null);
+}
+
+public String getSQLColumnList(boolean bQualified, boolean bParentheses, String asSuffix) {
 	StringBuffer buffer = new StringBuffer();
-	buffer.append("(");
+	if (bParentheses){
+		buffer.append("(");
+	}
 	Field[] allFields = getFields();
 	for (int i=0;i<allFields.length;i++){
 		if (i>0){
 			buffer.append(",");
 		}
-		buffer.append(allFields[i].getUnqualifiedColName());
+		if (bQualified){
+			buffer.append(allFields[i].getQualifiedColName());
+		}else{
+			buffer.append(allFields[i].getUnqualifiedColName());
+		}
+		if (asSuffix!=null){
+			buffer.append(" "+allFields[i].getUnqualifiedColName()+asSuffix);
+		}
 	}
-	buffer.append(")");
+	if (bParentheses){
+		buffer.append(")");
+	}
 	return buffer.toString();
 }
 
