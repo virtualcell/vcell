@@ -13,6 +13,7 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.TokenMangler;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -122,13 +123,15 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			ReactionStep rs = reactionSpec.getReactionStep();
 			String name = rs.getName();
+			String mangled = TokenMangler.fixTokenStrict(name);
+			mangled = newModel.getReactionName(mangled);
 			Kinetics k = rs.getKinetics();
 			if(!(k instanceof MassActionKinetics)) {
 				throw new RuntimeException("Only Mass Action Kinetics supported at this time, reaction \""+rs.getName()+"\" uses kinetic law type \""+rs.getKinetics().getName()+"\"");
 			}
 			
 			boolean bReversible = true;
-			ReactionRule rr = new ReactionRule(newModel, name, rs.getStructure(), bReversible);
+			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
 			rr.setStructure(rs.getStructure());
 		
 			Expression forwardRateExp = ((MassActionKinetics)k).getForwardRateParameter().getExpression();
