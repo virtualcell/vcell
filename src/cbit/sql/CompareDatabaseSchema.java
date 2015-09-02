@@ -173,7 +173,7 @@ public static void main(java.lang.String[] args) {
         String driverName = "oracle.jdbc.driver.OracleDriver";
         String host = args[1];
         String db = args[2];
-        String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
+        String connectURL = "jdbc:oracle:thin:@" + host + ":1521/" + db;
         String dbSchemaUser = args[3];
         String dbPassword = args[4];
         //
