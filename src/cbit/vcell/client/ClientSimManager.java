@@ -538,7 +538,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 }
 
 @SuppressWarnings("serial") 
-static class TempSimulation extends Simulation {
+public static class TempSimulation extends Simulation {
 	final private SimulationVersion tempSimVersion = SimulationVersion.createTempSimulationVersion();
 	public TempSimulation(Simulation simulation, boolean bCloneMath) {
 		super(simulation, bCloneMath);
@@ -672,7 +672,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 }
 
 
-static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
+public static Solver createQuickRunSolver(StdoutSessionLog sessionLog, File directory, SimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");
