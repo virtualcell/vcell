@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
-import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
@@ -37,7 +35,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 
 public class RulebasedTransformer implements SimContextTransformer {
 
@@ -134,16 +132,30 @@ public class RulebasedTransformer implements SimContextTransformer {
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
 			rr.setStructure(rs.getStructure());
 		
-			Expression forwardRateExp = ((MassActionKinetics)k).getForwardRateParameter().getExpression();
-			Expression reverseRateExp = ((MassActionKinetics)k).getReverseRateParameter().getExpression();
+			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
+			Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
+			Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
 			RateLawType rateLawType = RateLawType.MassAction;
 			RbmKineticLaw kineticLaw = new RbmKineticLaw(rr, rateLawType);
 			try {
 				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
-				fR.setExpression(forwardRateExp);
+				kineticLaw.setParameterValue(fR, forwardRateExp, true);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
-				rR.setExpression(reverseRateExp);
-			} catch (ExpressionBindingException e) {
+				kineticLaw.setParameterValue(rR, reverseRateExp, true);
+				//
+				// set values of local user-defined parameters also (user defined).
+				//
+				for (KineticsParameter reaction_p : massActionKinetics.getKineticsParameters()){
+					if (reaction_p.getRole() == Kinetics.ROLE_UserDefined){
+						LocalParameter rule_p = kineticLaw.getLocalParameter(reaction_p.getName());
+						if (rule_p.getRole() != RbmKineticLawParameterType.UserDefined){
+							throw new RuntimeException("user defined parameter "+reaction_p.getName()+" didn't map to a user defined parameter in generated rule");
+						}
+						kineticLaw.setParameterValue(rule_p, reaction_p.getExpression(), true);
+						rule_p.setUnitDefinition(reaction_p.getUnitDefinition());
+					}
+				}
+			} catch (ExpressionException e) {
 				e.printStackTrace();
 				throw new RuntimeException("Problem attempting to set RbmKineticLaw expression: "+ e.getMessage());
 			}
