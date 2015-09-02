@@ -71,24 +71,26 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.common.VCellErrorMessages;
+
 import org.vcell.util.Compare;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.graph.LargeShape;
+
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+
 
 @SuppressWarnings("serial")
 public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
@@ -687,6 +689,13 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			selectedObject = null;
 			System.out.println("outside");		// when cursor is outside any species pattern we offer to add a new one
 			popupFromShapeMenu.add(getAddSpeciesPatternFromShapeMenuItem());
+		} else if(deepestShape instanceof ComponentStateLargeShape) {
+			System.out.println("inside state");
+			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+			} else {
+				return;
+			}
 		} else if(deepestShape instanceof MolecularComponentLargeShape) {
 			System.out.println("inside component");
 			if(((MolecularComponentLargeShape)deepestShape).isHighlighted()) {

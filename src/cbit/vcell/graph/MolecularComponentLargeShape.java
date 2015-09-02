@@ -17,6 +17,7 @@ import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
@@ -50,7 +51,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	private final List <ComponentStateLargeShape> stateShapes = new ArrayList<ComponentStateLargeShape> ();
 	
 	//---------------------------------------------------------------------------------------------------
-	class ComponentStateLargeShape implements LargeShape, HighlightableShapeInterface {
+	public class ComponentStateLargeShape implements LargeShape, HighlightableShapeInterface {
 
 		final Graphics graphicsContext;
 		private final Font font;
@@ -59,16 +60,22 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		private int width;
 		private final int height;
 
-		private ComponentStateDefinition csd;			// ComponentStateDefinition
+		private ComponentStateDefinition csd = null;
+		private ComponentStatePattern csp = null;
 		private final Displayable owner;
 		private String displayName;
 		
-		public ComponentStateLargeShape(int x, int y, ComponentStateDefinition cs, Graphics gc, Displayable owner) {
+		public ComponentStateLargeShape(int x, int y, RbmElementAbstract rea, Graphics gc, Displayable owner) {
 			this.xPos = x;
 			this.yPos = y;
 			
 			this.owner = owner;
-			this.csd = cs;
+			if(owner instanceof MolecularType) {
+			this.csd = (ComponentStateDefinition)rea;
+			} else {
+				this.csp = (ComponentStatePattern)rea;
+				this.csd = csp.getComponentStateDefinition();	// we create a large shape only if the ComponentStatePattern has a ComponentStateDefinition
+			}
 			this.graphicsContext = gc;
 			
 			this.displayName = "~" + adjustForSize(csd.getDisplayName());
@@ -140,18 +147,21 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			Color darkerBlue = Color.getHSBColor(0.6f, 0.18f, 1.0f);	// a bit darker for border
 			Rectangle2D rect = makeStateRectangle();
 			
-			if(isHighlighted()) {
-				g2.setPaint(paleBlue);
-				g2.fill(rect);
-				g2.setColor(darkerBlue);
-				g2.draw(rect);
-			} else {
-				g2.setPaint(Color.white);
-				g2.fill(rect);
-				g2.setColor(Color.white);
-				g2.draw(rect);
+			if(owner instanceof MolecularType) {
+				// we deal with highlighting only for Molecular Type States - because only here we have more
+				// than one and highlighting them individually makes sense
+				if(isHighlighted()) {
+					g2.setPaint(paleBlue);
+					g2.fill(rect);
+					g2.setColor(darkerBlue);
+					g2.draw(rect);
+				} else {
+					g2.setPaint(Color.white);
+					g2.fill(rect);
+					g2.setColor(Color.white);
+					g2.draw(rect);
+				}
 			}
-
 			g.setFont(font);
 			g.setColor(Color.black);
 			g.drawString(displayName, xPos, yPos);
@@ -163,15 +173,47 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 
 		@Override
 		public boolean isHighlighted() {
-			return true;
+			
+			if(owner instanceof RbmObservable) {
+				return csp.isHighlighted();
+			} else if(owner instanceof MolecularType) {
+				return csd.isHighlighted();
+			} else if(owner instanceof SpeciesContext) {
+				return csp.isHighlighted();
+			} else if(owner instanceof ReactionRule) {
+				return csp.isHighlighted();
+			}
+			return false;
 		}
 		@Override
-		public void setHighlight(boolean highlight) {
-			
+		public void setHighlight(boolean b) {
+			if(owner instanceof RbmObservable) {
+				csp.setHighlighted(b);
+			} else if(owner instanceof MolecularType) {
+				csd.setHighlighted(b);
+			} else if(owner instanceof SpeciesContext) {
+				csp.setHighlighted(b);
+			} else if(owner instanceof ReactionRule) {
+				csp.setHighlighted(b);
+			}
 		}
 		@Override
 		public void turnHighlightOffRecursive(Graphics g) {
-			
+			boolean oldHighlight = isHighlighted();
+			setHighlight(false);
+			if(oldHighlight == true) {
+				paintSelf(g);			// paint self not highlighted if previously highlighted
+			}
+		}
+
+		public Displayable getOwner() {
+			return owner;
+		}
+		public ComponentStateDefinition getComponentStateDefinition() {
+			return csd;
+		}
+		public ComponentStatePattern getComponentStatePattern() {
+			return csp;
 		}
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
@@ -231,8 +273,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		xPos = rightPos-width;
 		yPos = y;
 		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
-			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset, csd, graphicsContext, owner);
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPos + baseWidth/2 +6, yPos + height + SpeciesPatternLargeShape.yLetterOffset, mcp.getComponentStatePattern(), graphicsContext, owner);
 			stateShapes.add(csls);
 		}
 	}
@@ -430,6 +471,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		setHighlight(false);
 		if(oldHighlight == true) {
 			paintSelf(g);			// paint self not highlighted if previously highlighted
+		}
+		for(ComponentStateLargeShape css : stateShapes) {
+			css.turnHighlightOffRecursive(g);
 		}
 	}
 

@@ -12,6 +12,7 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 	
 	private final ComponentStateDefinition componentStateDefinition;
 	private final boolean bAny;
+	private transient boolean bHighlighted = false;
 	
 	public static final String strAny = "not specified";
 	
@@ -63,6 +64,12 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 		return componentStateDefinition;
 	}
 	
+	public boolean isHighlighted() {
+		return bHighlighted;
+	}
+	public void setHighlighted(boolean isHighlighted) {
+		this.bHighlighted = isHighlighted;
+	}
 	
 	public static final String typeName = "State";
 	@Override
