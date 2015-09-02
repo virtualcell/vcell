@@ -135,6 +135,9 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		if (name == null || name.length()==0){
 			throw new IllegalArgumentException("reaction rule name is null or empty");
 		}
+//		if(model.isReactionNameInUse(name)) {
+//			throw new RuntimeException("Reaction name candidate: " + name + " is already being used by another reaction or rule.");
+//		}
 		this.name = name;
 		this.bReversible = reversible;
 		this.structure = structure;
