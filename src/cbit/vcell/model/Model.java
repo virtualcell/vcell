@@ -2301,6 +2301,27 @@ public SimpleReaction createSimpleReaction(Structure structure) {
 }
 
 
+public boolean isReactionNameInUse(String candidateName) {
+	if ((getReactionStep(candidateName) == null) && (getRbmModelContainer().getReactionRule(candidateName) == null)){
+		return false;
+	}
+	return true;
+}
+public String getReactionName(String candidate) {
+	if(!isReactionNameInUse(candidate)) {
+		return candidate;
+	}
+	int count=0;
+	String reactionName = candidate;
+	while (true) {
+		reactionName = candidate + count;
+		if ((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
+			break;
+		}
+		count++;
+	}
+	return reactionName;
+}
 public String getReactionName() {
 	int count=0;
 	String reactionName = null;
