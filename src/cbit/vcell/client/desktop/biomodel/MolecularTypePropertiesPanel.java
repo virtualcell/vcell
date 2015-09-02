@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -82,6 +83,8 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
+import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
@@ -172,6 +175,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
+	private JPopupMenu popupFromShapeMenu;
 	private JMenuItem addMenuItem;
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem renameMenuItem;
@@ -378,6 +382,44 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
 		
+		shapePanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				super.mouseClicked(e);
+				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
+					Point whereClicked = e.getPoint();
+					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+					Graphics g = shapePanel.getGraphics();
+					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
+						stls.turnHighlightOffRecursive(g);
+					}
+					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
+						if (stls.contains(locationContext)) {		//check if mouse is inside shape
+							break;
+						}
+					}
+					locationContext.highlightDeepestShape();
+					locationContext.paintDeepestShape(g);
+				} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
+					Point whereClicked = e.getPoint();
+					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
+						if (stls.contains(locationContext)) {		//check if mouse is inside shape
+							break;		// if mouse is inside a shape it can't be simultaneously in another one
+						}
+					}
+					if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
+						// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
+						
+						// return;
+					}					
+					showPopupMenu(e, locationContext);
+				}
+			}
+		});
+
+		// -------------------------------------------------------------------------------------------
+		
 		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
 		generalPanel.setBorder(annotationBorder);
 		generalPanel.setLayout(new GridBagLayout());
@@ -455,7 +497,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		if (selectedObjects.length == 1 && selectedObjects[0] instanceof MolecularType) {
 			molecularType = (MolecularType) selectedObjects[0];
 		}
-		setMolecularType(molecularType);	
+		setMolecularType(molecularType);
+		if(molecularType != null) {
+			// we want to start with a "normal" state for the depiction (not highlighted).
+			molecularType.setHighlightedRecursively(false);
+		}
 	}
 	
 	private void setMolecularType(MolecularType newValue) {
@@ -538,6 +584,21 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
+	private void showPopupMenu(MouseEvent e, PointLocationInShapeContext locationContext) {
+		if (popupFromShapeMenu == null) {
+			popupFromShapeMenu = new JPopupMenu();			
+		}		
+		if (popupFromShapeMenu.isShowing()) {
+			return;
+		}
+
+		System.out.println("showing menu");
+		// TODO: aici
+		
+		
+		
+		
+	}
 	private void showPopupMenu(MouseEvent e){ 
 		if (!e.isPopupTrigger()) {
 			return;
