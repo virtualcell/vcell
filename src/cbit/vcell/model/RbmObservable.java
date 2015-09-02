@@ -478,7 +478,7 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
 					mcp.setHighlighted(b);
 					if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
-						mcp.getComponentStatePattern().getComponentStateDefinition().setHighlighted(b);
+						mcp.getComponentStatePattern().setHighlighted(b);
 					}
 					if(mcp.getBond() != null) {
 						mcp.getBond().setHighlighted(b);
