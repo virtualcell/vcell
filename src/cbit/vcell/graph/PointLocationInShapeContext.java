@@ -3,9 +3,15 @@ package cbit.vcell.graph;
 import java.awt.Graphics;
 import java.awt.Point;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
+
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 
 public class PointLocationInShapeContext {
 	// Hierarchy of shapes containing a Point
@@ -16,7 +22,7 @@ public class PointLocationInShapeContext {
 	public SpeciesPatternLargeShape sps = null;
 	public MolecularTypeLargeShape mts = null;
 	public MolecularComponentLargeShape mcs = null;
-	public MolecularComponentLargeShape.ComponentStateLargeShape csls = null;
+	public ComponentStateLargeShape csls = null;
 
 	public PointLocationInShapeContext(Point point) {
 		this.point = point;
@@ -24,6 +30,9 @@ public class PointLocationInShapeContext {
 	
 	public HighlightableShapeInterface getDeepestShape() {
 		
+		if(csls != null) {
+			return csls;
+		}
 		if(mcs != null) {
 			return mcs;
 		}
@@ -36,6 +45,18 @@ public class PointLocationInShapeContext {
 		return null;
 	}
 	
+	public ComponentStateDefinition getComponentStateDefinition() {
+		if(csls != null) {
+			return csls.getComponentStateDefinition();
+		}
+		return null;
+	}
+	public ComponentStatePattern getComponentStatePattern() {
+		if(csls != null) {
+			return csls.getComponentStatePattern();
+		}
+		return null;
+	}
 	public MolecularComponentPattern getMolecularComponentPattern() {
 		if(mcs != null) {
 			return mcs.getMolecularComponentPattern();
@@ -56,9 +77,16 @@ public class PointLocationInShapeContext {
 	}
 	
 	public void highlightDeepestShape() {
+		if(csls != null) {
+			// we highlight the mcs for observables / species / reactions
+			if(mcs != null && !(csls.getOwner() instanceof MolecularType)) mcs.setHighlight(true);
+			if(mcs != null && csls.getOwner() instanceof MolecularType) csls.setHighlight(true);
+			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
+			return;
+		}
 		if(mcs != null) {
 			mcs.setHighlight(true);
-			if(mts != null) mts.setHighlight(false);	// we don't highlight the mts because it's overkill - too much color
+//			if(mts != null) mts.setHighlight(false);	// we don't highlight the mts because it's overkill - too much color
 			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
 			return;
 		}
@@ -74,6 +102,12 @@ public class PointLocationInShapeContext {
 	}
 
 	public void paintDeepestShape(Graphics graphics) {
+		
+		if(csls != null) {
+			if(sps != null) sps.paintSelf(graphics);
+			else csls.paintSelf(graphics);
+			return;
+		}
 		if(mcs != null) {
 			if(sps != null) sps.paintSelf(graphics);
 			else mcs.paintSelf(graphics);
