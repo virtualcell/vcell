@@ -1,10 +1,8 @@
 package org.vcell.util.logging;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
