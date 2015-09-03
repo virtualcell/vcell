@@ -113,6 +113,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.gui.DBReactionWizardPanel;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.publish.ITextWriter;
 
 public class ReactionCartoonTool extends BioCartoonTool {
 
@@ -2647,7 +2648,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 					}
 				}
 				//System.out.println("Saving reactions image to file: " + selectedFile.toString());
-				getDocumentManager().generateReactionsImage(new FileOutputStream(selectedFile),this);
+				ITextWriter.generateDocReactionsImage(this.getModel(),new FileOutputStream(selectedFile),ITextWriter.HIGH_RESOLUTION);
 				//reset the user preference for the default path, if needed.
 				File newPath = selectedFile.getParentFile();
 				if (!newPath.equals(defaultPath)) {

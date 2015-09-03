@@ -36,7 +36,6 @@ import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.DBFormalSpecies;
@@ -201,7 +200,7 @@ ReferenceQueryResult findReferences(ReferenceQuerySpec sqs) throws DataAccessExc
 	public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception;
 
 
-	public void generateReactionsImage(java.io.FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN) throws Exception;
+//	public void generateReactionsImage(java.io.FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN) throws Exception;
 
 
 	public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception;

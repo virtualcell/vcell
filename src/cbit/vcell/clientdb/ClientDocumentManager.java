@@ -70,7 +70,6 @@ import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.graph.ReactionCartoonTool;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -764,21 +763,18 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 	}
 
 
-	public void generateReactionsImage(java.io.FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN) throws Exception {
-
-		java.io.ByteArrayOutputStream bos = ITextWriter.generateReactionsImage(reactionCartoonToolIN);
-		try {
-			bos.flush();
-			bos.writeTo(fos);
-			fos.flush();
-			fos.close();
-			bos.close();
-		} catch (java.io.IOException e) {
-			System.err.println("Unable to print image to file.");
-			e.printStackTrace();
-			throw e;
-		}
-	}
+//	public void generateReactionsImage(FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN/*tif,png,jpg,... javax.imageio.spi.ImageReaderSpi#getFormatNames*/) throws Exception {
+//		BufferedImage reactionsImage = ITextWriter.generateDocReactionsImage(reactionCartoonToolIN.getModel(), ITextWriter.HIGH_RESOLUTION);
+//		try {
+//			ImageIO.write(reactionsImage,"jpg", fos);
+//		} catch (java.io.IOException e) {
+//			System.err.println("Unable to save image to file.");
+//			e.printStackTrace();
+//			throw e;
+//		} finally {
+//			try{fos.close();}catch(Exception e){e.printStackTrace();}
+//		}
+//	}
 
 
 	public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception {
