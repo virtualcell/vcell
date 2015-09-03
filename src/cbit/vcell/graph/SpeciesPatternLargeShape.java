@@ -67,12 +67,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, null);
 		speciesShapes.add(stls);
 	}
-	
-	
-	
-	
-	
-	// 
+		
 	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
