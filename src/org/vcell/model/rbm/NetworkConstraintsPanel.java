@@ -1,10 +1,8 @@
 package org.vcell.model.rbm;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.EventObject;
 import java.util.Hashtable;
 
@@ -24,33 +21,26 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 
-import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.client.desktop.biomodel.RbmTableRenderer;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -59,8 +49,6 @@ import cbit.vcell.client.task.CreateBNGOutputSpec;
 import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -68,15 +56,9 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
-import cbit.vcell.math.MathException;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.Species;
-import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -520,9 +502,9 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 			public void setMessage(String message) {}
 			public boolean isInterrupted() { return false; }
 		};
-		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNoTimeout);
 		BNGInput bngInput = new BNGInput(input);
-		final BNGExecutorService bngService = new BNGExecutorService(bngInput);
+		final BNGExecutorService bngService = new BNGExecutorService(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
 		bngService.registerBngUpdaterCallback(this);
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 

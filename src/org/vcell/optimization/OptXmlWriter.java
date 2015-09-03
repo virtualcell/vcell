@@ -83,7 +83,7 @@ public class OptXmlWriter {
 		
 		File modelSbmlFile = File.createTempFile("mathModel", ".xml", ResourceUtil.getVcellHome());
 		SimulationContext simulationContext = parameterEstimationTask.getSimulationContext();
-		simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.ComputeFullNetwork);
+		simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.ComputeFullStandardTimeout);
         MathModel vcellMathModel = new MathModel(null);
         vcellMathModel.setMathDescription(simulationContext.getMathDescription());
         //get math model string

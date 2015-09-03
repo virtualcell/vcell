@@ -11,8 +11,13 @@ public class BioNetGenExecutable extends MathExecutable {
 
 	private transient List<BioNetGenUpdaterCallback> callbacks = null;
 	
-	public BioNetGenExecutable(String[] command) {
-		super(command);
+	/**
+	 * 
+	 * @param command
+	 * @param timeoutMS - 0 means no-timeout.
+	 */
+	public BioNetGenExecutable(String[] command, long timeoutMS) {
+		super(command, timeoutMS);
 	}
 	
 	public void inheritCallbacks(List<BioNetGenUpdaterCallback> callbacks) {

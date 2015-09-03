@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.RbmNetworkGenerator;
@@ -178,7 +177,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
-			final BNGExecutorService bngService = new BNGExecutorService(bngInput);
+			final BNGExecutorService bngService = new BNGExecutorService(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {
 			ex.printStackTrace(System.out);

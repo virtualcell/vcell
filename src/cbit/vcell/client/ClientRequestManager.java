@@ -976,7 +976,7 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 					public void setMessage(String message) {}
 					public boolean isInterrupted() { return false; }
 				};
-			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 //			simContext.setMathDescription(transformedMathMapping.getMathDescription());
 			
 			BioModel newBioModel = new BioModel(null);
@@ -1022,7 +1022,7 @@ public void createRuleBasedBioModelFromApplication(final BioModelWindowManager r
 					public void setMessage(String message) {}
 					public boolean isInterrupted() { return false; }
 				};
-			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 //			simContext.setMathDescription(transformedMathMapping.getMathDescription());
 			
 			BioModel newBioModel = new BioModel(null);

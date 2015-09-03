@@ -98,7 +98,7 @@ public class ClientTaskManager {
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
 					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-					newSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
+					newSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 				}
 				hashTable.put("newSimulationContext", newSimulationContext);
 			}

@@ -33,7 +33,6 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -59,74 +58,8 @@ import cbit.vcell.xml.XmlParseException;
 import com.google.gson.Gson;
 
 
-public class StochtestService {
+public class StochtestCompareService {
 	
-	public enum StochtestMathType {
-		ode("ode"),
-		rules("rules"),
-		pde("pde"),
-		nonspatialstochastic("nonspatial-stochastic"),
-		spatialstochastic("spatial-stochastic");
-		
-		private final String databaseTag;
-		
-		StochtestMathType(String databaseTag){
-			this.databaseTag = databaseTag;
-		}
-		
-		public String getDatabaseTag(){
-			return this.databaseTag;
-		}
-		
-		public static StochtestMathType fromDatabaseTag(String databaseTag){
-			for (StochtestMathType m : values()){
-				if (m.getDatabaseTag().equals(databaseTag)){
-					return m;
-				}
-			}
-			return null;
-		}
-	}
-	
-	public static class Stochtest {
-		public KeyValue key;
-		public KeyValue simContextRef;
-		public KeyValue biomodelRef;
-		public KeyValue mathRef;
-		public int dimension;
-		public int numcompartments;
-		public StochtestMathType mathType;
-	}
-	
-	
-	public static enum StochtestRunStatus {
-		none,
-		waiting,
-		accepted,
-		complete,
-		failed
-	};
-	
-	
-	public static class StochtestRun {
-		public KeyValue key;
-		public Stochtest stochtest;
-		public StochtestMathType parentMathType;
-		public StochtestMathType mathType;
-		public StochtestRunStatus status;
-		public String errmsg;
-	}
-	
-	public static class StochtestCompare {
-		public KeyValue key;
-		public KeyValue stochtestRun1ref;
-		public KeyValue stochtestRun2ref;
-		public String results;
-		public String status;
-	}
-	
-	
-
 	private cbit.sql.ConnectionFactory conFactory = null;
 	private DatabaseServerImpl dbServerImpl = null;
 	private cbit.sql.KeyFactory keyFactory = null;
@@ -135,7 +68,7 @@ public class StochtestService {
 	private long bngTimeoutMS;
 
 
-	public StochtestService(File baseDir, int numTrials, long bngTimeoutMS, ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) 
+	public StochtestCompareService(File baseDir, int numTrials, long bngTimeoutMS, ConnectionFactory argConFactory, KeyFactory argKeyFactory, SessionLog argSessionLog) 
 			throws DataAccessException, SQLException {
 		this.conFactory = argConFactory;
 		this.keyFactory = argKeyFactory;
@@ -175,7 +108,7 @@ public class StochtestService {
 	    //
 	    ConnectionFactory conFactory = new OraclePoolingConnectionFactory(sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
 	    KeyFactory keyFactory = new OracleKeyFactory();    
-	    StochtestService stochtestService = new StochtestService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory, sessionLog);
+	    StochtestCompareService stochtestService = new StochtestCompareService(baseDir, numTrials, bngTimeoutMS, conFactory, keyFactory, sessionLog);
 	    
 	    while (true){
 	    	stochtestService.runOne();
@@ -229,9 +162,9 @@ public class StochtestService {
 				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(0.5);
 				double endTime = 10.0;
 				computeTrials(simContext, stochtestRun, baseDirectory, outputTimeSpec, endTime, numTrials);
-				finalizeAcceptedJob(stochtestRun, StochtestRunStatus.complete,null);
+				finalizeAcceptedJob(stochtestRun, StochtestRun.StochtestRunStatus.complete,null);
 	    	}catch (Exception e){
-				finalizeAcceptedJob(stochtestRun, StochtestRunStatus.failed,e.getMessage());
+				finalizeAcceptedJob(stochtestRun, StochtestRun.StochtestRunStatus.failed,e.getMessage());
 				//
 				// write original biomodelXML to a .vcml file
 				//
@@ -276,7 +209,7 @@ public class StochtestService {
 				String sql = "SELECT "+stochtestTable.getSQLColumnList(true, false, "_1") + " , " + stochtestRunTable.getSQLColumnList(true, false, "_2") +
 						" FROM "+stochtestRunTable.getTableName() + ", " + stochtestTable.getTableName() + 
 						" WHERE "+stochtestTable.id.getQualifiedColName()+" = "+stochtestRunTable.stochtestref.getQualifiedColName() +
-						" AND "+stochtestRunTable.status.getQualifiedColName()+" = "+"'"+StochtestRunStatus.waiting+"'" +
+						" AND "+stochtestRunTable.status.getQualifiedColName()+" = "+"'"+StochtestRun.StochtestRunStatus.waiting+"'" +
 						" AND ROWNUM = 1" +
 						" FOR UPDATE " +
 						" ORDER BY "+stochtestRunTable.id.getQualifiedColName();
@@ -310,7 +243,7 @@ for (int i = 0; i < numColumns; i++){
 			        stochtestRun.stochtest = stochtest;
 			        stochtestRun.parentMathType = StochtestMathType.fromDatabaseTag(rset.getString(stochtestRunTable.parentmathtype.getUnqualifiedColName()+"_2"));
 			        stochtestRun.mathType = StochtestMathType.fromDatabaseTag(rset.getString(stochtestRunTable.mathtype.getUnqualifiedColName()+"_2"));
-			        stochtestRun.status = StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
+			        stochtestRun.status = StochtestRun.StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
 			        stochtestRun.errmsg = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
 			    }else{
 			    	return null;
@@ -326,7 +259,7 @@ for (int i = 0; i < numColumns; i++){
 			try {
 				StochtestRunTable stochtestRunTable = StochtestRunTable.table;
 				String sql = "UPDATE "+stochtestRunTable.getTableName() +
-						" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+StochtestRunStatus.accepted+"'" +
+						" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+StochtestRun.StochtestRunStatus.accepted+"'" +
 						" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + stochtestRun.key.toString();
 				stmt = con.createStatement();
 System.out.println(sql);
@@ -350,10 +283,10 @@ System.out.println(sql);
 		return stochtestRun;
 	}
 	
-	private void finalizeAcceptedJob(StochtestRun acceptedStochtestRun, StochtestRunStatus newStatus, String errmsg) throws IllegalArgumentException, SQLException, DataAccessException {
+	private void finalizeAcceptedJob(StochtestRun acceptedStochtestRun, StochtestRun.StochtestRunStatus newStatus, String errmsg) throws IllegalArgumentException, SQLException, DataAccessException {
 
-		if (newStatus != StochtestRunStatus.complete && newStatus != StochtestRunStatus.failed){
-			throw new RuntimeException("new status is "+newStatus+", expecting "+StochtestRunStatus.complete+" or "+StochtestRunStatus.failed);
+		if (newStatus != StochtestRun.StochtestRunStatus.complete && newStatus != StochtestRun.StochtestRunStatus.failed){
+			throw new RuntimeException("new status is "+newStatus+", expecting "+StochtestRun.StochtestRunStatus.complete+" or "+StochtestRun.StochtestRunStatus.failed);
 		}
 		
 		//
@@ -514,8 +447,6 @@ System.out.println(sql);
 				writeMessageTofile(file,e.getMessage());
 				if (bTimeout){
 					throw new RuntimeException("timed out");
-				}else{
-					throw new RuntimeException("solver failed : "+e.getMessage(),e);
 				}
 			}
 			try {
