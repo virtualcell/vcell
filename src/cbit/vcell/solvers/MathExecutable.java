@@ -21,6 +21,10 @@ public MathExecutable(String[] command) {
 	super(command);
 }
 
+public MathExecutable(String[] command, long timeoutMS) {	
+	super(command, timeoutMS);
+}
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */

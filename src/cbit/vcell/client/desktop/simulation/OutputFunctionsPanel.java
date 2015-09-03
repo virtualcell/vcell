@@ -666,7 +666,7 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 				if (simulationWorkspace.getSimulationOwner() instanceof SimulationContext){
 					SimulationContext simulationContext = (SimulationContext)simulationWorkspace.getSimulationOwner();
-					simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.AllowTruncatedNetwork);
+					simulationContext.refreshMathDescription(mathMappingCallback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 				} // else, for mathModels, nothing to refresh.
 			}
 		};

@@ -46,6 +46,7 @@ public class BNGExecutorService {
 	private static File workingDir = null;
 	private BioNetGenExecutable executable = null;
 	private final BNGInput bngInput;
+	private final Long timeoutDurationMS; // ignore if null, else gives time limit for process
 	
 	private transient List<BioNetGenUpdaterCallback> callbacks = null;
 	private boolean stopped = false;
@@ -70,9 +71,10 @@ public class BNGExecutorService {
 /**
  * BNGUtils constructor comment.
  */
-public BNGExecutorService(BNGInput bngInput) {
+public BNGExecutorService(BNGInput bngInput, Long timeoutDurationMS) {
 	super();
 	this.bngInput = bngInput;
+	this.timeoutDurationMS = timeoutDurationMS;
 }
 public void registerBngUpdaterCallback(BioNetGenUpdaterCallback callbackOwner) {
 	getCallbacks().add(callbackOwner);
@@ -142,7 +144,11 @@ public BNGOutput executeBNG() throws BNGException {
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
 //		executable = new org.vcell.util.Executable(cmd);
-		executable = new BioNetGenExecutable(cmd);
+		long timeoutMS = 0;
+		if (timeoutDurationMS != null){
+			timeoutMS = timeoutDurationMS.longValue();
+		}
+		;executable = new BioNetGenExecutable(cmd,timeoutMS);
 		executable.setWorkingDir(workingDir);
 		executable.inheritCallbacks(getCallbacks());
 		executable.start();

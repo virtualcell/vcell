@@ -35,11 +35,11 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.client.desktop.biomodel.UnitSystemSelectionPanel;
-import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.DisplayBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
@@ -214,7 +214,7 @@ public void runBioNetGen(BNGInput bngInput) {
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put(BNG_OUTPUT_PANEL, getBngOutputPanel());
-	final BNGExecutorService bngService = new BNGExecutorService(bngInput);
+	final BNGExecutorService bngService = new BNGExecutorService(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
 
 	// Create the AsynchClientTasks : in this case, running the BioNetGen (non-swing) and then displaying the output (swing) tasks.
 	AsynchClientTask[] tasksArray = new AsynchClientTask[2];
