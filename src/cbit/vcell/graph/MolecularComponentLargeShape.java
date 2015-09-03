@@ -98,7 +98,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			final int xOffsetLeft = 3;
 			final int xOffsetWidth = 4;
 			final int yOffset = 2;
-			return new Rectangle2D.Double(xPos-xOffsetLeft, yPos-height+yOffset, width+xOffsetWidth, height);
+			return new Rectangle2D.Double(xPos-xOffsetLeft, yPos-height+yOffset, width+xOffsetWidth, height-1);
 		}
 
 		@Override
@@ -412,8 +412,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 		g2.draw(normalRectangle);
 		if(isHighlighted()) {
+			g2.setColor(Color.black);
 			g2.draw(outerRectangle);
-		}
+			g2.setColor(componentColor);
+			}
 
 		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);

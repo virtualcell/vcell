@@ -637,13 +637,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			titleLabel.setText("Properties for Observable : " + observable.getName());
 		}
 	}
+	public static final int ReservedSpaceForNameOnYAxis = 20;
 	private void updateShape() {
 		spsList.clear();
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
 			Graphics gc = splitPane.getRightComponent().getGraphics();
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(30, 20+80*i, 80, sp, gc, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(30, 20+(80+ReservedSpaceForNameOnYAxis)*i, 80, sp, gc, observable);
 				spsList.add(sps);
 			}
 		}

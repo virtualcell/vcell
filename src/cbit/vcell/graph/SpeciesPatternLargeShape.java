@@ -27,6 +27,7 @@ import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
 
+import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -37,7 +38,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	public static final int separationWidth = 1;		// width between 2 molecular type patterns
 	
 	private int xPos = 0;
-	private int yPos = 0;
+	private int yPos = 0;		// y position where we draw the sape
+	private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
 	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
 
@@ -65,18 +67,29 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, null);
 		speciesShapes.add(stls);
 	}
+	
+	
+	
+	
+	
+	// 
 	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
-		this.yPos = yPos;
+		if(owner instanceof RbmObservable) {
+			nameOffset = ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
+			this.yPos = yPos+ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
+		} else {
+			this.yPos = yPos;
+		}
 		this.height = height;
 		this.graphicsContext = graphicsContext;
 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, graphicsContext, owner);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -84,7 +97,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, mtp, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, graphicsContext, owner);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
@@ -195,7 +208,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		
 		// even if the point it's not inside one of our subcomponents it may still be inside "this"
 		int y = locationContext.point.y;
-		if(height > 0 && y > yPos && y < yPos + height) {
+		if(height > 0 && y > yPos-3-nameOffset && y < yPos + height-2) {
 			locationContext.sps = this;
 			return true;
 		}
@@ -213,7 +226,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			
 		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
 		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
-		Rectangle2D rect = new Rectangle2D.Double(xPos-20, yPos-3, 3000, height-2);
+		Rectangle2D rect = new Rectangle2D.Double(xPos-20, yPos-3-nameOffset, 3000, height-2+nameOffset);
 		
 		if(isHighlighted()) {
 			g2.setPaint(paleBlue);
@@ -239,6 +252,17 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		paintContour(g);
+		
+		if(owner instanceof RbmObservable) {		// type the expression of the sp right above the shape
+			Color colorOld = g2.getColor();
+			Font fontOld = g.getFont();
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Color fontColor = Color.gray;
+			g2.drawString("SpeciesPattern: " + sp.toString(), xPos, yPos-nameOffset/3);
+			g2.setFont(fontOld);
+			g2.setColor(colorOld);
+		}
+		
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
 		}
