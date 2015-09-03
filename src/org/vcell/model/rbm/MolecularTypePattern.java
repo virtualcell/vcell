@@ -116,21 +116,22 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		return molecularType.getName() + "(" + index + ")";
 	}
 	
-	private void checkIgnorablePatterns() {
-		List<MolecularComponentPattern> newValue = new ArrayList<MolecularComponentPattern>(componentPatternList);
-		Iterator<MolecularComponentPattern> iter = newValue.iterator();
-		while (iter.hasNext()) {
-			MolecularComponentPattern mcp = iter.next();
-			if (mcp.getBondType() == BondType.Possible && mcp.getComponentStatePattern() == null) {
-				iter.remove();
-			}
-		}
-		setComponentPatterns(newValue);
-	}
+	// I don't know why this code was being used in the first place but it's causing inconsistency
+//	private void checkIgnorablePatterns() {
+//		List<MolecularComponentPattern> newValue = new ArrayList<MolecularComponentPattern>(componentPatternList);
+//		Iterator<MolecularComponentPattern> iter = newValue.iterator();
+//		while (iter.hasNext()) {
+//			MolecularComponentPattern mcp = iter.next();
+//			if (mcp.getBondType() == BondType.Possible && mcp.getComponentStatePattern() == null) {
+//				iter.remove();
+//			}
+//		}
+//		setComponentPatterns(newValue);
+//	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() instanceof MolecularComponentPattern) {
-			checkIgnorablePatterns();
+//			checkIgnorablePatterns();
 		}		
 	}
 
