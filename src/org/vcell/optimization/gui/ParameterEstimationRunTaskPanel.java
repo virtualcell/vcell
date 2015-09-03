@@ -1055,7 +1055,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
 		ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullNetwork);
+		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		for (AsynchClientTask task : updateTasks) {
 			taskList.add(task);
 		}
@@ -1311,7 +1311,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 					return false;
 				}
 			};
-			Simulation newSim = simContext.addNewSimulation(newSimName, dummyCallback, NetworkGenerationRequirements.ComputeFullNetwork);
+			Simulation newSim = simContext.addNewSimulation(newSimName, dummyCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			DialogUtils.showInfoDialog(this, "created simulation \""+newSim.getName()+"\"");
 		}catch (UtilCancelException e){

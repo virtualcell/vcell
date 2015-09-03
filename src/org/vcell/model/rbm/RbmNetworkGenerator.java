@@ -7,14 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.StringTokenizer;
+
+import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -32,12 +35,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
-
-import java.util.StringTokenizer;
-
-import org.vcell.util.Pair;
 
 public class RbmNetworkGenerator {
 	
@@ -81,7 +79,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_MODEL);	
 		writer.println();
 		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, NetworkGenerationRequirements.ComputeFullNetwork);
+		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
@@ -267,12 +265,12 @@ public class RbmNetworkGenerator {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
 		writer.print("generate_network({");
-		if(networkGenerationRequirements == NetworkGenerationRequirements.AllowTruncatedNetwork) {
+		if(networkGenerationRequirements.requestType == RequestType.AllowTruncatedNetwork) {
 			// this is called when we create the first simulation in a new application
 			// we don't really care about the network, we just want to do the minimal thing (the fastest)
 			// hence we just do one single iteration
 			writer.print("max_iter=>1");
-		} else if (networkGenerationRequirements == NetworkGenerationRequirements.ComputeFullNetwork) {
+		} else if (networkGenerationRequirements.requestType == RequestType.ComputeFullNetwork) {
 			writer.print("max_iter=>" + constraints.getMaxIteration());
 		} else {
 			throw new RuntimeException("internal error: invocation of BioNetGen called unexpectly");

@@ -130,23 +130,25 @@ public class RuleBasedTest {
 		newODEApp.getOutputFunctionContext().setOutputFunctions(outputFunctionsList);
 		newRuleBasedApp.getOutputFunctionContext().setOutputFunctions(outputFunctionsList);
 		
+		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
+		
 		bioModel.addSimulationContext(newODEApp);
-		newODEApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		newODEApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 		
 		bioModel.addSimulationContext(newRuleBasedApp);
-		newRuleBasedApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		newRuleBasedApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 		
-		srcSimContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		srcSimContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 	
 		//Create non-spatialStoch, ODE and RuleBased sims
 		Simulation nonspatialStochAppNewSim = 
-				srcSimContext.addNewSimulation(STOCH_SIM_NAME/*SimulationOwner.DEFAULT_SIM_NAME_PREFIX*/,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+				srcSimContext.addNewSimulation(STOCH_SIM_NAME/*SimulationOwner.DEFAULT_SIM_NAME_PREFIX*/,new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 
 		Simulation newODEAppNewSim = 
-			newODEApp.addNewSimulation(ODE_SIM_NAME,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+			newODEApp.addNewSimulation(ODE_SIM_NAME,new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 
 		Simulation newRuleBasedAppNewSim = 
-			newRuleBasedApp.addNewSimulation(NFS_SIM_NAME,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+			newRuleBasedApp.addNewSimulation(NFS_SIM_NAME,new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 
 		nonspatialStochAppNewSim.setSimulationOwner(srcSimContext);
 		newODEAppNewSim.setSimulationOwner(newODEApp);

@@ -54,6 +54,7 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
@@ -2338,9 +2339,35 @@ public VersionedLibrary getRequiredLibrary( ) {
 	return null;
 }
 
-public enum NetworkGenerationRequirements {
-	AllowTruncatedNetwork,
-	ComputeFullNetwork
+
+public static class NetworkGenerationRequirements {
+	public enum RequestType {
+		AllowTruncatedNetwork,
+		ComputeFullNetwork
+	};
+	public final static long NoTimeoutMS = 0L;
+	public final static long StandardTimeoutMS = 60000L;
+
+	public final RequestType requestType;
+	public final Long timeoutDurationMS;
+	
+	/**
+	 * 
+	 * @param requestType
+	 * @param timeoutDurationMS - null or 0 indicates no timeout.
+	 */
+	private NetworkGenerationRequirements(RequestType requestType, Long timeoutDurationMS){
+		this.requestType = requestType;
+		this.timeoutDurationMS = timeoutDurationMS;
+	}
+
+	public final static NetworkGenerationRequirements ComputeFullNoTimeout = new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, NoTimeoutMS);
+	public final static NetworkGenerationRequirements ComputeFullStandardTimeout = new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, StandardTimeoutMS);
+	public final static NetworkGenerationRequirements AllowTruncatedStandardTimeout = new NetworkGenerationRequirements(RequestType.AllowTruncatedNetwork, StandardTimeoutMS);
+
+	public static NetworkGenerationRequirements getComputeFull(long timeoutDurationMS) {
+		return new NetworkGenerationRequirements(RequestType.ComputeFullNetwork, timeoutDurationMS);
+	}
 };
 
 public MathMapping createNewMathMapping() {
@@ -2362,7 +2389,7 @@ public MathMapping createNewMathMapping() {
 			return false;
 		}
 	};
-	return createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullNetwork);
+	return createNewMathMapping(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 }
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {

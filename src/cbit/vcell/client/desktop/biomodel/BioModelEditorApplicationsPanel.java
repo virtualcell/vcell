@@ -15,7 +15,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -28,7 +27,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
@@ -241,8 +239,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 					return false;
 				}
 			};
-			simContext1.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullNetwork);
-			simContext2.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullNetwork);
+			simContext1.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+			simContext2.refreshMathDescription(callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 
 			Xmlproducer xmlProducer = new Xmlproducer(false);
 			String simContext1XML = XmlUtil.xmlToString(xmlProducer.getXML(simContext1,bioModel));

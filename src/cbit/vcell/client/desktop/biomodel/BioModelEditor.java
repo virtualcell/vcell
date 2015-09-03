@@ -201,7 +201,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
 								MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-								selectedSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
+								selectedSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 							}
 						};
 						AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -209,7 +209,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 							@Override
 							public void run(Hashtable<String, Object> hashTable) throws Exception {
 								MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-								Object newsim = selectedSimulationContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedNetwork);
+								Object newsim = selectedSimulationContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX,callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 								selectionManager.setSelectedObjects(new Object[]{newsim});
 							}
 						};

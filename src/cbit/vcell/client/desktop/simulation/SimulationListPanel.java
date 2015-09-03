@@ -99,7 +99,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewButton()) {
-				newSimulation(NetworkGenerationRequirements.AllowTruncatedNetwork);
+				newSimulation(NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
 			} else if (e.getSource() == SimulationListPanel.this.getEditButton()) {
 				editSimulation();
 			} else if (e.getSource() == copyButton) {

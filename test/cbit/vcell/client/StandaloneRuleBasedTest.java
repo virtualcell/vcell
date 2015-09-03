@@ -1,10 +1,11 @@
-package org.vcell.stochtest;
+package cbit.vcell.client;
 
 import java.io.File;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import org.vcell.stochtest.TimeSeriesMultitrialData;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
@@ -65,6 +66,7 @@ public class StandaloneRuleBasedTest {
 		}
 		
 		final int numTrials = 40;
+		final long bngTimeoutDurationMS = 30000; // 30 seconds
 		
 		VCDatabaseVisitor vcDatabaseVisitor = new VCDatabaseVisitor() {
 			
@@ -85,7 +87,7 @@ public class StandaloneRuleBasedTest {
 					if ((simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) && simContext.getGeometry().getDimension() == 0){
 						File baseDirectory = createDirFile(simContext);
 						try{
-							checkNonspatialStochasticSimContext(simContext,baseDirectory,numTrials);
+							checkNonspatialStochasticSimContext(simContext,baseDirectory,numTrials,bngTimeoutDurationMS);
 						}catch(Exception e){
 							e.printStackTrace();
 							if(!e.getMessage().contains("Only Mass Action Kinetics supported ")){
@@ -124,7 +126,7 @@ public class StandaloneRuleBasedTest {
 	private static final String ODE_SIM_NAME = "aUniqueNewODE";
 	private static final String NFS_SIM_NAME = "aUniqueNewNFS";
 	
-	private static void checkNonspatialStochasticSimContext(SimulationContext srcSimContext, File baseDirectory, int numTrials) throws Exception{
+	private static void checkNonspatialStochasticSimContext(SimulationContext srcSimContext, File baseDirectory, int numTrials, long bngTimeoutDuration) throws Exception{
 		if(!srcSimContext.getApplicationType().equals(Application.NETWORK_STOCHASTIC) || srcSimContext.getGeometry().getDimension() != 0){
 			throw new RuntimeException("simContext is of type "+srcSimContext.getApplicationType()+" and geometry dimension of "+srcSimContext.getGeometry().getDimension()+", expecting nonspatial stochastic");
 		}
@@ -145,23 +147,25 @@ public class StandaloneRuleBasedTest {
 		newODEApp.getOutputFunctionContext().setOutputFunctions(outputFunctionsList);
 		newRuleBasedApp.getOutputFunctionContext().setOutputFunctions(outputFunctionsList);
 		
+		NetworkGenerationRequirements networkGenRequirements = NetworkGenerationRequirements.getComputeFull(bngTimeoutDuration);
+		
 		bioModel.addSimulationContext(newODEApp);
-		newODEApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		newODEApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 		
 		bioModel.addSimulationContext(newRuleBasedApp);
-		newRuleBasedApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		newRuleBasedApp.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 		
-		srcSimContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+		srcSimContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 	
 		//Create non-spatialStoch, ODE and RuleBased sims
 		Simulation nonspatialStochAppNewSim = 
-				srcSimContext.addNewSimulation(STOCH_SIM_NAME/*SimulationOwner.DEFAULT_SIM_NAME_PREFIX*/,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+				srcSimContext.addNewSimulation(STOCH_SIM_NAME/*SimulationOwner.DEFAULT_SIM_NAME_PREFIX*/,new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 
 		Simulation newODEAppNewSim = 
-			newODEApp.addNewSimulation(ODE_SIM_NAME,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+			newODEApp.addNewSimulation(ODE_SIM_NAME,new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 
 		Simulation newRuleBasedAppNewSim = 
-			newRuleBasedApp.addNewSimulation(NFS_SIM_NAME,new MathMappingCallbackTaskAdapter(null),NetworkGenerationRequirements.AllowTruncatedNetwork);
+			newRuleBasedApp.addNewSimulation(NFS_SIM_NAME,new MathMappingCallbackTaskAdapter(null),networkGenRequirements);
 
 		nonspatialStochAppNewSim.setSimulationOwner(srcSimContext);
 		newODEAppNewSim.setSimulationOwner(newODEApp);
