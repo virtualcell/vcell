@@ -6,6 +6,7 @@ import org.apache.commons.math3.stat.descriptive.rank.Max;
 import org.apache.commons.math3.stat.descriptive.rank.Min;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
+import org.apache.commons.math3.stat.inference.TTest;
 
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.parser.ExpressionException;
@@ -188,6 +189,90 @@ public class TimeSeriesMultitrialData {
 		    }
 		  }
 		  return result;
+	}
+
+	public static class SummaryStatistics {
+		int numExperiments;
+		int size1;
+		int size2;
+		int numFail_95;
+		int numFail_99;
+		int numFail_999;
+		int numFail_9999;
+		String varSmallestPValue;
+		double smallestPValue;
+		double timeSmallestPValue;
+//		public double maxTTest;
+//		public double maxDiffMeans;
+//		public double maxChiSquare;
+//		public double maxKolmogorovSmirnov;
+		public String toString(){
+			return super.toString();
+		}
+		public boolean pass(){
+			if (((double)numFail_95)/numExperiments > 3*0.05){
+				return false;
+			}
+			if (((double)numFail_99)/numExperiments > 3*0.01){
+				return false;
+			}
+			if (((double)numFail_999)/numExperiments > 3*0.001){
+				return false;
+			}
+			return true;
+		}
+		public String results() {
+			return "pass="+pass()+",   smallest p-value="+smallestPValue+" for var "+varSmallestPValue+"@t="+timeSmallestPValue+"     N1="+size1+",N2="+size2+",Nexperiments="+numExperiments+",num fail 95%="+numFail_95+",num fail 99%="+numFail_99+",num fail 999%="+numFail_999+",num fail 9999%="+numFail_9999;
+		}
+	}
+	
+	public static SummaryStatistics statisticsSummary(TimeSeriesMultitrialData data1, TimeSeriesMultitrialData data2) {
+		SummaryStatistics ss = new SummaryStatistics();
+//		ss.maxTTest = Double.NEGATIVE_INFINITY;
+//		ss.maxDiffMeans = Double.NEGATIVE_INFINITY;
+//		ss.maxChiSquare = Double.NEGATIVE_INFINITY;
+//		ss.maxKolmogorovSmirnov = Double.NEGATIVE_INFINITY;
+		ss.size1 = data1.numTrials;
+		ss.size2 = data2.numTrials;
+		ss.smallestPValue = 1.0;
+		ss.timeSmallestPValue = -1.0;
+		for (int varIndex=0; varIndex<data1.varNames.length; varIndex++){
+			String varName = data1.varNames[varIndex];
+//			double[] trajectory1 = data1.getMeanTrajectory(varName);
+//			double[] trajectory2 = data2.getMeanTrajectory(varName);
+//			StochtestFileUtils.MinMaxHelp minmaxStoch = new StochtestFileUtils.MinMaxHelp(trajectory1);
+			for (int timeIndex = 0; timeIndex < data1.times.length; timeIndex++) {
+//				double diffMeans = Math.abs((trajectory1[timeIndex]/minmaxStoch.diff)-(trajectory2[timeIndex]/minmaxStoch.diff));
+				double[] varTimeData1 = data1.getVarTimeData(varName,timeIndex);
+				double[] varTimeData2 = data2.getVarTimeData(varName,timeIndex);
+				TTest ttest = new TTest();
+				ss.numExperiments++;
+				double pValue = ttest.tTest(varTimeData1, varTimeData2);
+				if (pValue < 0.05){
+					ss.numFail_95++;
+				}
+				if (pValue < 0.01){
+					ss.numFail_99++;
+				}
+				if (pValue < 0.001){
+					ss.numFail_999++;
+				}
+				
+				if (pValue < ss.smallestPValue){
+					ss.smallestPValue = pValue;
+					ss.varSmallestPValue = varName;
+					ss.timeSmallestPValue = data1.times[timeIndex];
+				}
+				
+//				double chiSquared = TimeSeriesMultitrialData.chiSquaredTest(varTimeData1, varTimeData2);
+//				double ks = TimeSeriesMultitrialData.kolmogorovSmirnovTest(varTimeData1, varTimeData2);
+//				ss.maxTTest = Math.max(ss.maxTTest,ttest_p);
+//				ss.maxDiffMeans = Math.max(ss.maxDiffMeans,diffMeans);
+//				ss.maxChiSquare = Math.max(ss.maxChiSquare,chiSquared);
+//				ss.maxKolmogorovSmirnov = Math.max(ss.maxKolmogorovSmirnov,ks);
+			}
+		}
+		return ss;
 	}
 
 }

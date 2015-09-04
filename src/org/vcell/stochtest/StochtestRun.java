@@ -1,6 +1,5 @@
 package org.vcell.stochtest;
 
-import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
 import org.vcell.util.document.KeyValue;
 
 public class StochtestRun {
