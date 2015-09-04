@@ -109,7 +109,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (e.getSource() == getAddSpeciesPatternFromTreeMenuItem()) {
+			if (source == getAddSpeciesPatternFromTreeMenuItem()) {
 				addSpeciesPattern();
 			} else if (source == getDeleteFromTreeMenuItem()) {
 				deleteFromTree();
@@ -119,11 +119,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				addNewFromTree();
 			} else if (source == getEditFromTreeMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
-			}
-				
-				
-				
-			if (e.getSource() == getAddSpeciesPatternFromShapeMenuItem()) {
+			} else if (e.getSource() == getAddSpeciesPatternFromShapeMenuItem()) {
 				addSpeciesPattern();
 			} else if (source == getDeleteFromShapeMenuItem()) {
 				deleteFromShape();

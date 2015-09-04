@@ -36,6 +36,7 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -82,9 +83,12 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
+import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
@@ -103,12 +107,14 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == getDeleteMenuItem()) {
-				delete();
-			} else if (source == getRenameMenuItem()) {
+			if (source == getDeleteFromTreeMenuItem()) {
+				deleteFromTree();
+			} else if (source == getRenameFromTreeMenuItem()) {
 				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
-			} else if (source == getAddMenuItem()) {
-				addNew();
+			} else if (source == getAddFromTreeMenuItem()) {
+				addNewFromTree();
+			} else if (source == getRenameFromShapeMenuItem()) {
+				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			}			
 		}
 		@Override
@@ -123,6 +129,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == molecularTypeTree) {
+				// the popup menu when click inside shape is called elsewhere below
 				showPopupMenu(e);
 			}			
 		}
@@ -172,13 +179,16 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
+	private JPanel shapePanel = null;
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
+	private JMenuItem addFromTreeMenuItem;
+	private JMenuItem deleteFromTreeMenuItem;	
+	private JMenuItem renameFromTreeMenuItem;
+	
 	private JPopupMenu popupFromShapeMenu;
-	private JMenuItem addMenuItem;
-	private JMenuItem deleteMenuItem;	
-	private JMenuItem renameMenuItem;
+	private JMenuItem renameFromShapeMenuItem;
 	
 	private BioModel bioModel;
 	public MolecularTypePropertiesPanel() {
@@ -186,7 +196,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		initialize();
 	}
 	
-	public void addNew() {
+	public void addNewFromTree() {
 		Object obj = molecularTypeTree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
 			return;
@@ -208,8 +218,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, componentStateDefinition));
 		}	
 	}
-
-	public void delete() {
+	public void deleteFromTree() {
 		Object obj = molecularTypeTree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
 			return;
@@ -300,8 +309,6 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					mc.deleteComponentStateDefinition(csd);		// this stays
 				}
 			}
-			
-			
 //			mc.deleteComponentStateDefinition(csd);
 		}
 	}
@@ -369,11 +376,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
 		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 
-		JPanel shapePanel = new JPanel() {
+		shapePanel = new JPanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
-//				g.drawString("This is my custom Panel!", 10, 20);
 				for(LargeShape stls : molecularTypeShapeList) {
 					stls.paintSelf(g);
 				}
@@ -390,11 +396,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
 					Graphics g = shapePanel.getGraphics();
-					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
-						stls.turnHighlightOffRecursive(g);
+					for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+						mtls.turnHighlightOffRecursive(g);
 					}
-					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
-						if (stls.contains(locationContext)) {		//check if mouse is inside shape
+					for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+						if (mtls.contains(locationContext)) {		//check if mouse is inside shape
 							break;
 						}
 					}
@@ -467,28 +473,33 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		annotationTextArea.addMouseListener(eventHandler);
 	}
 	
-	private JMenuItem getAddMenuItem() {
-		if (addMenuItem == null) {
-			addMenuItem = new JMenuItem("Add");
-			addMenuItem.addActionListener(eventHandler);
+	private JMenuItem getAddFromTreeMenuItem() {
+		if (addFromTreeMenuItem == null) {
+			addFromTreeMenuItem = new JMenuItem("Add");
+			addFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return addMenuItem;
+		return addFromTreeMenuItem;
 	}
-	
-	private JMenuItem getRenameMenuItem() {
-		if (renameMenuItem == null) {
-			renameMenuItem = new JMenuItem("Rename");
-			renameMenuItem.addActionListener(eventHandler);
+	private JMenuItem getRenameFromTreeMenuItem() {
+		if (renameFromTreeMenuItem == null) {
+			renameFromTreeMenuItem = new JMenuItem("Rename");
+			renameFromTreeMenuItem.addActionListener(eventHandler);
 		}
-		return renameMenuItem;
+		return renameFromTreeMenuItem;
 	}
-	
-	private JMenuItem getDeleteMenuItem() {
-		if (deleteMenuItem == null) {
-			deleteMenuItem = new JMenuItem("Delete");
-			deleteMenuItem.addActionListener(eventHandler);
+	private JMenuItem getRenameFromShapeMenuItem() {
+		if (renameFromShapeMenuItem == null) {
+			renameFromShapeMenuItem = new JMenuItem("Rename");
+			renameFromShapeMenuItem.addActionListener(eventHandler);
 		}
-		return deleteMenuItem;
+		return renameFromShapeMenuItem;
+	}
+	private JMenuItem getDeleteFromTreeMenuItem() {
+		if (deleteFromTreeMenuItem == null) {
+			deleteFromTreeMenuItem = new JMenuItem("Delete");
+			deleteFromTreeMenuItem.addActionListener(eventHandler);
+		}
+		return deleteFromTreeMenuItem;
 	}
 	
 	@Override
@@ -591,14 +602,158 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		if (popupFromShapeMenu.isShowing()) {
 			return;
 		}
+		
+		final Object deepestShape = locationContext.getDeepestShape();
+		final Object selectedObject;
 
-		System.out.println("showing menu");
-		// TODO: aici
-		
-		
-		
-		
+		if(deepestShape == null) {
+			selectedObject = null;
+			System.out.println("outside");		// when cursor is outside there's nothing to do  ???
+			return;
+		} else if(deepestShape instanceof ComponentStateLargeShape) {
+			System.out.println("inside state");
+			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+			} else {
+				return;		// right click only works on highlighted entity, if it's not highlighted we simply return
+			}
+		} else if(deepestShape instanceof MolecularComponentLargeShape) {
+			System.out.println("inside component");
+			if(((MolecularComponentLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((MolecularComponentLargeShape)deepestShape).getMolecularComponent();
+			} else {
+				return;
+			}
+		} else if(deepestShape instanceof MolecularTypeLargeShape) {
+			System.out.println("inside molecule");
+			if(((MolecularTypeLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((MolecularTypeLargeShape)deepestShape).getMolecularType();
+			} else {
+				return;
+			}
+		} else if(deepestShape instanceof SpeciesPatternLargeShape) {	// this cannot happen, here just for symmetry
+			System.out.println("inside species pattern");
+			if(((SpeciesPatternLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((SpeciesPatternLargeShape)deepestShape).getSpeciesPattern();
+			} else {
+				return;
+			}
+		} else {
+			selectedObject = null;
+			System.out.println("inside something else?");
+			return;
+		}
+		System.out.println(selectedObject);		
+
+		boolean bDelete = false;
+		boolean bAdd = false;
+		popupFromShapeMenu.removeAll();
+		Point mousePoint = e.getPoint();
+		popupFromShapeMenu.add(getRenameFromShapeMenuItem());		// everything can be renamed
+//		Graphics gc = shapePanel.getGraphics();
+
+		if (selectedObject instanceof MolecularType) {				// rename, add
+			if(selectedObject != molecularType) {
+				throw new RuntimeException("The selected object from shape different from the current object");
+			}
+			JMenuItem addMenuItem = new JMenuItem("Add " + MolecularComponent.typeName);
+//			Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+//			menuItem.setIcon(icon);
+			popupFromShapeMenu.add(new JSeparator());
+			popupFromShapeMenu.add(addMenuItem);
+			addMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularComponent molecularComponent = molecularType.createMolecularComponent();
+					molecularType.addMolecularComponent(molecularComponent);
+					bioModel.getModel().getRbmModelContainer().adjustSpeciesContextPatterns(molecularType, molecularComponent);
+					bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, molecularComponent);
+					bioModel.getModel().getRbmModelContainer().adjustRulesPatterns(molecularType, molecularComponent);
+					molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, molecularComponent));
+				}
+			});
+		} else if (selectedObject instanceof MolecularComponent) {		// rename, delete, separator, add
+			JMenuItem addMenuItem = new JMenuItem("Add " + ComponentStateDefinition.typeName);
+			JMenuItem deleteMenuItem = new JMenuItem("Delete ");
+			popupFromShapeMenu.add(deleteMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
+			popupFromShapeMenu.add(addMenuItem);
+			deleteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularComponent mc = (MolecularComponent) selectedObject;
+					// if there are states we ask the user to delete them individually first
+					// detailed verifications will be done there, to see if they are being used in reactions, species, observables
+					if(!mc.getComponentStateDefinitions().isEmpty()) {
+						String[] options = {"OK"};
+						String errMsg = mc.getDisplayType() + " '<b>" + mc.getDisplayName() + "</b>' cannot be deleted because it contains explicit States.";
+						errMsg += "<br>Please delete each individual State first.";
+						errMsg += "<br><br>Detailed usage information will be provided at that time to help you decide.";
+						errMsg = "<html>" + errMsg + "</html>";
+						JOptionPane.showOptionDialog(shapePanel, errMsg, "Delete " + mc.getDisplayType(), JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
+						return;
+					}
+					// we find and display component usage information to help the user decide
+					Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
+					bioModel.getModel().getRbmModelContainer().findComponentUsage(molecularType, mc, usedHere);
+					if(!usedHere.isEmpty()) {
+						String errMsg = mc.dependenciesToHtml(usedHere);
+						errMsg += "<br><br>Delete anyway?";
+						errMsg = "<html>" + errMsg + "</html>";
+				        int dialogButton = JOptionPane.YES_NO_OPTION;
+				        int returnCode = JOptionPane.showConfirmDialog(shapePanel, errMsg, "Delete " + mc.getDisplayType(), dialogButton);
+						if (returnCode == JOptionPane.YES_OPTION) {
+							// keep this code in sync with MolecularTypeTableModel.setValueAt
+							if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc) == true) {
+								molecularType.removeMolecularComponent(mc);
+							}
+						}
+					} else {
+						if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc) == true) {
+							molecularType.removeMolecularComponent(mc);
+						}
+					}
+				}
+			});
+			addMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularComponent mc = (MolecularComponent) selectedObject;
+					ComponentStateDefinition componentStateDefinition = mc.createComponentStateDefinition();
+					mc.addComponentStateDefinition(componentStateDefinition);
+					bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, mc, componentStateDefinition);
+					molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, componentStateDefinition));
+				}
+			});
+		} else if (selectedObject instanceof ComponentStateDefinition) {		// rename, delete
+			JMenuItem deleteMenuItem = new JMenuItem("Delete");
+			popupFromShapeMenu.add(deleteMenuItem);
+			deleteMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ComponentStateDefinition csd = (ComponentStateDefinition) selectedObject;
+					MolecularComponent mc = locationContext.mcs.getMolecularComponent();	// must exist, we're deleting one of its states
+					Map<String, Pair<Displayable, SpeciesPattern>> usedHere = new LinkedHashMap<String, Pair<Displayable, SpeciesPattern>>();
+					bioModel.getModel().getRbmModelContainer().findStateUsage(molecularType, mc, csd, usedHere);
+					if(!usedHere.isEmpty()) {
+						String errMsg = csd.dependenciesToHtml(usedHere);
+						errMsg += "<br><br>Delete anyway?";
+						errMsg = "<html>" + errMsg + "</html>";
+				        int dialogButton = JOptionPane.YES_NO_OPTION;
+				        int returnCode = JOptionPane.showConfirmDialog(shapePanel, errMsg, "Delete " + ComponentStateDefinition.typeName, dialogButton);
+						if (returnCode == JOptionPane.YES_OPTION) {
+							// keep this code in sync with MolecularTypeTableModel.setValueAt
+							if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc, csd) == true) {
+								mc.deleteComponentStateDefinition(csd);
+							}
+						}
+					} else {
+						if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc, csd) == true) {
+							mc.deleteComponentStateDefinition(csd);
+						}
+					}
+				}
+			});
+		}
+		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
+	
 	private void showPopupMenu(MouseEvent e){ 
 		if (!e.isPopupTrigger()) {
 			return;
@@ -626,11 +781,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			BioModelNode selectedNode = (BioModelNode) obj;
 			Object userObject = selectedNode.getUserObject();
 			if (userObject instanceof MolecularType) {
-				getAddMenuItem().setText("Add " + MolecularComponent.typeName);
+				getAddFromTreeMenuItem().setText("Add " + MolecularComponent.typeName);
 				bAdd = true;
 				bDelete = false;
 			} else if (userObject instanceof MolecularComponent) {
-				getAddMenuItem().setText("Add " + ComponentStateDefinition.typeName);
+				getAddFromTreeMenuItem().setText("Add " + ComponentStateDefinition.typeName);
 				bAdd = true;
 				bDelete = true;
 			} else if (userObject instanceof ComponentStateDefinition) {
@@ -641,13 +796,13 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		popupMenu.removeAll();
 		// everything can be renamed
-		popupMenu.add(getRenameMenuItem());
+		popupMenu.add(getRenameFromTreeMenuItem());
 		if (bDelete) {
-			popupMenu.add(getDeleteMenuItem());
+			popupMenu.add(getDeleteFromTreeMenuItem());
 		}
 		popupMenu.add(new JSeparator());
 		if (bAdd) {
-			popupMenu.add(getAddMenuItem());
+			popupMenu.add(getAddFromTreeMenuItem());
 		}
 
 		Point mousePoint = e.getPoint();

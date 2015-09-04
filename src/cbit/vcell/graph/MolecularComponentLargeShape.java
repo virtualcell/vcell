@@ -281,6 +281,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public MolecularComponentPattern getMolecularComponentPattern() {
 		return mcp;
 	}
+	public MolecularComponent getMolecularComponent() {
+		return mc;
+	}
 	public int getX(){
 		return xPos;
 	}
@@ -399,7 +402,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		g2.setColor(componentColor);
 		
 		RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
-		RoundRectangle2D outerRectangle = new RoundRectangle2D.Float(xPos-1, yPos-1, width+2, baseHeight+2, cornerArc+2, cornerArc+2);
+		RoundRectangle2D innerRectangle = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-2, cornerArc-2);
 		g2.fill(normalRectangle);
 		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			g2.setColor(Color.red);
@@ -413,7 +416,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		g2.draw(normalRectangle);
 		if(isHighlighted()) {
 			g2.setColor(Color.black);
-			g2.draw(outerRectangle);
+			g2.draw(innerRectangle);
 			g2.setColor(componentColor);
 			}
 
