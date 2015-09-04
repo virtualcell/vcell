@@ -23,6 +23,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -2647,8 +2648,14 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						return;
 					}
 				}
-				//System.out.println("Saving reactions image to file: " + selectedFile.toString());
-				ITextWriter.generateDocReactionsImage(this.getModel(),new FileOutputStream(selectedFile),ITextWriter.HIGH_RESOLUTION);
+				BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(this.getModel(),ITextWriter.HIGH_RESOLUTION);
+				FileOutputStream reactionImageOutputStream = null;
+				try{
+					reactionImageOutputStream = new FileOutputStream(selectedFile);
+					reactionImageOutputStream.write(ITextWriter.encodeJPEG(bufferedImage).toByteArray());
+				}finally{
+					try{if(reactionImageOutputStream != null){reactionImageOutputStream.close();}}catch(Exception e){e.printStackTrace();}
+				}
 				//reset the user preference for the default path, if needed.
 				File newPath = selectedFile.getParentFile();
 				if (!newPath.equals(defaultPath)) {
