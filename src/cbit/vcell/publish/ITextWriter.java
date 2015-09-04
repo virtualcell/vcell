@@ -343,13 +343,12 @@ protected ITextWriter() {
 
 //helper method. 
 	private void addImage(Section container, ByteArrayOutputStream bos) throws Exception {
-
 		com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(Toolkit.getDefaultToolkit().createImage(bos.toByteArray()), null);
 		//com.lowagie.text.Image structImage = com.lowagie.text.Image.getInstance(bos.toByteArray());
 		//Gif structImage = new Gif(bos.toByteArray());
 		//setNewPage(container, image);
 		image.setBackgroundColor(java.awt.Color.white);           //?
-		Table imageTable = getTable(1, 100, 2, 0, 0);
+		Table imageTable = getTable(1,100, 2, 0, 0);
 		Cell imageCell = new Cell();
 		imageCell.setLeading(0); 
 		imageCell.add(image);
@@ -400,66 +399,11 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	return createCell(text, font, colspan, 1, Element.ALIGN_LEFT, true);
 }
 
-
-	//pretty similar to its static counterpart
-	protected ByteArrayOutputStream generateDocReactionsImage(Model model, Structure struct, String resolution) throws Exception {
-			                                                       
-        if (model == null || struct == null || !model.contains(struct) || !isValidResolutionSetting(resolution)) {
-	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for structure: " + struct.getName() + 
-		    									" in model: " + model.getName());
-        }
-	    ByteArrayOutputStream bos;
-		ReactionCartoon rcartoon = new ReactionCartoon();
-		rcartoon.setModel(model);
-		StructureSuite layout;
-		if(struct instanceof Membrane && model.getStructureTopology().getOutsideFeature((Membrane)struct) != null && model.getStructureTopology().getInsideFeature((Membrane)struct) != null) {
-			layout = new MembraneStructureSuite(model.getStructureTopology().getOutsideFeature((Membrane)struct), ((Membrane) struct), model.getStructureTopology().getInsideFeature((Membrane)struct));
-		} else {
-			layout = new SingleStructureSuite(struct);
-		}
-		StructureSuite structureSuite = layout;
-		rcartoon.setStructureSuite(structureSuite);
-		rcartoon.refreshAll();
-		//dummy settings to get the real dimensions.
-		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
-		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
-		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
-		int width = (int)prefDim.getWidth()*110/100;
-		int height = (int)prefDim.getHeight()*110/100;
-		
-		int MAX_IMAGE_HEIGHT = 532;
-		
-		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
-			width = ITextWriter.DEF_IMAGE_WIDTH;
-		} 
-		
-		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
-			height = ITextWriter.DEF_IMAGE_HEIGHT;
-		} else if (height > MAX_IMAGE_HEIGHT) {
-			height = MAX_IMAGE_HEIGHT;
-		}
-			
-		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		while (true) {
-			GraphContainerLayout containerLayout = new GraphContainerLayoutVCellClassical();
-			containerLayout.layout(rcartoon, g, new Dimension(width,height));
-			break;
-		}
-		rcartoon.paint(g, null);
-		bos = encodeJPEG(bufferedImage);
-				
-		return bos;
-	}
-
-	//pretty similar to its static counterpart
-	public static BufferedImage generateDocReactionsImage(Model model, OutputStream outputStream, String resolution) throws Exception {
+	public static BufferedImage generateDocReactionsImage(Model model,String resolution) throws Exception {
 			                                                       
 	    if (model == null || !isValidResolutionSetting(resolution)) {
 	    	throw new IllegalArgumentException("Invalid parameters for generating reactions image for  model: " + model.getName());
 	    }
-//	    ByteArrayOutputStream bos;
 		ReactionCartoon rcartoon = new ReactionCartoon();
 		rcartoon.setModel(model);
 		StructureSuite structureSuite = new AllStructureSuite(new Model.Owner() {
@@ -468,52 +412,41 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 				return model;
 			}
 		});
-//		if(struct instanceof Membrane && model.getStructureTopology().getOutsideFeature((Membrane)struct) != null && model.getStructureTopology().getInsideFeature((Membrane)struct) != null) {
-//			layout = new MembraneStructureSuite(model.getStructureTopology().getOutsideFeature((Membrane)struct), ((Membrane) struct), model.getStructureTopology().getInsideFeature((Membrane)struct));
-//		} else {
-//			layout = new SingleStructureSuite(struct);
-//		}
-//		StructureSuite structureSuite = layout;
 		rcartoon.setStructureSuite(structureSuite);
 		rcartoon.refreshAll();
 		//dummy settings to get the real dimensions.
 		BufferedImage dummyBufferedImage = new BufferedImage(DEF_IMAGE_WIDTH, DEF_IMAGE_HEIGHT, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D dummyGraphics = (Graphics2D)dummyBufferedImage.getGraphics();
 		Dimension prefDim = rcartoon.getPreferedCanvasSize(dummyGraphics);
-		int width = (int)prefDim.getWidth();//*110/100;
-		int height = (int)prefDim.getHeight();//*110/100;
+		dummyGraphics.dispose();
+		double width = prefDim.getWidth();
+		double height = prefDim.getHeight();
 		
-//		int MAX_IMAGE_HEIGHT = 532;
+		int MAX_IMAGE_HEIGHT = 532;
+		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
+			width = ITextWriter.DEF_IMAGE_WIDTH;
+		} 
+		height= height * width/prefDim.getWidth();
 		
-//		if (width < ITextWriter.DEF_IMAGE_WIDTH) {
-//			width = ITextWriter.DEF_IMAGE_WIDTH;
-//		} 
-//		
-//		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
-//			height = ITextWriter.DEF_IMAGE_HEIGHT;
-//		} 
-//		else if (height > MAX_IMAGE_HEIGHT) {
-//			height = MAX_IMAGE_HEIGHT;
-//		}
-			
-		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+		if (height < ITextWriter.DEF_IMAGE_HEIGHT) {
+			height = ITextWriter.DEF_IMAGE_HEIGHT;
+		} else if (height > MAX_IMAGE_HEIGHT) {
+			height = MAX_IMAGE_HEIGHT;
+		}
+		width= width * height/prefDim.getHeight();
+		Dimension newDim = new Dimension((int)width,(int)height);
+
+		rcartoon.getResizeManager().setZoomPercent((int)(100*width/prefDim.getWidth()));
+
+		BufferedImage bufferedImage = new BufferedImage(newDim.width,newDim.height, BufferedImage.TYPE_3BYTE_BGR);
 		Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		while (true) {
-			GraphContainerLayout containerLayout = new GraphContainerLayoutReactions();//new GraphContainerLayoutVCellClassical();
-			containerLayout.layout(rcartoon, g, new Dimension(width,height));
-			break;
-		}
-		rcartoon.paint(g, null);
 		
-		if(outputStream != null){
-			try{
-				outputStream.write(encodeJPEG(bufferedImage).toByteArray());
-			}finally{
-				try{outputStream.close();}catch(Exception e){e.printStackTrace();}
-			}
-		}
-				
+		GraphContainerLayoutReactions containerLayout = new GraphContainerLayoutReactions();
+		containerLayout.layout(rcartoon, g, prefDim);
+		
+		rcartoon.paint(g, null);
+		g.dispose();
 		return bufferedImage;
 	}
 
@@ -1937,6 +1870,17 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		if (model == null) {
 			return;
 		}
+		Paragraph reactionParagraph = new Paragraph();
+		reactionParagraph.add(new Chunk("Structures and Reactions Diagram").setLocalDestination(model.getName()));
+		Section reactionDiagramSection = physioChapter.addSection(reactionParagraph, physioChapter.numberDepth() + 1);
+		try{
+			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model, ITextWriter.HIGH_RESOLUTION)));
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new DocumentException(e.getClass().getName()+": "+e.getMessage());
+		}
+
+		
 		for (int i = 0; i < model.getNumStructures(); i++) {
 			ReactionStep[] reactionSteps = model.getReactionSteps();
 			ReactionStep rs = null;
@@ -1950,15 +1894,6 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 						Paragraph linkParagraph = new Paragraph();
 						linkParagraph.add(new Chunk("Reaction(s) in " + model.getStructure(i).getName()).setLocalDestination(model.getStructure(i).getName()));
 						reactStructSection = physioChapter.addSection(linkParagraph, physioChapter.numberDepth() + 1);
-						try {
-							//int width = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());  
-							//int height = (int)(document.getPageSize().height() - document.topMargin() - document.bottomMargin())/2;        //half the page size.    
-							ByteArrayOutputStream bos = generateDocReactionsImage(model, model.getStructure(i), ITextWriter.LOW_RESOLUTION);               
-							addImage(reactStructSection, bos);
-						} catch (Exception e) {
-							System.err.println("Unable to add structure mapping image to report.");
-							e.printStackTrace();
-						}
 						firstTime = false;
 					}
 					rs = reactionSteps[j];
