@@ -27,15 +27,19 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.ClientTaskManager;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
+import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
@@ -136,6 +140,13 @@ public class StochtestRunService {
 		    		throw new RuntimeException("cannot find simcontext with key="+stochtestRun.stochtest.simContextRef);
 		    	}
 		    	
+		    	//
+		    	// clear clamped attribute of speciesContexts (because they are not supported by Rule-based applications).
+		    	//
+		    	for (SpeciesContextSpec scs : srcSimContext.getReactionContext().getSpeciesContextSpecs()){
+		    		scs.setConstant(false);
+		    	}
+		    	
 		    	SimulationContext simContext = srcSimContext;
 		    	StochtestMathType parentMathType = stochtestRun.parentMathType;
 		    	StochtestMathType mathType = stochtestRun.mathType;
@@ -150,12 +161,20 @@ public class StochtestRunService {
 		    		bioModel.addSimulationContext(simContext);
 		    	}
 		    	
+				MathMapping mathMapping = simContext.createNewMathMapping(null, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+				MathDescription mathDesc = mathMapping.getMathDescription(null);
+				simContext.setMathDescription(mathDesc);
+		    	
 		    	
 				File baseDirectory = StochtestFileUtils.createDirFile(baseDir, stochtestRun);
-				OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(0.5);
-				double endTime = 10.0;
-				computeTrials(simContext, stochtestRun, baseDirectory, outputTimeSpec, endTime, numTrials);
-				StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.complete,null);
+				try {
+					OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(0.5);
+					double endTime = 10.0;
+					computeTrials(simContext, stochtestRun, baseDirectory, outputTimeSpec, endTime, numTrials);
+					StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.complete,null);
+				}finally{
+					StochtestFileUtils.clearDir(baseDirectory);
+				}
 	    	}catch (Exception e){
 				StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.failed,e.getMessage());
 				//
