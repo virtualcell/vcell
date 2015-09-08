@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -59,6 +60,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
@@ -2187,21 +2189,24 @@ public void exitApplication() {
 		}
 	}
 	// ready to exit
-	if (getVcellClient().isApplet()) {
-		// can't just exit, since it will take down other applets and possibly the browser, try cleanup
-		// if all end up being closed, we should take care of threads and object references so that the application exits
-		
-		/* more work needed here... */
-		
-		((ClientMDIManager)getMdiManager()).cleanup();
-		getClientServerManager().cleanup();
-		getVcellClient().getStatusUpdater().stop();
-		System.gc();
-	} else {
+	if (!ClientTaskDispatcher.hasOutstandingTasks()) {
 		// simply exit in this case
 		System.exit(0);
 	}
+	new Timer(1000, evt -> checkTasksDone() ).start(); 
 	}
+}
+
+/**
+ * see if there are outstanding tasks ... if not, exit the application
+ */
+private void checkTasksDone( ) {
+	Collection<String> ot = ClientTaskDispatcher.outstandingTasks();
+	if (ot.isEmpty()) {
+		//ready to exit now
+		System.exit(0);
+	}
+	System.out.println("waiting for " + ot.toString());
 }
 
 
