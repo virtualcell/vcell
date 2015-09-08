@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver.stoch;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -229,6 +230,18 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		  			iniExp.bindExpression(simSymbolTable);
 					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
 					double expectedCount = iniExp.evaluateConstant();
+					final Integer limit = 1000000000;
+					if (limit < expectedCount){
+						String eMessage = "The Initial count for Species '" + varIniCondition.getVar().getName() + "' is " + BigDecimal.valueOf(expectedCount).toBigInteger() + "\n";
+						eMessage += "which is higher than the internal vCell limit of " + limit + ".\n";
+						eMessage += "Please reduce the Initial Condition value for this Species or reduce the compartment size.";
+
+						throw new MathFormatException(eMessage);
+					}
+
+					
+					
+					expectedCount = 1000000000;
 			  		long varCount = 0;
 			  		if(varIniCondition instanceof VarIniCount)
 			  		{
@@ -241,9 +254,9 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 			  				varCount = dist.nextPoisson(expectedCount);
 			  			}
 			  		}
+			  		System.out.println("expectedCount: " + expectedCount + ", varCount: " + varCount);
 		  			printWriter.println(varIniCondition.getVar().getName()+"\t" + varCount);
-		  		}catch(ExpressionException ex)
-		  		{
+		  		}catch(ExpressionException ex) {
 		  			ex.printStackTrace();
 		  			throw new MathFormatException("variable "+varIniCondition.getVar().getName()+"'s initial condition is required to be a constant.");
 		  		}
