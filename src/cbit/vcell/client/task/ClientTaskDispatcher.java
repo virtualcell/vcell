@@ -15,7 +15,11 @@ import java.awt.Window;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
@@ -54,6 +58,8 @@ public class ClientTaskDispatcher {
 	 * used to count / generate thread names
 	 */
 	private static long serial = 0;
+	private static final List<List<AsynchClientTask>> taskLists = Collections.synchronizedList(new LinkedList<>());
+	
 
 /**
  * don't show popup.
@@ -102,7 +108,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		Thread.dumpStack();
 	}
 		
-	final ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	final List<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	
 	for (int i = 0; i < tasks.length; i++){
 		if (tasks[i].getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING && i < tasks.length - 1) {
@@ -284,6 +290,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		}
 	};
 	setSwingWorkerThreadName(worker,threadBaseName); 
+	taskLists.add(taskList);
 	worker.start();
 }
 
@@ -318,6 +325,35 @@ public static void recordException(Throwable exc, Hashtable<String, Object> hash
 		hash.put(TASK_ABORTED_BY_ERROR, exc);
 	}
 }
+
+/**
+ * @return list of outstanding tasks, or empty set if none
+ */
+public static Collection<String> outstandingTasks( ) {
+	if (taskLists.isEmpty()) {
+		return Collections.emptyList();
+	}
+	
+	synchronized(taskLists) {
+		List<String> taskNames = new ArrayList<>();
+		for (List<AsynchClientTask> tl :taskLists) {
+			for (AsynchClientTask ct : tl) {
+				String tn = ct.getTaskName();
+				taskNames.add(tn);
+			}
+		}
+		return taskNames;
+	}
+}
+
+/**
+ * @return true if there are uncompleted tasks
+ */
+public static boolean hasOutstandingTasks( ) {
+	return !taskLists.isEmpty();
+}
+
+
 
 /**
  * set {@link SwingWorker} thread name

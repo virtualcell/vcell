@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -62,6 +63,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.IOUtils;
@@ -2363,11 +2365,6 @@ public static void downloadExportedData(final Component requester, final UserPre
 	ClientTaskDispatcher.dispatch(requester, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3}, false);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 4:20:47 AM)
- */
 public void exitApplication() {
 	try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 	if (!bExiting) {
@@ -2378,17 +2375,27 @@ public void exitApplication() {
 			return;
 		}
 	}
-	ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0); 
-	//long start = System.currentTimeMillis();
-	VCMongoMessage.shutdown();
-	/*
-	long stop = System.currentTimeMillis();
-	double ft = (stop - start) /1000.0;
-	System.out.println("mongo flush time " + ft);
-	*/
-	System.exit(0);
+	// ready to exit
+	if (!ClientTaskDispatcher.hasOutstandingTasks()) {
+		// simply exit in this case
+		System.exit(0);
+	}
+	new Timer(1000, evt -> checkTasksDone() ).start(); 
 	}
 }
+
+/**
+ * see if there are outstanding tasks ... if not, exit the application
+ */
+private void checkTasksDone( ) {
+	Collection<String> ot = ClientTaskDispatcher.outstandingTasks();
+	if (ot.isEmpty()) {
+		//ready to exit now
+		System.exit(0);
+	}
+	System.out.println("waiting for " + ot.toString());
+}
+
 
 
 /**
