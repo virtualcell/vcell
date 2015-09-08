@@ -78,18 +78,33 @@ mathtype varchar2(64) NOT NULL,
 mathgenstatus varchar2(256) ,
 runstatus varchar2(256) );
 
+select count(id) from stochtestrun;
+
+update stochtestrun set status = 'waiting';
 
 insert into stochtestrun 
 (id,stochtestref,parentmathtype,mathtype)
-select NewSeq.NEXTVAL, stochtest.id, stochtest.MATHTYPE, stochtest.MATHTYPE
+select NewSeq.NEXTVAL, stochtest.id, stochtest.MATHTYPE, 'rules'
 from stochtest
-where stochtest.mathtype = 'rules';
+where stochtest.mathtype = 'nonspatial-stochastic';
+
+select * from stochtestrun_old where errmsg like '%cygwin%';
 
 alter table stochtestrun drop column runstatus;
 
 alter table stochtestrun add status varchar2(32) default 'none' not null;
 
 alter table stochtestrun add errmsg varchar2(4000);
+
+alter table stochtestcompare add smallest_pvalue NUMBER;
+
+alter table stochtestcompare add numExperiments NUMBER;
+
+alter table stochtestcompare add numFail_95 NUMBER;
+
+alter table stochtestcompare add numFail_999 NUMBER;
+
+alter table stochtestcompare add errmsg varchar2(4000);
 
 rename column stochtestrun.mathgenstatus to status;
 
@@ -101,15 +116,53 @@ update stochtestrun set status = 'waiting' where parentmathtype = 'nonspatial-st
 
 update stochtestrun set status = 'waiting', errmsg = NULL where status = 'none' and parentmathtype = 'nonspatial-stochastic' and mathtype = 'nonspatial-stochastic';
 
-update stochtestrun set status = 'none';
+update stochtestrun set status = 'waiting', errmsg = NULL where status = 'accepted' and parentmathtype = 'rules' and mathtype = 'nonspatial-stochastic' and rownum < 600;
 
 update stochtestrun set errmsg = NULL;
 
-rollback;
+update stochtestcompare set status = 'waiting', errmsg = NULL, results = NULL where status = 'none';
 
+update stochtestcompare set status = 'waiting', errmsg = NULL, results = NULL, smallest_pvalue=NULL, numexperiments=NULL, numfail_95=NULL, numfail_99=NULL, numfail_999=NULL;
 
+select count(id), status, results from stochtestcompare group by status, results order by status, results;
+
+select * from stochtestcompare where status = 'verydifferent' ;
+
+select count(id), status from stochtestcompare  group by status order by status;
+
+select * from stochtestcompare where smallest_pvalue is not NULL;
 
 commit;
+
+rollback;
+
+insert into stochtestcompare
+(id, stochtestrunref1, stochtestrunref2, results, status)
+select 
+NewSeq.NEXTVAL as id, 
+r1.id as ref1, r2.id as ref2,
+NULL, 'none'
+from stochtestrun r1, stochtestrun r2  
+where r1.stochtestref = r2.stochtestref
+and r1.id < r2.id;
+
+select c.*, r1.mathtype as mt1, r2.mathtype as mt2, r1.status status1, r2.status status2 from stochtestcompare c, stochtestrun r1, stochtestrun r2
+where r1.id = c.stochtestrunref1
+and r2.id = c.stochtestrunref2;
+
+select count(c.id), r1.mathtype as mt1, r1.status as status1, r2.mathtype as mt2, r2.status as status2 from stochtestcompare c, stochtestrun r1, stochtestrun r2
+where r1.id = c.stochtestrunref1
+and r2.id = c.stochtestrunref2
+group by r1.mathtype, r1.status, r2.mathtype, r2.status
+order by r1.mathtype, r1.status, r2.mathtype, r2.status;
+
+select * from stochtestcompare where status <> 'waiting';
+
+commit;
+
+create table stochtestrun_old as select * from stochtestrun;
+
+delete from stochtestrun;
 
 select count(stochtestrun.id) from stochtestrun where stochtestrun.stochtestref in (select stochtest.id from stochtest where stochtest.numcompartments <> 1);
 
@@ -117,9 +170,20 @@ delete from stochtestrun where stochtestrun.stochtestref in (select stochtest.id
 
 select count(id), PARENTMATHTYPE, MATHTYPE, status, errmsg from stochtestrun group by status, PARENTMATHTYPE, MATHTYPE, errmsg order by parentmathtype, mathtype, status, errmsg;
 
+select * from stochtestrun where errmsg like '%speciesPattern22';
+
+select stochtestcompare.*, stochtestrun.*, stochtest.*, vc_userinfo.userid, vc_biomodel.* 
+from stochtestcompare, vc_userinfo, stochtestrun, stochtest, vc_biomodel 
+where stochtestcompare.STOCHTESTRUNREF1 = stochtestrun.id 
+and vc_userinfo.id = vc_biomodel.ownerref 
+and stochtestrun.stochtestref = stochtest.id 
+and stochtest.biomodelref = vc_biomodel.id 
+and (stochtestrun.status = 'failed' or stochtestcompare.status = 'verydifferent')
+order by stochtestcompare.smallest_pvalue;
+
 select count(id), PARENTMATHTYPE, MATHTYPE, status from stochtestrun group by status, PARENTMATHTYPE, MATHTYPE order by parentmathtype, mathtype, status;
 
-select count(*) from stochtestrun where status <> 'waiting';
+select count(*) from stochtestcompare;
 
 SELECT 
 stochtest.id id_1,
