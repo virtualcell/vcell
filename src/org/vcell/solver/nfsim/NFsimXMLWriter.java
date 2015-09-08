@@ -836,8 +836,9 @@ public class NFsimXMLWriter {
 				}
 				if (maxMoleculesPerType.doubleValue() < value){
 					String eMessage = "The Initial count for Species '" + seedSpecies.getName() + "' is " + BigDecimal.valueOf(value).toBigInteger();
-					eMessage += ", which is higher than the limit of " + maxMoleculesPerType + "\n";
-					eMessage += "Please do one of the following: \n- reduce the Initial Condition value for this Species or\n- increase the maximal number of Molecules per Molecular Type in the Advanced Solver Options panel.";
+					eMessage += ", which is higher than the limit of " + maxMoleculesPerType + ".\n";
+					eMessage += "Please do one of the following: \n- reduce the Initial Condition value for this Species or reduce the compartment size\n";
+					eMessage += "- increase the maximal number of Molecules per Molecular Type in the Advanced Solver Options panel.";
 					throw new RuntimeException(eMessage);
 				}
 				speciesElement.setAttribute("concentration",Double.toString(value));
