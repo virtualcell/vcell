@@ -1,5 +1,6 @@
 package org.vcell.solver.nfsim;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -822,7 +823,6 @@ public class NFsimXMLWriter {
 			if (particleInitialConditions.size()!=1){
 				throw new SolverException("multiple particle initial conditions not expected for "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName());
 			}
-			
 			// the initial conditions must be a count in math (ParticleInitialConditionCount)
 			if (!(particleInitialConditions.get(0) instanceof ParticleInitialConditionCount)){
 				throw new SolverException("expecting initial count for "+ParticleSpeciesPattern.class.getSimpleName()+" "+seedSpecies.getName());
@@ -830,6 +830,16 @@ public class NFsimXMLWriter {
 			ParticleInitialConditionCount initialCount = (ParticleInitialConditionCount)particleInitialConditions.get(0);
 			try {
 				double value = evaluateConstant(initialCount.getCount(),simulationSymbolTable);
+				Integer maxMoleculesPerType = simulationSymbolTable.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions().getMaxMoleculesPerType();
+				if (maxMoleculesPerType == null){
+					maxMoleculesPerType = new Integer(100000);
+				}
+				if (maxMoleculesPerType.doubleValue() < value){
+					String eMessage = "The Initial count for Species '" + seedSpecies.getName() + "' is " + BigDecimal.valueOf(value).toBigInteger();
+					eMessage += ", which is higher than the limit of " + maxMoleculesPerType + "\n";
+					eMessage += "Please do one of the following: \n- reduce the Initial Condition value for this Species or\n- increase the maximal number of Molecules per Molecular Type in the Advanced Solver Options panel.";
+					throw new RuntimeException(eMessage);
+				}
 				speciesElement.setAttribute("concentration",Double.toString(value));
 			} catch (ExpressionException | MathException e) {
 				e.printStackTrace();
