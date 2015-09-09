@@ -11,7 +11,10 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
 import org.vcell.util.TokenMangler;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext.ContextType;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -186,14 +189,36 @@ public class RulebasedTransformer implements SimContextTransformer {
 					}
 				}
 			}
+			// NFSim doesn't support more then 2 reactants / products
+			if(rr.getReactantPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 reactants within a reaction: " + name;
+				throw new RuntimeException(message);
+			}
+			if(rr.getProductPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reaction: " + name;
+				throw new RuntimeException(message);
+			}
 			newModel.removeReactionStep(rs);
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
 		
-		// delete those rules which are disabled (excluded) in the Specifications / Reaction table
 		for(ReactionRuleSpec rrs : transformedSimulationContext.getReactionContext().getReactionRuleSpecs()) {
-			if(rrs != null && rrs.isExcluded()) {
-				newModel.getRbmModelContainer().removeReactionRule(rrs.getReactionRule());	// we delete those rules which are disabled (excluded)
+			if(rrs == null) {
+				continue;
+			}
+			ReactionRule rr = rrs.getReactionRule();
+			if(rrs.isExcluded()) {		// delete those rules which are disabled (excluded) in the Specifications / Reaction table
+				newModel.getRbmModelContainer().removeReactionRule(rr);
+				continue;
+			}
+			// NFSim doesn't support more then 2 reactants / products
+			if(rr.getReactantPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 reactants within a reaction rule: " + rr.getDisplayName();
+				throw new RuntimeException(message);
+			}
+			if(rr.getProductPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reaction rule: " + rr.getDisplayName();
+				throw new RuntimeException(message);
 			}
 		}
 		

@@ -27,6 +27,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
@@ -74,6 +75,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -960,7 +962,38 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * @param issueVector java.util.Vector
  */
 public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
-	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
+//	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
+	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC)) {
+		for(ReactionRuleSpec rrs : getReactionContext().getReactionRuleSpecs()) {
+			if(rrs.isExcluded()) {
+				continue;
+			}
+			ReactionRule rr = rrs.getReactionRule();
+			if(rr.getReactantPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 reactants within a reaction rule.";
+				issueVector.add(new Issue(rr, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+			}
+			if(rr.getProductPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reaction rule.";
+				issueVector.add(new Issue(rr, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+			}
+		}
+		for(ReactionSpec rrs : getReactionContext().getReactionSpecs()) {
+			if(rrs.isExcluded()) {
+				continue;
+			}
+			ReactionStep rs = rrs.getReactionStep();
+			if(rs.getNumReactants() > 2) {
+				String message = "NFSim doesn't support more than 2 reactants within a reaction step.";
+				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+			}
+			if(rs.getNumProducts() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reaction step.";
+				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+			}
+		}
+	}
+	
 	getReactionContext().gatherIssues(issueContext, issueVector);
 	getGeometryContext().gatherIssues(issueContext, issueVector);
 	if (fieldAnalysisTasks != null) {
