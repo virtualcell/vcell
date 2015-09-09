@@ -230,7 +230,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 		  			iniExp.bindExpression(simSymbolTable);
 					iniExp = simSymbolTable.substituteFunctions(iniExp).flatten();
 					double expectedCount = iniExp.evaluateConstant();
-					final Integer limit = 1000000000;
+					final Integer limit = 10000000;	// 10 mill
 					if (limit < expectedCount){
 						String eMessage = "The Initial count for Species '" + varIniCondition.getVar().getName() + "' is " + BigDecimal.valueOf(expectedCount).toBigInteger() + "\n";
 						eMessage += "which is higher than the internal vCell limit of " + limit + ".\n";
@@ -238,10 +238,6 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 
 						throw new MathFormatException(eMessage);
 					}
-
-					
-					
-					expectedCount = 1000000000;
 			  		long varCount = 0;
 			  		if(varIniCondition instanceof VarIniCount)
 			  		{
