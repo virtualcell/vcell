@@ -10,6 +10,8 @@
 
 package cbit.vcell.client.task;
 
+import java.awt.Container;
+import java.awt.Window;
 import java.util.Hashtable;
 
 
@@ -17,9 +19,16 @@ import java.util.Hashtable;
 
 
 
+
+import java.util.Objects;
+
+import javax.swing.SwingUtilities;
+
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
+
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:09:07 PM)
@@ -82,7 +91,7 @@ public abstract class AsynchClientTask {
 	 * @throws ProgrammingException required is true and key not present 
 	 */
 	@SuppressWarnings("unchecked")
-	protected <T> T fetch(Hashtable<String, Object> hashTable, String key, Class<T> clzz, boolean required) {
+	static protected <T> T fetch(Hashtable<String, Object> hashTable, String key, Class<T> clzz, boolean required) {
 		Object obj = hashTable.get(key);
 		if (obj != null) {
 			Class<? extends Object> oclzz = obj.getClass();
@@ -121,6 +130,25 @@ public abstract class AsynchClientTask {
 	}
 	public boolean showProgressPopup() {
 		return bShowProgressPopup;
+	}
+	
+	/**
+	 * set final window to be raised
+	 * @param hashTable non null
+	 * @param cw non null
+	 */
+	protected void setFinalWindow(Hashtable<String, Object> hashTable,ChildWindow cw) {
+		Objects.requireNonNull(cw);
+		ClientTaskDispatcher.setFinalWindow(hashTable,() -> cw.toFront( ) );
+	}
+	protected void setFinalWindow(Hashtable<String, Object> hashTable,Container cntr) {
+		Objects.requireNonNull(cntr);
+		Window w= (Window) SwingUtilities.getAncestorOfClass(Window.class, cntr); 
+		if (w != null) {
+			ClientTaskDispatcher.setFinalWindow(hashTable,() -> w.toFront( ) );
+			return;
+		}
+		throw new ProgrammingException("Container " + cntr.getName() + " has no window parent");
 	}
 //	public AsynchClientTask[] getFollowupTasks() {
 //		return followupTasks;

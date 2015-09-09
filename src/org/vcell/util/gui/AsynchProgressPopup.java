@@ -12,10 +12,8 @@ package org.vcell.util.gui;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Frame;
 import java.util.EventObject;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.vcell.client.logicalwindow.LWContainerHandle;
@@ -326,18 +324,15 @@ public void startKeepOnTop() {
  * Creation date: (5/19/2004 3:28:39 PM)
  */
 public void stop() {
-	new SwingDispatcherAsync (){
-		public void runSwing() {
-			// stop timer for auto progress
-			if (! knowsProgress) {
-				AsynchProgressPopup.super.stop();
-			}
-			getDialog().dispose();
-		}
-		public void handleException(Throwable e) {
-			e.printStackTrace();
-		}
-	}.dispatch();
+	VCSwingFunction.executeAsRuntimeException( ( ) -> shutdownAndDispose() );
+}
+
+private void shutdownAndDispose( ) {
+	if (! knowsProgress) {
+		AsynchProgressPopup.super.stop();
+	}
+	getDialog().dispose();
+	
 }
 
 public synchronized boolean isInterrupted() {

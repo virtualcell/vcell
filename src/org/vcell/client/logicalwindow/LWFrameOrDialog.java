@@ -5,6 +5,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
+import java.awt.event.FocusListener;
+import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 
 import javax.swing.JDialog;
@@ -22,6 +24,7 @@ public interface LWFrameOrDialog {
 
 	//existing JFrame / JDialog methods
 	public void addWindowListener(WindowListener windowListener);
+	public void addWindowFocusListener(WindowFocusListener focusListener);
 	public void dispose();
 	public Container getContentPane();
 	public Point getLocation();
