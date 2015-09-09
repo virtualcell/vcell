@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -62,6 +61,9 @@ public class ClientTaskDispatcher {
 	 * used to count / generate thread names
 	 */
 	private static long serial = 0;
+	/**
+	 * set of all scheduled tasks; 
+	 */
 	private static final Set<AsynchClientTask> allTasks; 
 	/**
 	 * hash key for final window
