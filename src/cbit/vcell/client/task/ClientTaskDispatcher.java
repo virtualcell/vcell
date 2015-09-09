@@ -20,14 +20,18 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgrammingException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
@@ -58,7 +62,16 @@ public class ClientTaskDispatcher {
 	 * used to count / generate thread names
 	 */
 	private static long serial = 0;
-	private static final List<List<AsynchClientTask>> taskLists = Collections.synchronizedList(new LinkedList<>());
+	private static final Set<AsynchClientTask> allTasks; 
+	/**
+	 * hash key for final window
+	 */
+	private static final String FINAL_WINDOW = "finalWindowInterface";
+	
+	static {
+		WeakHashMap<AsynchClientTask, Boolean> whm = new WeakHashMap<AsynchClientTask,Boolean>( );
+		allTasks = Collections.synchronizedSet( Collections.newSetFromMap(whm) );
+	}
 	
 
 /**
@@ -161,73 +174,78 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// after abort, run only non-skippable tasks
 				// also skip selected tasks specified by conditionalSkip tag 
 				final AsynchClientTask currentTask = taskList.get(i);
-				currentTask.setClientTaskStatusSupport(pp);
-				setSwingWorkerThreadName(this,threadBaseName + currentTask.getTaskName());
-				
-//System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
-				if (pp != null ) {
-					pp.setVisible(currentTask.showProgressPopup());
-					if(!bKnowProgress)
-					{
-						pp.setProgress(i*100/taskList.size()); // beginning of task
-					}
-					pp.setMessage(currentTask.getTaskName());
-				}
-				boolean shouldRun = true;
-				if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
-					shouldRun = false;
-				}
-				if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
-					String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
-					if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
-						shouldRun = false;
-					}
-				}
-				if (pp != null && pp.isInterrupted()) {
-					recordException(UserCancelException.CANCEL_GENERIC, hash);
-				}
-				
-				if (hash.containsKey(TASK_ABORTED_BY_USER)) {
-					UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
-					if (currentTask.skipIfCancel(exc)) {
-						shouldRun = false;
-					}
-				}
-				if (shouldRun) {
-					try {
-						if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-							runTask(currentTask,hash);
-						} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-							SwingUtilities.invokeAndWait(new Runnable() {
-								public void run() {
-									try {
-										runTask(currentTask,hash);
-									} catch (Throwable exc) {
-										recordException(exc, hash);
-									}
-								}
-							});
-						} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									try {
-										runTask(currentTask,hash);
-									} catch (Throwable exc) {
-										recordException(exc, hash);
-									}
-								}
-							});
+				try {
+					currentTask.setClientTaskStatusSupport(pp);
+					setSwingWorkerThreadName(this,threadBaseName + currentTask.getTaskName());
+
+					//System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
+					if (pp != null ) {
+						pp.setVisible(currentTask.showProgressPopup());
+						if(!bKnowProgress)
+						{
+							pp.setProgress(i*100/taskList.size()); // beginning of task
 						}
-					} catch (Throwable exc) {
-						recordException(exc, hash);
+						pp.setMessage(currentTask.getTaskName());
 					}
+					boolean shouldRun = true;
+					if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
+						shouldRun = false;
+					}
+					if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
+						String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
+						if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
+							shouldRun = false;
+						}
+					}
+					if (pp != null && pp.isInterrupted()) {
+						recordException(UserCancelException.CANCEL_GENERIC, hash);
+					}
+
+					if (hash.containsKey(TASK_ABORTED_BY_USER)) {
+						UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
+						if (currentTask.skipIfCancel(exc)) {
+							shouldRun = false;
+						}
+					}
+					if (shouldRun) {
+						try {
+							if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+								runTask(currentTask,hash);
+							} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+								SwingUtilities.invokeAndWait(new Runnable() {
+									public void run() {
+										try {
+											runTask(currentTask,hash);
+										} catch (Throwable exc) {
+											recordException(exc, hash);
+										}
+									}
+								});
+							} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+								SwingUtilities.invokeLater(new Runnable() {
+									public void run() {
+										try {
+											runTask(currentTask,hash);
+										} catch (Throwable exc) {
+											recordException(exc, hash);
+										}
+									}
+								});
+							}
+						} catch (Throwable exc) {
+							recordException(exc, hash);
+						}
+					}
+					//				AsynchClientTask[] followupTasks = currentTask.getFollowupTasks();
+					//				if (followupTasks != null) {
+					//					for (int j = 0; j < followupTasks.length; j++) {
+					//						taskList.add(i+j+1, followupTasks[j]);
+					//					}					
+					//				}
 				}
-//				AsynchClientTask[] followupTasks = currentTask.getFollowupTasks();
-//				if (followupTasks != null) {
-//					for (int j = 0; j < followupTasks.length; j++) {
-//						taskList.add(i+j+1, followupTasks[j]);
-//					}					
-//				}
+				finally {
+					allTasks.remove(currentTask);
+				}
 			}
 			return hash;
 		}
@@ -269,30 +287,57 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
 			}
+			
+			FinalWindow fw = AsynchClientTask.fetch(hash, FINAL_WINDOW,FinalWindow.class,false); 
+			if (lg.isTraceEnabled() && fw != null) {
+				lg.trace("FinalWindow retrieved from hash");
+			}
+			//focusOwner is legacy means of shifting focus -- FinalWindow is newer explicit invocatoin
 			if (windowParent != null) {
 				ClientMDIManager.unBlockWindow(windowParent);
 				windowParent.setCursor(Cursor.getDefaultCursor());
-				if (focusOwner != null) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							try {
-								windowParent.requestFocusInWindow();
-								focusOwner.requestFocusInWindow();
-							} catch (Throwable exc) {
-								recordException(exc, hash);
-							}
-						}
-					});
+				if (fw == null && focusOwner != null) {
+					fw = () -> { windowParent.requestFocusInWindow(); focusOwner.requestFocusInWindow(); };
+					if (lg.isTraceEnabled()) {
+						lg.trace("FinalWindow built from " + windowParent.toString() + " and "  + focusOwner.toString());
+					}
 				}
+			}
+			if (fw != null) {
+				if (lg.isDebugEnabled()) {
+					lg.debug("scheduling " + fw.getClass().getName() + ".run on " + fw.toString()); 
+					SwingUtilities.invokeLater(debugWrapper(fw));
+				}
+				else {
+					SwingUtilities.invokeLater(fw);
+				}
+			}
+			else {
+				lg.trace("no Final Window");
 			}
 //			BeanUtils.setCursorThroughout(frameParent, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 //System.out.println("DISPATCHING: done at "+ new Date(System.currentTimeMillis()));
 		}
 	};
 	setSwingWorkerThreadName(worker,threadBaseName); 
-	taskLists.add(taskList);
+	allTasks.addAll(taskList);
 	worker.start();
 }
+
+/**
+ * wrap runnable in debug print statement
+ * @param r payload
+ * @return wrapper
+ */
+private static Runnable debugWrapper(Runnable r) {
+	Runnable wrapper = () -> 
+	{ 
+		lg.debug("calling " + r.getClass().getName() + ".run on " + r.toString()); 
+		r.run(); 
+	};
+	return wrapper; 
+}
+
 
 
 /**
@@ -330,17 +375,15 @@ public static void recordException(Throwable exc, Hashtable<String, Object> hash
  * @return list of outstanding tasks, or empty set if none
  */
 public static Collection<String> outstandingTasks( ) {
-	if (taskLists.isEmpty()) {
+	if (allTasks.isEmpty()) {
 		return Collections.emptyList();
 	}
-	
-	synchronized(taskLists) {
+
+	synchronized(allTasks) {
 		List<String> taskNames = new ArrayList<>();
-		for (List<AsynchClientTask> tl :taskLists) {
-			for (AsynchClientTask ct : tl) {
-				String tn = ct.getTaskName();
-				taskNames.add(tn);
-			}
+		for (AsynchClientTask ct : allTasks) { 
+			String tn = ct.getTaskName();
+			taskNames.add(tn);
 		}
 		return taskNames;
 	}
@@ -350,7 +393,7 @@ public static Collection<String> outstandingTasks( ) {
  * @return true if there are uncompleted tasks
  */
 public static boolean hasOutstandingTasks( ) {
-	return !taskLists.isEmpty();
+	return !allTasks.isEmpty();
 }
 
 
@@ -404,5 +447,30 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 	
 	currentTask.run(hash);
 }
+
+//package
+interface FinalWindow extends Runnable{
+}
+
+/**
+ * set final window in hash
+ * @param hash non null
+ * @param fWindow non null
+ * @throws ProgrammingException if more than one set in the same hash
+ */
+//package
+static void setFinalWindow(Hashtable<String,Object> hash, FinalWindow fWindow) {
+	if (!hash.contains(FINAL_WINDOW)) {
+		hash.put(FINAL_WINDOW, fWindow);
+		return;
+	}
+	Object existing = hash.get(FINAL_WINDOW);
+	final String def = "null";
+	String e = ClassUtils.getShortClassName(existing ,def);
+	String n = ClassUtils.getShortClassName(fWindow ,def);
+	throw new ProgrammingException("duplicate final windows" + e + " and " + n); 
+}
+
+
 
 }

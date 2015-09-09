@@ -367,8 +367,22 @@ public class ChildWindowManager {
 
 		public void toFront() {
 			if(impl != null){
+				if (LG.isTraceEnabled()) {
+					LG.trace(impl.getTitle() + " toFront( )");
+				}
 				impl.toFront();
 			}
+			else { 
+				LG.trace(" toFront( ) called on unrealized window");
+			}
+		}
+		
+		public void logFocusLoss( ) {
+			if(impl != null){
+					
+				
+			}
+			
 		}
 	};   
 	

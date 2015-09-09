@@ -325,12 +325,11 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 					if (childWindow==null){
 						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, simWindow.getTitle());
+						childWindow.pack();
+						childWindow.setIsCenteredOnParent();
+						childWindow.show();
 					}
-					childWindow.pack();
-					childWindow.setIsCenteredOnParent();
-					childWindow.show();
-//					JInternalFrame existingFrame = simWindow.getFrame();
-//					documentWindowManager.showFrame(existingFrame);
+					setFinalWindow(hashTable, childWindow); 
 				} else {					
 					// wire it up the viewer
 					DataViewerController viewerController = dataViewerControllers.get(vcSimulationIdentifier);
@@ -347,6 +346,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
 						BeanUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
+						setFinalWindow(hashTable, viewer); 
 					}
 				}
 			}
@@ -471,7 +471,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 	tasks[tasks.length - 1] = new AsynchClientTask("starting particle view", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 		
 		@Override
-		public void run(@SuppressWarnings("unused") Hashtable<String, Object> hashTable) throws Exception {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			File exes[] = SolverUtilities.getExes(SolverDescription.Smoldyn);
 			assert exes.length == 1 : "one and only one smoldyn solver expected";
 			File smoldynExe = exes[0];
@@ -499,7 +499,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			final Process process = processBuilder.start();
 			getClientTaskStatusSupport().addProgressDialogListener(new ProgressDialogListener() {
 
-				public void cancelButton_actionPerformed(@SuppressWarnings("unused") EventObject newEvent) {
+				public void cancelButton_actionPerformed(EventObject newEvent) {
 					process.destroy();
 				}
 			});
@@ -615,7 +615,7 @@ public void runQuickSimulation(final Simulation originalSimulation) {
 					int progress = (int)(event.getProgress() * 100);
 					getClientTaskStatusSupport().setProgress(progress);
 				}
-				public void solverPrinted(@SuppressWarnings("unused") SolverEvent event) {
+				public void solverPrinted(SolverEvent event) {
 					getClientTaskStatusSupport().setMessage("Running...");
 				}
 				public void solverFinished(SolverEvent event) {
