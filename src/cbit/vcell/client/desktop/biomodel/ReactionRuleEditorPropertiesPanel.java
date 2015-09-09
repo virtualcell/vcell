@@ -566,7 +566,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						sps.addEndText("->");
 					}
 				}
-				xOffset = sps.getRightEnd() + 35;	// distance between species patterns
+				xOffset = sps.getRightEnd() + 42;	// distance between species patterns
 				reactantPatternShapeList.add(sps);
 			}
 		}
@@ -581,7 +581,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
-				xOffset = sps.getRightEnd() + 35;
+				xOffset = sps.getRightEnd() + 42;
 				productPatternShapeList.add(sps);
 			}
 		}
