@@ -30,7 +30,6 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
 import org.sbpax.impl.HashGraph;
-import org.sbpax.impl.IndexedGraph;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.sbpax.util.SesameRioUtil;
 import org.vcell.relationship.AnnotationMapping;
@@ -209,7 +208,7 @@ public class VCMetaData implements Serializable {
 					nonRDFAnnotation.setXmlAnnotations(null);					
 				}
 				System.err.println("Deleting resource for identifiable '" + entryIdentifiable.toString() 
-						+ "' since it is not foind in " + identifiableProvider.getClass().getName());
+						+ "' since it is not found in " + identifiableProvider.getClass().getName());
 			}
 		}
 	}
