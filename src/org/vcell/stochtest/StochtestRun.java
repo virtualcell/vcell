@@ -16,4 +16,5 @@ public class StochtestRun {
 	public StochtestMathType mathType;
 	public StochtestRun.StochtestRunStatus status;
 	public String errmsg;
+	public String conclusion;
 }
