@@ -12,6 +12,7 @@ package cbit.vcell.mapping;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -25,14 +26,18 @@ import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
+import cbit.vcell.mapping.BioEvent.BioEventParameterType;
+import cbit.vcell.mapping.ParameterContext.GlobalParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterPolicy;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -50,56 +55,7 @@ import cbit.vcell.units.VCUnitSystem;
  */
 
 public abstract class ElectricalStimulus implements Matchable, java.io.Serializable, IssueSource {
-	private final ElectricalStimulusNameScope nameScope = new ElectricalStimulusNameScope();
-	private final ParameterPolicy parameterPolicy = new ParameterPolicy(){
 
-		@Override
-		public boolean isUserDefined(LocalParameter localParameter) {
-			return (localParameter.getRole() == ElectricalStimulusParameterType.UserDefined);
-		}
-
-		@Override
-		public boolean isExpressionEditable(LocalParameter localParameter) {
-			return (localParameter.getExpression()!=null);
-		}
-
-		@Override
-		public boolean isNameEditable(LocalParameter localParameter) {
-			return true;
-		}
-
-		@Override
-		public boolean isUnitEditable(LocalParameter localParameter) {
-			return isUserDefined(localParameter);
-		}
-
-		@Override
-		public ParameterRoleEnum getUserDefinedRole() {
-			return ElectricalStimulusParameterType.UserDefined;
-		}
-
-		@Override
-		public IssueSource getIssueSource() {
-			return ElectricalStimulus.this;
-		}
-
-		@Override
-		public RealInterval getConstraintBounds(ParameterRoleEnum role) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
-		
-	};
-	
-	protected final ParameterContext parameterContext = new ParameterContext(nameScope,parameterPolicy, new UnitSystemProvider() {
-		public VCUnitSystem getUnitSystem() {
-			return getSimulationContext().getModel().getUnitSystem();
-		}
-	});
-
-	private static final String GENERAL_PROTOCOL = "General_Protocol";
-	
 	public class ElectricalStimulusNameScope extends BioNameScope {
 		private NameScope[] children = new NameScope[0];
 		public ElectricalStimulusNameScope(){
@@ -123,6 +79,73 @@ public abstract class ElectricalStimulus implements Matchable, java.io.Serializa
 		}
 	}
 
+	private class ParameterContextSettings implements Serializable, ParameterPolicy, UnitSystemProvider, GlobalParameterContext {
+		@Override /* ParameterPolicy */
+		public boolean isUserDefined(LocalParameter localParameter) {
+			return (localParameter.getRole() == ElectricalStimulusParameterType.UserDefined);
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isExpressionEditable(LocalParameter localParameter) {
+			return (localParameter.getExpression()!=null);
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isNameEditable(LocalParameter localParameter) {
+			return true;
+		}
+
+		@Override /* ParameterPolicy */
+		public boolean isUnitEditable(LocalParameter localParameter) {
+			return isUserDefined(localParameter);
+		}
+		
+		@Override /* ParameterPolicy */
+		public ParameterRoleEnum getUserDefinedRole() {
+			return ElectricalStimulusParameterType.UserDefined;
+		}
+
+		@Override /* ParameterPolicy */
+		public IssueSource getIssueSource() {
+			return ElectricalStimulus.this;
+		}
+
+		@Override /* ParameterPolicy */
+		public RealInterval getConstraintBounds(ParameterRoleEnum role) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override /* UnitSystemProvider */
+		public VCUnitSystem getUnitSystem() {
+			return getSimulationContext().getModel().getUnitSystem();
+		}
+		
+		@Override /* GlobalParameterContext */
+		public ScopedSymbolTable getSymbolTable() {
+			return getSimulationContext().getModel();
+		}
+		
+		@Override /* GlobalParameterContext */
+		public Parameter getParameter(String name) {
+			return getSimulationContext().getModel().getModelParameter(name);
+		}
+		
+		@Override /* GlobalParameterContext */
+		public Parameter addParameter(String name, Expression exp, VCUnitDefinition unit) throws PropertyVetoException {
+			Model model = getSimulationContext().getModel();
+			return model.addModelParameter(model.new ModelParameter(name, exp, Model.ROLE_UserDefined, unit));
+		}
+
+	};
+
+	private final ElectricalStimulusNameScope nameScope = new ElectricalStimulusNameScope();
+	
+	protected final ParameterContextSettings parameterSettings = new ParameterContextSettings();
+	
+	protected final ParameterContext parameterContext = new ParameterContext(nameScope, parameterSettings, parameterSettings);
+
+	private static final String GENERAL_PROTOCOL = "General_Protocol";
 		
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
