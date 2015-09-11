@@ -662,6 +662,29 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.SEVERITY_WARNING));
 		}
 		
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				String name = mtp.getMolecularType().getDisplayName().toLowerCase();
+				if(name.equals("trash")) {
+					String message = "'Trash' is a reserved NFSim keyword and it cannot be used as a reactant.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+				}
+			}
+		}
+		if(bReversible) {
+			for(ProductPattern pp : productPatterns) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					String name = mtp.getMolecularType().getDisplayName().toLowerCase();
+					if(name.equals("trash")) {
+						String message = "'Trash' is a reserved NFSim keyword and it cannot be used as a reactant.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+					}
+				}
+			}
+		}
+		
 		// match management
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
 		Map<String, MolecularTypePattern> rMatches = new LinkedHashMap<String, MolecularTypePattern>();

@@ -311,6 +311,15 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Observable '" + name + "' Type is null", Issue.SEVERITY_ERROR));
 			}			
 		}
+		for(SpeciesPattern sp : speciesPatternList) {
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				String name = mtp.getMolecularType().getDisplayName().toLowerCase();
+				if(name.equals("trash")) {
+					String message = "'Trash' is a reserved NFSim keyword and it cannot be used as an observable.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+				}
+			}
+		}
 	}
 	public void checkComponentStateConsistency(IssueContext issueContext, List<Issue> issueList, MolecularTypePattern mtpThis) {
 		if(issueList == null) {
