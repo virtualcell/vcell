@@ -381,6 +381,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			for(MolecularTypePattern mtpThis : speciesPattern.getMolecularTypePatterns()) {
 				checkComponentStateConsistency(issueContext, issueList, mtpThis);
 			}
+			for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+				String name = mtp.getMolecularType().getDisplayName().toLowerCase();
+				if(name.equals("trash")) {
+					String message = "'Trash' is a reserved NFSim keyword and it cannot be used as a seed species.";
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
+				}
+			}
 		}
 	}
 }
