@@ -18,4 +18,5 @@ public class StochtestCompare {
 	public StochtestCompareStatus status;
 	public String errmsg;
 	public String results;
+	public String conclusion;
 }

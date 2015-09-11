@@ -23,8 +23,10 @@ public class StochtestRunTable extends Table {
 	public final Field mathtype					= new Field("mathtype",					"varchar2(64)",	"NOT NULL");
 	public final Field status					= new Field("status",					"varchar2(32)", "NOT NULL");
 	public final Field errmsg					= new Field("errmsg",					"varchar2(4000)", "");
+	public final Field conclusion				= new Field("conclusion",				"varchar2(4000)", "");
+	public final Field exclude					= new Field("exclude",					"varchar2(4000)", "");
 
-	private final Field fields[] = {stochtestref,parentmathtype,mathtype,status,errmsg};
+	private final Field fields[] = {stochtestref,parentmathtype,mathtype,status,errmsg,conclusion,exclude};
 	
 	public static final StochtestRunTable table = new StochtestRunTable();
 
