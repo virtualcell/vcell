@@ -64,6 +64,7 @@ for (int i = 0; i < numColumns; i++){
 			        stochtestRun.mathType = StochtestMathType.fromDatabaseTag(rset.getString(stochtestRunTable.mathtype.getUnqualifiedColName()+"_2"));
 			        stochtestRun.status = StochtestRun.StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
 			        stochtestRun.errmsg = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
+			        stochtestRun.conclusion = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
 			    }else{
 			    	return null;
 			    }
@@ -242,6 +243,7 @@ for (int i = 0; i < numColumns; i++){
 			        stochtestRun.mathType = StochtestMathType.fromDatabaseTag(rset.getString(stochtestRunTable.mathtype.getUnqualifiedColName()+"_2"));
 			        stochtestRun.status = StochtestRun.StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
 			        stochtestRun.errmsg = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
+			        stochtestRun.conclusion = rset.getString(stochtestRunTable.conclusion.getUnqualifiedColName()+"_2");
 			    }else{
 			    	return null;
 			    }
@@ -320,6 +322,7 @@ for (int i = 0; i < numColumns; i++){
 			    	stochtestCompare.status = StochtestCompare.StochtestCompareStatus.valueOf(rset.getString(stochtestCompareTable.status.getUnqualifiedColName()));
 			        stochtestCompare.errmsg = rset.getString(stochtestCompareTable.errmsg.getUnqualifiedColName());
 			        stochtestCompare.results = rset.getString(stochtestCompareTable.results.getUnqualifiedColName());
+			        stochtestCompare.conclusion = rset.getString(stochtestCompareTable.conclusion.getUnqualifiedColName());
 			    }else{
 			    	return null;
 			    }

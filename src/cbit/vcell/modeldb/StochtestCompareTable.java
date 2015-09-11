@@ -23,13 +23,14 @@ public class StochtestCompareTable extends Table {
 	public final Field results					= new Field("results",					"varchar2(4000)",	"");
 	public final Field status					= new Field("status",					"varchar2(32)",		"");
 	public final Field errmsg					= new Field("errmsg",					"varchar2(4000)", "");
+	public final Field conclusion				= new Field("conclusion",				"varchar2(4000)", "");
 	public final Field smallest_pvalue			= new Field("smallest_pvalue",			"NUMBER", "");
 	public final Field numexperiments			= new Field("numexperiments",			"integer", "");
 	public final Field numfail_95				= new Field("numfail_95",				"integer", "");
 	public final Field numfail_99				= new Field("numfail_99",				"integer", "");
 	public final Field numfail_999				= new Field("numfail_999",				"integer", "");
 
-	private final Field fields[] = {stochtestrunref1,stochtestrunref2,results,status,errmsg,smallest_pvalue,numexperiments,numfail_95,numfail_99,numfail_999};
+	private final Field fields[] = {stochtestrunref1,stochtestrunref2,results,status,errmsg,conclusion,smallest_pvalue,numexperiments,numfail_95,numfail_99,numfail_999};
 	
 	public static final StochtestCompareTable table = new StochtestCompareTable();
 
