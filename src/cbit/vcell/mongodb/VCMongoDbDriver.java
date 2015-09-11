@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.logging.Log4jSessionLog;
@@ -39,8 +40,23 @@ public class VCMongoDbDriver implements Runnable {
 	}
 	
 	private VCMongoDbDriver() {
-    	mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
-    	mongoDbLoggingCollectionName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);
+    	String dbName  = null;
+    	String colName = null;
+		try {
+	    	dbName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+	    	colName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);
+		}
+		catch (Exception e) {
+			LG.warn("mongo properties not set?",e);
+		}
+		finally {
+	    	mongoDbDatabaseName = dbName;
+	    	mongoDbLoggingCollectionName = colName; 
+	    	if (mongoDbDatabaseName == null || mongoDbLoggingCollectionName == null) {
+				LG.warn("mongo disabled; unable to read properties"); 
+	    		VCMongoMessage.enabled = false;
+	    	}
+		}
 	}
 
 	public void setSessionLog(SessionLog log){
@@ -66,9 +82,16 @@ public class VCMongoDbDriver implements Runnable {
 	
 	    		// send to MongoDB
 	        	if (m==null){
-	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
-	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
-	        		m = new Mongo(mongoDbHost,mongoDbPort);
+	        		try {
+		        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHost);
+		        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPort)); // default 27017
+		        		m = new Mongo(mongoDbHost,mongoDbPort);
+	        		} catch (ConfigurationException ce) {
+	        			LG.warn("Can't create mongo object, disabling mongo", ce);
+	        			log.alert("Can't create mongo object " + ce.getMessage());
+	        			VCMongoMessage.enabled = false;
+	        			return;
+	        		}
 	        	}
 	        	
 	        	DB db = m.getDB(mongoDbDatabaseName);
