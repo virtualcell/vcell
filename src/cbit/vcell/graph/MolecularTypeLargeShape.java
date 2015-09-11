@@ -297,18 +297,18 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				List<MolecularType> mtList = rbmmc.getMolecularTypeList();
 				int index = mtList.indexOf(mt);
 				index = index%7;
-				if(owner instanceof MolecularType) {
-					switch(index) {
-					case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
-					case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
-					case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
-					case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
-					case 4:  primaryColor = isHighlighted() == true ? Color.orange : Color.orange.darker().darker(); break;
-					case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
-					case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
-					default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
-					}
-				} else {
+//				if(owner instanceof MolecularType) {
+//					switch(index) {
+//					case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
+//					case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
+//					case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
+//					case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
+//					case 4:  primaryColor = isHighlighted() == true ? Color.orange : Color.orange.darker().darker(); break;
+//					case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
+//					case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
+//					default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
+//					}
+//				} else {
 					switch(index) {
 					case 0:  primaryColor = isHighlighted() == true ? Color.white : Color.red.darker().darker(); break;
 					case 1:  primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
@@ -319,7 +319,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					case 6:  primaryColor = isHighlighted() == true ? Color.white : Color.green.darker().darker().darker(); break;
 					default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
 					}
-				}
+//				}
 			}
 		}
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);
