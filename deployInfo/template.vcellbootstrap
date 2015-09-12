@@ -3,6 +3,11 @@ if [ -z "$BOOTVARIANT" ]; then
 	echo "set BOOTVARIANT before including $BASH_SOURCE"
 	exit 1
 fi
+
+# delay for load balancing / staggering 
+STARTUP_DELAY=${1:-0}
+sleep $STARTUP_DELAY
+
 #
 # include common variable definitions
 #
