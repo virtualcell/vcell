@@ -586,6 +586,10 @@ public class PDEDataViewer extends DataViewer {
 					return true;
 				}
 				VariableType varType = dataIdentifier.getVariableType();
+				if (pdeDataContext.getCartesianMesh().isChomboMesh() && !Double.isNaN(pdeDataContext.getDataValues()[dataIndex]))
+				{
+					return true;
+				}
 				if(varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 					int subvol = pdeDataContext.getCartesianMesh().getSubVolumeFromVolumeIndex(dataIndex);
 					if (simulationModelInfo.getVolumeNameGeometry(subvol).equals(varDomain.getName())) {
