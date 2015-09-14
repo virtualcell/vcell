@@ -91,6 +91,7 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.graph.structures.StructureSuite;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Feature;
@@ -549,6 +550,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
 					String rootSC = speciesContextRootFinder(reactionSpeciesCopy.getSpeciesContextArr()[i]);
 					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), rootSC, getModel(),structure,true,speciesHash, null));
+					copyRelativePosition(getGraphModel(),reactionSpeciesCopy.getSpeciesContextArr()[i], pastedSpeciesContextV.lastElement());
 				}
 				getGraphModel().clearSelection();
 				for(SpeciesContext pastedSpeciesContext:pastedSpeciesContextV){
@@ -556,10 +558,25 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true,getGraphPane(), null);					
+				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,getGraphModel());					
 			}
 		}
 
+	}
+	
+	public static void copyRelativePosition(GraphModel graphModel,BioModelEntityObject origEntity,BioModelEntityObject newEntity){
+		Shape origEntityShape = graphModel.getShapeFromModelObject(origEntity);
+		Shape newEntityShape = graphModel.getShapeFromModelObject(newEntity);
+		newEntityShape.setRelPos(new Point(origEntityShape.getRelPos()));
+		//offset if completely overlap another shape
+		for(Shape shape:graphModel.getShapes()){
+			if(shape.getModelObject() instanceof BioModelEntityObject && shape != newEntityShape){
+				if(shape.getRelPos().equals(newEntityShape.getRelPos())){
+					newEntityShape.setRelPos(new Point(newEntityShape.getRelX()+5, newEntityShape.getRelY()+5));
+					break;
+				}
+			}
+		}
 	}
 	
 	public static String speciesContextRootFinder(SpeciesContext speciesContext){
@@ -2599,6 +2616,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		dbrqWiz.setModel(getModel());
 		dbrqWiz.setStructure(struct);
 		dbrqWiz.setDocumentManager(getDocumentManager());
+		dbrqWiz.setGraphModel(getGraphModel());
 		
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this.getGraphPane());
 		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within structure '" + struct.getName() + "'" );
@@ -2648,6 +2666,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 						return;
 					}
 				}
+
 				BufferedImage bufferedImage = ITextWriter.generateDocReactionsImage(this.getModel(),ITextWriter.HIGH_RESOLUTION);
 				FileOutputStream reactionImageOutputStream = null;
 				try{
@@ -2656,6 +2675,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}finally{
 					try{if(reactionImageOutputStream != null){reactionImageOutputStream.close();}}catch(Exception e){e.printStackTrace();}
 				}
+
 				//reset the user preference for the default path, if needed.
 				File newPath = selectedFile.getParentFile();
 				if (!newPath.equals(defaultPath)) {

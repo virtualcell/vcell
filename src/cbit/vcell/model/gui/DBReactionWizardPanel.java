@@ -31,6 +31,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
+import cbit.gui.graph.GraphModel;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
@@ -2451,7 +2452,10 @@ private void reactionListSelectionChanged() {
 	}
 }
 
-
+private GraphModel graphModel;
+public void setGraphModel(GraphModel graphModel){
+	this.graphModel = graphModel;
+}
 /**
  * Comment
  */
@@ -2530,8 +2534,8 @@ private void applySelectedReactionElements(){
 			Structure pasteToStructure = DBReactionWizardPanel.this.getStructure();
 			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this,
 					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
-					pasteToModel, pasteToStructure, false,DBReactionWizardPanel.this,
-					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"));
+					pasteToModel, pasteToStructure, false,
+					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"),graphModel);
 			closeParent();
 		}
 	};
