@@ -55,7 +55,6 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.AbstractMathMapping.MathMappingNameScope;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.MathMappingCallbackTaskAdapter;
@@ -88,7 +87,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.resource.VersionedLibrary;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
@@ -2354,23 +2352,23 @@ public SimContextTransformer createNewTransformer(){
  * duplicate logic in {@link #createNewTransformer()} ... if {@link NetworkTransformer} 
  * going to be needed, return {@ link VersionedLibrary#CYGWIN_DLL_BIONETGEN}
  */
-@Override
-public VersionedLibrary getRequiredLibrary( ) {
-	switch (applicationType) {
-	case NETWORK_DETERMINISTIC:
-	case NETWORK_STOCHASTIC:
-		try { //4 gets and size -- can any return null? Wrap for safety
-			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
-			if (listSize > 0) {
-				return VersionedLibrary.CYGWIN_DLL_BIONETGEN;
-			}
-		}
-		catch (NullPointerException npe) { }
-		break;
-	default:
-	}
-	return null;
-}
+//@Override
+//public VersionedLibrary getRequiredLibrary( ) {
+//	switch (applicationType) {
+//	case NETWORK_DETERMINISTIC:
+//	case NETWORK_STOCHASTIC:
+//		try { //4 gets and size -- can any return null? Wrap for safety
+//			final int listSize = getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size();
+//			if (listSize > 0) {
+//				return VersionedLibrary.CYGWIN_DLL_BIONETGEN;
+//			}
+//		}
+//		catch (NullPointerException npe) { }
+//		break;
+//	default:
+//	}
+//	return null;
+//}
 
 
 public static class NetworkGenerationRequirements {

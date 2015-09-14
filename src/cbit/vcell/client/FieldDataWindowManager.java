@@ -386,11 +386,6 @@ private static class OutputFunctionViewer extends JPanel{
 				return null;
 			}
 
-			@Override
-			public VersionedLibrary getRequiredLibrary() {
-				return null;
-			}
-
 			/**
 			 * @throws UnsupportedOperationException (always)
 			 */
