@@ -19,6 +19,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -34,9 +35,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -48,7 +53,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -77,16 +84,23 @@ import org.vcell.util.gui.DialogUtils;
 
 import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
+import cbit.gui.graph.GraphResizeManager;
+import cbit.gui.graph.Shape;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.FluxReactionShape;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionCartoonTool;
+import cbit.vcell.graph.ReactionContainerShape;
+import cbit.vcell.graph.SimpleReactionShape;
+import cbit.vcell.graph.SpeciesContextShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.model.common.VCellErrorMessages;
@@ -113,8 +127,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			} else if (source == getAddFromTreeMenuItem()) {
 				addNewFromTree();
-			} else if (source == getRenameFromShapeMenuItem()) {
-				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
+//			} else if (source == getRenameFromShapeMenuItem()) {
+//				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			}			
 		}
 		@Override
@@ -392,6 +406,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				super.mouseClicked(e);
+				stopEditing();
 				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
@@ -487,13 +502,13 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 		return renameFromTreeMenuItem;
 	}
-	private JMenuItem getRenameFromShapeMenuItem() {
-		if (renameFromShapeMenuItem == null) {
-			renameFromShapeMenuItem = new JMenuItem("Rename");
-			renameFromShapeMenuItem.addActionListener(eventHandler);
-		}
-		return renameFromShapeMenuItem;
-	}
+//	private JMenuItem getRenameFromShapeMenuItem() {
+//		if (renameFromShapeMenuItem == null) {
+//			renameFromShapeMenuItem = new JMenuItem("Rename");
+//			renameFromShapeMenuItem.addActionListener(eventHandler);
+//		}
+//		return renameFromShapeMenuItem;
+//	}
 	private JMenuItem getDeleteFromTreeMenuItem() {
 		if (deleteFromTreeMenuItem == null) {
 			deleteFromTreeMenuItem = new JMenuItem("Delete");
@@ -595,6 +610,71 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	
+	private void stopEditing(){
+		shapePanel.requestFocus();
+		if(shapePanel.getComponentCount() > 0){
+			shapePanel.remove(0);
+		}
+		shapePanel.validate();
+		shapePanel.repaint();
+	}
+	private void editInPlace(final LargeShape selectedShape){
+		Rectangle labelOutline = selectedShape.getLabelOutline();
+		System.out.println(labelOutline);
+		Font font = selectedShape.getLabelFont();
+		
+		//Add press 'Enter' action, 'Escape' action, editor gets focus and mouse 'Exit' parent action
+		if(true){
+			final JTextField jTextField = new JTextField(selectedShape.getFullName());
+			jTextField.setFont(font);
+			jTextField.selectAll();
+			jTextField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try{
+						//Type specific edit actions
+						if(selectedShape instanceof MolecularTypeLargeShape){
+							((MolecularTypeLargeShape)selectedShape).getMolecularType().setName(jTextField.getText());
+						}else if(selectedShape instanceof MolecularComponentLargeShape){
+							((MolecularComponentLargeShape)selectedShape).getMolecularComponent().setName(jTextField.getText());
+						}else if(selectedShape instanceof ComponentStateLargeShape){
+							((ComponentStateLargeShape)selectedShape).getComponentStateDefinition().setName(jTextField.getText());
+						}
+					}catch(Exception e2){
+						e2.printStackTrace();
+						DialogUtils.showErrorDialog(shapePanel, e2.getMessage());
+					}
+					if(shapePanel.getComponentCount() > 0){
+						shapePanel.remove(0);
+					}
+				}
+			});
+//			ReactionCartoonTool.this.getGraphPane().removeMouseListener(myStopEditAdapter);//just to be sure
+//			ReactionCartoonTool.this.getGraphPane().addMouseListener(myStopEditAdapter);
+//			
+//			getGraphModel().removeGraphListener(myGraphListener);
+//			getGraphModel().addGraphListener(myGraphListener);
+			
+			InputMap im = jTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+	        ActionMap am = jTextField.getActionMap();
+	        im.put(KeyStroke.getKeyStroke("ESCAPE"), "cancelChange");
+	        am.put("cancelChange", new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					shapePanel.remove(0);
+					updateInterface();
+				}
+			});
+//	        GraphResizeManager grm = getGraphModel().getResizeManager();
+			jTextField.setBounds(labelOutline.x,labelOutline.y,labelOutline.width, labelOutline.height);
+			shapePanel.add(jTextField);
+//			getGraphPane().validate();
+			jTextField.requestFocus();
+			updateInterface();
+		}
+		return;
+	}
+	
 	private void showPopupMenu(MouseEvent e, PointLocationInShapeContext locationContext) {
 		if (popupFromShapeMenu == null) {
 			popupFromShapeMenu = new JPopupMenu();			
@@ -649,7 +729,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		boolean bAdd = false;
 		popupFromShapeMenu.removeAll();
 		Point mousePoint = e.getPoint();
-		popupFromShapeMenu.add(getRenameFromShapeMenuItem());		// everything can be renamed
+		
+		JMenuItem renamMenuItem = new JMenuItem("Rename");
+		popupFromShapeMenu.add(renamMenuItem);						// everything can be renamed
 //		Graphics gc = shapePanel.getGraphics();
 
 		if (selectedObject instanceof MolecularType) {				// rename, add
@@ -668,7 +750,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					bioModel.getModel().getRbmModelContainer().adjustSpeciesContextPatterns(molecularType, molecularComponent);
 					bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, molecularComponent);
 					bioModel.getModel().getRbmModelContainer().adjustRulesPatterns(molecularType, molecularComponent);
-					molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, molecularComponent));
+//					editInPlace((LargeShape)deepestShape);
+				}
+			});
+			renamMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					editInPlace((LargeShape)deepestShape);
 				}
 			});
 		} else if (selectedObject instanceof MolecularComponent) {		// rename, delete, separator, add
@@ -719,7 +806,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					ComponentStateDefinition componentStateDefinition = mc.createComponentStateDefinition();
 					mc.addComponentStateDefinition(componentStateDefinition);
 					bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, mc, componentStateDefinition);
-					molecularTypeTree.startEditingAtPath(molecularTypeTreeModel.findObjectPath(null, componentStateDefinition));
+//					editInPlace((LargeShape)deepestShape);
+				}
+			});
+			renamMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					editInPlace((LargeShape)deepestShape);
 				}
 			});
 		} else if (selectedObject instanceof ComponentStateDefinition) {		// rename, delete
@@ -748,6 +840,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 							mc.deleteComponentStateDefinition(csd);
 						}
 					}
+				}
+			});
+			renamMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					editInPlace((LargeShape)deepestShape);
 				}
 			});
 		}
