@@ -6,6 +6,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
@@ -28,7 +29,7 @@ import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularComponentLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
+public class MolecularComponentLargeShape extends AbstractComponentShape implements LargeShape, HighlightableShapeInterface {
 	
 	public static final int componentSeparation = 6;	// distance between components
 	public static final int baseWidth = 16;
@@ -98,7 +99,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			final int xOffsetLeft = 3;
 			final int xOffsetWidth = 4;
 			final int yOffset = 2;
-			return new Rectangle2D.Double(xPos-xOffsetLeft, yPos-height+yOffset, width+xOffsetWidth, height-1);
+			return new Rectangle2D.Double(xPos-xOffsetLeft, yPos-height+yOffset, width+xOffsetWidth, height+1);
 		}
 
 		@Override
@@ -117,6 +118,35 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public int getY() {
 			return yPos;
 		}
+		@Override
+		public int getWidth() {
+			return width;
+		}
+		@Override
+		public int getHeight() {
+			return height;
+		}
+		@Override
+		public Rectangle getLabelOutline() {
+			Font font = getLabelFont();
+			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			int stringWidth = fm.stringWidth(getFullName());
+			Rectangle labelOutline = new Rectangle(xPos-3, yPos-11, stringWidth+14, fm.getHeight()+4);
+			return labelOutline;
+		}
+		@Override
+		public Font getLabelFont() {
+			return font;
+		}
+		@Override
+		public String getFullName() {
+			if(csd != null) {
+				return csd.getDisplayName();
+			} else {
+				return "?";
+			}
+		}
+		
 		public void forceDifferentWidth(int width) {
 			// use this to force a different with, for instance if we want all the rectangles used
 			// for contains() to be equal
@@ -127,14 +157,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				this.width = width;
 			}
 		}
-		@Override
-		public int getWidth() {
-			return width;
-		}
-		@Override
-		public int getHeight() {
-			return height;
-		}
+
 		@Override
 		public void paintSelf(Graphics g) {
 			Graphics2D g2 = (Graphics2D)g;
@@ -228,7 +251,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		
 		String longestName = "";	// we find the longest State name
 		Font font = deriveStateFont();
-		int stateHeight = getStringHeight(font);
+		int stateHeight = getStringHeight(font)+2;	// we reserve 2 extra pixels height as separation between states
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
 			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
 			String stateName = csd.getDisplayName();
@@ -284,19 +307,51 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public MolecularComponent getMolecularComponent() {
 		return mc;
 	}
+	@Override
 	public int getX(){
 		return xPos;
 	}
+	@Override
+	public void setX(int xPos) {
+		this.xPos = xPos;
+	}
+	@Override
 	public int getY(){
 		return yPos;
 	}
+	@Override
+	public void setY(int yPos) {
+		this.yPos = yPos;
+	}
+	@Override
 	public int getWidth(){
 		return width;
 	} 
+	@Override
 	public int getHeight(){
 		return height;
 	}
-
+	@Override
+	public Rectangle getLabelOutline() {
+		Font font = getLabelFont();
+		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		int stringWidth = fm.stringWidth(getFullName());
+		Rectangle labelOutline = new Rectangle(xPos+6, yPos+2, stringWidth+18, fm.getHeight()+2);
+		return labelOutline;
+	}
+	@Override
+	public Font getLabelFont() {
+		return MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+	}
+	@Override
+	public String getFullName() {
+		if(mc != null) {
+			return mc.getDisplayName();
+		} else {
+			return "?";
+		}
+	}
+	
 	private String adjustForSize(String input) {
 		int len = input.length();
 		if(len > 8) {

@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -207,6 +208,28 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	public int getHeight(){
 		return height;
 	}
+	@Override
+	public Rectangle getLabelOutline() {
+		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
+		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		int stringWidth = fm.stringWidth(getFullName());
+		Rectangle labelOutline = new Rectangle(xPos+8, yPos+7, stringWidth+11, fm.getHeight()+5);
+		return labelOutline;
+	}
+	@Override
+	public Font getLabelFont() {
+		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
+		return font;
+	}
+	@Override
+	public String getFullName() {
+		if(mt != null) {
+			return mt.getDisplayName();
+		} else {
+			return "?";
+		}
+	}
+
 	public final boolean getPattern() {
 		return pattern;
 	}
