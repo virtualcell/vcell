@@ -12,6 +12,7 @@ package cbit.vcell.graph;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -37,9 +38,12 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.Shape;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.model.BioModelEntityObject;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -128,8 +132,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	 */
 	public static final void pasteReactionSteps(Component requester,ReactionStep[] reactionStepsArrOrig,
 			Model pasteModel, Structure struct,
-			boolean bNew,/*boolean bUseDBSpecies,*/ Component guiRequestComponent,
-			UserResolvedRxElements userResolvedRxElements){
+			boolean bNew,/*boolean bUseDBSpecies,*/
+			UserResolvedRxElements userResolvedRxElements,
+			GraphModel graphModel){
 		
 		PasteHelper[] pasteHelper = new PasteHelper[1];
 		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -138,11 +143,11 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				pasteHelper[0] =
-					pasteReactionSteps0(null,guiRequestComponent, issueContext, reactionStepsArrOrig,
+					pasteReactionSteps0(null,requester, issueContext, reactionStepsArrOrig,
 							clonedModel, clonedModel.getStructure(struct.getName()), bNew,/*bUseDBSpecies,*/
 							UserResolvedRxElements.createCompatibleUserResolvedRxElements(userResolvedRxElements, clonedModel));
 				if (pasteHelper[0].issues.size() != 0) {
-					if (!printIssues(pasteHelper[0].issues, guiRequestComponent)) {
+					if (!printIssues(pasteHelper[0].issues, requester)) {
 						throw UserCancelException.CANCEL_GENERIC;
 					}
 				}
@@ -167,10 +172,18 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			@Override
 			public void run(Hashtable<String, Object> hashTable)throws Exception {
 				IssueContext issueContext = new IssueContext(ContextType.Model, pasteModel, null);
-				pasteHelper[0] = pasteReactionSteps0(pasteHelper[0].rxPartMapStruct,guiRequestComponent, issueContext, reactionStepsArrOrig,
+				pasteHelper[0] = pasteReactionSteps0(pasteHelper[0].rxPartMapStruct,requester, issueContext, reactionStepsArrOrig,
 						pasteModel, struct, bNew,/*bUseDBSpecies,*/userResolvedRxElements);
 				if (pasteHelper[0].issues.size() != 0) {
-					printIssues(pasteHelper[0].issues, guiRequestComponent);
+					printIssues(pasteHelper[0].issues, requester);
+				}
+				
+				for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
+					ReactionCartoonTool.copyRelativePosition(graphModel, pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
+				}
+				graphModel.clearSelection();
+				for(BioModelEntityObject bioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
+					graphModel.select(bioModelEntityObject);
 				}
 			}
 		};
@@ -359,9 +372,11 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	public static class PasteHelper {
 		public Vector<Issue> issues;
 		public HashMap<ReactionParticipant,Structure> rxPartMapStruct;
-		public PasteHelper(Vector<Issue> issues,HashMap<ReactionParticipant, Structure> rxPartMapStruct) {
+		public HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts;
+		public PasteHelper(Vector<Issue> issues,HashMap<ReactionParticipant, Structure> rxPartMapStruct,HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts) {
 			this.issues = issues;
 			this.rxPartMapStruct = rxPartMapStruct;
+			this.reactionsAndSpeciesContexts = reactionsAndSpeciesContexts;
 		}
 	}
 	/**
@@ -379,6 +394,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			boolean bNew,/*boolean bUseDBSpecies,*/
 			UserResolvedRxElements userResolvedRxElements) throws Exception {
 
+		HashMap<BioModelEntityObject,BioModelEntityObject> reactionsAndSpeciesContexts = new HashMap<>();
+		
 		if(copyFromRxSteps == null || copyFromRxSteps.length == 0 || pasteToModel == null || pasteToStructure == null){
 			throw new IllegalArgumentException("CartoonTool.pasteReactionSteps Error "+
 					(copyFromRxSteps == null || copyFromRxSteps.length == 0?"reactionStepsArr empty ":"")+
@@ -429,6 +446,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			}
 
 			pasteToModel.addReactionStep(newReactionStep);
+			reactionsAndSpeciesContexts.put(newReactionStep,copyFromReactionStep);
 			Structure toRxnStruct = newReactionStep.getStructure();
 			Structure fromRxnStruct = copyFromReactionStep.getStructure();
 
@@ -458,14 +476,17 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					String matchRoot = ReactionCartoonTool.speciesContextRootFinder(matchSC[j]);
 					if(matchRoot != null && matchRoot.equals(rootSC) && matchSC[j].getStructure().getName().equals(pasteToStruct.getName())){
 						newSc = matchSC[j];
+						reactionsAndSpeciesContexts.put(newSc, matchSC[j]);
+						break;
 					}
 				}
 				
 				if(newSc == null){
 					newSc = pasteSpecies(parent, copyFromRxParticipantArr[i].getSpecies(),rootSC,pasteToModel,pasteToStruct,bNew, /*bUseDBSpecies,*/speciesHash,
 							UserResolvedRxElements.getPreferredReactionElement(userResolvedRxElements,copyFromRxParticipantArr[i]));
+					reactionsAndSpeciesContexts.put(newSc,copyFromRxParticipantArr[i].getSpeciesContext());
 				}
-				// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams. 
+				// record the old-new speciesContexts (reactionparticipants) in the IdHashMap, this is useful, esp for 'Paste new', while replacing proxyparams.
 				SpeciesContext oldSc = copyFromRxParticipantArr[i].getSpeciesContext();
 				if (speciesContextHash.get(oldSc) == null) {
 					speciesContextHash.put(oldSc, newSc);
@@ -534,6 +555,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 								// if models are the same and newSc is null, then oldSc is not a rxnParticipant. Leave it as is in the expr. 
 							}
 							if (newSC != null) {
+								reactionsAndSpeciesContexts.put(newSC,oldSC);
 								newExpression.substituteInPlace(new Expression(ste.getName()), new Expression(newSC.getName()));
 							}
 							//							SpeciesContext sc = null;
@@ -665,7 +687,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			}
 			copiedStructName = fromRxnStruct.getName();
 		}while(true);
-		return new PasteHelper(issueVector, rxPartMapStructure);
+		return new PasteHelper(issueVector, rxPartMapStructure,reactionsAndSpeciesContexts);
 	}
 
 	private static Species getNewSpecies(
