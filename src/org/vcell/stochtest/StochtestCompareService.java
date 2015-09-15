@@ -8,6 +8,7 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 
 import org.vcell.stochtest.StochtestCompare.StochtestCompareStatus;
+import org.vcell.stochtest.StochtestRun.StochtestRunStatus;
 import org.vcell.stochtest.TimeSeriesMultitrialData.SummaryStatistics;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -90,7 +91,12 @@ public class StochtestCompareService {
 	    	try {
 	    		StochtestRun stochtestRun1 = StochtestDbUtils.getStochtestRun(conFactory, stochtestCompare.stochtestRun1ref);
 	    		StochtestRun stochtestRun2 = StochtestDbUtils.getStochtestRun(conFactory, stochtestCompare.stochtestRun2ref);
-	    		
+	    		if (stochtestRun1.status != StochtestRunStatus.complete){
+	    			throw new RuntimeException("incomplete run status found: "+stochtestRun1.status.name());
+	    		}
+	    		if (stochtestRun2.status != StochtestRunStatus.complete){
+	    			throw new RuntimeException("incomplete run status found: "+stochtestRun2.status.name());
+	    		}
 	    		TimeSeriesMultitrialData data1 = StochtestFileUtils.readData(StochtestFileUtils.getStochtestRunDataFile(baseDir, stochtestRun1));
 	    		TimeSeriesMultitrialData data2 = StochtestFileUtils.readData(StochtestFileUtils.getStochtestRunDataFile(baseDir, stochtestRun2));
 
@@ -118,7 +124,7 @@ public class StochtestCompareService {
 	    }else{
 	    	System.out.println("no compare jobs waiting");
 	    	try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

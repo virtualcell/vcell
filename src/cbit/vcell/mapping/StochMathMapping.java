@@ -17,6 +17,8 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.AbstractMathMapping.ObservableConcentrationParameter;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
@@ -48,6 +50,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
@@ -58,6 +61,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
@@ -497,6 +501,12 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					mathDesc.addVariable(variable);
 				}
 			}
+			if (fieldMathMappingParameters[i] instanceof ObservableCountParameter){
+				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+				if (mathDesc.getVariable(variable.getName())==null){
+					mathDesc.addVariable(variable);
+				}
+			}
 		}
 
 		if (!mathDesc.isValid()){
@@ -901,13 +911,34 @@ protected void refreshVariables() throws MappingException {
 			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
 		}catch(Exception e){
 			e.printStackTrace();
-			throw new MappingException(e.getMessage());
+			throw new MappingException(e.getMessage(),e);
 		}
 		//we always add variables, all species are independent variables, no matter they are constant or not.
 		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
 		scm.setVariable(new StochVolVariable(countMathSymbol));
 		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 	}
+	
+	//
+	// add Observable "count" (the "concentration" observable is already added as a Global Parameter ... generated during NetworkTransformer).
+	// if a model parameter is an observable, we treat it specially, adding a "count" version of the observable
+	//
+	for (ModelEntityMapping mem : getTransformation().modelEntityMappings){
+		if (mem.newModelObj instanceof ModelParameter && mem.origModelObj instanceof RbmObservable){
+			ModelParameter concObservableParameter = (ModelParameter)mem.newModelObj;
+			RbmObservable observable = (RbmObservable)mem.origModelObj;
+			try {
+				Expression countExp = getExpressionConcToExpectedCount(new Expression(concObservableParameter,getNameScope()), observable.getStructure());
+				//countExp.bindExpression(this);
+				addObservableCountParameter(concObservableParameter.getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, getSimulationContext().getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
+			} catch (ExpressionException | PropertyVetoException e) {
+				e.printStackTrace();
+				throw new MappingException(e.getMessage(),e);
+			}
+		}
+	}
+	
+
 }
 
 }

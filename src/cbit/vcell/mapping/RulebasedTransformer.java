@@ -11,10 +11,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
 import org.vcell.util.TokenMangler;
-import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext.ContextType;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -99,11 +96,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 				newsp.addMolecularTypePattern(newmtp);
 				sc.setSpeciesPattern(newsp);
 				
-				RbmObservable newo = new RbmObservable(sc.getName()+"_SeedSpeciesObservable");
-				newo.setType(RbmObservable.ObservableType.Molecules);
-				newo.setModel(newModel);
+				RbmObservable newo = new RbmObservable(newModel,sc.getName()+"_SeedSpeciesObservable",sc.getStructure(),RbmObservable.ObservableType.Molecules);
 				newo.addSpeciesPattern(newsp);
-				newo.setStructure(sc.getStructure());
 				newModel.getRbmModelContainer().addObservable(newo);
 
 				em = new ModelEntityMapping(originalModel.getSpeciesContext(sc.getName()), newo);	// map new observable to old species context

@@ -485,8 +485,8 @@ private static final String PARAMETER_BOUNDARY_YP_SUFFIX = "_boundaryYp";
 private static final String PARAMETER_BOUNDARY_ZM_SUFFIX = "_boundaryZm";
 private static final String PARAMETER_BOUNDARY_ZP_SUFFIX = "_boundaryZp";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_CONC_UNIT_PREFIX = "_init_";
-static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "_Conc";
-static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "";
+static final String MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION = "";
+static final String MATH_VAR_SUFFIX_SPECIES_COUNT = "_Count";
 public static final String MATH_FUNC_SUFFIX_SPECIES_INIT_COUNT = "_initCount";
 static final String PARAMETER_VELOCITY_X_SUFFIX = "_velocityX";
 static final String PARAMETER_VELOCITY_Y_SUFFIX = "_velocityY";
@@ -722,7 +722,7 @@ public RationalExp getUnitFactorAsRationalExp(VCUnitDefinition unitFactor) {
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+public final synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
@@ -1012,7 +1012,7 @@ public String getMathSymbol(SymbolTableEntry ste, GeometryClass geometryClass) t
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
+protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClass)
 		throws MappingException {
 			String steName = ste.getName();
 			if (ste instanceof Kinetics.KineticsParameter){
@@ -1058,6 +1058,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, GeometryClass geometryClas
 			if (ste instanceof ObservableCountParameter){
 				ObservableCountParameter countParm = (ObservableCountParameter)ste;
 				return countParm.getObservable().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+			}
+			if (ste instanceof RbmObservable){
+				RbmObservable observable = (RbmObservable)ste;
+				return observable.getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
 			}
 			if (ste instanceof EventAssignmentOrRateRuleInitParameter){
 				EventAssignmentOrRateRuleInitParameter eventInitParm = (EventAssignmentOrRateRuleInitParameter)ste;
@@ -1394,7 +1398,7 @@ protected GeometryClass getDefaultGeometryClass(Expression expr)
 			return geometryClass;
 		}
 
-ObservableConcentrationParameter addObservableConcentrationParameter(String name, Expression expr, int role,
+final ObservableConcentrationParameter addObservableConcentrationParameter(String name, Expression expr, int role,
 		VCUnitDefinition unitDefn, RbmObservable argObservable) throws PropertyVetoException {
 		
 			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argObservable.getStructure()).getGeometryClass();
@@ -1413,7 +1417,7 @@ ObservableConcentrationParameter addObservableConcentrationParameter(String name
 			return newParameter;
 		}
 
-ObservableCountParameter addObservableCountParameter(String name, Expression expr, int role,
+final ObservableCountParameter addObservableCountParameter(String name, Expression expr, int role,
 		VCUnitDefinition unitDefn, RbmObservable argObservable) throws PropertyVetoException {
 		
 			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argObservable.getStructure()).getGeometryClass();
@@ -1434,7 +1438,7 @@ ObservableCountParameter addObservableCountParameter(String name, Expression exp
 			return newParameter;
 		}
 
-SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role,
+final SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role,
 		VCUnitDefinition unitDefn, SpeciesContextSpec argscSpec) throws PropertyVetoException {
 		
 			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argscSpec.getSpeciesContext().getStructure()).getGeometryClass();
@@ -1453,7 +1457,7 @@ SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expr
 			return newParameter;
 		}
 
-protected SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn, SpeciesContextSpec argscSpec) throws PropertyVetoException {
+protected final SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn, SpeciesContextSpec argscSpec) throws PropertyVetoException {
 
 	GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argscSpec.getSpeciesContext().getStructure()).getGeometryClass();
 	SpeciesCountParameter newParameter = new SpeciesCountParameter(name,expr,role,unitDefn,argscSpec,geometryClass);
@@ -1479,7 +1483,7 @@ protected SpeciesCountParameter addSpeciesCountParameter(String name, Expression
  * @param expression cbit.vcell.parser.Expression
  * @param role int
  */
-ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
+final ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
 		VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException,
 		ExpressionBindingException {
 		
@@ -1584,7 +1588,7 @@ public KFluxParameter getFluxCorrectionParameter(StructureMapping sourceStructur
  * @param expression cbit.vcell.parser.Expression
  * @param role int
  */
-MathMappingParameter addMathMappingParameter(String name, Expression expression, int role,
+final MathMappingParameter addMathMappingParameter(String name, Expression expression, int role,
 		VCUnitDefinition unitDefinition, GeometryClass geometryClass) throws java.beans.PropertyVetoException,
 		ExpressionBindingException {
 		

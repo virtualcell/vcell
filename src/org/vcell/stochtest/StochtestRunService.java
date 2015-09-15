@@ -214,7 +214,7 @@ public class StochtestRunService {
 	    }else{
 	    	System.out.println("no jobs waiting");
 	    	try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -275,6 +275,7 @@ public class StochtestRunService {
 		boolean bTimeout = false;
 //		int progress = 1;
 		for(int trialIndex=0;trialIndex<numRuns;trialIndex++){
+			System.out.println("\n=====================================\n\nStarting trial "+(trialIndex+1)+" of "+numRuns+"\n\n==============================\n");
 			long startTime = System.currentTimeMillis();
 //			if(i >= (progress*numRuns/10)){
 //				printout(progress+" ");
