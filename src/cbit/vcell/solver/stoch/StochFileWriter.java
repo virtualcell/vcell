@@ -250,7 +250,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 			  				varCount = dist.nextPoisson(expectedCount);
 			  			}
 			  		}
-			  		System.out.println("expectedCount: " + expectedCount + ", varCount: " + varCount);
+			  		//System.out.println("expectedCount: " + expectedCount + ", varCount: " + varCount);
 		  			printWriter.println(varIniCondition.getVar().getName()+"\t" + varCount);
 		  		}catch(ExpressionException ex) {
 		  			ex.printStackTrace();

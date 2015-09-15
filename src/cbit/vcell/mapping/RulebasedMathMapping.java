@@ -430,6 +430,12 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 					mathDesc.addVariable(variable);
 				}
 			}
+			if (fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
+				Variable variable = newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass());
+				if (mathDesc.getVariable(variable.getName())==null){
+					mathDesc.addVariable(variable);
+				}
+			}
 		}
 
 		if (!mathDesc.isValid()){

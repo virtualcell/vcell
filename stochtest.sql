@@ -106,6 +106,14 @@ alter table stochtestcompare add numFail_999 NUMBER;
 
 alter table stochtestcompare add errmsg varchar2(4000);
 
+alter table stochtestcompare add conclusion varchar2(4000);
+
+alter table stochtestrun add conclusion varchar2(4000);
+
+alter table stochtestrun add exclude varchar2(4000);
+
+update stochtestcompare set conclusion = 'zero-order mass action reverse' where id = 96750698;
+
 rename column stochtestrun.mathgenstatus to status;
 
 select * from stochtestrun where status = 'none' and parentmathtype <> mathtype and rownum < 100;
@@ -122,8 +130,6 @@ update stochtestrun set errmsg = NULL;
 
 update stochtestcompare set status = 'waiting', errmsg = NULL, results = NULL where status = 'none';
 
-update stochtestcompare set status = 'waiting', errmsg = NULL, results = NULL, smallest_pvalue=NULL, numexperiments=NULL, numfail_95=NULL, numfail_99=NULL, numfail_999=NULL;
-
 select count(id), status, results from stochtestcompare group by status, results order by status, results;
 
 select * from stochtestcompare where status = 'verydifferent' ;
@@ -131,6 +137,18 @@ select * from stochtestcompare where status = 'verydifferent' ;
 select count(id), status from stochtestcompare  group by status order by status;
 
 select * from stochtestcompare where smallest_pvalue is not NULL;
+
+
+
+select vc_userinfo.userid, vc_biomodel.NAME as biomodel_name, vc_biomodel.VERSIONDATE as biomodel_date, stochtestcompare.* 
+from stochtestcompare, vc_userinfo, stochtestrun, stochtest, vc_biomodel 
+where vc_userinfo.id = vc_biomodel.ownerref 
+and stochtestcompare.STOCHTESTRUNREF1 = stochtestrun.id
+and stochtestrun.stochtestref = stochtest.id 
+and stochtest.biomodelref = vc_biomodel.id 
+and (stochtestcompare.status = 'verydifferent' or stochtestcompare.status = 'failed')
+and stochtest.NUMCOMPARTMENTS = 1
+order by stochtestcompare.SMALLEST_PVALUE, stochtestcompare.id;
 
 commit;
 
@@ -146,11 +164,13 @@ from stochtestrun r1, stochtestrun r2
 where r1.stochtestref = r2.stochtestref
 and r1.id < r2.id;
 
-select c.*, r1.mathtype as mt1, r2.mathtype as mt2, r1.status status1, r2.status status2 from stochtestcompare c, stochtestrun r1, stochtestrun r2
+select c.*, r1.mathtype as mt1, r2.mathtype as mt2, r1.status status1, r2.status status2 
+from stochtestcompare c, stochtestrun r1, stochtestrun r2
 where r1.id = c.stochtestrunref1
 and r2.id = c.stochtestrunref2;
 
-select count(c.id), r1.mathtype as mt1, r1.status as status1, r2.mathtype as mt2, r2.status as status2 from stochtestcompare c, stochtestrun r1, stochtestrun r2
+select count(c.id), r1.mathtype as mt1, r1.status as status1, r2.mathtype as mt2, r2.status as status2 
+from stochtestcompare c, stochtestrun r1, stochtestrun r2
 where r1.id = c.stochtestrunref1
 and r2.id = c.stochtestrunref2
 group by r1.mathtype, r1.status, r2.mathtype, r2.status
@@ -160,6 +180,11 @@ select * from stochtestcompare where status <> 'waiting';
 
 commit;
 
+update stochtestrun set status = 'waiting', errmsg = NULL where PARENTMATHTYPE = 'nonspatial-stochastic' and MATHTYPE = 'nonspatial-stochastic';
+
+
+select stochtestrun.id from stochtest, stochtestrun, vc_speciescontextspec where stochtest.id = stochtestrun.stochtestref and stochtest.simcontextref = vc_speciescontextspec.simcontextref and vc_speciescontextspec.bforceconst = 1;
+
 create table stochtestrun_old as select * from stochtestrun;
 
 delete from stochtestrun;
@@ -168,20 +193,177 @@ select count(stochtestrun.id) from stochtestrun where stochtestrun.stochtestref 
 
 delete from stochtestrun where stochtestrun.stochtestref in (select stochtest.id from stochtest where stochtest.NUMCOMPARTMENTS <> 1);
 
-select count(id), PARENTMATHTYPE, MATHTYPE, status, errmsg from stochtestrun group by status, PARENTMATHTYPE, MATHTYPE, errmsg order by parentmathtype, mathtype, status, errmsg;
+-------------------------------------------------------------
+-- rerun stochtest run records
+-------------------------------------------------------------
+update stochtestrun set status = 'waiting', errmsg = NULL, conclusion = NULL, exclude = NULL
+where status = 'accepted'
+-- and errmsg like '%cygwin%'
+-- and PARENTMATHTYPE = 'rules'
+-- and PARENTMATHTYPE = 'nonspatial-stochastic'
+-- and MATHTYPE = 'nonspatial-stochastic'
+-- and MATHTYPE = 'rules'
+-- and conclusion = 'bng-null-pointer-exception'
+-- and rownum < 1;
+;
 
-select * from stochtestrun where errmsg like '%speciesPattern22';
+select count(id) from stochtestrun where errmsg like '%cygwin%';
 
-select stochtestcompare.*, stochtestrun.*, stochtest.*, vc_userinfo.userid, vc_biomodel.* 
-from stochtestcompare, vc_userinfo, stochtestrun, stochtest, vc_biomodel 
-where stochtestcompare.STOCHTESTRUNREF1 = stochtestrun.id 
+-------------------------------------------------------------
+-- retun stochest compare
+-------------------------------------------------------------
+update stochtestcompare 
+set status = 'waiting', 
+errmsg = NULL, 
+results = NULL, 
+smallest_pvalue=NULL, 
+numexperiments=NULL, 
+numfail_95=NULL, 
+numfail_99=NULL, 
+numfail_999=NULL,
+CONCLUSION=NULL
+where status = 'failed'
+;
+
+
+
+---------------------------------------------------------
+-- stochtest compare - detailed query with biomodel info
+---------------------------------------------------------
+select vc_userinfo.userid as owner, 
+vc_biomodel.VERSIONDATE as bmdate, 
+vc_biomodel.name as bmname, 
+stochtestcompare.id as compare_id,
+stochtestcompare.results as compare_results,
+stochtestcompare.status as compare_status,
+stochtestcompare.errmsg as compare_errmsg, 
+stochtestcompare.SMALLEST_PVALUE,
+stochtestcompare.NUMEXPERIMENTS,
+stochtestcompare.NUMFAIL_95,
+stochtestcompare.NUMFAIL_99,
+stochtestcompare.NUMFAIL_999,
+r1.status as r1stat, 
+r2.status as r2stat, 
+stochtest.dimension, stochtest.numcompartments
+from stochtestcompare, vc_userinfo, stochtestrun r1, stochtestrun r2, stochtest, vc_biomodel 
+where stochtestcompare.STOCHTESTRUNREF1 = r1.id 
+and stochtestcompare.STOCHTESTRUNREF2 = r2.id 
 and vc_userinfo.id = vc_biomodel.ownerref 
-and stochtestrun.stochtestref = stochtest.id 
+and r1.stochtestref = stochtest.id 
 and stochtest.biomodelref = vc_biomodel.id 
-and (stochtestrun.status = 'failed' or stochtestcompare.status = 'verydifferent')
+-- and (stochtestrun.status = 'failed' or stochtestcompare.status = 'verydifferent')
+-- and stochtestcompare.status = 'not_verydifferent'
+-- and vc_userinfo.userid = 'mblinov'
+and r1.status = 'complete' and r2.status = 'complete'
 order by stochtestcompare.smallest_pvalue;
 
-select count(id), PARENTMATHTYPE, MATHTYPE, status from stochtestrun group by status, PARENTMATHTYPE, MATHTYPE order by parentmathtype, mathtype, status;
+---------------------------------------------------------
+-- stochtest compare - summary
+---------------------------------------------------------
+select 
+count(stochtestcompare.id) as id,
+stochtestcompare.status as compare_status
+from stochtestcompare, stochtestrun r1, stochtestrun r2, stochtest 
+where stochtestcompare.STOCHTESTRUNREF1 = r1.id 
+and stochtestcompare.STOCHTESTRUNREF2 = r2.id 
+and r1.stochtestref = stochtest.id 
+-- and (stochtestrun.status = 'failed' or stochtestcompare.status = 'verydifferent')
+-- and stochtestcompare.status = 'failed'
+and r1.status = 'complete' and r2.status = 'complete' and stochtest.numcompartments = 1
+group by stochtestcompare.status;
+
+select count(id) from stochtestcompare;
+
+---------------------------------------------------------------------------
+-- stochtest run - terse summary - status only (no conclusions, no errmsg)
+---------------------------------------------------------------------------
+select count(id), PARENTMATHTYPE, MATHTYPE, status 
+from stochtestrun 
+where exclude is NULL
+group by status, PARENTMATHTYPE, MATHTYPE 
+order by parentmathtype, mathtype, status;
+
+-------------------------------------------------------------------
+-- stochtest run - short summary - with conclusions (no errmsg)
+-------------------------------------------------------------------
+select count(id), PARENTMATHTYPE, MATHTYPE, status, conclusion
+-- , max(errmsg)
+from stochtestrun 
+-- where exclude is NULL
+group by status, conclusion, PARENTMATHTYPE, MATHTYPE 
+order by parentmathtype, mathtype, status, count(id) desc;
+
+-------------------------------------------------------------------
+-- stochtest run - short summary - with conclusions (no errmsg) ... with biomodel and user
+-------------------------------------------------------------------
+select count(stochtestrun.id), 
+stochtestrun.PARENTMATHTYPE, 
+stochtestrun.MATHTYPE, 
+stochtestrun.status, 
+stochtestrun.conclusion, 
+max('user('||vc_userinfo.userid||'),     biomodel('||vc_biomodel.name||'),     date('||TO_CHAR(vc_biomodel.versiondate, 'dd/mon/yyyy  hh24:mi:ss')||')') as max_model
+-- , max(errmsg)
+from stochtestrun, stochtest, vc_biomodel, vc_userinfo 
+where stochtestrun.STOCHTESTREF = stochtest.id
+and stochtest.biomodelref = vc_biomodel.id
+and vc_userinfo.id = vc_biomodel.ownerref
+-- where exclude is NULL
+and stochtest.NUMCOMPARTMENTS = 1
+group by stochtestrun.status, stochtestrun.conclusion, stochtestrun.PARENTMATHTYPE, stochtestrun.MATHTYPE 
+order by stochtestrun.parentmathtype, stochtestrun.mathtype, stochtestrun.status, count(stochtestrun.id) desc;
+
+-------------------------------------------------------------------
+-- stochtest run - detailed summary - with conclusions and errmsg
+-------------------------------------------------------------------
+select count(id), PARENTMATHTYPE, MATHTYPE, status, conclusion, errmsg 
+from stochtestrun 
+-- where conclusion = 'bng-null-pointer-exception'
+where exclude is NULL
+group by status, conclusion, errmsg, PARENTMATHTYPE, MATHTYPE 
+order by parentmathtype, mathtype, status, conclusion, errmsg;
+
+-------------------------------------------------------------------------
+-- stochtest run - full query with conclusions, errmsg and biomodel info
+-------------------------------------------------------------------------
+select vc_userinfo.userid as owner, 
+vc_biomodel.VERSIONDATE as bmdate, 
+vc_biomodel.name as bmname, 
+stochtestrun.id as runid, 
+stochtestrun.parentmathtype, 
+stochtestrun.mathtype,
+stochtestrun.status, 
+stochtestrun.conclusion,
+stochtestrun.errmsg
+-- stochtest.*
+from vc_userinfo, stochtestrun, stochtest, vc_biomodel 
+where vc_userinfo.id = vc_biomodel.ownerref 
+and stochtestrun.stochtestref = stochtest.id 
+and stochtest.biomodelref = vc_biomodel.id 
+and stochtestrun.status <> 'none'
+and stochtestrun.status <> 'waiting' 
+and stochtestrun.status <> 'complete' 
+and stochtestrun.PARENTMATHTYPE = 'rules' and stochtestrun.mathtype = 'nonspatial-stochastic'
+--and conclusion is NULL
+--and exclude is NULL
+-- and errmsg like '%more than 2%'
+order by status, errmsg
+;
+
+------------------------------------------------------
+-- stochtest run - update stochtestrun.conclusion
+------------------------------------------------------
+update stochtestrun set exclude = 'structure-size-not-set' where conclusion = 'nfsim-structure-size-not-set';
+
+update stochtestrun set status = 'waiting', errmsg = NULL, conclusion = NULL where status = 'failed' and conclusion is NULL and errmsg like '%cygwin%';
+
+update stochtestrun set conclusion = 'nfsim-exe-failed' where status = 'failed' and conclusion is NULL and errmsg like '%solver failed : Could not execute code:%NFsim_x64%';
+
+update stochtestrun set conclusion = NULL where conclusion = 'nfsim-exe-failed';
+
+update stochtestrun set conclusion = 'nfsim-solver-exception-couldnt-find-binding-sites' where errmsg like '%solver failed : Could not execute code: It seems that I couldn&apos;t find the binding sites or states you are refering to%' and status = 'failed' and parentmathtype = 'rules' and mathtype = 'rules';
+update stochtestrun set conclusion = NULL where status = 'complete';
+
+
 
 select count(*) from stochtestcompare;
 
@@ -202,7 +384,7 @@ FROM stochtestrun, stochtest
 WHERE stochtest.id = stochtestrun.stochtestref 
 AND stochtestrun.status = 'waiting' 
 AND ROWNUM = 1 
-FOR UPDATE  
+FOR UPDATE
 ORDER BY stochtestrun.id;
 
 
