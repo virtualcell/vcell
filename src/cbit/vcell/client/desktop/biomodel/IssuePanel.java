@@ -28,9 +28,12 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
@@ -269,6 +272,19 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				//			} else {
 				System.err.println("SpeciesPattern object missing a proper issue context.");
 				//			}
+			} else if (object instanceof SimulationContext) {
+				SimulationContext sc = (SimulationContext)object;
+				IssueCategory ic = issue.getCategory();
+				switch(ic) {
+				case RbmNetworkConstraintsBad:
+					NetworkConstraints networkConstraints = sc.getBioModel().getModel().getRbmModelContainer().getNetworkConstraints();
+					NetworkConstraintsEntity nce = new NetworkConstraintsEntity("Max Iterations", "value", networkConstraints.getMaxIteration() + "");
+					followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
+					break;
+				default:
+					followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {object});
+					break;
+				}
 			} else if (object instanceof Geometry) {
 				if (issueContext.hasContextType(ContextType.SimContext)){
 					SimulationContext simContext = (SimulationContext)issueContext.getContextObject(ContextType.SimContext);
