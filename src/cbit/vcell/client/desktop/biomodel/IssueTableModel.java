@@ -290,6 +290,17 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 					description = "Model";
 					break;
 				}
+			} else if (source instanceof SimulationContext) {
+				SimulationContext sc = (SimulationContext)source;
+				IssueCategory ic = issue.getCategory();
+				switch(ic) {
+				case RbmNetworkConstraintsBad:
+					description = "Specifications / Network";
+					break;
+				default:
+					description = "Application";
+					break;
+				}
 			} else if (source instanceof Model) {
 				description = "Model";
 			} else {
@@ -382,6 +393,9 @@ public class IssueTableModel extends VCellSortTableModel<Issue> implements Issue
 			} else if (object instanceof RbmModelContainer) {
 				//RbmModelContainer mc = (RbmModelContainer)object;
 				description = "Rules validator";
+			} else if (object instanceof SimulationContext) {
+				SimulationContext sc = (SimulationContext)object;
+				description = sc.getName();
 			} else if (object instanceof Model) {
 				Model m = (Model)object;
 				description = m.getName();

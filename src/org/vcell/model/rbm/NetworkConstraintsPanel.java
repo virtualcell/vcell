@@ -39,6 +39,7 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
@@ -66,7 +67,7 @@ import cbit.vcell.solvers.ApplicationMessage;
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
 @SuppressWarnings("serial")
-public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterCallback, ApplicationSpecificationsPanel.Specifier {
+public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements BioNetGenUpdaterCallback, ApplicationSpecificationsPanel.Specifier {
 
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
@@ -598,6 +599,11 @@ public class NetworkConstraintsPanel extends JPanel implements BioNetGenUpdaterC
 				}
 			}
 		}
+	}
+	@Override
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
