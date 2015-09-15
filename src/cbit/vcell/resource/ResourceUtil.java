@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -71,7 +70,10 @@ public class ResourceUtil {
 	private static File localRootDir = null;
 	private static File logDir = null;
 
-	private static File solversDirectory = null;
+	/**
+	 * normally set once; protected to allow test fixtures to access
+	 */
+	protected static File solversDirectory = null;
 	/**
 	 * directory to cache licensed files download from vcell.org
 	 */
@@ -596,6 +598,5 @@ public class ResourceUtil {
 	public static String forceUnixPath(String filePath){
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
 	}
-
 
 }
