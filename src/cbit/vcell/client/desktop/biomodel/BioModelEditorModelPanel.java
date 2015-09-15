@@ -1078,18 +1078,19 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_NAME).setCellRenderer(rbmSpeciesNameCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_LINK).setCellRenderer(tableCellRenderer);
 		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.species_pattern.ordinal()).setCellRenderer(rbmObservablePatternCellRenderer);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.structure.ordinal()).setCellRenderer(tableRenderer);
 		
 		// all "depictions" have their own renderer
 		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmMolecularTypeShapeDepictionCellRenderer);
 		molecularTypeTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setMaxWidth(180);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEPICTION).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
 		speciesTable.getColumnModel().getColumn(BioModelEditorSpeciesTableModel.COLUMN_DEFINITION).setCellRenderer(rbmTableRenderer);
-		observablesTable.getColumnModel().getColumn(MolecularTypeTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.depiction.ordinal()).setCellRenderer(rbmObservableShapeDepictionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
 		reactionsTable.getColumnModel().getColumn(BioModelEditorReactionTableModel.COLUMN_DEPICTION).setPreferredWidth(180);
 		
-		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.type.ordinal()).setCellEditor(observableTableModel.getStructureComboBoxEditor());
-		observableTableModel.updateStructureComboBox();
+		observablesTable.getColumnModel().getColumn(ObservableTableModel.Column.type.ordinal()).setCellEditor(observableTableModel.getObservableTypeComboBoxEditor());
+		observableTableModel.updateObservableTypeComboBox();
 		
 		reactionsTable.addMouseListener(eventHandler);
 		reactionsTable.addKeyListener(eventHandler);

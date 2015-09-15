@@ -31,6 +31,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.RbmObservable.ObservableType;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -42,6 +43,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 
 	public enum Column {
 		name("Name"),
+		structure("Structure"),
 		depiction("Pattern Depiction"),
 		species_pattern("Pattern Definition"),
 		type("Count");
@@ -174,6 +176,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				}
 			case type:
 				return observable.getType();
+			case structure:
+				return observable.getStructure();
 			}
 		}
 		return null;
@@ -188,7 +192,10 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		if (o == null) {
 			return false;
 		}
-		if(col == Column.type) {
+		if (col == Column.structure){
+			return false;
+		}
+		if (col == Column.type) {
 			return true;
 		}
 		if (col == Column.depiction) {
@@ -225,6 +232,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				switch (col) {
 				case name:
 					return scale * o1.getName().compareToIgnoreCase(o2.getName());
+				case structure:
+					return scale * o1.getStructure().getName().compareToIgnoreCase(o2.getStructure().getName());
 				case species_pattern:
 					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0)).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0)));
 				case type:					
@@ -241,6 +250,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		switch (col) {
 		case name:
 			return String.class;
+		case structure:
+			return Structure.class;
 		case species_pattern:
 			return String.class;
 		case type:
@@ -251,21 +262,22 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		return String.class;
 	}
 	
-	protected void updateStructureComboBox() {
-		JComboBox typeComboBoxCellEditor = (JComboBox) getStructureComboBoxEditor().getComponent();
+	protected void updateObservableTypeComboBox() {
+		@SuppressWarnings("unchecked")
+		JComboBox<RbmObservable.ObservableType> typeComboBoxCellEditor = (JComboBox<RbmObservable.ObservableType>) getObservableTypeComboBoxEditor().getComponent();
 		if (typeComboBoxCellEditor == null) {
-			typeComboBoxCellEditor = new JComboBox();
+			typeComboBoxCellEditor = new JComboBox<RbmObservable.ObservableType>();
 		}
-		DefaultComboBoxModel aModel = new DefaultComboBoxModel();
+		DefaultComboBoxModel<RbmObservable.ObservableType> aModel = new DefaultComboBoxModel<RbmObservable.ObservableType>();
 		for(RbmObservable.ObservableType ot : RbmObservable.ObservableType.values()) {
-			aModel.addElement(ot.toString());
+			aModel.addElement(ot);
 		}
 		DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer() {
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setHorizontalTextPosition(SwingConstants.LEFT);
-				if (value instanceof String) {
-					setText((String)value);
+				if (value instanceof RbmObservable.ObservableType) {
+					setText(((RbmObservable.ObservableType) value).name());
 				}
 				return this;
 			}
@@ -274,9 +286,9 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 		typeComboBoxCellEditor.setModel(aModel);
 		typeComboBoxCellEditor.setSelectedIndex(0);
 	}
-	protected DefaultScrollTableComboBoxEditor getStructureComboBoxEditor() {
+	protected DefaultScrollTableComboBoxEditor getObservableTypeComboBoxEditor() {
 		if (defaultScrollTableComboBoxEditor == null) {
-			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox());
+			defaultScrollTableComboBoxEditor = ((EditorScrollTable)ownerTable).new DefaultScrollTableComboBoxEditor(new JComboBox<RbmObservable.ObservableType>());
 		}
 		return defaultScrollTableComboBoxEditor;
 	}
@@ -425,15 +437,11 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 					return;
 				}
 				if (observable == null) {	// new observable in empty row of the table
-					RbmObservable o = new RbmObservable(inputValue);
-					o.setType(RbmObservable.ObservableType.Molecules);
-					o.setModel(getModel());
-					Structure structure = null;
-					int size = getModel().getStructures().length;
-					if(size > 0) {
-						structure = getModel().getStructure(0);
+					if (getModel().getStructures().length == 0){
+						throw new RuntimeException("cannot add observable without a structure");
 					}
-					o.setStructure(structure);
+					Structure structure = getModel().getStructure(0);
+					RbmObservable o = new RbmObservable(getModel(),inputValue,structure,RbmObservable.ObservableType.Molecules);
 					getModel().getRbmModelContainer().addObservable(o);
 					SpeciesPattern sp = new SpeciesPattern();	// we add an empty species pattern
 					o.addSpeciesPattern(sp);
@@ -461,7 +469,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				break;
 			}
 			case type: {
-				RbmObservable.ObservableType ot = RbmObservable.ObservableType.getTypeFromName((String) value);
+				RbmObservable.ObservableType ot = (ObservableType) value;
 				observable.setType(ot);
 				fireTableRowsUpdated(row, row);
 				break;
