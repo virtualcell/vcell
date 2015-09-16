@@ -31,6 +31,7 @@ import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
@@ -207,7 +208,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			locationContext.sps = this;
 			return true;
 		}
-		return false;		// for the case of SpeciesPatternLargeShape, it actually can't
+		// for species contexts we can only have one single species pattern
+		// anywhere you click inside the panel you select that species pattern
+		if(owner instanceof SpeciesContext) {
+			locationContext.sps = this;
+			return true;
+		}
+		return false;
 	}
 
 	public void paintContour(Graphics g) {
@@ -246,7 +253,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		paintContour(g);
+		if(owner instanceof RbmObservable) {
+			paintContour(g);
+		}
 		
 		if(owner instanceof RbmObservable) {		// type the expression of the sp right above the shape
 			Color colorOld = g2.getColor();
