@@ -45,6 +45,7 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private boolean bSaveVCellOutput = true;
 	private boolean bSaveChomboOutput = false;
 	private List<Integer> refineRatioList = null;
+	private List<TimeInterval> timeIntervalList = new ArrayList<TimeInterval>();
 
 	public ChomboSolverSpec(int maxBoxSize) {
 		this.maxBoxSize = maxBoxSize;
@@ -56,6 +57,10 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.viewLevel = css.viewLevel;
 		this.bSaveVCellOutput = css.bSaveVCellOutput;
 		this.bSaveChomboOutput = css.bSaveChomboOutput;
+		for (TimeInterval ti : css.timeIntervalList)
+		{
+			timeIntervalList.add(new TimeInterval(ti));
+		}
 		this.refinementRoiList = new ArrayList<RefinementRoi>();
 		for (RefinementRoi roi : css.refinementRoiList)
 		{
@@ -203,6 +208,15 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		{
 			return false;
 		}
+		if (timeIntervalList.size() != chomboSolverSpec.timeIntervalList.size())
+		{
+			return false;
+		}
+		for (int i = 0; i < timeIntervalList.size(); i ++) {
+			if (!timeIntervalList.get(i).compareEqual(chomboSolverSpec.timeIntervalList.get(i))) {
+				return false;
+			}
+		}				
 		if (chomboSolverSpec.getNumRefinementLevels() != getNumRefinementLevels()) {
 			return false;
 		}
@@ -228,6 +242,14 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 		buffer.append("\t" + VCML.SaveVCellOutput + " " + bSaveVCellOutput + "\n");
 		buffer.append("\t" + VCML.SaveChomboOutput + " " + bSaveChomboOutput + "\n");
+		
+		buffer.append("\t" + VCML.TimeBounds + " " + VCML.BeginBlock + "\n");
+		for (TimeInterval ti : timeIntervalList)
+		{
+			buffer.append(ti.getVCML());
+		}
+		buffer.append("\t" + VCML.EndBlock+"\n");
+		
 		buffer.append("\t" + VCML.MeshRefinement + " " + VCML.BeginBlock + "\n");
 		for (RefinementRoi roi : refinementRoiList) {
 			buffer.append(roi.getVCML());
@@ -256,38 +278,39 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				maxBoxSize = Integer.parseInt(token);
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.ViewLevel))
+			else if (token.equalsIgnoreCase(VCML.ViewLevel))
 			{
 				token = tokens.nextToken();
 				viewLevel = Integer.parseInt(token);
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.FillRatio))
+			else if (token.equalsIgnoreCase(VCML.FillRatio))
 			{
 				token = tokens.nextToken();
 				fillRatio = Double.parseDouble(token);
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.SaveVCellOutput))
+			else if (token.equalsIgnoreCase(VCML.SaveVCellOutput))
 			{
 				token = tokens.nextToken();
 				bSaveVCellOutput = Boolean.parseBoolean(token);
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.SaveChomboOutput))
+			else if (token.equalsIgnoreCase(VCML.SaveChomboOutput))
 			{
 				token = tokens.nextToken();
 				bSaveChomboOutput = Boolean.parseBoolean(token);
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.MeshRefinement))
+			else if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
 				readVCMLRefinementRois(tokens);
-				continue;
 			}
-			throw new DataAccessException("unexpected token " + token); 
+			else if (token.equalsIgnoreCase(VCML.TimeBounds))
+			{
+				readVCMLTimeBounds(tokens);
+			}
+			else
+			{
+				throw new DataAccessException("unexpected token " + token);
+			}
 		}
 	}
 	
@@ -303,12 +326,13 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				RefinementRoi roi = new RefinementRoi(tokens);
 				addRefinementRoi(roi);			
-				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.EndBlock)) {
+			else if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				return;
 			}
-			throw new DataAccessException("unexpected token in refinement levels " + token); 
+			else {
+				throw new DataAccessException("unexpected token in refinement levels " + token);
+			}
 		}
 		throw new DataAccessException("unclosed refinement level block");
 	}
@@ -452,5 +476,77 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 		return ratios;
 	}
+
+	public List<TimeInterval> getTimeIntervalList() {
+		return timeIntervalList;
+	}
 	
+	public void addTimeInterval(TimeInterval ti) throws IllegalArgumentException
+	{
+		if (timeIntervalList.size() == 0)
+		{
+			if (ti.getStartingTime() != 0)
+			{
+				throw new IllegalArgumentException("The starting time of the first time interval must be 0.");
+			}
+		}
+		else
+		{
+			int num = timeIntervalList.size();
+			if (ti.getStartingTime() != timeIntervalList.get(num - 1).getEndingTime())
+			{
+				throw new IllegalArgumentException("The starting time of a time interval must be the same as the ending time of the previous interval.");
+			}
+		}
+		timeIntervalList.add(ti);
+	}
+	
+	public TimeInterval getLastTimeInterval()
+	{
+		int num = timeIntervalList.size();
+		assert(num > 0);
+		return timeIntervalList.get(num - 1);
+	}
+	
+	public void addNewTimeInterval()
+	{
+		double startingTime = getLastTimeInterval().getEndingTime();
+		TimeInterval ti = new TimeInterval(startingTime, -1, -1, -1);
+		timeIntervalList.add(ti);
+	}
+	
+	public void removeTimeInterval()
+	{
+		// always remove the last one
+		timeIntervalList.remove(timeIntervalList.size() - 1);
+	}
+
+	private void readVCMLTimeBounds(CommentStringTokenizer tokens) throws DataAccessException {
+		// BeginToken
+		String token = tokens.nextToken();
+		if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
+			throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+		}
+		while (tokens.hasMoreTokens()) {
+			token = tokens.nextToken();
+			if (token.equalsIgnoreCase(VCML.TimeInterval)) 
+			{
+				TimeInterval ti = new TimeInterval(tokens);
+				timeIntervalList.add(ti);			
+			}
+			else if (token.equalsIgnoreCase(VCML.EndBlock)) {
+				return;
+			}
+			else
+			{
+				throw new DataAccessException("unexpected token in time bounds " + token);
+			}
+		}
+		throw new DataAccessException("unclosed refinement level block");
+	}
+
+	public double getEndingTime() 
+	{
+		return getLastTimeInterval().getEndingTime();
+	}
 }

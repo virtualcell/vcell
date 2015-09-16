@@ -95,6 +95,10 @@ public Object getValueAt(int row, int column) {
 					return simulation.getName();
 				} 
 				case COLUMN_ENDTIME: {
+					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+					{
+						return simulation.getSolverTaskDescription().getChomboSolverSpec().getEndingTime();
+					}
 					return simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
 				} 
 				case COLUMN_OUTPUT: {
@@ -126,11 +130,12 @@ public Object getValueAt(int row, int column) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
+	Simulation simulation = getValueAt(rowIndex);
 	switch (columnIndex){
 		case COLUMN_NAME: 
 			return true;
 		case COLUMN_ENDTIME:
-			return true;
+			return !simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver();
 		case COLUMN_OUTPUT:
 			return true;
 		default: {

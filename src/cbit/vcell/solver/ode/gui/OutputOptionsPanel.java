@@ -202,6 +202,7 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 				constraintsTimeStepUnitsLabel.gridx = 1; constraintsTimeStepUnitsLabel.gridy = 0;
 				constraintsTimeStepUnitsLabel.anchor = java.awt.GridBagConstraints.WEST;
 				constraintsTimeStepUnitsLabel.weightx = 1.0;
+				constraintsTimeStepUnitsLabel.fill = GridBagConstraints.HORIZONTAL;
 				constraintsTimeStepUnitsLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 				getUniformOutputPanel().add(getTimeStepUnitsLabel(), constraintsTimeStepUnitsLabel);
 
@@ -641,10 +642,14 @@ public class OutputOptionsPanel extends CollapsiblePanel {
 		} else if (solverTaskDescription.getSolverDescription().isChomboSolver()) {
 				getDefaultOutputPanel().setVisible(false);
 				getDefaultOutputRadioButton().setVisible(false);
+				getUniformOutputPanel().setVisible(false);
+				getUniformOutputRadioButton().setVisible(false);
 		} else {
 			getDefaultOutputPanel().setVisible(true);
 			getDefaultOutputRadioButton().setVisible(true);
 			getDefaultOutputRadioButton().setEnabled(false);
+			getUniformOutputPanel().setVisible(true);
+			getUniformOutputRadioButton().setVisible(true);
 			BeanUtils.enableComponents(getDefaultOutputPanel(), false);
 		}
 		

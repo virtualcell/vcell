@@ -470,11 +470,12 @@ public class ChomboSolverSpecPanel extends CollapsiblePanel {
 		
 		maxBoxSizeComboBox = new JComboBox<Integer>();
 		int start = 8;
-		for (int i = 0; i < 10; ++ i)
+		for (int i = 0; i < 9; ++ i)
 		{
-			maxBoxSizeComboBox.addItem(new Integer(start));
+			maxBoxSizeComboBox.addItem(start);
 			start *= 2;
 		}
+		maxBoxSizeComboBox.addItem(0);
 		
 		viewLevelFinestRadioButton = new JRadioButton("Finest");
 		viewLevelUserSelectRadioButton = new JRadioButton("Select");

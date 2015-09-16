@@ -29,6 +29,7 @@ import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementLevel;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
+import org.vcell.chombo.TimeInterval;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -5774,7 +5775,7 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		}
 		Element chomboElement = param.getChild(XMLTags.ChomboSolverSpec, vcNamespace);		
 		if (chomboElement != null) {
-			ChomboSolverSpec chombo = getChomboSolverSpec(chomboElement, simulation.getMathDescription().getGeometry().getDimension());
+			ChomboSolverSpec chombo = getChomboSolverSpec(solverTaskDesc, chomboElement, simulation.getMathDescription().getGeometry().getDimension());
 			solverTaskDesc.setChomboSolverSpec(chombo);
 		}
 	} catch (java.beans.PropertyVetoException e) {
@@ -7118,7 +7119,7 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		return parseWithDefault(parent,tagName,defaultValue,convertBoolean);
 	}
 	
-	private ChomboSolverSpec getChomboSolverSpec(Element element, int dimension) throws XmlParseException {
+	private ChomboSolverSpec getChomboSolverSpec(SolverTaskDescription solverTaskDesc, Element element, int dimension) throws XmlParseException {
 		int maxBoxSize = parseIntWithDefault(element, XMLTags.MaxBoxSizeTag, ChomboSolverSpec.getDefaultMaxBoxSize(dimension));
 		double fillRatio = parseDoubleWithDefault(element,XMLTags.FillRatioTag, ChomboSolverSpec.getDefaultFillRatio());
 		boolean bSaveVCellOutput = parseBooleanWithDefault(element, XMLTags.SaveVCellOutput, true);
@@ -7150,6 +7151,60 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		try 
 		{
 			ChomboSolverSpec css = new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineRatioList);
+						
+			Element timeBoundsElement = element.getChild(XMLTags.TimeBoundTag, vcNamespace);
+			List<Element> timeIntervalElementList = null;
+			boolean noTimeBounds = false;
+			if (timeBoundsElement == null)
+			{
+				noTimeBounds = true;
+			}
+			else
+			{
+				timeIntervalElementList = timeBoundsElement.getChildren(XMLTags.TimeIntervalTag, vcNamespace);
+				if (timeIntervalElementList.size() == 0)
+				{
+					noTimeBounds = true;
+				}
+			}
+				
+			if (noTimeBounds)
+			{
+				// old format
+				double startTime = 0;
+				double endTime = solverTaskDesc.getTimeBounds().getEndingTime();
+				double timeStep = solverTaskDesc.getTimeStep().getDefaultTimeStep();
+				double outputTimeStep = ((UniformOutputTimeSpec)solverTaskDesc.getOutputTimeSpec()).getOutputTimeStep();
+				try
+				{
+					TimeInterval ti = new TimeInterval(startTime, endTime, timeStep, outputTimeStep);
+					css.addTimeInterval(ti);
+				} 
+				catch (IllegalArgumentException ex)
+				{
+					css.addTimeInterval(TimeInterval.getDefaultTimeInterval());
+				}
+			}
+			else
+			{
+				for (Element e: timeIntervalElementList)
+				{
+					String s = e.getAttributeValue(XMLTags.StartTimeAttrTag);
+					double startTime = Double.valueOf(s);
+					
+					s = e.getAttributeValue(XMLTags.EndTimeAttrTag);
+					double endTime = Double.valueOf(s);					
+					
+					s = e.getAttributeValue(XMLTags.TimeStepAttrTag);
+					double timeStep = Double.valueOf(s);					
+					
+					s = e.getAttributeValue(XMLTags.OutputTimeStepAttrTag);
+					double outputTimeStep = Double.valueOf(s);		
+					TimeInterval ti = new TimeInterval(startTime, endTime, timeStep, outputTimeStep);
+					css.addTimeInterval(ti);
+				}
+			}
+			
 			Element meshRefineElement = element.getChild(XMLTags.MeshRefinementTag, vcNamespace);		
 			if (meshRefineElement != null) 
 			{

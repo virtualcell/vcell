@@ -251,4 +251,5 @@ public class VCML {
 	public final static String SaveChomboOutput = "SaveChomboOutput";		
 	public final static String TagsGrow = "TagsGrow";		
 	public final static String NUM_PROCESSORS = "NumProcessors";
+	public final static String TimeInterval = "TimeInterval";
 }

@@ -689,6 +689,7 @@ public class XMLTags {
   public final static String RefineRoiLevelAttrTag = "Level";
   public final static String TagsGrowAttrTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
+  public final static String TimeIntervalTag = "TimeInterval";
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";
