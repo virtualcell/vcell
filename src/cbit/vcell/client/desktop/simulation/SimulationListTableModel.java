@@ -102,6 +102,15 @@ public Object getValueAt(int row, int column) {
 					return simulation.getSolverTaskDescription().getTimeBounds().getEndingTime();
 				} 
 				case COLUMN_OUTPUT: {
+					if (simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver())
+					{
+						String text = "Variable";
+						if (simulation.getSolverTaskDescription().getChomboSolverSpec().getTimeIntervalList().size() == 1)
+						{
+							text = "Every " + simulation.getSolverTaskDescription().getChomboSolverSpec().getLastTimeInterval().getOutputTimeStep() + "s";
+						}
+						return text;
+					}
 					return simulation.getSolverTaskDescription().getOutputTimeSpec();
 				} 
 				case COLUMN_SOLVER: {

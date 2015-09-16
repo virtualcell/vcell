@@ -155,7 +155,26 @@ public class ChomboTimeBoundsPanel extends CollapsiblePanel {
 		
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return columnIndex != COLUMN_Starting;
+			if (columnIndex == COLUMN_Starting)
+			{
+				return false;
+			}
+			List<TimeInterval> timeIntervalList = solverTaskDescription.getChomboSolverSpec().getTimeIntervalList();
+			if (timeIntervalList.size() == 1 || rowIndex == timeIntervalList.size() - 1)
+			{
+				// if there is only one time interval, or this is the last time interval
+				return true;
+			}
+			if (columnIndex == COLUMN_TimeStep || columnIndex == COLUMN_OutputInterval)
+			{
+				return true;
+			}
+			if (columnIndex == COLUMN_Ending && rowIndex >= 0)
+			{
+				TimeInterval ti = timeIntervalList.get(rowIndex);
+				return ti.getEndingTime() < 0;
+			}
+			return false;
 		}
 
 		@Override
