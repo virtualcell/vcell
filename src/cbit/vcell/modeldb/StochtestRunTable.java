@@ -25,8 +25,9 @@ public class StochtestRunTable extends Table {
 	public final Field errmsg					= new Field("errmsg",					"varchar2(4000)", "");
 	public final Field conclusion				= new Field("conclusion",				"varchar2(4000)", "");
 	public final Field exclude					= new Field("exclude",					"varchar2(4000)", "");
+	public final Field networkGenProbs			= new Field("networkGenProbs",			"varchar2(4000)", "");
 
-	private final Field fields[] = {stochtestref,parentmathtype,mathtype,status,errmsg,conclusion,exclude};
+	private final Field fields[] = {stochtestref,parentmathtype,mathtype,status,errmsg,conclusion,exclude,networkGenProbs};
 	
 	public static final StochtestRunTable table = new StochtestRunTable();
 
