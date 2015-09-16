@@ -19,18 +19,18 @@ public interface LWContainerHandle extends LWHandle {
 	 * @param w handle to arrange for, not null
 	 * @return last Window positioned
 	 */
-	public static Window positionChildren(LWHandle w) {
-		w.unIconify();
-		Window lastW = w.getWindow();
-		lastW.toFront();
-		for (LWHandle childHw : w ) {
-			Window child = childHw.getWindow();
-			stagger(lastW,child);
-			lastW = child;
-			lastW = positionChildren(childHw);
-		}
-		return lastW;
-	}
+//	public static Window positionChildren(LWHandle w) {
+//		w.unIconify();
+//		Window lastW = w.getWindow();
+//		lastW.toFront();
+//		for (LWHandle childHw : w ) {
+//			Window child = childHw.getWindow();
+//			stagger(lastW,child);
+//			lastW = child;
+//			lastW = positionChildren(childHw);
+//		}
+//		return lastW;
+//	}
 	
 	public static void positionTopDownTo(LWHandle to) {
 		LWHandle starting = to;
@@ -39,32 +39,8 @@ public interface LWContainerHandle extends LWHandle {
 			starting = p;
 			p = starting.getlwParent();
 		}
-		positionChildrenTo(starting, to);
+		ContainerSupport.positionChildrenTo(starting, to);
 	}
-	
-	/**
-	 * arrange children
-	 * @param from handle to arrange for, not null
-	 * @param to handle to stop at  
-	 * @return last Window positioned
-	 */
-	public static Window positionChildrenTo(LWHandle from, LWHandle to) {
-		from.unIconify();
-		Window lastW = from.getWindow();
-		lastW.toFront();
-		if (from != to) {
-		for (LWHandle childHw : from ) {
-			Window child = childHw.getWindow();
-			stagger(lastW,child);
-			lastW = child;
-//			if (lastW != to.getWindow()) {
-				lastW = positionChildrenTo(childHw,to);
-//			}
-		}
-		}
-		return lastW;
-	}
-	
 	
 	/**
 	 * position window relative another window

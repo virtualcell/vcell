@@ -15,9 +15,13 @@ import java.awt.ComponentOrientation;
 public class TestChildWindow extends LWChildFrame implements ProofOfConceptContainer {
 	private LWContainerHandle parent;
 	private JButton btnWindows; 
+	/**
+	 * given unique ids for tracking which is which
+	 */
+	private static int serialId = 1;
 	
 	public TestChildWindow(LWContainerHandle hwindow) {
-		super(hwindow,((ProofOfConceptHandle)hwindow).menuDescription() + " child");
+		super(hwindow,((ProofOfConceptHandle)hwindow).menuDescription() + " child:" + serialId++);
 		this.parent = hwindow;
 		TestPanel tp = new TestPanel();
 		tp.setHwindow(this);
