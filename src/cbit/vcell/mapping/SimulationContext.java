@@ -313,7 +313,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	// This operation has no relationship whatsoever with caching of the MathMapping below
 	private transient String md5hash = null;
 	private transient BNGOutputSpec mostRecentlyCreatedOutputSpec = null;	// valid only if the hash is verified
-	private transient boolean bInsufficientIterations = false;		// not related with the cache but used at the same time
+	private boolean bInsufficientIterations = false;		// not related with the cache but used at the same time
 	
 	// Cache the most recent Math Mapping
 	// This operation has no relationship whatsoever with caching of the BNGLOutputSpec above
