@@ -75,7 +75,7 @@ public class RefinementRoi implements Serializable, Matchable {
 		return buffer.toString();
 	}
 	
-	public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
+	private void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		try {
 			String token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.RefinementRoi)) {

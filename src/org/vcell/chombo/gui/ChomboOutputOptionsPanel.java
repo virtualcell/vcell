@@ -65,8 +65,8 @@ public class ChomboOutputOptionsPanel extends JPanel {
 			setLayout(new GridBagLayout());
 			setBorder(BorderFactory.createTitledBorder(GuiConstants.TAB_PANEL_BORDER, "Save Output Files"));
 
-			vcellOutputCheckBox = new JCheckBox("VCell");
-			chomboOutputCheckBox = new JCheckBox("Chombo");
+			vcellOutputCheckBox = new JCheckBox("For VCell Native Viewer");
+			chomboOutputCheckBox = new JCheckBox("For VisIt Viewer");
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
