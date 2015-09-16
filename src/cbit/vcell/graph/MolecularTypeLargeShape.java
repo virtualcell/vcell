@@ -414,7 +414,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		} else if(owner instanceof MolecularType) {
 			mt.setHighlighted(b);
 		} else if(owner instanceof SpeciesContext) {
-			mtp.setHighlighted(b);
+			if(mtp != null) {
+				mtp.setHighlighted(b);		// plain species don't have sp, nor mtp
+			}
 		} else if(owner instanceof ReactionRule) {
 			mtp.setHighlighted(b);
 		} else {
@@ -428,7 +430,11 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		} else if(owner instanceof MolecularType) {
 			return mt.isHighlighted();
 		} else if(owner instanceof SpeciesContext) {
-			return mtp.isHighlighted();
+			if(mtp != null) {
+				return mtp.isHighlighted();
+			} else {
+				return false;
+			}
 		} else if(owner instanceof ReactionRule) {
 			return mtp.isHighlighted();
 		} else {
