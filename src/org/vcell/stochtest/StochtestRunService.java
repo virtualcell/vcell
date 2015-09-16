@@ -39,7 +39,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
-import cbit.vcell.modeldb.MathVerifier.MathGenerationResults;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ODEDataBlock;
 import cbit.vcell.simdata.SimulationData;
@@ -123,6 +122,7 @@ public class StochtestRunService {
 	    StochtestRun stochtestRun = StochtestDbUtils.acceptNextWaitingStochtestRun(conFactory);
 	    String biomodelXML = null;
 	    if (stochtestRun!=null){
+	    	String networkGenProbs = null;
 	    	try {
 		    	User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 		    	ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this.dbServerImpl);
@@ -181,6 +181,10 @@ public class StochtestRunService {
 				MathMapping mathMapping = simContext.createNewMathMapping(mathMappingCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 				MathDescription mathDesc = mathMapping.getMathDescription(mathMappingCallback);
 				simContext.setMathDescription(mathDesc);
+				
+				if (simContext.isInsufficientIterations()){
+					networkGenProbs = "insufficientIterations";
+				}
 		    	
 		    	
 				File baseDirectory = StochtestFileUtils.createDirFile(baseDir, stochtestRun);
@@ -188,12 +192,12 @@ public class StochtestRunService {
 					OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(0.5);
 					double endTime = 10.0;
 					computeTrials(simContext, stochtestRun, baseDirectory, outputTimeSpec, endTime, numTrials);
-					StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.complete,null);
+					StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.complete,null,networkGenProbs);
 				}finally{
 					StochtestFileUtils.clearDir(baseDirectory);
 				}
 	    	}catch (Exception e){
-				StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.failed,e.getMessage());
+				StochtestDbUtils.finalizeAcceptedStochtestRun(conFactory, stochtestRun, StochtestRun.StochtestRunStatus.failed,e.getMessage(),networkGenProbs);
 				//
 				// write original biomodelXML to a .vcml file
 				//

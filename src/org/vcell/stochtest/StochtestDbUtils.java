@@ -65,6 +65,8 @@ for (int i = 0; i < numColumns; i++){
 			        stochtestRun.status = StochtestRun.StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
 			        stochtestRun.errmsg = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
 			        stochtestRun.conclusion = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
+			        stochtestRun.exclude = rset.getString(stochtestRunTable.exclude.getUnqualifiedColName()+"_2");
+			        stochtestRun.networkGenProbs = rset.getString(stochtestRunTable.networkGenProbs.getUnqualifiedColName()+"_2");
 			    }else{
 			    	return null;
 			    }
@@ -86,7 +88,7 @@ for (int i = 0; i < numColumns; i++){
 		return stochtestRun;
 	}
 
-	public static void finalizeAcceptedStochtestRun(ConnectionFactory conFactory, StochtestRun acceptedStochtestRun, StochtestRun.StochtestRunStatus newStatus, String errmsg) throws IllegalArgumentException, SQLException, DataAccessException {
+	public static void finalizeAcceptedStochtestRun(ConnectionFactory conFactory, StochtestRun acceptedStochtestRun, StochtestRun.StochtestRunStatus newStatus, String errmsg, String networkGenProbs) throws IllegalArgumentException, SQLException, DataAccessException {
 		
 		if (newStatus != StochtestRun.StochtestRunStatus.complete && newStatus != StochtestRun.StochtestRunStatus.failed){
 			throw new RuntimeException("new status is "+newStatus+", expecting "+StochtestRun.StochtestRunStatus.complete+" or "+StochtestRun.StochtestRunStatus.failed);
@@ -100,18 +102,16 @@ for (int i = 0; i < numColumns; i++){
 			java.sql.Statement stmt = null;
 			try {
 				StochtestRunTable stochtestRunTable = StochtestRunTable.table;
-				String sql = null;
-				if (errmsg==null){
-					sql = "UPDATE "+stochtestRunTable.getTableName() +
+				
+				String errMsgRHS = (errmsg==null) ? "NULL" : "'"+TokenMangler.getSQLEscapedString(errmsg, 4000)+"'";
+				
+				String networkGenProbsRHS = (networkGenProbs==null) ? "NULL" : "'"+TokenMangler.getSQLEscapedString(networkGenProbs, 4000)+"'";
+				
+				String sql = "UPDATE "+stochtestRunTable.getTableName() +
 						" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+newStatus.name()+"'" + ", " +
-							    stochtestRunTable.errmsg.getUnqualifiedColName() + " = NULL" +
+								stochtestRunTable.errmsg.getUnqualifiedColName() + " = " + errMsgRHS + ", " +
+								stochtestRunTable.networkGenProbs.getUnqualifiedColName() + " = " + networkGenProbsRHS + ", " +
 						" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + acceptedStochtestRun.key.toString();
-				}else{
-					sql = "UPDATE "+stochtestRunTable.getTableName() +
-							" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+newStatus.name()+"'" + ", " +
-								    stochtestRunTable.errmsg.getUnqualifiedColName() + " = " + "'"+TokenMangler.getSQLEscapedString(errmsg, 4000)+"'" +
-							" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + acceptedStochtestRun.key.toString();
-				}
 				stmt = con.createStatement();
 System.out.println(sql);
 			    int numrows = stmt.executeUpdate(sql);
@@ -244,6 +244,8 @@ for (int i = 0; i < numColumns; i++){
 			        stochtestRun.status = StochtestRun.StochtestRunStatus.valueOf(rset.getString(stochtestRunTable.status.getUnqualifiedColName()+"_2"));
 			        stochtestRun.errmsg = rset.getString(stochtestRunTable.errmsg.getUnqualifiedColName()+"_2");
 			        stochtestRun.conclusion = rset.getString(stochtestRunTable.conclusion.getUnqualifiedColName()+"_2");
+			        stochtestRun.exclude = rset.getString(stochtestRunTable.exclude.getUnqualifiedColName()+"_2");
+			        stochtestRun.networkGenProbs = rset.getString(stochtestRunTable.networkGenProbs.getUnqualifiedColName()+"_2");
 			    }else{
 			    	return null;
 			    }

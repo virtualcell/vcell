@@ -17,4 +17,6 @@ public class StochtestRun {
 	public StochtestRun.StochtestRunStatus status;
 	public String errmsg;
 	public String conclusion;
+	public String exclude;
+	public String networkGenProbs;
 }
