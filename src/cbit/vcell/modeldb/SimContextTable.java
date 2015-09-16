@@ -228,6 +228,11 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 			appComponentsElement.addContent(appRelatedFlagsElement);			
 		}
 	}
+	if(simContext.isInsufficientIterations()) {
+		appComponentsElement.setAttribute(XMLTags.InsufficientIterationsTag, "true");
+	} else {
+		appComponentsElement.setAttribute(XMLTags.InsufficientIterationsTag, "false");
+	}
 		
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	// first fill in bioevents from simContext
@@ -325,7 +330,12 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 				}
 				simContext.setRandomizeInitConditions(bRandomizeInitCondition);
 			}
-			
+			if((appComponentsElement.getAttributeValue(XMLTags.InsufficientIterationsTag)!= null) && (appComponentsElement.getAttributeValue(XMLTags.InsufficientIterationsTag).equals("true"))) {
+				simContext.setInsufficientIterations(true);
+			} else {
+				simContext.setInsufficientIterations(false);
+			}
+
 			XmlReader xmlReader = new XmlReader(false);
 			// get bioEvents
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);

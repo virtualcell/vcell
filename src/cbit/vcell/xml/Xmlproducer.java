@@ -1524,7 +1524,11 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	}else{
 		simulationcontext.setAttribute(XMLTags.RuleBasedAttrTag, "false");
 	}
-
+	if(param.isInsufficientIterations()) {
+		simulationcontext.setAttribute(XMLTags.InsufficientIterationsTag, "true");
+	} else {
+		simulationcontext.setAttribute(XMLTags.InsufficientIterationsTag, "false");
+	}
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {

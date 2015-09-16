@@ -5234,6 +5234,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	boolean bRuleBased = false;
 	boolean bUseConcentration = true;
 	boolean bRandomizeInitCondition = false;
+	boolean bInsufficientIterations = false;
 	
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true"))){
 		bStoch = true;
@@ -5249,7 +5250,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		if((param.getAttributeValue(XMLTags.RandomizeInitConditionTag)!= null) && (param.getAttributeValue(XMLTags.RandomizeInitConditionTag).equals("true"))) {
 			bRandomizeInitCondition = true;
 		}
-
+	}
+	if((param.getAttributeValue(XMLTags.InsufficientIterationsTag)!= null) && (param.getAttributeValue(XMLTags.InsufficientIterationsTag).equals("true"))) {
+		bInsufficientIterations = true;
 	}
 	if ((param.getAttributeValue(XMLTags.RuleBasedAttrTag)!= null) && (param.getAttributeValue(XMLTags.RuleBasedAttrTag).equals("true"))){
 		bRuleBased = true;
@@ -5319,6 +5322,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		// set if randomizing init condition or not (for stochastic applications
 		if (bStoch) {
 			newsimcontext.setRandomizeInitConditions(bRandomizeInitCondition);
+		}
+		if(bInsufficientIterations) {
+			newsimcontext.setInsufficientIterations(bInsufficientIterations);
 		}
 		 
 	} catch(java.beans.PropertyVetoException e) {
