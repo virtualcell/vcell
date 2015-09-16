@@ -921,11 +921,6 @@ private void updateShape() {
 		if (popupFromShapeMenu.isShowing()) {
 			return;
 		}
-		boolean bDelete = false;
-		boolean bAdd = false;
-		boolean bEdit = false;
-		boolean bRename = false;
-
 		final Object deepestShape = locationContext.getDeepestShape();
 		final Object selectedObject;
 		
@@ -959,7 +954,11 @@ private void updateShape() {
 			if(((SpeciesPatternLargeShape)deepestShape).isHighlighted()) {
 				selectedObject = ((SpeciesPatternLargeShape)deepestShape).getSpeciesPattern();
 			} else {
-				return;
+				if(!fieldSpeciesContext.hasSpeciesPattern()) {
+					selectedObject = new SpeciesPattern();
+				} else {
+					return;
+				}
 			}
 		} else {
 			selectedObject = null;
@@ -967,9 +966,6 @@ private void updateShape() {
 			return;
 		}
 		System.out.println(selectedObject);	
-	
-	// TODO: aici =========================================================================
-
 		popupFromShapeMenu.removeAll();
 		Point mousePoint = e.getPoint();
 		
@@ -991,11 +987,10 @@ private void updateShape() {
 						for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
 							mcp.setBondType(BondType.None);
 						}
+						if(!fieldSpeciesContext.hasSpeciesPattern()) {
+							fieldSpeciesContext.setSpeciesPattern(sp);
+						}
 						fieldSpeciesContext.getSpeciesPattern().addMolecularTypePattern(molecularTypePattern);
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-							}
-						});
 					}
 				});
 			}
@@ -1009,6 +1004,9 @@ private void updateShape() {
 					MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 					SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
 					sp.removeMolecularTypePattern(mtp);
+					if(sp.getMolecularTypePatterns().isEmpty()) {
+						fieldSpeciesContext.setSpeciesPattern(null);
+					}
 				}
 			});
 			popupFromShapeMenu.add(deleteMenuItem);
