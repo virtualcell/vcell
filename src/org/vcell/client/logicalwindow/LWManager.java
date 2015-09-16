@@ -9,6 +9,7 @@ import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 
 /**
@@ -17,7 +18,7 @@ import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 class LWManager extends WindowAdapter{
 	
 	private final LWContainerHandle lwParent;
-	
+	private static final Logger LG = Logger.getLogger(LWManager.class);
 	
 	 /**
 	 * storage of children
@@ -26,7 +27,7 @@ class LWManager extends WindowAdapter{
 	
 	public LWManager(LWContainerHandle parent, LWContainerHandle client) {
 		lwParent = parent;
-		client.getWindow().addWindowListener(new ChildCloser());
+		client.getWindow().addWindowListener(new ChildManager());
 	}
 	
 	public LWContainerHandle getLwParent() {
@@ -71,16 +72,23 @@ class LWManager extends WindowAdapter{
 		children.removeIf( hw -> hw.getWindow() == w);
 	}
 	
-	/**
-	 * calls {@link LWManager#closeRecursively()}
-	 */
-	private class ChildCloser extends WindowAdapter {
+	@Override
+	public void windowClosing(WindowEvent e) {
+		if (LG.isTraceEnabled()) {
+			LG.trace(e.getSource() +  " closing");
+		}
+	}
+
+	private class ChildManager extends WindowAdapter {
 
 		@Override
 		public void windowOpened(WindowEvent e) {
 			e.getWindow().toFront();
 		}
 
+		/**
+		 * calls {@link LWManager#closeRecursively()}
+		 */
 		@Override
 		public void windowClosing(WindowEvent e) {
 			closeRecursively();
