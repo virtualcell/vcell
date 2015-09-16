@@ -42,9 +42,11 @@ import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
+import cbit.vcell.client.task.AsyncClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -104,6 +106,11 @@ public class LocalVCSimulationDataIdentifier extends VCSimulationDataIdentifier 
 	private DocumentWindowManager documentWindowManager = null;
 	private SimulationWorkspace simWorkspace = null;
 	private SimulationStatusHash simHash = new SimulationStatusHash();
+	
+	// Hash Keys
+	private final static String H_DATA_VIEWER_CONTROLLERS = "dataViewerControllers";
+	private final static String H_FAILURES = "failures";
+	private final static String H_LOCAL_SIM = "showingLocal";
 
 /**
  * Insert the method's description here.
@@ -245,8 +252,8 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 
 	// Create the AsynchClientTasks 
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-	final String dataViewerControllers_string = "dataViewerControllers";
-	final String failures_string = "failures";
+	
+	taskList.add(  new AsyncClientTaskFunction( h ->  h.put(H_LOCAL_SIM, isLocal) , "setLocal", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) ); 
 
 	final DocumentWindowManager documentWindowManager = getDocumentWindowManager();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
@@ -259,16 +266,16 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
 				
 				if (simWindow == null) {			
-					Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(failures_string);
+					Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
 					if (failures == null) {
 						failures = new Hashtable<Simulation, Throwable>();
-						hashTable.put(failures_string, failures);
+						hashTable.put(H_FAILURES, failures);
 					}
 						
-					Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(dataViewerControllers_string);
+					Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(H_DATA_VIEWER_CONTROLLERS);
 					if (dataViewerControllers == null) {
 						dataViewerControllers = new Hashtable<VCSimulationIdentifier, DataViewerController>();
-						hashTable.put(dataViewerControllers_string, dataViewerControllers);
+						hashTable.put(H_DATA_VIEWER_CONTROLLERS, dataViewerControllers);
 					}
 				
 					try {
@@ -313,8 +320,9 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 	AsynchClientTask displayResultsTask = new AsynchClientTask("Showing results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@SuppressWarnings("unchecked")
 		public void run(Hashtable<String, Object> hashTable) throws Exception {					
-			Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(dataViewerControllers_string);
-			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(failures_string);
+			boolean isLocal = fetch(hashTable,H_LOCAL_SIM,Boolean.class,true);
+			SimulationWindow.LocalState localState = isLocal ? LocalState.LOCAL : LocalState.SERVER;
+			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
 			Simulation[] simsToShow = (Simulation[])hashTable.get("simsArray");
 			for (int i = 0; i < simsToShow.length; i++){
 				final Simulation sim  = simsToShow[i];
@@ -330,8 +338,10 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						childWindow.show();
 					}
 					setFinalWindow(hashTable, childWindow); 
+					simWindow.setLocalState(localState);
 				} else {					
 					// wire it up the viewer
+					Hashtable<VCSimulationIdentifier, DataViewerController> dataViewerControllers = (Hashtable<VCSimulationIdentifier, DataViewerController>)hashTable.get(H_DATA_VIEWER_CONTROLLERS);
 					DataViewerController viewerController = dataViewerControllers.get(vcSimulationIdentifier);
 					Throwable ex = failures.get(sim); 
 					if (viewerController != null && ex == null) { // no failure
@@ -347,6 +357,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 						BeanUtils.addCloseWindowKeyboardAction(newWindow.getDataViewer());
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
+						newWindow.setLocalState(localState);
 					}
 				}
 			}
