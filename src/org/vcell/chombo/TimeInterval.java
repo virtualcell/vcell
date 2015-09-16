@@ -45,7 +45,7 @@ public class TimeInterval implements Matchable, Serializable {
 		{
 			throw new IllegalArgumentException("Output interval has to be a multiple of time step");
 		}
-		if (endingTime > 0 && outputTimeStep > 0 && outputTimeStep > endingTime - startingTime)
+		if (endingTime > 0 && outputTimeStep > 0 && outputTimeStep - (endingTime - startingTime) > eps)
 		{
 			throw new IllegalArgumentException("Output time step can not be greater than [Starting, Ending] interval length.");
 		}
