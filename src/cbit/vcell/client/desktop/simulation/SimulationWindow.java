@@ -9,11 +9,8 @@
  */
 
 package cbit.vcell.client.desktop.simulation;
-import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import javax.swing.ImageIcon;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
@@ -27,6 +24,12 @@ public class SimulationWindow {
 	private SimulationOwner simOwner = null;
 	private ChildWindow childWindow = null;
 	private DataViewer dataViewer = null;
+	public enum LocalState {
+		SERVER,
+		LOCAL,
+		LOCAL_SIMMODFIED
+	}
+	private LocalState localState; 
 	
 	private transient PropertyChangeListener pcl = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt){
@@ -51,7 +54,18 @@ public SimulationWindow(VCSimulationIdentifier vcSimulationIdentifier, Simulatio
 	setSimOwner(simOwner);
 	getSimulation().addPropertyChangeListener(pcl);
 	this.dataViewer = dataViewer;
+	localState = LocalState.SERVER; 
 }
+
+public LocalState getLocalState() {
+	return localState;
+}
+
+public void setLocalState(LocalState localState) {
+	this.localState = localState;
+}
+
+
 
 private ChildWindow getChildWindow() {
 	return childWindow;
@@ -138,9 +152,27 @@ private void setVcSimulationIdentifier(VCSimulationIdentifier newVcSimulationIde
 	vcSimulationIdentifier = newVcSimulationIdentifier;
 }
 
-
 public String getTitle() {
-	return "Results for Simulation "+simulation.getName();
+	String b =  "Results for Simulation "+simulation.getName();
+	switch (localState) {
+	case SERVER:
+	case LOCAL:
+		return b; 
+	case LOCAL_SIMMODFIED:
+		return b + " *";
+	}
+	return null; //keep compiler happy
+}
+
+public boolean isShowingLocalSimulation() {
+	switch (localState) {
+	case SERVER:
+		return false;
+	case LOCAL:
+	case LOCAL_SIMMODFIED:
+		return true;
+	}
+	return false; //keep compiler happy
 }
 
 }

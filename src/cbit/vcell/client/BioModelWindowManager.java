@@ -243,11 +243,12 @@ private void updateSimulationDataViewers(ApplicationComponents appComponents, Si
 		}
 	}
 	for (int i = 0; i < simWindows.length; i++){
+		SimulationWindow sw = simWindows[i];
 		if (hash.containsKey(simWindows[i].getVcSimulationIdentifier())) {
-			simWindows[i].resetSimulation((Simulation)hash.get(simWindows[i].getVcSimulationIdentifier()));
-		} else {
+			sw.resetSimulation((Simulation)hash.get(sw.getVcSimulationIdentifier()));
+		} else if (!sw.isShowingLocalSimulation()){
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
-			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindows[i]);
+			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(sw);
 			if(childWindow != null) {
 				childWindowManager.closeChildWindow(childWindow);
 			}
