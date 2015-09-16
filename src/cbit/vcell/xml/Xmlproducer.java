@@ -27,6 +27,7 @@ import org.jdom.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
+import org.vcell.chombo.TimeInterval;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -4646,6 +4647,18 @@ public Element getXML(RateRule[] rateRules) throws XmlParseException{
 		Element saveChomboOutput = new Element(XMLTags.SaveChomboOutput);
 		saveChomboOutput.setText(chomboSolverSpec.isSaveChomboOutput() + "");
 		chomboElement.addContent(saveChomboOutput);
+		
+		Element timeBoundsTag = new Element(XMLTags.TimeBoundTag); 
+		for (TimeInterval ti : chomboSolverSpec.getTimeIntervalList())
+		{
+			Element e = new Element(XMLTags.TimeIntervalTag);
+			e.setAttribute(XMLTags.StartTimeAttrTag, String.valueOf(ti.getStartingTime()));
+			e.setAttribute(XMLTags.EndTimeAttrTag, String.valueOf(ti.getEndingTime()));
+			e.setAttribute(XMLTags.TimeStepAttrTag, String.valueOf(ti.getTimeStep()));
+			e.setAttribute(XMLTags.OutputTimeStepAttrTag, String.valueOf(ti.getOutputTimeStep()));
+			timeBoundsTag.addContent(e);
+		}
+		chomboElement.addContent(timeBoundsTag);
 		
 		Element meshRefinement = new Element(XMLTags.MeshRefinementTag);
 		for (RefinementRoi roi : chomboSolverSpec.getRefinementRois()) {

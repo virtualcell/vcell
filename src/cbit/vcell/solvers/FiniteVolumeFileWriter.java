@@ -31,6 +31,7 @@ import java.util.Vector;
 
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
+import org.vcell.chombo.TimeInterval;
 import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynFileWriter.DiffusingMembraneParticleException;
@@ -173,6 +174,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		BASE_FILE_NAME,
 		ENDING_TIME,
 		TIME_STEP,
+		TIME_INTERVALS,
 		KEEP_EVERY,
 		ONE_STEP,
 		KEEP_AT_MOST,
@@ -1369,7 +1371,16 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
 	printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());
 	OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
-	if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
+	if (solverTaskDesc.getSolverDescription().isChomboSolver())
+	{
+		List<TimeInterval> timeIntervalList = solverTaskDesc.getChomboSolverSpec().getTimeIntervalList();
+		printWriter.println(FVInputFileKeyword.TIME_INTERVALS + " " + timeIntervalList.size());
+		for (TimeInterval ti: timeIntervalList)
+		{
+			printWriter.println(ti.getEndingTime() + " " + ti.getTimeStep() + " " + ti.getKeepEvery());
+		}
+	}
+	else if (solverTaskDesc.getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 		if (outputTimeSpec.isDefault()) {
 			DefaultOutputTimeSpec defaultOutputTimeSpec = (DefaultOutputTimeSpec)outputTimeSpec;
 			printWriter.println(FVInputFileKeyword.KEEP_EVERY + " " +FVInputFileKeyword.ONE_STEP + " " + defaultOutputTimeSpec.getKeepEvery());

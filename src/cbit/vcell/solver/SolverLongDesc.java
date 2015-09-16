@@ -46,8 +46,16 @@ interface SolverLongDesc {
 	 static final String Description_Stochastic_DEFAULT_TIME_STEP_Adaptive = "<b>Default:</b> the initial time step of the SDE numerical integrator. " +
 			"It may be set for adaptive methods to decrease memory requirements.";
 	 static final String Description_StochasticOptions = "<b>Stochastic Options</b>";
-	 static final String Description_MaxBoxSize = "<b>Max Box Size:</b> Maximum grid length in any direction. 0 means no limit.";
-	 static final String Description_FillRatio = "<b>Fill Ratio:</b> Measure of how efficiently tagged cells will be covered.";
+	 static final String Description_MaxBoxSize = "<b>Max Box Size:</b> Maximum allowable box size (0 means no limit).";
+	 static final String Description_FillRatio = "<b>Fill Ratio:</b> Measure of how densely cells tagged for refinement will be covered by boxes in each refinement level.";
+	 static final String Description_EBChombo_Mesh_Options_Advanced = "<b>EBChombo Mesh Options (advanced)</b>: Chombo breaks up the computational grid into sub-grids or boxes (especially for mesh refinement and parallel computation). Parameters can affect solver performance, but should not affect the results.</u>";
+	 static final String Description_TimeBounds = "<b>Time Bounds</b>: Describe one or more intervals of integration and output options. For each interval, enter:";
+	 static final String Description_TimeBounds_Details = "<ul>"
+	 		+ "<li><b>Starting Time</b> of the interval</li>"
+	 		+ "<li><b>Ending Time</b> of the interval</li>"
+	 		+ "<li><b>Time Step</b> to numerically solve ODEs/PDEs</li>"
+	 		+ "<li><b>Output Interval</b>: write results at uniformly sampled time points within the interval (must be a multiple of time step)</li>"
+	 		+ "</ul>";
 
 	 static final String Description_PARAMETERS_TO_BE_SET = "<p><u><b>Input Parameters:<b></u>";
 	 static final String Description_REFERENCES = "<u><b>References:<b></u>";
@@ -446,19 +454,17 @@ interface SolverLongDesc {
 	     "embedded boundaries and mapped grids, and Chombo also supports particle methods. Most parallel platforms " +
 	     "are supported, and cross-platform self-describing file formats are included."
 	     + Description_PARAMETERS_TO_BE_SET +
-			"<li>" + Description_Start_Time + "</li>"+
-			"<li>" + Description_End_Time + "</li>"+
-			"<li>" + Description_TimeStep +
-				"<ul>"+
-				"<li>" + Description_TimeStep_Default + "</li>" +
-				"</ul></li>"+
+	     "<ul>" +
+				"<li>" + Description_TimeBounds + "<br>"
+				+ Description_TimeBounds_Details
+				 + "</li>"
+	  		 + "<li>" + Description_EBChombo_Mesh_Options_Advanced +
+	  		 "<ul>" +
 		     "<li>" + Description_MaxBoxSize + "</li>" +
-		     "<li>" + Description_FillRatio + "</li>" +
-		     "<li>" + Description_OutputOptions +
-		     	"<ul>" +
-	  			"<li>" + Description_OutputOptions_OutputInterval + "</li>" +
-	  			"</ul></li>"
-	  		 + "</ul>"	
+		     "<li>" + Description_FillRatio + "</li>"
+		     + "</ul>"
+		     + "</li>"
+		     + "</ul>"
 	     + "</html>";
     
     static final String NFSIM =

@@ -25,6 +25,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.TimeInterval;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -298,7 +299,13 @@ private void displayTask() {
 		{
 			//gcwtodo
 			String text = solverTaskDescription.getOutputTimeSpec().getShortDescription();
-			if (solverTaskDescription.getOutputTimeSpec().isDefault() && !solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() 
+			if (solverTaskDescription.getSolverDescription().isChomboSolver()) {
+				text = "Variable";
+				if (solverTaskDescription.getChomboSolverSpec().getTimeIntervalList().size() == 1)
+				{
+					text = "Every " + solverTaskDescription.getChomboSolverSpec().getLastTimeInterval().getOutputTimeStep() + "s";
+				}
+			} else if (solverTaskDescription.getOutputTimeSpec().isDefault() && !solverTaskDescription.getSolverDescription().isSemiImplicitPdeSolver() 
 					&& !solverTaskDescription.getSolverDescription().equals(SolverDescription.StochGibson)) {
 				text += ", at most " + ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec()).getKeepAtMost();
 			}
@@ -378,7 +385,19 @@ private void displayTask() {
 		} else {
 			getJLabel12().setEnabled(true);
 			getJLabel12().setText("Timestep");
-			getJLabelTimestep().setText(timeStep.getDefaultTimeStep() + "s");
+			if (solverDescription.isChomboSolver())
+			{
+				String text = "Variable";
+				if (solverTaskDescription.getChomboSolverSpec().getTimeIntervalList().size() == 1)
+				{
+					text = solverTaskDescription.getChomboSolverSpec().getLastTimeInterval().getTimeStep() + "s";
+				}
+				getJLabelTimestep().setText(text);
+			}
+			else
+			{
+				getJLabelTimestep().setText(timeStep.getDefaultTimeStep() + "s");
+			}
 			if (solverDescription.isSemiImplicitPdeSolver()) {
 				getJLabelRelTol().setEnabled(true);
 				getJLabelRelTolValue().setText("" + errorTolerance.getRelativeErrorTolerance());

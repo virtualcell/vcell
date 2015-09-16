@@ -25,6 +25,7 @@ import javax.swing.JCheckBox;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.NFSimSimulationOptionsPanel;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -74,6 +75,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private CollapsiblePanel generalOptionsPanel;
+	private ChomboTimeBoundsPanel chomboTimeBoundsPanel;
 	private CollapsiblePanel miscPanel = null;
 	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
 	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
@@ -207,7 +209,9 @@ private void managePanels() {
 		if(sensitivityAnalysisCollapsiblePanel != null) sensitivityAnalysisCollapsiblePanel.setVisible(false);
 		if(nfsimSimulationOptionsPanel != null) nfsimSimulationOptionsPanel.expand(true);
 	} else {
-		if(sensitivityAnalysisCollapsiblePanel != null) sensitivityAnalysisCollapsiblePanel.setVisible(true);
+		if(sensitivityAnalysisCollapsiblePanel != null) {
+			sensitivityAnalysisCollapsiblePanel.setVisible(!getSolverTaskDescription().getSimulation().getMathDescription().isSpatial() && !getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch());
+		}
 	}
 }
 
@@ -609,6 +613,16 @@ private void initConnections() throws java.lang.Exception {
 	connPtoP2SetTarget();
 }
 
+private ChomboTimeBoundsPanel getChomboTimeBoundsPanel()
+{
+	if (chomboTimeBoundsPanel == null) {		
+		chomboTimeBoundsPanel = new ChomboTimeBoundsPanel();
+		chomboTimeBoundsPanel.setVisible(false);
+	}
+	
+	return chomboTimeBoundsPanel;
+}
+
 private CollapsiblePanel getGeneralOptionsPanel() {
 	if (generalOptionsPanel == null) {		
 		generalOptionsPanel = new CollapsiblePanel("General");
@@ -629,13 +643,13 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeStepPanel.weighty = 1.0;
 		constraintsTimeStepPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
-	
+			
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
-		constraintsErrorTolerancePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
 	}
 	
@@ -704,7 +718,7 @@ private void initialize() {
 		constraintsPanel2.weightx = 1.0;
 		constraintsPanel2.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getSolverPanel(), constraintsPanel2);
-
+		
 		gridy ++;
 		java.awt.GridBagConstraints gbc1 = new java.awt.GridBagConstraints();
 		gbc1.gridx = 0; 
@@ -712,8 +726,17 @@ private void initialize() {
 		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getChomboTimeBoundsPanel(), gbc1);
+
+		gridy ++;
+		gbc1 = new java.awt.GridBagConstraints();
+		gbc1.gridx = 0; 
+		gbc1.gridy = gridy;
+		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc1.weightx = 1.0;
+		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getGeneralOptionsPanel(), gbc1);
-		
+				
 		gridy ++;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0; 
@@ -880,6 +903,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			stopAtSpatiallyUniformPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
+			getChomboTimeBoundsPanel().setSolverTaskDescription(getTornOffSolverTaskDescription());
 			updateSensitivityAnalysisComboBox();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
@@ -925,10 +949,22 @@ private void refresh() {
 	} else {
 		serialParameterScanCheckBox.setVisible(false);
 	}
-	sensitivityAnalysisCollapsiblePanel.setVisible(!getSolverTaskDescription().getSimulation().getMathDescription().isSpatial() && !getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch());
+	managePanels(); // sensitivity panel's visibility
 	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans) 
 			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform) 
 			|| supportedFeatures.contains(SolverFeature.Feature_DataProcessingInstructions));
+	if (getSolverTaskDescription().getSolverDescription().isChomboSolver())
+	{
+		getTimeBoundsPanel().setVisible(false);
+		getTimeStepPanel().setVisible(false);
+		getChomboTimeBoundsPanel().setVisible(true);
+	}
+	else
+	{
+		getTimeBoundsPanel().setVisible(true);
+		getTimeStepPanel().setVisible(true);
+		getChomboTimeBoundsPanel().setVisible(false);
+	}
 }
 
 private javax.swing.JButton getQuestionButton() {

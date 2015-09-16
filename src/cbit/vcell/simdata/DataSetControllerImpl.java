@@ -1688,7 +1688,6 @@ private SimDataBlock evaluateFunction(
 		log.alert("dependencies for function '"+function+"' not found, assuming datalength of volume");
 		computedDataLength = mesh.getDataLength(VariableType.VOLUME);
 		computedVariableType = VariableType.VOLUME;
-
 //		try {
 //			computedDataLength = mesh.getDataLength(VariableType.VOLUME);
 //			computedVariableType = VariableType.VOLUME;
@@ -1703,6 +1702,11 @@ private SimDataBlock evaluateFunction(
 
 	if (!variableType.equals(computedVariableType)) {
 		System.err.println("function [" + function.getName() + "] variable type [" + variableType.getTypeName() + "] is not equal to computed variable type [" + computedVariableType.getTypeName() + "].");
+	}
+	if (dataLength == 0)
+	{
+		dataLength = computedDataLength;
+		variableType = computedVariableType;
 	}
 	//
 	//Gradient Info for special processing

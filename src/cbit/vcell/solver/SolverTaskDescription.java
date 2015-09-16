@@ -13,6 +13,7 @@ import java.beans.PropertyVetoException;
 
 import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.TimeInterval;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -591,7 +592,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					double outputTime = (timeBounds.getEndingTime()-timeBounds.getStartingTime())/20;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 				}
-				
 				if (solverDescription.equals(SolverDescription.SundialsPDE)) {
 					setErrorTolerance(ErrorTolerance.getDefaultSundialsErrorTolerance());
 					setTimeStep(TimeStep.getDefaultSundialsTimeStep());
@@ -640,6 +640,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				if (getOutputTimeSpec() == null || !(getOutputTimeSpec() instanceof UniformOutputTimeSpec)) {
 					double outputTime = getTimeBounds().getEndingTime()/10;
 					setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
+				}
+				if (chomboSolverSpec.getTimeIntervalList().size() == 0)
+				{	
+					chomboSolverSpec.addTimeInterval(TimeInterval.getDefaultTimeInterval());
 				}
 			} else {
 				chomboSolverSpec = null;
