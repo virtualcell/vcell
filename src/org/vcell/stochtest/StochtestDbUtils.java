@@ -110,7 +110,7 @@ for (int i = 0; i < numColumns; i++){
 				String sql = "UPDATE "+stochtestRunTable.getTableName() +
 						" SET "+stochtestRunTable.status.getUnqualifiedColName() + " = " + "'"+newStatus.name()+"'" + ", " +
 								stochtestRunTable.errmsg.getUnqualifiedColName() + " = " + errMsgRHS + ", " +
-								stochtestRunTable.networkGenProbs.getUnqualifiedColName() + " = " + networkGenProbsRHS + ", " +
+								stochtestRunTable.networkGenProbs.getUnqualifiedColName() + " = " + networkGenProbsRHS + " " +
 						" WHERE "+stochtestRunTable.id.getUnqualifiedColName()+" = " + acceptedStochtestRun.key.toString();
 				stmt = con.createStatement();
 System.out.println(sql);
