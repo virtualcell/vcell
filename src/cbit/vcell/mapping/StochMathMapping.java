@@ -19,6 +19,7 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.AbstractMathMapping.ObservableConcentrationParameter;
 import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
+import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
@@ -920,24 +921,32 @@ protected void refreshVariables() throws MappingException {
 	}
 	
 	//
-	// add Observable "count" (the "concentration" observable is already added as a Global Parameter ... generated during NetworkTransformer).
-	// if a model parameter is an observable, we treat it specially, adding a "count" version of the observable
+	// if the original (untransformed) model any observables (which are rule-based components), then the transformed model maps these observables to "Concentration" ModelParameters.
+	// 
+	// for symmetry with the RuleBasedMathMapping, we want to generate a "_Count" version of these observables if applicable.
 	//
-	for (ModelEntityMapping mem : getTransformation().modelEntityMappings){
-		if (mem.newModelObj instanceof ModelParameter && mem.origModelObj instanceof RbmObservable){
-			ModelParameter concObservableParameter = (ModelParameter)mem.newModelObj;
-			RbmObservable observable = (RbmObservable)mem.origModelObj;
-			try {
-				Expression countExp = getExpressionConcToExpectedCount(new Expression(concObservableParameter,getNameScope()), observable.getStructure());
-				//countExp.bindExpression(this);
-				addObservableCountParameter(concObservableParameter.getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, getSimulationContext().getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
-			} catch (ExpressionException | PropertyVetoException e) {
-				e.printStackTrace();
-				throw new MappingException(e.getMessage(),e);
+	// so if a "transformation" was performed, we want to find those ModelParameters which map to Observables so that we can generate an additional "Count" function (by scaling by compartment size and performing a unit conversion).
+	//
+	SimContextTransformation transformation = getTransformation();
+	if (transformation!=null){
+		ModelEntityMapping[] modelEntityMappings = transformation.modelEntityMappings;
+		if (modelEntityMappings!=null){
+			for (ModelEntityMapping mem : modelEntityMappings){
+				if (mem.newModelObj instanceof ModelParameter && mem.origModelObj instanceof RbmObservable){
+					ModelParameter concObservableParameter = (ModelParameter)mem.newModelObj;
+					RbmObservable observable = (RbmObservable)mem.origModelObj;
+					try {
+						Expression countExp = getExpressionConcToExpectedCount(new Expression(concObservableParameter,getNameScope()), observable.getStructure());
+						//countExp.bindExpression(this);
+						addObservableCountParameter(concObservableParameter.getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT, countExp, PARAMETER_ROLE_OBSERVABLE_COUNT, getSimulationContext().getModel().getUnitSystem().getStochasticSubstanceUnit(), observable);
+					} catch (ExpressionException | PropertyVetoException e) {
+						e.printStackTrace();
+						throw new MappingException(e.getMessage(),e);
+					}
+				}
 			}
 		}
-	}
-	
+	}	
 
 }
 
