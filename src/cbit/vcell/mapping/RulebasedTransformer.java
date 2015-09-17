@@ -131,14 +131,19 @@ public class RulebasedTransformer implements SimContextTransformer {
 		
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
 			Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
+			String forwardRateName = massActionKinetics.getForwardRateParameter().getName();
 			Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
+			String reverseRateName = massActionKinetics.getReverseRateParameter().getName();
 			RateLawType rateLawType = RateLawType.MassAction;
 			RbmKineticLaw kineticLaw = new RbmKineticLaw(rr, rateLawType);
 			try {
 				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
-				kineticLaw.setParameterValue(fR, forwardRateExp, true);
+				fR.setName(forwardRateName);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+				rR.setName(reverseRateName);
+				kineticLaw.setParameterValue(fR, forwardRateExp, true);
 				kineticLaw.setParameterValue(rR, reverseRateExp, true);
+				
 				//
 				// set values of local user-defined parameters also (user defined).
 				//
