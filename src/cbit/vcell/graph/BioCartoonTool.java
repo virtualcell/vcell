@@ -12,7 +12,6 @@ package cbit.vcell.graph;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -38,8 +37,7 @@ import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.Shape;
+import cbit.gui.graph.GraphPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
@@ -118,6 +116,10 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	}
 
 
+	public interface RXPasteInterface {
+		GraphPane getGraphPane();
+		void saveDiagram();
+	}
 	/**
 	 * pasteReactionSteps : this method clones the model argument and calls the private pasteReationSteps0 method with the cloned model to see if
 	 * there are any issues with the paste operation. If so, the issue list is popped up in a warning dialog, and user is given the option of proceeding
@@ -134,7 +136,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			Model pasteModel, Structure struct,
 			boolean bNew,/*boolean bUseDBSpecies,*/
 			UserResolvedRxElements userResolvedRxElements,
-			GraphModel graphModel){
+			RXPasteInterface rxPasteInterface){
 		
 		PasteHelper[] pasteHelper = new PasteHelper[1];
 		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -177,17 +179,27 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 				if (pasteHelper[0].issues.size() != 0) {
 					printIssues(pasteHelper[0].issues, requester);
 				}
-				
-				for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
-					ReactionCartoonTool.copyRelativePosition(graphModel, pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
-				}
-				graphModel.clearSelection();
-				for(BioModelEntityObject bioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
-					graphModel.select(bioModelEntityObject);
+				if(rxPasteInterface != null){
+					for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
+						ReactionCartoonTool.copyRelativePosition(rxPasteInterface.getGraphPane().getGraphModel(), pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
+					}
+					rxPasteInterface.getGraphPane().getGraphModel().clearSelection();
+					rxPasteInterface.saveDiagram();
+					for(BioModelEntityObject bioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
+						rxPasteInterface.getGraphPane().getGraphModel().select(bioModelEntityObject);
+					}
+	
+					//Setup to allow dispatcher to set focus on a specified component after it closes the ProgressPopup
+					hashTable.put(ClientTaskDispatcher.FINAL_WINDOW, new ClientTaskDispatcher.FinalWindow() {
+						@Override
+						public void run() {
+							rxPasteInterface.getGraphPane().requestFocusInWindow();
+						}
+					});
 				}
 			}
 		};
-		
+
 		ClientTaskDispatcher.dispatch(requester, new Hashtable<>(), new AsynchClientTask[] {issueTask,pasteRXTask}, false);
 	}
 
