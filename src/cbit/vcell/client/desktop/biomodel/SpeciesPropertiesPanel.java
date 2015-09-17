@@ -445,8 +445,6 @@ private void initialize() {
 		rightPanel.setBackground(Color.white);		
 		
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(480);
-		splitPane.setResizeWeight(0.9);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
 				
@@ -574,16 +572,14 @@ private void initialize() {
         gbc1.fill = GridBagConstraints.BOTH;
         leftPanel.add(shapePanel, gbc1); 
 		
-//		Dimension minimumSize = new Dimension(100, 150);		//provide minimum sizes for the two components in the split pane
-//		splitPane.setMinimumSize(minimumSize);
-//		leftPanel.setMinimumSize(minimumSize);
-//		rightPanel.setMinimumSize(minimumSize);
-		
-		
 		setName("SpeciesEditorPanel");
 		setLayout(new BorderLayout());
-		add(splitPane, BorderLayout.CENTER);
 		setBackground(Color.white);
+		splitPane.setResizeWeight(1.0d);
+		splitPane.getRightComponent().setMinimumSize(new Dimension());
+		splitPane.getRightComponent().setPreferredSize(new Dimension());
+		splitPane.setDividerLocation(1.0d);
+		add(splitPane, BorderLayout.CENTER);
 		
 		initConnections();
 		

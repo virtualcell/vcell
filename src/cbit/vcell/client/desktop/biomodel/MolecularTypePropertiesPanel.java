@@ -467,18 +467,15 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		splitPaneHorizontal.setBottomComponent(generalPanel);
 
 		// -----------------------------------------------------------------------------
-		
 		splitPane.setOneTouchExpandable(true);
-		splitPane.setDividerLocation(240);
-		splitPane.setResizeWeight(0.1);
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(splitPaneHorizontal);
 		
-		Dimension minimumSize = new Dimension(100, 150);	//provide minimum sizes for the two components in the split pane
-		splitPane.setMinimumSize(minimumSize);
-		leftPanel.setMinimumSize(minimumSize);
-		splitPaneHorizontal.setMinimumSize(minimumSize);
-		
+		splitPane.setResizeWeight(0.0d);
+		splitPane.getLeftComponent().setMinimumSize(new Dimension());
+		splitPane.getLeftComponent().setPreferredSize(new Dimension());
+		splitPane.setDividerLocation(0.0d);
+
 		setName("MolecularTypePropertiesPanel");
 		setLayout(new BorderLayout());
 		add(splitPane, BorderLayout.CENTER);
