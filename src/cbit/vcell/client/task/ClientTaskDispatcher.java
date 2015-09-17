@@ -37,10 +37,10 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
 
-import swingthreads.SwingWorker;
 import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import swingthreads.SwingWorker;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)
@@ -68,7 +68,7 @@ public class ClientTaskDispatcher {
 	/**
 	 * hash key for final window
 	 */
-	private static final String FINAL_WINDOW = "finalWindowInterface";
+	public static final String FINAL_WINDOW = "finalWindowInterface";
 	
 	static {
 		WeakHashMap<AsynchClientTask, Boolean> whm = new WeakHashMap<AsynchClientTask,Boolean>( );
@@ -451,7 +451,7 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 }
 
 //package
-interface FinalWindow extends Runnable{
+public interface FinalWindow extends Runnable{
 }
 
 /**

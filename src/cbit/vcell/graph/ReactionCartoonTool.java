@@ -530,6 +530,17 @@ public class ReactionCartoonTool extends BioCartoonTool {
 
 	}
 	
+	private RXPasteInterface rxPasteInterface = new RXPasteInterface() {
+		@Override
+		public void saveDiagram() {
+			ReactionCartoonTool.this.saveDiagram();
+		}
+		@Override
+		public GraphPane getGraphPane() {
+			return ReactionCartoonTool.this.getGraphPane();
+		}
+	};
+	
 	private void pasteReactionsAndSpecies(Structure structure){
 		final String RXSPECIES_PASTERX = "Reactions";
 		final String RXSPECIES_SPECIES = "Species";
@@ -558,7 +569,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				}
 			}
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
-				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,getGraphModel());					
+				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,rxPasteInterface);
 			}
 		}
 
@@ -2616,7 +2627,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		dbrqWiz.setModel(getModel());
 		dbrqWiz.setStructure(struct);
 		dbrqWiz.setDocumentManager(getDocumentManager());
-		dbrqWiz.setGraphModel(getGraphModel());
+		dbrqWiz.setRXPasteInterface(rxPasteInterface);
 		
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this.getGraphPane());
 		ChildWindow childWindow = childWindowManager.addChildWindow( dbrqWiz, SEARCHABLE_REACTIONS_CONTEXT_OBJECT, "Create Reaction within structure '" + struct.getName() + "'" );
