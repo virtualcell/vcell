@@ -31,8 +31,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
-import cbit.gui.graph.GraphModel;
-import cbit.vcell.client.ChildWindowManager;
+import cbit.gui.graph.GraphPane;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -42,6 +41,7 @@ import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.dictionary.db.ReactionDescription;
 import cbit.vcell.graph.BioCartoonTool;
+import cbit.vcell.graph.BioCartoonTool.RXPasteInterface;
 import cbit.vcell.graph.BioCartoonTool.UserResolvedRxElements;
 import cbit.vcell.model.Catalyst;
 import cbit.vcell.model.DBFormalSpecies;
@@ -49,6 +49,7 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -57,7 +58,6 @@ import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.ReactionQuerySpec;
 
@@ -2452,9 +2452,9 @@ private void reactionListSelectionChanged() {
 	}
 }
 
-private GraphModel graphModel;
-public void setGraphModel(GraphModel graphModel){
-	this.graphModel = graphModel;
+private RXPasteInterface rxPasteInterface;
+public void setRXPasteInterface(RXPasteInterface rxPasteInterface){
+	this.rxPasteInterface = rxPasteInterface;
 }
 /**
  * Comment
@@ -2535,7 +2535,7 @@ private void applySelectedReactionElements(){
 			BioCartoonTool.pasteReactionSteps(DBReactionWizardPanel.this,
 					new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")},
 					pasteToModel, pasteToStructure, false,
-					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"),graphModel);
+					(UserResolvedRxElements)hashTable.get("userResolvedRxElements"),rxPasteInterface);
 			closeParent();
 		}
 	};
