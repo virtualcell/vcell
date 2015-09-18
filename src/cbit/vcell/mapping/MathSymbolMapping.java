@@ -12,7 +12,12 @@ package cbit.vcell.mapping;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
@@ -33,12 +38,36 @@ public class MathSymbolMapping {
 	private java.util.HashMap<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new java.util.HashMap<SymbolTableEntry, String>();
 	private java.util.HashMap<SymbolTableEntry, Variable> biologicalToMathHash = new java.util.HashMap<SymbolTableEntry, Variable>();
 	private java.util.HashMap<Variable, SymbolTableEntry[]> mathToBiologicalHash = new java.util.HashMap<Variable, SymbolTableEntry[]>();
-
+	/**
+	 * debug concurrency issues
+	 */
+	private final Lock lock = new ReentrantLock();
+	
+	private static final Logger LG = Logger.getLogger(MathSymbolMapping.class);
 /**
  * MathSymbolMapping constructor comment.
  */
 public MathSymbolMapping() {
 	super();
+}
+
+private void entry( ) {
+	if (!lock.tryLock()) {
+		LG.setLevel(Level.TRACE);
+		LG.trace("entry lock fail",new RuntimeException());
+		try {
+			while (!lock.tryLock(500,TimeUnit.MILLISECONDS));
+		} catch (InterruptedException e) {
+			LG.trace("wait interrupt",new RuntimeException());
+		} 
+	}
+}
+
+private void mexit( ) {
+	if (LG.isTraceEnabled()) {
+		LG.trace("method exit",new RuntimeException());
+	}
+	lock.unlock();
 }
 
 
@@ -48,6 +77,8 @@ public MathSymbolMapping() {
  * @return java.lang.Object
  */
 public Variable findVariableByName(String variableName) {
+	entry( );
+	try {
 	
 	java.util.Iterator<Variable> iter = mathToBiologicalHash.keySet().iterator();
 	while (iter.hasNext()){
@@ -57,6 +88,10 @@ public Variable findVariableByName(String variableName) {
 		}
 	}
 	return null;
+	}
+	finally {
+		mexit( );
+	}
 }
 
 
@@ -67,8 +102,15 @@ public Variable findVariableByName(String variableName) {
  * @param var cbit.vcell.math.Variable
  */
 public SymbolTableEntry[] getBiologicalSymbol(Variable var) {
+	entry( );
+	try {
+	
 	return (SymbolTableEntry[])mathToBiologicalHash.get(var);
-
+	
+	}
+	finally {
+		mexit( );
+	}
 }
 
 
@@ -79,7 +121,15 @@ public SymbolTableEntry[] getBiologicalSymbol(Variable var) {
  * @param biologicalSymbol cbit.vcell.parser.SymbolTableEntry
  */
 public Variable getVariable(SymbolTableEntry biologicalSymbol) {
+	entry( );
+	try {
+		
 	return (Variable)biologicalToMathHash.get(biologicalSymbol);
+	
+	}
+	finally {
+		mexit( );
+	}
 }
 
 
@@ -90,6 +140,9 @@ public Variable getVariable(SymbolTableEntry biologicalSymbol) {
  * @param var cbit.vcell.math.Variable
  */
 public void put(SymbolTableEntry biologicalSymbol, String varName) {
+	entry( );
+	try {
+		
 	if(varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 		return;
 	}
@@ -106,6 +159,10 @@ public void put(SymbolTableEntry biologicalSymbol, String varName) {
 	//System.out.println(cbit.util.BeanUtils.forceStringSize(biologicalSymbol.getName(),25," ",true)+" ---> "+varName);
 	biologicalToMathSymbolNameHash.put(biologicalSymbol,varName);
 	
+	}
+	finally {
+		mexit( );
+	}
 }
 
 
@@ -115,6 +172,8 @@ public void put(SymbolTableEntry biologicalSymbol, String varName) {
  * @param mathDesc cbit.vcell.math.MathDescription
  */
 public void reconcileVarNames(MathDescription mathDesc) {
+	entry( );
+	try {
 
 	//
 	// clear secondary hashmaps in case called multiple times.
@@ -123,13 +182,14 @@ public void reconcileVarNames(MathDescription mathDesc) {
 	mathToBiologicalHash.clear();
 	
 	java.util.Set<SymbolTableEntry> keyset = biologicalToMathSymbolNameHash.keySet();
+	System.out.println(keyset.size());
 	java.util.Iterator<SymbolTableEntry> keysetIter = keyset.iterator();
 	while (keysetIter.hasNext()){
 		SymbolTableEntry biologicalSymbol = keysetIter.next();
 		String mathVarName = (String)biologicalToMathSymbolNameHash.get(biologicalSymbol);
 		Variable var = mathDesc.getVariable(mathVarName);
 		if(var != null){
-			biologicalToMathHash.put(biologicalSymbol,var);
+			biologicalToMathHash.put(biologicalSymbol,var); //<-- here
 			SymbolTableEntry[] previousBiologicalSymbolArr =
 				(SymbolTableEntry[])mathToBiologicalHash.put(var,new SymbolTableEntry[] {biologicalSymbol});
 			if(previousBiologicalSymbolArr != null){
@@ -139,10 +199,18 @@ public void reconcileVarNames(MathDescription mathDesc) {
 			}
 		}
 	}
+	
+	}
+	finally {
+		mexit( );
+	}
 }
 
 
 public void transform(SimContextTransformation transformation) {
+	entry( );
+	try {
+
 	if (transformation == null || transformation.modelEntityMappings == null){
 		return;
 	}
@@ -169,6 +237,10 @@ public void transform(SimContextTransformation transformation) {
 			}
 		}
 		entry.setValue(origStes.toArray(new SymbolTableEntry[0]));
+	}
+	}
+	finally {
+		mexit( );
 	}
 	
 }
