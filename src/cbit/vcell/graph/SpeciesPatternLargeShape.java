@@ -196,12 +196,16 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		for(MolecularTypeLargeShape mts : speciesShapes) {
 			boolean found = mts.contains(locationContext);
 			if(found) {
+				if(owner instanceof SpeciesContext && !((SpeciesContext)owner).hasSpeciesPattern()) {
+					// special case: clicked inside plain species, we only want to allow the user to add a species pattern
+					// we'll behave as if the user clicked outside the shape, which will bring the Add Molecule menu
+					break;
+				}
 				// since point is inside one of our components it's also inside "this"
 				locationContext.sps = this;
 				return true;	// if the point is inside a MolecularTypeLargeShape there's no need to check others
 			}
 		}
-		
 		// even if the point it's not inside one of our subcomponents it may still be inside "this"
 		int y = locationContext.point.y;
 		if(height > 0 && y > yPos-3-nameOffset && y < yPos + height-2) {
@@ -365,7 +369,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+13);
 			} else {
 				// for BondType.None we show nothing at all
-				// below commented out: small line ended in a red "x"
+				// below small black vertical line ended in a red "x" (comment out if not wanted)
 //				g2.setColor(lineColor);
 //				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+7);
 //				g2.setColor(Color.gray);
@@ -382,17 +386,17 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //				g2.setColor(Color.gray);
 //				g2.drawLine(bs.from.x-3, bs.from.y-1+vo, bs.from.x+4, bs.from.y+3+vo);
 				
-				// below commented out: small horizontal red line
+				// below small black vertical line ended in a small horizontal red line (comment out if not wanted)
+				int vo = 10;
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+7);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+vo);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+7);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+vo);
 				
-				int vo = 4;
 				g2.setColor(Color.red);
-				g2.drawLine(bs.from.x-2, bs.from.y+vo+2, bs.from.x+3, bs.from.y+vo+2);
+				g2.drawLine(bs.from.x-2, bs.from.y+vo-1, bs.from.x+3, bs.from.y+vo-1);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x-2, bs.from.y+vo+3, bs.from.x+3, bs.from.y+vo+3);
+				g2.drawLine(bs.from.x-2, bs.from.y+vo, bs.from.x+3, bs.from.y+vo);
 			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
