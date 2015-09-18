@@ -13,6 +13,10 @@ import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
+import java.util.Map.Entry;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -23,6 +27,7 @@ import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.simdata.DataManager;
@@ -40,7 +45,6 @@ public class ODEDataViewer extends DataViewer {
 	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private PlotPane ivjPlotPane1 = null;
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
-	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JPanel ivjViewData = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
 
@@ -87,46 +91,58 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
+private final Set<AsynchClientTaskFunctionTrack> clientTasks = Collections.newSetFromMap(new WeakHashMap<AsynchClientTaskFunctionTrack, Boolean>()) ;
 
 /**
  * connPtoP1SetTarget:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
  */
-private void connPtoP1SetTarget() {
+private synchronized void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	if(getOdeSolverResultSet() == null){
 		return;
 	}
 	try {
-		if (ivjConnPtoP1Aligning == false) {
-			ivjConnPtoP1Aligning = true;
-			
-			AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					if(ODEDataViewer.this.getSimulationModelInfo() != null){
-						SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-						simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
-					}
-				}
-			};
-			AsynchClientTask firePropertyChangeTask = new AsynchClientTask("Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-				@Override
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-					ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
-					getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
-				}
-			};
-			ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
-					new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
-					false, false, false, null, true);
-	
-				ivjConnPtoP1Aligning = false;
+		//see if still processing async task from  a previous call; if so just return
+		for (AsynchClientTaskFunctionTrack act: clientTasks) {
+			if (!act.isFinished()) {
+				System.err.println("duplicate set detected, ct size " + clientTasks.size());
+				return;
+			}
 		}
+		AsynchClientTaskFunctionTrack filterCategoriesTask = new AsynchClientTaskFunctionTrack( ht -> calculateFilterTask(ht),"Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
+		AsynchClientTaskFunctionTrack firePropertyChangeTask = new AsynchClientTaskFunctionTrack( ht -> firePropertyChangeTask(ht),"Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING);
+		clientTasks.add(filterCategoriesTask);
+		clientTasks.add(firePropertyChangeTask);
+		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
+				false, false, false, null, true);
+
 	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
 		handleException(ivjExc);
 	}
+}
+
+/**
+ * {@link AsynchClientTask} method
+ * @param ht
+ */
+private void calculateFilterTask(Hashtable<String,Object> ht) {
+	if(ODEDataViewer.this.getSimulationModelInfo() != null){
+		SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+		simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+	}
+}
+
+/**
+ * {@link AsynchClientTask} method
+ * @param ht
+ */
+private void firePropertyChangeTask(Hashtable<String,Object> ht) {
+	SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+	ODEDataInterfaceImpl oDEDataInterfaceImpl = new ODEDataInterfaceImpl(getOdeSolverResultSet(),simulationModelInfo);
+	getODESolverPlotSpecificationPanel1().setMyDataInterface(oDEDataInterfaceImpl);
+
+	
 }
 
 

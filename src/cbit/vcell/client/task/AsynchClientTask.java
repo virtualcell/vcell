@@ -52,14 +52,32 @@ public abstract class AsynchClientTask {
 	private boolean bShowProgressPopup = true;
 	//private AsynchClientTask[] followupTasks = null;
 	
+	/**
+	 * defaults showPopup, skip if abort, skip if cancel to true
+	 * @param name
+	 * @param taskType
+	 */
 	public AsynchClientTask(String name, int taskType) {
 		this(name, taskType, true, true, true);
 	}
 	
+	/**
+	 * defaults skip if abort, skip if cancel to true
+	 * @param name
+	 * @param taskType
+	 * @param bShowPopup
+	 */
 	public AsynchClientTask(String name, int taskType, boolean bShowPopup) {
 		this(name, taskType, bShowPopup, true, true);
 	}
 	
+	/**
+	 * defaults showPopup, skip if abort, skip if cancel to true
+	 * @param name
+	 * @param taskType
+	 * @param skipIfAbort
+	 * @param skipIfCancel
+	 */
 	public AsynchClientTask(String name, int taskType, boolean skipIfAbort, boolean skipIfCancel) {
 		this(name, taskType, true, skipIfAbort, skipIfCancel);
 	}
