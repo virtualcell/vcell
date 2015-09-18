@@ -992,7 +992,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		}
 	}
 	
-	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getBioModel().getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
+	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {
 			String message = "Max Iterations number may be insufficient.";
