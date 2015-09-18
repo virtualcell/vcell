@@ -13,10 +13,11 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Vector;
-
-import javax.swing.JDesktopPane;
-import javax.swing.JInternalFrame;
 
 import org.vcell.util.BeanUtils;
 
@@ -50,10 +51,10 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/3/2004 4:40:40 PM)
+ * @param simWindow non  null
  */
 public void addDataViewer(SimulationWindow simWindow) {
+	Objects.requireNonNull(simWindow);
 	simulationWindowsHash.put(simWindow.getVcSimulationIdentifier(), simWindow);
 }
 
@@ -66,30 +67,27 @@ public void resetSimulationContext(SimulationContext simContext) {
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (6/21/2005 12:36:41 PM)
+ * Remove server side sim results windows that are no longer in use 
  */
 public void cleanSimWindowsHash() {
 
-	Enumeration<VCSimulationIdentifier> enum1 = simulationWindowsHash.keys();
-	Vector<VCSimulationIdentifier> toRemove = new Vector<VCSimulationIdentifier>();
-	while(enum1.hasMoreElements()){
-		VCSimulationIdentifier vcsid = enum1.nextElement();
-		Simulation[] sims = simulationWorkspace.getSimulations();
-		boolean bFound = false;
-		for(int i=0;i<sims.length;i+= 1){
-			if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
-				bFound = true;
-				break;
+	Iterator<Entry<VCSimulationIdentifier, SimulationWindow>> iter = simulationWindowsHash.entrySet().iterator();
+	while (iter.hasNext()) {
+		Entry<VCSimulationIdentifier, SimulationWindow> es = iter.next();
+		SimulationWindow sw = es.getValue();
+		if (!sw.isShowingLocalSimulation()) {
+			VCSimulationIdentifier vcsid = es.getKey(); 
+			Simulation[] sims = simulationWorkspace.getSimulations();
+			boolean bFound = false;
+			for(int i=0;i<sims.length;i+= 1){
+				if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
+					bFound = true;
+					break;
+				}
 			}
-		}
-		if(!bFound){
-			toRemove.add(vcsid);
-		}
-	}
-	if(toRemove.size() > 0){
-		for(int i=0;i<toRemove.size();i+= 1){
-			simulationWindowsHash.remove(toRemove.elementAt(i));
+			if(!bFound){
+				iter.remove();
+			}
 		}
 	}
 }
@@ -108,7 +106,7 @@ public ChildWindow[] getDataViewerFrames(Component component) {
 			childWindows.add(childWindow);
 		}
 	}
-	return childWindows.toArray(new ChildWindow[0]);
+	return childWindows.toArray(new ChildWindow[childWindows.size()]);
 }
 
 /**
@@ -116,7 +114,7 @@ public ChildWindow[] getDataViewerFrames(Component component) {
  * Creation date: (6/3/2004 4:40:40 PM)
  */
 public SimulationWindow[] getSimulationWindows() {
-	return (SimulationWindow[])BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	return BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 }
 
 /**
@@ -126,11 +124,7 @@ public SimulationWindow[] getSimulationWindows() {
  * @param vcSimulationIdentifier cbit.vcell.server.VCSimulationIdentifier
  */
 public SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
-	if (simulationWindowsHash.containsKey(vcSimulationIdentifier)) {
-		return (SimulationWindow)simulationWindowsHash.get(vcSimulationIdentifier);
-	} else {
-		return null;
-	}
+	return simulationWindowsHash.get(vcSimulationIdentifier);
 }
 
 public void preloadSimulationStatus(Simulation[] simulations) {

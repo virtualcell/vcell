@@ -11,14 +11,19 @@
 package cbit.vcell.client.desktop.simulation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
+import java.util.List;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.title.TitleChanger;
+import cbit.vcell.client.title.TitleEvent;
+import cbit.vcell.client.title.TitleListener;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
-public class SimulationWindow {
+public class SimulationWindow implements TitleChanger {
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private Simulation simulation = null;
 	private SimulationOwner simOwner = null;
@@ -30,6 +35,7 @@ public class SimulationWindow {
 		LOCAL_SIMMODFIED
 	}
 	private LocalState localState; 
+	private List<TitleListener> titleListeners;
 	
 	private transient PropertyChangeListener pcl = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt){
@@ -55,6 +61,7 @@ public SimulationWindow(VCSimulationIdentifier vcSimulationIdentifier, Simulatio
 	getSimulation().addPropertyChangeListener(pcl);
 	this.dataViewer = dataViewer;
 	localState = LocalState.SERVER; 
+	titleListeners = new LinkedList<>();
 }
 
 public LocalState getLocalState() {
@@ -62,10 +69,29 @@ public LocalState getLocalState() {
 }
 
 public void setLocalState(LocalState localState) {
-	this.localState = localState;
+	if (this.localState != localState) {
+		String  old = getTitle();
+		this.localState = localState;
+		//did this change title?
+		String now = getTitle();
+		if (!now.equals(old)) {
+			TitleEvent te = new TitleEvent(now);
+			for (TitleListener tl : titleListeners) {
+				tl.titleChanged(te);
+			}
+		}
+	}
 }
 
+@Override
+public void addTitleListener(TitleListener listener) {
+	titleListeners.add(listener);
+}
 
+@Override
+public void removeTitleListener(TitleListener listener) {
+	titleListeners.remove(listener);
+}
 
 private ChildWindow getChildWindow() {
 	return childWindow;
