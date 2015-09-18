@@ -21,12 +21,12 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.dispatcher.SimulationStateMachine;
 import cbit.vcell.message.server.htc.HtcJobID;
-import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
 import cbit.vcell.messaging.db.SimulationExecutionStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
+import cbit.vcell.messaging.db.SimulationExecutionStatusPersistent;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
+import cbit.vcell.messaging.db.SimulationJobStatusPersistent;
 import cbit.vcell.messaging.db.SimulationQueueEntryStatus;
+import cbit.vcell.messaging.db.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -402,6 +402,11 @@ public final class VCMongoMessage {
 		}
 	}
 
+	/**
+	 * @param jobStatus non null
+	 * @param failureMessage
+	 * @param htcJobID
+	 */
 	public static void sendZombieJob(SimulationJobStatus jobStatus, String failureMessage, HtcJobID htcJobID) {
 		if (!enabled){
 			return;
