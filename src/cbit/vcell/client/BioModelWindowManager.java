@@ -36,6 +36,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.MathematicsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -171,7 +172,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 	ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 	if (childWindow==null){
-		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, "simulation results for "+simWindow.getSimulation().getName());
+		childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 		simWindow.setChildWindow(childWindow);
 		childWindow.setIsCenteredOnParent();
 		childWindow.pack();
@@ -246,7 +247,12 @@ private void updateSimulationDataViewers(ApplicationComponents appComponents, Si
 		SimulationWindow sw = simWindows[i];
 		if (hash.containsKey(simWindows[i].getVcSimulationIdentifier())) {
 			sw.resetSimulation((Simulation)hash.get(sw.getVcSimulationIdentifier()));
-		} else if (!sw.isShowingLocalSimulation()){
+		} 
+		else if (sw.isShowingLocalSimulation()){
+			sw.setLocalState(LocalState.LOCAL_SIMMODFIED);
+		}
+		else
+		{
 			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getJPanel());
 			ChildWindow childWindow = childWindowManager.getChildWindowFromContext(sw);
 			if(childWindow != null) {
