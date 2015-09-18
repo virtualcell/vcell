@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -1271,6 +1272,26 @@ public class RbmUtils {
 			throw new RuntimeException("Reaction rule " + reactionRule.getName() + " (reversible) is missing the reverse rate Kr (null).");
 		}
 		return str;
+	}
+	
+	public static String toBnglStringLong_internal(ReactionRule reactionRule) {
+		String str = reactionRule.getName() + ":\t";
+		str += toBnglStringShort(reactionRule);
+		str += "\t\t";
+		switch (reactionRule.getKineticLaw().getRateLawType()){
+		case MassAction:{
+			FakeReactionRuleRateParameter fakeForwardRateParam = new FakeReactionRuleRateParameter(reactionRule, RbmKineticLawParameterType.MassActionForwardRate);
+			str += fakeForwardRateParam.fakeParameterName;
+			if (reactionRule.isReversible()) {
+				FakeReactionRuleRateParameter fakeReverseRateParam = new FakeReactionRuleRateParameter(reactionRule, RbmKineticLawParameterType.MassActionReverseRate);
+				str += ", " + fakeReverseRateParam.fakeParameterName;
+			}
+			return str;
+		}
+		default:{
+			throw new RuntimeException("kinetic law "+reactionRule.getKineticLaw().getRateLawType().name()+" not yet supported.");
+		}
+		}
 	}
 	
 	public static String toBnglString(Parameter parameter, boolean bFunction) {

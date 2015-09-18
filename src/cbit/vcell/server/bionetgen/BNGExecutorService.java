@@ -141,6 +141,8 @@ public BNGOutput executeBNG() throws BNGException {
 		inputFile.print(bngInput.getInputString());
 		inputFile.close();
 		
+System.out.println("BNGExecutorService.executeBNG(): input = \n"+bngInput.getInputString());
+		
 		// run BNG
 		String[] cmd = new String[] {file_exe_bng.getAbsolutePath(), bngInputFile.getAbsolutePath()};
 //		executable = new org.vcell.util.Executable(cmd);
@@ -148,7 +150,7 @@ public BNGOutput executeBNG() throws BNGException {
 		if (timeoutDurationMS != null){
 			timeoutMS = timeoutDurationMS.longValue();
 		}
-		;executable = new BioNetGenExecutable(cmd,timeoutMS);
+		executable = new BioNetGenExecutable(cmd,timeoutMS);
 		executable.setWorkingDir(workingDir);
 		executable.inheritCallbacks(getCallbacks());
 		executable.start();

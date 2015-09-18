@@ -24,6 +24,8 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -54,8 +56,6 @@ public class RbmNetworkGenerator {
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
 
-	public static final String uniqueIdRoot = "unique_id_used_as_fake_parameter_";
-
 @Deprecated
 	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
 		SimulationContext sc = bioModel.getSimulationContexts()[0];	// we assume one single simulation context which may not be the case
@@ -83,8 +83,11 @@ public class RbmNetworkGenerator {
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
-	public static void writeBnglSpecial(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
+	public static void writeBngl_internal(SimulationContext simulationContext, PrintWriter writer,
+			Map<FakeReactionRuleRateParameter, Expression> kineticsParameterMap, 
+			Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
 			NetworkGenerationRequirements networkGenerationRequirements) {
+		
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
 		if(!callerClassName.equals(networkTransformerClassName)) {
@@ -94,7 +97,7 @@ public class RbmNetworkGenerator {
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
 		// first we prepare the fake parameters we need to maintain the relationship between the species context and the seed species
-		List<String> fakeParameterList = new ArrayList<String>();
+		List<FakeSeedSpeciesInitialConditionsParameter> fakeParameterList = new ArrayList<FakeSeedSpeciesInitialConditionsParameter>();
 		List<String> seedSpeciesList = new ArrayList<String>();
 		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
 //		Long uuid = UUID.randomUUID().getMostSignificantBits();
@@ -107,34 +110,55 @@ public class RbmNetworkGenerator {
 			SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
 			Expression initialConcentration = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
 			
-			String connectionKey = uniqueIdRoot + i;		// fake initial values for the seed species, we need to present them to bngl as parameters
-			connectionKey += "__" + sc.getName();			// we add at the end the original name of the species, to facilitate matching
+			// fake initial values for the seed species, we need to present them to bngl as parameters
+			FakeSeedSpeciesInitialConditionsParameter fakeSeedSpeciesParam = new FakeSeedSpeciesInitialConditionsParameter(sc.getName());
 			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
-			speciesEquivalenceMap.put(connectionKey, p);
+			speciesEquivalenceMap.put(fakeSeedSpeciesParam, p);
 			
 			String modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
-			modified += "\t\t" + connectionKey;
+			modified += "\t\t" + fakeSeedSpeciesParam.fakeParameterName;
 			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
-			fakeParameterList.add(connectionKey + "\t\t1");
+			fakeParameterList.add(fakeSeedSpeciesParam);
 		}
 
 		// second we produce the bngl file
 		writer.println(BEGIN_MODEL);
 		writer.println();
 		
-		writer.println(BEGIN_PARAMETERS);
-		List<Parameter> paramList = rbmModelContainer.getParameterList();
-		for (Parameter param : paramList) {
-			writer.println(RbmUtils.toBnglString(param,false));
-		}
-		if(ignoreFunctions) {	// we cheat and transform all functions into constant parameters
-			List<Parameter> functionList = rbmModelContainer.getFunctionList();
-			for (Parameter function : functionList) {
-				writer.println(RbmUtils.toBnglStringIgnoreExpression(function));
+		for (ReactionRuleSpec rrs : simulationContext.getReactionContext().getReactionRuleSpecs()){
+			if (!rrs.isExcluded()){
+				ReactionRule reactionRule = rrs.getReactionRule();
+				RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
+				switch (kineticLaw.getRateLawType()){
+				case MassAction:{
+					FakeReactionRuleRateParameter fakeRateParameterForward = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MassActionForwardRate);
+					Expression forwardRateExp = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getExpression();
+					kineticsParameterMap.put(fakeRateParameterForward, forwardRateExp);
+					if (reactionRule.isReversible()){
+						FakeReactionRuleRateParameter fakeRateParameterReverse = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MassActionReverseRate);
+						Expression reverseRateExp = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getExpression();
+						kineticsParameterMap.put(fakeRateParameterReverse, reverseRateExp);
+					}
+					break;
+				}
+				default:{
+					throw new RuntimeException("kinetic law type "+kineticLaw.getRateLawType().name()+" not yet implemented");
+				}
+				}
 			}
+			
 		}
-		for (String s : fakeParameterList) {
-			writer.println(s);			// the fake parameters used at initial values for the seed species
+		
+		writer.println(BEGIN_PARAMETERS);
+		// the fake parameters used for reaction rule kinetics
+		
+		for (FakeReactionRuleRateParameter p : kineticsParameterMap.keySet()) {
+			writer.println(p.fakeParameterName+"\t\t1");
+		}
+		// printing BNGL for internal use, use placeholders for all parameters
+		// the fake parameters used at initial values for the seed species
+		for (FakeSeedSpeciesInitialConditionsParameter s : fakeParameterList) {
+			writer.println(s.fakeParameterName+"\t\t1");
 		}
 		writer.println(END_PARAMETERS);
 		writer.println();
@@ -150,8 +174,7 @@ public class RbmNetworkGenerator {
 		writer.println();
 		
 		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
-		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, simulationContext, true);
+		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -224,6 +247,18 @@ public class RbmNetworkGenerator {
 				}
 			}
 			writer.println(RbmUtils.toBnglStringLong(rr));
+		}
+		writer.println(END_REACTIONS);	
+		writer.println();
+	}
+	
+	private static void writeReactions_internal(PrintWriter writer, SimulationContext sc) {
+		writer.println(BEGIN_REACTIONS);
+		for (ReactionRuleSpec rrSpec : sc.getReactionContext().getReactionRuleSpecs()) {
+			if (rrSpec.isExcluded()){
+				continue;		// we skip those rules which are disabled (excluded)
+			}
+			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule()));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();

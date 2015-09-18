@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.model.bngl.ParseException;
+import org.vcell.model.rbm.FakeReactionRuleRateParameter;
+import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -57,7 +59,8 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class NetworkTransformer implements SimContextTransformer {
 
-	private Map<String, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<String, Pair<SpeciesContext, Expression>>();
+	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
+	private Map<FakeReactionRuleRateParameter, Expression> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, Expression>();
 		
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
@@ -116,7 +119,7 @@ public class NetworkTransformer implements SimContextTransformer {
 	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBnglSpecial(simulationContext, pw, ignoreFunctions, speciesEquivalenceMap, networkGenerationRequirements);
+		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 //		System.out.println(bngl);
@@ -149,13 +152,14 @@ public class NetworkTransformer implements SimContextTransformer {
 		TaskCallbackMessage tcm;
 		BNGOutputSpec outputSpec;
 		speciesEquivalenceMap.clear();
+		kineticsParameterMap.clear(); 
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
-		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
-		    String key = entry.getKey();
+		for (Map.Entry<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
+		    FakeSeedSpeciesInitialConditionsParameter key = entry.getKey();
 		    Pair<SpeciesContext, Expression> value = entry.getValue();
 		    SpeciesContext sc = value.one;
 		    Expression initial = value.two;
-			System.out.println("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+			System.out.println("key: " + key.fakeParameterName + ",   species: " + sc.getName() + ", initial: " + initial.infix());
 		}
 
 		String md5hash = MD5.md5(input);
@@ -269,12 +273,19 @@ public class NetworkTransformer implements SimContextTransformer {
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
 			String s = p.getName();
-			if(speciesEquivalenceMap.containsKey(s)) {
+			FakeSeedSpeciesInitialConditionsParameter fakeICParam = FakeSeedSpeciesInitialConditionsParameter.fromString(s);
+			if(speciesEquivalenceMap.containsKey(fakeICParam)) {
 				continue;	// we get rid of the fake parameters we use as keys
 			}
-			Expression exp = new Expression(p.getValue());
-			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
-			model.getRbmModelContainer().addParameter(p.getName(), exp, model.getUnitSystem().getInstance_TBD());
+			FakeReactionRuleRateParameter fakeKineticParam = FakeReactionRuleRateParameter.fromString(s);
+			if(fakeKineticParam != null) {
+				System.out.println("found fakeKineticParam "+fakeKineticParam.fakeParameterName);
+				continue;	// we get rid of the fake parameters we use as keys
+			}
+			throw new RuntimeException("unexpected parameter "+p.getName()+" in internal BNG processing");
+//			Expression exp = new Expression(p.getValue());
+//			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
+//			model.getRbmModelContainer().addParameter(p.getName(), exp, model.getUnitSystem().getInstance_TBD());
 		}
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
@@ -301,8 +312,9 @@ public class NetworkTransformer implements SimContextTransformer {
 //			System.out.println(i+1 + ":\t\t"+ s.toString());
 			
 			String key = s.getConcentration().infix();
-			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
-			    Pair<SpeciesContext, Expression> value = speciesEquivalenceMap.get(key);
+			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
+			if (fakeParam != null) {
+			    Pair<SpeciesContext, Expression> value = speciesEquivalenceMap.get(fakeParam);
 			    SpeciesContext originalsc = value.one;		// the species context of the original model
 			    Expression initial = value.two;
 				s.setConcentration(initial);		// replace the fake initial condition with the real one
@@ -574,11 +586,13 @@ public class NetworkTransformer implements SimContextTransformer {
 				}
 				MassActionKinetics k = new MassActionKinetics(sr);
 				sr.setKinetics(k);
+				Expression substitutedForwardRateExp = substituteFakeParameters(forwardBNGReaction.getParamExpression());
 				KineticsParameter kforward = k.getForwardRateParameter();
-				sr.getKinetics().setParameterValue(kforward, forwardBNGReaction.getParamExpression());
+				sr.getKinetics().setParameterValue(kforward, substitutedForwardRateExp);
 				if (reverseBNGReaction!=null){
+					Expression substitutedReverseRateExp = substituteFakeParameters(reverseBNGReaction.getParamExpression());
 					KineticsParameter kReverse = k.getReverseRateParameter();
-					sr.getKinetics().setParameterValue(kReverse, reverseBNGReaction.getParamExpression());
+					sr.getKinetics().setParameterValue(kReverse, substitutedReverseRateExp);
 				}
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();
@@ -619,8 +633,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				}
 				MassActionKinetics k = new MassActionKinetics(sr);
 				sr.setKinetics(k);
+				Expression substitutedReverseRateExp = substituteFakeParameters(reverseBNGReaction.getParamExpression());
 				KineticsParameter kforward = k.getForwardRateParameter();
-				sr.getKinetics().setParameterValue(kforward, reverseBNGReaction.getParamExpression());
+				sr.getKinetics().setParameterValue(kforward, substitutedReverseRateExp);
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();
 	//			kforward.setName(fieldParameterName);
@@ -718,6 +733,20 @@ public class NetworkTransformer implements SimContextTransformer {
 		System.out.println(msg);
 		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
+	}
+
+	private Expression substituteFakeParameters(Expression paramExpression) throws ExpressionException {
+		Expression newExp = new Expression(paramExpression);
+		String[] fakeSymbols = paramExpression.getSymbols();
+		for (String fakeSymbol : fakeSymbols){
+			FakeReactionRuleRateParameter fakeParameter = FakeReactionRuleRateParameter.fromString(fakeSymbol);
+			if (fakeParameter == null){
+				throw new RuntimeException("unexpected identifier "+fakeSymbol+" in kinetic law during network generation");
+			}
+			Expression ruleExpression = this.kineticsParameterMap.get(fakeParameter);
+			newExp.substituteInPlace(new Expression(fakeSymbol), new Expression(ruleExpression));
+		}
+		return newExp;
 	}
 
 }

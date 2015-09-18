@@ -10,15 +10,12 @@
 
 package org.vcell.model.rbm;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import org.vcell.pathway.BioPaxObject;
-import org.vcell.relationship.ConversionTableRow;
 import org.vcell.util.gui.AutoCompleteTableModel;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.GuiUtils;
@@ -26,7 +23,6 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -130,8 +126,9 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 			BNGSpecies species = speciess[i];
 			String key = species.getConcentration().infix();
 			String originalName = "";
-			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
-				originalName = key.substring(key.lastIndexOf("__")+2);
+			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
+			if (fakeParam != null){
+				originalName = fakeParam.speciesContextName;
 				System.out.println(originalName);
 				scMap.put(originalName, originalName);
 				GeneratedSpeciesTableRow newRow = createTableRow(species, i+1, originalName, species.toStringShort());
@@ -142,8 +139,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 		for(int i = 0; i<speciess.length; i++) {
 			BNGSpecies species = speciess[i];
 			String key = species.getConcentration().infix();
-			String originalName = "";
-			if(key.startsWith(RbmNetworkGenerator.uniqueIdRoot)) {
+			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
+			if (fakeParam != null){
 				continue;					// we already dealt with these
 			} else {
 				int count = 0;				// generate unique name for the species
