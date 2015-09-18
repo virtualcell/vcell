@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -557,22 +558,27 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			}
 			if(reactionSpeciesCopy.getSpeciesContextArr() != null && (response==null || response.equals(RXSPECIES_SPECIES))){
 				IdentityHashMap<Species, Species> speciesHash = new IdentityHashMap<Species, Species>();
-				Vector<SpeciesContext> pastedSpeciesContextV = new Vector<SpeciesContext>();
+				Vector<BioModelEntityObject> pastedSpeciesContextV = new Vector<BioModelEntityObject>();
 				for (int i = 0; i < reactionSpeciesCopy.getSpeciesContextArr().length; i++) {
 					String rootSC = speciesContextRootFinder(reactionSpeciesCopy.getSpeciesContextArr()[i]);
 					pastedSpeciesContextV.add(pasteSpecies(getGraphPane(), reactionSpeciesCopy.getSpeciesContextArr()[i].getSpecies(), rootSC, getModel(),structure,true,speciesHash, null));
 					copyRelativePosition(getGraphModel(),reactionSpeciesCopy.getSpeciesContextArr()[i], pastedSpeciesContextV.lastElement());
 				}
-				getGraphModel().clearSelection();
-				for(SpeciesContext pastedSpeciesContext:pastedSpeciesContextV){
-					getGraphModel().select(pastedSpeciesContext);
-				}
+				ReactionCartoonTool.selectAndSaveDiagram(rxPasteInterface, pastedSpeciesContextV);
 			}
 			if(reactionSpeciesCopy.getReactStepArr() != null && (response == null || response.equals(RXSPECIES_PASTERX))){
 				pasteReactionSteps(getGraphPane(),reactionSpeciesCopy.getReactStepArr(), getModel(),structure,true, null,rxPasteInterface);
 			}
 		}
 
+	}
+	
+	public static void selectAndSaveDiagram(RXPasteInterface rxPasteInterface,List<BioModelEntityObject> reactionAndSpecies){
+		rxPasteInterface.getGraphPane().getGraphModel().clearSelection();
+		rxPasteInterface.saveDiagram();
+		for(BioModelEntityObject rxSpecies:reactionAndSpecies){
+			rxPasteInterface.getGraphPane().getGraphModel().select(rxSpecies);
+		}
 	}
 	
 	public static void copyRelativePosition(GraphModel graphModel,BioModelEntityObject origEntity,BioModelEntityObject newEntity){
