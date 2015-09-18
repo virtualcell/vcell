@@ -29,6 +29,7 @@ import org.vcell.util.Issue;
 
 import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
+import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
@@ -76,6 +77,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		if(owner instanceof RbmObservable) {
 			nameOffset = ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
 			this.yPos = yPos+ObservablePropertiesPanel.ReservedSpaceForNameOnYAxis;
+		} else if(owner instanceof ReactionRule) {
+			nameOffset = ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+			this.yPos = yPos+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+
 		} else {
 			this.yPos = yPos;
 		}
@@ -257,19 +262,28 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		if(owner instanceof RbmObservable) {
+		if(owner instanceof RbmObservable || owner instanceof ReactionRule) {
 			paintContour(g);
 		}
-		
-		if(owner instanceof RbmObservable) {		// type the expression of the sp right above the shape
-			Color colorOld = g2.getColor();
-			Font fontOld = g.getFont();
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
-			Color fontColor = Color.gray;
-			g2.drawString("SpeciesPattern: " + sp.toString(), xPos, yPos-nameOffset/3);
-			g2.setFont(fontOld);
-			g2.setColor(colorOld);
-		}
+
+//		// type the expression of the species pattern right above the shape
+//		if(owner instanceof RbmObservable) {
+//			Color colorOld = g2.getColor();
+//			Font fontOld = g.getFont();
+//			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+//			Color fontColor = Color.gray;
+//			g2.drawString("SpeciesPattern: " + sp.toString(), xPos, yPos-nameOffset/3);
+//			g2.setFont(fontOld);
+//			g2.setColor(colorOld);
+//		} else if(owner instanceof ReactionRule) {
+//			Color colorOld = g2.getColor();
+//			Font fontOld = g.getFont();
+//			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+//			Color fontColor = Color.gray;
+//			g2.drawString("SpeciesPattern: " + sp.toString(), xPos+40, yPos-nameOffset/3);
+//			g2.setFont(fontOld);
+//			g2.setColor(colorOld);
+//		}
 		
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
