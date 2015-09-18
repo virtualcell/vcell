@@ -261,6 +261,11 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				return true;	// if the point is inside a MolecularComponentLargeShape there's no need to check others
 			}
 		}
+		if(owner instanceof SpeciesContext && !((SpeciesContext)owner).hasSpeciesPattern()) {
+			// special case: clicked inside plain species, we only want to allow the user to add a species pattern
+			// we'll behave as if the user clicked outside the shape
+			return false;
+		}
 		// even if the point it's not inside one of our subcomponents it may still be inside "this"
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
 		if(rect.contains(locationContext.point)) {
