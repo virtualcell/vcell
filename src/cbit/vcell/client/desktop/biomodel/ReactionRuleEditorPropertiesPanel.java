@@ -547,16 +547,20 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		updateShape();
 	}
+//	public static final int ReservedSpaceForNameOnYAxis = 25;
+	public static final int ReservedSpaceForNameOnYAxis = 10;
 	private void updateShape() {
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		reactantPatternShapeList.clear();
-		int xOffset = 10;
+		int xOffset = 25;
+		int yOffset = 8;
 		if(rpList != null && rpList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 15, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffset, -1, sp, gc, reactionRule);
+//				if(i==0) { sps.setHighlight(true); }
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
 				} else {
@@ -570,14 +574,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				reactantPatternShapeList.add(sps);
 			}
 		}
-		xOffset += 15;	// space for the <-> sign
+		xOffset = 25;
+		yOffset = 100;
 		List<ProductPattern> ppList = reactionRule.getProductPatterns();
 		productPatternShapeList.clear();
 		if(ppList != null && ppList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 15, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffset, -1, sp, gc, reactionRule);
+//				if(i==0) { sps.setHighlight(true); }
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
