@@ -156,6 +156,9 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
 					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
 					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+					for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+						mtp.setParticipantMatchLabel("*");
+					}
 					System.out.println(speciesPattern.toString());
 					reactionRule.addProduct(new ProductPattern(speciesPattern, reactionRule.getStructure()));
 					} catch(Throwable ex) {
@@ -179,7 +182,9 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					Graphics gc = shapePanel.getGraphics();
 					for(int i = 0; i<rpList.size(); i++) {
 						SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-						// TODO: count the number of bonds for this sp and allow enough vertical space for them
+						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+							mtp.setParticipantMatchLabel("*");
+						}
 						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, gc, reactionRule);
 						if(i < rpList.size()-1) {
 							sps.addEndText("+");
@@ -190,7 +195,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 								sps.addEndText("->");
 							}
 						}
-						xOffset = sps.getRightEnd() + 35;
+						xOffset = sps.getRightEnd() + 45;
 						reactantPatternShapeList.add(sps);
 					}
 				}
@@ -201,11 +206,14 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					Graphics gc = shapePanel.getGraphics();
 					for(int i = 0; i<ppList.size(); i++) {
 						SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
+						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+							mtp.setParticipantMatchLabel("*");
+						}
 						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, gc, reactionRule);
 						if(i < ppList.size()-1) {
 							sps.addEndText("+");
 						}
-						xOffset = sps.getRightEnd() + 35;
+						xOffset = sps.getRightEnd() + 45;
 						productPatternShapeList.add(sps);
 					}
 				}
