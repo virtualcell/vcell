@@ -34,6 +34,7 @@ import org.vcell.util.ProgrammingException;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.title.TitleChanger;
 //import cbit.vcell.client.desktop.biomodel.ChildWindowListener;
 import edu.uchc.connjur.wb.ExecutionTrace;
 
@@ -426,6 +427,13 @@ public class ChildWindowManager {
 		childWindows.add(childWindow);
 		return childWindow;
 	}
+	
+	public ChildWindow addChildWindow(Container contentPane, TitleChanger titleChanger){
+		ChildWindow cw = addChildWindow(contentPane, titleChanger, titleChanger.getTitle( ));
+		titleChanger.addTitleListener( titleEvent -> cw.setTitle( titleEvent.getTitle() ) );
+		return cw;
+	}
+	
 	
 	public ChildWindow addChildWindow(Container contentPane, Object contextObject, String title, boolean resizable){
 		ChildWindow childWindow = addChildWindow(contentPane, contextObject, title);

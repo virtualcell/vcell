@@ -332,7 +332,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(documentWindowManager.getComponent());
 					ChildWindow childWindow = childWindowManager.getChildWindowFromContext(simWindow);
 					if (childWindow==null){
-						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow, simWindow.getTitle());
+						childWindow = childWindowManager.addChildWindow(simWindow.getDataViewer(), simWindow);
 						childWindow.pack();
 						childWindow.setIsCenteredOnParent();
 						childWindow.show();
