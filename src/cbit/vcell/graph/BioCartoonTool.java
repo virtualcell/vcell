@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
@@ -183,12 +184,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 					for(BioModelEntityObject newBioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
 						ReactionCartoonTool.copyRelativePosition(rxPasteInterface.getGraphPane().getGraphModel(), pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
 					}
-					rxPasteInterface.getGraphPane().getGraphModel().clearSelection();
-					rxPasteInterface.saveDiagram();
-					for(BioModelEntityObject bioModelEntityObject:pasteHelper[0].reactionsAndSpeciesContexts.keySet()){
-						rxPasteInterface.getGraphPane().getGraphModel().select(bioModelEntityObject);
-					}
-	
+					ReactionCartoonTool.selectAndSaveDiagram(rxPasteInterface, new ArrayList<BioModelEntityObject>(pasteHelper[0].reactionsAndSpeciesContexts.keySet()));
+					
 					//Setup to allow dispatcher to set focus on a specified component after it closes the ProgressPopup
 					hashTable.put(ClientTaskDispatcher.FINAL_WINDOW, new ClientTaskDispatcher.FinalWindow() {
 						@Override
