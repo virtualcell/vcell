@@ -23,6 +23,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
@@ -240,7 +241,11 @@ public void accessPermissions(final Component requester, final VersionInfo selec
 							}
 						}
 						if (errorNames.length() > 0) {
-							PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames);
+							if(DatabaseWindowManager.this.getComponent() != null){
+								PopupGenerator.showErrorDialog(DatabaseWindowManager.this, errorNames);
+							}else{
+								DialogUtils.showErrorDialog(requester, errorNames);
+							}
 							accessPermissions(requester, selectedVersionInfo);
 						}
 					}
