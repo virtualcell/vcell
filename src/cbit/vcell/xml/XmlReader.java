@@ -4250,14 +4250,13 @@ private MolecularTypePattern getRbmMolecularTypePattern(Element e, Model newMode
 		System.out.println("XMLReader: getRbmMolecularTypePattern: encountered reference to non-existing MolecularType.");
 		return null;
 	}
-	MolecularTypePattern tp = new MolecularTypePattern(mt);
+	MolecularTypePattern tp = new MolecularTypePattern(mt, false);	// we insert the component patterns below
 	String index = e.getAttributeValue(XMLTags.RbmIndexAttrTag);
 	if(index!=null && !index.isEmpty()) {
 		tp.setIndex(Integer.parseInt(index));
 	}
 	String match = e.getAttributeValue(XMLTags.RbmParticipantPatternMatchTag);
 	if(match!=null && !match.isEmpty()) {
-		tp.setIndex(Integer.parseInt(index));
 		tp.setParticipantMatchLabel(match);
 	}
 	List<MolecularComponentPattern> cpl = new ArrayList<MolecularComponentPattern>();
@@ -4486,7 +4485,7 @@ private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newMode
 		List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
 		for (Element element : children) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
-			if(s != null) { r.addReactant(new ReactantPattern(s, r.getStructure())); }
+			if(s != null) { r.addReactant(new ReactantPattern(s, r.getStructure()), false); }
 	}
 	}
 }
