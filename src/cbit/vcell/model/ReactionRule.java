@@ -156,17 +156,23 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public void addReactant(ReactantPattern reactant) {
 		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 		newValue.add(reactant);
-		setReactantPatterns(newValue);		
+		setReactantPatterns(newValue, true);		
+	}
+	// when reading from the database we want to preserve the matches we saved, so bResolveMatches is false
+	public void addReactant(ReactantPattern reactant, boolean bResolveMatches) {
+		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
+		newValue.add(reactant);
+		setReactantPatterns(newValue, bResolveMatches);		
 	}
 	public void removeReactant(ReactantPattern reactant) {
 		if (reactantPatterns.contains(reactant)) {
 			List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 			newValue.remove(reactant);
-			setReactantPatterns(newValue);	
+			setReactantPatterns(newValue, true);	
 		}
 	}
 	
-	public void setReactantPatterns(List<ReactantPattern> newValue) {
+	public void setReactantPatterns(List<ReactantPattern> newValue, boolean bResolveMatches) {
 		List<ReactantPattern> oldValue = reactantPatterns;
 		if (oldValue != null) {
 			for (ReactantPattern rp : oldValue) {
@@ -184,7 +190,9 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 //		checkReactantPatterns(null);
 //		checkProductPatterns(null);
 		getKineticLaw().refreshUnits();
-		resolveMatches();
+		if(bResolveMatches) {
+			resolveMatches();
+		}
 	}
 	
 	public void checkReactantPatterns(IssueContext issueContext, List<Issue> issueList) {
@@ -291,17 +299,22 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public void addProduct(ProductPattern product) {
 		List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
 		newValue.add(product);
-		setProductPatterns(newValue);		
+		setProductPatterns(newValue, true);		
+	}
+	public void addProduct(ProductPattern product, boolean bResolveMatches) {
+		List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
+		newValue.add(product);
+		setProductPatterns(newValue, bResolveMatches);		
 	}
 	
 	public void removeProduct(ProductPattern product) {
 		if (productPatterns.contains(product)) {
 			List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
 			newValue.remove(product);
-			setProductPatterns(newValue);
+			setProductPatterns(newValue, true);
 		}
 	}	
-	public void setProductPatterns(List<ProductPattern> newValue) {
+	public void setProductPatterns(List<ProductPattern> newValue, boolean bResolveMatches) {
 		List<ProductPattern> oldValue = productPatterns;
 		if (oldValue != null) {
 			for (ProductPattern pp : oldValue) {
@@ -318,7 +331,9 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		firePropertyChange(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS, oldValue, newValue);
 //		checkProductPatterns(null);
 		getKineticLaw().refreshUnits();
-		resolveMatches();
+		if(bResolveMatches) {
+			resolveMatches();
+		}
 	}
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;
