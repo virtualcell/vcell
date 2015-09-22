@@ -11,8 +11,10 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -56,8 +58,12 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.MolecularComponentLargeShape;
+import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
+import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -99,6 +105,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem addProductMenuItem;
 	private JMenuItem deleteMenuItem;	
 	private JMenuItem editMenuItem;
+
+	private JPopupMenu popupFromShapeMenu;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 
@@ -202,6 +210,90 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			};
+			shapePanel.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					super.mouseClicked(e);
+					if(e.getButton() == 1) {		// left click selects the object (we highlight it)
+						Point whereClicked = e.getPoint();
+						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+						Graphics g = shapePanel.getGraphics();
+						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
+							sps.turnHighlightOffRecursive(g);
+						}
+						for (SpeciesPatternLargeShape sps : productPatternShapeList) {
+							sps.turnHighlightOffRecursive(g);
+						}
+						boolean found = false;
+						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
+							if (sps.contains(locationContext)) {		//check if mouse is inside shape
+								found = true;
+								break;
+							}
+						}
+						if(!found) {
+							for (SpeciesPatternLargeShape sps : productPatternShapeList) {
+								if (sps.contains(locationContext)) {
+									found = true;
+									break;
+								}
+							}
+						}
+						locationContext.highlightDeepestShape();
+						if(locationContext.getDeepestShape() == null) {
+							// nothing selected means all the reactant bar or all the product bar is selected 
+
+//							xOffsetInitial;
+//							yOffsetReactantInitial;
+//							yOffsetProductInitial;
+							
+							int xExtent = SpeciesPatternLargeShape.xExtent;
+							Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+							Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+							
+							if(locationContext.isInside(reactantRectangle)) {
+								locationContext.paintContour(g, reactantRectangle);
+								for(SpeciesPatternLargeShape spls : reactantPatternShapeList) {
+									spls.paintSelf(g, false);
+								}
+							} else if(locationContext.isInside(productRectangle)) {
+								locationContext.paintContour(g, productRectangle);
+								for(SpeciesPatternLargeShape spls : productPatternShapeList) {
+									spls.paintSelf(g, false);
+								}
+							} else {
+								
+							}
+						} else {
+							locationContext.paintDeepestShape(g);
+						}
+					} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
+						Point whereClicked = e.getPoint();
+						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+						boolean found = false;
+						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
+							if (sps.contains(locationContext)) {		//check if mouse is inside shape
+								found = true;
+								break;		// if mouse is inside a shape it can't be simultaneously in another one
+							}
+						}
+						if(!found) {
+							for (SpeciesPatternLargeShape sps : productPatternShapeList) {
+								if (sps.contains(locationContext)) {
+									found = true;
+									break;
+								}
+							}
+						}
+						if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
+							// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
+							
+							// return;
+						}					
+						showPopupMenu(e, locationContext);
+					}
+				}
+			});
 			shapePanel.setLayout(new GridBagLayout());
 			shapePanel.setBackground(Color.white);	
 			
@@ -548,18 +640,20 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		updateShape();
 	}
 //	public static final int ReservedSpaceForNameOnYAxis = 25;
+	public static  final int xOffsetInitial = 25;
+	public static  final int yOffsetReactantInitial = 8;
+	public static  final int yOffsetProductInitial = 100;
 	public static final int ReservedSpaceForNameOnYAxis = 10;
 	private void updateShape() {
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		reactantPatternShapeList.clear();
-		int xOffset = 25;
-		int yOffset = 8;
+		int xOffset = xOffsetInitial;
 		if(rpList != null && rpList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffset, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffsetReactantInitial, -1, sp, gc, reactionRule);
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
@@ -574,15 +668,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				reactantPatternShapeList.add(sps);
 			}
 		}
-		xOffset = 25;
-		yOffset = 100;
+		xOffset = xOffsetInitial;
 		List<ProductPattern> ppList = reactionRule.getProductPatterns();
 		productPatternShapeList.clear();
 		if(ppList != null && ppList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffset, -1, sp, gc, reactionRule);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffsetProductInitial, -1, sp, gc, reactionRule);
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
@@ -599,6 +692,66 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		splitPaneHorizontal.getTopComponent().repaint();
 	}
 	
+	private void showPopupMenu(MouseEvent e, PointLocationInShapeContext locationContext) {
+		if (popupFromShapeMenu == null) {
+			popupFromShapeMenu = new JPopupMenu();			
+		}		
+		if (popupFromShapeMenu.isShowing()) {
+			return;
+		}
+		boolean bDelete = false;
+		boolean bAdd = false;
+		boolean bEdit = false;
+		boolean bRename = false;
+		popupFromShapeMenu.removeAll();
+		Point mousePoint = e.getPoint();
+
+		final Object deepestShape = locationContext.getDeepestShape();
+		final Object selectedObject;
+		
+		if(deepestShape == null) {
+			selectedObject = null;
+			System.out.println("outside");		// when cursor is outside any species pattern we offer to add a new one
+//			popupFromShapeMenu.add(getAddSpeciesPatternFromShapeMenuItem());
+		} else if(deepestShape instanceof ComponentStateLargeShape) {
+			System.out.println("inside state");
+			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+			} else {
+				return;
+			}
+		} else if(deepestShape instanceof MolecularComponentLargeShape) {
+			System.out.println("inside component");
+			if(((MolecularComponentLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((MolecularComponentLargeShape)deepestShape).getMolecularComponentPattern();
+			} else {
+				return;
+			}
+		} else if(deepestShape instanceof MolecularTypeLargeShape) {
+			System.out.println("inside molecule");
+			if(((MolecularTypeLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((MolecularTypeLargeShape)deepestShape).getMolecularTypePattern();
+			} else {
+				return;
+			}
+		} else if(deepestShape instanceof SpeciesPatternLargeShape) {
+			System.out.println("inside species pattern");
+			if(((SpeciesPatternLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((SpeciesPatternLargeShape)deepestShape).getSpeciesPattern();
+			} else {
+				return;
+			}
+		} else {
+			selectedObject = null;
+			System.out.println("inside something else?");
+			return;
+		}
+		
+		
+		
+		
+		
+	}
 	private void showPopupMenu(MouseEvent e){ 
 		if (!e.isPopupTrigger()) {
 			return;

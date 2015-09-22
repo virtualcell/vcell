@@ -2,6 +2,7 @@ package cbit.vcell.graph;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.geom.Rectangle2D;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -76,29 +77,34 @@ public class PointLocationInShapeContext {
 		return null;
 	}
 	
-	public void highlightDeepestShape() {
+	public boolean highlightDeepestShape() {
 		if(csls != null) {
 			// we highlight the mcs for observables / species / reactions
 			if(mcs != null && !(csls.getOwner() instanceof MolecularType)) mcs.setHighlight(true);
 			if(mcs != null && csls.getOwner() instanceof MolecularType) csls.setHighlight(true);
 			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
-			return;
+			return true;
 		}
 		if(mcs != null) {
 			mcs.setHighlight(true);
 //			if(mts != null) mts.setHighlight(false);	// we don't highlight the mts because it's overkill - too much color
 			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
-			return;
+			return true;
 		}
 		if(mts != null) {
 			mts.setHighlight(true);
 			if(sps != null) sps.setHighlight(true);
-			return;
+			return true;
 		}
 		if(sps != null) {
 			sps.setHighlight(true);
-			return;
+			return true;
 		}
+		return false;		// couldn't find anything to highlight
+	}
+
+	public void paintContour(Graphics graphics, Rectangle2D rect) {
+		SpeciesPatternLargeShape.paintContour(graphics, rect);
 	}
 
 	public void paintDeepestShape(Graphics graphics) {
@@ -122,6 +128,10 @@ public class PointLocationInShapeContext {
 			sps.paintSelf(graphics);
 			return;
 		}
+	}
+
+	public boolean isInside(Rectangle2D rectangle) {
+		return rectangle.contains(point);
 	}
 	
 }

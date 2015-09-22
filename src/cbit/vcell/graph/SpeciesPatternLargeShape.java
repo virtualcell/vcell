@@ -172,12 +172,20 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	public int getY(){
 		return yPos;
 	}
+	public int getWidth() {
+		if(speciesShapes.isEmpty()) {
+			return MolecularTypeLargeShape.getDummyWidth();
+		}
+		int width = 0;
+		for(MolecularTypeLargeShape stls : speciesShapes) {
+			width += stls.getWidth();
+		}
+		return width;
+	}
 	public int getRightEnd(){		// get the x of the right end of the species pattern
-		
 		if(speciesShapes.isEmpty()) {
 			return xPos + MolecularTypeLargeShape.getDummyWidth();
 		}
-		
 		int xRightmostMolecularType = 0;
 		int widthRightmostMolecularType = 0;
 		for(MolecularTypeLargeShape stls : speciesShapes) {
@@ -194,6 +202,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		this.endText = string;
 	}
 	
+	static final public int xExtent = 20;	// left and right extension of the sp, used for reactions only
+									// clicking within these limits still means we're inside that sp
 	@Override
 	public boolean contains(PointLocationInShapeContext locationContext) {
 		
@@ -214,8 +224,18 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		// even if the point it's not inside one of our subcomponents it may still be inside "this"
 		int y = locationContext.point.y;
 		if(height > 0 && y > yPos-3-nameOffset && y < yPos + height-2) {
-			locationContext.sps = this;
-			return true;
+			if(!(owner instanceof ReactionRule)) {
+				// most entities have just 1 sp per row, so it's enough to check the y
+				locationContext.sps = this;
+				return true;
+			} else {
+				int x = locationContext.point.x;
+				// for rules, more sp may be on the same row, so we need to also check x 
+				if(x > xPos-xExtent && x < xPos + getWidth() + xExtent) {
+					locationContext.sps = this;
+					return true;
+				}
+			}
 		}
 		// for species contexts we can only have one single species pattern
 		// anywhere you click inside the panel you select that species pattern
@@ -226,8 +246,24 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		return false;
 	}
 
+	static public void paintContour(Graphics g, Rectangle2D rect) {
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+		int yPos = 0;
+			
+		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
+
+		g2.setPaint(paleBlue);
+		g2.fill(rect);
+		g2.setColor(darkerBlue);
+		g2.draw(rect);
+
+	    g2.setPaint(paintOld);
+		g2.setColor(colorOld);
+	}
 	public void paintContour(Graphics g) {
-		
 		if(height == -1) {
 			height = 80;
 		}
@@ -237,8 +273,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			
 		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
 		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
-		Rectangle2D rect = new Rectangle2D.Double(xPos-20, yPos-3-nameOffset, 3000, height-2+nameOffset);
-		
+		Rectangle2D rect = new Rectangle2D.Double(xPos-xExtent, yPos-3-nameOffset, getWidth()+2*xExtent, height-2+nameOffset);
 		if(isHighlighted()) {
 			g2.setPaint(paleBlue);
 			g2.fill(rect);
@@ -253,7 +288,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
+	
 	public void paintSelf(Graphics g) {
+		paintSelf(g, true);
+	}
+	public void paintSelf(Graphics g, boolean bPaintContour) {
+		
+		// bond related attributes
 		final int offset = 18;			// initial height of vertical bar
 		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
 		final int xTwoLetterOffset = 13;
@@ -262,7 +303,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		if(owner instanceof RbmObservable || owner instanceof ReactionRule) {
+		if(bPaintContour && (owner instanceof RbmObservable || owner instanceof ReactionRule)) {
 			paintContour(g);
 		}
 
