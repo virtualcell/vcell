@@ -302,8 +302,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 			
 			splitPaneHorizontal.setOneTouchExpandable(true);
-			splitPaneHorizontal.setDividerLocation(yDividerLocation);
-			splitPaneHorizontal.setResizeWeight(0.1);
+//			splitPaneHorizontal.setDividerLocation(yDividerLocation);
+//			splitPaneHorizontal.setResizeWeight(0.1);
 			
 			JPanel lowerPanel = new JPanel();
 			lowerPanel.setLayout(new GridBagLayout());
@@ -458,6 +458,12 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(2,2,2,2);
 			gbc.fill = GridBagConstraints.BOTH;
 			lowerPanel.add(new JScrollPane(splitPaneTrees), gbc);
+			
+			splitPaneHorizontal.setResizeWeight(1.0d);
+			splitPaneHorizontal.getBottomComponent().setMinimumSize(new Dimension());
+			splitPaneHorizontal.getBottomComponent().setPreferredSize(new Dimension());
+			splitPaneHorizontal.setDividerLocation(1.0d);
+
 			
 			setLayout(new BorderLayout());
 			add(splitPaneHorizontal, BorderLayout.CENTER);
@@ -639,10 +645,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		updateShape();
 	}
-//	public static final int ReservedSpaceForNameOnYAxis = 25;
-	public static  final int xOffsetInitial = 25;
-	public static  final int yOffsetReactantInitial = 8;
-	public static  final int yOffsetProductInitial = 100;
+
+	public static final int xOffsetInitial = 25;
+	public static final int yOffsetReactantInitial = 8;
+	public static final int yOffsetProductInitial = 100;
 	public static final int ReservedSpaceForNameOnYAxis = 10;
 	private void updateShape() {
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
