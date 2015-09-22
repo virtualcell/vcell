@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -574,6 +573,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 	}
 	
 	public static void selectAndSaveDiagram(RXPasteInterface rxPasteInterface,List<BioModelEntityObject> reactionAndSpecies){
+		
 		rxPasteInterface.getGraphPane().getGraphModel().clearSelection();
 		rxPasteInterface.saveDiagram();
 		for(BioModelEntityObject rxSpecies:reactionAndSpecies){
@@ -585,6 +585,7 @@ public class ReactionCartoonTool extends BioCartoonTool {
 		Shape origEntityShape = graphModel.getShapeFromModelObject(origEntity);
 		Shape newEntityShape = graphModel.getShapeFromModelObject(newEntity);
 		newEntityShape.setRelPos(new Point(origEntityShape.getRelPos()));
+		
 		//offset if completely overlap another shape
 		for(Shape shape:graphModel.getShapes()){
 			if(shape.getModelObject() instanceof BioModelEntityObject && shape != newEntityShape){
@@ -1309,16 +1310,11 @@ public class ReactionCartoonTool extends BioCartoonTool {
 				} else {
 					Shape shape = (getGraphModel().getSelectedShape() != null ?
 						getGraphModel().getSelectedShape():getReactionCartoon().pickWorld(worldPoint));
-					if (!bCntrl && !bShift && (shape instanceof SpeciesContextShape || 
-							shape instanceof ReactionStepShape ||
-							(shape instanceof ReactionContainerShape && worldPoint.y<25))){
+					if (!bCntrl && !bShift && (shape instanceof SpeciesContextShape || shape instanceof ReactionStepShape)){
 						bMoving=true;
 						movingShape = shape;
 						movingPointWorld = shape.getSpaceManager().getAbsLoc();
 						movingOffsetWorld = new Point(worldPoint.x-movingPointWorld.x,worldPoint.y-movingPointWorld.y);
-						if (movingShape instanceof ReactionContainerShape){
-							((ReactionContainerShape)movingShape).isBeingDragged = true;
-						}
 					} 
 					else if (shape instanceof ReactionContainerShape || bShift || bCntrl){
 						if(rectShape == null){
@@ -1755,9 +1751,6 @@ public class ReactionCartoonTool extends BioCartoonTool {
 			case SELECT: {
 				getGraphPane().setCursor(Cursor.getDefaultCursor());
 				if (bMoving){
-					if (movingShape instanceof ReactionContainerShape){
-						((ReactionContainerShape)movingShape).isBeingDragged = false;
-					}
 					getGraphPane().invalidate();
 					((JViewport) getGraphPane().getParent()).revalidate();
 					getGraphPane().repaint();

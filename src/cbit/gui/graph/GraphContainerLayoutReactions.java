@@ -230,29 +230,12 @@ public class GraphContainerLayoutReactions implements GraphContainerLayout {
 	}
 	
 	public void refreshLayoutChildrenContainerContainerShape(ContainerContainerShape shape) {
-		int draggedIndex = -1;
 		List<ReactionContainerShape> structureContainers = shape.getStructureContainers();
-		for (int i = 0; i < structureContainers.size(); i++) {
-			if (shape.getStructureContainers().get(i).isBeingDragged){
-				draggedIndex = i;
-			}
-		}
 		int currentX = 0;
 		int currentY = 0;
 		for (int i = 0; i < structureContainers.size(); i++) {
-			if (i != draggedIndex) {
-				structureContainers.get(i).getSpaceManager().setRelPos(currentX, currentY);
-			}
+			structureContainers.get(i).getSpaceManager().setRelPos(currentX, currentY);
 			currentX += structureContainers.get(i).getSpaceManager().getSize().width;
-//			int padding = 8;
-//			if(i < structureContainers.size() - 1) {
-//				Structure structure1 = structureContainers.get(i).getStructure();
-//				Structure structure2 = structureContainers.get(i + 1).getStructure();
-//				if(StructureUtil.areAdjacent(structure1, structure2)) {
-//					padding = 0;
-//				}
-//			}
-//			currentX += padding;											
 		}
 	}
 

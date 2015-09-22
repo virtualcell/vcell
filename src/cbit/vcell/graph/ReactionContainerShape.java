@@ -20,7 +20,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.util.ArrayList;
 
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphModel;
@@ -33,7 +32,6 @@ public class ReactionContainerShape extends ContainerShape {
 
 	protected Structure structure = null;
 	protected StructureSuite structureSuite;
-	public boolean isBeingDragged = false;
 
 	public ReactionContainerShape(Structure structure, StructureSuite structureSuite, 
 			GraphModel graphModel) {
@@ -140,6 +138,4 @@ public class ReactionContainerShape extends ContainerShape {
 		}
 
 	}
-
-
 }
