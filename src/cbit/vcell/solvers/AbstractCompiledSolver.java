@@ -219,35 +219,15 @@ public synchronized final void stopSolver() {
 	}
 }
 
-//Added Nov 2008.
 public Vector<AnnotatedFunction> createFunctionList() {
-	Vector<AnnotatedFunction> funcList = new Vector<AnnotatedFunction>();
-	
-	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
-	Function functions[] = simSymbolTable.getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (SimulationSymbolTable.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
-			try {
-				exp1 = simSymbolTable.substituteFunctions(exp1).flatten();
-			} catch (MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			Domain domain = null;
-			AnnotatedFunction af = new AnnotatedFunction(functions[i].getName(), exp1, domain, "", VariableType.NONSPATIAL, FunctionCategory.PREDEFINED);
-			funcList.add(af);
-		}
+	try{
+		return simTask.getSimulationJob().getSimulationSymbolTable().createAnnotatedFunctionsList(simTask.getSimulation().getMathDescription());
+	}catch(Exception e){
+		e.printStackTrace();
+		throw new RuntimeException("Simulation '"+simTask.getSimulationInfo().getName()+"', error createFunctionList(): "+e.getMessage(),e);
 	}
-	return funcList;
-
 }
 
-
-//Added Nov 2008. For new mechanism of simulation data retrive. (No binary file is written for variables and functions from now on)
 public void writeFunctionsFile() {
 	// ** Dumping the functions of a simulation into a '.functions' file.
 	String functionFileName = getBaseName() + FUNCTIONFILE_EXTENSION;
@@ -260,7 +240,7 @@ public void writeFunctionsFile() {
 		functionFileGenerator.generateFunctionFile();		
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+		throw new RuntimeException("Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage(),e);
 	}		
 }
 
