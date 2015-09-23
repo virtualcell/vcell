@@ -6999,9 +6999,13 @@ private ParticleMolecularComponentPattern getParticleMolecularComponentPattern(E
 }
 private ParticleMolecularTypePattern getParticleMolecularTypePattern(Element param, MathDescription mathDescription) throws XmlParseException {
 	String molecularTypeName = unMangle( param.getAttributeValue(XMLTags.NameAttrTag));
+	String matchLabel = unMangle( param.getAttributeValue(XMLTags.ParticleMolecularTypePatternMatchLabelAttrTag));
 	ParticleMolecularType particleMolecularType = mathDescription.getParticleMolecularType(molecularTypeName);
 	if (particleMolecularType != null){
 		ParticleMolecularTypePattern var = new ParticleMolecularTypePattern(particleMolecularType);
+		if (matchLabel != null){
+			var.setMatchLabel(matchLabel);
+		}
 		List<Element> componentPatternList = param.getChildren(XMLTags.ParticleMolecularComponentPatternTag, vcNamespace);
 		for (Element componentPattern : componentPatternList) {
 			ParticleMolecularComponentPattern p = getParticleMolecularComponentPattern(componentPattern, particleMolecularType);
@@ -7027,7 +7031,6 @@ private VolumeParticleSpeciesPattern getVolumeParticleSpeciesPattern(Element par
 		var.addMolecularTypePattern(p);
 	}
 
-	
 //	Element meshRefineElement = param.getChild(XMLTags.ParticleMolecularTypePatternTag, vcNamespace);		
 //	if (meshRefineElement != null) {
 //		List<Element> levelElementList = meshRefineElement.getChildren(XMLTags.RefinementLevelTag, vcNamespace);
