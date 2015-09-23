@@ -11,26 +11,16 @@
 package cbit.vcell.solvers;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Vector;
 
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 /**
