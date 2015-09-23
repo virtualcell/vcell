@@ -173,26 +173,31 @@ public class NFsimXMLWriter {
 		}
 	}
 	public static class ComponentOfMolecularTypeOfReactionParticipant {
-		public ComponentOfMolecularTypeOfReactionParticipant(String moleculeName, String componentName, String elementID, String state) {
+		public ComponentOfMolecularTypeOfReactionParticipant(String moleculeName, String matchLabel, String componentName, String elementID, String state) {
 			this.moleculeName = moleculeName;
+			this.matchLabel = matchLabel;
 			this.componentName = componentName;
 			this.elementID = elementID;
 			this.state = state;
 		}
 		String moleculeName;
+		String matchLabel;
 		String componentName;
 		String elementID;		// component element ID, for example RR2_PP0_M1_C0
 		String state;
 
 		@Override
 		public int hashCode() {
-			return moleculeName.hashCode() + componentName.hashCode() + elementID.hashCode() + state.hashCode();
+			return moleculeName.hashCode() + matchLabel.hashCode() + componentName.hashCode() + elementID.hashCode() + state.hashCode();
 		}
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof ComponentOfMolecularTypeOfReactionParticipant){
 				ComponentOfMolecularTypeOfReactionParticipant other = (ComponentOfMolecularTypeOfReactionParticipant)obj;
 				if(!moleculeName.equals(other.moleculeName)) {
+					return false;
+				}
+				if (!matchLabel.equals(other.matchLabel)){
 					return false;
 				}
 				if(!componentName.equals(other.componentName)) {
@@ -212,6 +217,9 @@ public class NFsimXMLWriter {
 			if (obj instanceof ComponentOfMolecularTypeOfReactionParticipant){
 				ComponentOfMolecularTypeOfReactionParticipant other = (ComponentOfMolecularTypeOfReactionParticipant)obj;
 				if(!moleculeName.equals(other.moleculeName)) {
+					return false;
+				}
+				if (!matchLabel.equals(other.matchLabel)){
 					return false;
 				}
 				if(!componentName.equals(other.componentName)) {
@@ -983,8 +991,10 @@ public class NFsimXMLWriter {
 			ParticleComponentStatePattern componentStatePattern = particleMolecularComponentPattern.getComponentStatePattern();
 			ParticleComponentStateDefinition pcsd = componentStatePattern.getParticleComponentStateDefinition();
 			String state = "";
+			boolean ignoreFlagState = false;
 			if(componentStatePattern.isAny()) {
 				state = "*";
+				ignoreFlagState = true;
 			} else if(pcsd != null) {
 				state = pcsd.getName();
 				componentElement.setAttribute("state", state);
@@ -1000,10 +1010,10 @@ public class NFsimXMLWriter {
 //				}
 //			}
 			ComponentOfMolecularTypeOfReactionParticipant cper = new ComponentOfMolecularTypeOfReactionParticipant(particleMolecularTypePattern.getMolecularType().getName(), 
-					particleMolecularComponent.getName(), componentID, state);
+					particleMolecularTypePattern.getMatchLabel(), particleMolecularComponent.getName(), componentID, state);
 			// number of bonds is 0 or 1 for species (concrete species).  the bonds are listed later in the list of bonds
 			ParticleBondType bondType = particleMolecularComponentPattern.getBondType();
-			boolean ignoreFlag = false;
+			boolean ignoreFlagBond = false;
 			switch (bondType){
 				case Exists:{
 					componentElement.setAttribute("numberOfBonds",bondType.symbol);
@@ -1015,7 +1025,7 @@ public class NFsimXMLWriter {
 				}
 				case Possible:{
 					componentElement.setAttribute("numberOfBonds",bondType.symbol);
-					ignoreFlag = true;
+					ignoreFlagBond = true;
 					break;
 				}
 				case Specified:{
@@ -1044,7 +1054,7 @@ public class NFsimXMLWriter {
 					break;
 				}
 			}
-			if(!ignoreFlag) {
+			if(ignoreFlagState == false || ignoreFlagBond == false) {
 				currentComponentOfParticipant.add(cper);
 				listOfComponentsElement.addContent(componentElement);
 			}
