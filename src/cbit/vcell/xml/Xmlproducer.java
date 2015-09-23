@@ -2996,6 +2996,9 @@ private Element getXML(ParticleMolecularType param) {
 private Element getXML(ParticleMolecularTypePattern param) {
 	Element e = new Element(XMLTags.ParticleMolecularTypePatternTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getMolecularType().getName()));
+	if (param.getMatchLabel() != null){
+		e.setAttribute(XMLTags.ParticleMolecularTypePatternMatchLabelAttrTag, mangle(param.getMatchLabel()));
+	}
 	for(ParticleMolecularComponentPattern cp : param.getMolecularComponentPatternList()) {
 		e.addContent(getXML(cp));
 	}

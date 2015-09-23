@@ -987,6 +987,10 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			for (MolecularTypePattern molecularTypePattern : speciesPattern.getMolecularTypePatterns()){
 				ParticleMolecularType particleMolecularType = mathDesc.getParticleMolecularType(molecularTypePattern.getMolecularType().getName());
 				ParticleMolecularTypePattern particleMolecularTypePattern = new ParticleMolecularTypePattern(particleMolecularType);
+				String participantMatchLabel = molecularTypePattern.getParticipantMatchLabel();
+				if (molecularTypePattern.getParticipantMatchLabel()!=null){
+					particleMolecularTypePattern.setMatchLabel(participantMatchLabel);
+				}
 				
 				for (MolecularComponentPattern molecularComponentPattern : molecularTypePattern.getComponentPatternList()){
 					MolecularComponent molecularComponent = molecularComponentPattern.getMolecularComponent();

@@ -194,6 +194,7 @@ public class VCML {
 	public final static String ParticleMolecularComponent	= "Component";
 	public final static String ParticleComponentAllowableState	= "AllowableState";
 	public final static String ParticleMolecularTypePattern	= "MolecularType";
+	public final static String ParticleMolecularTypePatternMatchLabel	= "MatchLabel";
 	public final static String ParticleMolecularComponentPattern = "Component";
 	public final static String ParticleComponentStatePattern = "State";
 	public final static String ParticleComponentBondPattern = "Bond";
