@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -11,7 +12,7 @@ import org.vcell.util.Matchable;
 @SuppressWarnings("serial")
 public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	private ParticleMolecularType molecularType;
-	private String matchLabel = null;
+	private String matchLabel = MolecularTypePattern.TRIVIAL_MATCH;
 	private ArrayList<ParticleMolecularComponentPattern> componentPatternList = new ArrayList<ParticleMolecularComponentPattern>();
 
 	public ParticleMolecularTypePattern(ParticleMolecularType molecularType) {
@@ -130,7 +131,18 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	}
 
 	public void setMatchLabel(String matchLabel) {
-		this.matchLabel = matchLabel;
+		if(MolecularTypePattern.TRIVIAL_MATCH.equals(matchLabel)) {
+			this.matchLabel = matchLabel;
+			return;
+		}
+		try {
+			Integer.parseInt(matchLabel);
+			this.matchLabel = matchLabel;
+			return;
+		} catch(NumberFormatException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
 	}
 	
 	public String getMatchLabel(){
