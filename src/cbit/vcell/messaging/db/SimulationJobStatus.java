@@ -23,6 +23,7 @@ import cbit.vcell.solver.server.SimulationMessage;
  * Creation date: (1/31/2003 11:02:54 AM)
  * @author: Jim Schaff
  */
+@SuppressWarnings("serial")
 public class SimulationJobStatus implements org.vcell.util.Matchable, Serializable {
 	//
 	// mandatory fields - not null
@@ -37,7 +38,6 @@ public class SimulationJobStatus implements org.vcell.util.Matchable, Serializab
 	private int fieldJobIndex;
 	private SimulationQueueEntryStatus fieldSimulationQueueEntryStatus = null;	// may be null
 	private SimulationExecutionStatus fieldSimulationExecutionStatus = null;	// may be null
-	private static SimulationJobStatus NO_SUCH_JOB;
 
 	public static enum SchedulerStatus {
 		WAITING(0,"waiting"),
@@ -161,14 +161,11 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
 
 /**
  * status for lost / unknown jobs 
- * @return lazily created static instance
+ * @return newly created job 
  */
 public static SimulationJobStatus noSuchJob( ) {
-	if (NO_SUCH_JOB == null) {
 		SimulationMessage mess = SimulationMessage.MESSAGE_JOB_FAILED_UNKNOWN;
-		NO_SUCH_JOB = new SimulationJobStatus(null,null,0,new Date(0),SchedulerStatus.FAILED,0,mess,null,null);
-	}
-	return NO_SUCH_JOB;
+		return new SimulationJobStatus(null,null,0,new Date(0),SchedulerStatus.FAILED,0,mess,null,null);
 }
 
 /**
