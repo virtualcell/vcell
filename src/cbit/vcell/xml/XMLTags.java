@@ -592,6 +592,7 @@ public class XMLTags {
 	public static final String ParticleMolecularTypeAllowableStateTag = "AllowableState";
 	public static final String ParticleMolecularComponentPatternTag = "Component";
 	public static final String ParticleMolecularTypePatternTag = "MolecularType";
+	public static final String ParticleMolecularTypePatternMatchLabelAttrTag = "MatchLabel";
 	public static final String VolumeParticleSpeciesPatternTag = "VolumeParticleSpeciesPattern";
 	public static final String VolumeParticleSpeciesPatternsTag = "VolumeParticleSpeciesPatterns";
 	public static final String VolumeParticleObservableTag = "VolumeParticleObservable";

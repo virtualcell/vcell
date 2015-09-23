@@ -121,22 +121,27 @@ public class NFsimXMLWriter {
 	
 	// The next 3 classes are used to build the mapping between reactants and products of the current reaction
 	public static class MolecularTypeOfReactionParticipant {
-		public MolecularTypeOfReactionParticipant(String moleculeName, String elementID) {
+		public MolecularTypeOfReactionParticipant(String moleculeName, String elementID, String matchLabel) {
 			this.moleculeName = moleculeName;
 			this.elementID = elementID;
+			this.matchLabel = matchLabel;
 		}
 		String moleculeName;
 		String elementID;		// molecule element ID, for example RR0_RP3_M0
+		String matchLabel;
 
 		@Override
 		public int hashCode() {
-			return moleculeName.hashCode();
+			return moleculeName.hashCode() + matchLabel.hashCode();
 		}
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof MolecularTypeOfReactionParticipant){
 				MolecularTypeOfReactionParticipant other = (MolecularTypeOfReactionParticipant)obj;
 				if(!moleculeName.equals(other.moleculeName)) {
+					return false;
+				}
+				if (!matchLabel.equals(other.matchLabel)){
 					return false;
 				}
 				if (!elementID.equals(other.elementID)){
@@ -150,6 +155,9 @@ public class NFsimXMLWriter {
 			if (obj instanceof MolecularTypeOfReactionParticipant){
 				MolecularTypeOfReactionParticipant other = (MolecularTypeOfReactionParticipant)obj;
 				if(!moleculeName.equals(other.moleculeName)) {
+					return false;
+				}
+				if(!matchLabel.equals(other.matchLabel)) {
 					return false;
 				}
 				return true;
@@ -727,9 +735,10 @@ public class NFsimXMLWriter {
 			String moleculeID = "M" + moleculeIndex;
 			String id = reactionRuleID + "_" + patternID + "_" + moleculeID;
 			String name = molecularTypePattern.getMolecularType().getName();
+			String matchLabel = molecularTypePattern.getMatchLabel();
 			moleculeElement.setAttribute("id", id);
 			moleculeElement.setAttribute("name", name);
-			MolecularTypeOfReactionParticipant per = new MolecularTypeOfReactionParticipant(name, id);
+			MolecularTypeOfReactionParticipant per = new MolecularTypeOfReactionParticipant(name, id, matchLabel);
 			currentParticipant.add(per);
 			
 			Element listOfComponentsElement = getListOfComponents1(reactionRuleID, patternID, moleculeID, reactantSpeciesPattern, molecularTypePattern, 

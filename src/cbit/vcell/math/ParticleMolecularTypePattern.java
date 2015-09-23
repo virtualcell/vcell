@@ -11,6 +11,7 @@ import org.vcell.util.Matchable;
 @SuppressWarnings("serial")
 public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	private ParticleMolecularType molecularType;
+	private String matchLabel = null;
 	private ArrayList<ParticleMolecularComponentPattern> componentPatternList = new ArrayList<ParticleMolecularComponentPattern>();
 
 	public ParticleMolecularTypePattern(ParticleMolecularType molecularType) {
@@ -72,6 +73,9 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 			if (!Compare.isEqual(molecularType, other.molecularType)){
 				return false;
 			}
+			if (!Compare.isEqualOrNull(matchLabel, other.matchLabel)){
+				return false;
+			}
 			return true;
 		}
 		return false;
@@ -80,6 +84,9 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("    "+VCML.ParticleMolecularTypePattern + " " + molecularType.getName() + " {");
+		if (this.matchLabel!=null){
+			buffer.append("\n    "+"    "+VCML.ParticleMolecularTypePatternMatchLabel+" "+matchLabel+"\n    ");
+		}
 		if (componentPatternList.size() == 0){
 			buffer.append(" }");
 		}else{
@@ -102,6 +109,11 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 			if (token.equalsIgnoreCase(VCML.EndBlock)){
 				break;
 			}			
+			if (token.equalsIgnoreCase(VCML.ParticleMolecularTypePatternMatchLabel)){
+				token = tokens.nextToken();
+				setMatchLabel(token);
+				continue;
+			}	
 			if (token.equalsIgnoreCase(VCML.ParticleMolecularComponentPattern)){
 				token = tokens.nextToken();
 //return VCML.ParticleMolecularComponentPattern + " " + molecularComponent.getName() + " " + VCML.ParticleComponentStatePattern + " " + componentState.getVCML() + " " + VCML.ParticleComponentBondPattern + " " + bondType.getVCML(bondId)+"\n";
@@ -115,5 +127,13 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 			throw new MathFormatException("unexpected identifier "+token);
 		}	
 			
-	}	
+	}
+
+	public void setMatchLabel(String matchLabel) {
+		this.matchLabel = matchLabel;
+	}
+	
+	public String getMatchLabel(){
+		return matchLabel;
+	}
 }
