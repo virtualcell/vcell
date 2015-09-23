@@ -22,11 +22,12 @@ import cbit.vcell.model.Model.RbmModelContainer;
 
 public class MolecularTypePattern extends RbmElementAbstract implements Matchable, PropertyChangeListener, IssueSource, Displayable {
 	public static final String PROPERTY_NAME_COMPONENT_PATTERN_LIST = "componentPatternList";
+	public static final String TRIVIAL_MATCH = "*";
 	
 	private MolecularType molecularType;
 	private List<MolecularComponentPattern> componentPatternList = new ArrayList<MolecularComponentPattern>();
 	private int index = 0; // purely for displaying purpose, since molecule can bind to itself
-	private String participantMatchLabel = "*";	// reactant-product match label, to avoid ambiguity
+	private String participantMatchLabel = TRIVIAL_MATCH;	// reactant-product match label, to avoid ambiguity
 	private Map<String,ArrayList<MolecularComponent>> processedMolecularComponentsMultiMap = new HashMap<String,ArrayList<MolecularComponent>>();
 	private transient boolean bHighlighted = false;
 	
@@ -145,10 +146,22 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		return participantMatchLabel;
 	}
 	public void setParticipantMatchLabel(String participantMatchLabel) {
-		this.participantMatchLabel = participantMatchLabel;
+		// check if it's a number or '*', throw exception if it's not
+		if(TRIVIAL_MATCH.equals(participantMatchLabel)) {
+			this.participantMatchLabel = participantMatchLabel;
+			return;
+		}
+		try {
+			Integer.parseInt(participantMatchLabel);
+			this.participantMatchLabel = participantMatchLabel;
+			return;
+		} catch(NumberFormatException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
 	}
 	public boolean hasExplicitParticipantMatch() {
-		if(participantMatchLabel.equals("*")) {
+		if(TRIVIAL_MATCH.equals(participantMatchLabel)) {
 			return false;
 		} else {
 			return true;
