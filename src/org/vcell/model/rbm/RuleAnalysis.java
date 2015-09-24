@@ -1,110 +1,22 @@
 package org.vcell.model.rbm;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.jdom.Element;
-import org.vcell.solver.nfsim.NFsimXMLWriter.BondSites;
-import org.vcell.solver.nfsim.NFsimXMLWriter.ComponentOfMolecularTypeOfReactionParticipant;
-import org.vcell.solver.nfsim.NFsimXMLWriter.MappingOfReactionParticipants;
-import org.vcell.solver.nfsim.NFsimXMLWriter.MolecularTypeOfReactionParticipant;
-import org.vcell.util.Compare;
+import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.ChangeStateOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.DeleteBondOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.DeleteMolecularTypeOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
+import org.vcell.model.rbm.RuleAnalysisReport.Operation;
 
-import com.sun.org.apache.xalan.internal.xsltc.dom.MatchingIterator;
-
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.ReactantPattern;
-
-public abstract class RuleAnalysis {
-	
-	public class MoleculeMapping {
-		public ReactantPattern sourceReactantPattern;
-		public MolecularTypePattern sourceMolecularTypePattern;
-		//public MolecularComponentPattern source;
+public class RuleAnalysis {
 		
-		public ProductPattern targetProductPattern;
-		public MolecularTypePattern targetMolecularTypePattern;
-		//public MolecularComponentPattern target;
-	}
+	public static int INDEX_OFFSET = 1;
 	
-	public abstract class Operation {
-		
-	}
-	
-	public class DeleteParticipantOperation extends Operation {
-		public final ParticipantEntry removedParticipantEntry;
-		
-		public DeleteParticipantOperation(ParticipantEntry removedParticipantEntry){
-			this.removedParticipantEntry = removedParticipantEntry;
-		}
-	}
-	
-	public class DeleteMolecularTypeOperation extends Operation {
-		public final MolecularTypeEntry removedReactantMolecularEntry;
-		
-		public DeleteMolecularTypeOperation(MolecularTypeEntry removedReactantMolecularEntry) {
-			this.removedReactantMolecularEntry = removedReactantMolecularEntry;
-		}
-	}
-	
-	public class AddMolecularTypeOperation extends Operation {
-		public final MolecularTypeEntry unmatchedProductMoleculeEntry;
-
-		public AddMolecularTypeOperation(MolecularTypeEntry unmatchedProductMoleculeEntry) {
-			this.unmatchedProductMoleculeEntry = unmatchedProductMoleculeEntry;
-		}
-		
-	}
-	
-	public class DeleteBondOperation extends Operation {
-		public final BondEntry removedBondEntry;
-		
-		public DeleteBondOperation(BondEntry removedBondEntry){
-			this.removedBondEntry = removedBondEntry;
-		}
-	}
-
-	public class AddBondOperation extends Operation {
-		public final BondEntry addedProductBondEntry;
-		
-		public AddBondOperation(BondEntry addedProductBondEntry){
-			this.addedProductBondEntry = addedProductBondEntry;
-		}
-		
-	}
-	
-	public class ChangeStateOperation extends Operation {
-		public final MolecularComponentEntry reactantComponentEntry;
-		public final MolecularComponentEntry productComponentEntry;
-		public final String newState;
-		
-		public ChangeStateOperation(MolecularComponentEntry reactantComponentEntry, MolecularComponentEntry productComponentEntry, String newState){
-			this.reactantComponentEntry = reactantComponentEntry;
-			this.productComponentEntry = productComponentEntry;
-			this.newState = newState;
-		}
-	}	
-	
-	private Integer symmetryFactor;
-	public static final int INDEX_OFFSET = 0;
-	protected ArrayList<ParticipantEntry> reactantEntries = new ArrayList<ParticipantEntry>();
-	protected ArrayList<ParticipantEntry> productEntries = new ArrayList<ParticipantEntry>();
-	protected ArrayList<MolecularTypeEntry> reactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
-	protected ArrayList<MolecularComponentEntry> reactantMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
-	protected ArrayList<MolecularTypeEntry> productMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
-	protected ArrayList<MolecularComponentEntry> productMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
-	protected ArrayList<BondEntry> reactantBondEntries = new ArrayList<BondEntry>();
-	protected ArrayList<BondEntry> productBondEntries = new ArrayList<BondEntry>();
-	
-	public RuleAnalysis(){
-	}
-	
-	public Integer getSymmetryFactor(){
-		return symmetryFactor;
+	private RuleAnalysis(){
 	}
 	
 	public enum ParticipantType {
@@ -112,10 +24,26 @@ public abstract class RuleAnalysis {
 		Product
 	};
 	
-	public interface ParticipantEntry {
+	public interface RuleEntry {
 		public String getRuleName();
 		
 		public int getRuleIndex();
+		
+		public List<? extends ParticipantEntry> getReactantEntries();		
+		public List<? extends MolecularTypeEntry> getReactantMolecularTypeEntries();
+		public List<? extends MolecularComponentEntry> getReactantMolecularComponentEntries();
+		public List<ReactantBondEntry> getReactantBondEntries();
+		
+		public List<? extends ParticipantEntry> getProductEntries();
+		public List<? extends MolecularTypeEntry> getProductMolecularTypeEntries();
+		public List<? extends MolecularComponentEntry> getProductMolecularComponentEntries();
+		public List<ProductBondEntry> getProductBondEntries();
+
+		public String getForwardRateConstantName();
+	}
+	
+	public interface ParticipantEntry {
+		public RuleEntry getRule();
 		
 		public int getParticipantIndex();
 		
@@ -136,6 +64,8 @@ public abstract class RuleAnalysis {
 		public String getMolecularTypeName();
 		
 		public List<? extends MolecularComponentEntry> getMolecularComponentEntries();
+
+		public String toBngl();
 	}
 	
 	public interface MolecularComponentEntry {
@@ -148,41 +78,59 @@ public abstract class RuleAnalysis {
 		String getExplicitState();
 
 		boolean isBoundTo(MolecularComponentEntry productComponent);
+
+		public boolean hasBond();
 	}
 	
-	public class BondEntry {
-		public final MolecularComponentEntry component1;
-		public final MolecularComponentEntry component2;
+	public static class ReactantBondEntry {
+		public final MolecularComponentEntry reactantComponent1;
+		public final MolecularComponentEntry reactantComponent2;
 
-		public BondEntry(MolecularComponentEntry component1, MolecularComponentEntry component2) {
-			this.component1 = component1;
-			this.component2 = component2;
+		public ReactantBondEntry(MolecularComponentEntry reactantComponent1, MolecularComponentEntry reactantComponent2) {
+			if (reactantComponent1.getMolecularTypeEntry().getParticipantEntry().getParticipantType() != ParticipantType.Reactant){
+				throw new RuntimeException("reactantComponent1 should be from a reactant pattern");
+			}
+			if (reactantComponent2.getMolecularTypeEntry().getParticipantEntry().getParticipantType() != ParticipantType.Reactant){
+				throw new RuntimeException("reactantComponent2 should be from a reactant pattern");
+			}
+			this.reactantComponent1 = reactantComponent1;
+			this.reactantComponent2 = reactantComponent2;
 		}
 	}
 	
-	protected abstract void populateRuleInfo();
+	public static class ProductBondEntry {
+		public final MolecularComponentEntry productComponent1;
+		public final MolecularComponentEntry productComponent2;
+
+		public ProductBondEntry(MolecularComponentEntry productComponent1, MolecularComponentEntry productComponent2) {
+			if (productComponent1.getMolecularTypeEntry().getParticipantEntry().getParticipantType() != ParticipantType.Product){
+				throw new RuntimeException("component1 should be from a product pattern");
+			}
+			if (productComponent2.getMolecularTypeEntry().getParticipantEntry().getParticipantType() != ParticipantType.Product){
+				throw new RuntimeException("component2 should be from a product pattern");
+			}
+			this.productComponent1 = productComponent1;
+			this.productComponent2 = productComponent2;
+		}
+	}
+	
+	public static RuleAnalysisReport analyze(RuleEntry rule) {
 		
-	public void analyze() {
+		RuleAnalysisReport report = new RuleAnalysisReport();
 		
-		this.symmetryFactor = 1;		
+		report.setSymmetryFactor(1);		
 		
-		ArrayList<MolecularTypeEntry> unmatchedReactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(reactantMolecularTypeEntries);
-		ArrayList<MolecularTypeEntry> unmatchedProductMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(productMolecularTypeEntries);
+		ArrayList<MolecularTypeEntry> unmatchedReactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getReactantMolecularTypeEntries());
+		ArrayList<MolecularTypeEntry> unmatchedProductMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getProductMolecularTypeEntries());
 		//
 		// compute molecular type mappings (must be unique)
 		//
-		HashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>> forwardMolecularMapping = new HashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>>();
-		for (MolecularTypeEntry reactantMTE : reactantMolecularTypeEntries){
-			for (MolecularTypeEntry productMTE : productMolecularTypeEntries){
+		for (MolecularTypeEntry reactantMTE : rule.getReactantMolecularTypeEntries()){
+			for (MolecularTypeEntry productMTE : rule.getProductMolecularTypeEntries()){
 				if (reactantMTE.matches(productMTE)){
-					ArrayList<MolecularTypeEntry> matchingProductEntries = forwardMolecularMapping.get(reactantMTE);
-					if (matchingProductEntries == null){
-						matchingProductEntries = new ArrayList<MolecularTypeEntry>();
-						forwardMolecularMapping.put(reactantMTE, matchingProductEntries);
-					}
-					matchingProductEntries.add(productMTE);
+					report.addMapping(reactantMTE,productMTE);
 					unmatchedReactantMolecularTypeEntries.remove(reactantMTE);
-					unmatchedReactantMolecularTypeEntries.remove(productMTE);
+					unmatchedProductMolecularTypeEntries.remove(productMTE);
 				}
 			}
 		}
@@ -199,22 +147,20 @@ public abstract class RuleAnalysis {
 		//
 		// verify unique match and print matches
 		//
-		for (Entry<MolecularTypeEntry, ArrayList<MolecularTypeEntry>> reactantMolecularTypeEntry : forwardMolecularMapping.entrySet()){
-			MolecularTypeEntry reactantMTE = reactantMolecularTypeEntry.getKey();
-			ArrayList<MolecularTypeEntry> matches = reactantMolecularTypeEntry.getValue();
-			if (reactantMolecularTypeEntries.size() > 1){
-				throw new RuntimeException("reactant molecular pattern id: "+getID(reactantMTE)+" matched more than one product pattern "+matches);
+		for (MolecularTypeEntry reactantMTE : report.getMappedReactantMolecules()){
+			List<MolecularTypeEntry> matchingProductMTEs = report.getMappedProductMolecules(reactantMTE);
+			if (matchingProductMTEs.size() > 1){
+				throw new RuntimeException("reactant molecular pattern id: "+getID(reactantMTE)+" matched more than one product pattern "+matchingProductMTEs);
 			}else{
-				System.out.println("matched sourceID="+getID(reactantMTE)+", targetID="+getID(matches.get(0)));
+//				System.out.println("matched sourceID="+getID(reactantMTE)+", targetID="+getID(matchingProductMTEs.get(0)));
 			}
 		}
 		
 		//
 		// find all component mappings (looking in the matched molecules).
 		//
-		HashMap<MolecularComponentEntry, MolecularComponentEntry> forwardComponentMapping = new HashMap<MolecularComponentEntry,MolecularComponentEntry>();
-		for (MolecularTypeEntry mappedReactantMolecularTypeEntry : forwardMolecularMapping.keySet()){
-			ArrayList<MolecularTypeEntry> mappedProductMolecularTypeList = forwardMolecularMapping.get(mappedReactantMolecularTypeEntry);
+		for (MolecularTypeEntry mappedReactantMolecularTypeEntry : report.getMappedReactantMolecules()){
+			List<MolecularTypeEntry> mappedProductMolecularTypeList = report.getMappedProductMolecules(mappedReactantMolecularTypeEntry);
 			if (mappedProductMolecularTypeList.size() != 1){
 				// if not checked earlier
 				throw new RuntimeException("reactant molecular pattern id: "+getID(mappedReactantMolecularTypeEntry)+" matched more than one product pattern "+mappedProductMolecularTypeList);
@@ -228,40 +174,15 @@ public abstract class RuleAnalysis {
 			for (int componentIndex=0; componentIndex<reactantMolecularComponents.size(); componentIndex++){
 				MolecularComponentEntry reactantComponentEntry = reactantMolecularComponents.get(componentIndex);
 				MolecularComponentEntry productComponentEntry = productMolecularComponents.get(componentIndex);
-				forwardComponentMapping.put(reactantComponentEntry, productComponentEntry);
+				report.map(reactantComponentEntry, productComponentEntry);
 			}
 		}
-		
-        //  <Map>
-        //    <MapItem sourceID="RR1_RP1_M1" targetID="RR1_PP1_M1"/>
-        //    <MapItem sourceID="RR1_RP1_M1_C1" targetID="RR1_PP1_M1_C1"/>
-        //    <MapItem sourceID="RR1_RP1_M1_C2" targetID="RR1_PP1_M1_C2"/>
-        //    <MapItem sourceID="RR1_RP2_M1" targetID="RR1_PP1_M2"/>
-        //    <MapItem sourceID="RR1_RP2_M1_C1" targetID="RR1_PP1_M2_C1"/>
-        //  </Map>
-		System.out.println("----------------------------------------------------------------------");
-		for(MolecularTypeEntry p : reactantMolecularTypeEntries) {
-			System.out.println(p.getMolecularTypeName() + ", " + getID(p));
-		}
-		for(MolecularComponentEntry c : reactantMolecularComponentEntries) {
-			System.out.println(c.getMolecularTypeEntry().getMolecularTypeName() + ", " + c.getMolecularComponentName() + ", " + getID(c));
-		}
-		System.out.println("----------------------------------------------------------------------");
-		for(MolecularTypeEntry p : productMolecularTypeEntries) {
-			System.out.println(p.getMolecularTypeName() + ", " + getID(p));
-		}
-		for(MolecularComponentEntry c : productMolecularComponentEntries) {
-			System.out.println(c.getMolecularTypeEntry().getMolecularTypeName() + ", " + c.getMolecularComponentName() + ", " + getID(c));
-		}
-		System.out.println("----------------------------------------------------------------------");
-		
-		ArrayList<Operation> listOfOperations = new ArrayList<Operation>();
 		
 		//
 		// go through component mappings and look for state changes (and verify unique mapping).
 		//
-		for (MolecularComponentEntry reactantComponentEntry : forwardComponentMapping.keySet()){
-			MolecularComponentEntry productComponentEntry = forwardComponentMapping.get(reactantComponentEntry);
+		for (MolecularComponentEntry reactantComponentEntry : report.getMappedReactantComponents()){
+			MolecularComponentEntry productComponentEntry = report.getMappedProductComponent(reactantComponentEntry);
 			String reactantState = reactantComponentEntry.getExplicitState();
 			String productState = productComponentEntry.getExplicitState();
 			if (reactantState != null || productState != null){
@@ -269,7 +190,7 @@ public abstract class RuleAnalysis {
 					throw new RuntimeException("reactant state = "+reactantState+" and product state = "+productState+", not allowed, null not allowed.");
 				}
 				if (!reactantState.equals(productState)){
-					listOfOperations.add(new ChangeStateOperation(reactantComponentEntry, productComponentEntry, productState));
+					report.addOperation(new RuleAnalysisReport.ChangeStateOperation(reactantComponentEntry, productComponentEntry, productState));
 				}
 			}
 		}
@@ -281,24 +202,24 @@ public abstract class RuleAnalysis {
 		// we add unmatched reactant bonds to "unmatchedReactantBond"
 		// we remove matched product bonds from "unmatchedProductBond"
 		//
-		ArrayList<BondEntry> unmatchedReactantBonds = new ArrayList<RuleAnalysis.BondEntry>();
-		ArrayList<BondEntry> unmatchedProductBonds = new ArrayList<RuleAnalysis.BondEntry>(productBondEntries);
-		for (BondEntry reactantBondEntry : reactantBondEntries){
+		ArrayList<ReactantBondEntry> unmatchedReactantBonds = new ArrayList<ReactantBondEntry>();
+		ArrayList<ProductBondEntry> unmatchedProductBonds = new ArrayList<ProductBondEntry>(rule.getProductBondEntries());
+		for (ReactantBondEntry reactantBondEntry : rule.getReactantBondEntries()){
 			//
 			// find corresponding product components
 			//
-			MolecularComponentEntry productComponent1 = forwardComponentMapping.get(reactantBondEntry.component1);
-			MolecularComponentEntry productComponent2 = forwardComponentMapping.get(reactantBondEntry.component2);
+			MolecularComponentEntry productComponent1 = report.getMapping(reactantBondEntry.reactantComponent1);
+			MolecularComponentEntry productComponent2 = report.getMapping(reactantBondEntry.reactantComponent2);
 			
 			if (productComponent1 == null || productComponent2 == null || !productComponent1.isBoundTo(productComponent2)){
 				// match not found
 				unmatchedReactantBonds.add(reactantBondEntry);
 			}else{
 				// match found
-				BondEntry matchingProductBondEntry = null;
-				for (BondEntry productBondEntry : productBondEntries){
-					if ((productBondEntry.component1 == productComponent1 && productBondEntry.component2 == productComponent2) ||
-						(productBondEntry.component1 == productComponent2 && productBondEntry.component2 == productComponent1)){
+				ProductBondEntry matchingProductBondEntry = null;
+				for (ProductBondEntry productBondEntry : rule.getProductBondEntries()){
+					if ((productBondEntry.productComponent1 == productComponent1 && productBondEntry.productComponent2 == productComponent2) ||
+						(productBondEntry.productComponent1 == productComponent2 && productBondEntry.productComponent2 == productComponent1)){
 						matchingProductBondEntry = productBondEntry;
 						break;
 					}
@@ -312,25 +233,32 @@ public abstract class RuleAnalysis {
 		//
 		// add AddBond operations
 		//
-		for (BondEntry addedBond : unmatchedProductBonds){
-			listOfOperations.add(new AddBondOperation(addedBond));
+		for (ProductBondEntry addedProductBond : unmatchedProductBonds){
+			//
+			// addBonds are initially "ProductBondEntry" objects ... have to create the corresponding "ReactantBondEntry".
+			//
+			MolecularComponentEntry reactantComponent1 = report.getReactantComponentEntry(addedProductBond.productComponent1);
+			MolecularComponentEntry reactantComponent2 = report.getReactantComponentEntry(addedProductBond.productComponent2);
+			ReactantBondEntry addedReactantBond = new ReactantBondEntry(reactantComponent1, reactantComponent2);
+			report.addOperation(new RuleAnalysisReport.AddBondOperation(addedReactantBond));
 		}
 		
 		//
 		// add AddMolecularType (unmatched product molecule)
 		//
 		for (MolecularTypeEntry unmatchedProductMoleculeEntry : unmatchedProductMolecularTypeEntries){
-			listOfOperations.add(new AddMolecularTypeOperation(unmatchedProductMoleculeEntry));
+			report.addOperation(new RuleAnalysisReport.AddMolecularTypeOperation(unmatchedProductMoleculeEntry));
 		}
 		
 		//
 		// delete entire reactant pattern if all molecules in it are unmapped
 		//
-		for (ParticipantEntry reactantEntry : reactantEntries){
+		for (ParticipantEntry reactantEntry : rule.getReactantEntries()){
 			boolean bAllMoleculesRemoved = true;
 			for (MolecularTypeEntry moleculesEntry : reactantEntry.getMolecularTypeEntries()){
-				if (forwardMolecularMapping.get(moleculesEntry) != null){
+				if (report.getMappedProductMolecules(moleculesEntry) != null){
 					bAllMoleculesRemoved = false;
+					break;
 				}
 			}
 			if (bAllMoleculesRemoved){
@@ -338,12 +266,12 @@ public abstract class RuleAnalysis {
 				// remove species pattern (and disregard all unmatched bonds and molecules belonging to that species pattern)
 				//
 				//
-				listOfOperations.add(new DeleteParticipantOperation(reactantEntry));
+				report.addOperation(new RuleAnalysisReport.DeleteParticipantOperation(reactantEntry));
 				for (MolecularTypeEntry moleculesEntry : reactantEntry.getMolecularTypeEntries()){
 					unmatchedReactantMolecularTypeEntries.remove(moleculesEntry);
-					for (BondEntry reactantBond : reactantBondEntries){
-						if ((reactantBond.component1.getMolecularTypeEntry().getParticipantEntry() == reactantEntry) &&
-							(reactantBond.component2.getMolecularTypeEntry().getParticipantEntry() == reactantEntry)){
+					for (ReactantBondEntry reactantBond : rule.getReactantBondEntries()){
+						if ((reactantBond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == reactantEntry) &&
+							(reactantBond.reactantComponent2.getMolecularTypeEntry().getParticipantEntry() == reactantEntry)){
 							unmatchedReactantBonds.remove(reactantBond);
 						}
 					}
@@ -354,37 +282,195 @@ public abstract class RuleAnalysis {
 		//
 		// add RemoveBond operations
 		//
-		for (BondEntry removedBond : unmatchedReactantBonds){
-			listOfOperations.add(new DeleteBondOperation(removedBond));
+		for (ReactantBondEntry removedBond : unmatchedReactantBonds){
+			report.addOperation(new RuleAnalysisReport.DeleteBondOperation(removedBond));
 		}
 		
 		//
 		// delete molecule
 		//
 		for (MolecularTypeEntry unmatchedMolecularTypeEntry : unmatchedReactantMolecularTypeEntries){
-			listOfOperations.add(new DeleteMolecularTypeOperation(unmatchedMolecularTypeEntry));
+			report.addOperation(new RuleAnalysisReport.DeleteMolecularTypeOperation(unmatchedMolecularTypeEntry));
 		}
+		
+		return report;
 	}
 
-	public String getID(MolecularTypeEntry mte){
+	public static String getID(RuleEntry ruleEntry){
+		int ruleIndex = ruleEntry.getRuleIndex();
+		return "RR"+(ruleIndex+INDEX_OFFSET);
+	}	
+
+	public static String getID(ParticipantEntry participantEntry){
+		int participantIndex = participantEntry.getParticipantIndex();
+		if (participantEntry.getParticipantType() == ParticipantType.Reactant){
+			return getID(participantEntry.getRule())+"_RP"+(participantIndex+INDEX_OFFSET);
+		}else{
+			return getID(participantEntry.getRule())+"_PP"+(participantIndex+INDEX_OFFSET);
+		}
+	}	
+
+	public static String getID(MolecularTypeEntry mte){
 		int molecularTypeIndex = mte.getMoleculeIndex();
 		return getID(mte.getParticipantEntry())+"_"+"M"+(molecularTypeIndex+INDEX_OFFSET);
 	}
 	
-	public String getID(MolecularComponentEntry mce){
+	public static String getID(MolecularComponentEntry mce){
 		int componentIndex = mce.getComponentIndex();
-		return getID(mce.getMolecularTypeEntry())+"_"+"M"+(componentIndex+INDEX_OFFSET);
+		return getID(mce.getMolecularTypeEntry())+"_"+"C"+(componentIndex+INDEX_OFFSET);
 	}
 	
-	public String getID(ParticipantEntry participantEntry){
-		String participantId = null;
-		int ruleIndex = participantEntry.getRuleIndex();
-		int participantIndex = participantEntry.getRuleIndex();
-		if (participantEntry.getParticipantType() == ParticipantType.Reactant){
-			participantId = "RR"+(ruleIndex+INDEX_OFFSET)+"_RP"+(participantIndex+INDEX_OFFSET);
-		}else{
-			participantId = "RR"+(ruleIndex+INDEX_OFFSET)+"_PP"+(participantIndex+INDEX_OFFSET);
+	public static Element getNFSimXML(RuleEntry rule, RuleAnalysisReport report){
+		Element root = new Element("ReactionRule");
+		
+		Element listOfReactantPatterns = new Element("ListOfReactantPatterns");
+		root.addContent(listOfReactantPatterns);
+		for (ParticipantEntry reactantEntry : rule.getReactantEntries()){
+			Element reactantElement = getParticipantEntry(rule,reactantEntry);
+			listOfReactantPatterns.addContent(reactantElement);
 		}
-		return participantId;
-	}	
+		
+		Element listOfProductPatterns = new Element("ListOfProductPatterns");
+		root.addContent(listOfProductPatterns);
+		for (ParticipantEntry productEntry : rule.getProductEntries()){
+			Element productElement = getParticipantEntry(rule,productEntry);
+			listOfProductPatterns.addContent(productElement);
+		}
+		
+		Element rateLaw = new Element("RateLaw");
+		root.addContent(rateLaw);
+		Element listOfRateConstants = new Element("ListOfRateConstants");
+		rateLaw.addContent(listOfRateConstants);
+		Element rateConstant = new Element("RateConstant");
+		listOfRateConstants.addContent(rateConstant);
+		rateConstant.setAttribute("value",rule.getForwardRateConstantName());
+		
+		Element map = new Element("Map");
+		root.addContent(map);
+		for (MolecularTypeEntry mappedReactantMolecule : report.getMappedReactantMolecules()){
+			Element moleculeMapEntry = new Element("MapItem");
+			map.addContent(moleculeMapEntry);
+			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
+			moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
+			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
+			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
+				Element componentMapEntry = new Element("MapItem");
+				map.addContent(componentMapEntry);
+				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
+				componentMapEntry.setAttribute("targetID",getID(productComponent));
+				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
+			}
+		}
+		
+		Element listOfOperations = new Element("ListOfOperations");
+		for (Operation op : report.getOperations()){
+			if (op instanceof DeleteBondOperation){
+				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
+				Element deleteBond = new Element("DeleteBond");
+				listOfOperations.addContent(deleteBond);
+				deleteBond.setAttribute("site2",getID(deleteBondOp.removedBondEntry.reactantComponent2));
+				deleteBond.setAttribute("site1",getID(deleteBondOp.removedBondEntry.reactantComponent1));
+			}
+			if (op instanceof AddBondOperation){
+				AddBondOperation addBondOp = (AddBondOperation)op;
+				Element addBond = new Element("AddBond");
+				listOfOperations.addContent(addBond);
+				addBond.setAttribute("site2",getID(addBondOp.addedProductBondEntry.reactantComponent2));
+				addBond.setAttribute("site1",getID(addBondOp.addedProductBondEntry.reactantComponent1));
+			}
+			if (op instanceof AddMolecularTypeOperation){
+				AddMolecularTypeOperation addMoleculeOp = (AddMolecularTypeOperation)op;
+				Element addMolecule = new Element("Add");
+				listOfOperations.addContent(addMolecule);
+				addMolecule.setAttribute("id",getID(addMoleculeOp.unmatchedProductMoleculeEntry));
+			}
+			if (op instanceof DeleteMolecularTypeOperation){
+				DeleteMolecularTypeOperation deleteMolecule = (DeleteMolecularTypeOperation)op;
+				Element delete = new Element("Delete");
+				listOfOperations.addContent(delete);
+				delete.setAttribute("id",getID(deleteMolecule.removedReactantMolecularEntry));
+				delete.setAttribute("DeleteMolecule","0");
+			}
+			if (op instanceof DeleteParticipantOperation){
+				DeleteParticipantOperation deleteParticipant = (DeleteParticipantOperation)op;
+				Element delete = new Element("Delete");
+				listOfOperations.addContent(delete);
+				delete.setAttribute("id",getID(deleteParticipant.removedParticipantEntry));
+				delete.setAttribute("DeleteMolecule","0");
+			}
+			if (op instanceof ChangeStateOperation){
+				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
+				Element changeState = new Element("StateChange");
+				listOfOperations.addContent(changeState);
+				changeState.setAttribute("site",getID(changeStateOp.reactantComponentEntry));
+				changeState.setAttribute("finalState",changeStateOp.newState);
+			}
+		}
+		return root;
+	}
+
+	private static Element getParticipantEntry(RuleEntry rule, ParticipantEntry participant) {
+		Element root = null;
+		if (participant.getParticipantType() == ParticipantType.Reactant){
+			root = new Element("ReactantPattern");
+		}else{
+			root = new Element("ProductPattern");
+		}
+		root.setAttribute("id", getID(participant));
+		Element listOfMolecules = new Element("ListOfMolecules");
+		root.addContent(listOfMolecules);
+		for (MolecularTypeEntry molecule : participant.getMolecularTypeEntries()){
+			Element moleculeElement = new Element("Molecule");
+			listOfMolecules.addContent(moleculeElement);
+			moleculeElement.setAttribute("id",getID(molecule));
+			moleculeElement.setAttribute("name",molecule.getMolecularTypeName());
+			Element listOfComponents = new Element("ListOfComponents");
+			moleculeElement.addContent(listOfComponents);
+			for (MolecularComponentEntry component : molecule.getMolecularComponentEntries()){
+				Element componentElement = new Element("Component");
+				listOfComponents.addContent(componentElement);
+				componentElement.setAttribute("id",getID(component));
+				componentElement.setAttribute("name",component.getMolecularComponentName());
+				componentElement.setAttribute("numberOfBonds",component.hasBond()?"1":"0");
+				String state = component.getExplicitState();
+				if (state != null){
+					componentElement.setAttribute("state",state);
+				}
+			}
+		}
+		Element listOfBonds = new Element("ListOfBonds");
+		boolean bAnyBonds = false;
+		if (participant.getParticipantType() == ParticipantType.Reactant){
+			int count = 0;
+			for (ReactantBondEntry bond : rule.getReactantBondEntries()){
+				if (bond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+					Element bondElement = new Element("Bond");
+					listOfBonds.addContent(bondElement);
+					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
+					bondElement.setAttribute("site1",getID(bond.reactantComponent1));
+					bAnyBonds = true;
+					count++;
+				}
+			}
+		}else{
+			int count = 0;
+			for (ProductBondEntry bond : rule.getProductBondEntries()){
+				if (bond.productComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+					Element bondElement = new Element("Bond");
+					listOfBonds.addContent(bondElement);
+					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+					bondElement.setAttribute("site2",getID(bond.productComponent2));
+					bondElement.setAttribute("site1",getID(bond.productComponent1));
+					bAnyBonds = true;
+					count++;
+				}
+			}
+		}
+		if (bAnyBonds){
+			root.addContent(listOfBonds);
+		}
+		return root;
+	}
+	
 }

@@ -35,9 +35,6 @@ public class ParticleObservable extends Variable {
 	private ArrayList<ParticleSpeciesPattern> particleSpeciesPatternList = new ArrayList<ParticleSpeciesPattern>(); 
 	private ObservableType type;
 	
-	public ParticleObservable(String name, Domain domain) {
-		this(name, domain, ObservableType.Molecules);
-	}
 	public ParticleObservable(String name, Domain domain, ObservableType t) {
 		super(name,domain);
 		this.name = name;
@@ -56,7 +53,7 @@ public class ParticleObservable extends Variable {
 		return type;
 	}
 	
-	public void setType(ObservableType newValue) throws PropertyVetoException {
+	protected void setType(ObservableType newValue) {
 		type = newValue;
 	}
 	

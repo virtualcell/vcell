@@ -7,21 +7,99 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
+import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
+import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
+import org.vcell.model.rbm.RuleAnalysis.ParticipantEntry;
+import org.vcell.model.rbm.RuleAnalysis.ParticipantType;
+import org.vcell.model.rbm.RuleAnalysis.ProductBondEntry;
+import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
+import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
-public class ModelRuleAnalysis extends RuleAnalysis {
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
+
+public class ModelRuleFactory {
+	
+	public class ModelRuleEntry implements RuleEntry {
+		private final ReactionRule reactionRule;
+		private final int ruleIndex;
+		
+		private final ArrayList<ParticipantEntry> reactantEntries = new ArrayList<ParticipantEntry>();
+		private final ArrayList<ParticipantEntry> productEntries = new ArrayList<ParticipantEntry>();
+		private final ArrayList<MolecularTypeEntry> reactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
+		private final ArrayList<MolecularComponentEntry> reactantMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
+		private final ArrayList<MolecularTypeEntry> productMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
+		private final ArrayList<MolecularComponentEntry> productMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
+		private final ArrayList<ReactantBondEntry> reactantBondEntries = new ArrayList<ReactantBondEntry>();
+		private final ArrayList<ProductBondEntry> productBondEntries = new ArrayList<ProductBondEntry>();
+		
+		public ModelRuleEntry(ReactionRule reactionRule, int ruleIndex){
+			this.reactionRule = reactionRule;
+			this.ruleIndex = ruleIndex;
+		}
+		
+		@Override
+		public String getRuleName() {
+			return reactionRule.getName();
+		}
+		@Override
+		public int getRuleIndex() {
+			return ruleIndex;
+		}
+		@Override
+		public List<? extends ParticipantEntry> getReactantEntries() {
+			return reactantEntries;
+		}
+		@Override
+		public List<? extends MolecularTypeEntry> getReactantMolecularTypeEntries() {
+			return reactantMolecularTypeEntries;
+		}
+		@Override
+		public List<? extends MolecularComponentEntry> getReactantMolecularComponentEntries() {
+			return reactantMolecularComponentEntries;
+		}
+		@Override
+		public List<ReactantBondEntry> getReactantBondEntries() {
+			return reactantBondEntries;
+		}
+		@Override
+		public List<? extends ParticipantEntry> getProductEntries() {
+			return productEntries;
+		}
+		@Override
+		public List<? extends MolecularTypeEntry> getProductMolecularTypeEntries() {
+			return productMolecularTypeEntries;
+		}
+		@Override
+		public List<? extends MolecularComponentEntry> getProductMolecularComponentEntries() {
+			return productMolecularComponentEntries;
+		}
+		@Override
+		public List<ProductBondEntry> getProductBondEntries() {
+			return productBondEntries;
+		}
+
+		@Override
+		public String getForwardRateConstantName() {
+			if (reactionRule.getKineticLaw().getRateLawType() == RateLawType.MassAction){
+				return reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getExpression().infix();
+			}else{
+				throw new RuntimeException("ModelRuleFactory.ModelRuleEntry.getForwardRateConstantName() is only supported for mass action kinetics");
+			}
+		}
+
+	}
 	
 	public class ModelParticipantEntry implements ParticipantEntry {
-		private final ReactionRule reactionRule;
 		private final ArrayList<ModelMolecularTypeEntry> molecularTypeEntries = new ArrayList<ModelMolecularTypeEntry>();
 		private final ReactionRuleParticipant participantPattern; 
-		private final int ruleIndex;
+		private final ModelRuleEntry modelRule;
 		private final int participantIndex;
 		
-		public ModelParticipantEntry(int ruleIndex, int participantIndex, ReactionRule reactionRule, ReactionRuleParticipant participantPattern) {
-			this.ruleIndex = ruleIndex;
+		public ModelParticipantEntry(ModelRuleEntry modelRule, int participantIndex, ReactionRuleParticipant participantPattern) {
+			this.modelRule = modelRule;
 			this.participantIndex = participantIndex;
-			this.reactionRule = reactionRule;
 			this.participantPattern = participantPattern;
 		}
 
@@ -35,13 +113,8 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 		}
 
 		@Override
-		public String getRuleName() {
-			return reactionRule.getName();
-		}
-
-		@Override
-		public int getRuleIndex() {
-			return ruleIndex;
+		public RuleEntry getRule() {
+			return modelRule;
 		}
 
 		@Override
@@ -57,7 +130,6 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 				return ParticipantType.Product;
 			}
 		}
-		
 	}
 	
 
@@ -81,13 +153,13 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 		
 		@Override
 		public boolean matches(MolecularTypeEntry productMTE) {
-			if (modelParticipantEntry.getParticipantType() != ParticipantType.Product){
-				throw new RuntimeException("expecting reactantPatter.matches(productPattern)");
+			if (modelParticipantEntry.getParticipantType() != ParticipantType.Reactant || ((ModelMolecularTypeEntry)productMTE).modelParticipantEntry.getParticipantType() != ParticipantType.Product){
+				throw new RuntimeException("expecting reactantPattern.matches(productPattern)");
 			}
 			if (molecularTypePattern.getMolecularType() != ((ModelMolecularTypeEntry)productMTE).molecularTypePattern.getMolecularType()){
 				return false;
 			}
-			if (!molecularTypePattern.getParticipantMatchLabel().equals(productMTE)){
+			if (!molecularTypePattern.getParticipantMatchLabel().equals(((ModelMolecularTypeEntry)productMTE).molecularTypePattern.getParticipantMatchLabel())){
 				return false;
 			}
 			return true;
@@ -113,6 +185,11 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 		@Override
 		public int getMoleculeIndex() {
 			return moleculeIndex;
+		}
+
+		@Override
+		public String toBngl() {
+			return RbmUtils.toBnglString(this.molecularTypePattern);
 		}
 	}
 	
@@ -154,71 +231,66 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 
 		@Override
 		public boolean isBoundTo(MolecularComponentEntry productComponent) {
+			System.out.print("MODEL checking if "+RuleAnalysis.getID(this)+" is bound to "+RuleAnalysis.getID(productComponent)+" ");
+			if (this == productComponent){
+				System.out.println("FALSE");
+				return false;
+			}
 			if (molecularComponentPattern.getBond() == null){
+				System.out.println("FALSE");
 				return false;
 			}
 			Bond bond = molecularComponentPattern.getBond();
-			if (bond.molecularComponentPattern == ((ModelMolecularComponentEntry)productComponent).molecularComponentPattern){
-				return true;
+			if (bond.molecularComponentPattern != ((ModelMolecularComponentEntry)productComponent).molecularComponentPattern){
+				System.out.println("FALSE");
+				return false;
 			}
-			return false;
-		}		
+			System.out.println("TRUE");
+			return true;
+		}
+
+		@Override
+		public boolean hasBond() {
+			Bond bond = molecularComponentPattern.getBond();
+			return bond != null;
+		}
+		
 	}
 		
-	private final ReactionRule reactionRule;
-	private final int reactionRuleIndex;
+	public ModelRuleEntry createRuleEntry(ReactionRule reactionRule, int reactionRuleIndex) {
 
-	public ModelRuleAnalysis(int reactionRuleIndex, ReactionRule reactionRule) {
-		this.reactionRuleIndex = reactionRuleIndex;
-		this.reactionRule = reactionRule;
-	}
-
-	public ReactionRule getReactionRule(){
-		return reactionRule;
-	}
-	
-	@Override
-	protected void populateRuleInfo() {
-		reactantEntries.clear();
-		productEntries.clear();
-		reactantMolecularTypeEntries.clear();
-		reactantMolecularComponentEntries.clear();
-		productMolecularTypeEntries.clear();
-		productMolecularComponentEntries.clear();
-		reactantBondEntries.clear();
-		productBondEntries.clear();
+		ModelRuleEntry rule = new ModelRuleEntry(reactionRule, reactionRuleIndex);
 		
 		//
 		// for each molecular type in reactant, find all possible matches in products (without regard for consistency).
 		//
-
 		int participantIndex = 0;
 		for (ReactantPattern rp : reactionRule.getReactantPatterns()){
-			ModelParticipantEntry reactantEntry = new ModelParticipantEntry(reactionRuleIndex,participantIndex,reactionRule,rp);
-			reactantEntries.add(reactantEntry);
+			ModelParticipantEntry reactantEntry = new ModelParticipantEntry(rule,participantIndex,rp);
+			rule.reactantEntries.add(reactantEntry);
 			int moleculeIndex = 0;
 			for (MolecularTypePattern mtp : rp.getSpeciesPattern().getMolecularTypePatterns()){
 				ModelMolecularTypeEntry molecularTypeEntry = new ModelMolecularTypeEntry(reactantEntry, moleculeIndex, mtp);
-				reactantMolecularTypeEntries.add(molecularTypeEntry);
+				rule.reactantMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
-					reactantMolecularComponentEntries.add(mce);
+					rule.reactantMolecularComponentEntries.add(mce);
 					
 					//
 					// if this reactant component has a bond, find partner already in list (will always find second binding site where first one is in the list already).
 					//
 					Bond bond = mcp.getBond();
 					if (bond != null){
-						BondEntry bondEntry = null;
-						for (MolecularComponentEntry otherMCE : reactantMolecularComponentEntries){
+						ReactantBondEntry bondEntry = null;
+						for (MolecularComponentEntry otherMCE : rule.reactantMolecularComponentEntries){
 							if (((ModelMolecularComponentEntry)otherMCE).molecularComponentPattern == bond.molecularComponentPattern){
-								bondEntry = new BondEntry(otherMCE, mce);
+								bondEntry = new ReactantBondEntry(otherMCE, mce);
 								break;
 							}
 						}
 						if (bondEntry!=null){
-							reactantBondEntries.add(bondEntry);
+							rule.reactantBondEntries.add(bondEntry);
 						}
 					}
 					componentIndex++;
@@ -230,31 +302,31 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 		
 		participantIndex = 0;
 		for (ProductPattern pp : reactionRule.getProductPatterns()){
-			ModelParticipantEntry productEntry = new ModelParticipantEntry(reactionRuleIndex,participantIndex,reactionRule,pp);
-			productEntries.add(productEntry);
+			ModelParticipantEntry productEntry = new ModelParticipantEntry(rule,participantIndex,pp);
+			rule.productEntries.add(productEntry);
 			int moleculeIndex = 0;
 			for (MolecularTypePattern mtp : pp.getSpeciesPattern().getMolecularTypePatterns()){
 				ModelMolecularTypeEntry molecularTypeEntry = new ModelMolecularTypeEntry(productEntry, moleculeIndex, mtp);
-				productMolecularTypeEntries.add(molecularTypeEntry);
+				rule.productMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
-					productMolecularComponentEntries.add(mce);
+					rule.productMolecularComponentEntries.add(mce);
 
 					//
-					// if this reactant component has a bond, find partner already in list (will always find second binding site where first one is in the list already).
+					// if this product component has a bond, find partner already in list (will always find second binding site where first one is in the list already).
 					//
 					Bond bond = mcp.getBond();
 					if (bond != null){
-						BondEntry bondEntry = null;
-						for (MolecularComponentEntry otherMCE : productMolecularComponentEntries){
+						ProductBondEntry bondEntry = null;
+						for (MolecularComponentEntry otherMCE : rule.productMolecularComponentEntries){
 							if (((ModelMolecularComponentEntry)otherMCE).molecularComponentPattern == bond.molecularComponentPattern){
-								bondEntry = new BondEntry(otherMCE, mce);
+								bondEntry = new ProductBondEntry(otherMCE, mce);
 								break;
 							}
 						}
 						if (bondEntry!=null){
-							productBondEntries.add(bondEntry);
+							rule.productBondEntries.add(bondEntry);
 						}
 					}
 					componentIndex++;
@@ -263,6 +335,8 @@ public class ModelRuleAnalysis extends RuleAnalysis {
 			}
 			participantIndex++;
 		}
+		
+		return rule;
 	}
 
 }
