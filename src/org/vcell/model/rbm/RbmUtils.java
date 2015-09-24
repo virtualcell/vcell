@@ -1189,7 +1189,7 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 
-	private static String toBnglString(MolecularTypePattern molecularTypePattern) {
+	public static String toBnglString(MolecularTypePattern molecularTypePattern) {
 		StringBuilder buffer = new StringBuilder(molecularTypePattern.getMolecularType().getName());
 		buffer.append("(");
 		List<MolecularComponentPattern> componentPatterns = molecularTypePattern.getComponentPatternList();
