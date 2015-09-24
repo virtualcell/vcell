@@ -5,16 +5,11 @@ import java.beans.PropertyVetoException;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Matchable;
 
-import cbit.vcell.math.Variable.Domain;
-
 @SuppressWarnings("serial")
 public class VolumeParticleObservable extends ParticleObservable {
 
 	public VolumeParticleObservable(String name, Domain domain, ObservableType t) {
 		super(name, domain, t);
-	}
-	public VolumeParticleObservable(String name, Domain domain) {
-		super(name, domain);
 	}
 
 //	@Override
@@ -56,11 +51,7 @@ public class VolumeParticleObservable extends ParticleObservable {
 			if (token.equalsIgnoreCase(VCML.ParticleMolecularType)){
 				token = tokens.nextToken();
 				String name = token;
-				try {
-					setType(ObservableType.fromString(name));
-				} catch (PropertyVetoException e) {
-					e.printStackTrace();
-				}
+				setType(ObservableType.fromString(name));
 				continue;
 			} else if(token.equalsIgnoreCase(VCML.VolumeParticleSpeciesPatterns)){
 				token = tokens.nextToken();
