@@ -4499,7 +4499,7 @@ private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel
 		List<Element> children = GenericUtils.convert(e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace), Element.class);
 		for (Element element : children) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
-			if(s != null) { r.addProduct(new ProductPattern(s, r.getStructure())); }
+			if(s != null) { r.addProduct(new ProductPattern(s, r.getStructure()), false); }
 		}
 	}
 }

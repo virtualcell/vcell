@@ -190,7 +190,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	public void ClearProcessedMolecularComponentsMultiMap() {
 		processedMolecularComponentsMultiMap.clear();
 	}
-	
+
 	@Override
 	public boolean compareEqual(Matchable aThat) {
 		if (this == aThat) {
@@ -200,8 +200,10 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			return false;
 		}
 		MolecularTypePattern that = (MolecularTypePattern)aThat;
-
 		if (!Compare.isEqual(molecularType, that.molecularType)){
+			return false;
+		}
+		if (!participantMatchLabel.equals(that.getParticipantMatchLabel())) {
 			return false;
 		}
 		if (!Compare.isEqual(componentPatternList, that.componentPatternList)){
