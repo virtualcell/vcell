@@ -32,8 +32,7 @@ public class NfsimExtensionFilter extends SelectorExtensionFilter {
 		// This should be done by creating one or more additional Selector values and add the filtering logic to ChooseFile
 		
 		SimulationContext simContexts[] = bioModel.getSimulationContexts();
-		SimulationContext aSimulationContext = simContexts[0];
-		Simulation selectedSim = aSimulationContext.getSimulations(0);
+		Simulation selectedSim = simulationContext.getSimulations(0);
 		//Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 		SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
 		long randomSeed = 0;	// a fixed seed will allow us to run reproducible simulations

@@ -38,8 +38,6 @@ public class RuleAnalysis {
 		public List<? extends MolecularTypeEntry> getProductMolecularTypeEntries();
 		public List<? extends MolecularComponentEntry> getProductMolecularComponentEntries();
 		public List<ProductBondEntry> getProductBondEntries();
-
-		public String getForwardRateConstantName();
 	}
 	
 	public interface ParticipantEntry {
@@ -66,6 +64,8 @@ public class RuleAnalysis {
 		public List<? extends MolecularComponentEntry> getMolecularComponentEntries();
 
 		public String toBngl();
+
+		public String getMatchLabel();
 	}
 	
 	public interface MolecularComponentEntry {
@@ -322,6 +322,9 @@ public class RuleAnalysis {
 	
 	public static Element getNFSimXML(RuleEntry rule, RuleAnalysisReport report){
 		Element root = new Element("ReactionRule");
+		root.setAttribute("id",getID(rule));
+		root.setAttribute("name",rule.getRuleName());
+		root.setAttribute("symmetry_factor",""+report.getSymmetryFactor());
 		
 		Element listOfReactantPatterns = new Element("ListOfReactantPatterns");
 		root.addContent(listOfReactantPatterns);
@@ -337,13 +340,13 @@ public class RuleAnalysis {
 			listOfProductPatterns.addContent(productElement);
 		}
 		
-		Element rateLaw = new Element("RateLaw");
-		root.addContent(rateLaw);
-		Element listOfRateConstants = new Element("ListOfRateConstants");
-		rateLaw.addContent(listOfRateConstants);
-		Element rateConstant = new Element("RateConstant");
-		listOfRateConstants.addContent(rateConstant);
-		rateConstant.setAttribute("value",rule.getForwardRateConstantName());
+//		Element rateLaw = new Element("RateLaw");
+//		root.addContent(rateLaw);
+//		Element listOfRateConstants = new Element("ListOfRateConstants");
+//		rateLaw.addContent(listOfRateConstants);
+//		Element rateConstant = new Element("RateConstant");
+//		listOfRateConstants.addContent(rateConstant);
+//		rateConstant.setAttribute("value",rule.getForwardRateConstantName());
 		
 		Element map = new Element("Map");
 		root.addContent(map);
@@ -363,6 +366,7 @@ public class RuleAnalysis {
 		}
 		
 		Element listOfOperations = new Element("ListOfOperations");
+		root.addContent(listOfOperations);
 		for (Operation op : report.getOperations()){
 			if (op instanceof DeleteBondOperation){
 				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
@@ -424,6 +428,9 @@ public class RuleAnalysis {
 			listOfMolecules.addContent(moleculeElement);
 			moleculeElement.setAttribute("id",getID(molecule));
 			moleculeElement.setAttribute("name",molecule.getMolecularTypeName());
+			if (molecule.getMatchLabel()!=null){
+				moleculeElement.setAttribute("label",molecule.getMatchLabel());
+			}
 			Element listOfComponents = new Element("ListOfComponents");
 			moleculeElement.addContent(listOfComponents);
 			for (MolecularComponentEntry component : molecule.getMolecularComponentEntries()){

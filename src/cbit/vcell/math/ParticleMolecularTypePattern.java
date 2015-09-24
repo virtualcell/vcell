@@ -148,4 +148,13 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	public String getMatchLabel(){
 		return matchLabel;
 	}
+	
+	public boolean hasExplicitParticipantMatch() {
+		if(MolecularTypePattern.TRIVIAL_MATCH.equals(matchLabel)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 }

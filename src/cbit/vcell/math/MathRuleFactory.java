@@ -76,15 +76,15 @@ public class MathRuleFactory {
 			return productBondEntries;
 		}
 
-		@Override
-		public String getForwardRateConstantName() {
-			JumpProcessRateDefinition rateDefinition = particleJumpProcess.getParticleRateDefinition();
-			if (rateDefinition instanceof MacroscopicRateConstant){
-				return ((MacroscopicRateConstant)rateDefinition).getExpression().infix();
-			}else{
-				throw new RuntimeException("MathRuleFactory.MathRuleEntry.getForwardRateConstantName() only supported for MacroscopicRateConstant kinetic rate");
-			}
-		}
+//		@Override
+//		public String getForwardRateConstantName() {
+//			JumpProcessRateDefinition rateDefinition = particleJumpProcess.getParticleRateDefinition();
+//			if (rateDefinition instanceof MacroscopicRateConstant){
+//				return ((MacroscopicRateConstant)rateDefinition).getExpression().infix();
+//			}else{
+//				throw new RuntimeException("MathRuleFactory.MathRuleEntry.getForwardRateConstantName() only supported for MacroscopicRateConstant kinetic rate");
+//			}
+//		}
 
 	}
 	
@@ -193,6 +193,15 @@ public class MathRuleFactory {
 		@Override
 		public String toBngl() {
 			return "nobngl";
+		}
+
+		@Override
+		public String getMatchLabel() {
+			if (particleMolecularTypePattern.hasExplicitParticipantMatch()){
+				return particleMolecularTypePattern.getMatchLabel();
+			}else{
+				return null;
+			}
 		}
 	}
 	

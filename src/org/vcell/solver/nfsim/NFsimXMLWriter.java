@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.jdom.Comment;
 import org.jdom.Element;
+import org.vcell.model.rbm.RuleAnalysis;
+import org.vcell.model.rbm.RuleAnalysisReport;
 
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -20,6 +22,8 @@ import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathRuleFactory;
+import cbit.vcell.math.MathRuleFactory.MathRuleEntry;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
@@ -275,6 +279,11 @@ public class NFsimXMLWriter {
 		for (int reactionRuleIndex =0; reactionRuleIndex < compartmentSubDomain.getParticleJumpProcesses().size(); reactionRuleIndex++) {
 			ParticleJumpProcess particleJumpProcess = compartmentSubDomain.getParticleJumpProcesses().get(reactionRuleIndex);
 			
+			MathRuleFactory mathRuleFactory = new MathRuleFactory();
+			MathRuleEntry rule = mathRuleFactory.createRuleEntry(particleJumpProcess, reactionRuleIndex);
+			RuleAnalysisReport report = RuleAnalysis.analyze(rule);
+			Element reactionRuleElement = RuleAnalysis.getNFSimXML(rule, report); // remember, we have to add RateLaw
+			
 			ArrayList<MolecularTypeOfReactionParticipant> currentReactantElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
 			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfReactantElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
 			ArrayList<MolecularTypeOfReactionParticipant> currentProductElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
@@ -283,62 +292,62 @@ public class NFsimXMLWriter {
 			reactionProductBondSites.clear();
 			reactionReactantBondSites.clear();
 			
-			Element reactionRuleElement = new Element("ReactionRule");
-			String reactionRuleID = "RR" + reactionRuleIndex;
-			reactionRuleElement.setAttribute("id",reactionRuleID);
-			reactionRuleElement.setAttribute("name",particleJumpProcess.getName());
-			reactionRuleElement.setAttribute("symmetry_factor","1");
+//			Element reactionRuleElement = new Element("ReactionRule");
+//			String reactionRuleID = "RR" + (reactionRuleIndex + 1);
+//			reactionRuleElement.setAttribute("id",reactionRuleID);
+//			reactionRuleElement.setAttribute("name",particleJumpProcess.getName());
+//			reactionRuleElement.setAttribute("symmetry_factor","1");
 //			reactionRule.resolveBonds();
 			
-			ArrayList<VolumeParticleSpeciesPattern> selectedPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
-			for (ParticleVariable particleVariable : particleJumpProcess.getParticleVariables()){
-				if (!(particleVariable instanceof VolumeParticleSpeciesPattern)){
-					throw new SolverException("expecting only "+VolumeParticleSpeciesPattern.class.getSimpleName()+"s for "+ParticleJumpProcess.class.getSimpleName()+" "+particleJumpProcess.getName());
-				}
-				selectedPatterns.add((VolumeParticleSpeciesPattern) particleVariable);
-			}
-			ArrayList<VolumeParticleSpeciesPattern> createdPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
-			HashSet<VolumeParticleSpeciesPattern> destroyedPatterns = new HashSet<VolumeParticleSpeciesPattern>();
-			for (Action action : particleJumpProcess.getActions()){
-				if (!(action.getVar() instanceof VolumeParticleSpeciesPattern)){
-					throw new SolverException("expecting only "+VolumeParticleSpeciesPattern.class.getSimpleName()+"s for "+ParticleJumpProcess.class.getSimpleName()+" "+particleJumpProcess.getName());
-				}
-				if (action.getOperation().equals(Action.ACTION_CREATE)){
-					createdPatterns.add((VolumeParticleSpeciesPattern) action.getVar());
-				}else if (action.getOperation().equals(Action.ACTION_DESTROY)){
-					destroyedPatterns.add((VolumeParticleSpeciesPattern) action.getVar());
-				}else{
-					throw new RuntimeException("unexpected action operation "+action.getOperation()+" for jump process "+particleJumpProcess.getName());
-				}
-			}
-				
-			Element listOfReactantPatternsElement = new Element("ListOfReactantPatterns");
-			for(int reactantPatternIndex=0; reactantPatternIndex < selectedPatterns.size(); reactantPatternIndex++) {
-				VolumeParticleSpeciesPattern reactantSpeciesPattern = selectedPatterns.get(reactantPatternIndex);
-				String reactantPatternID = "RP" + reactantPatternIndex;
-				patternReactantBondSites.clear();
-				Element reactantPatternElement = getReactionParticipantPattern1(reactionRuleID, reactantPatternID, reactantSpeciesPattern, 
-						currentReactantElementsOfReaction, currentComponentOfReactantElementsOfReaction, "ReactantPattern");
-				listOfReactantPatternsElement.addContent(reactantPatternElement);
-				reactionReactantBondSites.addAll(patternReactantBondSites);
-			}
-			reactionRuleElement.addContent(listOfReactantPatternsElement);
-			
-			Element listOfProductPatternsElement = new Element("ListOfProductPatterns");
-			ArrayList<VolumeParticleSpeciesPattern> productSpeciesPatterns = new ArrayList<VolumeParticleSpeciesPattern>(selectedPatterns);
-			productSpeciesPatterns.removeAll(destroyedPatterns);
-			productSpeciesPatterns.addAll(createdPatterns);
-			// for products, add all "created" species from Actions and all "particles" that are selected but not destroyed
-			for(int productPatternIndex=0; productPatternIndex < productSpeciesPatterns.size(); productPatternIndex++) {
-				VolumeParticleSpeciesPattern productSpeciesPattern = productSpeciesPatterns.get(productPatternIndex);
-				String productPatternID = "PP" + productPatternIndex;
-				patternProductBondSites.clear();
-				Element productPatternElement = getReactionParticipantPattern1(reactionRuleID, productPatternID, productSpeciesPattern, 
-								currentProductElementsOfReaction, currentComponentOfProductElementsOfReaction, "ProductPattern");
-				listOfProductPatternsElement.addContent(productPatternElement);
-				reactionProductBondSites.addAll(patternProductBondSites);
-			}
-			reactionRuleElement.addContent(listOfProductPatternsElement);
+//			ArrayList<VolumeParticleSpeciesPattern> selectedPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
+//			for (ParticleVariable particleVariable : particleJumpProcess.getParticleVariables()){
+//				if (!(particleVariable instanceof VolumeParticleSpeciesPattern)){
+//					throw new SolverException("expecting only "+VolumeParticleSpeciesPattern.class.getSimpleName()+"s for "+ParticleJumpProcess.class.getSimpleName()+" "+particleJumpProcess.getName());
+//				}
+//				selectedPatterns.add((VolumeParticleSpeciesPattern) particleVariable);
+//			}
+//			ArrayList<VolumeParticleSpeciesPattern> createdPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
+//			HashSet<VolumeParticleSpeciesPattern> destroyedPatterns = new HashSet<VolumeParticleSpeciesPattern>();
+//			for (Action action : particleJumpProcess.getActions()){
+//				if (!(action.getVar() instanceof VolumeParticleSpeciesPattern)){
+//					throw new SolverException("expecting only "+VolumeParticleSpeciesPattern.class.getSimpleName()+"s for "+ParticleJumpProcess.class.getSimpleName()+" "+particleJumpProcess.getName());
+//				}
+//				if (action.getOperation().equals(Action.ACTION_CREATE)){
+//					createdPatterns.add((VolumeParticleSpeciesPattern) action.getVar());
+//				}else if (action.getOperation().equals(Action.ACTION_DESTROY)){
+//					destroyedPatterns.add((VolumeParticleSpeciesPattern) action.getVar());
+//				}else{
+//					throw new RuntimeException("unexpected action operation "+action.getOperation()+" for jump process "+particleJumpProcess.getName());
+//				}
+//			}
+//				
+//			Element listOfReactantPatternsElement = new Element("ListOfReactantPatterns");
+//			for(int reactantPatternIndex=0; reactantPatternIndex < selectedPatterns.size(); reactantPatternIndex++) {
+//				VolumeParticleSpeciesPattern reactantSpeciesPattern = selectedPatterns.get(reactantPatternIndex);
+//				String reactantPatternID = "RP" + reactantPatternIndex + 1;
+//				patternReactantBondSites.clear();
+//				Element reactantPatternElement = getReactionParticipantPattern1(reactionRuleID, reactantPatternID, reactantSpeciesPattern, 
+//						currentReactantElementsOfReaction, currentComponentOfReactantElementsOfReaction, "ReactantPattern");
+//				listOfReactantPatternsElement.addContent(reactantPatternElement);
+//				reactionReactantBondSites.addAll(patternReactantBondSites);
+//			}
+//			reactionRuleElement.addContent(listOfReactantPatternsElement);
+//			
+//			Element listOfProductPatternsElement = new Element("ListOfProductPatterns");
+//			ArrayList<VolumeParticleSpeciesPattern> productSpeciesPatterns = new ArrayList<VolumeParticleSpeciesPattern>(selectedPatterns);
+//			productSpeciesPatterns.removeAll(destroyedPatterns);
+//			productSpeciesPatterns.addAll(createdPatterns);
+//			// for products, add all "created" species from Actions and all "particles" that are selected but not destroyed
+//			for(int productPatternIndex=0; productPatternIndex < productSpeciesPatterns.size(); productPatternIndex++) {
+//				VolumeParticleSpeciesPattern productSpeciesPattern = productSpeciesPatterns.get(productPatternIndex);
+//				String productPatternID = "PP" + productPatternIndex + 1;
+//				patternProductBondSites.clear();
+//				Element productPatternElement = getReactionParticipantPattern1(reactionRuleID, productPatternID, productSpeciesPattern, 
+//								currentProductElementsOfReaction, currentComponentOfProductElementsOfReaction, "ProductPattern");
+//				listOfProductPatternsElement.addContent(productPatternElement);
+//				reactionProductBondSites.addAll(patternProductBondSites);
+//			}
+//			reactionRuleElement.addContent(listOfProductPatternsElement);
 			
 	        //  <RateLaw id="RR1_RateLaw" type="Ele" totalrate="0">
 	        //    <ListOfRateConstants>
@@ -346,7 +355,7 @@ public class NFsimXMLWriter {
 	        //    </ListOfRateConstants>
 	        //  </RateLaw>
 			Element rateLawElement = new Element("RateLaw");
-			rateLawElement.setAttribute("id", reactionRuleID + "_RateLaw");
+			rateLawElement.setAttribute("id", RuleAnalysis.getID(rule));
 			
 			String rateConstantValue = null;
 			JumpProcessRateDefinition particleProbabilityRate = particleJumpProcess.getParticleRateDefinition();
@@ -407,225 +416,225 @@ public class NFsimXMLWriter {
 			}
 			reactionRuleElement.addContent(rateLawElement);
 			
-	        //  <Map>
-	        //    <MapItem sourceID="RR1_RP1_M1" targetID="RR1_PP1_M1"/>
-	        //    <MapItem sourceID="RR1_RP1_M1_C1" targetID="RR1_PP1_M1_C1"/>
-	        //    <MapItem sourceID="RR1_RP1_M1_C2" targetID="RR1_PP1_M1_C2"/>
-	        //    <MapItem sourceID="RR1_RP2_M1" targetID="RR1_PP1_M2"/>
-	        //    <MapItem sourceID="RR1_RP2_M1_C1" targetID="RR1_PP1_M2_C1"/>
-	        //  </Map>
-			Element mapElement = new Element("Map");
-			System.out.println("----------------------------------------------------------------------");
-			for(MolecularTypeOfReactionParticipant p : currentReactantElementsOfReaction) {
-				System.out.println(p.moleculeName + ", " + p.elementID);
-			}
-			for(ComponentOfMolecularTypeOfReactionParticipant c : currentComponentOfReactantElementsOfReaction) {
-				System.out.println(c.moleculeName + ", " + c.componentName + ", " + c.elementID);
-			}
-			System.out.println("----------------------------------------------------------------------");
-			for(MolecularTypeOfReactionParticipant p : currentProductElementsOfReaction) {
-				System.out.println(p.moleculeName + ", " + p.elementID);
-			}
-			for(ComponentOfMolecularTypeOfReactionParticipant c : currentComponentOfProductElementsOfReaction) {
-				System.out.println(c.moleculeName + ", " + c.componentName + ", " + c.elementID);
-			}
-			System.out.println("----------------------------------------------------------------------");
-			
-			List<MolecularTypeOfReactionParticipant> cloneOfReactants = new ArrayList<MolecularTypeOfReactionParticipant>(currentReactantElementsOfReaction);
-			List<MolecularTypeOfReactionParticipant> cloneOfProducts = new ArrayList<MolecularTypeOfReactionParticipant>(currentProductElementsOfReaction);
-			for(Iterator<MolecularTypeOfReactionParticipant> itReactant = cloneOfReactants.iterator(); itReactant.hasNext();) {	// participants
-				MolecularTypeOfReactionParticipant reactant = itReactant.next();
-				boolean foundProduct = false;
-				for(Iterator<MolecularTypeOfReactionParticipant> itProduct = cloneOfProducts.iterator(); itProduct.hasNext();) {
-					MolecularTypeOfReactionParticipant product = itProduct.next();
-					if(reactant.find(product)) {
-						MappingOfReactionParticipants m = new MappingOfReactionParticipants(reactant.elementID, product.elementID, "");
-						currentMappingOfReactionParticipants.add(m );
-						itProduct.remove();
-						foundProduct = true;
-						break;		// we exit inner loop if we find a match for current reactant
-					}
-				}
-				if(foundProduct == false) {
-					System.out.println("Did not found a match for reactant " + reactant.moleculeName + ", " + reactant.elementID);
-				}
-				itReactant.remove();		// found or not, we remove the reactant
-			}
-			if(!currentProductElementsOfReaction.isEmpty()) {
-				for(MolecularTypeOfReactionParticipant p : currentProductElementsOfReaction) {
-					System.out.println("Did not found a match for product " + p.moleculeName + ", " + p.elementID);
-				}
-			}
-			for(Iterator<ComponentOfMolecularTypeOfReactionParticipant> itReactant = currentComponentOfReactantElementsOfReaction.iterator(); itReactant.hasNext();) {	// components
-				ComponentOfMolecularTypeOfReactionParticipant reactant = itReactant.next();
-				boolean foundProduct = false;
-				for(Iterator<ComponentOfMolecularTypeOfReactionParticipant> itProduct = currentComponentOfProductElementsOfReaction.iterator(); itProduct.hasNext();) {
-					ComponentOfMolecularTypeOfReactionParticipant product = itProduct.next();
-					String state = "";
-					if(reactant.find(product)) {
-						if(!reactant.state.equals(product.state)) {
-							state = product.state;
-						}
-						MappingOfReactionParticipants m = new MappingOfReactionParticipants(reactant.elementID, product.elementID, state);
-						currentMappingOfReactionParticipants.add(m );
-						itProduct.remove();
-						foundProduct = true;
-						break;		// we exit inner loop if we find a match for current reactant
-					}
-				}
-				if(foundProduct == false) {
-					System.out.println("Did not found a match for reactant " + reactant.moleculeName + ", " + reactant.elementID);
-				}
-				itReactant.remove();		// found or not, we remove the reactant
-			}
-			if(!currentComponentOfProductElementsOfReaction.isEmpty()) {
-				for(ComponentOfMolecularTypeOfReactionParticipant p : currentComponentOfProductElementsOfReaction) {
-					System.out.println("Did not found a match for product " + p.moleculeName + ", " + p.elementID);
-				}
-			}
-			for(Iterator<MappingOfReactionParticipants> it = currentMappingOfReactionParticipants.iterator(); it.hasNext();) {
-				MappingOfReactionParticipants m = it.next();
-				Element mapItemElement = new Element("MapItem");
-				mapItemElement.setAttribute("sourceID", m.reactantElementID);
-				mapItemElement.setAttribute("targetID", m.productElementID);
-				mapElement.addContent(mapItemElement);
-			}
-			reactionRuleElement.addContent(mapElement);
-
-	        //  <ListOfOperations>
-	        //      <AddBond site1="RR1_RP1_M1_C1" site2="RR1_RP2_M1_C1"/>
-			//		<StateChange site="RR0_RP0_M0_C2" finalState="Y"/>
-	        //  </ListOfOperations>
-			Element listOfOperationsElement = new Element("ListOfOperations");
-			
-			// AddBond elements
-			// add any bond in the product which is not present in the reactant
-			Iterator<BondSites> it = patternProductBondSites.iterator();
-			while (it.hasNext()) {
-				BondSites bs = it.next();
-				String reactantS1 = MappingOfReactionParticipants.findMatchingReactant(bs.component1, currentMappingOfReactionParticipants);
-				String reactantS2 = MappingOfReactionParticipants.findMatchingReactant(bs.component2, currentMappingOfReactionParticipants);
-				// we check if the bonds in the product existed already in the reactant, in which case they were not "added" in this reaction
-				BondSites candidate = new BondSites(reactantS1, reactantS2);
-				boolean preExistent = false;
-				for(BondSites bsReactant : reactionReactantBondSites) {
-					if(bsReactant.equals(candidate)) {
-						preExistent = true;
-						break;
-					}
-				}
-				if(preExistent == true) {
-					continue;		// we don't add preexisting bonds
-				}
-				Element addBondElement = new Element("AddBond");
-				addBondElement.setAttribute("site1", reactantS1);
-				addBondElement.setAttribute("site2", reactantS2);
-				listOfOperationsElement.addContent(addBondElement);
-			}
-			// StateChange elements
-			for(Iterator<MappingOfReactionParticipants> it1 = currentMappingOfReactionParticipants.iterator(); it1.hasNext();) {
-				MappingOfReactionParticipants m = it1.next();
-				if(!m.componentFinalState.equals("")) {		// state has changed if it's different from ""
-					Element stateChangeElement = new Element("StateChange");
-					stateChangeElement.setAttribute("site", m.reactantElementID);
-					stateChangeElement.setAttribute("finalState", m.componentFinalState);
-					listOfOperationsElement.addContent(stateChangeElement);
-				}
-			}
-			// eliminate all the common entries (molecule types) in reactants and products
-			// what's left in reactants was deleted, what's left in products was added
-			List<MolecularTypeOfReactionParticipant> commonParticipants = new ArrayList<MolecularTypeOfReactionParticipant>();
-			for(Iterator<MolecularTypeOfReactionParticipant> itReactant = currentReactantElementsOfReaction.iterator(); itReactant.hasNext();) {	// participants
-				MolecularTypeOfReactionParticipant reactant = itReactant.next();
-				for(Iterator<MolecularTypeOfReactionParticipant> itProduct = currentProductElementsOfReaction.iterator(); itProduct.hasNext();) {
-					MolecularTypeOfReactionParticipant product = itProduct.next();
-					if(reactant.find(product)) {
-						// commonParticipants contains the reactant molecules with a equivalent molecule in the product (meaning they are not in the "Deleted" category)
-						commonParticipants.add(reactant);
-						itReactant.remove();
-						itProduct.remove();
-						break;		// we exit inner loop if we find a match for current reactant
-					}
-				}
-			}
-			// DeleteBond element
-			// there is no need to mention deletion of bond if the particleSpeciesPattern 
-			// or the MolecularType involved in the bond are deleted as well
-			// We only keep those "Deleted" bonds which belong to the molecules (of the reactant) present in commonParticipants
-			// Both components (sites) of the bond need to have their molecules in commonParticipants
-			boolean foundMoleculeForComponent1 = false;
-			boolean foundMoleculeForComponent2 = false;
-			HashSet<BondSites> cloneOfReactantBondSites = new HashSet<BondSites>(patternReactantBondSites);
-			Iterator<BondSites> itbs = cloneOfReactantBondSites.iterator();
-			while (itbs.hasNext()) {
-				BondSites bs = itbs.next();
-				String bondComponent1MoleculeId = BondSites.extractMoleculeId(bs.component1);
-				String bondComponent2MoleculeId = BondSites.extractMoleculeId(bs.component2);
-				for(MolecularTypeOfReactionParticipant commonReactionMoleculeule : commonParticipants) {
-					String commonReactantPatternId = commonReactionMoleculeule.elementID;
-					if(bondComponent1MoleculeId.equals(commonReactantPatternId)) {
-						foundMoleculeForComponent1 = true;
-					}
-					if(bondComponent2MoleculeId.equals(commonReactantPatternId)) {
-						foundMoleculeForComponent2 = true;
-					}
-				}
-				if(!foundMoleculeForComponent1 || !foundMoleculeForComponent2) {
-					// at least one of bond's molecule is not in common, hence we don't need to report the deletion of this bond
-					itbs.remove();
-				}
-			}
-			// the clone has now all the deleted bonds whose molecules have not been deleted
-			itbs = cloneOfReactantBondSites.iterator();
-			while (itbs.hasNext()) {
-				BondSites bs = itbs.next();
-				Element addBondElement = new Element("DeleteBond");
-				addBondElement.setAttribute("site1", bs.component1);
-				addBondElement.setAttribute("site2", bs.component2);
-				listOfOperationsElement.addContent(addBondElement);
-			}
-			// Add MolecularType element
-			for(MolecularTypeOfReactionParticipant molecule : currentProductElementsOfReaction) {
-				System.out.println("created molecule: " + molecule.elementID + "' " + molecule.moleculeName);
-				Element addMolecularTypePatternElement = new Element("Add");
-				addMolecularTypePatternElement.setAttribute("id", molecule.elementID);
-				listOfOperationsElement.addContent(addMolecularTypePatternElement);
-			}
-			// Delete MolecularType element
-			// if the reactant pattern of the molecule being deleted still exists as part of the common, then we only delete the molecule
-			// if the reactant pattern of the molecule being deleted is not as part of the common, then it's gone completely and we delete the reactant pattern
-			ArrayList<String> patternsToDelete = new ArrayList<String>();
-			for(MolecularTypeOfReactionParticipant molecule : currentReactantElementsOfReaction) {
-				String reactantPatternId = molecule.extractReactantPatternId();
-				boolean found = false;
-				for(MolecularTypeOfReactionParticipant common : commonParticipants) {
-					String commonId = common.extractReactantPatternId();
-					if(reactantPatternId.equals(commonId)) {
-						found = true;
-						break;		// some other molecule of this pattern still there, we don't delete the pattern
-					}
-				}
-				if(found == true) {		// some other molecule of this pattern still there, we don't delete the pattern
-					System.out.println("deleted molecule: " + molecule.elementID + "' " + molecule.moleculeName);
-					Element addMolecularTypePatternElement = new Element("Delete");
-					addMolecularTypePatternElement.setAttribute("id", molecule.elementID);
-					addMolecularTypePatternElement.setAttribute("DeleteMolecules", "0");
-					listOfOperationsElement.addContent(addMolecularTypePatternElement);
-				} else {				// no molecule of this pattern left, we delete the pattern
-					if(patternsToDelete.contains(reactantPatternId)) {
-						// nothing to do, we're already deleting this pattern
-						break;
-					} else {
-						patternsToDelete.add(reactantPatternId);
-					System.out.println("deleted pattern: " + reactantPatternId);
-					Element addParticleSpeciesPatternElement = new Element("Delete");
-					addParticleSpeciesPatternElement.setAttribute("id", reactantPatternId);
-					addParticleSpeciesPatternElement.setAttribute("DeleteMolecules", "0");
-					listOfOperationsElement.addContent(addParticleSpeciesPatternElement);
-					}
-				}
-			}
-			reactionRuleElement.addContent(listOfOperationsElement);
+//	        //  <Map>
+//	        //    <MapItem sourceID="RR1_RP1_M1" targetID="RR1_PP1_M1"/>
+//	        //    <MapItem sourceID="RR1_RP1_M1_C1" targetID="RR1_PP1_M1_C1"/>
+//	        //    <MapItem sourceID="RR1_RP1_M1_C2" targetID="RR1_PP1_M1_C2"/>
+//	        //    <MapItem sourceID="RR1_RP2_M1" targetID="RR1_PP1_M2"/>
+//	        //    <MapItem sourceID="RR1_RP2_M1_C1" targetID="RR1_PP1_M2_C1"/>
+//	        //  </Map>
+//			Element mapElement = new Element("Map");
+//			System.out.println("----------------------------------------------------------------------");
+//			for(MolecularTypeOfReactionParticipant p : currentReactantElementsOfReaction) {
+//				System.out.println(p.moleculeName + ", " + p.elementID);
+//			}
+//			for(ComponentOfMolecularTypeOfReactionParticipant c : currentComponentOfReactantElementsOfReaction) {
+//				System.out.println(c.moleculeName + ", " + c.componentName + ", " + c.elementID);
+//			}
+//			System.out.println("----------------------------------------------------------------------");
+//			for(MolecularTypeOfReactionParticipant p : currentProductElementsOfReaction) {
+//				System.out.println(p.moleculeName + ", " + p.elementID);
+//			}
+//			for(ComponentOfMolecularTypeOfReactionParticipant c : currentComponentOfProductElementsOfReaction) {
+//				System.out.println(c.moleculeName + ", " + c.componentName + ", " + c.elementID);
+//			}
+//			System.out.println("----------------------------------------------------------------------");
+//			
+//			List<MolecularTypeOfReactionParticipant> cloneOfReactants = new ArrayList<MolecularTypeOfReactionParticipant>(currentReactantElementsOfReaction);
+//			List<MolecularTypeOfReactionParticipant> cloneOfProducts = new ArrayList<MolecularTypeOfReactionParticipant>(currentProductElementsOfReaction);
+//			for(Iterator<MolecularTypeOfReactionParticipant> itReactant = cloneOfReactants.iterator(); itReactant.hasNext();) {	// participants
+//				MolecularTypeOfReactionParticipant reactant = itReactant.next();
+//				boolean foundProduct = false;
+//				for(Iterator<MolecularTypeOfReactionParticipant> itProduct = cloneOfProducts.iterator(); itProduct.hasNext();) {
+//					MolecularTypeOfReactionParticipant product = itProduct.next();
+//					if(reactant.find(product)) {
+//						MappingOfReactionParticipants m = new MappingOfReactionParticipants(reactant.elementID, product.elementID, "");
+//						currentMappingOfReactionParticipants.add(m );
+//						itProduct.remove();
+//						foundProduct = true;
+//						break;		// we exit inner loop if we find a match for current reactant
+//					}
+//				}
+//				if(foundProduct == false) {
+//					System.out.println("Did not found a match for reactant " + reactant.moleculeName + ", " + reactant.elementID);
+//				}
+//				itReactant.remove();		// found or not, we remove the reactant
+//			}
+//			if(!currentProductElementsOfReaction.isEmpty()) {
+//				for(MolecularTypeOfReactionParticipant p : currentProductElementsOfReaction) {
+//					System.out.println("Did not found a match for product " + p.moleculeName + ", " + p.elementID);
+//				}
+//			}
+//			for(Iterator<ComponentOfMolecularTypeOfReactionParticipant> itReactant = currentComponentOfReactantElementsOfReaction.iterator(); itReactant.hasNext();) {	// components
+//				ComponentOfMolecularTypeOfReactionParticipant reactant = itReactant.next();
+//				boolean foundProduct = false;
+//				for(Iterator<ComponentOfMolecularTypeOfReactionParticipant> itProduct = currentComponentOfProductElementsOfReaction.iterator(); itProduct.hasNext();) {
+//					ComponentOfMolecularTypeOfReactionParticipant product = itProduct.next();
+//					String state = "";
+//					if(reactant.find(product)) {
+//						if(!reactant.state.equals(product.state)) {
+//							state = product.state;
+//						}
+//						MappingOfReactionParticipants m = new MappingOfReactionParticipants(reactant.elementID, product.elementID, state);
+//						currentMappingOfReactionParticipants.add(m );
+//						itProduct.remove();
+//						foundProduct = true;
+//						break;		// we exit inner loop if we find a match for current reactant
+//					}
+//				}
+//				if(foundProduct == false) {
+//					System.out.println("Did not found a match for reactant " + reactant.moleculeName + ", " + reactant.elementID);
+//				}
+//				itReactant.remove();		// found or not, we remove the reactant
+//			}
+//			if(!currentComponentOfProductElementsOfReaction.isEmpty()) {
+//				for(ComponentOfMolecularTypeOfReactionParticipant p : currentComponentOfProductElementsOfReaction) {
+//					System.out.println("Did not found a match for product " + p.moleculeName + ", " + p.elementID);
+//				}
+//			}
+//			for(Iterator<MappingOfReactionParticipants> it = currentMappingOfReactionParticipants.iterator(); it.hasNext();) {
+//				MappingOfReactionParticipants m = it.next();
+//				Element mapItemElement = new Element("MapItem");
+//				mapItemElement.setAttribute("sourceID", m.reactantElementID);
+//				mapItemElement.setAttribute("targetID", m.productElementID);
+//				mapElement.addContent(mapItemElement);
+//			}
+//			reactionRuleElement.addContent(mapElement);
+//
+//	        //  <ListOfOperations>
+//	        //      <AddBond site1="RR1_RP1_M1_C1" site2="RR1_RP2_M1_C1"/>
+//			//		<StateChange site="RR0_RP0_M0_C2" finalState="Y"/>
+//	        //  </ListOfOperations>
+//			Element listOfOperationsElement = new Element("ListOfOperations");
+//			
+//			// AddBond elements
+//			// add any bond in the product which is not present in the reactant
+//			Iterator<BondSites> it = patternProductBondSites.iterator();
+//			while (it.hasNext()) {
+//				BondSites bs = it.next();
+//				String reactantS1 = MappingOfReactionParticipants.findMatchingReactant(bs.component1, currentMappingOfReactionParticipants);
+//				String reactantS2 = MappingOfReactionParticipants.findMatchingReactant(bs.component2, currentMappingOfReactionParticipants);
+//				// we check if the bonds in the product existed already in the reactant, in which case they were not "added" in this reaction
+//				BondSites candidate = new BondSites(reactantS1, reactantS2);
+//				boolean preExistent = false;
+//				for(BondSites bsReactant : reactionReactantBondSites) {
+//					if(bsReactant.equals(candidate)) {
+//						preExistent = true;
+//						break;
+//					}
+//				}
+//				if(preExistent == true) {
+//					continue;		// we don't add preexisting bonds
+//				}
+//				Element addBondElement = new Element("AddBond");
+//				addBondElement.setAttribute("site1", reactantS1);
+//				addBondElement.setAttribute("site2", reactantS2);
+//				listOfOperationsElement.addContent(addBondElement);
+//			}
+//			// StateChange elements
+//			for(Iterator<MappingOfReactionParticipants> it1 = currentMappingOfReactionParticipants.iterator(); it1.hasNext();) {
+//				MappingOfReactionParticipants m = it1.next();
+//				if(!m.componentFinalState.equals("")) {		// state has changed if it's different from ""
+//					Element stateChangeElement = new Element("StateChange");
+//					stateChangeElement.setAttribute("site", m.reactantElementID);
+//					stateChangeElement.setAttribute("finalState", m.componentFinalState);
+//					listOfOperationsElement.addContent(stateChangeElement);
+//				}
+//			}
+//			// eliminate all the common entries (molecule types) in reactants and products
+//			// what's left in reactants was deleted, what's left in products was added
+//			List<MolecularTypeOfReactionParticipant> commonParticipants = new ArrayList<MolecularTypeOfReactionParticipant>();
+//			for(Iterator<MolecularTypeOfReactionParticipant> itReactant = currentReactantElementsOfReaction.iterator(); itReactant.hasNext();) {	// participants
+//				MolecularTypeOfReactionParticipant reactant = itReactant.next();
+//				for(Iterator<MolecularTypeOfReactionParticipant> itProduct = currentProductElementsOfReaction.iterator(); itProduct.hasNext();) {
+//					MolecularTypeOfReactionParticipant product = itProduct.next();
+//					if(reactant.find(product)) {
+//						// commonParticipants contains the reactant molecules with a equivalent molecule in the product (meaning they are not in the "Deleted" category)
+//						commonParticipants.add(reactant);
+//						itReactant.remove();
+//						itProduct.remove();
+//						break;		// we exit inner loop if we find a match for current reactant
+//					}
+//				}
+//			}
+//			// DeleteBond element
+//			// there is no need to mention deletion of bond if the particleSpeciesPattern 
+//			// or the MolecularType involved in the bond are deleted as well
+//			// We only keep those "Deleted" bonds which belong to the molecules (of the reactant) present in commonParticipants
+//			// Both components (sites) of the bond need to have their molecules in commonParticipants
+//			boolean foundMoleculeForComponent1 = false;
+//			boolean foundMoleculeForComponent2 = false;
+//			HashSet<BondSites> cloneOfReactantBondSites = new HashSet<BondSites>(patternReactantBondSites);
+//			Iterator<BondSites> itbs = cloneOfReactantBondSites.iterator();
+//			while (itbs.hasNext()) {
+//				BondSites bs = itbs.next();
+//				String bondComponent1MoleculeId = BondSites.extractMoleculeId(bs.component1);
+//				String bondComponent2MoleculeId = BondSites.extractMoleculeId(bs.component2);
+//				for(MolecularTypeOfReactionParticipant commonReactionMoleculeule : commonParticipants) {
+//					String commonReactantPatternId = commonReactionMoleculeule.elementID;
+//					if(bondComponent1MoleculeId.equals(commonReactantPatternId)) {
+//						foundMoleculeForComponent1 = true;
+//					}
+//					if(bondComponent2MoleculeId.equals(commonReactantPatternId)) {
+//						foundMoleculeForComponent2 = true;
+//					}
+//				}
+//				if(!foundMoleculeForComponent1 || !foundMoleculeForComponent2) {
+//					// at least one of bond's molecule is not in common, hence we don't need to report the deletion of this bond
+//					itbs.remove();
+//				}
+//			}
+//			// the clone has now all the deleted bonds whose molecules have not been deleted
+//			itbs = cloneOfReactantBondSites.iterator();
+//			while (itbs.hasNext()) {
+//				BondSites bs = itbs.next();
+//				Element addBondElement = new Element("DeleteBond");
+//				addBondElement.setAttribute("site1", bs.component1);
+//				addBondElement.setAttribute("site2", bs.component2);
+//				listOfOperationsElement.addContent(addBondElement);
+//			}
+//			// Add MolecularType element
+//			for(MolecularTypeOfReactionParticipant molecule : currentProductElementsOfReaction) {
+//				System.out.println("created molecule: " + molecule.elementID + "' " + molecule.moleculeName);
+//				Element addMolecularTypePatternElement = new Element("Add");
+//				addMolecularTypePatternElement.setAttribute("id", molecule.elementID);
+//				listOfOperationsElement.addContent(addMolecularTypePatternElement);
+//			}
+//			// Delete MolecularType element
+//			// if the reactant pattern of the molecule being deleted still exists as part of the common, then we only delete the molecule
+//			// if the reactant pattern of the molecule being deleted is not as part of the common, then it's gone completely and we delete the reactant pattern
+//			ArrayList<String> patternsToDelete = new ArrayList<String>();
+//			for(MolecularTypeOfReactionParticipant molecule : currentReactantElementsOfReaction) {
+//				String reactantPatternId = molecule.extractReactantPatternId();
+//				boolean found = false;
+//				for(MolecularTypeOfReactionParticipant common : commonParticipants) {
+//					String commonId = common.extractReactantPatternId();
+//					if(reactantPatternId.equals(commonId)) {
+//						found = true;
+//						break;		// some other molecule of this pattern still there, we don't delete the pattern
+//					}
+//				}
+//				if(found == true) {		// some other molecule of this pattern still there, we don't delete the pattern
+//					System.out.println("deleted molecule: " + molecule.elementID + "' " + molecule.moleculeName);
+//					Element addMolecularTypePatternElement = new Element("Delete");
+//					addMolecularTypePatternElement.setAttribute("id", molecule.elementID);
+//					addMolecularTypePatternElement.setAttribute("DeleteMolecules", "0");
+//					listOfOperationsElement.addContent(addMolecularTypePatternElement);
+//				} else {				// no molecule of this pattern left, we delete the pattern
+//					if(patternsToDelete.contains(reactantPatternId)) {
+//						// nothing to do, we're already deleting this pattern
+//						break;
+//					} else {
+//						patternsToDelete.add(reactantPatternId);
+//					System.out.println("deleted pattern: " + reactantPatternId);
+//					Element addParticleSpeciesPatternElement = new Element("Delete");
+//					addParticleSpeciesPatternElement.setAttribute("id", reactantPatternId);
+//					addParticleSpeciesPatternElement.setAttribute("DeleteMolecules", "0");
+//					listOfOperationsElement.addContent(addParticleSpeciesPatternElement);
+//					}
+//				}
+//			}
+//			reactionRuleElement.addContent(listOfOperationsElement);
 			listOfReactionRules.addContent(reactionRuleElement);
 		}
 
@@ -740,12 +749,15 @@ public class NFsimXMLWriter {
 		for (int moleculeIndex =0; moleculeIndex < reactantSpeciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++) {
 			ParticleMolecularTypePattern molecularTypePattern = reactantSpeciesPattern.getParticleMolecularTypePatterns().get(moleculeIndex);
 			Element moleculeElement = new Element("Molecule");
-			String moleculeID = "M" + moleculeIndex;
+			String moleculeID = "M" + moleculeIndex + 1;
 			String id = reactionRuleID + "_" + patternID + "_" + moleculeID;
 			String name = molecularTypePattern.getMolecularType().getName();
 			String matchLabel = molecularTypePattern.getMatchLabel();
 			moleculeElement.setAttribute("id", id);
 			moleculeElement.setAttribute("name", name);
+			if(!("*".equals(molecularTypePattern.getMatchLabel()))) {
+				moleculeElement.setAttribute("label", molecularTypePattern.getMatchLabel());
+			}
 			MolecularTypeOfReactionParticipant per = new MolecularTypeOfReactionParticipant(name, id, matchLabel);
 			currentParticipant.add(per);
 			
@@ -983,7 +995,7 @@ public class NFsimXMLWriter {
 			Element componentElement = new Element("Component");
 			ParticleMolecularComponent particleMolecularComponent = particleMolecularComponentPattern.getMolecularComponent();
 			//componentElement.setAttribute("id", particleMolecularComponent.getId());
-			String elementID = "C" + componentId;
+			String elementID = "C" + componentId + 1;
 			String componentID = reactionRuleID + "_" + patternID + "_" + moleculeID + "_" + elementID;
 			componentElement.setAttribute("id", componentID);
 			componentElement.setAttribute("name", particleMolecularComponent.getName());
