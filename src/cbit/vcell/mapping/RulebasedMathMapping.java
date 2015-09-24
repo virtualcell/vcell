@@ -27,10 +27,13 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.RuleAnalysis;
+import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.TokenMangler;
 
-import ucar.units.RationalNumber;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
@@ -44,6 +47,8 @@ import cbit.vcell.math.JumpProcessRateDefinition;
 import cbit.vcell.math.MacroscopicRateConstant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathRuleFactory;
+import cbit.vcell.math.MathRuleFactory.MathRuleEntry;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
@@ -67,10 +72,11 @@ import cbit.vcell.math.VolumeParticleObservable;
 import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelRuleFactory;
+import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
@@ -79,10 +85,8 @@ import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -517,7 +521,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				
 			}else{
 				throw new MappingException("rule-based math generation unsupported for Kinetic Law: "+kinetics.getRateLawType());
-			}
+			}			
 			
 		} // end reactionRules
 	}
@@ -821,6 +825,55 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		JumpProcessRateDefinition forward_rateDefinition = new MacroscopicRateConstant(forward_rate);
 		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions);
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
+
+		
+		
+		
+		
+		
+		
+		
+        int ruleIndex = getSimulationContext().getModel().getRbmModelContainer().getReactionRuleList().indexOf(reactionRule);
+        System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(ruleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
+        System.out.println(RbmUtils.toBnglStringShort(reactionRule));
+
+        ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
+        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(reactionRule, ruleIndex);
+        RuleAnalysisReport modelReport = RuleAnalysis.analyze(modelRule);
+        String modelSummary = modelReport.getSummary();
+
+        MathRuleFactory mathRuleFactory = new MathRuleFactory();
+        MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, ruleIndex);
+        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
+        String mathSummary = mathReport.getSummary();
+
+        System.out.println("RuleAnalysis modelSummary:\n"+modelSummary);
+        System.out.println("RuleAnalysis mathSummary:\n"+mathSummary);
+        if (modelSummary.equals(mathSummary)){
+             System.out.println("Rule Analysis SAME\n");
+        }else{
+             System.out.println("Rule Analysis DIFFERENT\n");
+        }
+
+        String modelXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(modelRule, modelReport),false);
+        String mathXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(mathRule, mathReport),false);
+
+        System.out.println("MATH NFSIM\n"+mathXML);
+        if (modelXML.equals(mathXML)){
+             System.out.println("NFSim XML is SAME");
+        }else{
+             System.out.println("NFSim XML is DIFFERENT");
+             System.out.println("MODEL NFSIM\n"+modelXML);
+        }
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		}
 		
 		//
