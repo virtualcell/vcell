@@ -284,21 +284,21 @@ public class NFsimXMLWriter {
 			RuleAnalysisReport report = RuleAnalysis.analyze(rule);
 			Element reactionRuleElement = RuleAnalysis.getNFSimXML(rule, report); // remember, we have to add RateLaw
 			
-			ArrayList<MolecularTypeOfReactionParticipant> currentReactantElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
-			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfReactantElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
-			ArrayList<MolecularTypeOfReactionParticipant> currentProductElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
-			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfProductElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
-			currentMappingOfReactionParticipants.clear();
-			reactionProductBondSites.clear();
-			reactionReactantBondSites.clear();
-			
+//			ArrayList<MolecularTypeOfReactionParticipant> currentReactantElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
+//			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfReactantElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
+//			ArrayList<MolecularTypeOfReactionParticipant> currentProductElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();
+//			ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfProductElementsOfReaction = new ArrayList<ComponentOfMolecularTypeOfReactionParticipant>();
+//			currentMappingOfReactionParticipants.clear();
+//			reactionProductBondSites.clear();
+//			reactionReactantBondSites.clear();
+//			
 //			Element reactionRuleElement = new Element("ReactionRule");
 //			String reactionRuleID = "RR" + (reactionRuleIndex + 1);
 //			reactionRuleElement.setAttribute("id",reactionRuleID);
 //			reactionRuleElement.setAttribute("name",particleJumpProcess.getName());
 //			reactionRuleElement.setAttribute("symmetry_factor","1");
 //			reactionRule.resolveBonds();
-			
+//			
 //			ArrayList<VolumeParticleSpeciesPattern> selectedPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
 //			for (ParticleVariable particleVariable : particleJumpProcess.getParticleVariables()){
 //				if (!(particleVariable instanceof VolumeParticleSpeciesPattern)){
@@ -324,7 +324,7 @@ public class NFsimXMLWriter {
 //			Element listOfReactantPatternsElement = new Element("ListOfReactantPatterns");
 //			for(int reactantPatternIndex=0; reactantPatternIndex < selectedPatterns.size(); reactantPatternIndex++) {
 //				VolumeParticleSpeciesPattern reactantSpeciesPattern = selectedPatterns.get(reactantPatternIndex);
-//				String reactantPatternID = "RP" + reactantPatternIndex + 1;
+//				String reactantPatternID = "RP" + (reactantPatternIndex + 1);
 //				patternReactantBondSites.clear();
 //				Element reactantPatternElement = getReactionParticipantPattern1(reactionRuleID, reactantPatternID, reactantSpeciesPattern, 
 //						currentReactantElementsOfReaction, currentComponentOfReactantElementsOfReaction, "ReactantPattern");
@@ -340,7 +340,7 @@ public class NFsimXMLWriter {
 //			// for products, add all "created" species from Actions and all "particles" that are selected but not destroyed
 //			for(int productPatternIndex=0; productPatternIndex < productSpeciesPatterns.size(); productPatternIndex++) {
 //				VolumeParticleSpeciesPattern productSpeciesPattern = productSpeciesPatterns.get(productPatternIndex);
-//				String productPatternID = "PP" + productPatternIndex + 1;
+//				String productPatternID = "PP" + (productPatternIndex + 1);
 //				patternProductBondSites.clear();
 //				Element productPatternElement = getReactionParticipantPattern1(reactionRuleID, productPatternID, productSpeciesPattern, 
 //								currentProductElementsOfReaction, currentComponentOfProductElementsOfReaction, "ProductPattern");
@@ -749,7 +749,7 @@ public class NFsimXMLWriter {
 		for (int moleculeIndex =0; moleculeIndex < reactantSpeciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++) {
 			ParticleMolecularTypePattern molecularTypePattern = reactantSpeciesPattern.getParticleMolecularTypePatterns().get(moleculeIndex);
 			Element moleculeElement = new Element("Molecule");
-			String moleculeID = "M" + moleculeIndex + 1;
+			String moleculeID = "M" + (moleculeIndex + 1);
 			String id = reactionRuleID + "_" + patternID + "_" + moleculeID;
 			String name = molecularTypePattern.getMolecularType().getName();
 			String matchLabel = molecularTypePattern.getMatchLabel();
@@ -843,7 +843,7 @@ public class NFsimXMLWriter {
 //				seedSpecies.getSpeciesPattern().resolveBonds();
 			ParticleProperties particleProperties = compartmentSubDomain.getParticleProperties().get(speciesIndex);
 			Element speciesElement = new Element("Species");
-			String speciesID = "S" + speciesIndex;
+			String speciesID = "S" + (speciesIndex + 1);
 			ParticleSpeciesPattern seedSpecies = (ParticleSpeciesPattern) particleProperties.getVariable();
 			speciesElement.setAttribute("id", speciesID);
 			speciesElement.setAttribute("name", seedSpecies.getName());
@@ -896,7 +896,7 @@ public class NFsimXMLWriter {
 		for (int moleculeIndex = 0; moleculeIndex < speciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++){
 			ParticleMolecularTypePattern molecularTypePattern = speciesPattern.getParticleMolecularTypePatterns().get(moleculeIndex);
 			Element moleculeElement = new Element("Molecule");
-			String moleculeID = prefix0 + "_M" + moleculeIndex;
+			String moleculeID = prefix0 + "_M" + (moleculeIndex+1);
 			moleculeElement.setAttribute("id", moleculeID);
 			moleculeElement.setAttribute("name", molecularTypePattern.getMolecularType().getName());
 			
@@ -919,7 +919,7 @@ public class NFsimXMLWriter {
 			ParticleMolecularComponentPattern particleMolecularComponentPattern = particleMolecularTypePattern.getMolecularComponentPatternList().get(patternIndex);
 			Element componentElement = new Element("Component");
 			ParticleMolecularComponent particleMolecularComponent = particleMolecularComponentPattern.getMolecularComponent();
-			String componentID = prefix1 + "_C" + patternIndex;
+			String componentID = prefix1 + "_C" + (patternIndex+1);
 			componentElement.setAttribute("id", componentID);
 			componentElement.setAttribute("name", particleMolecularComponent.getName());
 			ParticleComponentStatePattern componentStatePattern = particleMolecularComponentPattern.getComponentStatePattern();
@@ -995,7 +995,7 @@ public class NFsimXMLWriter {
 			Element componentElement = new Element("Component");
 			ParticleMolecularComponent particleMolecularComponent = particleMolecularComponentPattern.getMolecularComponent();
 			//componentElement.setAttribute("id", particleMolecularComponent.getId());
-			String elementID = "C" + componentId + 1;
+			String elementID = "C" + (componentId + 1);
 			String componentID = reactionRuleID + "_" + patternID + "_" + moleculeID + "_" + elementID;
 			componentElement.setAttribute("id", componentID);
 			componentElement.setAttribute("name", particleMolecularComponent.getName());
