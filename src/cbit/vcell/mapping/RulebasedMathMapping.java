@@ -895,16 +895,13 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		Model model = getSimulationContext().getModel();
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		for(RbmObservable observable : observableList) {
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, geometryClass),domain);
-			try {
-			if(observable.getType() == RbmObservable.ObservableType.Molecules) {
-				particleObservable.setType(ParticleObservable.ObservableType.Molecules);
-			} else {
-				particleObservable.setType(ParticleObservable.ObservableType.Species);
-			}
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-			}
+            ParticleObservable.ObservableType particleObservableType = null;
+            if (observable.getType() == RbmObservable.ObservableType.Molecules){
+                  particleObservableType = ParticleObservable.ObservableType.Molecules; 
+            }else{
+                  particleObservableType = ParticleObservable.ObservableType.Species; 
+            }
+			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, geometryClass),domain, particleObservableType);
 			for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
 				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
 				particleObservable.addParticleSpeciesPattern(vpsp);
@@ -916,12 +913,8 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		//
 		for (SpeciesContext sc : model.getSpeciesContexts()){
 			if(!sc.hasSpeciesPattern()) { continue; }
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(sc, geometryClass),domain);
-			try {
-				particleObservable.setType(ParticleObservable.ObservableType.Species);
-			} catch (PropertyVetoException e) {
-				e.printStackTrace();
-			}
+			ParticleObservable.ObservableType particleObservableType = ParticleObservable.ObservableType.Species; 
+			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(sc, geometryClass),domain,particleObservableType);
 			SpeciesPattern speciesPattern = sc.getSpeciesPattern();
 			VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
 			particleObservable.addParticleSpeciesPattern(vpsp);
