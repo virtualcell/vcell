@@ -21,6 +21,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
@@ -52,6 +57,7 @@ import javax.swing.event.ListSelectionListener;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ExceptionInterpreter;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.UserMessage;
@@ -162,6 +168,73 @@ public class DialogUtils {
 		void setJOptionPane(JOptionPane joptionPane);
 	}
 	
+	public interface SelectableTreeVersionJPanel {
+		void addJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener);
+		void removeJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener);
+		VersionInfo getSelectedVersionInfo();
+	}
+
+	/**
+	 * Return VersionInfo from JPanels implementing SelectableTreeVersionJPanel
+	 * including MathModelDbTreePanel, BioModelDbTreePanel, GeometryTreePanel and ImageDbTreePanel
+	 * 
+	 * @param requester						parent component for dialog
+	 * @param selectableTreeVersionJPanel	component having a JTree user can select to define a VersionInfo
+	 * @param okString						label for button user presses when selection complete
+	 * @param dialogTitle					string displayed at top of dialog
+	 * @return	VersionInfo					identifies a particular VCell document
+	 * @throws UserCancelException
+	 * @throws IllegalArgumentException
+	 */
+	public static VersionInfo getDBTreePanelSelection(Component requester,SelectableTreeVersionJPanel selectableTreeVersionJPanel,String okString,String dialogTitle) throws UserCancelException,IllegalArgumentException{
+		if(!(selectableTreeVersionJPanel instanceof JPanel)){
+			throw new IllegalArgumentException("selectableTreeVersionJPanel must be of type JPanel");
+		}
+		final MouseListener[] mouseListener = new MouseListener[] {null};
+//		final JTree[] listenToJTree = new JTree[] {null};
+		try{
+			JPanel defaultSizedJPanel = new JPanel();
+			defaultSizedJPanel.setLayout(new BorderLayout());
+			defaultSizedJPanel.add((JPanel)selectableTreeVersionJPanel,BorderLayout.CENTER);
+			Dimension dim = new Dimension(300, 400);
+			defaultSizedJPanel.setPreferredSize(dim);
+			defaultSizedJPanel.setMinimumSize(dim);
+			defaultSizedJPanel.setMaximumSize(dim);
+			String result = DialogUtils.showOptionsDialog(requester, defaultSizedJPanel, JOptionPane.PLAIN_MESSAGE, new String[] {okString, getCancelText()}, okString,new DialogUtils.OKEnabler() {
+				@Override
+				public void setJOptionPane(JOptionPane joptionPane) {
+					DialogUtils.setInternalOKEnabled(joptionPane, selectableTreeVersionJPanel.getSelectedVersionInfo() != null, false);				
+					mouseListener[0] = new MouseAdapter() {
+					    public void mousePressed(MouseEvent e) {
+					    	Component parentComponent = (Component)e.getSource();
+					    	while(parentComponent != selectableTreeVersionJPanel && parentComponent.getParent() != null){
+					    		parentComponent = parentComponent.getParent();
+					    	}
+					    	if(parentComponent == selectableTreeVersionJPanel){
+						        if(selectableTreeVersionJPanel.getSelectedVersionInfo() != null) {
+						            if(e.getClickCount() == 2) {
+						            	DialogUtils.setInternalOKEnabled(joptionPane, true, true);//enable OK and click OK button
+						            }else{
+						            	DialogUtils.setInternalOKEnabled(joptionPane, true, false);//enable OK button
+						            }
+						        }else{
+						        	DialogUtils.setInternalOKEnabled(joptionPane, false, false);//disable OK button
+						        }
+					    	}
+					    }
+					};
+					selectableTreeVersionJPanel.addJTreeSelectionMouseListener(mouseListener[0]);
+				}
+			}, dialogTitle);
+			if(result == null || !result.equals(okString)){
+				throw UserCancelException.CANCEL_GENERIC;
+			}		
+			return selectableTreeVersionJPanel.getSelectedVersionInfo();
+		}finally{
+			selectableTreeVersionJPanel.removeJTreeSelectionMouseListener(mouseListener[0]);
+		}
+	}
+
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (5/21/2004 3:23:18 AM)
@@ -352,7 +425,7 @@ private static JDialog prepareInfoDialog(final Component requester,final String 
  * @param jop javax.swing.JOptionPane
  * @param bEnabled boolean
  */
-private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled) {
+private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled, boolean bClickOK) {
   	Component[] componentsArr = jop.getComponents();
   	for(int i=0;i<componentsArr.length;i+= 1){
 	  	if(componentsArr[i] instanceof Container){
@@ -361,6 +434,9 @@ private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bE
 				  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase(getCancelText())){
 				  	if(bEnabled){
 					  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
+					  	if(bClickOK){
+					  		((JButton)((Container)componentsArr[i]).getComponent(j)).doClick();
+					  	}
 				  	}else{
 					  	((Container)componentsArr[i]).getComponent(j).setEnabled(false);
 				  	}
@@ -586,15 +662,15 @@ public static TableListResult showComponentOptionsTableList(final Component requ
 				private JOptionPane jop;
 					public void setJOptionPane(JOptionPane joptionPane) {
 						jop = joptionPane;
-						setInternalOKEnabled(joptionPane, false);
+						setInternalOKEnabled(joptionPane, false, false);
 						table.getSelectionModel().addListSelectionListener(
 								new ListSelectionListener(){
 									public void valueChanged(ListSelectionEvent e) {
 										if(!e.getValueIsAdjusting()){
 											if(table.getSelectedRowCount() != 0){
-												setInternalOKEnabled(jop, true);
+												setInternalOKEnabled(jop, true, false);
 											}else{
-												setInternalOKEnabled(jop, false);
+												setInternalOKEnabled(jop, false, false);
 											}
 										}
 									}
@@ -1009,12 +1085,12 @@ public static Object showListDialog(final Component requester,final  Object[] na
 			panel.add(scroller, BorderLayout.CENTER);
 			pane.setMessage(panel);
 
-			setInternalOKEnabled(pane,false);
+			setInternalOKEnabled(pane,false,false);
 			list.addListSelectionListener(
 				new javax.swing.event.ListSelectionListener(){
 					  public void valueChanged(javax.swing.event.ListSelectionEvent e){
 						  if(!e.getValueIsAdjusting()){
-						  	DialogUtils.setInternalOKEnabled(pane,list.getSelectedIndex() != -1);
+						  	DialogUtils.setInternalOKEnabled(pane,list.getSelectedIndex() != -1,false);
 						  }
 					  }
 				}

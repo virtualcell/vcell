@@ -22,8 +22,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -31,15 +32,17 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.gui.DialogUtils.SelectableTreeVersionJPanel;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.clientdb.DatabaseListener;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
-public class ImageDbTreePanel extends JPanel implements cbit.vcell.clientdb.DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+public class ImageDbTreePanel extends JPanel implements SelectableTreeVersionJPanel, DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, TreeModelListener, TreeSelectionListener {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
@@ -729,6 +732,14 @@ private javax.swing.JSeparator getJSeparator1() {
 	}
 	return ivjJSeparator1;
 }
+
+public void addJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().addMouseListener(jtreeSelectionMouseListener);
+}
+public void removeJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().removeMouseListener(jtreeSelectionMouseListener);
+}
+
 /**
  * Return the JTree1 property value.
  * @return javax.swing.JTree
