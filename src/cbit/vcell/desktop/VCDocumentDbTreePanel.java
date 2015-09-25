@@ -27,7 +27,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
@@ -38,10 +37,10 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils.SelectableTreeVersionJPanel;
 
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseSearchPanel;
@@ -59,7 +58,7 @@ import cbit.vcell.clientdb.DocumentManager;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel {
+public abstract class VCDocumentDbTreePanel extends DocumentEditorSubPanel implements SelectableTreeVersionJPanel{
 	protected JTree ivjJTree1 = null;
 	protected DocumentManager ivjDocumentManager = null;
 	protected VersionInfo fieldSelectedVersionInfo = null;
@@ -504,4 +503,12 @@ public void expandSearchPanel(boolean bExpand) {
 public void updateConnectionStatus(ConnectionStatus connStatus) {
 	getTreeModel( ).updateConnectionStatus(connStatus);
 }
+
+public void addJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().addMouseListener(jtreeSelectionMouseListener);
+}
+public void removeJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().removeMouseListener(jtreeSelectionMouseListener);
+}
+
 }

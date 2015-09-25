@@ -10,6 +10,8 @@
 
 package org.vcell.util.document;
 
+import org.vcell.util.document.VCDocument.VCDocumentType;
+
 public interface VCDocumentInfo extends VersionInfo {
 
 /**
@@ -41,4 +43,8 @@ int hashCode();
  * @return java.lang.String
  */
 String toString();
+
+
+VCDocumentType getVCDocumentType();
+
 }
