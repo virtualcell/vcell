@@ -68,6 +68,7 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 
@@ -242,22 +243,17 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						locationContext.highlightDeepestShape();
 						if(locationContext.getDeepestShape() == null) {
 							// nothing selected means all the reactant bar or all the product bar is selected 
-
-//							xOffsetInitial;
-//							yOffsetReactantInitial;
-//							yOffsetProductInitial;
-							
 							int xExtent = SpeciesPatternLargeShape.xExtent;
 							Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 							Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 							
 							if(locationContext.isInside(reactantRectangle)) {
-								locationContext.paintContour(g, reactantRectangle);
+//								locationContext.paintContour(g, reactantRectangle);
 								for(SpeciesPatternLargeShape spls : reactantPatternShapeList) {
 									spls.paintSelf(g, false);
 								}
 							} else if(locationContext.isInside(productRectangle)) {
-								locationContext.paintContour(g, productRectangle);
+//								locationContext.paintContour(g, productRectangle);
 								for(SpeciesPatternLargeShape spls : productPatternShapeList) {
 									spls.paintSelf(g, false);
 								}
@@ -753,11 +749,346 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			return;
 		}
 		
+		boolean bReactantsZone = false;
+		int xExtent = SpeciesPatternLargeShape.xExtent;
+		Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+		Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+		if(locationContext.isInside(reactantRectangle)) {
+			bReactantsZone = true;		// clicked inside the reactant rectangle (above yOffsetProductInitial)
+		} else if(locationContext.isInside(productRectangle)) {
+			bReactantsZone = false;		// clicked inside the product rectangle (below yOffsetProductInitial)
+		} else {
+			return;
+		}
 		
-		
-		
-		
+		// -------------------------------- reactant zone --------------------------------------------------------
+		if(bReactantsZone) {
+			if(selectedObject == null) {									// add reactant / product pattern
+				JMenuItem addMenuItem = new JMenuItem("Add Reactant");
+				addMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), reactionRule.getStructure())); 
+					}
+				});
+				popupFromShapeMenu.add(addMenuItem);
+			} else if(selectedObject instanceof SpeciesPattern) {			// delete (pattern) / specify molecule
+				final SpeciesPattern sp = (SpeciesPattern)selectedObject;
+				JMenuItem deleteMenuItem = new JMenuItem("Delete");
+				deleteMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						for(ReactantPattern rp : reactionRule.getReactantPatterns()) {
+							if(rp.getSpeciesPattern() == sp) {
+								reactionRule.removeReactant(rp);
+								Structure st = rp.getStructure();
+								if(reactionRule.getReactantPatterns().isEmpty()) {
+									reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), st)); 
+								}
+							}
+						}
+					}
+				});
+				popupFromShapeMenu.add(deleteMenuItem);
+				JMenu addMenuItem = new JMenu(VCellErrorMessages.SpecifyMolecularTypes);
+				popupFromShapeMenu.add(addMenuItem);
+				addMenuItem.removeAll();
+				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+					JMenuItem menuItem = new JMenuItem(mt.getName());
+					Graphics gc = shapePanel.getGraphics();
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+					menuItem.setIcon(icon);
+					addMenuItem.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
+							for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
+								mcp.setBondType(BondType.None);
+							}
+							sp.addMolecularTypePattern(molecularTypePattern);
+						}
+					});
+				}
+			} else if(selectedObject instanceof MolecularTypePattern) {		// delete molecule / reassign match
+				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
+				deleteMenuText = "<html>" + deleteMenuText + "</html>";
+				JMenuItem deleteMenuItem = new JMenuItem(deleteMenuText);
+				deleteMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						sp.removeMolecularTypePattern(mtp);
+					}
+				});
+				popupFromShapeMenu.add(deleteMenuItem);
+				if(mtp.hasExplicitParticipantMatch()) {
+					String newKey = mtp.getParticipantMatchLabel();
+					List<String> keyCandidates = new ArrayList<String>();
+					List<MolecularTypePattern> mtpReactantList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Reactant);
+					List<MolecularTypePattern> mtpProductList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Product);
+					for(MolecularTypePattern mtpCandidate : mtpReactantList) {	// we can look for indexes in any list, we should find the same
+						if(mtpCandidate.hasExplicitParticipantMatch() && !mtpCandidate.getParticipantMatchLabel().equals(newKey)) {
+							keyCandidates.add(mtpCandidate.getParticipantMatchLabel());
+						}
+					}
+					if(!keyCandidates.isEmpty()) {
+						JMenu reassignMatchMenuItem = new JMenu();
+						reassignMatchMenuItem.setText("Reassign match");
+						for(int i=0; i<keyCandidates.size(); i++) {
+							JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
+							reassignMatchMenuItem.add(menuItem);
+							menuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									String oldKey = e.getActionCommand();
+									MolecularTypePattern productToReassign = reactionRule.findMatch(oldKey, mtpProductList);
+									MolecularTypePattern orphanProduct = reactionRule.findMatch(newKey, mtpProductList);
+									productToReassign.setParticipantMatchLabel(newKey);
+									orphanProduct.setParticipantMatchLabel(oldKey);
+									// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
+									// when the tree will be gone
+									reactantTreeModel.populateTree();
+									productTreeModel.populateTree();
+									shapePanel.repaint();
+								}
+							});
+						}
+						popupFromShapeMenu.add(reassignMatchMenuItem);
+					}
+				}
+			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
+				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel);			
+			}
+		// ---------------------------------------- product zone ---------------------------------------------
+		} else if(!bReactantsZone) {
+			if(selectedObject == null) {									// add product pattern
+				JMenuItem addMenuItem = new JMenuItem("Add Product");
+				addMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), reactionRule.getStructure())); 
+					}
+				});
+				popupFromShapeMenu.add(addMenuItem);
+			} else if(selectedObject instanceof SpeciesPattern) {			// delete (pattern) / specify molecule
+				final SpeciesPattern sp = (SpeciesPattern)selectedObject;
+				JMenuItem deleteMenuItem = new JMenuItem("Delete");
+				deleteMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						for(ProductPattern pp : reactionRule.getProductPatterns()) {
+							if(pp.getSpeciesPattern() == sp) {
+								reactionRule.removeProduct(pp);
+								Structure st = pp.getStructure();
+								if(reactionRule.getProductPatterns().isEmpty()) {
+									reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), st)); 
+								}
+							}
+						}
+					}
+				});
+				popupFromShapeMenu.add(deleteMenuItem);
+				JMenu addMenuItem = new JMenu(VCellErrorMessages.SpecifyMolecularTypes);
+				popupFromShapeMenu.add(addMenuItem);
+				addMenuItem.removeAll();
+				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
+					JMenuItem menuItem = new JMenuItem(mt.getName());
+					Graphics gc = shapePanel.getGraphics();
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+					menuItem.setIcon(icon);
+					addMenuItem.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
+							for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
+								mcp.setBondType(BondType.None);
+							}
+							sp.addMolecularTypePattern(molecularTypePattern);
+						}
+					});
+				}
+			} else if(selectedObject instanceof MolecularTypePattern) {		// delete molecule / reassign match
+				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
+				deleteMenuText = "<html>" + deleteMenuText + "</html>";
+				JMenuItem deleteMenuItem = new JMenuItem(deleteMenuText);
+				deleteMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						sp.removeMolecularTypePattern(mtp);
+					}
+				});
+				popupFromShapeMenu.add(deleteMenuItem);
+				if(mtp.hasExplicitParticipantMatch()) {
+					String newKey = mtp.getParticipantMatchLabel();
+					List<String> keyCandidates = new ArrayList<String>();
+					List<MolecularTypePattern> mtpReactantList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Reactant);
+					List<MolecularTypePattern> mtpProductList = reactionRule.populateMaps(mtp.getMolecularType(), ReactionRuleParticipantType.Product);
+					for(MolecularTypePattern mtpCandidate : mtpReactantList) {	// we can look for indexes in any list, we should find the same
+						if(mtpCandidate.hasExplicitParticipantMatch() && !mtpCandidate.getParticipantMatchLabel().equals(newKey)) {
+							keyCandidates.add(mtpCandidate.getParticipantMatchLabel());
+						}
+					}
+					if(!keyCandidates.isEmpty()) {
+						JMenu reassignMatchMenuItem = new JMenu();
+						reassignMatchMenuItem.setText("Reassign match");
+						for(int i=0; i<keyCandidates.size(); i++) {
+							JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
+							reassignMatchMenuItem.add(menuItem);
+							menuItem.addActionListener(new ActionListener() {
+								public void actionPerformed(ActionEvent e) {
+									String oldKey = e.getActionCommand();
+									MolecularTypePattern reactantToReassign = reactionRule.findMatch(oldKey, mtpReactantList);
+									MolecularTypePattern orphanReactant = reactionRule.findMatch(newKey, mtpReactantList);
+									reactantToReassign.setParticipantMatchLabel(newKey);
+									orphanReactant.setParticipantMatchLabel(oldKey);
+									// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
+									// when the tree will be gone
+									reactantTreeModel.populateTree();
+									productTreeModel.populateTree();
+									shapePanel.repaint();
+								}
+							});
+						}
+						popupFromShapeMenu.add(reassignMatchMenuItem);
+					}
+				}
+			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
+				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel);			
+			}
+		}
+		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
+	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, final ReactionRulePropertiesTreeModel treeModel) {
+		popupFromShapeMenu.removeAll();
+		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
+		final MolecularComponent mc = mcp.getMolecularComponent();
+		
+		// ------------------------------------------------------------------- State
+		if(mc.getComponentStateDefinitions().size() != 0) {
+			JMenu editStateMenu = new JMenu();
+			editStateMenu.setText("Edit State");
+			editStateMenu.removeAll();
+			List<String> itemList = new ArrayList<String>();
+			itemList.add(ComponentStatePattern.strAny);
+			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				String name = csd.getName();
+				itemList.add(name);
+			}
+			for(String name : itemList) {
+				JMenuItem menuItem = new JMenuItem(name);
+				editStateMenu.add(menuItem);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						String name = e.getActionCommand();
+						if(name.equals(ComponentStatePattern.strAny)) {
+							ComponentStatePattern csp = new ComponentStatePattern();
+							mcp.setComponentStatePattern(csp);
+						} else {
+							String csdName = e.getActionCommand();
+							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
+							if(csd == null) {
+								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
+							}
+							ComponentStatePattern csp = new ComponentStatePattern(csd);
+							mcp.setComponentStatePattern(csp);
+						}
+						treeModel.populateTree();
+//						shapePanel.repaint();
+					}
+				});
+			}
+			popupFromShapeMenu.add(editStateMenu);
+		}
+		
+		// ------------------------------------------------------------------------------------------- Bonds
+		final MolecularTypePattern mtp = locationContext.getMolecularTypePattern();
+		final SpeciesPattern sp = locationContext.getSpeciesPattern();
+		
+		JMenu editBondMenu = new JMenu();
+		editBondMenu.setText("Edit Bond");
+		editBondMenu.removeAll();
+		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
+		
+		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
+		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
+		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		itemMap.put(noneString, null);
+		itemMap.put(existsString, null);
+		itemMap.put(possibleString, null);
+		if(mtp != null && sp != null) {
+			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
+			for(Bond b : bondPartnerChoices) {
+				if(b.equals(mcp.getBond())) {
+					continue;	// if the mcp has a bond already we don't offer it
+				}
+				int index = 0;
+				if(mcp.getBondType() == BondType.Specified) {
+					index = mcp.getBondId();
+				} else {
+					index = sp.nextBondId();
+				}
+//				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
+				itemMap.put(b.toHtmlStringLong(sp, index), b);
+			}
+		}
+		for(String name : itemMap.keySet()) {
+			JMenuItem menuItem = new JMenuItem(name);
+			editBondMenu.add(menuItem);
+			menuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					String name = e.getActionCommand();
+					BondType btBefore = mcp.getBondType();
+					if(name.equals(noneString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.None);
+						mcp.setBond(null);
+					} else if(name.equals(existsString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Exists);
+						mcp.setBond(null);
+					} else if(name.equals(possibleString)) {
+						if(btBefore == BondType.Specified) {	// specified -> not specified
+							// change the partner to possible
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Possible);
+						mcp.setBond(null);
+					} else {
+						if (btBefore != BondType.Specified) {
+							// if we go from a non-specified to a specified we need to find the next available
+							// bond id, so that we can choose the color for displaying the bond
+							// a bad bond id, like -1, will crash badly when trying to choose the color
+							int bondId = sp.nextBondId();
+							mcp.setBondId(bondId);
+						} else {
+							// specified -> specified
+							// change the old partner to possible, continue using the bond id
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							mcp.getBond().molecularComponentPattern.setBond(null);
+						}
+						mcp.setBondType(BondType.Specified);
+						Bond b = itemMap.get(name);
+						mcp.setBond(b);
+						mcp.getBond().molecularComponentPattern.setBondId(mcp.getBondId());
+						sp.resolveBonds();
+					}
+					// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
+					// when the tree will be gone
+					treeModel.populateTree();
+//					shapePanel.repaint();				
+				}
+			});
+		}
+		popupFromShapeMenu.add(editBondMenu);
+	}		
+	
 	private void showPopupMenu(MouseEvent e){ 
 		if (!e.isPopupTrigger()) {
 			return;
