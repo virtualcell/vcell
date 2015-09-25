@@ -10,7 +10,6 @@
 
 package cbit.vcell.desktop;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.Vector;
 
@@ -21,7 +20,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
@@ -31,7 +29,6 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**
@@ -54,7 +51,6 @@ public class MathModelDbTreePanel extends VCDocumentDbTreePanel {
 	private JMenuItem ivjJAnotherEditionMenuItem = null;
 	private JMenuItem ivjJLatestEditionMenuItem = null;
 	private JMenuItem ivjJPreviousEditionMenuItem = null;
-	private boolean fieldPopupMenuDisabled = false;
 	private JMenuItem ivjJMenuItemArchive = null;
 	private JMenuItem ivjJMenuItemPublish = null;	
 
@@ -726,18 +722,6 @@ private void compareWithMenuItemEnable(VersionInfo vInfo) {
 	getJLatestEditionMenuItem().setEnabled(bLatestEditionMenuItem);
 	getJAnotherEditionMenuItem().setEnabled(bAnotherEditionMenuItem);
 }
-
-/**
- * Sets the popupMenuDisabled property (boolean) value.
- * @param popupMenuDisabled The new value for the property.
- * @see #getPopupMenuDisabled
- */
-public void setPopupMenuDisabled(boolean popupMenuDisabled) {
-	boolean oldValue = fieldPopupMenuDisabled;
-	fieldPopupMenuDisabled = popupMenuDisabled;
-	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
-}
-
 
 /**
  * Comment

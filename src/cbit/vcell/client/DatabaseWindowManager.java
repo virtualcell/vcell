@@ -70,26 +70,6 @@ import cbit.xml.merge.XmlTreeDiff;
  * @author: Ion Moraru
  */
 public class DatabaseWindowManager extends TopLevelWindowManager{
-
-	class  DoubleClickListener implements java.awt.event.ActionListener {
-		private JDialog theJDialog = null;
-		private boolean bWasDoubleClicked = false;
-		
-		DoubleClickListener(JDialog dialog) {
-			theJDialog = dialog;
-		}
-		
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if(e.getActionCommand().equals(BM_MM_GM_DOUBLE_CLICK_ACTION)){
-				bWasDoubleClicked = true;
-				theJDialog.dispose();				
-			}			
-		}
-
-		boolean wasDoubleClicked() {
-			return bWasDoubleClicked;
-		}
-	}	
 		
 	private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
 	private ACLEditor aclEditor = new ACLEditor();
@@ -346,25 +326,17 @@ public void compareAnotherModel() {
 		return;
 	}
 	VCDocumentInfo thisDocumentInfo = getPanelSelection();
-
 	// Choose the other documentInfo. Bring up the appropriate dbTreePanel depending on the type of thisDocumentInfo
 	VCDocumentInfo otherDocumentInfo = null;
-	if (thisDocumentInfo instanceof BioModelInfo) {
-		Object choice = showOpenDialog(getBioModelDbTreePanel(), this);
-		if (choice != null && choice.equals("Open")) {
-			otherDocumentInfo = (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
+	try{
+		otherDocumentInfo = selectDocument(thisDocumentInfo.getVCDocumentType(), this);
+	}catch(Exception e){
+		if(!(e instanceof UserCancelException)){
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this.getComponent(), "Error Comparing documents: "+e.getMessage());
 		}
-	} else 	if (thisDocumentInfo instanceof MathModelInfo) {
-		Object choice = showOpenDialog(getMathModelDbTreePanel(), this);
-		if (choice != null && choice.equals("Open")) {
-			otherDocumentInfo = (MathModelInfo)getMathModelDbTreePanel().getSelectedVersionInfo();
-		}
-	} else 	if (thisDocumentInfo instanceof GeometryInfo) {
-		Object choice = showOpenDialog(getGeometryTreePanel(), this);
-		if (choice != null && choice.equals("Open")) {
-			otherDocumentInfo = (GeometryInfo)getGeometryTreePanel().getSelectedVersionInfo();
-		}
-	} 
+		return;
+	}
 
 	if (otherDocumentInfo == null){
 		//PopupGenerator.showErrorDialog(this, "Error Comparing documents : Second document is null ");
@@ -380,7 +352,6 @@ public void compareAnotherModel() {
 	// Now that we have both the document versions to be compared, do the comparison and display the result
 	compareWithOther(otherDocumentInfo, thisDocumentInfo);
 }
-
 
 /**
  * Comment
@@ -959,25 +930,13 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 	// otherwise use dialog return value
 	switch (documentType) {
 		case VCDocument.BIOMODEL_DOC: {
-			Object choice = showOpenDialog(getBioModelDbTreePanel(), requester);
-			if (choice != null && choice.equals("Open")) {
-				return (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
-			}
-			throw UserCancelException.CANCEL_DB_SELECTION;
+			return (BioModelInfo)DialogUtils.getDBTreePanelSelection(requester.getComponent(), getBioModelDbTreePanel(),"Open","Select BioModel");
 		} 
 		case VCDocument.MATHMODEL_DOC: {
-			Object choice = showOpenDialog(getMathModelDbTreePanel(), requester);
-			if (choice != null && choice.equals("Open")) {
-				return (MathModelInfo)getMathModelDbTreePanel().getSelectedVersionInfo();
-			}
-			throw UserCancelException.CANCEL_DB_SELECTION;
+			return (MathModelInfo)DialogUtils.getDBTreePanelSelection(requester.getComponent(), getMathModelDbTreePanel(),"Open","Select MathModel");
 		} 
 		case VCDocument.GEOMETRY_DOC: {
-			Object choice = showOpenDialog(getGeometryTreePanel(), requester);
-			if (choice != null && choice.equals("Open")) {
-				return (GeometryInfo)getGeometryTreePanel().getSelectedVersionInfo();
-			}
-			throw UserCancelException.CANCEL_DB_SELECTION;
+			return (GeometryInfo)DialogUtils.getDBTreePanelSelection(requester.getComponent(), getGeometryTreePanel(),"Open","Select Geometry");
 		}
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
@@ -987,23 +946,6 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
 		}
-	}
-}
-
-	
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 5:35:55 PM)
- */
-public BioModelInfo selectBioModelInfo(TopLevelWindowManager requester) throws Exception {
-	
-	Object choice = showOpenDialog(getBioModelDbTreePanel(), requester);
-
-	// Get Biomodelinfo from bioMOdelDBTreePanel
-	if (choice != null && choice.equals("Open")) {
-		return (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
-	} else {
-		throw UserCancelException.CANCEL_DB_SELECTION;
 	}
 }
 
@@ -1085,49 +1027,6 @@ public static File showFileChooserDialog(TopLevelWindowManager requester, final 
 	    throw UserCancelException.CANCEL_FILE_SELECTION;
     }
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:11:35 PM)
- */
-private Object showOpenDialog(final JComponent tree, final TopLevelWindowManager requester) {
-	JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
-	tree.setPreferredSize(new java.awt.Dimension(405, 400));
-	openDialog.setMessage("");
-	openDialog.setMessage(tree);
-	String docType = "document";
-	if (tree instanceof BioModelDbTreePanel) {
-		docType = "BioModel";
-	} else if (tree instanceof MathModelDbTreePanel) {
-		docType = "MathModel";
-	} else if (tree instanceof GeometryTreePanel) {
-		docType = "Geometry";
-	}
-	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select " + docType);
-	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	theJDialog.setResizable(true);
-	
-	DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
-	
-
-	getBioModelDbTreePanel().addActionListener(doubleClickListener);
-	getMathModelDbTreePanel().addActionListener(doubleClickListener);
-	getGeometryTreePanel().addActionListener(doubleClickListener);
-
-	DialogUtils.showModalJDialogOnTop(theJDialog,requester.getComponent());
-	
-	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
-	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
-	getGeometryTreePanel().removeActionListener(doubleClickListener);
-	
-	if (doubleClickListener.wasDoubleClicked()) {
-		return "Open";
-	}
-
-	return openDialog.getValue();
-}
-
 
 /**
  * Insert the method's description here.
