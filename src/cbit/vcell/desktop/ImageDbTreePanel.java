@@ -31,15 +31,17 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionInfo;
+import org.vcell.util.gui.DialogUtils.SelectableTreeVersionJPanel;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.clientdb.DatabaseListener;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
-public class ImageDbTreePanel extends JPanel implements cbit.vcell.clientdb.DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+public class ImageDbTreePanel extends JPanel implements  SelectableTreeVersionJPanel,DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 	private JTree ivjJTree1 = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
@@ -1163,6 +1165,12 @@ public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
 		connEtoC1();
 	// user code begin {2}
 	// user code end
+}
+public void addJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().addMouseListener(jtreeSelectionMouseListener);
+}
+public void removeJTreeSelectionMouseListener(MouseListener jtreeSelectionMouseListener){
+	getJTree1().removeMouseListener(jtreeSelectionMouseListener);
 }
 
 }

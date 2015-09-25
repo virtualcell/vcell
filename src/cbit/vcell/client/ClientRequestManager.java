@@ -269,11 +269,7 @@ private AsynchClientTask createSelectDocTask(final TopLevelWindowManager request
 				ImageDbTreePanel imageDbTreePanel = new ImageDbTreePanel();
 				imageDbTreePanel.setDocumentManager(getDocumentManager());
 				imageDbTreePanel.setPreferredSize(new java.awt.Dimension(200, 400));
-				int result = DialogUtils.showComponentOKCancelDialog(requester.getComponent(), imageDbTreePanel, "Select Image:");
-				if(result != JOptionPane.OK_OPTION){
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				vcVersionInfo = imageDbTreePanel.getSelectedVersionInfo();
+				vcVersionInfo = DialogUtils.getDBTreePanelSelection(requester.getComponent(), imageDbTreePanel,"OK","Select Image:");
 			}else{
 				vcVersionInfo = selectDocumentFromType(sourceDocumentType, requester);
 			}
@@ -1922,7 +1918,7 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {		
 						// spatial or non-spatial
-						BioModelInfo bioModelInfo = getMdiManager().getDatabaseWindowManager().selectBioModelInfo(requester);
+						BioModelInfo bioModelInfo = (BioModelInfo)DialogUtils.getDBTreePanelSelection(requester.getComponent(), getMdiManager().getDatabaseWindowManager().getBioModelDbTreePanel(), "Open", "Select BioModel");
 						if (bioModelInfo != null) { // may throw UserCancelException
 							hashTable.put("bioModelInfo", bioModelInfo);
 						}

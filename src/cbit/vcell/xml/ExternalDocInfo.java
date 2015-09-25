@@ -17,6 +17,8 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.jdom.Document;
+import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionableType;
@@ -133,5 +135,10 @@ public Reader getReader() {
 	}else{
 		throw new RuntimeException("neither file not textContents set for this ExternalDocInfo");
 	}
+}
+
+@Override
+public VCDocumentType getVCDocumentType() {
+	return VCDocument.VCDocumentType.EXTERNALFILE_DOC;
 }
 }

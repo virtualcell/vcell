@@ -54,7 +54,6 @@ public class MathModelDbTreePanel extends VCDocumentDbTreePanel {
 	private JMenuItem ivjJAnotherEditionMenuItem = null;
 	private JMenuItem ivjJLatestEditionMenuItem = null;
 	private JMenuItem ivjJPreviousEditionMenuItem = null;
-	private boolean fieldPopupMenuDisabled = false;
 	private JMenuItem ivjJMenuItemArchive = null;
 	private JMenuItem ivjJMenuItemPublish = null;	
 
@@ -726,18 +725,6 @@ private void compareWithMenuItemEnable(VersionInfo vInfo) {
 	getJLatestEditionMenuItem().setEnabled(bLatestEditionMenuItem);
 	getJAnotherEditionMenuItem().setEnabled(bAnotherEditionMenuItem);
 }
-
-/**
- * Sets the popupMenuDisabled property (boolean) value.
- * @param popupMenuDisabled The new value for the property.
- * @see #getPopupMenuDisabled
- */
-public void setPopupMenuDisabled(boolean popupMenuDisabled) {
-	boolean oldValue = fieldPopupMenuDisabled;
-	fieldPopupMenuDisabled = popupMenuDisabled;
-	firePropertyChange("popupMenuDisabled", new Boolean(oldValue), new Boolean(popupMenuDisabled));
-}
-
 
 /**
  * Comment

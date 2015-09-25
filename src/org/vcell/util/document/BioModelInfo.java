@@ -11,6 +11,7 @@
 package org.vcell.util.document;
 
 import org.vcell.util.BigString;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 
 
 /**
@@ -106,4 +107,8 @@ public VersionableType getVersionType() {
 public VCellSoftwareVersion getSoftwareVersion() {
 	return softwareVersion;
 }
+public VCDocumentType getVCDocumentType(){
+	return VCDocument.VCDocumentType.BIOMODEL_DOC;
+}
+
 }

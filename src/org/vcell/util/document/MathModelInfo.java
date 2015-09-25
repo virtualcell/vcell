@@ -11,6 +11,7 @@
 package org.vcell.util.document;
 
 import org.vcell.util.BigString;
+import org.vcell.util.document.VCDocument.VCDocumentType;
 
 
 /**
@@ -19,7 +20,7 @@ import org.vcell.util.BigString;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class MathModelInfo implements org.vcell.util.document.VCDocumentInfo {
+public class MathModelInfo implements VCDocumentInfo {
 	private Version version = null;
 	private KeyValue mathKey = null;
 	private MathModelChildSummary mathModelChildSummary = null;
@@ -108,4 +109,8 @@ public VersionableType getVersionType() {
 public VCellSoftwareVersion getSoftwareVersion() {
 	return softwareVersion;
 }
+public VCDocumentType getVCDocumentType(){
+	return VCDocument.VCDocumentType.MATHMODEL_DOC;
+}
+
 }
