@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Hashtable;
 
 import javax.swing.Box;
@@ -31,9 +32,14 @@ import javax.swing.JRadioButton;
 
 
 
+
+
+
 import cbit.gui.MultiPurposeTextPanel;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -181,24 +187,14 @@ public class MathematicsPanel extends JPanel {
 	}
 	
 	private void refreshMath() {
-		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
+		ClientTaskDispatcher.dispatchColl(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
 	}
 	
 	private void createMathModel(final ActionEvent e) {
 		// relays an action event with this as the source
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, simulationContext, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-		AsynchClientTask[] tasks = new AsynchClientTask[updateTasks.length + 1];
-		System.arraycopy(updateTasks, 0, tasks, 0, updateTasks.length);
-		
-		tasks[updateTasks.length] = new AsynchClientTask("creating math model", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				refireActionPerformed(e);
-			}
-		};
-		
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);
+		Collection<AsynchClientTask> tasks = ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
+		tasks.add(new AsynchClientTaskFunction(ht -> refireActionPerformed(e),"creating math model", AsynchClientTask.TASKTYPE_SWING_BLOCKING) ); 
+		ClientTaskDispatcher.dispatchColl(this, new Hashtable<String, Object>(), tasks, false);
 	}
 	
 	public synchronized void addActionListener(ActionListener l) {

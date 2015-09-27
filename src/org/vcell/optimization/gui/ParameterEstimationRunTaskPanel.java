@@ -21,6 +21,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Hashtable;
@@ -1038,6 +1039,11 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		}
 	}
 	
+	/**
+	 * hashtable key
+	 */
+	private static final String ORS_KEY = "Optimization result set";
+	
 	private void solve() throws NumberFormatException{
 		CopasiOptimizationMethod com = optimizationMethodParameterTableModel.copasiOptimizationMethod;
 		OptimizationSolverSpec optSolverSpec = new OptimizationSolverSpec(com);
@@ -1054,11 +1060,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		optSolverCallbacks.setEvaluation(0, Double.POSITIVE_INFINITY, 0, endValue, 0);
 		getRunStatusDialog().showProgressBar(com);//(endValue != null);
 
-		ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-		for (AsynchClientTask task : updateTasks) {
-			taskList.add(task);
-		}
+		Collection<AsynchClientTask> taskList = ClientRequestManager.updateMath(this, parameterEstimationTask.getSimulationContext(), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		
 		AsynchClientTask task1 = new AsynchClientTask("checking issues", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -1089,7 +1091,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
 				OptimizationResultSet optResultSet = CopasiOptimizationSolver.solve(new ParameterEstimationTaskSimulatorIDA(),parameterEstimationTask,optSolverCallbacks,mathMappingCallback);
-				hashTable.put("Optimiation Result Set", optResultSet);
+				hashTable.put(ORS_KEY, optResultSet);
 			}
 
 		};
@@ -1098,7 +1100,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
 		AsynchClientTask setResultTask = new AsynchClientTask("set results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				OptimizationResultSet optResultSet = (OptimizationResultSet) hashTable.get("Optimiation Result Set"); 
+				OptimizationResultSet optResultSet = (OptimizationResultSet) hashTable.get(ORS_KEY);
 				parameterEstimationTask.setOptimizationResultSet(optResultSet);
 			}
 

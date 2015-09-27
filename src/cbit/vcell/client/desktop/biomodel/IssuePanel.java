@@ -178,9 +178,9 @@ public class IssuePanel extends DocumentEditorSubPanel {
 					setIcon(icon);
 					setText(issue.getMessage());
 					String tt = issue.getHtmlTooltip();
-					if (!StringUtils.isBlank(tt)) {
+//					if (!StringUtils.isBlank(tt)) {
 						setToolTipText(tt);
-					}
+//					}
 					break;
 				}								
 				}
