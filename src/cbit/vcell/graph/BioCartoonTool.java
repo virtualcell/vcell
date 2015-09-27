@@ -185,14 +185,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 						ReactionCartoonTool.copyRelativePosition(rxPasteInterface.getGraphPane().getGraphModel(), pasteHelper[0].reactionsAndSpeciesContexts.get(newBioModelEntityObject), newBioModelEntityObject);
 					}
 					ReactionCartoonTool.selectAndSaveDiagram(rxPasteInterface, new ArrayList<BioModelEntityObject>(pasteHelper[0].reactionsAndSpeciesContexts.keySet()));
-					
-					//Setup to allow dispatcher to set focus on a specified component after it closes the ProgressPopup
-					hashTable.put(ClientTaskDispatcher.FINAL_WINDOW, new ClientTaskDispatcher.FinalWindow() {
-						@Override
-						public void run() {
-							rxPasteInterface.getGraphPane().requestFocusInWindow();
-						}
-					});
+//					//Setup to allow dispatcher to set focus on a specified component after it closes the ProgressPopup
+					setFinalWindow(hashTable,rxPasteInterface.getGraphPane());
 				}
 			}
 		};

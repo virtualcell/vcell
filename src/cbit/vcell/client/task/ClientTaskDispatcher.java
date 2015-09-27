@@ -68,7 +68,7 @@ public class ClientTaskDispatcher {
 	/**
 	 * hash key for final window
 	 */
-	public static final String FINAL_WINDOW = "finalWindowInterface";
+	private static final String FINAL_WINDOW = "finalWindowInterface";
 	
 	static {
 		WeakHashMap<AsynchClientTask, Boolean> whm = new WeakHashMap<AsynchClientTask,Boolean>( );
@@ -397,6 +397,46 @@ public static Collection<String> outstandingTasks( ) {
 public static boolean hasOutstandingTasks( ) {
 	return !allTasks.isEmpty();
 }
+/**
+ * convert Collection to array
+ * @param coll
+ * @return new array
+ */
+private static AsynchClientTask[] collToArray(Collection<AsynchClientTask> coll) {
+	return coll.toArray(new AsynchClientTask[coll.size()]);
+}
+//updated API
+public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll) {
+	dispatch(requester,hash,collToArray(coll));
+}
+
+public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress) {
+	dispatch(requester,hash,collToArray(coll),bKnowProgress);
+}
+
+public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask>coll, boolean bKnowProgress, 
+		boolean cancelable, ProgressDialogListener progressDialogListener) {
+	dispatch(requester, hash, collToArray(coll) ,bKnowProgress,cancelable,progressDialogListener);
+}
+
+public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress, 
+		boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
+	dispatch(requester, hash, collToArray(coll) ,bKnowProgress,cancelable,progressDialogListener,bInputBlocking);
+}
+
+public static void dispatchColl(final Component requester, final Hashtable<String, Object> hash, Collection<AsynchClientTask>coll,
+		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+	dispatch(requester, hash, collToArray(coll) ,bShowProgressPopup,bKnowProgress,cancelable,progressDialogListener,bInputBlocking);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/31/2004 5:37:06 PM)
+ * @param tasks cbit.vcell.desktop.controls.ClientTask[]
+ */
+public static void dispatchColl(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final ProgressDialog customDialog,
+		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+}
 
 
 
@@ -451,7 +491,7 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 }
 
 //package
-public interface FinalWindow extends Runnable{
+interface FinalWindow extends Runnable{
 }
 
 /**
@@ -459,6 +499,8 @@ public interface FinalWindow extends Runnable{
  * @param hash non null
  * @param fWindow non null
  * @throws ProgrammingException if more than one set in the same hash
+ * @see AsynchClientTask#setFinalWindow(Hashtable, cbit.vcell.client.ChildWindowManager.ChildWindow)
+ * @see AsynchClientTask#setFinalWindow(Hashtable, java.awt.Container)
  */
 //package
 static void setFinalWindow(Hashtable<String,Object> hash, FinalWindow fWindow) {

@@ -11,7 +11,9 @@
 package cbit.vcell.client;
 import javax.swing.*;
 
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.server.*;
+
 import java.util.*;
 public interface MDIManager {
 /**
@@ -29,11 +31,10 @@ long closeWindow(String windowID);
 
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 11:16:22 AM)
- * @param vcDocument cbit.vcell.document.VCDocument
+ * @param manager non-null
+ * @return new window
  */
-void createNewDocumentWindow(DocumentWindowManager manager);
+DocumentWindow createNewDocumentWindow(DocumentWindowManager manager);
 
 
 /**
