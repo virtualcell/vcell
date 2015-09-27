@@ -205,7 +205,7 @@ private DocumentWindow createDocumentWindow() {
  * Creation date: (5/24/2004 11:20:58 AM)
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
+public DocumentWindow createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	// used for opening new document windows
 	// assumes caller checked for having this document already open
 
@@ -230,6 +230,7 @@ public void createNewDocumentWindow(final DocumentWindowManager windowManager) {
 	getRequestManager().updateStatusNow(); // initialize status bar with current status (also syncs all other windows)
 	// done
 	documentWindow.setVisible(true);
+	return documentWindow;
 }
 
 
