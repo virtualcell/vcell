@@ -141,7 +141,7 @@ public class DialogUtils {
 			String result = DialogUtils.showOptionsDialog(requester, defaultSizedJPanel, JOptionPane.PLAIN_MESSAGE, new String[] {okString, getCancelText()}, okString,new DialogUtils.OKEnabler() {
 				@Override
 				public void setJOptionPane(JOptionPane joptionPane) {
-					DialogUtils.setInternalOKEnabled(joptionPane, selectableTreeVersionJPanel.getSelectedVersionInfo() != null, false);				
+					DialogUtils.setInternalNotCancelEnabled(joptionPane, selectableTreeVersionJPanel.getSelectedVersionInfo() != null, false);				
 					mouseListener[0] = new MouseAdapter() {
 					    public void mousePressed(MouseEvent e) {
 					    	Component parentComponent = (Component)e.getSource();
@@ -151,12 +151,12 @@ public class DialogUtils {
 					    	if(parentComponent == selectableTreeVersionJPanel){
 						        if(selectableTreeVersionJPanel.getSelectedVersionInfo() != null) {
 						            if(e.getClickCount() == 2) {
-						            	DialogUtils.setInternalOKEnabled(joptionPane, true, true);//enable OK and click OK button
+						            	DialogUtils.setInternalNotCancelEnabled(joptionPane, true, true);//enable OK and click OK button
 						            }else{
-						            	DialogUtils.setInternalOKEnabled(joptionPane, true, false);//enable OK button
+						            	DialogUtils.setInternalNotCancelEnabled(joptionPane, true, false);//enable OK button
 						            }
 						        }else{
-						        	DialogUtils.setInternalOKEnabled(joptionPane, false, false);//disable OK button
+						        	DialogUtils.setInternalNotCancelEnabled(joptionPane, false, false);//disable OK button
 						        }
 					    	}
 					    }
@@ -295,30 +295,25 @@ public class DialogUtils {
 	}
 
 	/**
-	 * Insert the method's description here.
-	 * Creation date: (6/23/2005 2:01:06 PM)
-	 * @param jop javax.swing.JOptionPane
-	 * @param bEnabled boolean
+	 * @param jop non null
+	 * @param bEnabled set non-cancel button to this state
+	 * @param bClickOK execute click (bEnabled must be true)
 	 */
-	private static void setInternalOKEnabled(final JOptionPane jop,final  boolean bEnabled, boolean bClickOK) {
-	  	Component[] componentsArr = jop.getComponents();
-	  	for(int i=0;i<componentsArr.length;i+= 1){
-		  	if(componentsArr[i] instanceof Container){
-			  	for(int j=0;j<((Container)componentsArr[i]).getComponentCount();j+= 1){
-				  	if(((Container)componentsArr[i]).getComponent(j) instanceof JButton &&
-					  	!((JButton)((Container)componentsArr[i]).getComponent(j)).getText().equalsIgnoreCase(getCancelText())){
-					  	if(bEnabled){
-						  	((Container)componentsArr[i]).getComponent(j).setEnabled(true);
-						  	if(bClickOK){
-						  		((JButton)((Container)componentsArr[i]).getComponent(j)).doClick();
-						  	}
-					  	}else{
-						  	((Container)componentsArr[i]).getComponent(j).setEnabled(false);
+	private static void setInternalNotCancelEnabled(final JOptionPane jop,final  boolean bEnabled, boolean bClickOK) {
+	  	for(Component topLevel : jop.getComponents() ) {
+	  		Container cntr = BeanUtils.downcast(Container.class, topLevel); 
+	  		if (cntr != null) {
+	  			for (Component cmpt : cntr.getComponents()) {
+	  				JButton btn = BeanUtils.downcast(JButton.class, cmpt); 
+	  				if (btn != null && !btn.getText().equalsIgnoreCase(getCancelText())) {
+				  		btn.setEnabled(bEnabled);
+					  	if(bEnabled && bClickOK) {
+					  			btn.doClick();
+					  		}
 					  	}
-				  	}
-			  	}
-		  	}
-	  	}
+	  				}
+	  			}
+	  		}
 	}
 
 	public static String showAnnotationDialog(final Component requester, final String oldAnnotation) throws Exception{
@@ -529,15 +524,15 @@ public class DialogUtils {
 					private JOptionPane jop;
 					public void setJOptionPane(JOptionPane joptionPane) {
 						jop = joptionPane;
-						setInternalOKEnabled(joptionPane, false,false);
+						setInternalNotCancelEnabled(joptionPane, false,false);
 						table.getSelectionModel().addListSelectionListener(
 								new ListSelectionListener(){
 									public void valueChanged(ListSelectionEvent e) {
 										if(!e.getValueIsAdjusting()){
 											if(table.getSelectedRowCount() != 0){
-												setInternalOKEnabled(jop, true,false);
+												setInternalNotCancelEnabled(jop, true,false);
 											}else{
-												setInternalOKEnabled(jop, false,false);
+												setInternalNotCancelEnabled(jop, false,false);
 											}
 										}
 									}
@@ -974,12 +969,12 @@ public class DialogUtils {
 			panel.add(scroller, BorderLayout.CENTER);
 			pane.setMessage(panel);
 
-			setInternalOKEnabled(pane,false,false);
+			setInternalNotCancelEnabled(pane,false,false);
 			list.addListSelectionListener(
 					new javax.swing.event.ListSelectionListener(){
 						public void valueChanged(javax.swing.event.ListSelectionEvent e){
 							if(!e.getValueIsAdjusting()){
-								DialogUtils.setInternalOKEnabled(pane,list.getSelectedIndex() != -1,false);
+								DialogUtils.setInternalNotCancelEnabled(pane,list.getSelectedIndex() != -1,false);
 							}
 						}
 					}
