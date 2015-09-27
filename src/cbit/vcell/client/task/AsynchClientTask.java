@@ -13,20 +13,12 @@ package cbit.vcell.client.task;
 import java.awt.Container;
 import java.awt.Window;
 import java.util.Hashtable;
-
-
-
-
-
-
-
 import java.util.Objects;
-
-import javax.swing.SwingUtilities;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 /**
@@ -159,22 +151,20 @@ public abstract class AsynchClientTask {
 		Objects.requireNonNull(cw);
 		ClientTaskDispatcher.setFinalWindow(hashTable,() -> cw.toFront( ) );
 	}
+	
+	/**
+	 * set final window to be raised
+	 * @param hashTable non null
+	 * @param cntr non null
+	 */
 	protected void setFinalWindow(Hashtable<String, Object> hashTable,Container cntr) {
 		Objects.requireNonNull(cntr);
-		Window w= (Window) SwingUtilities.getAncestorOfClass(Window.class, cntr); 
+		Window w= GuiUtils.getWindowForComponent(cntr);
 		if (w != null) {
 			ClientTaskDispatcher.setFinalWindow(hashTable,() -> w.toFront( ) );
 			return;
 		}
 		throw new ProgrammingException("Container " + cntr.getName() + " has no window parent");
 	}
-//	public AsynchClientTask[] getFollowupTasks() {
-//		return followupTasks;
-//	}
-//
-//	public void setFollowupTasks(AsynchClientTask[] followupTasks) {
-//		this.followupTasks = followupTasks;
-//	}
-	
 	
 }

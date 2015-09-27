@@ -51,11 +51,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -75,7 +73,6 @@ import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
-import org.vcell.util.ApplicationTerminator;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -133,6 +130,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -196,7 +194,6 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
@@ -2638,6 +2635,7 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
  */
 public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 		final VCDocument.DocumentCreationInfo documentCreationInfo) {
+	//gcwtodo
 	
 	AsynchClientTask createNewDocumentTask =
 		new AsynchClientTask("Creating New Document", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {		
@@ -2645,10 +2643,11 @@ public AsynchClientTask[] newDocument(TopLevelWindowManager requester,
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			VCDocument doc = (VCDocument)hashTable.get("doc");
 			DocumentWindowManager windowManager = createDocumentWindowManager(doc);
-			getMdiManager().createNewDocumentWindow(windowManager);
+			DocumentWindow dw = getMdiManager().createNewDocumentWindow(windowManager);
 			if (windowManager != null) {
 				hashTable.put("windowManager", windowManager);
 			}
+			setFinalWindow(hashTable, dw);
 		}
 	};
 
@@ -4218,11 +4217,8 @@ public void accessPermissions(Component requester, VCDocument vcDoc) {
 	
 }
 
-
-public static AsynchClientTask[] updateMath(final JComponent requester, final SimulationContext simulationContext, NetworkGenerationRequirements networkGenerationRequirements) {
-	return updateMath(requester, simulationContext, true, networkGenerationRequirements);
-}
-public static AsynchClientTask[] updateMath(final Component requester, final SimulationContext simulationContext, final boolean bShowWarning, final NetworkGenerationRequirements networkGenerationRequirements) {
+public static Collection<AsynchClientTask> updateMath(final Component requester, final SimulationContext simulationContext, final boolean bShowWarning, final NetworkGenerationRequirements networkGenerationRequirements) {
+	ArrayList<AsynchClientTask> rval = new ArrayList<>();
 	AsynchClientTask task1 = new AsynchClientTask("generating math", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 		@Override
@@ -4242,6 +4238,8 @@ public static AsynchClientTask[] updateMath(final Component requester, final Sim
 			hashTable.put("mathDesc", mathDesc);
 		}			
 	};
+	rval.add(task1);
+	
 	AsynchClientTask task2 = new AsynchClientTask("formating math", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 		@Override
@@ -4252,37 +4250,39 @@ public static AsynchClientTask[] updateMath(final Component requester, final Sim
 			}
 		}
 	};
-	AsynchClientTask task3 = new AsynchClientTask("showing issues", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+	rval.add(task2);
+	
+	if (bShowWarning) {
+		AsynchClientTask task3 = new AsynchClientTask("showing issues", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if (!bShowWarning) {
-				return;
-			}
-			MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
-			MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
-			if (mathDesc != null) {
-				//
-				// inform user if any issues
-				//					
-				Issue issues[] = mathMapping.getIssues();
-				if (issues!=null && issues.length>0){
-					StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
-					int issueCount=0;
-					for (int i = 0; i < issues.length; i++){
-						if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
-							messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
-							issueCount++;
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				MathMapping mathMapping = (MathMapping)hashTable.get("mathMapping");
+				MathDescription mathDesc = (MathDescription)hashTable.get("mathDesc");
+				if (mathDesc != null) {
+					//
+					// inform user if any issues
+					//					
+					Issue issues[] = mathMapping.getIssues();
+					if (issues!=null && issues.length>0){
+						StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
+						int issueCount=0;
+						for (int i = 0; i < issues.length; i++){
+							if (issues[i].getSeverity()==Issue.SEVERITY_ERROR || issues[i].getSeverity()==Issue.SEVERITY_WARNING){
+								messageBuffer.append(issues[i].getCategory()+" "+issues[i].getSeverityName()+" : "+issues[i].getMessage()+"\n");
+								issueCount++;
+							}
 						}
-					}
-					if (issueCount>0){
-						PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+						if (issueCount>0){
+							PopupGenerator.showWarningDialog(requester,messageBuffer.toString(),new String[] { "OK" }, "OK");
+						}
 					}
 				}
 			}
-		}
-	};
-	return new AsynchClientTask[] { task1, task2, task3};
+		};
+		rval.add(task3);
+	}
+	return rval; 
 }
 
 }

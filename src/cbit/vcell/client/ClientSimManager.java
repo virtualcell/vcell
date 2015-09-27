@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
@@ -470,16 +471,14 @@ public void updateStatusFromStopRequest(final Simulation simulation, SimulationS
 
 public void runSmoldynParticleView(final Simulation originalSimulation) {
 	SimulationOwner simulationOwner = simWorkspace.getSimulationOwner();
-	AsynchClientTask[] tasks = null;	
+	Collection<AsynchClientTask> tasks;
 	if (simulationOwner instanceof SimulationContext) {
-		AsynchClientTask[] updateTask = ClientRequestManager.updateMath(documentWindowManager.getComponent(), (SimulationContext)simulationOwner, false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-		tasks = new AsynchClientTask[updateTask.length + 1];
-		System.arraycopy(updateTask, 0, tasks, 0, updateTask.length);
+		tasks = ClientRequestManager.updateMath(documentWindowManager.getComponent(), (SimulationContext)simulationOwner, false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 	} else {
-		tasks = new AsynchClientTask[1];
+		tasks = new ArrayList<>(); 
 	}
 		
-	tasks[tasks.length - 1] = new AsynchClientTask("starting particle view", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+	AsynchClientTask pv = new AsynchClientTask("starting particle view", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
 		
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -545,7 +544,8 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			}
 		}
 	};
-	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
+	tasks.add(pv);
+	ClientTaskDispatcher.dispatchColl(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
 }
 
 @SuppressWarnings("serial") 
@@ -573,15 +573,13 @@ public static class TempSimulation extends Simulation {
 
 
 public void runQuickSimulation(final Simulation originalSimulation) {
-	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	Collection<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	final SimulationOwner simulationOwner = simWorkspace.getSimulationOwner();
 	
 	// ----------- update math if it is from biomodel (simulationContext)
 	if (simulationOwner instanceof SimulationContext) {
-		AsynchClientTask[] updateTasks = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-		for (AsynchClientTask task : updateTasks) {
-			taskList.add(task);
-		}
+		Collection<AsynchClientTask> ut = ClientRequestManager.updateMath(documentWindowManager.getComponent(), ((SimulationContext)simulationOwner), false, NetworkGenerationRequirements.ComputeFullStandardTimeout);
+		taskList.addAll(ut);
 	}	
 	
 	// ----------- run simulation(s)
