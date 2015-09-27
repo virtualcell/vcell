@@ -3,9 +3,9 @@ package cbit.vcell.client.task;
 import java.util.Hashtable;
 
 /**
- * {@link AsyncClientTaskFunction} that records the fact that it was executed ({@link #run(Hashtable)} called).
+ * {@link AsynchClientTaskFunction} that records the fact that it was executed ({@link #run(Hashtable)} called).
  */
-public class AsynchClientTaskFunctionTrack extends AsyncClientTaskFunction {
+public class AsynchClientTaskFunctionTrack extends AsynchClientTaskFunction {
 	
 	private boolean finished = false;
 

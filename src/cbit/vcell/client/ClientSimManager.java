@@ -47,7 +47,7 @@ import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
-import cbit.vcell.client.task.AsyncClientTaskFunction;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportServiceImpl;
@@ -254,7 +254,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 	// Create the AsynchClientTasks 
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	
-	taskList.add(  new AsyncClientTaskFunction( h ->  h.put(H_LOCAL_SIM, isLocal) , "setLocal", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) ); 
+	taskList.add(  new AsynchClientTaskFunction( h ->  h.put(H_LOCAL_SIM, isLocal) , "setLocal", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) ); 
 
 	final DocumentWindowManager documentWindowManager = getDocumentWindowManager();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {

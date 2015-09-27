@@ -1,6 +1,6 @@
 package cbit.vcell.client;
 
-import cbit.vcell.client.task.AsyncClientTaskFunction;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 
@@ -56,7 +56,7 @@ public class ClientTaskDispatcherTest {
 	}
 
 	private AsynchClientTask makeTask(int serial, int taskType) {
-		return new AsyncClientTaskFunction( h -> mock(serial), "task " + serial, taskType);
+		return new AsynchClientTaskFunction( h -> mock(serial), "task " + serial, taskType);
 	}
 	
 	private void mock(int value) {

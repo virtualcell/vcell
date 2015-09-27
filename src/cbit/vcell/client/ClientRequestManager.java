@@ -140,7 +140,7 @@ import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsyncClientTaskFunction;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
@@ -3274,7 +3274,7 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 			}
 		}
 	};
-	AsynchClientTask task4 = new AsyncClientTaskFunction(ClientRequestManager::setWindowFocus, "Set window focus", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false); 
+	AsynchClientTask task4 = new AsynchClientTaskFunction(ClientRequestManager::setWindowFocus, "Set window focus", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false); 
 	ClientTaskDispatcher.dispatch(requester.getComponent(), hashTable, new AsynchClientTask[]{task0, task1, task2,task3, task4}, false);
 }
 
