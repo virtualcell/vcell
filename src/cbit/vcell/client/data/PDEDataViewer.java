@@ -1678,7 +1678,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 											}
 											SimulationStatus simStatus =
 												PDEDataViewer.this.getDataViewerManager().getRequestManager().getServerSimulationStatus(getSimulation().getSimulationInfo());
-											if(!simStatus.isCompleted()){
+											if(simStatus == null){
+												hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, no simulation status");
+												return;
+											}else if(!simStatus.isCompleted()){
 												//sim still busy, no postprocessing data
 												hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
 												return;
