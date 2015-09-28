@@ -146,6 +146,7 @@ public abstract class AsynchClientTask {
 	 * set final window to be raised
 	 * @param hashTable non null
 	 * @param cw non null
+	 * @throws ProgrammingException if more than one set in the same hash
 	 */
 	protected void setFinalWindow(Hashtable<String, Object> hashTable,ChildWindow cw) {
 		Objects.requireNonNull(cw);
@@ -156,6 +157,7 @@ public abstract class AsynchClientTask {
 	 * set final window to be raised
 	 * @param hashTable non null
 	 * @param cntr non null
+	 * @throws ProgrammingException if more than one set in the same hash
 	 */
 	protected void setFinalWindow(Hashtable<String, Object> hashTable,Container cntr) {
 		Objects.requireNonNull(cntr);
