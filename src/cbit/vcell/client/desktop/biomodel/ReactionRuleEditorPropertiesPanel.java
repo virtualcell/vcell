@@ -295,7 +295,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			
 			scrollPane = new JScrollPane(shapePanel);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			
 			splitPaneHorizontal.setOneTouchExpandable(true);
 //			splitPaneHorizontal.setDividerLocation(yDividerLocation);
@@ -649,6 +649,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private void updateShape() {
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		reactantPatternShapeList.clear();
+		int maxXOffset;
 		int xOffset = xOffsetInitial;
 		if(rpList != null && rpList.size() > 0) {
 			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
@@ -670,6 +671,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				reactantPatternShapeList.add(sps);
 			}
 		}
+		maxXOffset = Math.max(xOffsetInitial, xOffset);
+		
 		xOffset = xOffsetInitial;
 		List<ProductPattern> ppList = reactionRule.getProductPatterns();
 		productPatternShapeList.clear();
@@ -686,9 +689,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				productPatternShapeList.add(sps);
 			}
 		}
-		
+		maxXOffset = Math.max(maxXOffset, xOffset);
+
 		// TODO: instead of offset +200 compute the exact width of the image
-		Dimension preferredSize = new Dimension(xOffset+200, yDividerLocation);
+		Dimension preferredSize = new Dimension(maxXOffset+200, yOffsetProductInitial+80+80);
 		shapePanel.setPreferredSize(preferredSize);
 
 		splitPaneHorizontal.getTopComponent().repaint();

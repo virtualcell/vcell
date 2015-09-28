@@ -71,6 +71,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.common.VCellErrorMessages;
 
@@ -83,7 +84,6 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
-
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
@@ -202,6 +202,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
+	JPanel shapePanel;
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);	// between tree and right side
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 
@@ -415,7 +416,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 //		JScrollPane p = new JScrollPane(shapePanel);
 //		p.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 //		p.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		JPanel shapePanel = new JPanel() {
+		shapePanel = new JPanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
@@ -489,7 +490,11 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(jsp, gbc);
 
-		splitPaneHorizontal.setTopComponent(shapePanel);
+		JScrollPane scrollPane = new JScrollPane(shapePanel);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+		splitPaneHorizontal.setTopComponent(scrollPane);
 		splitPaneHorizontal.setBottomComponent(generalPanel);
 
 // -------------------------------------------------------------------------------------------------		
@@ -632,17 +637,26 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 //	public static final int ReservedSpaceForNameOnYAxis = 20;	// enough to write some text above the shape
+	public static final int xOffsetInitial = 25;
 	public static final int ReservedSpaceForNameOnYAxis = 2;	// just a little empty spacing above the shape
 	private void updateShape() {
 		spsList.clear();
+		int maxXOffset = xOffsetInitial;
+		int maxYOffset = 88 + 80;
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
 			Graphics gc = splitPane.getRightComponent().getGraphics();
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(25, 8+(80+ReservedSpaceForNameOnYAxis)*i, 80, sp, gc, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(80+ReservedSpaceForNameOnYAxis)*i, 80, sp, gc, observable);
 				spsList.add(sps);
+				int xOffset = sps.getRightEnd();
+				maxXOffset = Math.max(maxXOffset, xOffset);
 			}
+			maxYOffset = Math.max(maxYOffset,8+(80+ReservedSpaceForNameOnYAxis)*observable.getSpeciesPatternList().size() + 80);
 		}
+		Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
+		shapePanel.setPreferredSize(preferredSize);
+
 		splitPane.getRightComponent().repaint();
 	}
 	private void changeFreeTextAnnotation() {
