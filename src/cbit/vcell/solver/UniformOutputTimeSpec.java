@@ -22,7 +22,7 @@ import cbit.vcell.solver.SimulationOwner.UnitInfo;
  * @author: Jim Schaff
  */
 @SuppressWarnings("serial")
-public class UniformOutputTimeSpec extends OutputTimeSpec {
+public class UniformOutputTimeSpec extends OutputTimeSpec implements Cloneable {
 	private double fieldOutputTimeStep;
 
 /**
@@ -31,6 +31,12 @@ public class UniformOutputTimeSpec extends OutputTimeSpec {
 public UniformOutputTimeSpec(double arg_outputTimeStep) {
 	super();
 	fieldOutputTimeStep = arg_outputTimeStep;
+}
+
+
+@Override
+public UniformOutputTimeSpec clone() throws CloneNotSupportedException {
+	return (UniformOutputTimeSpec) super.clone();
 }
 
 

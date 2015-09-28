@@ -1396,7 +1396,9 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		if (outputTimeSpec.isDefault()) {
         	keepEvery = ((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery();
 		} else if (outputTimeSpec.isUniform()) {
-	    	keepEvery = (int)(float)(((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep()/defaultTimeStep);
+			UniformOutputTimeSpec uots = (UniformOutputTimeSpec) outputTimeSpec;
+			double ots = uots.getOutputTimeStep();
+	    	keepEvery = (int)(ots / defaultTimeStep);
 		} else {
 			throw new RuntimeException("unexpected OutputTime specification type :"+outputTimeSpec.getClass().getName());
 		}
