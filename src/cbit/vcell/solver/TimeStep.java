@@ -63,7 +63,7 @@ public TimeStep(TimeStep timeStep) {
  */
 public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
-		return (true);
+		return true;
 	}
 	if (object != null && object instanceof TimeStep) {
 		TimeStep timeStep = (TimeStep) object;
@@ -72,7 +72,7 @@ public boolean compareEqual(org.vcell.util.Matchable object) {
 		if (getMaximumTimeStep() != timeStep.getMaximumTimeStep()) return (false);
 		return true;
 	}
-	return (false);
+	return false;
 }
 /**
  * Gets the defaultTimeStep property (double) value.
@@ -177,5 +177,15 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		throw new DataAccessException(
 			"line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage()); 
 	}
+}
+/**
+ * create new TimeStep with specified default; adjust min / max time if necessary
+ * @param defaultTimeStep default time step
+ * @return new TimeStep
+ */
+public TimeStep withDefault(double defaultTimeStep) {
+	double minTs = Math.min(defaultTimeStep,fieldMinimumTimeStep);
+	double maxTs = Math.max(defaultTimeStep,fieldMaximumTimeStep);
+	return new TimeStep(minTs, defaultTimeStep, maxTs); 
 }
 }
