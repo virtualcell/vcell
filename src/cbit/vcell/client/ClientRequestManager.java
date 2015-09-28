@@ -906,9 +906,15 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
 	}
-	if (simContext.isStoch() && ! simContext.isRuleBased()) {
+	
+	switch (simContext.getApplicationType()) {
+	case NETWORK_STOCHASTIC:
 		SmoldynSurfaceDiffusionWarning.acknowledgeWarning(requester.getComponent());
+		break;
+	case RULE_BASED_STOCHASTIC: 
+	case NETWORK_DETERMINISTIC:
 	}
+	
 	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -948,7 +954,8 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 				((MathModelWindowManager)windowManager). setCopyFromBioModelAppVersionableTypeVersion(
 							new VersionableTypeVersion(VersionableType.BioModelMetaData, simContext.getBioModel().getVersion()));
 			}
-			getMdiManager().createNewDocumentWindow(windowManager);
+			DocumentWindow dw = getMdiManager().createNewDocumentWindow(windowManager);
+			setFinalWindow(hashTable, dw);
 		}
 	};
 	ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(),  new AsynchClientTask[]{task1, task2}, false);
