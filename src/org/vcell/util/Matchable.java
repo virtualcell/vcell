@@ -21,4 +21,17 @@ public interface Matchable {
  * @param obj java.lang.Object not null
  */
 boolean compareEqual(Matchable obj);
+
+/**
+ * null safe compare
+ * @param lhs
+ * @param rhs
+ * @return true if lhs and rhs both null, or lhs.compareEqual(rhs)
+ */
+public static boolean areEqual(Matchable lhs, Matchable rhs) {
+	if (lhs != null) {
+		return lhs.compareEqual(rhs);
+	}
+	return rhs == null;
+}
 }
