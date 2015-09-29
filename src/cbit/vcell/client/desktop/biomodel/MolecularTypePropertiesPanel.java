@@ -193,6 +193,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
+	JScrollPane scrollPane;
 	private JPanel shapePanel = null;
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
@@ -400,8 +401,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		};
 		shapePanel.setBorder(border);
+		shapePanel.setLayout(null);
 		shapePanel.setBackground(Color.white);
-		
 		shapePanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -463,7 +464,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(jsp, gbc);
 
-		splitPaneHorizontal.setTopComponent(shapePanel);
+		scrollPane = new JScrollPane(shapePanel);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		splitPaneHorizontal.setTopComponent(scrollPane);
 		splitPaneHorizontal.setBottomComponent(generalPanel);
 
 		// -----------------------------------------------------------------------------
@@ -544,6 +549,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		molecularTypeTreeModel.setMolecularType(molecularType);
 		updateInterface();
 	}
+
+	public static final int xOffsetInitial = 20;
+	public static final int yOffsetInitial = 20;
 	public void updateInterface() {
 		boolean bNonNullMolecularType = molecularType != null && bioModel != null;
 		annotationTextArea.setEditable(bNonNullMolecularType);
@@ -554,9 +562,20 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 			molecularTypeShapeList.clear();
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(20, 20, molecularType, panelContext, molecularType);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, yOffsetInitial, molecularType, panelContext, molecularType);
 			molecularTypeShapeList.add(stls);
-			splitPane.getRightComponent().repaint();
+
+			int maxXOffset = xOffsetInitial + stls.getWidth();
+			int maxYOffset = yOffsetInitial + 80;
+			if(molecularType != null) {
+				for(MolecularComponent mc : molecularType.getComponentList()) {
+					maxYOffset = Math.max(maxYOffset, yOffsetInitial + 60 + 15 * mc.getComponentStateDefinitions().size());	// provide extra vertical space for the list of states
+				}
+			}
+			Dimension preferredSize = new Dimension(maxXOffset+100, maxYOffset+50);
+			shapePanel.setPreferredSize(preferredSize);
+			shapePanel.repaint();
+//			splitPane.getRightComponent().repaint();
 		} else {
 			annotationTextArea.setText(null);
 		}
@@ -616,59 +635,53 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		shapePanel.repaint();
 	}
 	private void editInPlace(final LargeShape selectedShape){
+		if(shapePanel.getComponentCount() > 0){		// remove if there's one already present
+			// this is the only component that may exist in this panel
+			shapePanel.remove(0);
+		}
 		Rectangle labelOutline = selectedShape.getLabelOutline();
-		System.out.println(labelOutline);
 		Font font = selectedShape.getLabelFont();
 		
-		//Add press 'Enter' action, 'Escape' action, editor gets focus and mouse 'Exit' parent action
-		if(true){
-			final JTextField jTextField = new JTextField(selectedShape.getFullName());
-			jTextField.setFont(font);
-			jTextField.selectAll();
-			jTextField.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					try{
-						//Type specific edit actions
-						if(selectedShape instanceof MolecularTypeLargeShape){
-							((MolecularTypeLargeShape)selectedShape).getMolecularType().setName(jTextField.getText());
-						}else if(selectedShape instanceof MolecularComponentLargeShape){
-							((MolecularComponentLargeShape)selectedShape).getMolecularComponent().setName(jTextField.getText());
-						}else if(selectedShape instanceof ComponentStateLargeShape){
-							((ComponentStateLargeShape)selectedShape).getComponentStateDefinition().setName(jTextField.getText());
-						}
-					}catch(Exception e2){
-						e2.printStackTrace();
-						DialogUtils.showErrorDialog(shapePanel, e2.getMessage());
+	//Add press 'Enter' action, 'Escape' action, editor gets focus and mouse 'Exit' parent action
+		final JTextField jTextField = new JTextField(selectedShape.getFullName());
+		jTextField.setFont(font);
+		jTextField.selectAll();
+		jTextField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try{
+					//Type specific edit actions
+					if(selectedShape instanceof MolecularTypeLargeShape){
+						((MolecularTypeLargeShape)selectedShape).getMolecularType().setName(jTextField.getText());
+					}else if(selectedShape instanceof MolecularComponentLargeShape){
+						((MolecularComponentLargeShape)selectedShape).getMolecularComponent().setName(jTextField.getText());
+					}else if(selectedShape instanceof ComponentStateLargeShape){
+						((ComponentStateLargeShape)selectedShape).getComponentStateDefinition().setName(jTextField.getText());
 					}
-					if(shapePanel.getComponentCount() > 0){
-						shapePanel.remove(0);
-					}
+				}catch(Exception e2){
+					e2.printStackTrace();
+					DialogUtils.showErrorDialog(shapePanel, e2.getMessage());
 				}
-			});
-//			ReactionCartoonTool.this.getGraphPane().removeMouseListener(myStopEditAdapter);//just to be sure
-//			ReactionCartoonTool.this.getGraphPane().addMouseListener(myStopEditAdapter);
-//			
-//			getGraphModel().removeGraphListener(myGraphListener);
-//			getGraphModel().addGraphListener(myGraphListener);
-			
-			InputMap im = jTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-	        ActionMap am = jTextField.getActionMap();
-	        im.put(KeyStroke.getKeyStroke("ESCAPE"), "cancelChange");
-	        am.put("cancelChange", new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
+				if(shapePanel.getComponentCount() > 0){
 					shapePanel.remove(0);
-					updateInterface();
 				}
-			});
-//	        GraphResizeManager grm = getGraphModel().getResizeManager();
-			jTextField.setBounds(labelOutline.x,labelOutline.y,labelOutline.width, labelOutline.height);
-			shapePanel.add(jTextField);
-//			getGraphPane().validate();
-			jTextField.requestFocus();
-			updateInterface();
-		}
+			}
+		});
+		InputMap im = jTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = jTextField.getActionMap();
+        im.put(KeyStroke.getKeyStroke("ESCAPE"), "cancelChange");
+        am.put("cancelChange", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				shapePanel.remove(0);
+				updateInterface();
+			}
+		});
+        final int MinWidth = 30;
+		jTextField.setBounds(labelOutline.x,labelOutline.y,Math.max(labelOutline.width, MinWidth), labelOutline.height);
+		shapePanel.add(jTextField);
+//		shapePanel.validate();
+		jTextField.requestFocus();
 		return;
 	}
 	

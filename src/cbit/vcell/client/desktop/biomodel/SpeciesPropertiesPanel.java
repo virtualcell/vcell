@@ -140,6 +140,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JTree speciesPropertiesTree = null;
 	private SpeciesPropertiesTreeModel speciesPropertiesTreeModel = null;
+	private JScrollPane scrollPane;
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JTree rightClickSourceTree = null;
 	
@@ -564,13 +565,16 @@ private void initialize() {
         gbc1.fill = GridBagConstraints.BOTH;
         leftPanel.add(generalPanel, gbc1);
 
+        scrollPane = new JScrollPane(shapePanel);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 //		gbc1 = new GridBagConstraints();
         gbc1.gridx = 0;
         gbc1.gridy = 1;
         gbc1.weightx = 1;
         gbc1.weighty = 0.1;
         gbc1.fill = GridBagConstraints.BOTH;
-        leftPanel.add(shapePanel, gbc1); 
+        leftPanel.add(scrollPane, gbc1); 
 		
 		setName("SpeciesEditorPanel");
 		setLayout(new BorderLayout());
@@ -699,12 +703,21 @@ private void updateInterface() {
 	listLinkedPathwayObjects();
 	updateShape();
 }
+
+public static final int xOffsetInitial = 20;
+public static final int yOffsetInitial = 10;
 private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
 		Graphics panelContext = shapePanel.getGraphics();
-		spls = new SpeciesPatternLargeShape(20, 5, -1, sp, panelContext, fieldSpeciesContext);
+		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, panelContext, fieldSpeciesContext);
+		
+		int maxXOffset = xOffsetInitial + spls.getWidth();
+		int maxYOffset = yOffsetInitial + 80;
+		Dimension preferredSize = new Dimension(maxXOffset+120, maxYOffset+20);
+		shapePanel.setPreferredSize(preferredSize);
 		shapePanel.repaint();
+		scrollPane.repaint();
 	}
 }
 
