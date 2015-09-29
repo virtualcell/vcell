@@ -103,7 +103,7 @@ import cbit.vcell.xml.XmlParseException;
  * @author: 
  */
 public class ClientDocumentManager implements DocumentManager{
-	private static Logger lg = Logger.getLogger(ClientDocumentManager.class);
+	private static final Logger LG = Logger.getLogger(ClientDocumentManager.class);
 	//
 	//
 	private SessionManager sessionManager = null;
@@ -545,7 +545,7 @@ public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, Str
 	try {
 		// Add to Server Disk
 		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
-		lg.debug(fdor);
+		LG.debug(fdor);
 	} catch (DataAccessException e) {
 		try{
 			// try to cleanup new ExtDataID
@@ -2424,8 +2424,8 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String mathModelXML = null;
 		try {
 			mathModelXML = XmlHelper.mathModelToXML(mathModel);
-			if (lg.isInfoEnabled()) {
-				lg.info(XmlUtil.beautify(mathModelXML));
+			if (LG.isInfoEnabled()) {
+				LG.info(XmlUtil.beautify(mathModelXML));
 			}
 		}catch (XmlParseException e){
 			e.printStackTrace(System.out);
@@ -2435,8 +2435,8 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML),independentSims).toString();
 
 		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
-		if (lg.isInfoEnabled()) {
-			lg.info(XmlUtil.beautify(savedMathModelXML));
+		if (LG.isInfoEnabled()) { 
+			LG.info(XmlUtil.beautify(savedMathModelXML));
 		}
 		
 		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
