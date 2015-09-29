@@ -121,6 +121,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
 		TreeWillExpandListener
 	{
+		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == reactionRule) {
 				if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_REACTANT_WARNING)) {
@@ -134,7 +135,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			}
 		}
-
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == getAddReactantMenuItem()) {
 				addReactant();
@@ -146,26 +147,28 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				editEntity();
 			}
 		}
-
+		@Override
 		public void mouseClicked(MouseEvent e) {			
 		}
-
+		@Override
 		public void mousePressed(MouseEvent e) {
 			if (!e.isConsumed() && (e.getSource() == reactantTree || e.getSource() == productTree)) {
 				showPopupMenu(e);
 			}
 		}
+		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (!e.isConsumed() && (e.getSource() == reactantTree || e.getSource() == productTree)) {
 				showPopupMenu(e);
 			}			
 		}
+		@Override
 		public void mouseEntered(MouseEvent e) {
 		}
-
+		@Override
 		public void mouseExited(MouseEvent e) {
 		}
-
+		@Override
 		public void valueChanged(TreeSelectionEvent e) {
 		}
 
@@ -691,8 +694,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		maxXOffset = Math.max(maxXOffset, xOffset);
 
-		// TODO: instead of offset +200 compute the exact width of the image
-		Dimension preferredSize = new Dimension(maxXOffset+200, yOffsetProductInitial+80+80);
+		// TODO: instead of offset+100 compute the exact width of the image
+		Dimension preferredSize = new Dimension(maxXOffset+90, yOffsetProductInitial+80+20);
 		shapePanel.setPreferredSize(preferredSize);
 
 		splitPaneHorizontal.getTopComponent().repaint();
@@ -705,10 +708,6 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		if (popupFromShapeMenu.isShowing()) {
 			return;
 		}
-		boolean bDelete = false;
-		boolean bAdd = false;
-		boolean bEdit = false;
-		boolean bRename = false;
 		popupFromShapeMenu.removeAll();
 		Point mousePoint = e.getPoint();
 

@@ -430,6 +430,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		};
 		shapePanel.setBorder(border);
 		shapePanel.setBackground(Color.white);
+		shapePanel.setLayout(null);
 		
 		shapePanel.addMouseListener(new MouseAdapter() {
 			@Override
