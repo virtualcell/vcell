@@ -326,8 +326,8 @@ public static boolean derivativeFunctionallyEquivalent(Expression exp, String di
  * Insert the method's description here.
  * Creation date: (10/17/2002 12:42:18 AM)
  * @return boolean
- * @param exp1 cbit.vcell.parser.Expression
- * @param exp2 cbit.vcell.parser.Expression
+ * @param exp1 cbit.vcell.parser.Expression non null
+ * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
 	boolean verifySameSymbols = true;
@@ -337,8 +337,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
  * Insert the method's description here.
  * Creation date: (10/17/2002 12:42:18 AM)
  * @return boolean
- * @param exp1 cbit.vcell.parser.Expression
- * @param exp2 cbit.vcell.parser.Expression
+ * @param exp1 cbit.vcell.parser.Expression non null
+ * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
 	double defaultAbsoluteTolerance = 1e-12;
@@ -349,8 +349,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
  * Insert the method's description here.
  * Creation date: (10/17/2002 12:42:18 AM)
  * @return boolean
- * @param exp1 cbit.vcell.parser.Expression
- * @param exp2 cbit.vcell.parser.Expression
+ * @param exp1 cbit.vcell.parser.Expression non null
+ * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean verifySameSymbols, double relativeTolerance, double absoluteTolerance) {
 	try {
