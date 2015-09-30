@@ -12,12 +12,15 @@ package cbit.vcell.client.task;
 
 import java.awt.Container;
 import java.awt.Window;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Objects;
 
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCAssert;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -115,6 +118,19 @@ public abstract class AsynchClientTask {
 		}
 		return null;
 	}
+	
+	/**
+	 * typesafe (verified) fetch of object from hash
+	 * @param hashTable non null
+	 * @param keyInfo non null
+	 * @return object of correct type
+	 */
+	static protected Object fetch(Hashtable<String, Object> hashTable, KeyInfo keyInfo) {
+		Object obj = hashTable.get(keyInfo.name);
+		VCAssert.assertTrue(obj != null, "ClientTaskDispatcher failed to verify object");
+		VCAssert.assertTrue(keyInfo.clzz.isAssignableFrom(obj.getClass()),"ClientTaskDispatcher failed to verify type");
+		return  obj;
+	}
 
 	/**
 	 * Insert the method's description here.
@@ -168,5 +184,32 @@ public abstract class AsynchClientTask {
 		}
 		throw new ProgrammingException("Container " + cntr.getName() + " has no window parent");
 	}
+	
+	/**
+	 * return list of keys need by task
+	 * @return non-null Collection
+	 */
+	protected Collection<KeyInfo> requiredKeys( ) {
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * required hash key name and type
+	 */
+	public static final class KeyInfo {
+		public final String name;
+		final Class<?> clzz;
+		/**
+		 * @param name non null
+		 * @param clzz non null
+		 */
+		protected KeyInfo(String name, Class<?> clzz) {
+			this.name = name;
+			this.clzz = clzz;
+			Objects.requireNonNull(name);
+			Objects.requireNonNull(clzz);
+		}
+	}
+	
 	
 }

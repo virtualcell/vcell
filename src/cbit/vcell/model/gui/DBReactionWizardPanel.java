@@ -31,11 +31,11 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.LineBorderBean;
 import org.vcell.util.gui.TitledBorderBean;
 
-import cbit.gui.graph.GraphPane;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.DictionaryQueryResults;
@@ -2741,7 +2741,7 @@ private void setdocument2(javax.swing.text.Document newValue) {
 public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 

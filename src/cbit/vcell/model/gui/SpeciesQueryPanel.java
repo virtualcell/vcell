@@ -22,6 +22,7 @@ import org.vcell.util.gui.TitledBorderBean;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DictionaryQueryResults;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -1868,7 +1869,7 @@ private void setdocument1(javax.swing.text.Document newValue) {
 public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
 	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 

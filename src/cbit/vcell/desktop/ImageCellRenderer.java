@@ -14,7 +14,8 @@ package cbit.vcell.desktop;
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JTree;
 
 import org.vcell.util.document.User;
  

@@ -10,9 +10,6 @@
 
 package cbit.vcell.desktop;
 
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -20,10 +17,7 @@ import javax.swing.JTree;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.Version;
 
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;

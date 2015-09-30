@@ -10,6 +10,8 @@
 
 package cbit.vcell.model.gui;
 
+import cbit.vcell.client.task.CommonTask;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/22/2003 4:08:34 PM)
@@ -36,7 +38,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == SpeciesQueryDialog.this.getSpeciesQueryPanel1() && (evt.getPropertyName().equals("dictionaryQueryResults"))) 
 				connEtoM3(evt);
-			if (evt.getSource() == SpeciesQueryDialog.this && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == SpeciesQueryDialog.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connEtoM1(evt);
 			if (evt.getSource() == SpeciesQueryDialog.this && (evt.getPropertyName().equals("searchableTypes"))) 
 				connEtoM2(evt);
@@ -405,7 +407,7 @@ private void setDictionaryQueryResults(cbit.vcell.dictionary.DictionaryQueryResu
 public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
 	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 /**
  * Sets the searchableTypes property (long) value.

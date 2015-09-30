@@ -37,10 +37,11 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
 
+import swingthreads.SwingWorker;
 import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
-import swingthreads.SwingWorker;
+import cbit.vcell.client.task.AsynchClientTask.KeyInfo;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)
@@ -53,6 +54,10 @@ public class ClientTaskDispatcher {
 	public static final String TASK_ABORTED_BY_USER = "cancel";
 	public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
 	/**
+	 * hash key to internally flag problem with hash table data 
+	 */
+	private static final String HASH_DATA_ERROR = "hdeHdeHde";
+	/**
 	 * hash key to store stack trace if {@link #lg} enabled for {@link Level#INFO}
 	 */
 	private static final String STACK_TRACE_ARRAY = "clientTaskDispatcherStackTraceArray";
@@ -62,7 +67,7 @@ public class ClientTaskDispatcher {
 	 */
 	private static long serial = 0;
 	/**
-	 * set of all scheduled tasks; 
+	 * set of all scheduled tasks; used to avoid calling System.exit() prematurely on Application exit
 	 */
 	private static final Set<AsynchClientTask> allTasks; 
 	/**
@@ -134,6 +139,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			lg.debug("added task name " + tasks[i].getTaskName());
 		}
 	}
+	
 	final String threadBaseName = "ClientTaskDispatcher " + ( serial++ )  + ' ';
 	// dispatch tasks to a new worker
 	SwingWorker worker = new SwingWorker() {
@@ -189,7 +195,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 						}
 						pp.setMessage(currentTask.getTaskName());
 					}
-					boolean shouldRun = true;
+					boolean shouldRun = !hash.containsKey(HASH_DATA_ERROR);
 					if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
 						shouldRun = false;
 					}
@@ -212,12 +218,12 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 					if (shouldRun) {
 						try {
 							if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-								runTask(currentTask,hash);
+								runTask(currentTask,hash, taskList);
 							} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 								SwingUtilities.invokeAndWait(new Runnable() {
 									public void run() {
 										try {
-											runTask(currentTask,hash);
+											runTask(currentTask,hash, taskList);
 										} catch (Throwable exc) {
 											recordException(exc, hash);
 										}
@@ -227,7 +233,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 								SwingUtilities.invokeLater(new Runnable() {
 									public void run() {
 										try {
-											runTask(currentTask,hash);
+											runTask(currentTask,hash, taskList);
 										} catch (Throwable exc) {
 											recordException(exc, hash);
 										}
@@ -354,7 +360,7 @@ private static void dispatchFollowUp(Hashtable<String, Object> hash) {
 	UserCancelException e = (UserCancelException)hash.get("cancel");
 	if (e == UserCancelException.CHOOSE_SAVE_AS) {
 		// user chose to save as during a save or save/edition of a documnet found to be unchanged
-		((DocumentWindowManager)hash.get("documentWindowManager")).saveDocumentAsNew();
+		((DocumentWindowManager)hash.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name)).saveDocumentAsNew();
 	}
 }
 
@@ -466,12 +472,13 @@ private static void setSwingWorkerThreadName(SwingWorker sw, String name) {
 }
 
 /**
- * call currentTask.run(hash) with log4j logging
+ * call currentTask.run(hash) with log4j logging; check for required keys 
  * @param currentTask not null
  * @param hash not null
+ * @param taskList current set of tasks being dispatched
  * @throws Exception
  */
-private static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash) throws Exception {
+private static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash, Collection<AsynchClientTask> taskList) throws Exception {
 	if (lg.isDebugEnabled()) {
 		String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
 		if (lg.isTraceEnabled()) {
@@ -486,8 +493,47 @@ private static void runTask(AsynchClientTask currentTask, Hashtable<String, Obje
 			lg.debug(msg);
 		}
 	}
+	//check required elements present
+	StringBuilder sb = null;
+	for (KeyInfo requiredKey : currentTask.requiredKeys()) {
+		Object obj = hash.get(requiredKey.name);
+		if (obj == null) {
+			if (sb == null) sb = initStringBuilder(currentTask) ;
+			sb.append("Missing required key  " + requiredKey.name + '\n');
+			continue;
+		}
+		Class<?> foundClass = obj.getClass();
+		if (!requiredKey.clzz.isAssignableFrom(foundClass)) {
+			if (sb == null) sb = initStringBuilder(currentTask) ;
+			sb.append("key " + requiredKey.name + " type " + foundClass.getName() + " not of required type " + requiredKey.clzz.getName());
+			sb.append('\n');
+		}
+	}
 	
-	currentTask.run(hash);
+	if (sb == null) { //no problems found 
+		currentTask.run(hash);
+		return;
+	}
+	
+	sb.append("Prior tasks\n");
+	for ( AsynchClientTask pt : taskList) {
+		if (pt == currentTask) {
+			break;
+		}
+		sb.append('\t' + pt.getTaskName() + '\n');
+	}
+	hash.put(HASH_DATA_ERROR,HASH_DATA_ERROR);
+	throw new ProgrammingException(sb.toString());
+}
+
+/**
+ * @param currentTask non null
+ * @return {@link StringBuilder} initialized with task name
+ */
+private static StringBuilder initStringBuilder(AsynchClientTask currentTask) {
+	StringBuilder sb = new StringBuilder();
+	sb.append("Data error for task " + currentTask.getTaskName() + '\n');
+	return sb;
 }
 
 //package
