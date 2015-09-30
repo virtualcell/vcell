@@ -4307,8 +4307,7 @@ private Element getXML(StochSimOptions param, boolean isHybrid) {
 		if(param.isUseCustomSeed())
 			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
 		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
-		if(isHybrid)
-		{
+		if (isHybrid && param instanceof StochHybridOptions) {
 			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(((StochHybridOptions)param).getEpsilon()));
 			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(((StochHybridOptions)param).getLambda()));
 			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(((StochHybridOptions)param).getMSRTolerance()));
@@ -4389,11 +4388,15 @@ private Element getXML(SolverTaskDescription param) {
 	solvertask.addContent( getXML(param.getErrorTolerance()) );
 	//Add Stochastic simulation Options, 5th Feb, 2007
 	//Amended 2oth July, 2007. We need to distinguish hybrid and SSA options
-	if(param.getStochOpt() != null)
+	if (param.getStochOpt() != null)
 	{
-		if(param.getSolverDescription().equals(SolverDescription.StochGibson))
+		if (param.getSolverDescription().isNonSpatialStochasticSolver()){
 			solvertask.addContent( getXML(param.getStochOpt(),false));
-		else solvertask.addContent(getXML(param.getStochOpt(),true));
+		} else if (param.getSolverDescription().isSpatialStochasticSolver()){
+			solvertask.addContent(getXML(param.getStochOpt(),true));
+		} else {
+			System.err.println("stochastic options not null for unexpected solver type "+param.getSolverDescription().getDisplayLabel());
+		}
 	}
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));
