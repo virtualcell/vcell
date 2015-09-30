@@ -9,17 +9,18 @@
  */
 
 package cbit.vcell.desktop;
-import cbit.vcell.geometry.GeometryInfo;
 /**
  * Insert the type's description here.
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
-import javax.swing.*;
+import javax.swing.JLabel;
 
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.Version;
+
+import cbit.vcell.geometry.GeometryInfo;
  
 public class GeometryMetaDataCellRenderer extends VCellBasicCellRenderer {
 /**

@@ -119,9 +119,9 @@ public class RunSims extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	ClientSimManager clientSimManager = (ClientSimManager)hashTable.get("clientSimManager");
-//	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+//	DocumentManager documentManager = (DocumentManager)hashTable.get(CommonTask.DOCUMENT_MANAGER.name);
 	JobManager jobManager = (JobManager)hashTable.get("jobManager");
 	Simulation[] simulations = (Simulation[])hashTable.get("simulations");
 	Hashtable<Simulation, Throwable> failures = new Hashtable<Simulation, Throwable>();

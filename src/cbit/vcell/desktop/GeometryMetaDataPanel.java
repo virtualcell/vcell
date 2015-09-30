@@ -18,6 +18,7 @@ import javax.swing.ToolTipManager;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.geometry.GeometryInfo;
 /**
@@ -40,7 +41,7 @@ public class GeometryMetaDataPanel extends DocumentEditorSubPanel {
 				getgeometryMetaDataTreeModel().setGeometryInfo(getGeometryInfo());
 				GuiUtils.treeExpandAllRows(getJTree1());
 			}
-			if (evt.getSource() == GeometryMetaDataPanel.this && (evt.getPropertyName().equals("documentManager"))) {
+			if (evt.getSource() == GeometryMetaDataPanel.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) {
 				getgeometryMetaDataTreeModel().setDocumentManager(getDocumentManager());
 				GuiUtils.treeExpandAllRows(getJTree1());
 			}
@@ -220,7 +221,7 @@ public static void main(java.lang.String[] args) {
 public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 /**

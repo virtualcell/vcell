@@ -22,7 +22,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.DataAccessException;
@@ -33,7 +32,6 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.VersionInfo;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 /**

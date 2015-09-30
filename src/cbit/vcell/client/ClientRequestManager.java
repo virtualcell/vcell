@@ -146,6 +146,7 @@ import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.client.task.DeleteOldDocument;
 import cbit.vcell.client.task.DocumentToExport;
 import cbit.vcell.client.task.DocumentValid;
@@ -3596,7 +3597,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put(DocumentManager.IDENT, getDocumentManager());
-	hash.put("documentWindowManager", documentWindowManager);
+	hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("clientSimManager", clientSimManager);
 	hash.put("simulations", simulations);
@@ -3706,7 +3707,7 @@ public void saveDocument(final DocumentWindowManager documentWindowManager, bool
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put(DocumentManager.IDENT, getDocumentManager());
-	hash.put("documentWindowManager", documentWindowManager);
+	hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("requestManager", this);
 	
@@ -3770,7 +3771,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager, Async
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put(DocumentManager.IDENT, getDocumentManager());
-	hash.put("documentWindowManager", documentWindowManager);
+	hash.put(CommonTask.DOCUMENT_WINDOW_MANAGER.name, documentWindowManager);
 	hash.put("currentDocumentWindow", currentDocumentWindow);
 	hash.put("requestManager", this);
 	

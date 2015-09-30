@@ -27,6 +27,7 @@ import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
 import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelDbTreePanel;
 import cbit.vcell.desktop.GeometryTreePanel;
@@ -62,16 +63,16 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC3(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == DatabaseWindowPanel.this && (evt.getPropertyName().equals("documentManager"))) {
+			if (evt.getSource() == DatabaseWindowPanel.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) {
 				connPtoP1SetTarget();
 				connPtoP2SetTarget();
 				connPtoP3SetTarget();
 			}
-			if (evt.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1() && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == DatabaseWindowPanel.this.getBioModelDbTreePanel1() && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connPtoP1SetSource();
-			if (evt.getSource() == DatabaseWindowPanel.this.getMathModelDbTreePanel1() && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == DatabaseWindowPanel.this.getMathModelDbTreePanel1() && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connPtoP2SetSource();
-			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connPtoP3SetSource();
 			if (evt.getSource() == DatabaseWindowPanel.this.getGeometryTreePanel1() && (evt.getPropertyName().equals("selectedVersionInfo")))
 				currentDocumentInfo();
@@ -617,7 +618,7 @@ public void setDatabaseWindowManager(DatabaseWindowManager databaseWindowManager
 public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 

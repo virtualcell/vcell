@@ -25,16 +25,17 @@ import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
@@ -357,7 +358,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	try {
-		if (evt.getSource() == this && evt.getPropertyName().equals("documentManager")){
+		if (evt.getSource() == this && evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name)){
 			refreshTree((TestSuiteInfoNew)null);
 		}
 	}catch (Throwable e){
@@ -714,7 +715,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
 	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 

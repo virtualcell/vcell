@@ -12,10 +12,14 @@ package cbit.vcell.desktop;
 
 import java.util.TreeMap;
 import java.util.Vector;
+
 import javax.swing.tree.DefaultTreeModel;
+
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
+
 import cbit.image.VCImageInfo;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 /**
@@ -375,7 +379,7 @@ public void setDocumentManager(DocumentManager documentManager) {
 		documentManager.addDatabaseListener(this);
 	}
 
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 
 	if (documentManager != oldValue){
 		refreshTree();

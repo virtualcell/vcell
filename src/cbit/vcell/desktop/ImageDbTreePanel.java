@@ -22,7 +22,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -35,6 +34,7 @@ import org.vcell.util.gui.DialogUtils.SelectableTreeVersionJPanel;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 /**
  * Insert the type's description here.
@@ -955,7 +955,7 @@ public void mouseReleased(java.awt.event.MouseEvent e) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	// user code begin {1}
 	// user code end
-	if (evt.getSource() == this && (evt.getPropertyName().equals("documentManager"))) 
+	if (evt.getSource() == this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 		connPtoP2SetTarget();
 	if (evt.getSource() == getJTree1() && (evt.getPropertyName().equals("selectionModel"))) 
 		connPtoP4SetTarget();
@@ -1002,7 +1002,7 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager newValue) {
 			connEtoM7(ivjDocumentManager);
 			connEtoC8(ivjDocumentManager);
 			connEtoM3(ivjDocumentManager);
-			firePropertyChange("documentManager", oldValue, newValue);
+			firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, newValue);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

@@ -9,9 +9,10 @@
  */
 
 package cbit.vcell.client.task;
+import java.util.Hashtable;
+
 import org.vcell.util.document.VCDocument;
 
-import java.util.Hashtable;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.MDIManager;
 /**
@@ -33,7 +34,7 @@ public class FinishSave extends AsynchClientTask {
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	MDIManager mdiManager= (MDIManager)hashTable.get("mdiManager");
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	if (hashTable.containsKey(SaveDocument.DOC_KEY)) {
 		VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 		documentWindowManager.resetDocument(savedDocument);

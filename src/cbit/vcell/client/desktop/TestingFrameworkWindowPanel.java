@@ -14,11 +14,9 @@ import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -33,16 +31,14 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.tree.TreePath;
 
-import junit.framework.TestSuite;
-
 import org.vcell.util.Compare;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.UtilCancelException;
 import org.vcell.util.gui.DialogUtils.TableListResult;
+import org.vcell.util.gui.UtilCancelException;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TestingFrameworkWindowManager;
@@ -52,6 +48,7 @@ import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.client.task.TFAddTestSuite;
 import cbit.vcell.client.task.TFDuplicateTestSuite;
 import cbit.vcell.client.task.TFGenerateReport;
@@ -65,15 +62,14 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.modeldb.MathVerifier;
 import cbit.vcell.numericstest.LoadTestInfoOP;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
-import cbit.vcell.numericstest.RemoveTestCriteriaOP;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.SimulationInfo;
@@ -103,11 +99,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC1(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals("documentManager"))){
+			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))){
 				connPtoP1SetTarget();
 				getJSplitPane1().setDividerLocation(500);
 			}
-			if (evt.getSource() == TestingFrameworkWindowPanel.this.gettestingFrameworkPanel() && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == TestingFrameworkWindowPanel.this.gettestingFrameworkPanel() && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connPtoP1SetSource();
 			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals("testingFrameworkWindowManager"))) 
 				connPtoP2SetTarget();
@@ -404,7 +400,7 @@ public void selectInTreeView(BigDecimal testSuiteKey,BigDecimal testCaseKey,BigD
 public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
 	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 
 

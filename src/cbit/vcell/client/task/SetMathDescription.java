@@ -11,6 +11,7 @@
 package cbit.vcell.client.task;
 
 import java.util.Hashtable;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.mapping.SimulationContext;
@@ -32,7 +33,7 @@ public class SetMathDescription extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();

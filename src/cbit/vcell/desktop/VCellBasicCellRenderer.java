@@ -12,9 +12,11 @@
 package cbit.vcell.desktop;
 
 import java.awt.Font;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
+
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.document.BioModelChildSummary;
@@ -23,6 +25,7 @@ import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.Version;
+
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;

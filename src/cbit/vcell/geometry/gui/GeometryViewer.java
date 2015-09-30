@@ -52,6 +52,7 @@ import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ChooseFile;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.client.task.ExportDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryOwner;
@@ -224,7 +225,7 @@ private void exportGeometry(/*String exportType*/){
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("documentToExport",getGeometry());
 	hash.put("userPreferences",documentWindowManager.getUserPreferences());
-	hash.put("documentManager",documentWindowManager.getRequestManager().getDocumentManager());
+	hash.put(CommonTask.DOCUMENT_MANAGER.name,documentWindowManager.getRequestManager().getDocumentManager());
 	hash.put("component", this);
 	ClientTaskDispatcher.dispatch(this, hash, tasks, false);
 }

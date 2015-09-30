@@ -48,8 +48,8 @@ public CheckUnchanged(boolean whileSavingForRunningSims) {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
-	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
+	DocumentManager documentManager = (DocumentManager)hashTable.get(CommonTask.DOCUMENT_MANAGER.name);
 //	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
 	if (documentWindowManager.getVCDocument().getDocumentType() == VCDocumentType.MATHMODEL_DOC) {
 		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {

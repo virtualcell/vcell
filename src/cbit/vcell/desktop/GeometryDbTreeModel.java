@@ -9,15 +9,12 @@
  */
 
 package cbit.vcell.desktop;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JTree;
-import javax.swing.tree.MutableTreeNode;
 
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.User;
 
 import cbit.vcell.clientdb.DatabaseEvent;

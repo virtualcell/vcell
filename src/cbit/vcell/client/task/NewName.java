@@ -16,11 +16,14 @@ import java.util.Hashtable;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.client.*;
+import cbit.vcell.client.DocumentWindowManager;
+import cbit.vcell.client.MDIManager;
+import cbit.vcell.client.MathModelWindowManager;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
 /**
  * Insert the type's description here.
@@ -40,7 +43,7 @@ public class NewName extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	VCDocument document = documentWindowManager.getVCDocument();
 	if (document.getDocumentType() == VCDocumentType.MATHMODEL_DOC) {
 		if (((MathModelWindowManager)documentWindowManager).hasUnappliedChanges()) {

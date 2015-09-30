@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -33,6 +32,7 @@ import org.vcell.util.document.Version;
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
 import cbit.vcell.client.server.ConnectionStatus;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
@@ -295,7 +295,7 @@ public void setDocumentManager(DocumentManager documentManager) {
 		documentManager.addDatabaseListener(this);
 	}
 
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 
 	if (documentManager != oldValue){
 		refreshTree();

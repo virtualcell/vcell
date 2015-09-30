@@ -9,22 +9,21 @@
  */
 
 package cbit.vcell.client.desktop.testingframework;
-import cbit.vcell.client.TestingFrameworkWindowManager;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import javax.swing.JTextArea;
 import javax.swing.border.LineBorder;
 
-import java.awt.Color;
+import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
 
 /**
  * Insert the type's description here.

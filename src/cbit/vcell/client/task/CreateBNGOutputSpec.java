@@ -17,8 +17,8 @@ import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
+import cbit.vcell.server.bionetgen.BNGOutput;
 
 public class CreateBNGOutputSpec extends AsynchClientTask {
 	private static final String message = "Creating BNG output spec ...";

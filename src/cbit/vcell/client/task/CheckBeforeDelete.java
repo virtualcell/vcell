@@ -236,7 +236,7 @@ private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySav
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 //	JFrame currentDocumentWindow = (JFrame)hashTable.get("currentDocumentWindow");
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
 	if (! hashTable.containsKey(SaveDocument.DOC_KEY)) {
@@ -250,7 +250,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 	}
 
 	
-	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+	DocumentManager documentManager = (DocumentManager)hashTable.get(CommonTask.DOCUMENT_MANAGER.name);
 	Simulation simulations[] = (Simulation[])hashTable.get("simulations");
 	VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 	// just to make sure, verify that we actually did save a new edition
@@ -288,6 +288,7 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			
 		}
 	}
+	
 }
 
 }
