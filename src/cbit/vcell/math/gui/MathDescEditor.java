@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 
 import cbit.gui.MultiPurposeTextPanel;
@@ -89,7 +90,11 @@ private void apply_ExceptionOccurred(java.lang.Throwable e) throws javax.swing.t
 private void applyChanges(java.awt.event.ActionEvent arg1) {
 	try {
 		if ((getMathDescription() != null)) {
+			JTextPane tp = getVCMLPane().getTextPane();
+			int cp = tp.getCaretPosition();
 			setMathDescription(MathDescription.fromEditor(getMathDescription(), getVCMLPane().getText()));
+			cp = Math.min(cp, tp.getText().length());
+			tp.setCaretPosition(cp);
 		}
 		getCancelButton().setEnabled(false);
 		getApplyButton().setEnabled(false);
