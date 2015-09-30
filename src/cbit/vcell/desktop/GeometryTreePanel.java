@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.desktop;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
@@ -17,7 +16,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.vcell.util.BeanUtils;
@@ -25,9 +23,9 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 
-import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.desktop.DatabaseWindowPanel;
 import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;
@@ -69,7 +67,7 @@ private class IvjEventHandler implements java.awt.event.ActionListener, java.bea
 			if (evt.getSource() == GeometryTreePanel.this && (evt.getPropertyName().equals("selectedVersionInfo"))) {
 				getGeometryMetaDataPanel().setGeometryInfo(getSelectedGeometryInfo());
 			}
-			if (evt.getSource() == GeometryTreePanel.this && (evt.getPropertyName().equals("documentManager"))) {
+			if (evt.getSource() == GeometryTreePanel.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) {
 				getGeometryMetaDataPanel().setDocumentManager(getDocumentManager());
 			}
 		}		

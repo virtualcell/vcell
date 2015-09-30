@@ -36,6 +36,7 @@ import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel.LoadTestTreeInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.client.task.SuiteTFRemoveCompiledSolvers;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
@@ -301,7 +302,7 @@ class IvjEventHandler implements TreeExpansionListener,java.awt.event.ActionList
 
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == TestingFrameworkPanel.this && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == TestingFrameworkPanel.this && (evt.getPropertyName().equals(CommonTask.DOCUMENT_MANAGER.name))) 
 				connPtoP2SetTarget();
 			if (evt.getSource() == TestingFrameworkPanel.this && (evt.getPropertyName().equals("testingFrameworkWindowManager"))) 
 				connPtoP3SetTarget();
@@ -2334,7 +2335,7 @@ public void selectInTreeView(final BigDecimal testSuiteKey,final BigDecimal test
 public void setDocumentManager(DocumentManager documentManager) {
 	DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
-	firePropertyChange("documentManager", oldValue, documentManager);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, documentManager);
 }
 /**
  * Set the documentManager1 to a new value.
@@ -2354,7 +2355,7 @@ private void setdocumentManager1(DocumentManager newValue) {
 			}
 			connPtoP2SetSource();
 			connEtoM1(ivjdocumentManager1);
-			firePropertyChange("documentManager", oldValue, newValue);
+			firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, newValue);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

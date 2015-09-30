@@ -15,13 +15,14 @@ import java.util.Vector;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
+import cbit.vcell.solver.SimulationOwner;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -39,7 +40,7 @@ public class DocumentValid extends AsynchClientTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();
@@ -73,7 +74,8 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		}
 		// check issues for errors
 		Vector<Issue> issueList = new Vector<Issue>();
-		bioModel.gatherIssues(issueList);
+		IssueContext issueContext = new IssueContext();
+		bioModel.gatherIssues(issueContext,issueList);
 		for (int i = 0; i < issueList.size(); i++){
 			Issue issue = issueList.elementAt(i);
 			if (issue.getSeverity() == Issue.SEVERITY_ERROR){

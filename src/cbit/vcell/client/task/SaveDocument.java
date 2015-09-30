@@ -48,9 +48,9 @@ public class SaveDocument extends AsynchClientTask {
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	long l1 = System.currentTimeMillis();
-	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
+	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name);
 	VCDocument currentDocument = documentWindowManager.getVCDocument();
-	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
+	DocumentManager documentManager = (DocumentManager)hashTable.get(CommonTask.DOCUMENT_MANAGER.name);
 	RequestManager requestManager = (RequestManager)hashTable.get("requestManager");
 	boolean bAsNew = hashTable.containsKey("newName");
 	String newName = bAsNew ? (String)hashTable.get("newName") : null;

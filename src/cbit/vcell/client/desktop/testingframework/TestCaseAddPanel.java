@@ -9,9 +9,7 @@
  */
 
 package cbit.vcell.client.desktop.testingframework;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
-import cbit.vcell.numericstest.TestCaseNewBioModel;
-import cbit.vcell.numericstest.TestCaseNew;
+import java.awt.GridBagConstraints;
 
 import javax.swing.JRadioButton;
 import javax.swing.ListSelectionModel;
@@ -21,7 +19,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import java.awt.GridBagConstraints;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCaseNewBioModel;
+import cbit.vcell.numericstest.TestCaseNewMathModel;
 /**
  * Insert the type's description here.
  * Creation date: (7/22/2004 9:21:05 AM)

@@ -49,6 +49,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
@@ -366,7 +367,7 @@ public void setDocumentManager(DocumentManager newValue) {
 	}
 	getTreeModel( ).setDocumentManager(ivjDocumentManager);
 	treeCellRenderer.setSessionUser(ivjDocumentManager == null ? null : ivjDocumentManager.getUser());
-	firePropertyChange("documentManager", oldValue, newValue);
+	firePropertyChange(CommonTask.DOCUMENT_MANAGER.name, oldValue, newValue);
 }
 
 /**

@@ -11,12 +11,14 @@
 package cbit.vcell.desktop;
 
 import java.awt.Font;
+
+import javax.swing.JLabel;
 /**
  * Insert the type's description here.
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
-import javax.swing.*;
+import javax.swing.JTree;
  
 public class BioModelInfoCellRenderer extends VCellBasicCellRenderer {
 /**

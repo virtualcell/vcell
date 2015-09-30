@@ -10,6 +10,8 @@
 
 package cbit.vcell.model.gui;
 
+import java.beans.PropertyVetoException;
+
 import cbit.vcell.model.Kinetics;
 
 /**
@@ -258,7 +260,7 @@ private void updatePermeability() {
 		if (getGhkKinetics()==null){
 			return;
 		}
-		double z = getGhkKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence).getExpression().evaluateConstant();
+		double z = getGhkKinetics().getKineticsParameterFromRole(Kinetics.ROLE_CarrierChargeValence).getExpression().evaluateConstant();
 		double R = getGhkKinetics().getReactionStep().getModel().getGAS_CONSTANT().getConstantValue();
 		double T = 300;
 		double F = getGhkKinetics().getReactionStep().getModel().getFARADAY_CONSTANT().getConstantValue();

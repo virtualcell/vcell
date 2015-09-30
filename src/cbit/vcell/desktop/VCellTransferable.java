@@ -17,7 +17,6 @@ import org.vcell.util.gui.SimpleTransferable;
 
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.ReactionStep.ReactionNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 /**

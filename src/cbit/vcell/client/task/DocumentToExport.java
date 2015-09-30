@@ -56,7 +56,7 @@ public class DocumentToExport extends AsynchClientTask {
 			doc = ((DocumentWindowManager) topLevelWindowManager)
 					.getVCDocument();
 		} else if (topLevelWindowManager instanceof DatabaseWindowManager) {
-			DocumentManager documentManager = extractRequired(hashTable, DocumentManager.class,"documentManager");
+			DocumentManager documentManager = extractRequired(hashTable, DocumentManager.class,CommonTask.DOCUMENT_MANAGER.name);
 			VCDocumentInfo documentInfo = ((DatabaseWindowManager) topLevelWindowManager)
 					.getPanelSelection();
 			if (documentInfo instanceof BioModelInfo) {

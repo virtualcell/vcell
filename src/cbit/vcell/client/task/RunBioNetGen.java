@@ -15,8 +15,8 @@ import java.util.Hashtable;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
+import cbit.vcell.server.bionetgen.BNGOutput;
 /**
  * Insert the type's description here.
  * Creation date: (7/14/2006 5:11:43 PM)
