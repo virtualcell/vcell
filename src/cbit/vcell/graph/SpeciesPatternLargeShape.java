@@ -423,6 +423,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				g2.setColor(Color.gray);
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+13);
 			} else {
+				g2.setColor(Color.red.darker());									// draw a dark red '-' sign
+				g2.drawLine(bs.from.x-10, bs.from.y+5, bs.from.x-4, bs.from.y+5);	// horizontal
+				g2.drawLine(bs.from.x-10, bs.from.y+6, bs.from.x-4, bs.from.y+6);
+//				g2.drawLine(bs.from.x-6, bs.from.y+4, bs.from.x-6, bs.from.y+9);	// vertical
+//				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
+
 				// for BondType.None we show nothing at all
 				// below small black vertical line ended in a red "x" (comment out if not wanted)
 //				g2.setColor(lineColor);
@@ -448,10 +454,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				g2.setColor(Color.gray);
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+vo);
 				
-				g2.setColor(Color.red);
-				g2.drawLine(bs.from.x-2, bs.from.y+vo-1, bs.from.x+3, bs.from.y+vo-1);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x-2, bs.from.y+vo, bs.from.x+3, bs.from.y+vo);
+				g2.drawLine(bs.from.x-1, bs.from.y+vo-1, bs.from.x+2, bs.from.y+vo-1);
+				g2.setColor(Color.gray);
+				g2.drawLine(bs.from.x-1, bs.from.y+vo, bs.from.x+2, bs.from.y+vo);
 			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
