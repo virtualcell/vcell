@@ -436,35 +436,33 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				super.mouseClicked(e);
-				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
+				if(e.getButton() == 1) {					// left click selects the object (we highlight it)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					Graphics g = shapePanel.getGraphics();
-					for (SpeciesPatternLargeShape sps : spsList) {
-						sps.turnHighlightOffRecursive(g);
-					}
-					for (SpeciesPatternLargeShape sps : spsList) {
-						if (sps.contains(locationContext)) {		//check if mouse is inside shape
-							break;
-						}
-					}
-					locationContext.highlightDeepestShape();
-					locationContext.paintDeepestShape(g);
-				} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
+					manageMouseActivity(locationContext);
+				} else if(e.getButton() == 3) {				// right click invokes popup menu (only if the object is highlighted)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					for (SpeciesPatternLargeShape sps : spsList) {
-						if (sps.contains(locationContext)) {		//check if mouse is inside shape
-							break;		// if mouse is inside a shape it can't be simultaneously in another one
-						}
-					}
+					manageMouseActivity(locationContext);
 					if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
 						// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
-						
 						// return;
 					}					
 					showPopupMenu(e, locationContext);
 				}
+			}
+			private void manageMouseActivity(PointLocationInShapeContext locationContext) {
+				Graphics g = shapePanel.getGraphics();
+				for (SpeciesPatternLargeShape sps : spsList) {
+					sps.turnHighlightOffRecursive(g);
+				}
+				for (SpeciesPatternLargeShape sps : spsList) {
+					if (sps.contains(locationContext)) {		//check if mouse is inside shape
+						break;
+					}
+				}
+				locationContext.highlightDeepestShape();
+				locationContext.paintDeepestShape(g);
 			}
 		});
 //		shapePanel.addMouseListener(eventHandler);		// alternately use this

@@ -411,32 +411,30 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					Graphics g = shapePanel.getGraphics();
-					for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
-						mtls.turnHighlightOffRecursive(g);
-					}
-					for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
-						if (mtls.contains(locationContext)) {		//check if mouse is inside shape
-							break;
-						}
-					}
-					locationContext.highlightDeepestShape();
-					locationContext.paintDeepestShape(g);
+					manageMouseActivity(locationContext);
 				} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					for (MolecularTypeLargeShape stls : molecularTypeShapeList) {
-						if (stls.contains(locationContext)) {		//check if mouse is inside shape
-							break;		// if mouse is inside a shape it can't be simultaneously in another one
-						}
-					}
+					manageMouseActivity(locationContext);
 					if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
 						// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
-						
 						// return;
 					}					
 					showPopupMenu(e, locationContext);
 				}
+			}
+			private void manageMouseActivity(PointLocationInShapeContext locationContext) {
+				Graphics g = shapePanel.getGraphics();
+				for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+					mtls.turnHighlightOffRecursive(g);
+				}
+				for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+					if (mtls.contains(locationContext)) {		//check if mouse is inside shape
+						break;
+					}
+				}
+				locationContext.highlightDeepestShape();
+				locationContext.paintDeepestShape(g);
 			}
 		});
 
