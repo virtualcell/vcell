@@ -412,26 +412,26 @@ private void initialize() {
 				if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					Graphics g = shapePanel.getGraphics();
-					spls.turnHighlightOffRecursive(g);
-					if (spls.contains(locationContext)) {		//check if mouse is inside shape
-						System.out.println("left click inside shape " + locationContext.getDeepestShape().toString());
-					}
-					locationContext.highlightDeepestShape();
-					locationContext.paintDeepestShape(g);
+					manageMouseActivity(locationContext);
 				} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
 					Point whereClicked = e.getPoint();
 					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-					if (spls.contains(locationContext)) {		//check if mouse is inside shape
-						System.out.println("right click inside shape");
-					}
+					manageMouseActivity(locationContext);
 					if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
 						// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
-						
 						// return;
 					}					
 					showPopupMenu(e, locationContext);
 				}
+			}
+			private void manageMouseActivity(PointLocationInShapeContext locationContext) {
+				Graphics g = shapePanel.getGraphics();
+				spls.turnHighlightOffRecursive(g);
+				if (spls.contains(locationContext)) {		//check if mouse is inside shape
+					System.out.println("left click inside shape " + locationContext.getDeepestShape().toString());
+				}
+				locationContext.highlightDeepestShape();
+				locationContext.paintDeepestShape(g);
 			}
 		});
 		// ----------------------------------------------------------------------------------

@@ -221,75 +221,61 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 						Point whereClicked = e.getPoint();
 						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-						Graphics g = shapePanel.getGraphics();
-						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
-							sps.turnHighlightOffRecursive(g);
+						manageMouseActivity(locationContext);
+					} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
+						Point whereClicked = e.getPoint();
+						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+						manageMouseActivity(locationContext);
+						if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
+							// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
+							// return;
+						}					
+						showPopupMenu(e, locationContext);
+					}
+				}
+				private void manageMouseActivity(PointLocationInShapeContext locationContext) {
+					Graphics g = shapePanel.getGraphics();
+					for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
+						sps.turnHighlightOffRecursive(g);
+					}
+					for (SpeciesPatternLargeShape sps : productPatternShapeList) {
+						sps.turnHighlightOffRecursive(g);
+					}
+					boolean found = false;
+					for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
+						if (sps.contains(locationContext)) {		//check if mouse is inside shape
+							found = true;
+							break;
 						}
+					}
+					if(!found) {
 						for (SpeciesPatternLargeShape sps : productPatternShapeList) {
-							sps.turnHighlightOffRecursive(g);
-						}
-						boolean found = false;
-						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
-							if (sps.contains(locationContext)) {		//check if mouse is inside shape
+							if (sps.contains(locationContext)) {
 								found = true;
 								break;
 							}
 						}
-						if(!found) {
-							for (SpeciesPatternLargeShape sps : productPatternShapeList) {
-								if (sps.contains(locationContext)) {
-									found = true;
-									break;
-								}
+					}
+					locationContext.highlightDeepestShape();
+					if(locationContext.getDeepestShape() == null) {
+						// nothing selected means all the reactant bar or all the product bar is selected 
+						int xExtent = SpeciesPatternLargeShape.xExtent;
+						Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+						Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
+						
+						if(locationContext.isInside(reactantRectangle)) {
+							for(SpeciesPatternLargeShape spls : reactantPatternShapeList) {
+								spls.paintSelf(g, false);
 							}
-						}
-						locationContext.highlightDeepestShape();
-						if(locationContext.getDeepestShape() == null) {
-							// nothing selected means all the reactant bar or all the product bar is selected 
-							int xExtent = SpeciesPatternLargeShape.xExtent;
-							Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
-							Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
-							
-							if(locationContext.isInside(reactantRectangle)) {
-//								locationContext.paintContour(g, reactantRectangle);
-								for(SpeciesPatternLargeShape spls : reactantPatternShapeList) {
-									spls.paintSelf(g, false);
-								}
-							} else if(locationContext.isInside(productRectangle)) {
-//								locationContext.paintContour(g, productRectangle);
-								for(SpeciesPatternLargeShape spls : productPatternShapeList) {
-									spls.paintSelf(g, false);
-								}
-							} else {
-								
+						} else if(locationContext.isInside(productRectangle)) {
+							for(SpeciesPatternLargeShape spls : productPatternShapeList) {
+								spls.paintSelf(g, false);
 							}
 						} else {
-							locationContext.paintDeepestShape(g);
-						}
-					} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
-						Point whereClicked = e.getPoint();
-						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
-						boolean found = false;
-						for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
-							if (sps.contains(locationContext)) {		//check if mouse is inside shape
-								found = true;
-								break;		// if mouse is inside a shape it can't be simultaneously in another one
-							}
-						}
-						if(!found) {
-							for (SpeciesPatternLargeShape sps : productPatternShapeList) {
-								if (sps.contains(locationContext)) {
-									found = true;
-									break;
-								}
-							}
-						}
-						if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
-							// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
 							
-							// return;
-						}					
-						showPopupMenu(e, locationContext);
+						}
+					} else {
+						locationContext.paintDeepestShape(g);
 					}
 				}
 			});
@@ -721,7 +707,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		} else if(deepestShape instanceof ComponentStateLargeShape) {
 			System.out.println("inside state");
 			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
-				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStatePattern();
 			} else {
 				return;
 			}
