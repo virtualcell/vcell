@@ -169,39 +169,20 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			Font fontOld = g.getFont();
 			Color colorOld = g.getColor();
 			Paint paintOld = g2.getPaint();
-
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			Color paleBlue = Color.getHSBColor(0.6f, 0.03f, 1.0f);
-			Color darkerBlue = Color.getHSBColor(0.6f, 0.18f, 1.0f);	// a bit darker for border
-			Rectangle2D rect = makeStateRectangle();
 			
-			if(owner instanceof MolecularType) {
-				// we deal with highlighting only for Molecular Type States - because only here we have more
-				// than one and highlighting them individually makes sense
-//				if(isHighlighted()) {
-//					g2.setPaint(paleBlue);
-//					g2.fill(rect);
-//					g2.setColor(darkerBlue);
-//					g2.draw(rect);
-//				} else {
-//					g2.setPaint(Color.white);
-//					g2.fill(rect);
-//					g2.setColor(Color.white);
-//					g2.draw(rect);
-//				}
-			}
-			
-			// =========================================================
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
-			g2.setColor(componentYellow);
+			if(!isHighlighted()) {
+				g2.setColor(componentYellow);
+			} else {
+				g2.setColor(Color.white);
+			}
 			g2.fill(normalRectangle);
 			g.setColor(Color.black);
 			g2.draw(normalRectangle);
-			// =========================================================
 			
 			g.setFont(font);
 			g.setColor(Color.black);
-//			g.drawString(displayName, xPos, yPos);
 			g.drawString(displayName, xPos+7, yPos+computeStateHeight(g)-4);
 			
 			g2.setPaint(paintOld);
