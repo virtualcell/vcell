@@ -717,7 +717,7 @@ private void updateShape() {
 		Dimension preferredSize = new Dimension(maxXOffset+120, maxYOffset+20);
 		shapePanel.setPreferredSize(preferredSize);
 		shapePanel.repaint();
-		scrollPane.repaint();
+//		scrollPane.repaint();
 	}
 }
 
@@ -1037,7 +1037,7 @@ private void updateShape() {
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
 			List<String> itemList = new ArrayList<String>();
-			itemList.add(ComponentStatePattern.strAny);
+//			itemList.add(ComponentStatePattern.strAny);			// any is not an option for state
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
 				String name = csd.getName();
 				itemList.add(name);

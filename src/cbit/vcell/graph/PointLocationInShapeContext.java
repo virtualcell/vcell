@@ -79,15 +79,12 @@ public class PointLocationInShapeContext {
 	
 	public boolean highlightDeepestShape() {
 		if(csls != null) {
-			// we highlight the mcs for observables / species / reactions
-			if(mcs != null && !(csls.getOwner() instanceof MolecularType)) mcs.setHighlight(true);
-			if(mcs != null && csls.getOwner() instanceof MolecularType) csls.setHighlight(true);
+			csls.setHighlight(true);
 			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
 			return true;
 		}
 		if(mcs != null) {
 			mcs.setHighlight(true);
-//			if(mts != null) mts.setHighlight(false);	// we don't highlight the mts because it's overkill - too much color
 			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
 			return true;
 		}
