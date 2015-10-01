@@ -81,8 +81,11 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			}
 			this.graphicsContext = gc;
 			
-//			this.displayName = "~" + adjustForSize(csd.getDisplayName());
-			this.displayName = adjustForSize(csd.getDisplayName());
+			if(this.csd == null) {
+				this.displayName = "?";
+			} else {
+				this.displayName = adjustForSize(csd.getDisplayName());
+			}
 			this.font = deriveStateFont(gc);
 			this.height = computeStateHeight(gc);
 			FontMetrics fm = graphicsContext.getFontMetrics(font);
@@ -302,7 +305,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		width = width + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
-		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+//		if(csp != null && !csp.isAny() && mcp.getComponentStatePattern().getComponentStateDefinition() != null) {
+		if(csp != null) {
 			// align the end of the state shape with the end of the component shape
 			int xPosState = xPos + width - longestStateNameWidth - ComponentStateLargeShape.xOffsetWidth;
 			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos-computeStateHeight(graphicsContext)+1, csp, graphicsContext, owner);
