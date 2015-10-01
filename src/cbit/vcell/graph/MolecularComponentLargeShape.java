@@ -454,6 +454,14 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			locationContext.mcs = this;
 			return true;
 		}
+		// the bond area is also considered to belong to the component shape (except for molecular type which has no bond)
+		if(!(owner instanceof MolecularType)) {
+			Rectangle2D bondRect = new Rectangle2D.Double(xPos, yPos+height, 15, 15);
+			if(bondRect.contains(locationContext.point)) {
+				locationContext.mcs = this;
+				return true;
+			}
+		}
 		return false;		// point not inside this component shape, locationContext.mcs remains null;
 	}
 	
@@ -489,7 +497,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.draw(innerRectangle);
 			g2.setColor(componentColor);
 		}
-
+		
 		Font font = deriveComponentFontBold(graphicsContext);
 		g.setFont(font);
 		if(hidden == false) {
@@ -502,15 +510,6 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		for(ComponentStateLargeShape csls : stateShapes) {	// text of the State(s), if any
 			csls.paintSelf(g);
 		}
-		
-		// the smaller "State" yellow circle
-//		if(mc.getComponentStateDefinitions().size()>0) {
-//			g2.setColor(componentYellow);
-//			g2.fillOval(xPos + width - 12, yPos-6, 10, 10);
-//			g.setColor(Color.gray);
-//			g2.drawOval(xPos + width - 12, yPos-6, 10, 10);
-//		}
-		
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
