@@ -551,6 +551,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	}
 
 	public static final int xOffsetInitial = 20;
+//	public static final int yOffsetInitial = 60;
 	public static final int yOffsetInitial = 20;
 	public void updateInterface() {
 		boolean bNonNullMolecularType = molecularType != null && bioModel != null;
@@ -561,23 +562,35 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			
 			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 			molecularTypeShapeList.clear();
+			int maxYOffset = computeStatesVerticalOffset(molecularType);
 			Graphics panelContext = splitPane.getRightComponent().getGraphics();
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, yOffsetInitial, molecularType, panelContext, molecularType);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, panelContext, molecularType);
 			molecularTypeShapeList.add(stls);
 
 			int maxXOffset = xOffsetInitial + stls.getWidth();
-			int maxYOffset = yOffsetInitial + 80;
-			if(molecularType != null) {
-				for(MolecularComponent mc : molecularType.getComponentList()) {
-					maxYOffset = Math.max(maxYOffset, yOffsetInitial + 60 + 15 * mc.getComponentStateDefinitions().size());	// provide extra vertical space for the list of states
-				}
-			}
-			Dimension preferredSize = new Dimension(maxXOffset+100, maxYOffset+50);
+			
+			Dimension preferredSize = new Dimension(maxXOffset+100, maxYOffset+60);
 			shapePanel.setPreferredSize(preferredSize);
 			shapePanel.repaint();
 //			splitPane.getRightComponent().repaint();
 		} else {
 			annotationTextArea.setText(null);
+		}
+	}
+	private int computeStatesVerticalOffset(MolecularType mt) {
+		if(mt.getComponentList().size() == 0) {
+			return yOffsetInitial;
+		}
+		int maxNumberOfStates = 0;	// we need to find the highest number of states per component
+		for(MolecularComponent mc : mt.getComponentList()) {
+			maxNumberOfStates = Math.max(maxNumberOfStates, mc.getComponentStateDefinitions().size());
+		}
+		if(maxNumberOfStates < 2) {		// no need to add any offset if there's just 1 state defined, it fits inside the body of the molecule shape
+			return yOffsetInitial;
+
+		} else {
+			int stateHeight = MolecularComponentLargeShape.computeStateHeight(shapePanel.getGraphics());
+			return yOffsetInitial + stateHeight * (maxNumberOfStates-1);
 		}
 	}
 	
