@@ -68,6 +68,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
@@ -692,7 +693,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		Point mousePoint = e.getPoint();
 
 		final Object deepestShape = locationContext.getDeepestShape();
-		final Object selectedObject;
+		final RbmElementAbstract selectedObject;
 		
 		if(deepestShape == null) {
 			selectedObject = null;
@@ -701,7 +702,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		} else if(deepestShape instanceof ComponentStateLargeShape) {
 			System.out.println("inside state");
 			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
-				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStatePattern();
 			} else {
 				return;
 			}
@@ -790,8 +791,12 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			popupFromShapeMenu.add(deleteMenuItem);
 			
 		} else if (selectedObject instanceof MolecularComponentPattern) {
-			manageComponentPatternFromShape(selectedObject, locationContext);
+			manageComponentPatternFromShape(selectedObject, locationContext, false);
 			bDelete = false;
+			
+		} else if (selectedObject instanceof ComponentStatePattern) {
+			MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
+			manageComponentPatternFromShape(mcp, locationContext, true);
 		}
 		if (bRename) {
 			popupFromShapeMenu.add(getRenameFromShapeMenuItem());
@@ -809,11 +814,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
 	
-	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext) {
-		popupFromShapeMenu.removeAll();
+	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, boolean showStateOnly) {
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
-		
+		popupFromShapeMenu.removeAll();
 		// ------------------------------------------------------------------- State
 		if(mc.getComponentStateDefinitions().size() != 0) {
 			JMenu editStateMenu = new JMenu();
@@ -848,7 +852,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 			popupFromShapeMenu.add(editStateMenu);
 		}
-		
+		if(showStateOnly) {
+			return;
+		}
 		// ------------------------------------------------------------------------------------------- Bonds
 		final MolecularTypePattern mtp = locationContext.getMolecularTypePattern();
 		final SpeciesPattern sp = locationContext.getSpeciesPattern();

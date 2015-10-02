@@ -55,7 +55,7 @@ public abstract class AbstractComponentShape {
 
 	public final static Color componentGreen = new Color(0xccffcc);
 	public final static Color componentYellow = new Color(0xffdf00);
-//	final static Color componentYellow = new Color(0xffff99);
+	final static Color componentPaleYellow = new Color(0xffff99);
 	public final static Color componentBad = new Color(0xffb2b2);
 	public final static Color componentHidden = new Color(0xe7e7e7);
 //	final static Color componentHidden = new Color(0xffffff);
