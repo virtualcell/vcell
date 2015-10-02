@@ -7,8 +7,8 @@ package cbit.vcell.client.constants;
  * @author gweatherby
  */
 public class VCellCodeVersion implements Comparable<VCellCodeVersion>{
-	public static final int CURRENT_MAJOR = 5;
-	public static final int CURRENT_MINOR = 4;
+	public static final int CURRENT_MAJOR = 6;
+	public static final int CURRENT_MINOR = 0;
 	
 	public static final VCellCodeVersion CURRENT = new VCellCodeVersion(CURRENT_MAJOR,CURRENT_MINOR);
 	
@@ -47,5 +47,9 @@ public class VCellCodeVersion implements Comparable<VCellCodeVersion>{
 		}
 		return majorCompare;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "VCellCodeVersion" + major + '.' + minor;
+	}
 }
