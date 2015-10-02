@@ -50,6 +50,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
@@ -698,7 +699,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		Point mousePoint = e.getPoint();
 
 		final Object deepestShape = locationContext.getDeepestShape();
-		final Object selectedObject;
+		final RbmElementAbstract selectedObject;
 		
 		if(deepestShape == null) {
 			selectedObject = null;
@@ -844,7 +845,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel);			
+				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel, false);
+				
+			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
+				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
+				manageComponentPatternFromShape(mcp, locationContext, reactantTreeModel, true);			
 			}
 		// ---------------------------------------- product zone ---------------------------------------------
 		} else if(!bReactantsZone) {
@@ -940,12 +945,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel);			
+				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel, false);
+				
+			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
+				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
+				manageComponentPatternFromShape(mcp, locationContext, productTreeModel, true);			
 			}
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
-	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, final ReactionRulePropertiesTreeModel treeModel) {
+	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, final ReactionRulePropertiesTreeModel treeModel, boolean showStateOnly) {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
@@ -985,6 +994,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				});
 			}
 			popupFromShapeMenu.add(editStateMenu);
+		}
+		if(showStateOnly) {
+			return;
 		}
 		
 		// ------------------------------------------------------------------------------------------- Bonds

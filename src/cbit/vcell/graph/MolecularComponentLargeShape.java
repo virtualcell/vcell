@@ -63,21 +63,27 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		private int width;
 		private final int height;
 
+		private MolecularComponentPattern mcp = null;
+		private MolecularComponent mc = null;
+
 		private ComponentStateDefinition csd = null;
 		private ComponentStatePattern csp = null;
 		private final Displayable owner;
 		private String displayName;
 		
-		public ComponentStateLargeShape(int x, int y, RbmElementAbstract rea, Graphics gc, Displayable owner) {
+		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, Graphics gc, Displayable owner) {
 			this.xPos = x;
 			this.yPos = y;
 			
 			this.owner = owner;
 			if(owner instanceof MolecularType) {
-			this.csd = (ComponentStateDefinition)rea;
+				this.mc = (MolecularComponent)reaComponent;
+				this.csd = (ComponentStateDefinition)reaState;
 			} else {
-				this.csp = (ComponentStatePattern)rea;
-				this.csd = csp.getComponentStateDefinition();	// we create a large shape only if the ComponentStatePattern has a ComponentStateDefinition
+				this.mcp = (MolecularComponentPattern)reaComponent;
+				this.mc = mcp.getMolecularComponent();
+				this.csp = (ComponentStatePattern)reaState;
+				this.csd = csp.getComponentStateDefinition();	// may be null
 			}
 			this.graphicsContext = gc;
 			
@@ -173,7 +179,11 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
 			if(!isHighlighted()) {
-				g2.setColor(componentYellow);
+				if(csd == null) {
+					g2.setColor(componentHidden);		// show it gray if it has "any" state
+				} else {
+					g2.setColor(componentPaleYellow);
+				}
 			} else {
 				g2.setColor(Color.white);
 			}
@@ -234,6 +244,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public ComponentStatePattern getComponentStatePattern() {
 			return csp;
 		}
+		public MolecularComponentPattern getMolecularComponentPattern() {
+			return mcp;
+		}
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
@@ -259,7 +272,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
 			// align the end of the state shape with the end of the component shape
 			int xPosState = xPos + width - getStateStringWidth(longestStateName, graphicsContext) - ComponentStateLargeShape.xOffsetWidth;
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos - computeStateHeight(graphicsContext)*(i+1)+1, csd, graphicsContext, owner);
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos - computeStateHeight(graphicsContext)*(i+1)+1, mc, csd, graphicsContext, owner);
 			csls.forceDifferentWidth(getStateStringWidth(longestStateName, graphicsContext));
 			stateShapes.add(csls);
 		}
@@ -290,7 +303,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		if(csp != null) {
 			// align the end of the state shape with the end of the component shape
 			int xPosState = xPos + width - longestStateNameWidth - ComponentStateLargeShape.xOffsetWidth;
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos-computeStateHeight(graphicsContext)+1, csp, graphicsContext, owner);
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos-computeStateHeight(graphicsContext)+1, mcp, csp, graphicsContext, owner);
 			csls.forceDifferentWidth(getStateStringWidth(longestStateName, graphicsContext));
 			stateShapes.add(csls);
 		}

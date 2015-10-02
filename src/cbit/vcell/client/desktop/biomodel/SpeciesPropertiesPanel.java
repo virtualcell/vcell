@@ -80,6 +80,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
@@ -931,7 +932,7 @@ private void updateShape() {
 			return;
 		}
 		final Object deepestShape = locationContext.getDeepestShape();
-		final Object selectedObject;
+		final RbmElementAbstract selectedObject;
 		
 		if(deepestShape == null) {
 			selectedObject = null;
@@ -940,7 +941,7 @@ private void updateShape() {
 		} else if(deepestShape instanceof ComponentStateLargeShape) {
 			System.out.println("inside state");
 			if(((ComponentStateLargeShape)deepestShape).isHighlighted()) {
-				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStateDefinition();
+				selectedObject = ((ComponentStateLargeShape)deepestShape).getComponentStatePattern();
 			} else {
 				return;
 			}
@@ -1003,6 +1004,7 @@ private void updateShape() {
 					}
 				});
 			}
+			
 		} else if(selectedObject instanceof MolecularTypePattern) {
 			MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 			String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
@@ -1019,14 +1021,20 @@ private void updateShape() {
 				}
 			});
 			popupFromShapeMenu.add(deleteMenuItem);
+			
 		} else if(selectedObject instanceof MolecularComponentPattern) {
-			manageComponentPatternFromShape(selectedObject, locationContext);			
+			manageComponentPatternFromShape(selectedObject, locationContext, false);		
+			
+		} else if(selectedObject instanceof ComponentStatePattern) {
+			MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
+			manageComponentPatternFromShape(mcp, locationContext, true);
+			
 		} else {
 			System.out.println("Where am I ???");
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
-	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext) {
+	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, boolean showStateOnly) {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
@@ -1064,6 +1072,9 @@ private void updateShape() {
 				});
 			}
 			popupFromShapeMenu.add(editStateMenu);
+		}
+		if(showStateOnly) {
+			return;
 		}
 		
 		// ------------------------------------------------------------------------------------------- Bonds
