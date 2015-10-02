@@ -1,6 +1,7 @@
 package cbit.vcell.resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -10,6 +11,11 @@ import java.util.Collections;
  *
  */
 abstract class CygwinDLL implements VersionedLibrary {
+	/**
+	 * associated library names
+	 */
+	protected static final String[] LIB_64_NAMES = { "cyggcc_s-seh-1.dll","cygstdc++-6.dll","cyggfortran-3.dll", "cygquadmath-0.dll"};
+	protected static final String[] LIB_32_NAMES = { "cyggcc_s-1.dll","cygstdc++-6.dll"};
 	private final OperatingSystemInfo operatingSystemInfo;
 	private Collection<ProvidedLibrary> libs;
 	protected CygwinDLL( ) {
@@ -48,11 +54,11 @@ abstract class CygwinDLL implements VersionedLibrary {
 	}
 	protected abstract String version( ); 
 	
-	protected Collection<String> get32bit( ) {
-		return Collections.emptyList( ); 
+	protected Collection<String> get32bit() {
+		return Collections.unmodifiableCollection(Arrays.asList(LIB_32_NAMES));
 	}
-	protected Collection<String> get64bit( ) {
-		return Collections.emptyList( ); 
+	protected Collection<String> get64bit() {
+		return Collections.unmodifiableCollection(Arrays.asList(LIB_64_NAMES));
 	}
 
 }

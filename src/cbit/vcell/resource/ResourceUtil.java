@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -85,14 +84,13 @@ public class ResourceUtil {
 	 * uniquely identify version and variant (OperatingSystemInfo)
 	 */
 	private static String ourManifest = null;
-	private static final Logger lg = Logger.getLogger(ResourceUtil.class);
+	private static final Logger LG = Logger.getLogger(ResourceUtil.class);
 	
     /**
      * ensure class loaded so static initialization executes
      */
-    public static void init( ) {
-    	
-    }
+     public static void init( ) { }
+    
     /**
 	 * class which can help find executable via some means
 	 */
@@ -277,7 +275,7 @@ public class ResourceUtil {
 		String res = pkgName + filename;
 		File exe = new java.io.File(destination, filename);
 		if (!exe.exists()) {
-			ResourceUtil.writeFileFromResource(res, exe);
+			ResourceUtil.writeResourceToExecutableFile(res, exe);
 		}
 		ArrayList<ProvidedLibrary> fromResourceLibraries = new ArrayList<>();
 		fromResourceLibraries.addAll(vl.getLibraries());
@@ -297,7 +295,7 @@ public class ResourceUtil {
 			ProvidedLibrary previous = librariesLoaded.get(file_dll);
 			if (previous == null) {
 				if (!pl.isCacheable() || !file_dll.exists()) {
-					ResourceUtil.writeFileFromResource(RES_DLL, file_dll);
+					ResourceUtil.writeResourceToExecutableFile(RES_DLL, file_dll);
 				}
 				librariesLoaded.put(file_dll,pl);
 			}
@@ -452,7 +450,7 @@ public class ResourceUtil {
 		} 
 	}
 	
-	public static void writeFileFromResource(String resname, File file) throws IOException {
+	public static void writeResourceToExecutableFile(String resname, File file) throws IOException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		writeResourceToFile(resname,file);
 		if (osi.getOsType().isUnixLike()) {
 			System.out.println("Make " + file + " executable");
@@ -469,11 +467,16 @@ public class ResourceUtil {
 	 * convert embedded resource (e.g. file) to String
 	 * @param resname
 	 * @return String or error
+	 * @throws IOException 
 	 */
 	public static String resourceToString(String resname) {
-		InputStream is = ResourceUtil.class.getResourceAsStream(resname);
-		if (is != null) {
-			try (Reader r = new InputStreamReader(is,"UTF-8")) {
+		java.net.URL url = ResourceUtil.class.getResource(resname);
+		if (url == null) {
+			throw new RuntimeException("ResourceUtil::resourceToString() : Can't get resource for " + resname);
+		}
+		try (BufferedInputStream bis = new BufferedInputStream(url.openConnection().getInputStream()) ) {
+		if (bis != null) {
+			try (Reader r = new InputStreamReader(bis,"UTF-8")) {
 				StringBuilder sb = new StringBuilder();
 				final int BSIZE = 1024;
 				char buffer[] = new char[BSIZE];
@@ -484,9 +487,12 @@ public class ResourceUtil {
 				}
 				return sb.toString();
 			} catch (IOException e) {
-				lg.warn("Can't extract " + resname, e);
+				LG.warn("Can't extract " + resname, e);
 				e.printStackTrace();
 			}
+		}
+		} catch (IOException e1) {
+			LG.warn("Can't get " + resname, e1);
 		}
 		return "not found";
 	}
@@ -544,7 +550,7 @@ public class ResourceUtil {
 						String manifestString = getManifest(); 
 						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),manifestString.getBytes());
 					} catch (IOException e) {
-						lg.warn("Error cleaning solvers directory",e); 
+						LG.warn("Error cleaning solvers directory",e); 
 					}
 				}
 			}
@@ -568,7 +574,7 @@ public class ResourceUtil {
 				}
 			}
 		} catch (IOException e) {
-			lg.warn("Error getting manifest", e);
+			LG.warn("Error getting manifest", e);
 		}
 		return false;
 	}
