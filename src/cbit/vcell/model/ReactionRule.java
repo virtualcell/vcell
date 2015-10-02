@@ -652,10 +652,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
 		if(name == null || name.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Label is missing", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Label is missing", Issue.Severity.ERROR));
 		}
 		if(reactantPatterns == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.Severity.ERROR));
 		} else {
 			checkReactantPatterns(issueContext, issueList);
 			for (ReactantPattern rp : reactantPatterns) {
@@ -664,7 +664,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			}
 		}
 		if(productPatterns == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Product Pattern is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Product Pattern is null", Issue.Severity.ERROR));
 		} else {
 			checkProductPatterns(issueContext, issueList);
 			for (ProductPattern pp : productPatterns) {
@@ -674,7 +674,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		}
 		kineticLaw.gatherIssues(issueContext, issueList);
 		if(molecularTypeMappings == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.Severity.WARNING));
 		}
 		
 		for(ReactantPattern rp : reactantPatterns) {
@@ -702,35 +702,78 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		
 		// match management
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
+		Map<String, Integer> matchedReactants = new LinkedHashMap<String, Integer>();
+		Map<String, Integer> unmatchedReactants = new LinkedHashMap<String, Integer>();
 		Map<String, MolecularTypePattern> rMatches = new LinkedHashMap<String, MolecularTypePattern>();
 		for (ReactantPattern rp : reactantPatterns) {
 			SpeciesPattern sp = rp.getSpeciesPattern();
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				String thisName = mtp.getMolecularType().getDisplayName();
 				if(!mtp.hasExplicitParticipantMatch()) {
+					if(unmatchedReactants.containsKey(thisName)) {
+						int newCounter = unmatchedReactants.get(thisName) + 1;
+						unmatchedReactants.put(thisName, newCounter);
+					} else {
+						unmatchedReactants.put(thisName, 1);
+					}
 					continue;
 				}
+				matchedReactants.put(thisName, 99);		// the value doesn't matter, it's important to be there
 				String key = mtp.getParticipantMatchLabel();
 				if(rMatches.containsKey(key)) {					// no duplicates in reactants allowed
 					String message = "Multiple Reactants with the same match id " + key + " are not allowed.";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				} else {
 					rMatches.put(key, mtp);
 				}
 			}
 		}
+		Map<String, Integer> matchedProducts = new LinkedHashMap<String, Integer>();
+		Map<String, Integer> unmatchedProducts = new LinkedHashMap<String, Integer>();
 		Map<String, MolecularTypePattern> pMatches = new LinkedHashMap<String, MolecularTypePattern>();
 		for (ProductPattern pp : productPatterns) {
 			SpeciesPattern sp = pp.getSpeciesPattern();
 			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				String thisName = mtp.getMolecularType().getDisplayName();
 				if(!mtp.hasExplicitParticipantMatch()) {
+					if(unmatchedProducts.containsKey(thisName)) {
+						int newCounter = unmatchedProducts.get(thisName) + 1;
+						unmatchedProducts.put(thisName, newCounter);
+					} else {
+						unmatchedProducts.put(thisName, 1);
+					}
 					continue;
 				}
+				matchedProducts.put(thisName, 100);
 				String key = mtp.getParticipantMatchLabel();
 				if(pMatches.containsKey(key)) {					// no duplicates in products allowed
 					String message = "Multiple Products with the same match id " + key + " are not allowed.";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				} else {
 					pMatches.put(key, mtp);
+				}
+			}
+		}
+		// 2+ unmatched reactants and 1+ unmatched products of same molecule mean error (or vice-versa: 1+ && 2+)
+		for(String key : unmatchedReactants.keySet()) {
+			if(unmatchedProducts.containsKey(key)) {
+				// both maps have the same unmatched molecule, anything larger than 1 and 1 means matching error
+				int rCounter = unmatchedReactants.get(key);
+				int pCounter = unmatchedProducts.get(key);
+				if((rCounter>1 && pCounter>1) || (rCounter>0 && pCounter>1)) {
+					String message = "Matching missing for Molecule " + key;
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+				}
+			}
+		}
+		// must look also for combination with matches and unmatches for the same molecule like pA rA matched AND also pA and rA unmatched - one of each unmatched
+		for(String key : unmatchedReactants.keySet()) {
+			if(unmatchedProducts.containsKey(key) && matchedProducts.containsKey(key) && matchedReactants.containsKey(key)) {
+				int rCounter = matchedReactants.get(key);
+				int pCounter = matchedProducts.get(key);
+				if(rCounter == 1 && pCounter == 1) {		// the cases when either is >1 was addressed above, don't need duplicates
+					String message = "Matching missing for Molecule " + key;
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 				}
 			}
 		}
@@ -745,11 +788,11 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		
 //		for(String key : rMatches.keySet()) {
 //			String message = "No product shares the match id " + key + " with the reactant molecule " + rMatches.get(key).getDisplayName();
-//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 //		}
 //		for(String key : pMatches.keySet()) {
 //			String message = "No reactant shares the match id " + key + " with the product molecule " + pMatches.get(key).getDisplayName();
-//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.SEVERITY_WARNING));
+//			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 //		}
 	}
 
