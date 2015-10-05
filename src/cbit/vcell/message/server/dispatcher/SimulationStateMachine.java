@@ -54,92 +54,10 @@ public class SimulationStateMachine {
 	private final int jobIndex;
 	
 	/**
-	 * in memory storage of last time information about this job was received
+	 * in memory storage of last time information about this job was received or status was unknown due 
+	 * to transient failure or system restart
 	 */
 	private long solverProcessTimestamp;
-	//private ArrayList<StateMachineTransition> stateMachineTransitions = new ArrayList<StateMachineTransition>();
-//	public static class StateMachineTransition {
-//		public final AbstractStateMachineEvent event;
-//		public final SimulationJobStatus oldSimJobStatus;
-//		public final SimulationJobStatus newSimJobStatus;
-//		public StateMachineTransition(AbstractStateMachineEvent event, SimulationJobStatus oldSimJobStatus, SimulationJobStatus newSimJobStatus){
-//			this.event = event;
-//			this.oldSimJobStatus = oldSimJobStatus;
-//			this.newSimJobStatus = newSimJobStatus;
-//		}
-//		public String toString(){
-//			return "event=("+event+") : oldJobStatus=("+oldSimJobStatus+") : newJobStatus=("+newSimJobStatus+")";
-//		}
-//	}
-	
-	//==============================================================
-	//
-	// input events (archived for debugging purposes)
-	//
-	//==============================================================
-//	public abstract class AbstractStateMachineEvent {
-//		final long timestampMS = System.currentTimeMillis();
-//		final Integer taskID;
-//		public AbstractStateMachineEvent(Integer taskID){
-//			this.taskID = taskID;
-//		}
-//		protected String getTimeAndTaskString(){
-//			return "timeStampMS="+timestampMS+",elaspedTimeS="+((System.currentTimeMillis()-timestampMS)/1000)+", taskID='"+taskID+"'";
-//		}
-//	}
-//	public class WorkerStateMachineEvent extends AbstractStateMachineEvent {
-//		final WorkerEvent workerEvent;
-//		public WorkerStateMachineEvent(Integer taskID, WorkerEvent workerEvent){
-//			super(taskID);
-//			this.workerEvent = workerEvent;
-//		}
-//		public String toString(){
-//			return "WorkerStateMachineEvent("+getTimeAndTaskString()+",workerEvent='"+workerEvent.toString()+"')";
-//		}
-//	}
-//	public class StartStateMachineEvent extends AbstractStateMachineEvent {
-//		public StartStateMachineEvent(Integer taskID){
-//			super(taskID);
-//		}
-//		public String toString(){
-//			return "StartStateMachineEvent("+getTimeAndTaskString()+")";
-//		}
-//	}
-//	public class StopStateMachineEvent extends AbstractStateMachineEvent {
-//		public StopStateMachineEvent(Integer taskID){
-//			super(taskID);
-//		}
-//		public String toString(){
-//			return "StopStateMachineEvent("+getTimeAndTaskString()+")";
-//		}
-//	}
-//	public class PreloadStateMachineEvent extends AbstractStateMachineEvent {
-//		public PreloadStateMachineEvent(Integer taskID){
-//			super(taskID);
-//		}
-//		public String toString(){
-//			return "PreloadStateMachineEvent("+getTimeAndTaskString()+")";
-//		}
-//	}
-//	public class DispatchStateMachineEvent extends AbstractStateMachineEvent {
-//		public DispatchStateMachineEvent(Integer taskID){
-//			super(taskID);
-//		}
-//		public String toString(){
-//			return "DispatchStateMachineEvent("+getTimeAndTaskString()+")";
-//		}
-//	}
-//	public class AbortStateMachineEvent extends AbstractStateMachineEvent {
-//		public final String failureMessage;
-//		public AbortStateMachineEvent(Integer taskID, String failureMessage){
-//			super(taskID);
-//			this.failureMessage = failureMessage;
-//		}
-//		public String toString(){
-//			return "AbortStateMachineEvent("+getTimeAndTaskString()+")";
-//		}
-//	}
-
 	
 	public SimulationStateMachine(KeyValue simKey, int jobIndex){
 		this.simKey = simKey;
@@ -160,6 +78,14 @@ public class SimulationStateMachine {
 		solverProcessTimestamp = System.currentTimeMillis();
 	}
 	
+	/**
+	 * set to specified time (for mass setting)
+	 * @param solverProcessTimestamp
+	 */
+	void setSolverProcessTimestamp(long solverProcessTimestamp) {
+		this.solverProcessTimestamp = solverProcessTimestamp;
+	}
+
 	public KeyValue getSimKey() {
 		return simKey;
 	}

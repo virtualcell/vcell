@@ -144,15 +144,15 @@ public final class PbsProxy extends HtcProxy {
 	protected PbsJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, 
 			String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, 
 			Collection<PortableCommand> postProcessingCommands) throws ExecutableException{	
-		if (lg.isInfoEnabled()) {
+		if (LG.isInfoEnabled()) {
 			char space=' ';
-			lg.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
+			LG.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
 				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
 				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
 		}
-		if (lg.isInfoEnabled()) {
+		if (LG.isInfoEnabled()) {
 			char space=' ';
-			lg.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
+			LG.info("submit: " + jobName + space + sub_file + space + Arrays.toString(command) 
 				 + space + ncpus + space + memSize + " second cmd:  " + Arrays.toString(secondCommand)
 				 + " exit cmd:  " + Arrays.toString(exitCommand) + " ecrt:  " + exitCodeReplaceTag);
 		}
