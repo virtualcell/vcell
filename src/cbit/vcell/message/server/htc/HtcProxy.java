@@ -27,7 +27,7 @@ import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.tools.PortableCommand;
 
 public abstract class HtcProxy {
-	protected static Logger lg = Logger.getLogger(HtcProxy.class);
+	protected static final Logger LG = Logger.getLogger(HtcProxy.class);
 	
 	/**
 	 * 
@@ -117,11 +117,12 @@ public abstract class HtcProxy {
 			String server = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty,"");
 			return stub + server + "_";
 		} catch (Error e) { //set regardless, just log error
-			lg.error(e);
+			LG.error(e);
 		}
 		return stub; 
 	}
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "V_ALPHA" ;
+	//public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
 	

@@ -346,6 +346,9 @@ public class SimulationDispatcher extends ServiceProvider {
 					}
 				}
 				catch (Exception e) {
+					//in case of transient status failure, reset timestamps to avoid premature termination of 
+					//jobs
+					simDispatcherEngine.resetTimeStamps();
 					log.exception(e);
 				}
 			}

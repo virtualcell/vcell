@@ -12,6 +12,7 @@ package cbit.vcell.message.server.dispatcher;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
@@ -38,17 +39,28 @@ import cbit.vcell.solver.server.SimulationMessage;
  */
 public class SimulationDispatcherEngine {
 
-	private HashMap<KeyValue,ArrayList<SimulationStateMachine>> simStateMachineHash = new HashMap<KeyValue, ArrayList<SimulationStateMachine>>();
+	private HashMap<KeyValue,List<SimulationStateMachine>> simStateMachineHash = new HashMap<KeyValue, List<SimulationStateMachine>>();
 
 	/**
 	 * Scheduler constructor comment.
 	 */
 	public SimulationDispatcherEngine() {
 	}
-
+	
+	/**
+	 * reset simulation state time stamps in case of transient error in getting running status
+	 */
+	void resetTimeStamps( ) {
+		long now = System.currentTimeMillis();
+		for (List<SimulationStateMachine> lst : simStateMachineHash.values()) {
+			for (SimulationStateMachine ssm: lst) {
+				ssm.setSolverProcessTimestamp(now);
+			}
+		}
+	}
 
 	public SimulationStateMachine getSimulationStateMachine(KeyValue simulationKey, int jobIndex) {
-		ArrayList<SimulationStateMachine> stateMachineList = simStateMachineHash.get(simulationKey);
+		List<SimulationStateMachine> stateMachineList = simStateMachineHash.get(simulationKey);
 		if (stateMachineList==null){
 			stateMachineList = new ArrayList<SimulationStateMachine>();
 			simStateMachineHash.put(simulationKey,stateMachineList);

@@ -312,8 +312,10 @@ denied: job "6894" does not exist
 	/**
 	 * @param xmlString string to parse (qstat output
 	 * @param prefix to look for
+	 * @return list of jobs, except ones already marked for deletion
 	 */
 	private List<HtcJobID> parseXML(String xmlString, String prefix) {
+		try {
 		statusMap.clear();
 		List<HtcJobID>  jobList = new ArrayList<>();
 		Document qstatDoc = XmlUtil.stringToXML(xmlString, null);
@@ -328,14 +330,31 @@ denied: job "6894" does not exist
 				}
 				String jn = ji.getChildText(PSYM_JNUMBER);
 				String state = ji.getAttributeValue(PSYM_STATE);
+				Element stateCodeE = ji.getChild(PSYM_STATE);
+				String stateCode = stateCodeE.getValue();
+				
 				SgeJobID id = new SgeJobID(jn);
 				HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
-				HtcJobStatus status = new HtcJobStatus(SGEJobStatus.parseStatus(state));
-				statusMap.put(id, new JobInfoAndStatus(hji, status));
-				jobList.add(id);
+				SGEJobStatus stat = SGEJobStatus.parseStatus(state,stateCode);
+				if (LG.isDebugEnabled()) {
+					LG.debug("job " + jname + ' ' + state + ", " + stateCode + stat);
+				}
+				switch (stat) {
+				case RUNNING:
+				case PENDING:
+				case EXITED: 
+					HtcJobStatus status = new HtcJobStatus(stat);
+					statusMap.put(id, new JobInfoAndStatus(hji, status));
+					jobList.add(id);
+				case DELETING: 
+				}
 			}
 		}
 		return jobList;
+		} catch (Error e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	/**
