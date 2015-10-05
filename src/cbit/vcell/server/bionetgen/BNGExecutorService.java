@@ -35,6 +35,7 @@ import cbit.vcell.solvers.BioNetGenExecutable;
  * @author: Fei Gao
  */
 public class BNGExecutorService {
+	private final static String RUN_NETWORK = "run_network";
 	private final static String EXE_SUFFIX; 
 	private final static String EXE_BNG; 
 	private final static String RES_EXE_BNG; 
@@ -68,6 +69,7 @@ public class BNGExecutorService {
 	private static File file_exe_bng = null;
 	private static File file_exe_run_network = null;
 	private static String runNetworkError = null; 
+	private static int[] returnCodes = null; 
 	static {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		EXE_SUFFIX = osi.isWindows() ? ".exe" : "";
@@ -75,7 +77,7 @@ public class BNGExecutorService {
 		//RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
 		RES_EXE_BNG = osi.getResourcePackage() + EXE_BNG;
 		// run_network is called from within BNG2.exe, so the extension is not controlled from here
-		EXE_RUN_NETWORK = "run_network" + (osi.isWindows() ? ".exe" : "");
+		EXE_RUN_NETWORK =RUN_NETWORK  + (osi.isWindows() ? ".exe" : "");
 		RES_EXE_RUN_NETWORK = osi.getResourcePackage() + EXE_RUN_NETWORK;
 	}
 	
@@ -149,7 +151,7 @@ public BNGOutput executeBNG() throws BNGException {
 		executable = new BioNetGenExecutable(cmd,timeoutMS);
 		executable.setWorkingDir(workingDir);
 		executable.inheritCallbacks(getCallbacks());
-		executable.start();
+		executable.start( returnCodes ); 
 
 		String stdoutString; 
 		if (executable.getStatus() != org.vcell.util.ExecutableStatus.STOPPED) { 
@@ -157,6 +159,13 @@ public BNGOutput executeBNG() throws BNGException {
 		}
 		else {
 			stdoutString = "Stopped by user. Output from BioNetGen may be truncated";	
+		}
+		if (executable.getExitValue() == 1) {
+			String stderrString = executable.getStderrString();
+			if (stderrString.contains(RUN_NETWORK)) {
+				stdoutString = "run_network not supported on this operating system; partial data may be available\n"
+						+ executable.getStdoutString();
+			}
 		}
 
 		File[] files = workingDir.listFiles();
@@ -192,7 +201,6 @@ public BNGOutput executeBNG() throws BNGException {
 				file.delete( );
 			}
 		}
-
 	}
 
 	return bngOutput;
@@ -239,14 +247,16 @@ private static void testRunNetwork( ) {
 		if (runNetworkError.startsWith(RUN_NETWORK_DEFAULT_STRING)) {
 			//expected output, 
 			runNetworkError = null;
+			returnCodes = new int[]{0};
 			return;
 		}
 	} catch (ExecutableException e) {
 		runNetworkError = e.getMessage(); 
+		if (LG.isInfoEnabled() ) {
+			LG.info(file_exe_run_network + " test error output " + runNetworkError);
+		}
 	}
-	if (LG.isInfoEnabled() && runNetworkError != null) {
-		LG.info(file_exe_run_network + " test error output " + runNetworkError);
-	}
+	returnCodes = new int[]{0,1};
 }
 
 /**
