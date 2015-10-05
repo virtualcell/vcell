@@ -14,6 +14,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
+import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.model.Kinetics;
@@ -27,6 +28,7 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactantPattern;
@@ -68,7 +70,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
 		
-	public void transform(SimulationContext originalSimContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings) throws PropertyVetoException{
+	private void transform(SimulationContext originalSimContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings) throws PropertyVetoException{
 		Model newModel = transformedSimulationContext.getModel();
 		Model originalModel = originalSimContext.getModel();
 		ModelEntityMapping em = null;
@@ -91,13 +93,16 @@ public class RulebasedTransformer implements SimContextTransformer {
 			try {
 				MolecularType newmt = newModel.getRbmModelContainer().createMolecularType();
 				newModel.getRbmModelContainer().addMolecularType(newmt, false);
-				MolecularTypePattern newmtp = new MolecularTypePattern(newmt);
-				SpeciesPattern newsp = new SpeciesPattern();
-				newsp.addMolecularTypePattern(newmtp);
-				sc.setSpeciesPattern(newsp);
+				MolecularTypePattern newmtp_sc = new MolecularTypePattern(newmt);
+				SpeciesPattern newsp_sc = new SpeciesPattern();
+				newsp_sc.addMolecularTypePattern(newmtp_sc);
+				sc.setSpeciesPattern(newsp_sc);
 				
-				RbmObservable newo = new RbmObservable(newModel,sc.getName()+"_SeedSpeciesObservable",sc.getStructure(),RbmObservable.ObservableType.Molecules);
-				newo.addSpeciesPattern(newsp);
+				RbmObservable newo = new RbmObservable(newModel,"O0_"+newmt.getName()+"_tot",sc.getStructure(),RbmObservable.ObservableType.Molecules);
+				MolecularTypePattern newmtp_ob = new MolecularTypePattern(newmt);
+				SpeciesPattern newsp_ob = new SpeciesPattern();
+				newsp_ob.addMolecularTypePattern(newmtp_ob);
+				newo.addSpeciesPattern(newsp_ob);
 				newModel.getRbmModelContainer().addObservable(newo);
 
 				em = new ModelEntityMapping(originalModel.getSpeciesContext(sc.getName()), newo);	// map new observable to old species context
@@ -150,11 +155,31 @@ public class RulebasedTransformer implements SimContextTransformer {
 				for (KineticsParameter reaction_p : massActionKinetics.getKineticsParameters()){
 					if (reaction_p.getRole() == Kinetics.ROLE_UserDefined){
 						LocalParameter rule_p = kineticLaw.getLocalParameter(reaction_p.getName());
-						if (rule_p.getRole() != RbmKineticLawParameterType.UserDefined){
-							throw new RuntimeException("user defined parameter "+reaction_p.getName()+" didn't map to a user defined parameter in generated rule");
+						if (rule_p == null){
+							//
+							// after lazy parameter creation we didn't find a user-defined rule parameter with this same name.
+							// 
+							// there must be a global symbol with the same name, that the local reaction parameter has overridden.
+							//
+							ParameterContext.LocalProxyParameter rule_proxy_parameter = null;
+							for (ProxyParameter proxyParameter : kineticLaw.getProxyParameters()){
+								if (proxyParameter.getName().equals(reaction_p.getName())){
+									rule_proxy_parameter = (LocalProxyParameter) proxyParameter;
+								}
+							}
+							if (rule_proxy_parameter != null){
+								boolean bConvertToGlobal = false;  // we want to convert to local
+								kineticLaw.convertParameterType(rule_proxy_parameter, bConvertToGlobal);
+							}else{
+								// could find neither local parameter nor proxy parameter
+								throw new RuntimeException("user defined parameter "+reaction_p.getName()+" from reaction "+rs.getName()+" didn't map to a reactionRule parameter");
+							}
+						}else if (rule_p.getRole() == RbmKineticLawParameterType.UserDefined){
+							kineticLaw.setParameterValue(rule_p, reaction_p.getExpression(), true);
+							rule_p.setUnitDefinition(reaction_p.getUnitDefinition());
+						}else{
+							throw new RuntimeException("user defined parameter "+reaction_p.getName()+" from reaction "+rs.getName()+" mapped to a reactionRule parameter with unexpected role "+rule_p.getRole().getDescription());
 						}
-						kineticLaw.setParameterValue(rule_p, reaction_p.getExpression(), true);
-						rule_p.setUnitDefinition(reaction_p.getUnitDefinition());
 					}
 				}
 			} catch (ExpressionException e) {
