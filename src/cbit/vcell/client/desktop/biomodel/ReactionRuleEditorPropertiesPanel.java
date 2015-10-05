@@ -797,8 +797,53 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						}
 					});
 				}
-			} else if(selectedObject instanceof MolecularTypePattern) {		// delete molecule / reassign match
+			} else if(selectedObject instanceof MolecularTypePattern) {		// move left, right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				
+				String moveRightMenuText = "Move <b>" + "right" + "</b>";
+				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
+				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+				moveRightMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+						int fromIndex = mtpList.indexOf(from);
+						if(mtpList.size() == fromIndex+1) {		// already the last element
+							return;
+						}
+						int toIndex = fromIndex+1;
+						MolecularTypePattern to = mtpList.remove(toIndex);
+						mtpList.add(fromIndex, to);
+						reactantTreeModel.populateTree();
+						productTreeModel.populateTree();
+						shapePanel.repaint();
+					}
+				});
+				popupFromShapeMenu.add(moveRightMenuItem);
+				
+				String moveLeftMenuText = "Move <b>" + "left" + "</b>";
+				moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
+				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+				moveLeftMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+						int fromIndex = mtpList.indexOf(from);
+						if(fromIndex == 0) {			// already the first element
+							return;
+						}
+						int toIndex = fromIndex-1;
+						MolecularTypePattern to = mtpList.remove(toIndex);
+						mtpList.add(fromIndex, to);
+						reactantTreeModel.populateTree();
+						productTreeModel.populateTree();
+						shapePanel.repaint();
+					}
+				});
+				popupFromShapeMenu.add(moveLeftMenuItem);
+				
 				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 				deleteMenuText = "<html>" + deleteMenuText + "</html>";
 				JMenuItem deleteMenuItem = new JMenuItem(deleteMenuText);
@@ -810,6 +855,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 				popupFromShapeMenu.add(deleteMenuItem);
+				
 				if(mtp.hasExplicitParticipantMatch()) {
 					String newKey = mtp.getParticipantMatchLabel();
 					List<String> keyCandidates = new ArrayList<String>();
@@ -899,6 +945,51 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			} else if(selectedObject instanceof MolecularTypePattern) {		// delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				
+				String moveRightMenuText = "Move <b>" + "right" + "</b>";
+				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
+				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+				moveRightMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+						int fromIndex = mtpList.indexOf(from);
+						if(mtpList.size() == fromIndex+1) {		// already the last element
+							return;
+						}
+						int toIndex = fromIndex+1;
+						MolecularTypePattern to = mtpList.remove(toIndex);
+						mtpList.add(fromIndex, to);
+						reactantTreeModel.populateTree();
+						productTreeModel.populateTree();
+						shapePanel.repaint();
+					}
+				});
+				popupFromShapeMenu.add(moveRightMenuItem);
+				
+				String moveLeftMenuText = "Move <b>" + "left" + "</b>";
+				moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
+				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+				moveLeftMenuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
+						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
+						List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+						int fromIndex = mtpList.indexOf(from);
+						if(fromIndex == 0) {			// already the first element
+							return;
+						}
+						int toIndex = fromIndex-1;
+						MolecularTypePattern to = mtpList.remove(toIndex);
+						mtpList.add(fromIndex, to);
+						reactantTreeModel.populateTree();
+						productTreeModel.populateTree();
+						shapePanel.repaint();
+					}
+				});
+				popupFromShapeMenu.add(moveLeftMenuItem);
+				
 				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 				deleteMenuText = "<html>" + deleteMenuText + "</html>";
 				JMenuItem deleteMenuItem = new JMenuItem(deleteMenuText);
