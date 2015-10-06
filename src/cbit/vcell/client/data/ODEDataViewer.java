@@ -13,10 +13,6 @@ import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
-import java.util.Map.Entry;
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -91,7 +87,7 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
-private final Set<AsynchClientTaskFunctionTrack> clientTasks = Collections.newSetFromMap(new WeakHashMap<AsynchClientTaskFunctionTrack, Boolean>()) ;
+//private final Set<AsynchClientTaskFunctionTrack> clientTasks = Collections.newSetFromMap(new WeakHashMap<AsynchClientTaskFunctionTrack, Boolean>()) ;
 
 /**
  * connPtoP1SetTarget:  (ODEDataViewer.odeSolverResultSet <--> ODESolverPlotSpecificationPanel1.odeSolverResultSet)
@@ -103,16 +99,8 @@ private synchronized void connPtoP1SetTarget() {
 	}
 	try {
 		//see if still processing async task from  a previous call; if so just return
-		for (AsynchClientTaskFunctionTrack act: clientTasks) {
-			if (!act.isFinished()) {
-				System.err.println("duplicate set detected, ct size " + clientTasks.size());
-				return;
-			}
-		}
 		AsynchClientTaskFunctionTrack filterCategoriesTask = new AsynchClientTaskFunctionTrack( ht -> calculateFilterTask(ht),"Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
 		AsynchClientTaskFunctionTrack firePropertyChangeTask = new AsynchClientTaskFunctionTrack( ht -> firePropertyChangeTask(ht),"Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING);
-		clientTasks.add(filterCategoriesTask);
-		clientTasks.add(firePropertyChangeTask);
 		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
 				false, false, false, null, true);
@@ -126,7 +114,11 @@ private synchronized void connPtoP1SetTarget() {
  * {@link AsynchClientTask} method
  * @param ht
  */
-private void calculateFilterTask(Hashtable<String,Object> ht) {
+private synchronized void calculateFilterTask(Hashtable<String,Object> ht) {
+	//
+	// this method is synchronized because it can be called from ClientTaskDispatcher thread
+	// from multiple invocations, this will force them to execute serially.
+	//
 	if(ODEDataViewer.this.getSimulationModelInfo() != null){
 		SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
 		simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
