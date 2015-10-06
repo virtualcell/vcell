@@ -350,7 +350,13 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 			throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 		}
 		
-		Expression varIniExp = parseAndBind(mathDesc, tokens) ;
+		Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+		try{
+			varIniExp.bindExpression(mathDesc);
+		}catch(Exception ex){
+			ex.printStackTrace(System.out);
+			throw new MathException(ex.getMessage());
+		}
 		VarIniCount vic= new VarIniCount(var,varIniExp);
 		addVarIniCondition(vic);
 		
@@ -367,7 +373,14 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 		if (!(var instanceof StochVolVariable)){
 			throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 		}
-		Expression varIniExp = parseAndBind(mathDesc, tokens) ;
+		
+		Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+		try{
+			varIniExp.bindExpression(mathDesc);
+		}catch(Exception ex){
+			ex.printStackTrace(System.out);
+			throw new MathException(ex.getMessage());
+		}
 		VarIniPoissonExpectedCount vic= new VarIniPoissonExpectedCount(var,varIniExp);
 		addVarIniCondition(vic);
 		
@@ -429,7 +442,14 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 					if (!opera.equals(Action.ACTION_INC)){
 						throw new MathFormatException("expected 'INC' for action, found "+opera);
 					}
-					Expression exp = parseAndBind(mathDesc, tokens);
+					Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+					try{
+						exp.bindExpression(mathDesc);
+					}
+					catch(Exception ex){
+						ex.printStackTrace(System.out);
+						throw new MathException(ex.getMessage());
+					}
 					Action action = Action.createIncrementAction(var,exp);
 					jump.addAction(action);
 				}
@@ -439,9 +459,284 @@ protected void parse(MathDescription mathDesc, String token, CommentStringTokeni
 		
 		return;
 	}	
-	
 	throw new MathFormatException("unexpected identifier "+token);
 }
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param tokens java.util.StringTokenizer
+ * @exception java.lang.Exception The exception description.
+ */
+/*
+private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathException, cbit.vcell.parser.ExpressionException {
+	String token = null;
+	token = tokens.nextToken();
+	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+		throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+	}			
+	while (tokens.hasMoreTokens()){
+		token = tokens.nextToken();
+		if (token.equalsIgnoreCase(VCML.EndBlock)){
+			break;
+		}			
+		if (token.equalsIgnoreCase(VCML.Handle)){
+			//
+			// throw away "handle information" deprecated
+			//
+			token = tokens.nextToken();
+			//handle = Integer.valueOf(token).intValue();
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.Priority)){
+			token = tokens.nextToken();
+			priority = Integer.valueOf(token).intValue();
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.BoundaryXm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeXm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryXp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeXp = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryYm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeYm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryYp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeYp = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryZm)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeZm = new BoundaryConditionType(type);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.BoundaryZp)){
+			String type = tokens.nextToken();
+			boundaryConditionTypeZp = new BoundaryConditionType(type);
+			continue;
+		}
+		if (token.equalsIgnoreCase(VCML.BoundaryConditionSpec)) {
+			String name = tokens.nextToken();
+			String type = tokens.nextToken();
+			BoundaryConditionSpec  bcs = new BoundaryConditionSpec(name, new BoundaryConditionType(type));
+			addBoundaryConditionSpec(bcs);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.PdeEquation)){
+			token = tokens.nextToken();
+			boolean bSteady = false;
+			if (token.equals(VCML.Steady)) {
+				bSteady = true;
+				token = tokens.nextToken();
+			}
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof VolVariable)){
+				throw new MathFormatException("variable "+token+" not a VolumeVariable");
+			}	
+			PdeEquation pde = new PdeEquation((VolVariable)var, bSteady);
+			pde.read(tokens);
+			addEquation(pde);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.OdeEquation)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof VolVariable)){
+				throw new MathFormatException("variable "+token+" not a VolumeVariable");
+			}	
+			OdeEquation ode = new OdeEquation((VolVariable)var,null,null);
+			ode.read(tokens);
+			addEquation(ode);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.VolumeRegionEquation)){
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof VolumeRegionVariable)){
+				throw new MathFormatException("variable "+token+" not a VolumeRegionVariable");
+			}	
+			VolumeRegionEquation vre = new VolumeRegionEquation((VolumeRegionVariable)var,null);
+			vre.read(tokens);
+			addEquation(vre);
+			continue;
+		}			
+		/**
+		 * ParticleJumpProcess name A B {
+		 *    MacroscopicRateConstant dkdkdk;
+		 *    Action destroy A
+		 *    Action destroy B
+		 *    Action create C
+		 * }
+		 */
+/*
+		if (token.equalsIgnoreCase(VCML.ParticleJumpProcess)){
+			ParticleJumpProcess particleJumpProcess = ParticleJumpProcess.fromVCML(mathDesc, tokens);
+			addParticleJumpProcess(particleJumpProcess);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.ParticleProperties)){
+			ParticleProperties pp = new ParticleProperties(mathDesc, tokens);
+			if((pp.getVariable() == null) || (pp.getVariable().getDomain() == null)) {
+				throw new RuntimeException("either variable not found or no domain");
+//				continue;
+			}
+			if(pp.getVariable().getDomain().getName().equals(this.getName())){
+				addParticleProperties(pp);
+			}else{
+				throw new MathException("Variable (" + pp.getVariable().getName() + ") is defined in domain " + pp.getVariable().getDomain().getName() +
+						                 ". \nHowever the variable particle properties of " + pp.getVariable().getName() + " is defined in domain " + this.getName() + ". \nPlease check your model.");
+			}
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.FastSystem)){
+			FastSystem fs = new FastSystem(mathDesc);
+			fs.read(tokens);
+			setFastSystem(fs);
+			continue;
+		}	
+		//Variable initial conditions as count		
+		if (token.equalsIgnoreCase(VCML.VarIniCount_Old) || token.equalsIgnoreCase(VCML.VarIniCount))
+		{
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof StochVolVariable)){
+				throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
+			}
+			
+			Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			try{
+				varIniExp.bindExpression(mathDesc);
+			}catch(Exception ex){
+				ex.printStackTrace(System.out);
+				throw new MathException(ex.getMessage());
+			}
+			VarIniCount vic= new VarIniCount(var,varIniExp);
+			addVarIniCondition(vic);
+			
+			continue;
+		}
+		//Variable inital conditions as concentration
+		if (token.equalsIgnoreCase(VCML.VarIniPoissonExpectedCount))
+		{
+			token = tokens.nextToken();
+			Variable var = mathDesc.getVariable(token);
+			if (var == null){
+				throw new MathFormatException("variable "+token+" not defined");
+			}	
+			if (!(var instanceof StochVolVariable)){
+				throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
+			}
+			
+			Expression varIniExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+			try{
+				varIniExp.bindExpression(mathDesc);
+			}catch(Exception ex){
+				ex.printStackTrace(System.out);
+				throw new MathException(ex.getMessage());
+			}
+			VarIniPoissonExpectedCount vic= new VarIniPoissonExpectedCount(var,varIniExp);
+			addVarIniCondition(vic);
+			
+			continue;
+		}
+		//Jump processes 
+		if (token.equalsIgnoreCase(VCML.JumpProcess))
+		{
+			JumpProcess jump = null;
+			token = tokens.nextToken();
+			String name=token;
+			token = tokens.nextToken();
+			if(!token.equalsIgnoreCase(VCML.BeginBlock))
+				throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+			token = tokens.nextToken();	
+			if(token.equalsIgnoreCase(VCML.ProbabilityRate))
+			{
+				Expression probExp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+				//check if probability functions contain "t", which is not allowed.
+				Expression extProb = MathUtilities.substituteFunctions(probExp,mathDesc).flatten();
+				String[] symbols = extProb.getSymbols();
+				if(symbols != null)
+				{
+					for(int i=0; i<symbols.length; i++)
+					{
+						if(symbols[i].equals("t"))
+						{
+							throw new MathFormatException("Unexpected symbol \'t\'  in probability rate of jump process "+name+". Probability rate should not be a function of t.");
+						}	
+					}
+				}
+				probExp.bindExpression(mathDesc);
+				jump = new JumpProcess(name,probExp);
+				addJumpProcess(jump);
+			}
+			else {
+				throw new MathFormatException("unexpected identifier "+token);
+			}
+
+			if(jump != null)
+			{
+				while (tokens.hasMoreTokens())
+				{
+					token = tokens.nextToken();
+					if (token.equalsIgnoreCase(VCML.EndBlock)){
+						break;
+					}
+					if (token.equalsIgnoreCase(VCML.Action))
+					{
+						token = tokens.nextToken();
+						Variable var = mathDesc.getVariable(token);
+						if (var == null){
+							throw new MathFormatException("variable "+token+" not defined");
+						}	
+						if (!(var instanceof StochVolVariable)){
+							throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
+						}
+						String opera = tokens.nextToken();
+						if (!opera.equals(Action.ACTION_INC)){
+							throw new MathFormatException("expected 'INC' for action, found "+opera);
+						}
+						Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
+						try{
+							exp.bindExpression(mathDesc);
+						}
+						catch(Exception ex){
+							ex.printStackTrace(System.out);
+							throw new MathException(ex.getMessage());
+						}
+						Action action = Action.createIncrementAction(var,exp);
+						jump.addAction(action);
+					}
+					else throw new MathFormatException("unexpected identifier "+token);
+				}
+			}
+			
+			continue;
+		}	
+		throw new MathFormatException("unexpected identifier "+token);
+	}	
+		
+}
+*/
 
 /**
  * This method was created by a SmartGuide.
