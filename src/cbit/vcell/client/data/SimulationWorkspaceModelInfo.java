@@ -33,6 +33,7 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.NetworkTransformer.GeneratedSpeciesSymbolTableEntry;
+import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
@@ -334,9 +335,9 @@ private class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRe
 	
 	private int rankType(SymbolTableEntry ste){
 		if (ste instanceof GeneratedSpeciesSymbolTableEntry){
-			return 0;
-		}else if (ste instanceof MathMappingParameter){
 			return 5;
+		}else if (ste instanceof MathMappingParameter){
+			return 0;
 		}else{
 			return 10;
 		}
@@ -381,8 +382,34 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 						}
 						BioModelCategoryType filterCategory = BioModelCategoryType.Other;
 						
-						if (bestBioSymbol instanceof SpeciesContext || bestBioSymbol instanceof SpeciesConcentrationParameter || bestBioSymbol instanceof SpeciesCountParameter){
+						if (bestBioSymbol instanceof SpeciesContext || bestBioSymbol instanceof SpeciesConcentrationParameter || bestBioSymbol instanceof SpeciesCountParameter || bestBioSymbol instanceof GeneratedSpeciesSymbolTableEntry){
 							filterCategory = BioModelCategoryType.Species;
+							SpeciesContext transformedModelSpeciesContext = null;
+							if (bestBioSymbol instanceof SpeciesContext){
+								transformedModelSpeciesContext = (SpeciesContext) bestBioSymbol;
+							}else if (bestBioSymbol instanceof SpeciesConcentrationParameter){
+								transformedModelSpeciesContext = ((SpeciesConcentrationParameter) bestBioSymbol).getSpeciesContext();
+							}else if (bestBioSymbol instanceof SpeciesCountParameter){
+								transformedModelSpeciesContext = ((SpeciesCountParameter) bestBioSymbol).getSpeciesContext();
+							}else if (bestBioSymbol instanceof GeneratedSpeciesSymbolTableEntry){
+								transformedModelSpeciesContext = ((GeneratedSpeciesSymbolTableEntry) bestBioSymbol).getGeneratedSpeciesContext();
+								filterCategory = BioModelCategoryType.GeneratedSpecies;
+							}
+							
+							//
+							// for SpeciesConcentrationParameters corresponding to Generated species, add GeneratedSpeciesSymbolTableEntry
+							//
+							for (ModelEntityMapping mem : mathMapping.getTransformation().modelEntityMappings){
+								if (mem.newModelObj == transformedModelSpeciesContext){
+									if (mem.origModelObj instanceof GeneratedSpeciesSymbolTableEntry){
+										filterCategory = BioModelCategoryType.GeneratedSpecies;
+									}
+								}
+							}
+							if(transformedModelSpeciesContext.hasSpeciesPattern()) {
+								SpeciesPattern sp = transformedModelSpeciesContext.getSpeciesPattern();
+								tooltipString = sp.toString();
+							}
 						}else if (bestBioSymbol instanceof KineticsParameter){
 							KineticsParameter kineticsParameter = (KineticsParameter)bestBioSymbol;
 							if(kineticsParameter.getRole() == Kinetics.ROLE_ReactionRate){
@@ -390,22 +417,23 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 							}
 						}else if (bestBioSymbol instanceof RbmObservable || bestBioSymbol instanceof ObservableConcentrationParameter || bestBioSymbol instanceof ObservableCountParameter){
 							filterCategory = BioModelCategoryType.Observables;
-						}else if (bestBioSymbol instanceof GeneratedSpeciesSymbolTableEntry){
-							filterCategory = BioModelCategoryType.GeneratedSpecies;
-							
-							SymbolTableEntry unmappedSymbol = ((GeneratedSpeciesSymbolTableEntry)bestBioSymbol).getSymbolTableEntry();
-							if(unmappedSymbol instanceof SpeciesContext) {
-								SpeciesContext sc = (SpeciesContext)unmappedSymbol;
-								if(sc.hasSpeciesPattern()) {
-									SpeciesPattern sp = sc.getSpeciesPattern();
-									tooltipString = sp.toString();
+							RbmObservable observable = null;
+							if (bestBioSymbol instanceof RbmObservable){
+								observable = (RbmObservable) bestBioSymbol;
+							}else if (bestBioSymbol instanceof ObservableConcentrationParameter){
+								observable = ((ObservableConcentrationParameter) bestBioSymbol).getObservable();
+							}else if (bestBioSymbol instanceof ObservableCountParameter){
+								observable = ((ObservableCountParameter) bestBioSymbol).getObservable();
+							}
+							if(observable != null) {
+								for (SpeciesPattern sp : observable.getSpeciesPatternList()){
+									if (tooltipString == null){
+										tooltipString = sp.toString();
+									}else{
+										tooltipString += " or "+sp.toString();
+									}
 								}
 							}
-//						}else if (ste instanceof ReservedSymbol){		// TODO: never executed? var can't be reserved symbol
-//							ReservedSymbol rs = (ReservedSymbol)ste;
-//							if (rs.isTime() || rs.isX() || rs.isY() || rs.isZ()){
-//								filterCategory = FilterCategoryType.ReservedXYZT;
-//							}
 						}
 						VCUnitDefinition unit = bestBioSymbol.getUnitDefinition();
 if (tooltipString==null){

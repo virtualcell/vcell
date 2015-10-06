@@ -190,7 +190,7 @@ public BNGOutput executeBNG() throws BNGException {
 		if (LG.isEnabledFor(Level.WARN) ) {
 			LG.warn("error executable BNG", ex); 
 		}
-		if (executable.getStderrString().trim().length() == 0) {
+		if (executable==null || executable.getStderrString().trim().length() == 0) {
 			throw new BNGException("Error executing BNG", ex); 
 		}
 		throw new BNGException(executable.getStderrString(),ex);

@@ -96,36 +96,38 @@ throws ExpressionException, MappingException, MathException, java.beans.Property
 	// read ParameterMappingSpecs
 	//
 	Element parameterMappingSpecListElement = parameterEstimationTaskElement.getChild(ParameterMappingSpecListTag, ns);
-	List<Element> parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
-	for (Element parameterMappingSpecElement : parameterMappingSpecElementList ){
-		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
-		SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
-	
-		if (ste instanceof Parameter){
-			Parameter parameter = (Parameter)ste;
-			ParameterMappingSpec parameterMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpec(parameter);
-			
-			if  (parameterMappingSpec != null) {
-				String lowLimitString = parameterMappingSpecElement.getAttributeValue(LowLimitAttribute);
-				if (lowLimitString!=null){
-					parameterMappingSpec.setLow(parseDouble(lowLimitString));
-				}
-				String highLimitString = parameterMappingSpecElement.getAttributeValue(HighLimitAttribute);
-				if (highLimitString!=null){
-					parameterMappingSpec.setHigh(parseDouble(highLimitString));
-				}
-				String currentValueString = parameterMappingSpecElement.getAttributeValue(CurrentValueAttribute);
-				if (currentValueString!=null){
-					parameterMappingSpec.setCurrent(Double.parseDouble(currentValueString));
-				}
-				String selectedString = parameterMappingSpecElement.getAttributeValue(SelectedAttribute);
-				if (selectedString!=null){
-					parameterMappingSpec.setSelected(Boolean.valueOf(selectedString).booleanValue());
-				}
-			} 
-		}else{
-			System.out.println("couldn't read parameterMappingSpec '"+parameterName+"', ste="+ste);
-		}	
+	if (parameterMappingSpecListElement!=null){
+		List<Element> parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
+		for (Element parameterMappingSpecElement : parameterMappingSpecElementList ){
+			String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
+			SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
+		
+			if (ste instanceof Parameter){
+				Parameter parameter = (Parameter)ste;
+				ParameterMappingSpec parameterMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpec(parameter);
+				
+				if  (parameterMappingSpec != null) {
+					String lowLimitString = parameterMappingSpecElement.getAttributeValue(LowLimitAttribute);
+					if (lowLimitString!=null){
+						parameterMappingSpec.setLow(parseDouble(lowLimitString));
+					}
+					String highLimitString = parameterMappingSpecElement.getAttributeValue(HighLimitAttribute);
+					if (highLimitString!=null){
+						parameterMappingSpec.setHigh(parseDouble(highLimitString));
+					}
+					String currentValueString = parameterMappingSpecElement.getAttributeValue(CurrentValueAttribute);
+					if (currentValueString!=null){
+						parameterMappingSpec.setCurrent(Double.parseDouble(currentValueString));
+					}
+					String selectedString = parameterMappingSpecElement.getAttributeValue(SelectedAttribute);
+					if (selectedString!=null){
+						parameterMappingSpec.setSelected(Boolean.valueOf(selectedString).booleanValue());
+					}
+				} 
+			}else{
+				System.out.println("couldn't read parameterMappingSpec '"+parameterName+"', ste="+ste);
+			}	
+		}
 	}
 
 	//

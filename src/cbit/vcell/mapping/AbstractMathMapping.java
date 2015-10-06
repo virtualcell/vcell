@@ -382,15 +382,15 @@ public class ObservableCountParameter extends MathMappingParameter {
 
 @SuppressWarnings("serial")
 public class SpeciesConcentrationParameter extends MathMappingParameter {
-	private SpeciesContextSpec speciesContextSpec = null;
+	private SpeciesContext speciesContext = null;
 	
-	protected SpeciesConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec, GeometryClass geometryClass) {
+	protected SpeciesConcentrationParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContext argSpeciesContext, GeometryClass geometryClass) {
 		super(argName,argExpression,argRole,argVCUnitDefinition,geometryClass);
-		this.speciesContextSpec = argscSpec;
+		this.speciesContext = argSpeciesContext;
 	}
 
-	public SpeciesContextSpec getSpeciesContextSpec() {
-		return speciesContextSpec;
+	public SpeciesContext getSpeciesContext() {
+		return speciesContext;
 	}
 	
 	@Override
@@ -402,7 +402,7 @@ public class SpeciesConcentrationParameter extends MathMappingParameter {
 			return false;
 		}
 		SpeciesConcentrationParameter other = (SpeciesConcentrationParameter)obj;
-		if (!Compare.isEqual(speciesContextSpec, other.speciesContextSpec)){
+		if (!Compare.isEqual(speciesContext, other.speciesContext)){
 			return false;
 		}
 		return true;
@@ -412,15 +412,15 @@ public class SpeciesConcentrationParameter extends MathMappingParameter {
 
 @SuppressWarnings("serial")
 public class SpeciesCountParameter extends MathMappingParameter {
-	private SpeciesContextSpec speciesContextSpec = null;
+	private SpeciesContext speciesContext = null;
 	
-	protected SpeciesCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContextSpec argscSpec, GeometryClass geometryClass) {
+	protected SpeciesCountParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition, SpeciesContext argSpeciesContext, GeometryClass geometryClass) {
 		super(argName,argExpression,argRole,argVCUnitDefinition, geometryClass);
-		this.speciesContextSpec = argscSpec;
+		this.speciesContext = argSpeciesContext;
 	}
 
-	public SpeciesContextSpec getSpeciesContextSpec() {
-		return speciesContextSpec;
+	public SpeciesContext getSpeciesContext() {
+		return speciesContext;
 	}
 	@Override
 	public boolean compareEqual(Matchable obj){
@@ -431,7 +431,7 @@ public class SpeciesCountParameter extends MathMappingParameter {
 			return false;
 		}
 		SpeciesCountParameter other = (SpeciesCountParameter)obj;
-		if (!Compare.isEqual(speciesContextSpec, other.speciesContextSpec)){
+		if (!Compare.isEqual(speciesContext, other.speciesContext)){
 			return false;
 		}
 		return true;
@@ -504,7 +504,7 @@ public static final String PARAMETER_K_FLUX_PREFIX = "KFlux_";
 public static final int PARAMETER_ROLE_P = 3;
 public static final int PARAMETER_ROLE_SPECIES_CONCENRATION = 5;
 public static final int PARAMETER_ROLE_SPECIES_COUNT = 6;
-public static final int PARAMETER_ROLE_OBSERVABLE_CONCENRATION = 7;
+public static final int PARAMETER_ROLE_OBSERVABLE_CONCENTRATION = 7;
 public static final int PARAMETER_ROLE_OBSERVABLE_COUNT = 8;
 public static final int PARAMETER_ROLE_P_reverse = 4;
 public static final String PARAMETER_MASS_CONSERVATION_PREFIX = "K_";
@@ -828,7 +828,7 @@ protected void reconcileWithOriginalModel() throws MappingException,
 protected SpeciesCountParameter getSpeciesCountParameter(SpeciesContext sc) {
 	MathMappingParameter[] mmParams = getMathMappingParameters();
 	for (int i = 0; i < mmParams.length; i++) {
-		if ( (mmParams[i] instanceof SpeciesCountParameter) && (((SpeciesCountParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+		if ( (mmParams[i] instanceof SpeciesCountParameter) && (((SpeciesCountParameter)mmParams[i]).getSpeciesContext() == sc)) {
 			return (SpeciesCountParameter)mmParams[i];
 		}
 	}
@@ -838,7 +838,7 @@ protected SpeciesCountParameter getSpeciesCountParameter(SpeciesContext sc) {
 protected SpeciesConcentrationParameter getSpeciesConcentrationParameter(SpeciesContext sc) {
 	MathMappingParameter[] mmParams = getMathMappingParameters();
 	for (int i = 0; i < mmParams.length; i++) {
-		if ( (mmParams[i] instanceof SpeciesConcentrationParameter) && (((SpeciesConcentrationParameter)mmParams[i]).getSpeciesContextSpec().getSpeciesContext() == sc)) {
+		if ( (mmParams[i] instanceof SpeciesConcentrationParameter) && (((SpeciesConcentrationParameter)mmParams[i]).getSpeciesContext() == sc)) {
 			return (SpeciesConcentrationParameter)mmParams[i];
 		}
 	}
@@ -971,6 +971,7 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 			Expression newExp = new Expression(origExp);
+			newExp.bindExpression(null);
 			for (int i=0;i<symbols.length;i++){
 				SymbolTableEntry ste = origExp.getSymbolBinding(symbols[i]);
 				
@@ -1045,11 +1046,11 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 			}
 			if (ste instanceof SpeciesConcentrationParameter){
 				SpeciesConcentrationParameter concParm = (SpeciesConcentrationParameter)ste;
-				return concParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
+				return concParm.getSpeciesContext().getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
 			}
 			if (ste instanceof SpeciesCountParameter){
 				SpeciesCountParameter countParm = (SpeciesCountParameter)ste;
-				return countParm.getSpeciesContextSpec().getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+				return countParm.getSpeciesContext().getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
 			}
 			if (ste instanceof ObservableConcentrationParameter){
 				ObservableConcentrationParameter concParm = (ObservableConcentrationParameter)ste;
@@ -1061,7 +1062,7 @@ protected final String getMathSymbol0(SymbolTableEntry ste, GeometryClass geomet
 			}
 			if (ste instanceof RbmObservable){
 				RbmObservable observable = (RbmObservable)ste;
-				return observable.getName() + MATH_VAR_SUFFIX_SPECIES_COUNT;
+				return observable.getName() + MATH_FUNC_SUFFIX_SPECIES_CONCENTRATION;
 			}
 			if (ste instanceof EventAssignmentOrRateRuleInitParameter){
 				EventAssignmentOrRateRuleInitParameter eventInitParm = (EventAssignmentOrRateRuleInitParameter)ste;
@@ -1439,10 +1440,10 @@ final ObservableCountParameter addObservableCountParameter(String name, Expressi
 		}
 
 final SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name, Expression expr, int role,
-		VCUnitDefinition unitDefn, SpeciesContextSpec argscSpec) throws PropertyVetoException {
+		VCUnitDefinition unitDefn, SpeciesContext argSpeciesContext) throws PropertyVetoException {
 		
-			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argscSpec.getSpeciesContext().getStructure()).getGeometryClass();
-			SpeciesConcentrationParameter newParameter = new SpeciesConcentrationParameter(name,expr,role,unitDefn,argscSpec,geometryClass);
+			GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argSpeciesContext.getStructure()).getGeometryClass();
+			SpeciesConcentrationParameter newParameter = new SpeciesConcentrationParameter(name,expr,role,unitDefn,argSpeciesContext,geometryClass);
 			MathMappingParameter previousParameter = getMathMappingParameter(name);
 			if(previousParameter != null){
 				System.out.println("MathMappingParameter addConcentrationParameter found duplicate parameter for name "+name);
@@ -1457,10 +1458,10 @@ final SpeciesConcentrationParameter addSpeciesConcentrationParameter(String name
 			return newParameter;
 		}
 
-protected final SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn, SpeciesContextSpec argscSpec) throws PropertyVetoException {
+protected final SpeciesCountParameter addSpeciesCountParameter(String name, Expression expr, int role, VCUnitDefinition unitDefn, SpeciesContext argSpeciesContext) throws PropertyVetoException {
 
-	GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argscSpec.getSpeciesContext().getStructure()).getGeometryClass();
-	SpeciesCountParameter newParameter = new SpeciesCountParameter(name,expr,role,unitDefn,argscSpec,geometryClass);
+	GeometryClass geometryClass = simContext.getGeometryContext().getStructureMapping(argSpeciesContext.getStructure()).getGeometryClass();
+	SpeciesCountParameter newParameter = new SpeciesCountParameter(name,expr,role,unitDefn,argSpeciesContext,geometryClass);
 	MathMappingParameter previousParameter = getMathMappingParameter(name);
 	if(previousParameter != null){
 		System.out.println("MathMappingParameter addCountParameter found duplicate parameter for name "+name);

@@ -1,9 +1,18 @@
 package org.vcell.model.rbm;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.jdom.Document;
 import org.jdom.Element;
+//import org.jgrapht.EdgeFactory;
+//import org.jgrapht.GraphMapping;
+//import org.jgrapht.UndirectedGraph;
+//import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
+//import org.jgrapht.graph.SimpleGraph;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.ChangeStateOperation;
@@ -12,9 +21,15 @@ import org.vcell.model.rbm.RuleAnalysisReport.DeleteMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.Operation;
 
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.server.bionetgen.BNGExecutorService;
+import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.server.bionetgen.BNGOutput;
+
 public class RuleAnalysis {
 		
 	public static int INDEX_OFFSET = 1;
+	public static boolean computeSymmetryFactor = false;
 	
 	private RuleAnalysis(){
 	}
@@ -38,6 +53,8 @@ public class RuleAnalysis {
 		public List<? extends MolecularTypeEntry> getProductMolecularTypeEntries();
 		public List<? extends MolecularComponentEntry> getProductMolecularComponentEntries();
 		public List<ProductBondEntry> getProductBondEntries();
+
+		public String getReactionBNGLShort();
 	}
 	
 	public interface ParticipantEntry {
@@ -66,6 +83,8 @@ public class RuleAnalysis {
 		public String toBngl();
 
 		public String getMatchLabel();
+
+		public String getMolecularTypeBNGL();
 	}
 	
 	public interface MolecularComponentEntry {
@@ -114,11 +133,190 @@ public class RuleAnalysis {
 		}
 	}
 	
+	private static class BondEdge {
+		public final MoleculeVertex molecule1;
+		public final MoleculeVertex molecule2;
+		
+		private BondEdge(MoleculeVertex molecule1, MoleculeVertex molecule2) {
+			this.molecule1 = molecule1;
+			this.molecule2 = molecule2;
+		}
+		@Override
+		public String toString(){
+			return molecule1+"<->"+molecule2;
+		}
+	}
+	
+	private static class MoleculeVertex {
+		public final MolecularTypeEntry molecule;
+		
+		private MoleculeVertex(MolecularTypeEntry molecule) {
+			this.molecule = molecule;
+		}
+		@Override
+		public boolean equals(Object obj){
+			if (obj instanceof MoleculeVertex){
+				MoleculeVertex other = (MoleculeVertex)obj;
+				if (other.molecule != molecule){
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+		@Override
+		public int hashCode(){
+			return molecule.hashCode();
+		}
+		@Override
+		public String toString(){
+			return getID(molecule);
+		}
+	}
+	
+//	public static double analyzeSymmetry(RuleEntry rule){
+//		EdgeFactory<MoleculeVertex, BondEdge> edgeFactory = new EdgeFactory<MoleculeVertex, BondEdge>() {
+//
+//			@Override
+//			public BondEdge createEdge(
+//					MoleculeVertex sourceVertex,
+//					MoleculeVertex targetVertex) {
+//				return new BondEdge(sourceVertex,targetVertex);
+//			}
+//		};
+////		{
+//        UndirectedGraph<MoleculeVertex, BondEdge> reactantsGraph = new SimpleGraph<MoleculeVertex, BondEdge>(edgeFactory);
+//        for (MolecularTypeEntry molecule : rule.getReactantMolecularTypeEntries()){
+//        	reactantsGraph.addVertex(new MoleculeVertex(molecule));
+//		}
+//        for (ReactantBondEntry bond : rule.getReactantBondEntries()){
+//        	MoleculeVertex molecule1 = new MoleculeVertex(bond.reactantComponent1.getMolecularTypeEntry());
+//        	MoleculeVertex molecule2 = new MoleculeVertex(bond.reactantComponent2.getMolecularTypeEntry());
+//			reactantsGraph.addEdge(molecule1, molecule2);
+//		}
+//        
+//        VF2SubgraphIsomorphismInspector<MoleculeVertex, BondEdge> reactionAutomorphisms =
+//                new VF2SubgraphIsomorphismInspector<MoleculeVertex, BondEdge>(reactantsGraph, reactantsGraph);
+//        
+//        Iterator<GraphMapping<MoleculeVertex, BondEdge>> reactantMappings = reactionAutomorphisms.getMappings();
+//        int reactantSymmetryFactor = 0;
+//        while (reactantMappings.hasNext()){
+//        	GraphMapping<MoleculeVertex, BondEdge> mapping = reactantMappings.next();
+//        	System.out.println("mapping "+mapping);
+//        	reactantSymmetryFactor++;
+//        }
+////		}  
+//		
+//		
+//        UndirectedGraph<MoleculeVertex, BondEdge> productsGraph = new SimpleGraph<MoleculeVertex, BondEdge>(edgeFactory);
+//        for (MolecularTypeEntry molecule : rule.getProductMolecularTypeEntries()){
+//        	productsGraph.addVertex(new MoleculeVertex(molecule));
+//		}
+//        for (ProductBondEntry bond : rule.getProductBondEntries()){
+//        	MoleculeVertex molecule1 = new MoleculeVertex(bond.productComponent1.getMolecularTypeEntry());
+//        	MoleculeVertex molecule2 = new MoleculeVertex(bond.productComponent2.getMolecularTypeEntry());
+//        	productsGraph.addEdge(molecule1, molecule2);
+//		}
+//        
+//        VF2SubgraphIsomorphismInspector<MoleculeVertex, BondEdge> productAutomorphisms =
+//                new VF2SubgraphIsomorphismInspector<MoleculeVertex, BondEdge>(productsGraph, productsGraph);
+//        
+//        Iterator<GraphMapping<MoleculeVertex, BondEdge>> productMappings = productAutomorphisms.getMappings();
+//        int productSymmetryFactor = 0;
+//        while (productMappings.hasNext()){
+//        	GraphMapping<MoleculeVertex, BondEdge> mapping = productMappings.next();
+//        	System.out.println("mapping "+mapping);
+//        	productSymmetryFactor++;
+//        }
+//        
+//        System.out.println("reactant symmetry factor = "+reactantSymmetryFactor);
+//        System.out.println("product symmetry factor = "+productSymmetryFactor);
+//        double symmetryFactor = ((double)reactantSymmetryFactor)/((double)productSymmetryFactor);
+//		System.out.println("overall reaction symmetry_factor = "+symmetryFactor);
+//        return symmetryFactor;
+//	}
+	
+
+	public static double analyzeSymmetryBNG(RuleEntry rule){
+		
+		//
+		// create bngl input for this rule
+		//
+		StringWriter bnglStringWriter = new StringWriter();
+		PrintWriter pw = new PrintWriter(bnglStringWriter);
+		RbmNetworkGenerator.writeBngl_internal(rule, pw);
+		String input = bnglStringWriter.toString();
+		pw.close();
+
+		//
+		// caching recent results - if input already processed, use previous results.
+		//
+//		String md5hash = MD5.md5(input);
+//		if(isBngHashValid(input, md5hash, simContext)) {
+//			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
+//			System.out.println(s);
+//			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);	// not an error, we just want to show it in red
+//			simContext.appendToConsole(tcm);
+//			if(simContext.isInsufficientIterations()) {
+//				s = SimulationConsolePanel.getInsufficientIterationsMessage();
+//				System.out.println(s);
+//				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
+//				simContext.appendToConsole(tcm);
+//			}
+//			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
+//			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+//		}
+		
+		BNGInput bngInput = new BNGInput(input);
+		BNGOutput bngOutput = null;
+		try {
+			final BNGExecutorService bngService = new BNGExecutorService(bngInput,NetworkGenerationRequirements.StandardTimeoutMS);
+			bngOutput = bngService.executeBNG();
+		} catch (RuntimeException ex) {
+			ex.printStackTrace(System.out);
+			throw ex; //rethrow without losing context
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			throw new RuntimeException(ex.getMessage());
+		}
+		
+		String bngConsoleString = bngOutput.getConsoleOutput();
+System.out.println(bngConsoleString);
+
+		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
+		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
+		Element modelElement = sbmlElement.getChild("model");
+		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules");
+		Element reactionRuleElement = listOfReactionRulesElement.getChild("ReactionRule");
+		String symmetry_factor_str = reactionRuleElement.getAttributeValue("symmetry_factor");
+		
+		return Double.parseDouble(symmetry_factor_str);
+	}
+	
 	public static RuleAnalysisReport analyze(RuleEntry rule) {
 		
 		RuleAnalysisReport report = new RuleAnalysisReport();
+
+		double symmetryFactor = 1.0;
+
+		if (computeSymmetryFactor){
+//			double mySymmetryFactor = analyzeSymmetry(rule);
+			
+			//
+			// try to run BNG to find the Symmetry Factor.
+			//
+			try {
+				double bngSymmetryFactor = analyzeSymmetryBNG(rule);
+//				if (bngSymmetryFactor != mySymmetryFactor){
+//					System.err.println("mySymmetryFactor was "+mySymmetryFactor+", bngSymmetryFactor is "+bngSymmetryFactor);
+//				}
+				symmetryFactor = bngSymmetryFactor;
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+			}
+		}
 		
-		report.setSymmetryFactor(1);		
+		report.setSymmetryFactor(symmetryFactor);		
 		
 		ArrayList<MolecularTypeEntry> unmatchedReactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getReactantMolecularTypeEntries());
 		ArrayList<MolecularTypeEntry> unmatchedProductMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getProductMolecularTypeEntries());
@@ -393,14 +591,14 @@ public class RuleAnalysis {
 				Element delete = new Element("Delete");
 				listOfOperations.addContent(delete);
 				delete.setAttribute("id",getID(deleteMolecule.removedReactantMolecularEntry));
-				delete.setAttribute("DeleteMolecule","0");
+				delete.setAttribute("DeleteMolecules","0");
 			}
 			if (op instanceof DeleteParticipantOperation){
 				DeleteParticipantOperation deleteParticipant = (DeleteParticipantOperation)op;
 				Element delete = new Element("Delete");
 				listOfOperations.addContent(delete);
 				delete.setAttribute("id",getID(deleteParticipant.removedParticipantEntry));
-				delete.setAttribute("DeleteMolecule","0");
+				delete.setAttribute("DeleteMolecules","0");
 			}
 			if (op instanceof ChangeStateOperation){
 				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
