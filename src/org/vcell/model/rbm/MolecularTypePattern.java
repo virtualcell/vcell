@@ -3,6 +3,7 @@ package org.vcell.model.rbm;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -111,6 +112,16 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		}
 		firePropertyChange(PROPERTY_NAME_COMPONENT_PATTERN_LIST, oldValue, newValue);
 	}
+	
+	public void swapComponentPatterns(MolecularComponent one, MolecularComponent two) {
+		// Collections.swap(List<?> list, int i, int j);
+		MolecularComponentPattern a = getMolecularComponentPattern(one);
+		MolecularComponentPattern b = getMolecularComponentPattern(two);
+		int i = componentPatternList.indexOf(a);
+		int j = componentPatternList.indexOf(b);
+		Collections.swap(componentPatternList, i, j);
+	}
+
 
 	@Override
 	public String toString() {

@@ -56,6 +56,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -74,6 +75,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
@@ -81,6 +83,7 @@ import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
@@ -103,6 +106,12 @@ import cbit.vcell.graph.SimpleReactionShape;
 import cbit.vcell.graph.SpeciesContextShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactantPattern;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
@@ -751,14 +760,13 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.removeAll();
 		Point mousePoint = e.getPoint();
 		
-		JMenuItem renamMenuItem = new JMenuItem("Rename");
-		popupFromShapeMenu.add(renamMenuItem);						// everything can be renamed
-//		Graphics gc = shapePanel.getGraphics();
-
 		if (selectedObject instanceof MolecularType) {				// rename, add
 			if(selectedObject != molecularType) {
 				throw new RuntimeException("The selected object from shape different from the current object");
 			}
+			JMenuItem renamMenuItem = new JMenuItem("Rename");
+			popupFromShapeMenu.add(renamMenuItem);
+
 			JMenuItem addMenuItem = new JMenuItem("Add " + MolecularComponent.typeName);
 //			Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
 //			menuItem.setIcon(icon);
@@ -779,7 +787,58 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					editInPlace((LargeShape)deepestShape);
 				}
 			});
-		} else if (selectedObject instanceof MolecularComponent) {		// rename, delete, separator, add
+		} else if (selectedObject instanceof MolecularComponent) {		// move left / right / separator / rename, delete, separator, add
+			
+			String moveRightMenuText = "Move <b>" + "right" + "</b>";
+			moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
+			JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+			Icon icon = VCellIcons.moveRightIcon;
+			moveRightMenuItem.setIcon(icon);
+			moveRightMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularComponent from = (MolecularComponent)selectedObject;
+					List<MolecularComponent> mcList = molecularType.getComponentList();
+					int fromIndex = mcList.indexOf(from);
+					if(mcList.size() == fromIndex+1) {		// already the last element
+						return;
+					}
+					int toIndex = fromIndex+1;
+					MolecularComponent to = mcList.remove(toIndex);
+					mcList.add(fromIndex, to);
+					molecularTypeTreeModel.populateTree();
+					molecularType.firePropertyChange("name", "aaa", "bbb");
+					swapComponentPatterns(molecularType, from, to);
+				}
+			});
+			popupFromShapeMenu.add(moveRightMenuItem);
+			
+			String moveLeftMenuText = "Move <b>" + "left" + "</b>";
+			moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
+			JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+			icon = VCellIcons.moveLeftIcon;
+			moveLeftMenuItem.setIcon(icon);
+			moveLeftMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					MolecularComponent from = (MolecularComponent)selectedObject;
+					List<MolecularComponent> mcList = molecularType.getComponentList();
+					int fromIndex = mcList.indexOf(from);
+					if(fromIndex == 0) {			// already the first element
+						return;
+					}
+					int toIndex = fromIndex-1;
+					MolecularComponent to = mcList.remove(toIndex);
+					mcList.add(fromIndex, to);
+					molecularTypeTreeModel.populateTree();
+					molecularType.firePropertyChange("name", "aaa", "bbb");
+					swapComponentPatterns(molecularType, from, to);
+				}
+			});
+			popupFromShapeMenu.add(moveLeftMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
+			
+			JMenuItem renamMenuItem = new JMenuItem("Rename");
+			popupFromShapeMenu.add(renamMenuItem);
+
 			JMenuItem addMenuItem = new JMenuItem("Add " + ComponentStateDefinition.typeName);
 			JMenuItem deleteMenuItem = new JMenuItem("Delete ");
 			popupFromShapeMenu.add(deleteMenuItem);
@@ -836,6 +895,10 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				}
 			});
 		} else if (selectedObject instanceof ComponentStateDefinition) {		// rename, delete
+			
+			JMenuItem renamMenuItem = new JMenuItem("Rename");
+			popupFromShapeMenu.add(renamMenuItem);
+
 			JMenuItem deleteMenuItem = new JMenuItem("Delete");
 			popupFromShapeMenu.add(deleteMenuItem);
 			deleteMenuItem.addActionListener(new ActionListener() {
@@ -870,6 +933,54 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			});
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
+	}
+	
+	private void swapComponentPatterns(MolecularType mt, MolecularComponent a, MolecularComponent b) {
+		Model model = bioModel.getModel();
+		if(model == null) {
+			return;
+		}
+		for(RbmObservable o : model.getRbmModelContainer().getObservableList()) {
+			for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp.getMolecularType() != mt) {
+						continue;
+					}
+					mtp.swapComponentPatterns(a, b);
+				}
+			}
+		}
+		for(SpeciesContext sc : model.getSpeciesContexts()) {
+			if(!sc.hasSpeciesPattern()) {
+				continue;
+			}
+			for(MolecularTypePattern mtp : sc.getSpeciesPattern().getMolecularTypePatterns()) {
+				if(mtp.getMolecularType() != mt) {
+					continue;
+				}
+				mtp.swapComponentPatterns(a, b);
+			}
+		}
+		for(ReactionRule r : model.getRbmModelContainer().getReactionRuleList()) {
+			for(ReactantPattern rp : r.getReactantPatterns()) {
+				SpeciesPattern sp = rp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp.getMolecularType() != mt) {
+						continue;
+					}
+					mtp.swapComponentPatterns(a, b);
+				}
+			}
+			for(ProductPattern pp : r.getProductPatterns()) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp.getMolecularType() != mt) {
+						continue;
+					}
+					mtp.swapComponentPatterns(a, b);
+				}
+			}
+		}
 	}
 	
 	private void showPopupMenu(MouseEvent e){ 
