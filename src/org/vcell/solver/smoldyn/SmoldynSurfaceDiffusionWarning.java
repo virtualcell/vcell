@@ -22,7 +22,7 @@ public class SmoldynSurfaceDiffusionWarning {
 	private static final String TEMP_SMOLDYN_HYBRID_WARNING = 
 		"<html>If you intend to create a 3D spatial stochastic model with species that can diffuse within a membrane surface, <br>"
 		+ "please be aware that an inaccuracy has been found in the Smoldyn simulator for only such circumstances. <br>"
-		+ "This is being repaired by our collaborator Steve Andrews, the developer of Smoldyn, and should be fixed by September, 2015. <br>" +
+		+ "This is being repaired by our collaborator Steve Andrews, the developer of Smoldyn. <br>" +
 		" Please contact Virtual Cell Support vcell_support@uchc.edu if you have any questions.";
 	private static final ThreadLocal<Component> guiComponent = new ThreadLocal<>();
 	
