@@ -23,6 +23,7 @@ import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTaskFunctionTrack;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.gui.ExportMonitorPanel;
@@ -98,9 +99,8 @@ private synchronized void connPtoP1SetTarget() {
 		return;
 	}
 	try {
-		//see if still processing async task from  a previous call; if so just return
-		AsynchClientTaskFunctionTrack filterCategoriesTask = new AsynchClientTaskFunctionTrack( ht -> calculateFilterTask(ht),"Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
-		AsynchClientTaskFunctionTrack firePropertyChangeTask = new AsynchClientTaskFunctionTrack( ht -> firePropertyChangeTask(ht),"Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING);
+		AsynchClientTaskFunction filterCategoriesTask = new AsynchClientTaskFunctionTrack( ht -> calculateFilterTask(ht),"Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
+		AsynchClientTaskFunction firePropertyChangeTask = new AsynchClientTaskFunctionTrack( ht -> firePropertyChangeTask(ht),"Fire Property Change...",AsynchClientTask.TASKTYPE_SWING_BLOCKING);
 		ClientTaskDispatcher.dispatch(ODEDataViewer.this, new Hashtable<String, Object>(),
 				new AsynchClientTask[] {filterCategoriesTask,firePropertyChangeTask},
 				false, false, false, null, true);
