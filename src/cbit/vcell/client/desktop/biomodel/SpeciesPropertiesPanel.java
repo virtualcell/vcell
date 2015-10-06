@@ -97,6 +97,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProvider;
 import uk.ac.ebi.www.miriamws.main.MiriamWebServices.MiriamProviderServiceLocator;
@@ -1011,6 +1012,8 @@ private void updateShape() {
 			String moveRightMenuText = "Move <b>" + "right" + "</b>";
 			moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 			JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+			Icon icon = VCellIcons.moveRightIcon;
+			moveRightMenuItem.setIcon(icon);
 			moveRightMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1031,6 +1034,8 @@ private void updateShape() {
 			String moveLeftMenuText = "Move <b>" + "left" + "</b>";
 			moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
 			JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+			icon = VCellIcons.moveLeftIcon;
+			moveLeftMenuItem.setIcon(icon);
 			moveLeftMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1047,6 +1052,7 @@ private void updateShape() {
 				}
 			});
 			popupFromShapeMenu.add(moveLeftMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
 
 			String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 			deleteMenuText = "<html>" + deleteMenuText + "</html>";
