@@ -250,7 +250,6 @@ import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.StochHybridOptions;
 import cbit.vcell.solver.StochSimOptions;
@@ -1501,7 +1500,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	String name = mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
 	//set isStoch, isUsingConcentration attributes
-	if (applicationType == Application.NETWORK_DETERMINISTIC)
+	if (applicationType == Application.NETWORK_STOCHASTIC)
 	{
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
 		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, param.isUsingConcentration());
