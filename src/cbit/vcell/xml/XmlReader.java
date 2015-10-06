@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.function.Consumer;
+
+import javax.management.modelmbean.XMLParseException;
 
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -3753,6 +3756,7 @@ private MembraneRegionVariable getMembraneRegionVariable(Element param) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
+@SuppressWarnings("unchecked")
 private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 
 	// no need to do anything with the 'Name' attribute : constructor of MembraneSubDomain creates name from inside/outside compartmentSubDomains.
@@ -3889,8 +3893,35 @@ private MembraneSubDomain getMembraneSubDomain(Element param, MathDescription ma
 			throw new XmlParseException("A MathException was fired when adding a jump process to the compartmentSubDomain " + name, e);
 		} 
 	}
+	
+	Element velElem = param.getChild(XMLTags.VelocityTag, vcNamespace);
+	setMembraneSubdomainVelocity(velElem, XMLTags.XAttrTag,subDomain::setVelocityX); 
+	setMembraneSubdomainVelocity(velElem, XMLTags.YAttrTag,subDomain::setVelocityY); 
 
 	return subDomain;	
+}
+
+/**
+ * MembraneSubDomain velocity 
+ * @param vel could be null
+ * @param tag 
+ * @param dest
+ * @throws XmlParseException
+ */
+private void setMembraneSubdomainVelocity(Element vel, String tag, Consumer<Expression> dest) throws XmlParseException { 
+	Expression exp = null; 
+	if (vel != null) {
+		Element e = vel.getChild(tag, vcNamespace);
+		if (e != null) {
+			String expStr = e.getValue();
+			try {
+				exp = new Expression(expStr);
+			} catch (ExpressionException ee) {
+				throw new XmlParseException("Error parsing "  + expStr, ee);
+			}
+		}
+	}
+	dest.accept(exp);
 }
 
 
