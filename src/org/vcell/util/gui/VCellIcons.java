@@ -58,7 +58,9 @@ public abstract class VCellIcons {
 	
 	public final static Icon kineticsPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kinetics_properties.png"));
 	public final static Icon editorPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/editor_properties.png"));
-	
+
+	public final static Icon moveLeftIcon = new ImageIcon(VCellIcons.class.getResource("/icons/move_left.png"));
+	public final static Icon moveRightIcon = new ImageIcon(VCellIcons.class.getResource("/icons/move_right.png"));
 
 	// Chombo
 	public final static Icon refLevelNewIcon = new ImageIcon(VCellIcons.class.getResource("/icons/reflevel_new.png"));

@@ -79,6 +79,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import org.vcell.util.Compare;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
@@ -781,6 +782,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			String moveRightMenuText = "Move <b>" + "right" + "</b>";
 			moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 			JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+			Icon icon = VCellIcons.moveRightIcon;
+			moveRightMenuItem.setIcon(icon);
 			moveRightMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -801,6 +804,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			String moveLeftMenuText = "Move <b>" + "left" + "</b>";
 			moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
 			JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+			icon = VCellIcons.moveLeftIcon;
+			moveLeftMenuItem.setIcon(icon);
 			moveLeftMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -817,6 +822,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				}
 			});
 			popupFromShapeMenu.add(moveLeftMenuItem);
+			popupFromShapeMenu.add(new JSeparator());
 			
 			String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 			deleteMenuText = "<html>" + deleteMenuText + "</html>";
