@@ -57,7 +57,7 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 		return node;
 	}
 	
-	private void populateTree() {
+	public void populateTree() {
 		if (molecularType == null) {
 			return;
 		}
