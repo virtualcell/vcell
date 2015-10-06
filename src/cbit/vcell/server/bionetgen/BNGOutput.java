@@ -9,9 +9,13 @@
  */
 
 package cbit.vcell.server.bionetgen;
+import java.io.StringBufferInputStream;
 import java.util.HashSet;
 
+import org.jdom.Document;
 import org.vcell.util.BigString;
+
+import cbit.util.xml.XmlUtil;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2005 2:59:47 PM)
@@ -19,6 +23,7 @@ import org.vcell.util.BigString;
  */
 public class BNGOutput implements java.io.Serializable {
 	public final static String BNG_NET_FILE_SUFFIX = ".net";
+	public final static String BNG_NFSIMXML_FILE_SUFFIX = ".xml";
 	private org.vcell.util.BigString consoleOutput;
 	private org.vcell.util.BigString[] bng_fileContents;
 	private String[] bng_filenames;
@@ -49,6 +54,23 @@ public String getNetFileContent() {
 	}
 	if (netFileIndices.size()==1){
 		return bng_fileContents[netFileIndices.iterator().next()].toString();
+	}
+	throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+}
+
+
+public Document getNFSimXMLDocument() {
+	HashSet<Integer> netFileIndices = new HashSet<Integer>();
+	for (int i=0;i<bng_filenames.length;i++){
+		if (bng_filenames[i].toLowerCase().endsWith(BNG_NFSIMXML_FILE_SUFFIX)){
+			netFileIndices.add(i);
+		}
+	}
+	if (netFileIndices.size()==1){
+		String nfsimXMLString = bng_fileContents[netFileIndices.iterator().next()].toString();
+System.out.println("BNGOutput.getNFSimXMLDocument(): +++++++++++ \n"+nfsimXMLString);
+		Document nfsimXMLDocument = XmlUtil.stringToXML(nfsimXMLString,null);
+		return nfsimXMLDocument;
 	}
 	throw new RuntimeException("BioNetGen was unable to generate reaction network.");
 }

@@ -80,14 +80,10 @@ public class ModelRuleFactory {
 			return productBondEntries;
 		}
 
-//		@Override
-//		public String getForwardRateConstantName() {
-//			if (reactionRule.getKineticLaw().getRateLawType() == RateLawType.MassAction){
-//				return reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getExpression().infix();
-//			}else{
-//				throw new RuntimeException("ModelRuleFactory.ModelRuleEntry.getForwardRateConstantName() is only supported for mass action kinetics");
-//			}
-//		}
+		@Override
+		public String getReactionBNGLShort() {
+			return RbmUtils.toBnglStringShort(reactionRule);
+		}
 
 	}
 	
@@ -200,6 +196,12 @@ public class ModelRuleFactory {
 				return null;
 			}
 		}
+
+		@Override
+		public String getMolecularTypeBNGL() {
+			return RbmUtils.toBnglString(molecularTypePattern.getMolecularType());
+		}
+		
 	}
 	
 	public class ModelMolecularComponentEntry implements MolecularComponentEntry {

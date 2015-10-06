@@ -395,7 +395,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		// include required UnitRateFactors
 		//
 		for (int i = 0; i < fieldMathMappingParameters.length; i++){
-			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter){
+			if (fieldMathMappingParameters[i] instanceof UnitFactorParameter || fieldMathMappingParameters[i] instanceof ObservableConcentrationParameter){
 				varHash.addVariable(newFunctionOrConstant(getMathSymbol(fieldMathMappingParameters[i],geometryClass),getIdentifierSubstitutions(fieldMathMappingParameters[i].getExpression(),fieldMathMappingParameters[i].getUnitDefinition(),geometryClass),fieldMathMappingParameters[i].getGeometryClass()));
 			}
 		}
@@ -491,9 +491,11 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			if (kinetics.getRateLawType() == RbmKineticLaw.RateLawType.MassAction){
 				boolean constantMassActionKineticCoefficients = true;
 				
+				StringBuffer errorMessage = new StringBuffer();
 				Parameter forward_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				Expression substitutedForwardRate = MathUtilities.substituteModelParameters(forward_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
 				if (!substitutedForwardRate.flatten().isNumeric()){
+					errorMessage.append("flattened Kf for reactionRule("+reactionRule.getName()+") is not numeric, exp = '"+substitutedForwardRate.flatten().infix()+"'");
 					constantMassActionKineticCoefficients = false;
 				}
 				if (reactionRule.isReversible()){
@@ -503,6 +505,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 					}
 					Expression substitutedReverseRate = MathUtilities.substituteModelParameters(reverse_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
 					if (!substitutedReverseRate.flatten().isNumeric()){
+						errorMessage.append("flattened Kr for reactionRule("+reactionRule.getName()+") is not numeric, exp = '"+substitutedReverseRate.flatten().infix()+"'");
 						constantMassActionKineticCoefficients = false;
 					}
 				}
@@ -513,10 +516,11 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 							reactantParticles, productParticles, 
 							forwardActions, reverseActions);
 				}else{
-					addGeneralParticleJumpProcess(varHash, geometryClass, subDomain,
-							reactionRule, jpName,
-							reactantParticles, productParticles, 
-							forwardActions, reverseActions);
+					throw new MappingException("not mass action: "+errorMessage.toString());
+//					addGeneralParticleJumpProcess(varHash, geometryClass, subDomain,
+//							reactionRule, jpName,
+//							reactantParticles, productParticles, 
+//							forwardActions, reverseActions);
 				}
 				
 			}else{
@@ -945,34 +949,32 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		//
 		// Particle Observables from Observables defined in Model
 		//
-		Model model = getSimulationContext().getModel();
-		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
-		for(RbmObservable observable : observableList) {
-            ParticleObservable.ObservableType particleObservableType = null;
-            if (observable.getType() == RbmObservable.ObservableType.Molecules){
-                  particleObservableType = ParticleObservable.ObservableType.Molecules; 
-            }else{
-                  particleObservableType = ParticleObservable.ObservableType.Species; 
-            }
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observable, geometryClass),domain, particleObservableType);
-			for(SpeciesPattern speciesPattern : observable.getSpeciesPatternList()) {
+		for(MathMappingParameter mathMappingParameter : getMathMappingParameters()) {
+			if (mathMappingParameter instanceof ObservableCountParameter){
+				ObservableCountParameter observableCountParameter = (ObservableCountParameter)mathMappingParameter;
+				RbmObservable rbmObservable = observableCountParameter.getObservable();
+				ParticleObservable.ObservableType particleObservableType = null;
+				if (rbmObservable.getType() == RbmObservable.ObservableType.Molecules){
+					particleObservableType = ParticleObservable.ObservableType.Molecules; 
+				}else{
+					particleObservableType = ParticleObservable.ObservableType.Species; 
+				}
+				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observableCountParameter, geometryClass),domain,particleObservableType);
+				for(SpeciesPattern speciesPattern : rbmObservable.getSpeciesPatternList()) {
+					VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
+					particleObservable.addParticleSpeciesPattern(vpsp);
+				}
+				observables.add(particleObservable);
+			}
+			if (mathMappingParameter instanceof SpeciesCountParameter){
+				SpeciesCountParameter speciesCountParameter = (SpeciesCountParameter)mathMappingParameter;
+				ParticleObservable.ObservableType particleObservableType = ParticleObservable.ObservableType.Species;
+				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(speciesCountParameter, geometryClass),domain,particleObservableType);
+				SpeciesPattern speciesPattern = speciesCountParameter.getSpeciesContext().getSpeciesPattern();
 				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
 				particleObservable.addParticleSpeciesPattern(vpsp);
+				observables.add(particleObservable);
 			}
-			observables.add(particleObservable);
-		}
-		//
-		// Particle observables from Seed species
-		//
-		for (SpeciesContext sc : model.getSpeciesContexts()){
-			if(!sc.hasSpeciesPattern()) { continue; }
-			ParticleObservable.ObservableType particleObservableType = ParticleObservable.ObservableType.Species; 
-			ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(sc, geometryClass),domain,particleObservableType);
-			SpeciesPattern speciesPattern = sc.getSpeciesPattern();
-			VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
-			particleObservable.addParticleSpeciesPattern(vpsp);
-
-			observables.add(particleObservable);
 		}
 		return observables;
 	}
@@ -1167,7 +1169,7 @@ protected void refreshVariables() throws MappingException {
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());
@@ -1178,7 +1180,7 @@ protected void refreshVariables() throws MappingException {
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
 			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm,getNameScope()), scs.getSpeciesContext().getStructure());
 			concExp.bindExpression(this);
-			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());
@@ -1206,7 +1208,7 @@ protected void refreshVariables() throws MappingException {
 			String concName = observable.getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
 			Expression concExp = getExpressionAmtToConc(new Expression(observableCountParm,getNameScope()), observable.getStructure());
 			concExp.bindExpression(this);
-			addObservableConcentrationParameter(concName, concExp, PARAMETER_ROLE_OBSERVABLE_CONCENRATION, observable.getUnitDefinition(), observable);
+			addObservableConcentrationParameter(concName, concExp, PARAMETER_ROLE_OBSERVABLE_CONCENTRATION, observable.getUnitDefinition(), observable);
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage());

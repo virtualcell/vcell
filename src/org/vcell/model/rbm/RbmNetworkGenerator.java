@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
@@ -180,6 +181,48 @@ public class RbmNetworkGenerator {
 		writer.println();
 		
 		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, networkGenerationRequirements);
+		writer.println();
+	}
+	// modified bngl writer for special use restricted to network transform functionality
+	public static void writeBngl_internal(RuleAnalysis.RuleEntry ruleEntry, PrintWriter writer) {
+		
+		writer.println(BEGIN_MODEL);
+		writer.println();
+		
+		writer.println(BEGIN_MOLECULE_TYPES);
+		ArrayList<String> uniqueMolecularTypeBNGLs = new ArrayList<String>();
+		ArrayList<MolecularTypeEntry> allMolecularTypePatterns = new ArrayList<MolecularTypeEntry>();
+		allMolecularTypePatterns.addAll(ruleEntry.getReactantMolecularTypeEntries());
+		allMolecularTypePatterns.addAll(ruleEntry.getProductMolecularTypeEntries());
+		for (MolecularTypeEntry mte : allMolecularTypePatterns){
+			String bngl = mte.getMolecularTypeBNGL();
+			if (!uniqueMolecularTypeBNGLs.contains(bngl)){
+				uniqueMolecularTypeBNGLs.add(bngl);
+			}
+		}
+		for (String bngl : uniqueMolecularTypeBNGLs) {
+			writer.println(bngl);
+		}
+		writer.println(END_MOLECULE_TYPES);
+		writer.println();
+
+//		// write modified version of seed species while maintaining the connection between the species context and the real seed species
+//		writer.println(BEGIN_SPECIES);
+//		for (String s : seedSpeciesList) {
+//			writer.println(s);
+//		}
+//		writer.println(END_SPECIES);
+//		writer.println();
+		
+		writer.println(BEGIN_REACTIONS);
+		writer.println(ruleEntry.getRuleName()+":"+"      "+ruleEntry.getReactionBNGLShort()+"    1.0");
+		writer.println(END_REACTIONS);	
+		writer.println();
+		
+		writer.println(END_MODEL);	
+		writer.println();
+		
+		writer.println("writeXML()");
 		writer.println();
 	}
 	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {

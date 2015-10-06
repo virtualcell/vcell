@@ -17,7 +17,6 @@ import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.AbstractMathMapping.ObservableConcentrationParameter;
 import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
@@ -62,7 +61,6 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
@@ -898,7 +896,7 @@ protected void refreshVariables() throws MappingException {
 		try{
 			String countName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_COUNT;
 			Expression countExp = new Expression(0.0);
-			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs);
+			spCountParm = addSpeciesCountParameter(countName, countExp, PARAMETER_ROLE_SPECIES_COUNT, scs.getInitialCountParameter().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(PropertyVetoException pve){
 			pve.printStackTrace();
 			throw new MappingException(pve.getMessage());
@@ -909,7 +907,7 @@ protected void refreshVariables() throws MappingException {
 			String concName = scs.getSpeciesContext().getName() + BIO_PARAM_SUFFIX_SPECIES_CONCENTRATION;
 			Expression concExp = getExpressionAmtToConc(new Expression(spCountParm,getNameScope()), scs.getSpeciesContext().getStructure());
 			concExp.bindExpression(this);
-			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs);
+			addSpeciesConcentrationParameter(concName, concExp, PARAMETER_ROLE_SPECIES_CONCENRATION, scs.getSpeciesContext().getUnitDefinition(), scs.getSpeciesContext());
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new MappingException(e.getMessage(),e);
@@ -917,15 +915,14 @@ protected void refreshVariables() throws MappingException {
 		//we always add variables, all species are independent variables, no matter they are constant or not.
 		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
 		scm.setVariable(new StochVolVariable(countMathSymbol));
-		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 	}
 	
 	//
-	// if the original (untransformed) model any observables (which are rule-based components), then the transformed model maps these observables to "Concentration" ModelParameters.
+	// if the original (untransformed) model has any explicit observables (which are rule-based components), then the transformed model maps these observables to "Concentration" ModelParameters.
 	// 
 	// for symmetry with the RuleBasedMathMapping, we want to generate a "_Count" version of these observables if applicable.
 	//
-	// so if a "transformation" was performed, we want to find those ModelParameters which map to Observables so that we can generate an additional "Count" function (by scaling by compartment size and performing a unit conversion).
+	// so if a rule-to-network "transformation" was performed, we want to find those ModelParameters which map to Observables (concentrations) so that we can generate an additional "Count" function (by scaling by compartment size and performing a unit conversion).
 	//
 	SimContextTransformation transformation = getTransformation();
 	if (transformation!=null){

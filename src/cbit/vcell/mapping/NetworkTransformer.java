@@ -83,22 +83,22 @@ public class NetworkTransformer implements SimContextTransformer {
 	}
 	
 	public static class GeneratedSpeciesSymbolTableEntry implements SymbolTableEntry {
-		private SymbolTableEntry unmappedSymbol = null;
+		private SpeciesContext generatedSpeciesContext = null;
 		
-		private GeneratedSpeciesSymbolTableEntry(SymbolTableEntry unmappedSymbol){
-			this.unmappedSymbol = unmappedSymbol;
+		private GeneratedSpeciesSymbolTableEntry(SpeciesContext generatedSpeciesContext){
+			this.generatedSpeciesContext = generatedSpeciesContext;
 		}
 		public boolean isConstant(){
 			return false;
 		}
 		public String getName(){
-			return unmappedSymbol.getName();
+			return generatedSpeciesContext.getName();
 		}
 		public NameScope getNameScope(){
 			return null; // unmappedSymbol.getNameScope();
 		}
 		public VCUnitDefinition getUnitDefinition() {
-			return unmappedSymbol.getUnitDefinition();
+			return generatedSpeciesContext.getUnitDefinition();
 		}
 		public Expression getExpression(){
 			return null;
@@ -106,8 +106,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		public double getConstantValue() throws ExpressionException {
 			throw new ExpressionException("can't evaluate to constant");
 		}
-		public SymbolTableEntry getSymbolTableEntry() {
-			return unmappedSymbol;
+		public SpeciesContext getGeneratedSpeciesContext() {
+			return generatedSpeciesContext;
 		}
 		
 		@Override
@@ -239,7 +239,7 @@ public class NetworkTransformer implements SimContextTransformer {
 	static final float progressFractionQuota = 2.0f/5.0f;
 	static final float progressFractionQuotaSpecies = progressFractionQuota / 2.0f / 10.0f;
 	
-	public void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
+	private void transform(SimulationContext simContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements){
 
 		String msg = "Generating network: flattening...";
 		mathMappingCallback.setMessage(msg);
