@@ -54,6 +54,7 @@ import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
+import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
@@ -797,12 +798,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						}
 					});
 				}
-			} else if(selectedObject instanceof MolecularTypePattern) {		// move left, right / delete molecule / reassign match
+			} else if(selectedObject instanceof MolecularTypePattern) {		// move left / right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 				
 				String moveRightMenuText = "Move <b>" + "right" + "</b>";
 				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+				Icon icon = VCellIcons.moveRightIcon;
+				moveRightMenuItem.setIcon(icon);
 				moveRightMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -825,6 +828,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				String moveLeftMenuText = "Move <b>" + "left" + "</b>";
 				moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
 				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+				icon = VCellIcons.moveLeftIcon;
+				moveLeftMenuItem.setIcon(icon);
 				moveLeftMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -843,6 +848,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 				popupFromShapeMenu.add(moveLeftMenuItem);
+				popupFromShapeMenu.add(new JSeparator());
 				
 				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 				deleteMenuText = "<html>" + deleteMenuText + "</html>";
@@ -943,12 +949,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						}
 					});
 				}
-			} else if(selectedObject instanceof MolecularTypePattern) {		// delete molecule / reassign match
+			} else if(selectedObject instanceof MolecularTypePattern) {		// move left / right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 				
 				String moveRightMenuText = "Move <b>" + "right" + "</b>";
 				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
+				Icon icon = VCellIcons.moveRightIcon;
+				moveRightMenuItem.setIcon(icon);
 				moveRightMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -971,6 +979,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				String moveLeftMenuText = "Move <b>" + "left" + "</b>";
 				moveLeftMenuText = "<html>" + moveLeftMenuText + "</html>";
 				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
+				icon = VCellIcons.moveLeftIcon;
+				moveLeftMenuItem.setIcon(icon);
 				moveLeftMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -989,6 +999,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 				popupFromShapeMenu.add(moveLeftMenuItem);
+				popupFromShapeMenu.add(new JSeparator());
 				
 				String deleteMenuText = "Delete <b>" + mtp.getMolecularType().getName() + "</b>";
 				deleteMenuText = "<html>" + deleteMenuText + "</html>";
