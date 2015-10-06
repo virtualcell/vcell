@@ -20,11 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Vector;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -41,7 +38,6 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.Matchable;
 import org.vcell.util.Token;
-import org.vcell.util.VCAssert;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -425,12 +421,6 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 							) {
 							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_BC_TYPE);
 						}					
-						if (!compareUpdate(msdNew.getVelocityX( ), msdOld.getVelocityX( ),msdNew::setVelocityX)) {
-							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "x");
-						}
-						if (!compareUpdate(msdNew.getVelocityY( ), msdOld.getVelocityY( ),msdNew::setVelocityY)) {
-							return new MathCompareResults(Decision.MathDifferent_DIFFERENT_VELOCITY, "y");
-						}
 					}
 				}
 				
@@ -730,37 +720,6 @@ private MathCompareResults compareEquivalentCanonicalMath(MathDescription newMat
 		return new MathCompareResults(Decision.MathDifferent_FAILURE_UNKNOWN);
 	}
 }
-
-/**
- * compare two expressions; if different but functionally equivalent, set the new to be the same as the old 
- * @param nExp
- * @param oExp
- * @param newSet nExp setter, non null
- * @return true if both null, or equal / equivalent 
- */
-private static boolean compareUpdate(Expression nExp, Expression oExp, Consumer<Expression> newSet) {
-	
-	Objects.requireNonNull(newSet);
-	switch (Compare.nullState(nExp, oExp) ) {
-		case BOTH_NULL:
-			return true;
-		case FIRST_NULL: 
-		case SECOND_NULL: 
-			return false;
-		case NEITHER_NULL:
-			//fall-through
-	}
-	
-	if (Compare.isEqual(nExp,oExp)) {
-		return true;
-	}
-	if (ExpressionUtils.functionallyEquivalent(nExp,oExp)) {
-		newSet.accept(oExp);
-	}
-	return false;
-}
-
-
 
 
 /**

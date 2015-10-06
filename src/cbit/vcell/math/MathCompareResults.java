@@ -49,8 +49,7 @@ public class MathCompareResults {
 		MathDifferent_NOT_SAVED(false,"MathDifferent:NotSaved"),
 		MathEquivalent_SAME_MATHDESC_AS_IN_DB(true,"MathEquivalent:SameMathDescAsInDB"),
 		
-		MathDifferent_DIFFERENT_PostProcessingBlock(false,"MathDifferent:DifferentPostProcessingBlock"), 
-		MathDifferent_DIFFERENT_VELOCITY(false,"MathDifferent:MembraneVelocity");
+		MathDifferent_DIFFERENT_PostProcessingBlock(false,"MathDifferent:DifferentPostProcessingBlock");
 
 		public final boolean equivalent;
 		public final String description;
