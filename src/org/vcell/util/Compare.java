@@ -10,7 +10,7 @@
 
 package org.vcell.util;
 
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -590,63 +590,6 @@ public static <T extends Matchable> boolean areEquivalent(Collection<T> lhs, Col
 	}
 	
 	return false;	
-}
-
-/**
- * see if all fields which implement {@link Matchable} are equal (both null or {@link Matchable#compareEqual(Matchable)} is true
- * @param lhs null is okay
- * @param rhs null is okay
- * @return true if both null or all fields equal 
- */
-public static boolean isEqualFields(Matchable lhs, Matchable rhs) {
-	try {
-		if ((lhs == null) != (rhs == null)) {
-			return false;
-		}
-		Class<? extends Matchable> lClass = lhs.getClass();
-		Class<? extends Matchable> rClass = lhs.getClass();
-		if (lClass != rClass) {
-			return false;
-		}
-		for ( Field f : lClass.getDeclaredFields()) {
-			f.setAccessible(true);
-			Matchable lMatch = BeanUtils.downcast(Matchable.class, f.get(lhs)  );
-			if (lMatch != null) {
-				Matchable rMatch = BeanUtils.downcast(Matchable.class, f.get(rhs) );
-				if (!isEqual(lMatch, rMatch)) {
-					return false;
-				}
-			}
-		}
-	}
-	catch (Exception e) {
-		e.printStackTrace();
-	}
-	return false;
-
-}
-
-/**
- * whether two objects are null or not
- */
-public static enum Nullness {
-	BOTH_NULL,
-	NEITHER_NULL,
-	FIRST_NULL,
-	SECOND_NULL,
-}
-
-/**
- * find what's null 
- * @param first
- * @param second
- * @return non-null enum
- */
-public static Nullness nullState(Object first, Object second) {
-	if (first == null) {
-		return second == null ? Nullness.BOTH_NULL : Nullness.FIRST_NULL;
-	}
-	return second == null ? Nullness.SECOND_NULL : Nullness.NEITHER_NULL;
 }
 
 }

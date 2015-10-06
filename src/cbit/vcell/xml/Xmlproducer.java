@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.commons.lang3.mutable.Mutable;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -121,7 +119,6 @@ import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.TotalCurrentClampStimulus;
@@ -1494,20 +1491,27 @@ public Element getXML(ReactionRuleSpec[] reactionRuleSpecs) {
  * @param param cbit.vcell.mapping.SimulationContext
  */
 public Element getXML(SimulationContext param, BioModel bioModel) throws XmlParseException{
-	SimulationContext.Application applicationType = param.getApplicationType();
 	Element simulationcontext = new Element(XMLTags.SimulationSpecTag);
 
 	//add attributes
 	String name = mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
 	//set isStoch, isUsingConcentration attributes
-	if (applicationType == Application.NETWORK_DETERMINISTIC)
+	if (param.isStoch())
 	{
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
-		setBooleanAttribute(simulationcontext, XMLTags.ConcentrationAttrTag, param.isUsingConcentration());
+		if(param.isUsingConcentration()) {
+			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+		} else {
+			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "false");
+		}
 		// write out 'randomizeInitConditin' flag only if non-spatial stochastic simContext
 		if(param.getGeometry().getDimension() == 0) {
-			setBooleanAttribute(simulationcontext, XMLTags.RandomizeInitConditionTag,param.isRandomizeInitCondition());
+			if (param.isRandomizeInitCondition()) {
+				simulationcontext.setAttribute(XMLTags.RandomizeInitConditionTag, "true");
+			} else {
+				simulationcontext.setAttribute(XMLTags.RandomizeInitConditionTag, "false");
+			}
 		}
 	}
 	else
@@ -1515,10 +1519,16 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
 		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
 	}
-	final boolean ruleBased = param.getApplicationType() == SimulationContext.Application.RULE_BASED_STOCHASTIC; 
-	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased); 
-	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
-	
+	if (param.isRuleBased()){
+		simulationcontext.setAttribute(XMLTags.RuleBasedAttrTag, "true");
+	}else{
+		simulationcontext.setAttribute(XMLTags.RuleBasedAttrTag, "false");
+	}
+	if(param.isInsufficientIterations()) {
+		simulationcontext.setAttribute(XMLTags.InsufficientIterationsTag, "true");
+	} else {
+		simulationcontext.setAttribute(XMLTags.InsufficientIterationsTag, "false");
+	}
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
@@ -1543,7 +1553,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	// write ReactionContext (parameter/variable mapping)
 	simulationcontext.addContent(getXML(param.getReactionContext()));
 
-	//check if there is anything to write first for the electrical context
+	//chech if there is anything to write first for the electricla context
 	if (param.getElectricalStimuli().length==1 || param.getGroundElectrode()!=null) {
 		//create ElectricalContext
 		Element electricalElement = new Element(XMLTags.ElectricalContextTag);
@@ -1658,17 +1668,6 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 
 	return simulationcontext;
 }
-
-/**
- * set atttribute to "true" or "false" 
- * @param elem non null
- * @param tag name of attribute
- * @param exp to evaluate
- */
-private void setBooleanAttribute(Element elem, String tag, boolean exp) {
-	elem.setAttribute(tag, Boolean.toString(exp) );
-}
-
 
 public Element getXML(MicroscopeMeasurement microscopeMeasurement) {
 	Element element = new Element(XMLTags.MicroscopeMeasurement);
@@ -2660,7 +2659,7 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	membrane.setAttribute(XMLTags.InsideCompartmentTag, mangle(param.getInsideCompartment().getName()));
 	membrane.setAttribute(XMLTags.OutsideCompartmentTag, mangle(param.getOutsideCompartment().getName()));
 	
-	//Add boundaryType subelements
+	//Add boundatyType subelements
 	Element boundary;
 	//Xm
 	boundary = new Element(XMLTags.BoundaryTypeTag);
@@ -2716,36 +2715,7 @@ private Element getXML(MembraneSubDomain param) throws XmlParseException{
 	for (ParticleJumpProcess pjp : param.getParticleJumpProcesses()){
 		membrane.addContent(getXML(pjp));
 	}
-	
-	Mutable<Element> velocity = new MutableObject<>();
-	addVelocityMaybe(velocity, XMLTags.XAttrTag,param.getVelocityX()); 
-	addVelocityMaybe(velocity, XMLTags.YAttrTag,param.getVelocityY()); 
-	if (velocity.getValue() != null ) {
-		membrane.addContent(velocity.getValue());
-	}
-	
 	return membrane;
-}
-
-/**
- * add velocity element if it's not null
- * @param dest non null; lazily create container element when needed
- * @param tag to label with
- * @param exp if null, do nothing
- */
-private void addVelocityMaybe(Mutable<Element> dest, String tag, Expression exp) {
-	if (exp == null) {
-		return;
-	}
-	
-	Element velocity = dest.getValue(); //create Element if we need to
-	if (velocity == null) {
-		velocity = new Element(XMLTags.VelocityTag);
-		dest.setValue(velocity);
-	}
-	Element component = new Element(tag);
-	component.addContent(mangleExpression(exp));
-	velocity.addContent(component);
 }
 
 
