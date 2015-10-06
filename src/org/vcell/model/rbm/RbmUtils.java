@@ -60,6 +60,16 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.math.Action;
+import cbit.vcell.math.ParticleComponentStateDefinition;
+import cbit.vcell.math.ParticleComponentStatePattern;
+import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleMolecularComponent;
+import cbit.vcell.math.ParticleMolecularComponentPattern;
+import cbit.vcell.math.ParticleMolecularType;
+import cbit.vcell.math.ParticleMolecularTypePattern;
+import cbit.vcell.math.ParticleSpeciesPattern;
+import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
@@ -1144,7 +1154,24 @@ public class RbmUtils {
 			throw new RuntimeException("Unexpected state for ComponentStatePattern " + componentStatePattern);
 		}
 	}
+	public static String toBnglString(ParticleComponentStatePattern componentStatePattern) {
+		if(componentStatePattern.getParticleComponentStateDefinition() != null) {
+			return "~" + componentStatePattern.getParticleComponentStateDefinition().getName();
+		} else if(componentStatePattern.isAny()) {
+			return "";
+		} else {
+			throw new RuntimeException("Unexpected state for ComponentStatePattern " + componentStatePattern);
+		}
+	}
 	public static String toBnglString(ComponentStateDefinition componentStateDefinition) {
+		if(componentStateDefinition == null) {
+			return "";
+		} else {
+			return "~" + componentStateDefinition.getName();
+		}
+	}
+	
+	public static String toBnglString(ParticleComponentStateDefinition componentStateDefinition) {
 		if(componentStateDefinition == null) {
 			return "";
 		} else {
@@ -1155,6 +1182,14 @@ public class RbmUtils {
 	public static String toBnglString(MolecularComponent molecularComponent) {
 		StringBuilder buffer = new StringBuilder(molecularComponent.getName());
 		for (ComponentStateDefinition componentStateDefinition : molecularComponent.getComponentStateDefinitions()) {
+			buffer.append(toBnglString(componentStateDefinition));
+		}
+		return buffer.toString();
+	}
+	
+	public static String toBnglString(ParticleMolecularComponent molecularComponent) {
+		StringBuilder buffer = new StringBuilder(molecularComponent.getName());
+		for (ParticleComponentStateDefinition componentStateDefinition : molecularComponent.getComponentStateDefinitions()) {
 			buffer.append(toBnglString(componentStateDefinition));
 		}
 		return buffer.toString();
@@ -1174,12 +1209,41 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
+	public static String toBnglString(ParticleMolecularType molecularType) {
+		StringBuilder buffer = new StringBuilder(molecularType.getName());
+		buffer.append("(");
+		List<ParticleMolecularComponent> componentList = molecularType.getComponentList();
+		for (int i = 0; i < componentList.size(); ++ i) {
+			if (i > 0) {
+				buffer.append(",");
+			}
+			buffer.append(toBnglString(componentList.get(i)));
+		}
+		buffer.append(")");
+		return buffer.toString();
+	}
+	
 	public static String toBnglString(SpeciesPattern speciesPattern) {
 		if (speciesPattern == null) {
 			return "";
 		}
 		StringBuilder buffer = new StringBuilder();
 		List<MolecularTypePattern> molecularTypePatterns = speciesPattern.getMolecularTypePatterns();
+		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
+			if (i > 0) {
+				buffer.append(".");
+			}
+			buffer.append(toBnglString(molecularTypePatterns.get(i)));
+		}
+		return buffer.toString();
+	}
+
+	public static String toBnglString(ParticleSpeciesPattern speciesPattern) {
+		if (speciesPattern == null) {
+			return "";
+		}
+		StringBuilder buffer = new StringBuilder();
+		List<ParticleMolecularTypePattern> molecularTypePatterns = speciesPattern.getParticleMolecularTypePatterns();
 		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
 			if (i > 0) {
 				buffer.append(".");
@@ -1211,7 +1275,50 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 
+	public static String toBnglString(ParticleMolecularTypePattern molecularTypePattern) {
+		StringBuilder buffer = new StringBuilder(molecularTypePattern.getMolecularType().getName());
+		buffer.append("(");
+		List<ParticleMolecularComponentPattern> componentPatterns = molecularTypePattern.getMolecularComponentPatternList();
+		boolean bAddComma = false;
+		for (ParticleMolecularComponentPattern mcp : componentPatterns) {
+//			if (mcp.isImplied()) {
+//				continue;
+//			}
+			if (bAddComma) {
+				buffer.append(",");
+			}
+			buffer.append(toBnglString(mcp));
+			bAddComma = true;
+		}
+		buffer.append(")");
+		if(molecularTypePattern.hasExplicitParticipantMatch()) {
+			buffer.append("%" + molecularTypePattern.getMatchLabel());
+		}
+		return buffer.toString();
+	}
+
 	public static String toBnglString(MolecularComponentPattern molecularComponentPattern) {
+		StringBuilder buffer = new StringBuilder(molecularComponentPattern.getMolecularComponent().getName());
+		if (molecularComponentPattern.getComponentStatePattern() != null) {
+			buffer.append(toBnglString(molecularComponentPattern.getComponentStatePattern()));
+		}
+		switch (molecularComponentPattern.getBondType()) {
+		case Exists:
+			buffer.append("!+");
+			break;
+		case None:
+			break;
+		case Possible:
+			buffer.append("!?");
+			break;
+		case Specified:
+			buffer.append("!" + molecularComponentPattern.getBondId());
+			break;
+		}
+		return buffer.toString();
+	}
+	
+	public static String toBnglString(ParticleMolecularComponentPattern molecularComponentPattern) {
 		StringBuilder buffer = new StringBuilder(molecularComponentPattern.getMolecularComponent().getName());
 		if (molecularComponentPattern.getComponentStatePattern() != null) {
 			buffer.append(toBnglString(molecularComponentPattern.getComponentStatePattern()));
@@ -1248,6 +1355,30 @@ public class RbmUtils {
 				buffer.append(" + ");
 			}
 			buffer.append(toBnglString(products.get(i).getSpeciesPattern()));
+		}
+		return buffer.toString();
+	}
+	
+	public static String toBnglStringShort(ParticleJumpProcess particleJumpProcess, List<ParticleSpeciesPattern> reactantSpeciesPatterns, List<ParticleSpeciesPattern> productSpeciesPatterns) {
+		StringBuilder buffer = new StringBuilder();
+
+		for (int i=0; i<reactantSpeciesPatterns.size(); i++){
+			ParticleSpeciesPattern reactantSpeciesPattern = reactantSpeciesPatterns.get(i);
+			if (i==0) {
+				buffer.append(" + ");
+			}
+			buffer.append(toBnglString(reactantSpeciesPattern));
+		}
+		// particleJumpProcesses are not reversible
+		boolean bReversible = false;
+		buffer.append(bReversible ? " <-> " : " -> ");
+		
+		for (int i=0; i<productSpeciesPatterns.size(); i++){
+			ParticleSpeciesPattern productSpeciesPattern = productSpeciesPatterns.get(i);
+			if (i==0) {
+				buffer.append(" + ");
+			}
+			buffer.append(toBnglString(productSpeciesPattern));
 		}
 		return buffer.toString();
 	}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
@@ -74,6 +75,19 @@ public class MathRuleFactory {
 		@Override
 		public List<ProductBondEntry> getProductBondEntries() {
 			return productBondEntries;
+		}
+
+		@Override
+		public String getReactionBNGLShort() {
+			ArrayList<ParticleSpeciesPattern> reactantPatterns = new ArrayList<ParticleSpeciesPattern>();
+			for (MathParticipantEntry reactant : getReactantEntries()){
+				reactantPatterns.add(reactant.particleSpeciesPattern);
+			}
+			ArrayList<ParticleSpeciesPattern> productPatterns = new ArrayList<ParticleSpeciesPattern>();
+			for (MathParticipantEntry product : getProductEntries()){
+				productPatterns.add(product.particleSpeciesPattern);
+			}
+			return RbmUtils.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
 		}
 
 //		@Override
@@ -202,6 +216,11 @@ public class MathRuleFactory {
 			}else{
 				return null;
 			}
+		}
+
+		@Override
+		public String getMolecularTypeBNGL() {
+			return RbmUtils.toBnglString(particleMolecularTypePattern.getMolecularType());
 		}
 	}
 	

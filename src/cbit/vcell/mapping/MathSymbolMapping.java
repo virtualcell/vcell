@@ -22,6 +22,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.parser.SymbolTableEntry;
 
 /**
@@ -90,6 +91,9 @@ public Variable getVariable(SymbolTableEntry biologicalSymbol) {
  * @param var cbit.vcell.math.Variable
  */
 public void put(SymbolTableEntry biologicalSymbol, String varName) {
+	if (biologicalSymbol instanceof ProxyParameter){
+		biologicalSymbol = ((ProxyParameter) biologicalSymbol).getTarget();
+	}
 	if(varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
 		return;
 	}
