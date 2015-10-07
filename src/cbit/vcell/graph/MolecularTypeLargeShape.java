@@ -372,10 +372,21 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
 		} else {							// molecular type, species pattern
+			
+			int textX = xPos + 11;
+			int textY =  yPos + baseHeight - 9;
 			Font font = fontOld.deriveFont(Font.BOLD);
 			g.setFont(font);
 			g.setColor(Color.black);
-			g2.drawString(name, xPos+11, yPos+baseHeight-9);
+			g2.drawString(name, textX, textY);
+			
+			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			int stringWidth = fm.stringWidth(name);
+			if(owner instanceof ReactionRule && mtp != null && mtp.hasExplicitParticipantMatch()) {
+				Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
+				g.setFont(smallerFont);
+				g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
+			}
 		}
 		g.setFont(fontOld);
 		g.setColor(colorOld);
