@@ -336,43 +336,44 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			endText = "Right click here to add a molecule.";
 		}
 		
-		// matches between molecular types - only within reaction rules
-		if(owner instanceof ReactionRule) {
-			Color colorOld = g2.getColor();
-			Font fontOld = g.getFont();
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
-			Color fontColor = Color.gray;
-			Color lineColor = Color.lightGray;
-			g2.setFont(font);
-			g2.setColor(fontColor);
-			for(MolecularTypeLargeShape mtls : speciesShapes) {
-				MolecularTypePattern mtp = mtls.getMolecularTypePattern();
-				if(!mtp.hasExplicitParticipantMatch()) {
-					continue;				// nothing to do if no explicit match
-				}
-				int x = mtls.getX()+10;
-				int y = mtls.getY()-7;
-				if(((ReactionRule)owner).isReactant(sp)) {					// line to right
-					g2.drawLine(x, y, x, y+6);
-					g2.drawLine(x+1, y, x+1, y+6);
-					
-					g2.drawLine(x, y, x+10, y);
-					g2.drawLine(x, y+1, x+10, y+1);
-					
-					g2.drawString(mtp.getParticipantMatchLabel(), x+12, y+4);
-				} else {
-					g2.drawLine(x, y, x, y+6);
-					g2.drawLine(x+1, y, x+1, y+6);
-
-					g2.drawLine(x, y, x-10, y);
-					g2.drawLine(x, y+1, x-10, y+1);
-					
-					g2.drawString(mtp.getParticipantMatchLabel(), x+3, y+4);
-				}
-			}
-			g2.setFont(fontOld);
-			g2.setColor(colorOld);
-		}
+//		// matches between molecular types - only within reaction rules
+//		if(owner instanceof ReactionRule) {
+//			Color colorOld = g2.getColor();
+//			Font fontOld = g.getFont();
+//
+//			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+//			Color fontColor = Color.gray;
+//			Color lineColor = Color.lightGray;
+//			g2.setFont(font);
+//			g2.setColor(fontColor);
+//			for(MolecularTypeLargeShape mtls : speciesShapes) {
+//				MolecularTypePattern mtp = mtls.getMolecularTypePattern();
+//				if(!mtp.hasExplicitParticipantMatch()) {
+//					continue;				// nothing to do if no explicit match
+//				}
+//				int x = mtls.getX()+10;
+//				int y = mtls.getY()-7;
+//				if(((ReactionRule)owner).isReactant(sp)) {
+//					g2.drawLine(x, y, x, y+6);									// vertical line
+//					g2.drawLine(x+1, y, x+1, y+6);
+//					
+//					g2.drawLine(x, y, x+10, y);									// line to right
+//					g2.drawLine(x, y+1, x+10, y+1);
+//					
+//					g2.drawString(mtp.getParticipantMatchLabel(), x+12, y+4);
+//				} else {
+//					g2.drawLine(x, y, x, y+6);
+//					g2.drawLine(x+1, y, x+1, y+6);
+//
+//					g2.drawLine(x, y, x-10, y);									// line to left
+//					g2.drawLine(x, y+1, x-10, y+1);
+//					
+//					g2.drawString(mtp.getParticipantMatchLabel(), x+3, y+4);	// the match label
+//				}
+//			}
+//			g2.setFont(fontOld);
+//			g2.setColor(colorOld);
+//		}
 
 		// bonds between components
 		for(int i=0; i<bondSingles.size(); i++) {
