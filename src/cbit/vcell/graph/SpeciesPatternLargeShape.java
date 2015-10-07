@@ -412,20 +412,21 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				g2.drawLine(bs.from.x+1, bs.from.y+10, bs.from.x+1, bs.from.y+13);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
-				g2.setColor(plusSignGreen);								// draw a green '+' sign
-				g2.drawLine(bs.from.x-8, bs.from.y+6, bs.from.x-3, bs.from.y+6);	// horizontal
-				g2.drawLine(bs.from.x-8, bs.from.y+7, bs.from.x-3, bs.from.y+7);
-				g2.drawLine(bs.from.x-6, bs.from.y+4, bs.from.x-6, bs.from.y+9);	// vertical
-				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
+//				g2.setColor(plusSignGreen);								// draw a green '+' sign
+//				g2.drawLine(bs.from.x-8, bs.from.y+6, bs.from.x-3, bs.from.y+6);	// horizontal
+//				g2.drawLine(bs.from.x-8, bs.from.y+7, bs.from.x-3, bs.from.y+7);
+//				g2.drawLine(bs.from.x-6, bs.from.y+4, bs.from.x-6, bs.from.y+9);	// vertical
+//				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
 
 				g2.setColor(lineColor);
 				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+13);
 				g2.setColor(Color.gray);
 				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+13);
 			} else {
-				g2.setColor(Color.red.darker());									// draw a dark red '-' sign
-				g2.drawLine(bs.from.x-10, bs.from.y+5, bs.from.x-4, bs.from.y+5);	// horizontal
-				g2.drawLine(bs.from.x-10, bs.from.y+6, bs.from.x-4, bs.from.y+6);
+//				g2.setColor(Color.red.darker());									// draw a dark red '-' sign
+//				g2.drawLine(bs.from.x-10, bs.from.y+5, bs.from.x-4, bs.from.y+5);	// horizontal
+//				g2.drawLine(bs.from.x-10, bs.from.y+6, bs.from.x-4, bs.from.y+6);
+				
 //				g2.drawLine(bs.from.x-6, bs.from.y+4, bs.from.x-6, bs.from.y+9);	// vertical
 //				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
 
@@ -447,17 +448,18 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //				g2.setColor(Color.gray);
 //				g2.drawLine(bs.from.x-3, bs.from.y-1+vo, bs.from.x+4, bs.from.y+3+vo);
 				
-				// below small black vertical line ended in a small horizontal red line (comment out if not wanted)
-				int vo = 10;
-				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+vo);
-				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+vo);
-				
-				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x-1, bs.from.y+vo-1, bs.from.x+2, bs.from.y+vo-1);
-				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x-1, bs.from.y+vo, bs.from.x+2, bs.from.y+vo);
+				// below small black vertical line (comment out if not wanted)
+//				int vo = 10;
+//				g2.setColor(lineColor);
+//				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+vo);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+vo);
+//				
+				// small horizontal red line at the end of the vertical one
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x-1, bs.from.y+vo-1, bs.from.x+2, bs.from.y+vo-1);
+//				g2.setColor(Color.gray);
+//				g2.drawLine(bs.from.x-1, bs.from.y+vo, bs.from.x+2, bs.from.y+vo);
 			}
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
