@@ -399,10 +399,12 @@ String mathInfo = var.getClass().getSimpleName()+"("+var.getName()+")";
 							//
 							// for SpeciesConcentrationParameters corresponding to Generated species, add GeneratedSpeciesSymbolTableEntry
 							//
-							for (ModelEntityMapping mem : mathMapping.getTransformation().modelEntityMappings){
-								if (mem.newModelObj == transformedModelSpeciesContext){
-									if (mem.origModelObj instanceof GeneratedSpeciesSymbolTableEntry){
-										filterCategory = BioModelCategoryType.GeneratedSpecies;
+							if (mathMapping.getTransformation() != null){
+								for (ModelEntityMapping mem : mathMapping.getTransformation().modelEntityMappings){
+									if (mem.newModelObj == transformedModelSpeciesContext){
+										if (mem.origModelObj instanceof GeneratedSpeciesSymbolTableEntry){
+											filterCategory = BioModelCategoryType.GeneratedSpecies;
+										}
 									}
 								}
 							}
