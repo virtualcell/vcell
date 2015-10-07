@@ -4509,6 +4509,7 @@ private ReactionRule getRbmReactionRule(Element e, Model newModel) {
 	getRbmReactantPatternsList(e1, r, newModel);
 	Element e2 = e.getChild(XMLTags.RbmProductPatternsListTag, vcNamespace);
 	getRbmProductPatternsList(e2, r, newModel);
+	r.checkMatchConsistency();
 	return r;	
 }
 private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newModel) {
