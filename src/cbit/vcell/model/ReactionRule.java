@@ -380,8 +380,29 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 			participant.getSpeciesPattern().resolveBonds();
 		}
 	}
+	
+	public void checkMatchConsistency() {
+		// invoked right after loading rule from database	
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.hasExplicitParticipantMatch()) {
+					return;		// if we find at least one explicit match we consider that all is well
+				}
+			}
+		}
+		for(ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				if(mtp.hasExplicitParticipantMatch()) {
+					return;
+				}
+			}
+		}
+		// either trivial or it's an old model with matches missing; we recalculate matches to be sure
+		resolveMatches();
+	}
 	private void resolveMatches() {
-		
 		// for each molecular type, make a lists of all corresponding molecular type patterns, one for reactants, one for products
 		Map <MolecularType, List<MolecularTypePattern>> reactantMap = new LinkedHashMap<MolecularType, List<MolecularTypePattern>>();
 		Map <MolecularType, List<MolecularTypePattern>> productMap = new LinkedHashMap<MolecularType, List<MolecularTypePattern>>();
@@ -648,7 +669,7 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public void removeVetoableChangeListener(VetoableChangeListener listener) {
 		eventHandler.removeVetoableChangeListener(listener);
 	}
-
+	
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
 		if(name == null || name.isEmpty()) {
@@ -882,7 +903,10 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	public Model getModel() {
 		return model;
 	}
-	
+	public void setModel(Model model) {
+		this.model = model;
+	}
+
 	public BioNameScope getNameScope() {
 		return nameScope;
 	}
@@ -1097,10 +1121,6 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	@Override
 	public final String getDisplayType() {
 		return typeName;
-	}
-
-	public void setModel(Model model) {
-		this.model = model;
 	}
 }
 
