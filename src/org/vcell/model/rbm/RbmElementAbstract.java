@@ -10,7 +10,7 @@ import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
 @SuppressWarnings("serial")
-public abstract class RbmElementAbstract implements RbmEventContainer, Serializable {
+public abstract class RbmElementAbstract implements RbmObject, RbmEventContainer, Serializable {
 	
 	private transient PropertyChangeSupport propertyChange;
 	private transient java.beans.VetoableChangeSupport vetoPropertyChange;

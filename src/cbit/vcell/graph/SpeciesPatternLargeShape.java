@@ -36,9 +36,10 @@ import cbit.vcell.model.SpeciesContext;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
-	public static final int yLetterOffset = 11;			// y position of Bond id and/or State name
-	public static final int separationWidth = 1;		// width between 2 molecular type patterns
-	
+	public static final int yLetterOffset = 11;		// y position of Bond id and/or State name
+	public static final int separationWidth = 1;	// width between 2 molecular type patterns
+	public static final int defaultHeight = 80;		// we actually always use this height, we never compute it as initially planned
+		
 	private int xPos = 0;
 	private int yPos = 0;		// y position where we draw the sape
 	private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
@@ -203,7 +204,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	
 	static final public int xExtent = 20;	// left and right extension of the sp, used for reactions only
-									// clicking within these limits still means we're inside that sp
+											// clicking within these limits still means we're inside that sp
 	@Override
 	public boolean contains(PointLocationInShapeContext locationContext) {
 		
@@ -265,7 +266,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	public void paintContour(Graphics g) {
 		if(height == -1) {
-			height = 80;
+			height = defaultHeight;
 		}
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
@@ -525,7 +526,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 
 	@Override
-	public void setHighlight(boolean b) {
+	public void setHighlight(boolean b, boolean param) {
+		// param is always ignored
 		// TODO: actually I need to look at the owner, sp may be null for a plain species (green circle)
 		// or for errors (where we display a red circle)
 		if(sp == null) {
@@ -545,7 +547,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {
 		boolean oldHighlight = isHighlighted();
-		setHighlight(false);
+		setHighlight(false, false);
 		if(oldHighlight == true) {
 			paintSelf(g);			// paint self not highlighted if previously highlighted
 		}
