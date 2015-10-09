@@ -51,6 +51,7 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmElementAbstract;
+import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.gui.GuiUtils;
@@ -64,6 +65,7 @@ import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionRulePatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.model.ProductPattern;
@@ -87,8 +89,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private ReactionRulePropertiesTreeModel reactantTreeModel = null;
 	private ReactionRulePropertiesTreeModel productTreeModel = null;
 	
-	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
-	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
+	ReactionRulePatternLargeShape reactantShape;
+	ReactionRulePatternLargeShape productShape;
+	
+//	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
+//	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
 	private JPanel shapePanel;
 	private JScrollPane scrollPane;
@@ -208,12 +213,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
-					for(SpeciesPatternLargeShape stls : reactantPatternShapeList) {
-						stls.paintSelf(g);
-					}
-					for(SpeciesPatternLargeShape stls : productPatternShapeList) {
-						stls.paintSelf(g);
-					}
+					
+					reactantShape.paintSelf(g);
+					productShape.paintSelf(g);
 				}
 			};
 			shapePanel.addMouseListener(new MouseAdapter() {
@@ -231,53 +233,41 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
 							// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
 							// return;
-						}					
+						}
 						showPopupMenu(e, locationContext);
 					}
 				}
 				private void manageMouseActivity(PointLocationInShapeContext locationContext) {
 					Graphics g = shapePanel.getGraphics();
-					for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
-						sps.turnHighlightOffRecursive(g);
-					}
-					for (SpeciesPatternLargeShape sps : productPatternShapeList) {
-						sps.turnHighlightOffRecursive(g);
-					}
+					reactantShape.turnHighlightOffRecursive(g);
+					productShape.turnHighlightOffRecursive(g);
+
 					boolean found = false;
-					for (SpeciesPatternLargeShape sps : reactantPatternShapeList) {
-						if (sps.contains(locationContext)) {		//check if mouse is inside shape
-							found = true;
-							break;
-						}
+					if(reactantShape.contains(locationContext)) {
+						found = true;
 					}
 					if(!found) {
-						for (SpeciesPatternLargeShape sps : productPatternShapeList) {
-							if (sps.contains(locationContext)) {
-								found = true;
-								break;
-							}
+						if(productShape.contains(locationContext)) {
+							;	// we just need to initialize the location context with the proper shapes under the cursor by calling "contains"
 						}
 					}
+
 					locationContext.highlightDeepestShape();
-					if(locationContext.getDeepestShape() == null) {
-						// nothing selected means all the reactant bar or all the product bar is selected 
+//					if(locationContext.getDeepestShape() == null) {
+//						// nothing selected means all the reactant bar or all the product bar is selected 
 						int xExtent = SpeciesPatternLargeShape.xExtent;
 						Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 						Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 						
 						if(locationContext.isInside(reactantRectangle)) {
-							for(SpeciesPatternLargeShape spls : reactantPatternShapeList) {
-								spls.paintSelf(g, false);
-							}
+							reactantShape.paintSelf(g, true);
 						} else if(locationContext.isInside(productRectangle)) {
-							for(SpeciesPatternLargeShape spls : productPatternShapeList) {
-								spls.paintSelf(g, false);
-							}
-						} else {
-							
-						}
-					} else {
-						locationContext.paintDeepestShape(g);
+							productShape.paintSelf(g, true);
+//						} else {
+//							
+//						}
+//					} else {
+//						locationContext.paintDeepestShape(g);
 					}
 				}
 			});
@@ -638,49 +628,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	public static final int yOffsetProductInitial = 100;
 	public static final int ReservedSpaceForNameOnYAxis = 10;
 	private void updateShape() {
-		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
-		reactantPatternShapeList.clear();
 		int maxXOffset;
-		int xOffset = xOffsetInitial;
-		if(rpList != null && rpList.size() > 0) {
-			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
-			for(int i = 0; i<rpList.size(); i++) {
-				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-				// TODO: count the number of bonds for this sp and allow enough vertical space for them
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffsetReactantInitial, -1, sp, gc, reactionRule);
-//				if(i==0) { sps.setHighlight(true); }
-				if(i < rpList.size()-1) {
-					sps.addEndText("+");
-				} else {
-					if(reactionRule.isReversible()) {
-						sps.addEndText("<->");
-					} else {
-						sps.addEndText("->");
-					}
-				}
-				xOffset = sps.getRightEnd() + 42;	// distance between species patterns
-				reactantPatternShapeList.add(sps);
-			}
-		}
-		maxXOffset = Math.max(xOffsetInitial, xOffset);
+		Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 		
-		xOffset = xOffsetInitial;
-		List<ProductPattern> ppList = reactionRule.getProductPatterns();
-		productPatternShapeList.clear();
-		if(ppList != null && ppList.size() > 0) {
-			Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
-			for(int i = 0; i<ppList.size(); i++) {
-				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yOffsetProductInitial, -1, sp, gc, reactionRule);
-//				if(i==0) { sps.setHighlight(true); }
-				if(i < ppList.size()-1) {
-					sps.addEndText("+");
-				}
-				xOffset = sps.getRightEnd() + 42;
-				productPatternShapeList.add(sps);
-			}
-		}
-		maxXOffset = Math.max(maxXOffset, xOffset);
+		reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, gc, reactionRule, true);
+		maxXOffset = Math.max(xOffsetInitial, reactantShape.getXOffset());
+		
+		productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, gc, reactionRule, false);
+		maxXOffset = Math.max(maxXOffset, productShape.getXOffset());
 
 		// TODO: instead of offset+100 compute the exact width of the image
 		Dimension preferredSize = new Dimension(maxXOffset+90, yOffsetProductInitial+80+20);
@@ -700,7 +655,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		Point mousePoint = e.getPoint();
 
 		final Object deepestShape = locationContext.getDeepestShape();
-		final RbmElementAbstract selectedObject;
+		final RbmObject selectedObject;
 		
 		if(deepestShape == null) {
 			selectedObject = null;
@@ -734,6 +689,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			} else {
 				return;
 			}
+		} else if(deepestShape instanceof ReactionRulePatternLargeShape) {
+			System.out.println("inside reactant line or products line");
+			if(((ReactionRulePatternLargeShape)deepestShape).isHighlighted()) {
+				selectedObject = ((ReactionRulePatternLargeShape)deepestShape).getReactionRule();
+			} else {
+				return;
+			}
 		} else {
 			selectedObject = null;
 			System.out.println("inside something else?");
@@ -754,7 +716,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		
 		// -------------------------------- reactant zone --------------------------------------------------------
 		if(bReactantsZone) {
-			if(selectedObject == null) {									// add reactant / product pattern
+			if(selectedObject == null) {
+				return;
+			} else if(selectedObject instanceof ReactionRule) {				// add reactant pattern
 				JMenuItem addMenuItem = new JMenuItem("Add Reactant");
 				addMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -905,7 +869,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}
 		// ---------------------------------------- product zone ---------------------------------------------
 		} else if(!bReactantsZone) {
-			if(selectedObject == null) {									// add product pattern
+			if(selectedObject == null) {
+				return;
+			} else if(selectedObject instanceof ReactionRule) {				// add product pattern
 				JMenuItem addMenuItem = new JMenuItem("Add Product");
 				addMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
