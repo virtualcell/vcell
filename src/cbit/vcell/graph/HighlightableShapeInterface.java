@@ -10,6 +10,6 @@ import org.vcell.model.rbm.MolecularType;
 public interface HighlightableShapeInterface {
 
 	public abstract boolean isHighlighted();
-	public abstract void setHighlight(boolean highlight);
+	public abstract void setHighlight(boolean highlight, boolean param);
 	public abstract void turnHighlightOffRecursive(Graphics g);
 }

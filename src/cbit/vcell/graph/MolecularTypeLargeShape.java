@@ -424,7 +424,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 	
 	@Override
-	public void setHighlight(boolean b) {
+	public void setHighlight(boolean b, boolean param) {
+		// param is being ignored
 		if(owner instanceof RbmObservable) {
 			mtp.setHighlighted(b);
 		} else if(owner instanceof MolecularType) {
@@ -461,7 +462,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {
 		boolean oldHighlight = isHighlighted();
-		setHighlight(false);
+		setHighlight(false, false);
 		if(oldHighlight == true) {
 			paintSelf(g);			// paint self not highlighted if previously highlighted
 		}

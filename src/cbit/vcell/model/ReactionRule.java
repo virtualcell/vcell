@@ -19,6 +19,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypeMapping;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.common.RbmEventHandler;
@@ -44,8 +45,8 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class ReactionRule implements Serializable, Matchable, ModelProcess, PropertyChangeListener,
-	IssueSource, Identifiable, Displayable
+public class ReactionRule implements RbmObject, Serializable, ModelProcess, PropertyChangeListener,
+	IssueSource, Identifiable
 	{
 	public static int reactionRuleLabelIndex;
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
@@ -61,7 +62,9 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 //	private String productWarning = null;
 	private Structure structure = null;
 	private transient Model model = null;
-	
+	private transient boolean bHighlighted = false;
+	private transient boolean bHighlightedReactants = false;
+
 	private final ReactionRuleNameScope nameScope = new ReactionRuleNameScope();
 	public class ReactionRuleNameScope extends BioNameScope {
 		private NameScope[] children = new NameScope[0];
@@ -1112,6 +1115,22 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 		return true;
 	}
 
+	public boolean isHighlighted() {
+		// one of either reactants or products is highlighted if true
+		// neither is highlighted if false
+		return bHighlighted;
+	}
+	public boolean isHighlightedReactants() {
+		// ATTENTION! valid only if bHighlighted is true
+		// reactants is highlighted if true
+		// products is highlighted if false
+		return bHighlightedReactants;
+	}
+	public void setHighlighted(boolean highlight, boolean isReactants) {
+		// if the first argument is false the second one is meaningless
+		this.bHighlighted = highlight;
+		this.bHighlightedReactants = isReactants;
+	}
 
 	public static final String typeName = "Reaction Rule";
 	@Override
@@ -1121,6 +1140,11 @@ public class ReactionRule implements Serializable, Matchable, ModelProcess, Prop
 	@Override
 	public final String getDisplayType() {
 		return typeName;
+	}
+
+	public void setHighlighted() {
+		// TODO Auto-generated method stub
+		
 	}
 }
 

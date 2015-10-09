@@ -215,7 +215,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			return false;
 		}
 		@Override
-		public void setHighlight(boolean b) {
+		public void setHighlight(boolean b, boolean param) {
+			// param is ignored
 			if(owner instanceof RbmObservable) {
 				csp.setHighlighted(b);
 			} else if(owner instanceof MolecularType) {
@@ -229,7 +230,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		@Override
 		public void turnHighlightOffRecursive(Graphics g) {
 			boolean oldHighlight = isHighlighted();
-			setHighlight(false);
+			setHighlight(false, false);
 			if(oldHighlight == true) {
 				paintSelf(g);			// paint self not highlighted if previously highlighted
 			}
@@ -528,7 +529,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}
 	
 	@Override
-	public void setHighlight(boolean b) {
+	public void setHighlight(boolean b, boolean param) {
+		// param is ignored
 		if(owner instanceof RbmObservable) {
 			mcp.setHighlighted(b);
 		} else if(owner instanceof MolecularType) {
@@ -555,7 +557,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {	// not really recursive, no subchildren (for now)
 		boolean oldHighlight = isHighlighted();
-		setHighlight(false);
+		setHighlight(false, false);
 		if(oldHighlight == true) {
 			paintSelf(g);			// paint self not highlighted if previously highlighted
 		}

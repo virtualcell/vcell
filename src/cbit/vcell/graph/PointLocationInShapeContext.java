@@ -13,6 +13,7 @@ import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.model.ReactionRule;
 
 public class PointLocationInShapeContext {
 	// Hierarchy of shapes containing a Point
@@ -20,6 +21,7 @@ public class PointLocationInShapeContext {
 	
 	public Point point = null;
 	
+	public ReactionRulePatternLargeShape rrps = null;
 	public SpeciesPatternLargeShape sps = null;
 	public MolecularTypeLargeShape mts = null;
 	public MolecularComponentLargeShape mcs = null;
@@ -42,6 +44,9 @@ public class PointLocationInShapeContext {
 		}
 		if(sps != null) {
 			return sps;
+		}
+		if(rrps != null) {
+			return rrps;
 		}
 		return null;
 	}
@@ -76,33 +81,59 @@ public class PointLocationInShapeContext {
 		}
 		return null;
 	}
-	
+	public ReactionRule getReactionRule() {
+		if(rrps != null) {
+			return rrps.getReactionRule();
+		}
+		return null;
+	}
+	public boolean isReactantsZone() {		// clicked within reactants area
+		if(rrps != null) {
+			return rrps.isReactants;
+		}
+		return false;
+	}
+	public boolean isProductsZone() {		// clicked within products area
+		if(rrps != null) {
+			return !rrps.isReactants;
+		}
+		return false;
+	}
+
 	public boolean highlightDeepestShape() {
 		if(csls != null) {
-			csls.setHighlight(true);
-			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
+			csls.setHighlight(true, false);
+			if(sps != null) sps.setHighlight(true, false);				// we always highlight the sps if present
+			if(rrps != null) rrps.setHighlight(true, rrps.isReactants);	// we always highlight the rrps if present
 			return true;
 		}
 		if(mcs != null) {
-			mcs.setHighlight(true);
-			if(sps != null) sps.setHighlight(true);		// we always highlight the sps if present
+			mcs.setHighlight(true, false);
+			if(sps != null) sps.setHighlight(true, false);
+			if(rrps != null) rrps.setHighlight(true, rrps.isReactants);
 			return true;
 		}
 		if(mts != null) {
-			mts.setHighlight(true);
-			if(sps != null) sps.setHighlight(true);
+			mts.setHighlight(true, false);
+			if(sps != null) sps.setHighlight(true, false);
+			if(rrps != null) rrps.setHighlight(true, rrps.isReactants);
 			return true;
 		}
 		if(sps != null) {
-			sps.setHighlight(true);
+			sps.setHighlight(true, false);
+			if(rrps != null) rrps.setHighlight(true, rrps.isReactants);
+			return true;
+		}
+		if(rrps != null) {
+			rrps.setHighlight(true, rrps.isReactants);
 			return true;
 		}
 		return false;		// couldn't find anything to highlight
 	}
 
-	public void paintContour(Graphics graphics, Rectangle2D rect) {
-		SpeciesPatternLargeShape.paintContour(graphics, rect);
-	}
+//	public void paintContour(Graphics graphics, Rectangle2D rect) {
+//		SpeciesPatternLargeShape.paintContour(graphics, rect);
+//	}
 
 	public void paintDeepestShape(Graphics graphics) {
 		
@@ -125,6 +156,11 @@ public class PointLocationInShapeContext {
 			sps.paintSelf(graphics);
 			return;
 		}
+		if(rrps != null) {
+			rrps.paintSelf(graphics);
+			return;
+		}
+
 	}
 
 	public boolean isInside(Rectangle2D rectangle) {
