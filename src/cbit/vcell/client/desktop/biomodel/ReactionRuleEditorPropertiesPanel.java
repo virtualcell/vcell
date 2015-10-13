@@ -225,10 +225,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 						Point whereClicked = e.getPoint();
 						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+						reactantShape.setPointLocationInShapeContext(locationContext);
+						productShape.setPointLocationInShapeContext(locationContext);
 						manageMouseActivity(locationContext);
 					} else if(e.getButton() == 3) {						// right click invokes popup menu (only if the object is highlighted)
 						Point whereClicked = e.getPoint();
 						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
+						reactantShape.setPointLocationInShapeContext(locationContext);
+						productShape.setPointLocationInShapeContext(locationContext);
 						manageMouseActivity(locationContext);
 						if(locationContext.getDeepestShape() != null && !locationContext.getDeepestShape().isHighlighted()) {
 							// TODO: (maybe) add code here to highlight the shape if it's not highlighted already but don't show the menu
