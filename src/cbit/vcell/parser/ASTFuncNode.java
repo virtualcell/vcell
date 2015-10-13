@@ -34,18 +34,6 @@ public class ASTFuncNode extends SimpleNode {
 			super(ft.getName(), ft.getArgNames(), ft.getArgTypes(), null, null, null);
 			functionType = ft;
 		}
-		public String getFunctionDeclaration() {
-			StringBuffer buffer = new StringBuffer(getFunctionName());
-			buffer.append("(");
-			for (int i=0;i<getNumArguments();i++){
-				if (i>0){
-					buffer.append(",");
-				}
-				buffer.append(getArgNames()[i]);
-			}
-			buffer.append(")");
-			return buffer.toString();
-		}
 		public String getDescription() {
 			return functionType.getHtmlDescription();
 		}
