@@ -760,7 +760,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						public void actionPerformed(ActionEvent e) {
 							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
 							for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
-								mcp.setBondType(BondType.None);
+								mcp.setBondType(BondType.Possible);
 							}
 							sp.addMolecularTypePattern(molecularTypePattern);
 						}
@@ -913,7 +913,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						public void actionPerformed(ActionEvent e) {
 							MolecularTypePattern molecularTypePattern = new MolecularTypePattern(mt);
 							for(MolecularComponentPattern mcp : molecularTypePattern.getComponentPatternList()) {
-								mcp.setBondType(BondType.None);
+								mcp.setBondType(BondType.Possible);
 							}
 							sp.addMolecularTypePattern(molecularTypePattern);
 						}
