@@ -26,6 +26,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	ReactionRule rr;
 	boolean isReactants;
 	int xOffset;
+	PointLocationInShapeContext locationContext = null;
 	
 	List<SpeciesPatternLargeShape> speciesPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	
@@ -82,6 +83,9 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		}
 	}
 	
+	public void setPointLocationInShapeContext(PointLocationInShapeContext locationContext) {
+		this.locationContext = locationContext;
+	}
 	public ReactionRule getReactionRule() {
 		return rr;
 	}
@@ -122,9 +126,53 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		if(bPaintContour) {
 			paintContour(g);
 		}
+		
+		if(locationContext != null && this == locationContext.getDeepestShape()) {
+			paintGhost(g, true);
+		} else {
+			paintGhost(g, false);
+		}
+		
 		for(SpeciesPatternLargeShape stls : speciesPatternShapeList) {
 			stls.paintSelf(g, bPaintContour);
 		}
+	}
+	public void paintGhost(Graphics g, boolean bShow) {
+		if(height == -1) {
+			height = 80;
+		}
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+			
+		int xOffset = xPos-SpeciesPatternLargeShape.xExtent;
+		for(SpeciesPatternLargeShape spls : speciesPatternShapeList) {
+			xOffset = Math.max(xOffset, spls.getRightEnd());
+		}
+		xOffset += 30;
+		// compute the dimensions of the SP contour
+		// TODO: keep this code in sync! xOffset is now a bit off to the right than the "contains" area, because it 
+		//		 would interfere with the painting of the -> or <-> (reaction arrow)
+		int ySP = yPos-3;
+		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
+		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
+		Rectangle2D rect = new Rectangle2D.Double(xOffset, ySP, 2000, hSP);
+		
+		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
+		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
+		if(bShow) {
+			g2.setPaint(paleBlue);
+			g2.fill(rect);
+			g2.setColor(darkerBlue);
+			g2.draw(rect);
+		} else {
+			g2.setPaint(Color.white);
+			g2.fill(rect);
+			g2.setColor(Color.white);
+			g2.draw(rect);
+		}
+	    g2.setPaint(paintOld);
+		g2.setColor(colorOld);
 	}
 	public void paintContour(Graphics g) {
 		if(height == -1) {
@@ -199,6 +247,9 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 //		if(!isReactants && !isHighlightedProducts()) {
 //			return;		// if i'm the products bar and products are not highlighted, nothing to do
 //		}
+		
+		paintGhost(g, false);
+		
 		if(isReactants && isHighlightedReactants()) {
 			// if i'm the reactants bar and reactants are highlighted, need to turn them off
 			boolean oldHighlight = isHighlightedReactants();
