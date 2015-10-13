@@ -16,10 +16,12 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.ModelPropertyVetoException;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -207,6 +209,13 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		MolecularType selectedMolecularType = getValueAt(row);
 		switch (col) {
 		case name: {
+			if (!inputValue.equals(TokenMangler.fixTokenStrict(inputValue))){
+				errMsg = "'" + inputValue + "' not legal identifier, try '"+TokenMangler.fixTokenStrict(inputValue)+"'.";
+				errMsg += VCellErrorMessages.PressEscToUndo;
+				errMsg = "<html>" + errMsg + "</html>";
+				return errMsg;
+			}
+			inputValue = TokenMangler.fixTokenStrict(inputValue);
 			MolecularType mt = getModel().getRbmModelContainer().getMolecularType(inputValue);
 			if (mt != null && mt != selectedMolecularType) {
 				errMsg = mt.getDisplayType() + " '" + inputValue + "' already exists!";
