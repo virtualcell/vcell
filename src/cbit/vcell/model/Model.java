@@ -1631,6 +1631,32 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}
 			}
 		}
+		public void adjustSpeciesPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName() + ", " + csd.getName());
+
+			for(SpeciesContext sc : getSpeciesContexts()) {
+				if(!sc.hasSpeciesPattern()) {
+					continue;
+				}
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp.getMolecularType() != mt) {
+						continue;
+					}
+					for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+						if (mcp.getMolecularComponent() != mc) {
+							continue;
+						}
+						ComponentStatePattern csp = mcp.getComponentStatePattern();
+						if(csp == null) {
+							csp = new ComponentStatePattern();
+							mcp.setComponentStatePattern(csp);
+							// do not return, multiple observables may be defined for this molecule, component, etc
+						}
+					}							
+				}
+			}
+		}
 		public void adjustObservablesPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
 			System.out.println("adjust for " + mt.getName() + ", " + mc.getName() + ", " + csd.getName());
 			Model model = Model.this;
@@ -1662,6 +1688,56 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}
 			}
 		}
+		public void adjustRulesPatterns(MolecularType mt, MolecularComponent mc, ComponentStateDefinition csd) {
+			System.out.println("adjust for " + mt.getName() + ", " + mc.getName());
+			Model model = Model.this;
+			RbmModelContainer rbmmc = model.getRbmModelContainer();
+			
+			List<ReactionRule> rlList = rbmmc.getReactionRuleList();
+			if(rlList == null || rlList.isEmpty()) {
+				return;
+			}
+			for(ReactionRule rl : rlList) {
+				List<ReactantPattern> rpList = rl.getReactantPatterns();
+				for(ReactantPattern rp : rpList) {
+					SpeciesPattern sp = rp.getSpeciesPattern();
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() != mc) {
+								continue;
+							}
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+							}
+						}
+					}
+				}
+				List<ProductPattern> ppList = rl.getProductPatterns();
+				for(ProductPattern pp : ppList) {
+					SpeciesPattern sp = pp.getSpeciesPattern();
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						if(mtp.getMolecularType() != mt) {
+							continue;
+						}
+						for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+							if (mcp.getMolecularComponent() != mc) {
+								continue;
+							}
+							ComponentStatePattern csp = mcp.getComponentStatePattern();
+							if(csp == null) {
+								csp = new ComponentStatePattern();
+								mcp.setComponentStatePattern(csp);
+							}
+						}
+					}
+				}
+			}
+		}
 		public void adjustRulesPatterns(MolecularType mt, MolecularComponent mc) {
 			System.out.println("adjust for " + mt.getName() + ", " + mc.getName());
 			Model model = Model.this;
@@ -1671,8 +1747,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			if(rlList == null || rlList.isEmpty()) {
 				return;
 			}
-			
-			
 			for(ReactionRule rl : rlList) {
 				List<ReactantPattern> rpList = rl.getReactantPatterns();
 				for(ReactantPattern rp : rpList) {
