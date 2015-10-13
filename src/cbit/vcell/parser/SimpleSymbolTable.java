@@ -114,7 +114,21 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 
 		public Set<String> getAllowableLiteralValues(String argumentName) {
 			return new HashSet<String>();
-		}		
+		}
+		
+		public String getFunctionDeclaration() {
+			StringBuffer buffer = new StringBuffer(getFunctionName());
+			buffer.append("(");
+			for (int i=0;i<getNumArguments();i++){
+				if (i>0){
+					buffer.append(",");
+				}
+				buffer.append(getArgNames()[i]);
+			}
+			buffer.append(")");
+			return buffer.toString();
+		}
+
 	}
 	
 	public static class SimpleSymbolTableEntry implements SymbolTableEntry {

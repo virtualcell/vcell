@@ -46,6 +46,7 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelFunction;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelProcess;
@@ -58,12 +59,15 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.VCUnitEvaluator;
+import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
@@ -971,6 +975,24 @@ protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefini
 				localIssueList.add(new Issue(origExp, issueContext, IssueCategory.Units,"expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 			Expression newExp = new Expression(origExp);
+			//
+			// flatten user-defined functions
+			//
+			FunctionInvocation[] functionInvocations = newExp.getFunctionInvocations(new FunctionFilter() {	
+				@Override
+				public boolean accept(String functionName, FunctionType functionType) {
+					return functionType == FunctionType.USERDEFINED;
+				}
+			});
+			for (FunctionInvocation functionInvocation : functionInvocations){
+				if (functionInvocation.getSymbolTableFunctionEntry() instanceof Model.ModelFunction){
+					ModelFunction modelFunction = (ModelFunction)functionInvocation.getSymbolTableFunctionEntry();
+					newExp.substituteInPlace(functionInvocation.getFunctionExpression(), modelFunction.getFlattenedExpression(functionInvocation));
+				}
+			}
+			//
+			// then substitute Math symbols for Biological symbols.
+			//
 			newExp.bindExpression(null);
 			for (int i=0;i<symbols.length;i++){
 				SymbolTableEntry ste = origExp.getSymbolBinding(symbols[i]);

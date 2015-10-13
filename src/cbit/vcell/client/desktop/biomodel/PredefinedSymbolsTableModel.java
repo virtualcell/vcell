@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.vcell.util.gui.EditorScrollTable;
+
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.TableUtil;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.ModelFunction;
 import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.ASTFuncNode.PredefinedSymbolTableFunctionEntry;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -48,6 +50,9 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		if (symbolTableEntry instanceof PredefinedSymbolTableFunctionEntry) {
 			return ((PredefinedSymbolTableFunctionEntry) symbolTableEntry).getDescription();
 		}
+		if (symbolTableEntry instanceof ModelFunction) {
+			return ((ModelFunction) symbolTableEntry).getDescription();
+		}
 		return null;
 	}
 	private String getExpression(SymbolTableEntry symbolTableEntry) {
@@ -56,7 +61,13 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 			if (expression != null) {
 				return expression.infix();
 			}
-		} 
+		}
+		if (symbolTableEntry instanceof Model.ModelFunction){
+			Expression expression = ((ModelFunction)symbolTableEntry).getExpression();
+			if (expression != null){
+				return expression.infix();
+			}
+		}
 		return null;
 	}
 	private String getName(SymbolTableEntry symbolTableEntry) {
@@ -66,6 +77,9 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		if (symbolTableEntry instanceof PredefinedSymbolTableFunctionEntry) {
 			return ((PredefinedSymbolTableFunctionEntry) symbolTableEntry).getFunctionDeclaration();
 		}
+		if (symbolTableEntry instanceof ModelFunction) {
+			return ((ModelFunction) symbolTableEntry).getFunctionDeclaration();
+		}
 		return null;
 	}
 	@Override
@@ -73,6 +87,7 @@ public class PredefinedSymbolsTableModel extends BioModelEditorRightSideTableMod
 		List<SymbolTableEntry> predefinedSymbolList = new ArrayList<SymbolTableEntry>();
 		if (getModel() != null) {
 			predefinedSymbolList.addAll(Arrays.asList(getModel().getReservedSymbols()));
+			predefinedSymbolList.addAll(Arrays.asList(getModel().getModelFunctions()));
 		}
 		predefinedSymbolList.addAll(Arrays.asList(ASTFuncNode.predefinedSymbolTableFunctionEntries));
 		
