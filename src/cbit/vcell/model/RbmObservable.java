@@ -439,7 +439,13 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 							continue;
 						}
 						ComponentStatePattern csp = mcp.getComponentStatePattern();
-						if(csp == null || csp.isAny()) {
+						if(csp == null) {
+							continue;
+						}
+						if(csp.isAny()) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								mcp.setComponentStatePattern(null);
+							}
 							continue;
 						}
 						if(csp.getComponentStateDefinition() == csd) {

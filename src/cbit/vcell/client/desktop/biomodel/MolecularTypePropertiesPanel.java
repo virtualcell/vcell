@@ -886,6 +886,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					ComponentStateDefinition componentStateDefinition = mc.createComponentStateDefinition();
 					mc.addComponentStateDefinition(componentStateDefinition);
 					bioModel.getModel().getRbmModelContainer().adjustObservablesPatterns(molecularType, mc, componentStateDefinition);
+					bioModel.getModel().getRbmModelContainer().adjustRulesPatterns(molecularType, mc, componentStateDefinition);
+					bioModel.getModel().getRbmModelContainer().adjustSpeciesPatterns(molecularType, mc, componentStateDefinition);
 //					editInPlace((LargeShape)deepestShape);
 				}
 			});

@@ -1070,8 +1070,15 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 							continue;	// not our mc
 						}
 						ComponentStatePattern csp = mcp.getComponentStatePattern();
-						if(csp == null || csp.isAny()) {
-							continue;	// no state to delete
+						if(csp == null) {
+							continue;
+						}
+						if(csp.isAny()) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								// we are about to delete the last possible state, so we set the ComponentStatePattern to null
+								mcp.setComponentStatePattern(null);
+							}
+							continue;
 						}
 						if(csp.getComponentStateDefinition() == csd) {
 							if(mc.getComponentStateDefinitions().size() == 1) {
@@ -1097,7 +1104,13 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 							continue;
 						}
 						ComponentStatePattern csp = mcp.getComponentStatePattern();
-						if(csp == null || csp.isAny()) {
+						if(csp == null) {
+							continue;
+						}
+						if(csp.isAny()) {
+							if(mc.getComponentStateDefinitions().size() == 1) {
+								mcp.setComponentStatePattern(null);
+							}
 							continue;
 						}
 						if(csp.getComponentStateDefinition() == csd) {
