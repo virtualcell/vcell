@@ -3,16 +3,11 @@ package org.vcell.model.rbm;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
-//import org.jgrapht.EdgeFactory;
-//import org.jgrapht.GraphMapping;
-//import org.jgrapht.UndirectedGraph;
-//import org.jgrapht.alg.isomorphism.VF2SubgraphIsomorphismInspector;
-//import org.jgrapht.graph.SimpleGraph;
+import org.jdom.Namespace;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.ChangeStateOperation;
@@ -285,9 +280,9 @@ System.out.println(bngConsoleString);
 
 		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
 		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
-		Element modelElement = sbmlElement.getChild("model");
-		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules");
-		Element reactionRuleElement = listOfReactionRulesElement.getChild("ReactionRule");
+		Element modelElement = sbmlElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		Element reactionRuleElement = listOfReactionRulesElement.getChild("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		String symmetry_factor_str = reactionRuleElement.getAttributeValue("symmetry_factor");
 		
 		return Double.parseDouble(symmetry_factor_str);
@@ -298,8 +293,8 @@ System.out.println(bngConsoleString);
 		RuleAnalysisReport report = new RuleAnalysisReport();
 
 		double symmetryFactor = 1.0;
-
-		if (computeSymmetryFactor){
+//computeSymmetryFactor=true;
+//		if (computeSymmetryFactor){
 //			double mySymmetryFactor = analyzeSymmetry(rule);
 			
 			//
@@ -307,6 +302,9 @@ System.out.println(bngConsoleString);
 			//
 			try {
 				double bngSymmetryFactor = analyzeSymmetryBNG(rule);
+				if (bngSymmetryFactor != 1){
+					System.err.println("bng computed symmetry factor which was not 1, bngSymmetryFactor is "+bngSymmetryFactor+" reaction is "+rule.getReactionBNGLShort());
+				}
 //				if (bngSymmetryFactor != mySymmetryFactor){
 //					System.err.println("mySymmetryFactor was "+mySymmetryFactor+", bngSymmetryFactor is "+bngSymmetryFactor);
 //				}
@@ -314,7 +312,7 @@ System.out.println(bngConsoleString);
 			}catch (Exception e){
 				e.printStackTrace(System.out);
 			}
-		}
+//		}
 		
 		report.setSymmetryFactor(symmetryFactor);		
 		
