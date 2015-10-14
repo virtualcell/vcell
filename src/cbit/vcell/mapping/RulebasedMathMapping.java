@@ -12,6 +12,7 @@ package cbit.vcell.mapping;
 
 
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.XmlUtil;
@@ -842,7 +844,18 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
         System.out.println(RbmUtils.toBnglStringShort(reactionRule));
 
         ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
-        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(reactionRule, ruleIndex);
+        ReactionRule irreversibleReactionRule = null;
+        try {
+			irreversibleReactionRule = (ReactionRule) BeanUtils.cloneSerializable(reactionRule);
+			irreversibleReactionRule.setReversible(false);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(irreversibleReactionRule, ruleIndex);
         RuleAnalysisReport modelReport = RuleAnalysis.analyze(modelRule);
         String modelSummary = modelReport.getSummary();
 
