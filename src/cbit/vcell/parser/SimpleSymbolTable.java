@@ -10,6 +10,7 @@
 
 package cbit.vcell.parser;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class SimpleSymbolTable implements ScopedSymbolTable {
 	private SymbolTableEntry steArray[] = null;
 	private NameScope nameScope = null;
 	
-	public static class SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry {
+	public static class SimpleSymbolTableFunctionEntry implements SymbolTableFunctionEntry, Serializable {
 		private String funcName = null; 
 		private String[] argNames = null;
 		private FunctionArgType[] argTypes = null;
