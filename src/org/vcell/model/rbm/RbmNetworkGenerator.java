@@ -15,6 +15,7 @@ import org.vcell.util.Pair;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
@@ -91,8 +92,9 @@ public class RbmNetworkGenerator {
 		
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
-		if(!callerClassName.equals(networkTransformerClassName)) {
-			throw new UnsupportedOperationException("This method may only be called from within a " + networkTransformerClassName + " instance.");
+		String rulebasedTransformerClassName = RulebasedTransformer.class.getName();
+		if(!callerClassName.equals(networkTransformerClassName) && !callerClassName.equals(rulebasedTransformerClassName)) {
+			throw new UnsupportedOperationException("This method may only be called from within a " + networkTransformerClassName + " or " + rulebasedTransformerClassName + " instance.");
 		}
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
@@ -147,7 +149,6 @@ public class RbmNetworkGenerator {
 				}
 				}
 			}
-			
 		}
 		
 		writer.println(BEGIN_PARAMETERS);
@@ -179,8 +180,13 @@ public class RbmNetworkGenerator {
 		
 		writer.println(END_MODEL);	
 		writer.println();
-		
-		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, networkGenerationRequirements);
+
+		if(callerClassName.equals(networkTransformerClassName)) {
+			RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, networkGenerationRequirements);
+		} else if (callerClassName.equals(rulebasedTransformerClassName)) {
+			writer.println();
+			writer.println("writeXML()");
+		}
 		writer.println();
 	}
 	// modified bngl writer for special use restricted to network transform functionality
