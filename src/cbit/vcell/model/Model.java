@@ -64,10 +64,13 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.FunctionInvocation;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
@@ -97,6 +100,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	private ReactionStep[] fieldReactionSteps = new ReactionStep[0];
 	private Diagram[] fieldDiagrams = new Diagram[0];
 	private ModelNameScope nameScope = new Model.ModelNameScope();
+	private Model.ModelFunction[] fieldModelFunctions = new Model.ModelFunction[0];
 	private Model.ModelParameter[] fieldModelParameters = new Model.ModelParameter[0];
 	private Model.ReservedSymbol[] fieldReservedSymbols = new Model.ReservedSymbol[0];
 	private final ModelUnitSystem unitSystem;
@@ -794,6 +798,37 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 	public static final String RoleDesc = "user defined";
 	
 	public static final String PROPERTY_NAME_MODEL_PARAMETERS = "modelParameters";
+	public static final String PROPERTY_NAME_MODEL_FUNCTIONS = "modelFunctions";
+	
+	public class ModelFunction extends SimpleSymbolTableFunctionEntry {
+
+		public ModelFunction(String funcName, String[] argNames, Expression expression, VCUnitDefinition vcUnitDefinition) {
+			super(funcName, argNames, getFunctionArgTypes(argNames.length), expression, vcUnitDefinition, Model.this.getNameScope());
+		}
+
+		public Expression getFlattenedExpression(FunctionInvocation functionInvocation) throws ExpressionException {
+			Expression exp = new Expression(getExpression());
+			for (int i=0;i<getNumArguments();i++){
+				String argName = getArgNames()[i];
+				exp.substituteInPlace(new Expression(argName), functionInvocation.getArguments()[i]);
+			}
+			return exp;
+		}
+
+		public String getDescription() {
+			return "user defined";
+		}
+		
+		
+	}
+
+	private static FunctionArgType[] getFunctionArgTypes(int numArgs){
+		FunctionArgType[] functionArgTypes = new FunctionArgType[numArgs];
+		for (int i=0;i<numArgs;i++){
+			functionArgTypes[i] = FunctionArgType.NUMERIC;
+		}
+		return functionArgTypes;
+	}
 	
 	public class ModelParameter extends Parameter implements ExpressionContainer, IssueSource, Displayable {
 		
@@ -831,7 +866,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			this.modelParameterAnnotation = modelParameterAnnotation;
 		}
 
-
+		@Override
 		public boolean compareEqual(Matchable obj) {
 			if (!(obj instanceof ModelParameter)){
 				return false;
@@ -847,24 +882,27 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return true;
 		}
 
-
+		@Override
 		public boolean isExpressionEditable(){
 			return true;
 		}
 
+		@Override
 		public boolean isUnitEditable(){
 			return true;
 		}
 
+		@Override
 		public boolean isNameEditable(){
 			return true;
 		}
 
+		@Override
 		public double getConstantValue() throws ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
-
+		@Override
 		public Expression getExpression() {
 			return this.fieldParameterExpression;
 		}
@@ -1815,6 +1853,15 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		
 		// initialize the reserved symbols
 		fieldReservedSymbols = createReservedSymbols();
+		
+		try {
+			this.fieldModelFunctions = new Model.ModelFunction[] {
+				new Model.ModelFunction("sum2", new String[] { "a",  "b" }, new Expression("a+b"), unitSystem.getInstance_DIMENSIONLESS()),
+				new Model.ModelFunction("sum3", new String[] { "a",  "b", "c" }, new Expression("a+b+c"), unitSystem.getInstance_DIMENSIONLESS())
+			};
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+		}
 	}      	
 	
 	public Model(String argName) {
@@ -1833,6 +1880,15 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 
 		// initialize the reserved symbols
 		fieldReservedSymbols = createReservedSymbols();
+
+		try {
+			this.fieldModelFunctions = new Model.ModelFunction[] {
+				new Model.ModelFunction("sum2", new String[] { "a",  "b" }, new Expression("a+b"), unitSystem.getInstance_DIMENSIONLESS()),
+				new Model.ModelFunction("sum3", new String[] { "a",  "b", "c" }, new Expression("a+b+c"), unitSystem.getInstance_DIMENSIONLESS())
+			};
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+		}
 	}      
 
 private ReservedSymbol[] createReservedSymbols() {
@@ -1865,6 +1921,14 @@ public ModelParameter addModelParameter(Model.ModelParameter modelParameter) thr
 		setModelParameters(newModelParameters);
 //	}	
 	return modelParameter;
+}   
+
+public ModelFunction addModelFunction(Model.ModelFunction modelFunction) throws PropertyVetoException {
+//	if (!contains(modelParameter)){
+		Model.ModelFunction newModelFunctions[] = (Model.ModelFunction[])BeanUtils.addElement(fieldModelFunctions,modelFunction);
+		setModelFunctions(newModelFunctions);
+//	}	
+	return modelFunction;
 }   
 
 
@@ -2560,6 +2624,13 @@ public SymbolTableEntry getLocalEntry(java.lang.String identifier) {
 	for (int i = 0; i < fieldModelParameters.length; i++) {
 		if (fieldModelParameters[i].getName().equals(identifier)) {
 			return fieldModelParameters[i];
+		}
+	}
+	
+	// look through the global/model functions
+	for (int i = 0; i < fieldModelFunctions.length; i++) {
+		if (fieldModelFunctions[i].getName().equals(identifier)) {
+			return fieldModelFunctions[i];
 		}
 	}
 	
@@ -3469,6 +3540,39 @@ public void setModelParameters(ModelParameter[] modelParameters) throws java.bea
 
 
 /**
+ * Sets the modelParameters property (cbit.vcell.model.ModelParameter[]) value.
+ * @param modelParameters The new value for the property.
+ * @exception java.beans.ModelPropertyVetoException The exception description.
+ * @see #getModelFunctions
+ */
+public void setModelFunctions(ModelFunction[] modelFunctions) throws java.beans.PropertyVetoException {
+	ModelFunction[] oldValue = fieldModelFunctions;
+	fireVetoableChange(Model.PROPERTY_NAME_MODEL_FUNCTIONS, oldValue, modelFunctions);
+	fieldModelFunctions = modelFunctions;
+	firePropertyChange(Model.PROPERTY_NAME_MODEL_FUNCTIONS, oldValue, modelFunctions);
+	
+//	ModelFunction newValue[] = modelFunctions;
+//	if (oldValue != null) {
+//		for (int i=0;i<oldValue.length;i++){	
+//			oldValue[i].removePropertyChangeListener(this);
+//			oldValue[i].removeVetoableChangeListener(this);
+//		}
+//	}
+//	if (newValue != null) {
+//		for (int i=0;i<newValue.length;i++){
+//			newValue[i].addPropertyChangeListener(this);
+//			newValue[i].addVetoableChangeListener(Function.PROPERTYNAME_NAME, this);
+//		}
+//	}
+}
+
+public ModelFunction[] getModelFunctions(){
+	return this.fieldModelFunctions;
+}
+
+
+
+/**
  * Sets the name property (java.lang.String) value.
  * @param name The new value for the property.
  * @exception java.beans.ModelPropertyVetoException The exception description.
@@ -4221,6 +4325,10 @@ public void getLocalEntries(Map<String, SymbolTableEntry> entryMap) {
 		}
 	}
 	for (SymbolTableEntry ste : fieldModelParameters) {
+		entryMap.put(ste.getName(), ste);
+	}
+	
+	for (Model.ModelFunction ste : fieldModelFunctions) {
 		entryMap.put(ste.getName(), ste);
 	}
 	
