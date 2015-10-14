@@ -1364,7 +1364,7 @@ public class RbmUtils {
 
 		for (int i=0; i<reactantSpeciesPatterns.size(); i++){
 			ParticleSpeciesPattern reactantSpeciesPattern = reactantSpeciesPatterns.get(i);
-			if (i==0) {
+			if (i>0) {
 				buffer.append(" + ");
 			}
 			buffer.append(toBnglString(reactantSpeciesPattern));
@@ -1375,7 +1375,7 @@ public class RbmUtils {
 		
 		for (int i=0; i<productSpeciesPatterns.size(); i++){
 			ParticleSpeciesPattern productSpeciesPattern = productSpeciesPatterns.get(i);
-			if (i==0) {
+			if (i>0) {
 				buffer.append(" + ");
 			}
 			buffer.append(toBnglString(productSpeciesPattern));
