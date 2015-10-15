@@ -1137,8 +1137,8 @@ private void updateShape() {
 		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
 		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
 		itemMap.put(noneString, null);
-		itemMap.put(existsString, null);
-		itemMap.put(possibleString, null);
+//		itemMap.put(existsString, null);	// not a valid option for species
+//		itemMap.put(possibleString, null);	// not a valid option for species
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
