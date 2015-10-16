@@ -64,21 +64,111 @@ import cbit.vcell.xml.XMLTags;
 
 public class RulebasedTransformer implements SimContextTransformer {
 
+	interface Operation {
+	}
+	class StateChangeOperation implements Operation {
+		final private String finalState;
+		final private RbmObject site;			// MolecularComponentPattern
+		public StateChangeOperation(String finalState, RbmObject site) {
+			super();
+			this.finalState = finalState;
+			this.site = site;
+		}
+		public String getFinalState() {
+			return finalState;
+		}
+		public RbmObject getSite() {
+			return site;
+		}
+	}
+	class AddBondOperation implements Operation {
+		final private RbmObject site1;		// MolecularComponentPattern
+		final private RbmObject site2;
+		public AddBondOperation(RbmObject site1, RbmObject site2) {
+			super();
+			this.site1 = site1;
+			this.site2 = site2;
+		}
+		public RbmObject getSite1() {
+			return site1;
+		}
+		public RbmObject getSite2() {
+			return site2;
+		}
+	}
+	class DeleteBondOperation implements Operation {
+		final private RbmObject site1;		// MolecularComponentPattern
+		final private RbmObject site2;
+		public DeleteBondOperation(RbmObject site1, RbmObject site2) {
+			super();
+			this.site1 = site1;
+			this.site2 = site2;
+		}
+		public RbmObject getSite1() {
+			return site1;
+		}
+		public RbmObject getSite2() {
+			return site2;
+		}
+	}
+	class AddOperation implements Operation {
+		final private RbmObject site;			// attribute is called id 
+		public AddOperation(RbmObject site) {
+			super();
+			this.site = site;	// can be MolecularTypePattern or SpeciesPattern
+		}
+		public RbmObject getSite() {
+			return site;
+		}
+	}
+	class DeleteOperation implements Operation {
+		final private RbmObject site;			// attribute is called id 
+		final private int deleteMolecules;
+		public DeleteOperation(RbmObject site, int deleteMolecules) {
+			super();
+			this.site = site;	// can be MolecularTypePattern or SpeciesPattern
+			this.deleteMolecules = deleteMolecules;
+		}
+		public RbmObject getSite() {
+			return site;
+		}
+		public int getDeleteMolecules() {
+			return deleteMolecules;
+		}
+	}
+
+	class ReactionRuleAnalysisReport {
+		protected Double symmetryFactor = 1.0;
+		protected List<Pair<RbmObject, RbmObject>> mappingList = new ArrayList<Pair<RbmObject, RbmObject>>();
+		protected List<Operation> operationsList = new ArrayList<Operation>();
+		public Double getSymmetryFactor() {
+			return symmetryFactor;
+		}
+		public List<Pair<RbmObject, RbmObject>> getMappingList() {
+			return mappingList;
+		}
+		public List<Operation> getOperationsList() {
+			return operationsList;
+		}
+	}
+
 	// we populate these by parsing the xml file produced by BioNetGen
-	private Map<String, RbmObject> keyMap = new LinkedHashMap<String, RbmObject>();				// master key map, only use here
-	private Map<ReactionRule, Double> ruleSymmetryForwardMap = new LinkedHashMap<ReactionRule, Double>();
-	private Map<ReactionRule, Double> ruleSymmetryReverseMap = new LinkedHashMap<ReactionRule, Double>();
-	private Map<ReactionRule, Pair<RbmObject, RbmObject>> ruleMappingForwardMap = new LinkedHashMap<ReactionRule, Pair<RbmObject, RbmObject>>();
-	private Map<ReactionRule, Pair<RbmObject, RbmObject>> ruleMappingReverseMap = new LinkedHashMap<ReactionRule, Pair<RbmObject, RbmObject>>();
+	private Map<String, RbmObject> keyMap = new LinkedHashMap<String, RbmObject>();				// master key map, only used here
+	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesForwardMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
+	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesReverseMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
+
+	Map<ReactionRule, ReactionRuleAnalysisReport> getRulesForwardMap() {
+		return rulesForwardMap;
+	}
+	Map<ReactionRule, ReactionRuleAnalysisReport> getRulesReverseMap() {
+		return rulesReverseMap;
+	}
 	
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements netGenReq_NOT_USED) {
 		SimulationContext transformedSimContext;
 		keyMap.clear();
-		ruleSymmetryForwardMap.clear();
-		ruleSymmetryReverseMap.clear();
-		ruleMappingForwardMap.clear();
-		ruleMappingReverseMap.clear();
+
 		try {
 			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
 			transformedSimContext.getModel().refreshDependencies();
@@ -105,19 +195,6 @@ public class RulebasedTransformer implements SimContextTransformer {
 		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
 	}
 	
-	Map<ReactionRule, Double> getRuleSymmetryForwardMap() {
-		return ruleSymmetryForwardMap;
-	}
-	Map<ReactionRule, Double> getRuleSymmetryReverseMap() {
-		return ruleSymmetryReverseMap;
-	}
-	Map<ReactionRule, Pair<RbmObject, RbmObject>> getRuleMappingForwardMap() {
-		return ruleMappingForwardMap;
-	}
-	Map<ReactionRule, Pair<RbmObject, RbmObject>> getRuleMappingReverseMap() {
-		return ruleMappingReverseMap;
-	}
-		
 	private void transform(SimulationContext originalSimContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback) throws PropertyVetoException {
 		Model newModel = transformedSimulationContext.getModel();
 		Model originalModel = originalSimContext.getModel();
@@ -390,11 +467,54 @@ public class RulebasedTransformer implements SimContextTransformer {
 //			throw new RuntimeException(message);
 //		}
 		
-		parseBngOutput(simContext, bngOutput);
+		// TODO: uncomment here to parse the xml file!!!
+//		parseBngOutput(simContext, bngOutput);
+	}
+	
+	
+	private void extractMolecules(SpeciesPattern sp, Model model, Element participantPatternElement) {
+		Element listOfMoleculesElement = participantPatternElement.getChild("ListOfMolecules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		List<Element> moleculeChildren = new ArrayList<Element>();
+		moleculeChildren = listOfMoleculesElement.getChildren("Molecule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		for (Element moleculeElement : moleculeChildren) {
+			String molecule_id_str = moleculeElement.getAttributeValue("id");
+			String molecule_name_str = moleculeElement.getAttributeValue("name");
+			MolecularTypePattern mtp = sp.getMolecularTypePattern(molecule_name_str);
+			if(mtp == null) System.out.println("!!! Missing molecule " + molecule_name_str);
+			System.out.println("     molecule  id=" + molecule_id_str + ", name=" + molecule_name_str);
+			keyMap.put(molecule_id_str, mtp);
+
+			Element listOfComponentsElement = moleculeElement.getChild("ListOfComponents", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			if(listOfComponentsElement == null) {
+				continue;
+			}
+			List<Element> componentChildren = new ArrayList<Element>();
+			componentChildren = listOfComponentsElement.getChildren("Component", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element componentElement : componentChildren) {
+				String component_id_str = componentElement.getAttributeValue("id");
+				String component_name_str = componentElement.getAttributeValue("name");
+				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(component_name_str);
+				if(mcp == null) System.out.println("!!! Missing component " + component_name_str);
+				System.out.println("        component  id=" + component_id_str + ", name=" + component_name_str);
+				keyMap.put(component_id_str, mcp);
+			
+			}
+		}
+	}
+	private void extractBonds(Element reactantPatternElement) {		// does nothing
+		Element listOfBondsElement = reactantPatternElement.getChild("ListOfBonds", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		if(listOfBondsElement != null) {
+			List<Element> bondChildren = new ArrayList<Element>();
+			bondChildren = listOfBondsElement.getChildren("Bond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element bondElement : bondChildren) {
+				String bond_id_str = bondElement.getAttributeValue("id");
+				String bond_site1_str = bondElement.getAttributeValue("site1");
+				String bond_site2_str = bondElement.getAttributeValue("site2");
+			}
+		}
 	}
 
 	private void parseBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
-		
 		Model model = simContext.getModel();
 		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
 		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
@@ -403,6 +523,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		List<Element> reactionRuleChildren = new ArrayList<Element>();
 		reactionRuleChildren = listOfReactionRulesElement.getChildren("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		for (Element reactionRuleElement : reactionRuleChildren) {
+			ReactionRuleAnalysisReport rar = new ReactionRuleAnalysisReport();
 			boolean bForward = true;
 			String rule_id_str = reactionRuleElement.getAttributeValue("id");
 			String rule_name_str = reactionRuleElement.getAttributeValue("name");
@@ -413,11 +534,12 @@ public class RulebasedTransformer implements SimContextTransformer {
 				bForward = false;
 				rule_name_str = rule_name_str.substring("_reverse_".length());
 				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
-				ruleSymmetryReverseMap.put(rr, symmetry_factor_double);
+				rulesReverseMap.put(rr, rar);
 			} else {
 				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
-				ruleSymmetryForwardMap.put(rr, symmetry_factor_double);
+				rulesForwardMap.put(rr, rar);
 			}
+			rar.symmetryFactor = symmetry_factor_double;
 			System.out.println("rule id=" + rule_id_str + ", name=" + rule_name_str + ", symmetry factor=" + symmetry_factor_str);
 			keyMap.put(rule_id_str, rr);
 			
@@ -427,31 +549,14 @@ public class RulebasedTransformer implements SimContextTransformer {
 			for (int i = 0; i < reactantPatternChildren.size(); i++) {
 				Element reactantPatternElement = reactantPatternChildren.get(i);
 				String pattern_id_str = reactantPatternElement.getAttributeValue("id");
-				ReactionRuleParticipant p = null;
-				if(bForward) {
-					p = rr.getReactantPattern(i);
-				} else {
-					p = rr.getProductPattern(i);
-				}
+				
+				ReactionRuleParticipant p = bForward ? rr.getReactantPattern(i) : rr.getProductPattern(i);
 				SpeciesPattern sp = p.getSpeciesPattern();
 				System.out.println("  reactant id=" + pattern_id_str + ", name=" + sp.toString());
 				keyMap.put(pattern_id_str, sp);
-
-				// list of molecules
-				extractMolecules(sp, model, reactantPatternElement);
 				
-				// list of bonds
-				Element listOfBondsElement = reactantPatternElement.getChild("ListOfBonds", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-				if(listOfBondsElement != null) {
-					List<Element> bondChildren = new ArrayList<Element>();
-					bondChildren = listOfBondsElement.getChildren("Bond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-					for (Element bondElement : bondChildren) {
-						String bond_id_str = bondElement.getAttributeValue("id");
-						String bond_site1_str = bondElement.getAttributeValue("site1");
-						String bond_site2_str = bondElement.getAttributeValue("site2");
-					
-					}
-				}
+				extractMolecules(sp, model, reactantPatternElement);	// list of molecules
+				extractBonds(reactantPatternElement);		// list of bonds (not implemented)
 			}
 			
 			Element listOfProductPatternsElement = reactionRuleElement.getChild("ListOfProductPatterns", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
@@ -461,34 +566,16 @@ public class RulebasedTransformer implements SimContextTransformer {
 				Element productPatternElement = productPatternChildren.get(i);
 				String pattern_id_str = productPatternElement.getAttributeValue("id");
 				
-				ReactionRuleParticipant p = null;
-				if(bForward) {
-					p = rr.getProductPattern(i);
-				} else {
-					p = rr.getReactantPattern(i);
-				}
+				ReactionRuleParticipant p = bForward ? rr.getProductPattern(i) : rr.getReactantPattern(i);
 				SpeciesPattern sp = p.getSpeciesPattern();
 				System.out.println("  product  id=" + pattern_id_str + ", name=" + sp.toString());
 				keyMap.put(pattern_id_str, sp);
 
-				// list of molecules
 				extractMolecules(sp, model, productPatternElement);
-				
-				// list of bonds
-				Element listOfBondsElement = productPatternElement.getChild("ListOfBonds", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-				if(listOfBondsElement != null) {
-					List<Element> bondChildren = new ArrayList<Element>();
-					bondChildren = listOfBondsElement.getChildren("Bond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-					for (Element bondElement : bondChildren) {
-						String bond_id_str = bondElement.getAttributeValue("id");
-						String bond_site1_str = bondElement.getAttributeValue("site1");
-						String bond_site2_str = bondElement.getAttributeValue("site2");
-					
-					}
-				}
+				extractBonds(productPatternElement);
 			}
 			
-			// extract the map for this rule
+			// extract the Map for this rule
 			Element listOfMapElement = reactionRuleElement.getChild("Map", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			List<Element> mapChildren = new ArrayList<Element>();
 			mapChildren = listOfMapElement.getChildren("MapItem", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
@@ -504,44 +591,85 @@ public class RulebasedTransformer implements SimContextTransformer {
 				if(target_object != null && source_object != null) {
 					System.out.println("      target=" + target_object + " source=" + source_object);
 					Pair<RbmObject, RbmObject> mapEntry = new Pair<RbmObject, RbmObject> (target_object, source_object);
-					if(bForward) {
-						ruleMappingForwardMap.put(rr, mapEntry);
-					} else {
-						ruleMappingReverseMap.put(rr, mapEntry);
-					}
+					rar.mappingList.add(mapEntry);
+				}
+			}
+			
+			// ListOfOperations
+			Element listOfOperationsElement = reactionRuleElement.getChild("ListOfOperations", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			List<Element> operationsChildren = new ArrayList<Element>();
+			operationsChildren = listOfOperationsElement.getChildren("StateChange", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			System.out.println("ListOfOperations");
+			for (Element operationsElement : operationsChildren) {
+				String finalState_str = operationsElement.getAttributeValue("finalState");
+				String site_str = operationsElement.getAttributeValue("site");
+				RbmObject site_object = keyMap.get(site_str);
+				if(site_object == null) System.out.println("!!! Missing map object " + site_str);
+				if(site_object != null) {
+					System.out.println("   finalState=" + finalState_str + " site=" + site_object);
+					StateChangeOperation sco = new StateChangeOperation(finalState_str, site_object);
+					rar.operationsList.add(sco);
+				}
+			}
+			operationsChildren = listOfOperationsElement.getChildren("AddBond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element operationsElement : operationsChildren) {
+				String site1_str = operationsElement.getAttributeValue("site1");
+				String site2_str = operationsElement.getAttributeValue("site2");
+				RbmObject site1_object = keyMap.get(site1_str);
+				RbmObject site2_object = keyMap.get(site2_str);
+				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
+				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
+				if(site1_object != null && site2_object != null) {
+					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
+					AddBondOperation abo = new AddBondOperation(site1_object,site2_object);
+					rar.operationsList.add(abo);
+				}
+			}
+			operationsChildren = listOfOperationsElement.getChildren("DeleteBond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element operationsElement : operationsChildren) {
+				String site1_str = operationsElement.getAttributeValue("site1");
+				String site2_str = operationsElement.getAttributeValue("site2");
+				RbmObject site1_object = keyMap.get(site1_str);
+				RbmObject site2_object = keyMap.get(site2_str);
+				if(site1_object == null) System.out.println("!!! Missing map object " + site1_str);
+				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
+				if(site1_object != null && site2_object != null) {
+					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
+					DeleteBondOperation dbo = new DeleteBondOperation(site1_object,site2_object);
+					rar.operationsList.add(dbo);
+				}
+			}
+			operationsChildren = listOfOperationsElement.getChildren("Add", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element operationsElement : operationsChildren) {
+				String id_str = operationsElement.getAttributeValue("id");
+				RbmObject id_object = keyMap.get(id_str);
+				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
+				if(id_object != null) {
+					System.out.println("   id=" + id_str);
+					AddOperation ao = new AddOperation(id_object);
+					rar.operationsList.add(ao);
+				}
+			}
+			operationsChildren = listOfOperationsElement.getChildren("Delete", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			for (Element operationsElement : operationsChildren) {
+				String id_str = operationsElement.getAttributeValue("id");
+				String delete_molecules_str = operationsElement.getAttributeValue("DeleteMolecules");
+				RbmObject id_object = keyMap.get(id_str);
+				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
+				int delete_molecules_int = Integer.parseInt(delete_molecules_str);
+				if(id_object != null) {
+					System.out.println("   id=" + id_str + ", DeleteMolecules=" + delete_molecules_str);
+					DeleteOperation dop = new DeleteOperation(id_object, delete_molecules_int);
+					rar.operationsList.add(dop);
 				}
 			}
 		}
 		System.out.println("done parsing xml file");
 	}
+	
 
-	public void extractMolecules(SpeciesPattern sp, Model model, Element participantPatternElement) {
-		
-		Element listOfMoleculesElement = participantPatternElement.getChild("ListOfMolecules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-		List<Element> moleculeChildren = new ArrayList<Element>();
-		moleculeChildren = listOfMoleculesElement.getChildren("Molecule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-		for (Element moleculeElement : moleculeChildren) {
-			String molecule_id_str = moleculeElement.getAttributeValue("id");
-			String molecule_name_str = moleculeElement.getAttributeValue("name");
-			MolecularTypePattern mtp = sp.getMolecularTypePattern(molecule_name_str);
-			if(mtp == null) System.out.println("!!! Missing molecule " + molecule_name_str);
-			System.out.println("     molecule  id=" + molecule_id_str + ", name=" + molecule_name_str);
-			keyMap.put(molecule_id_str, mtp);
 
-			Element listOfComponentsElement = moleculeElement.getChild("ListOfComponents", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-			List<Element> componentChildren = new ArrayList<Element>();
-			componentChildren = listOfComponentsElement.getChildren("Component", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-			for (Element componentElement : componentChildren) {
-				String component_id_str = componentElement.getAttributeValue("id");
-				String component_name_str = componentElement.getAttributeValue("name");
-				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(component_name_str);
-				if(mcp == null) System.out.println("!!! Missing component " + component_name_str);
-				System.out.println("        component  id=" + component_id_str + ", name=" + component_name_str);
-				keyMap.put(component_id_str, mcp);
-			
-			}
-		}
-	}
+
 }
 
 
