@@ -73,6 +73,14 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		return mcp;
 		//throw new RuntimeException("All components are added in the constructor, so here it can never be null");
 	}
+	public MolecularComponentPattern getMolecularComponentPattern(String name) {
+		for(MolecularComponentPattern mcp : getComponentPatternList()) {
+			if(mcp.getMolecularComponent().getName().equals(name)) {
+				return mcp;
+			}
+		}
+		return null;
+	}
 	
 	public void removeMolecularComponentPattern(MolecularComponentPattern molecularComponentPattern) {
 		List<MolecularComponentPattern> newValue = new ArrayList<MolecularComponentPattern>(componentPatternList);
