@@ -217,6 +217,10 @@ public class ModelRuleFactory {
 			molecularTypeEntry.add(this);
 		}
 		
+		public MolecularComponentPattern getMolecularComponentPattern(){
+			return this.molecularComponentPattern;
+		}
+		
 		@Override
 		public int getComponentIndex(){
 			return this.componentIndex;
