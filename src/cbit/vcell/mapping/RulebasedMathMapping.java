@@ -17,8 +17,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import jscl.text.ParseException;
 
@@ -28,11 +31,13 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.XmlUtil;
@@ -40,6 +45,14 @@ import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.UnresolvedParameter;
+import cbit.vcell.mapping.RulebasedTransformer.AddBondOperation;
+import cbit.vcell.mapping.RulebasedTransformer.AddOperation;
+import cbit.vcell.mapping.RulebasedTransformer.DeleteBondOperation;
+import cbit.vcell.mapping.RulebasedTransformer.DeleteOperation;
+import cbit.vcell.mapping.RulebasedTransformer.Operation;
+import cbit.vcell.mapping.RulebasedTransformer.ReactionRuleAnalysisReport;
+import cbit.vcell.mapping.RulebasedTransformer.RulebasedTransformation;
+import cbit.vcell.mapping.RulebasedTransformer.StateChangeOperation;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.Action;
@@ -57,6 +70,7 @@ import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
+import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
@@ -79,6 +93,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ModelRuleFactory.ModelRuleEntry;
+import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
@@ -532,186 +547,190 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		} // end reactionRules
 	}
 
-	private void addGeneralParticleJumpProcess(VariableHash varHash, GeometryClass geometryClass, SubDomain subDomain,
-															ReactionRule reactionRule, String jpName,
-															ArrayList<ParticleVariable> reactantParticles, ArrayList<ParticleVariable> productParticles,
-															ArrayList<Action> forwardActions, ArrayList<Action> reverseActions)
-					throws ExpressionException, ExpressionBindingException, PropertyVetoException, MathException, MappingException {
-		
-		String reactionRuleName = reactionRule.getName();
-		RbmKineticLaw kinetics = reactionRule.getKineticLaw();
-
-		if (kinetics.getRateLawType() != RbmKineticLaw.RateLawType.MassAction){
-			throw new RuntimeException("expecting mass action kinetics for reaction rule "+reactionRuleName);
-		}
-		
-		//
-		// construct stochastic forward or reverse rate expression (separately).  Transform from 
-		//        original expression of "concentrationRate" in terms of rateParameter and reactants/products in concentrations 
-		//    to  
-		//        new stochastic expression of "molecularRate" in terms of forwardRateParameter, reactants/products in molecules, structure sizes, and unit conversions.
-		//
-		//  (1)  concentrationRate = K * [s0] * [s1]    [uM.s-1]  or   [molecules.um-3.s-1]   or   [molecules.um-2.s-1]  (or other)
-		//  (2)  molecularRate = P * <s0> * <s1>        [molecules.s-1]
-		//
-		//  in this math description, we are using <s_i> [molecules], but original kinetics were in [s_i] [uM or molecules.um-2].
-		//  so through a change in variable to get things in terms of <s_i>.  <<<< Here P is the desired stochastic rate coefficient. >>>
-		//
-		//  (3)  let [s_i] = <s_i>/structsize(s_i)*unitConversionFactor(substanceunit([s_i])/substanceunit(<s_i>))
-		//
-		//  in addition to the change in variables, we need to transform the entire expression from concentration/time to molecules/time
-		//
-		//  (4)  let molecularRate = concentrationRate * structSize(reaction) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate))
-		//
-		//	(5)  in general, concentationRate = K * PRODUCT([s_i])
-		//
-		//  change of variables into stochastic variables used in MathDescription, substituting (3) into (5)
-		//
-		//  (6)  concentrationRate = K * PRODUCT(<s_i>/structsize(s_i)*unitConversionFactor(substanceunit([s_i])/substanceunit(<s_i>)))
-		//
-		//  reordering to separate the sizes, the unit conversions and the <s_i>
-		//
-		//  (7)  concentrationRate = K * PRODUCT(<s_i>) * PRODUCT(1/structsize(s_i)) * unitConversionFactor(PRODUCT(substanceunit([s_i])/substanceunit(<s_i>)))
-		//
-		//  combining (4) and (7)
-		//
-		//  (8) molecularRate = K * PRODUCT(<s_i>) * PRODUCT(1/structsize(s_i)) * unitConversionFactor(PRODUCT(substanceunit([s_i])/substanceunit(<s_i>))) * structSize(reaction) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate))
-		//
-		//  collecting terms of sizes and unit conversions
-		//
-		//  (9)  molecularRate = K * PRODUCT(<s_i>) * structSize(reaction) / PRODUCT(structsize(s_i)) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate) * PRODUCT(substanceunit([s_i])/substanceunit(<s_i>)))
-		//
-		//  (10) molecularRate = K * PRODUCT(<s_i>) * sizeFactor * unitConversionFactor(substanceConversionUnit)
-		//
-		//  where
-		//
-		//  (11) sizeFactor = structSize(reaction) / PRODUCT(structsize(s_i))
-		//  (12) substanceConversionUnit = substanceunit(molecularRate)/substanceunit(concentrationRate) * PRODUCT(substanceunit([s_i])/substanceunit(<s_i>))
-		//
-		//  The ParticleJumpCondition wants a single new rate stochastic, P from equation (2).  Note that PRODUCT(<s_i>) will be captured separately the the reactantPatterns.
-		//  comparing (2) and (10) we have found P.
-		//
-		//  (13) P = K * sizeFactor * unitConversionFactor(substanceConversionUnit)
-		//
-		//  the framework also needs the proper unit for P
-		//
-		//  (14) Unit(P) = Unit(K) * Unit(sizeFactor) * substanceConversionUnit
-		//
-		//
-		
-		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
-		VCUnitDefinition stochasticSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
-		VCUnitDefinition reactionRuleSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactionRule.getStructure());
-
-		{
-		//
-		// get forward rate parameter and make sure it is constant valued.
-		//
-		Parameter forward_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
-		{
-		Expression substitutedForwardRate = MathUtilities.substituteModelParameters(forward_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
-		if (!substitutedForwardRate.flatten().isNumeric()){
-//			throw new MappingException("forward rate constant for reaction rule "+reactionRule.getName()+" is not constant");
-		}
-		}
-		
-		// 
-		// create forward sizeExp and forward unitFactor
-		//
-		VCUnitDefinition forward_substanceConversionUnit = stochasticSubstanceUnit.divideBy(reactionRuleSubstanceUnit);
-		VCUnitDefinition forward_sizeFactorUnit = reactionRule.getStructure().getStructureSize().getUnitDefinition();
-		Expression forward_sizeFactor = new Expression(reactionRule.getStructure().getStructureSize(),getNameScope());
-		for (ReactantPattern reactantPattern : reactionRule.getReactantPatterns()){
-			Expression reactantSizeExp = new Expression(reactantPattern.getStructure().getStructureSize(),getNameScope());
-			VCUnitDefinition reactantSizeUnit = reactantPattern.getStructure().getStructureSize().getUnitDefinition();
-			VCUnitDefinition reactantSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactantPattern.getStructure());
-			forward_sizeFactor = Expression.div(forward_sizeFactor,reactantSizeExp);
-			forward_sizeFactorUnit = forward_sizeFactorUnit.divideBy(reactantSizeUnit);
-			forward_substanceConversionUnit = forward_substanceConversionUnit.multiplyBy(reactantSubstanceUnit).divideBy(stochasticSubstanceUnit);
-		}
-		// simplify sizeFactor (often has size/size/size)
-		try {
-			forward_sizeFactor = RationalExpUtils.getRationalExp(forward_sizeFactor).simplifyAsExpression();
-			forward_sizeFactor.bindExpression(getSimulationContext().getModel());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		
-		Expression forward_rateExp = Expression.mult(new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor,getUnitFactor(forward_substanceConversionUnit)).flatten();
-		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
-		
-		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);
-		
-		//add probability to function or constant
-		varHash.addVariable(newFunctionOrConstant(getMathSymbol(forward_probParm,geometryClass),getIdentifierSubstitutions(forward_rateExp, forward_rateUnit, geometryClass),geometryClass));
-		
-		// add forward ParticleJumpProcess
-		String forward_name = reactionRuleName;
-		Expression forward_rate = getIdentifierSubstitutions(new Expression(forward_probParm,getNameScope()), forward_probParm.getUnitDefinition(), geometryClass);
-		JumpProcessRateDefinition forward_rateDefinition = new MacroscopicRateConstant(forward_rate);
-		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions);
-		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
-		}
-		
-		//
-		// get reverse rate parameter and make sure it is missing or constant valued.
-		//
-		if (reactionRule.isReversible()){
-			Parameter reverse_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
-			if (reverse_rateParameter==null || reverse_rateParameter.getExpression()==null){
-				throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is missing");
-			}
-			{
-			Expression substitutedReverseRate = MathUtilities.substituteModelParameters(reverse_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
-			if (!substitutedReverseRate.flatten().isNumeric()){
-				throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is not constant");
-			}
-			}
-			
-			// 
-			// create reverse sizeExp and reverse unitFactor
-			//
-			VCUnitDefinition reverse_substanceConversionUnit = stochasticSubstanceUnit.divideBy(reactionRuleSubstanceUnit);
-			VCUnitDefinition reverse_sizeFactorUnit = reactionRule.getStructure().getStructureSize().getUnitDefinition();
-			Expression reverse_sizeFactor = new Expression(reactionRule.getStructure().getStructureSize(),getNameScope());
-			for (ProductPattern productPattern : reactionRule.getProductPatterns()){
-				Expression reactantSizeExp = new Expression(productPattern.getStructure().getStructureSize(),getNameScope());
-				VCUnitDefinition reactantSizeUnit = productPattern.getStructure().getStructureSize().getUnitDefinition();
-				VCUnitDefinition reactantSubstanceUnit = modelUnitSystem.getSubstanceUnit(productPattern.getStructure());
-				reverse_sizeFactor = Expression.div(reverse_sizeFactor,reactantSizeExp);
-				reverse_sizeFactorUnit = reverse_sizeFactorUnit.divideBy(reactantSizeUnit);
-				reverse_substanceConversionUnit = reverse_substanceConversionUnit.multiplyBy(reactantSubstanceUnit).divideBy(stochasticSubstanceUnit);
-			}
-			// simplify sizeFactor (often has size/size/size)
-			try {
-				reverse_sizeFactor = RationalExpUtils.getRationalExp(reverse_sizeFactor).simplifyAsExpression();
-				reverse_sizeFactor.bindExpression(getSimulationContext().getModel());
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
-			
-			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flatten();
-			VCUnitDefinition reverse_rateUnit = reverse_rateParameter.getUnitDefinition().multiplyBy(reverse_sizeFactorUnit).multiplyBy(reverse_substanceConversionUnit);
-			
-			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
-			// we process it as forward reaction
-			// get jump process name
-			
-			ProbabilityParameter reverse_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName+"_reverse", reverse_rateExp, PARAMETER_ROLE_P_reverse, reverse_rateUnit,reactionRule);
-			
-			//add probability to function or constant
-			varHash.addVariable(newFunctionOrConstant(getMathSymbol(reverse_probParm,geometryClass),getIdentifierSubstitutions(reverse_rateExp, reverse_rateUnit, geometryClass),geometryClass));
-											
-			// add reverse ParticleJumpProcess
-			Expression reverse_rate = getIdentifierSubstitutions(new Expression(reverse_probParm,getNameScope()), reverse_probParm.getUnitDefinition(), geometryClass);
-			String reverse_name = reactionRuleName+"_reverse";
-			JumpProcessRateDefinition reverse_rateDefinition = new MacroscopicRateConstant(reverse_rate);
-			ParticleJumpProcess reverse_particleJumpProcess = new ParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions);
-			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
-			
-		}
-	}
+//	private void addGeneralParticleJumpProcess_NOT_USED(VariableHash varHash, GeometryClass geometryClass, SubDomain subDomain,
+//															ReactionRule reactionRule, String jpName,
+//															ArrayList<ParticleVariable> reactantParticles, ArrayList<ParticleVariable> productParticles,
+//															ArrayList<Action> forwardActions, ArrayList<Action> reverseActions)
+//					throws ExpressionException, ExpressionBindingException, PropertyVetoException, MathException, MappingException {
+//		
+//		//
+//		// don't forget to add rule analysis operations here.
+//		//
+//		String reactionRuleName = reactionRule.getName();
+//		RbmKineticLaw kinetics = reactionRule.getKineticLaw();
+//
+//		if (kinetics.getRateLawType() != RbmKineticLaw.RateLawType.MassAction){
+//			throw new RuntimeException("expecting mass action kinetics for reaction rule "+reactionRuleName);
+//		}
+//		
+//		//
+//		// construct stochastic forward or reverse rate expression (separately).  Transform from 
+//		//        original expression of "concentrationRate" in terms of rateParameter and reactants/products in concentrations 
+//		//    to  
+//		//        new stochastic expression of "molecularRate" in terms of forwardRateParameter, reactants/products in molecules, structure sizes, and unit conversions.
+//		//
+//		//  (1)  concentrationRate = K * [s0] * [s1]    [uM.s-1]  or   [molecules.um-3.s-1]   or   [molecules.um-2.s-1]  (or other)
+//		//  (2)  molecularRate = P * <s0> * <s1>        [molecules.s-1]
+//		//
+//		//  in this math description, we are using <s_i> [molecules], but original kinetics were in [s_i] [uM or molecules.um-2].
+//		//  so through a change in variable to get things in terms of <s_i>.  <<<< Here P is the desired stochastic rate coefficient. >>>
+//		//
+//		//  (3)  let [s_i] = <s_i>/structsize(s_i)*unitConversionFactor(substanceunit([s_i])/substanceunit(<s_i>))
+//		//
+//		//  in addition to the change in variables, we need to transform the entire expression from concentration/time to molecules/time
+//		//
+//		//  (4)  let molecularRate = concentrationRate * structSize(reaction) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate))
+//		//
+//		//	(5)  in general, concentationRate = K * PRODUCT([s_i])
+//		//
+//		//  change of variables into stochastic variables used in MathDescription, substituting (3) into (5)
+//		//
+//		//  (6)  concentrationRate = K * PRODUCT(<s_i>/structsize(s_i)*unitConversionFactor(substanceunit([s_i])/substanceunit(<s_i>)))
+//		//
+//		//  reordering to separate the sizes, the unit conversions and the <s_i>
+//		//
+//		//  (7)  concentrationRate = K * PRODUCT(<s_i>) * PRODUCT(1/structsize(s_i)) * unitConversionFactor(PRODUCT(substanceunit([s_i])/substanceunit(<s_i>)))
+//		//
+//		//  combining (4) and (7)
+//		//
+//		//  (8) molecularRate = K * PRODUCT(<s_i>) * PRODUCT(1/structsize(s_i)) * unitConversionFactor(PRODUCT(substanceunit([s_i])/substanceunit(<s_i>))) * structSize(reaction) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate))
+//		//
+//		//  collecting terms of sizes and unit conversions
+//		//
+//		//  (9)  molecularRate = K * PRODUCT(<s_i>) * structSize(reaction) / PRODUCT(structsize(s_i)) * unitConversionFactor(substanceunit(molecularRate)/substanceunit(concentrationRate) * PRODUCT(substanceunit([s_i])/substanceunit(<s_i>)))
+//		//
+//		//  (10) molecularRate = K * PRODUCT(<s_i>) * sizeFactor * unitConversionFactor(substanceConversionUnit)
+//		//
+//		//  where
+//		//
+//		//  (11) sizeFactor = structSize(reaction) / PRODUCT(structsize(s_i))
+//		//  (12) substanceConversionUnit = substanceunit(molecularRate)/substanceunit(concentrationRate) * PRODUCT(substanceunit([s_i])/substanceunit(<s_i>))
+//		//
+//		//  The ParticleJumpCondition wants a single new rate stochastic, P from equation (2).  Note that PRODUCT(<s_i>) will be captured separately the the reactantPatterns.
+//		//  comparing (2) and (10) we have found P.
+//		//
+//		//  (13) P = K * sizeFactor * unitConversionFactor(substanceConversionUnit)
+//		//
+//		//  the framework also needs the proper unit for P
+//		//
+//		//  (14) Unit(P) = Unit(K) * Unit(sizeFactor) * substanceConversionUnit
+//		//
+//		//
+//		
+//		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
+//		VCUnitDefinition stochasticSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
+//		VCUnitDefinition reactionRuleSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactionRule.getStructure());
+//
+//		{
+//		//
+//		// get forward rate parameter and make sure it is constant valued.
+//		//
+//		Parameter forward_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
+//		{
+//		Expression substitutedForwardRate = MathUtilities.substituteModelParameters(forward_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
+//		if (!substitutedForwardRate.flatten().isNumeric()){
+////			throw new MappingException("forward rate constant for reaction rule "+reactionRule.getName()+" is not constant");
+//		}
+//		}
+//		
+//		// 
+//		// create forward sizeExp and forward unitFactor
+//		//
+//		VCUnitDefinition forward_substanceConversionUnit = stochasticSubstanceUnit.divideBy(reactionRuleSubstanceUnit);
+//		VCUnitDefinition forward_sizeFactorUnit = reactionRule.getStructure().getStructureSize().getUnitDefinition();
+//		Expression forward_sizeFactor = new Expression(reactionRule.getStructure().getStructureSize(),getNameScope());
+//		for (ReactantPattern reactantPattern : reactionRule.getReactantPatterns()){
+//			Expression reactantSizeExp = new Expression(reactantPattern.getStructure().getStructureSize(),getNameScope());
+//			VCUnitDefinition reactantSizeUnit = reactantPattern.getStructure().getStructureSize().getUnitDefinition();
+//			VCUnitDefinition reactantSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactantPattern.getStructure());
+//			forward_sizeFactor = Expression.div(forward_sizeFactor,reactantSizeExp);
+//			forward_sizeFactorUnit = forward_sizeFactorUnit.divideBy(reactantSizeUnit);
+//			forward_substanceConversionUnit = forward_substanceConversionUnit.multiplyBy(reactantSubstanceUnit).divideBy(stochasticSubstanceUnit);
+//		}
+//		// simplify sizeFactor (often has size/size/size)
+//		try {
+//			forward_sizeFactor = RationalExpUtils.getRationalExp(forward_sizeFactor).simplifyAsExpression();
+//			forward_sizeFactor.bindExpression(getSimulationContext().getModel());
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		Expression forward_rateExp = Expression.mult(new Expression(forward_rateParameter, getNameScope()),forward_sizeFactor,getUnitFactor(forward_substanceConversionUnit)).flatten();
+//		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
+//		
+//		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);
+//		
+//		//add probability to function or constant
+//		varHash.addVariable(newFunctionOrConstant(getMathSymbol(forward_probParm,geometryClass),getIdentifierSubstitutions(forward_rateExp, forward_rateUnit, geometryClass),geometryClass));
+//		
+//		// add forward ParticleJumpProcess
+//		String forward_name = reactionRuleName;
+//		Expression forward_rate = getIdentifierSubstitutions(new Expression(forward_probParm,getNameScope()), forward_probParm.getUnitDefinition(), geometryClass);
+//		JumpProcessRateDefinition forward_rateDefinition = new MacroscopicRateConstant(forward_rate);
+//		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions);
+//		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
+//		}
+//		
+//		//
+//		// get reverse rate parameter and make sure it is missing or constant valued.
+//		//
+//		if (reactionRule.isReversible()){
+//			Parameter reverse_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+//			if (reverse_rateParameter==null || reverse_rateParameter.getExpression()==null){
+//				throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is missing");
+//			}
+//			{
+//			Expression substitutedReverseRate = MathUtilities.substituteModelParameters(reverse_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
+//			if (!substitutedReverseRate.flatten().isNumeric()){
+//				throw new MappingException("reverse rate constant for reaction rule "+reactionRule.getName()+" is not constant");
+//			}
+//			}
+//			
+//			// 
+//			// create reverse sizeExp and reverse unitFactor
+//			//
+//			VCUnitDefinition reverse_substanceConversionUnit = stochasticSubstanceUnit.divideBy(reactionRuleSubstanceUnit);
+//			VCUnitDefinition reverse_sizeFactorUnit = reactionRule.getStructure().getStructureSize().getUnitDefinition();
+//			Expression reverse_sizeFactor = new Expression(reactionRule.getStructure().getStructureSize(),getNameScope());
+//			for (ProductPattern productPattern : reactionRule.getProductPatterns()){
+//				Expression reactantSizeExp = new Expression(productPattern.getStructure().getStructureSize(),getNameScope());
+//				VCUnitDefinition reactantSizeUnit = productPattern.getStructure().getStructureSize().getUnitDefinition();
+//				VCUnitDefinition reactantSubstanceUnit = modelUnitSystem.getSubstanceUnit(productPattern.getStructure());
+//				reverse_sizeFactor = Expression.div(reverse_sizeFactor,reactantSizeExp);
+//				reverse_sizeFactorUnit = reverse_sizeFactorUnit.divideBy(reactantSizeUnit);
+//				reverse_substanceConversionUnit = reverse_substanceConversionUnit.multiplyBy(reactantSubstanceUnit).divideBy(stochasticSubstanceUnit);
+//			}
+//			// simplify sizeFactor (often has size/size/size)
+//			try {
+//				reverse_sizeFactor = RationalExpUtils.getRationalExp(reverse_sizeFactor).simplifyAsExpression();
+//				reverse_sizeFactor.bindExpression(getSimulationContext().getModel());
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			Expression reverse_rateExp = Expression.mult(new Expression(reverse_rateParameter, getNameScope()),reverse_sizeFactor,getUnitFactor(reverse_substanceConversionUnit)).flatten();
+//			VCUnitDefinition reverse_rateUnit = reverse_rateParameter.getUnitDefinition().multiplyBy(reverse_sizeFactorUnit).multiplyBy(reverse_substanceConversionUnit);
+//			
+//			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
+//			// we process it as forward reaction
+//			// get jump process name
+//			
+//			ProbabilityParameter reverse_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName+"_reverse", reverse_rateExp, PARAMETER_ROLE_P_reverse, reverse_rateUnit,reactionRule);
+//			
+//			//add probability to function or constant
+//			varHash.addVariable(newFunctionOrConstant(getMathSymbol(reverse_probParm,geometryClass),getIdentifierSubstitutions(reverse_rateExp, reverse_rateUnit, geometryClass),geometryClass));
+//											
+//			// add reverse ParticleJumpProcess
+//			Expression reverse_rate = getIdentifierSubstitutions(new Expression(reverse_probParm,getNameScope()), reverse_probParm.getUnitDefinition(), geometryClass);
+//			String reverse_name = reactionRuleName+"_reverse";
+//			JumpProcessRateDefinition reverse_rateDefinition = new MacroscopicRateConstant(reverse_rate);
+//			ParticleJumpProcess reverse_particleJumpProcess = new ParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions);
+//			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
+//			
+//		}
+//	}
 	
+	private Map<ParticleJumpProcess, ReactionRuleAnalysisReport> jumpProcessMap = new  LinkedHashMap<ParticleJumpProcess, ReactionRuleAnalysisReport>();
 	private void addStrictMassActionParticleJumpProcess(VariableHash varHash, GeometryClass geometryClass, SubDomain subDomain,
 														ReactionRule reactionRule, String jpName,
 														ArrayList<ParticleVariable> reactantParticles, ArrayList<ParticleVariable> productParticles,
@@ -720,6 +739,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		
 		String reactionRuleName = reactionRule.getName();
 		RbmKineticLaw kinetics = reactionRule.getKineticLaw();
+		RulebasedTransformation ruleBasedTransformation = ((RulebasedTransformation)getTransformation());
 
 		if (kinetics.getRateLawType() != RbmKineticLaw.RateLawType.MassAction){
 			throw new RuntimeException("expecting mass action kinetics for reaction rule "+reactionRuleName);
@@ -782,6 +802,8 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
 		VCUnitDefinition stochasticSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
 		VCUnitDefinition reactionRuleSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactionRule.getStructure());
+
+		int forwardRuleIndex = 0;
 
 		{
 		//
@@ -829,67 +851,72 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		String forward_name = reactionRuleName;
 		Expression forward_rate = getIdentifierSubstitutions(new Expression(forward_probParm,getNameScope()), forward_probParm.getUnitDefinition(), geometryClass);
 		JumpProcessRateDefinition forward_rateDefinition = new MacroscopicRateConstant(forward_rate);
-		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions);
+
+		ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
+		
+		ProcessSymmetryFactor forwardSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelForward.getSymmetryFactor());
+		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
-
 		
-		
-		
-		
-		
-		
-		
-        int ruleIndex = getSimulationContext().getModel().getRbmModelContainer().getReactionRuleList().indexOf(reactionRule);
-        System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(ruleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
-        System.out.println(RbmUtils.toBnglStringShort(reactionRule));
-
-        ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
-        ReactionRule irreversibleReactionRule = null;
-        try {
-			irreversibleReactionRule = (ReactionRule) BeanUtils.cloneSerializable(reactionRule);
-			irreversibleReactionRule.setReversible(false);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		//
+		// verify that map and operations are consistent between BNG generated NFSimXML and RuleAnalysis algorithm.
+		//
+		for (ReactionRule rr : getSimulationContext().getModel().getRbmModelContainer().getReactionRuleList()){
+			if (rr == reactionRule){
+				break;
+			}
+			forwardRuleIndex++;
+			if (rr.isReversible()){
+				forwardRuleIndex++;
+			}
 		}
-        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(irreversibleReactionRule, ruleIndex);
-        RuleAnalysisReport modelReport = RuleAnalysis.analyze(modelRule);
-        String modelSummary = modelReport.getSummary();
+        System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(forwardRuleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
+        ReactionRuleDirection forward = ReactionRuleDirection.forward;
+		System.out.println(RbmUtils.toBnglStringShort(reactionRule)+", direction="+forward);
 
+//        ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
+//        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(reactionRule, ruleIndex, forward);
+//        RuleAnalysisReport modelReport = RuleAnalysis.analyze(modelRule);
+//        String ruleAnalysisSummary = modelReport.getSummary();
+ 
         MathRuleFactory mathRuleFactory = new MathRuleFactory();
-        MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, ruleIndex);
+        MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
         RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
-        String mathSummary = mathReport.getSummary();
+        String ruleAnalysisSummary = mathReport.getSummary();
+        
+        StringBuffer bngBuffer = new StringBuffer();
+        for (Pair<String, String> mapping : rrarBiomodelForward.getIdMappingList()){
+        	String str1 = mapping.one;
+        	String str2 = mapping.two;
+        	if(str1 == null) {
+        		bngBuffer.append("map "+str2+"\n");
+        	} else {
+        		bngBuffer.append("map "+str2+" to "+str1+"\n");
+        	}
+        }
+        for (Operation op : rrarBiomodelForward.getOperationsList()) {
+        	bngBuffer.append("operation " + op.toString() + "\n");
+        }
+        String bngSummary = bngBuffer.toString();
 
-        System.out.println("RuleAnalysis modelSummary:\n"+modelSummary);
-        System.out.println("RuleAnalysis mathSummary:\n"+mathSummary);
-        if (modelSummary.equals(mathSummary)){
+        System.out.println("RuleAnalysis summary:\n" + ruleAnalysisSummary);
+        System.out.println("BioNetGen-made summary:\n" + bngSummary);
+        if (ruleAnalysisSummary.equals(bngSummary)){
              System.out.println("Rule Analysis SAME\n");
         }else{
              System.out.println("Rule Analysis DIFFERENT\n");
         }
 
-        String modelXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(modelRule, modelReport),false);
-        String mathXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(mathRule, mathReport),false);
-
-        System.out.println("MATH NFSIM\n"+mathXML);
-        if (modelXML.equals(mathXML)){
-             System.out.println("NFSim XML is SAME");
-        }else{
-             System.out.println("NFSim XML is DIFFERENT");
-             System.out.println("MODEL NFSIM\n"+modelXML);
-        }
-		
-		
-		
-		
-		
-		
-		
-		
+//        String modelXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(modelRule, modelReport),false);
+//        String mathXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(mathRule, mathReport),false);
+//
+//        System.out.println("MATH NFSIM\n"+mathXML);
+//        if (modelXML.equals(mathXML)){
+//             System.out.println("NFSim XML is SAME");
+//        }else{
+//             System.out.println("NFSim XML is DIFFERENT");
+//             System.out.println("MODEL NFSIM\n"+modelXML);
+//        }		
 		
 		}
 		
@@ -946,8 +973,18 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 			Expression reverse_rate = getIdentifierSubstitutions(new Expression(reverse_probParm,getNameScope()), reverse_probParm.getUnitDefinition(), geometryClass);
 			String reverse_name = reactionRuleName+"_reverse";
 			JumpProcessRateDefinition reverse_rateDefinition = new MacroscopicRateConstant(reverse_rate);
-			ParticleJumpProcess reverse_particleJumpProcess = new ParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions);
+			ReactionRuleAnalysisReport rrarBiomodelReverse = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
+			ProcessSymmetryFactor reverseSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelReverse.getSymmetryFactor());
+			ParticleJumpProcess reverse_particleJumpProcess = new ParticleJumpProcess(reverse_name,productParticles,reverse_rateDefinition,reverseActions,reverseSymmetryFactor);
 			subDomain.addParticleJumpProcess(reverse_particleJumpProcess);
+			
+			//
+			// check reverse direction mapping and operations with RuleAnalysis.
+			//
+			int reverseRuleIndex = forwardRuleIndex + 1;
+			ReactionRuleAnalysisReport rrar = ruleBasedTransformation.getRulesReverseMap().get(reactionRule);
+			jumpProcessMap.put(reverse_particleJumpProcess, rrar);
+
 			
 		}
 	}

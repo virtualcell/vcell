@@ -68,87 +68,138 @@ public class RulebasedTransformer implements SimContextTransformer {
 	}
 	class StateChangeOperation implements Operation {
 		final private String finalState;
-		final private RbmObject site;			// MolecularComponentPattern
-		public StateChangeOperation(String finalState, RbmObject site) {
+		final private String idSite;
+		final private RbmObject objSite;			// MolecularComponentPattern
+		public StateChangeOperation(String finalState, String idSite, RbmObject objSite) {
 			super();
 			this.finalState = finalState;
-			this.site = site;
+			this.idSite = idSite;
+			this.objSite = objSite;
 		}
-		public String getFinalState() {
-			return finalState;
-		}
-		public RbmObject getSite() {
-			return site;
+		@Override
+		public String toString(){
+			return "CHANGE STATE ON " + idSite + " to " + finalState;
 		}
 	}
 	class AddBondOperation implements Operation {
-		final private RbmObject site1;		// MolecularComponentPattern
-		final private RbmObject site2;
-		public AddBondOperation(RbmObject site1, RbmObject site2) {
+		final private String idSite1;
+		final private String idSite2;
+		final private RbmObject objSite1;		// MolecularComponentPattern
+		final private RbmObject objSite2;
+		public AddBondOperation(String idSite1, String idSite2, RbmObject objSite1, RbmObject objSite2) {
 			super();
-			this.site1 = site1;
-			this.site2 = site2;
+			this.idSite1 = idSite1;
+			this.idSite2 = idSite2;
+			this.objSite1 = objSite1;
+			this.objSite2 = objSite2;
 		}
-		public RbmObject getSite1() {
-			return site1;
-		}
-		public RbmObject getSite2() {
-			return site2;
+		@Override
+		public String toString(){
+			return "ADD BOND from " + idSite1 + " to " + idSite2;
 		}
 	}
 	class DeleteBondOperation implements Operation {
-		final private RbmObject site1;		// MolecularComponentPattern
-		final private RbmObject site2;
-		public DeleteBondOperation(RbmObject site1, RbmObject site2) {
+		final private String idSite1;
+		final private String idSite2;
+		final private RbmObject objSite1;		// MolecularComponentPattern
+		final private RbmObject objSite2;
+		public DeleteBondOperation(String idSite1, String idSite2, RbmObject objSite1, RbmObject objSite2) {
 			super();
-			this.site1 = site1;
-			this.site2 = site2;
+			this.idSite1 = idSite1;
+			this.idSite2 = idSite2;
+			this.objSite1 = objSite1;
+			this.objSite2 = objSite2;
 		}
-		public RbmObject getSite1() {
-			return site1;
-		}
-		public RbmObject getSite2() {
-			return site2;
+		@Override
+		public String toString(){
+			return "DELETE BOND from " + idSite1 + " to " + idSite2;
 		}
 	}
 	class AddOperation implements Operation {
-		final private RbmObject site;			// attribute is called id 
-		public AddOperation(RbmObject site) {
+		final private String idSite;
+		final private RbmObject objSite;			// attribute is called id 
+		public AddOperation(String idSite, RbmObject objSite) {
 			super();
-			this.site = site;	// can be MolecularTypePattern or SpeciesPattern
+			this.idSite = idSite;
+			this.objSite = objSite;	// can be MolecularTypePattern or SpeciesPattern
 		}
-		public RbmObject getSite() {
-			return site;
+		@Override
+		public String toString() {
+			if(objSite instanceof MolecularTypePattern) {
+				return "ADD MOLECULE " + idSite;
+			} else {
+				return "ADD PARTICIPANT " + idSite;
+			}
 		}
 	}
 	class DeleteOperation implements Operation {
-		final private RbmObject site;			// attribute is called id 
+		final private String idSite;
+		final private RbmObject objSite;			// attribute is called id 
 		final private int deleteMolecules;
-		public DeleteOperation(RbmObject site, int deleteMolecules) {
+		public DeleteOperation(String idSite, RbmObject objSite, int deleteMolecules) {
 			super();
-			this.site = site;	// can be MolecularTypePattern or SpeciesPattern
+			this.idSite = idSite;
+			this.objSite = objSite;	// can be MolecularTypePattern or SpeciesPattern
 			this.deleteMolecules = deleteMolecules;
 		}
-		public RbmObject getSite() {
-			return site;
-		}
-		public int getDeleteMolecules() {
-			return deleteMolecules;
+		@Override
+		public String toString() {
+			String strMolecules = "";
+			if(deleteMolecules > 0) {
+				strMolecules += "DeleteMolecules=" + deleteMolecules;
+			}
+			if(objSite instanceof MolecularTypePattern) {
+				return "DELETE MOLECULE " + idSite + strMolecules;
+			} else {
+				return "DELETE PARTICIPANT " + idSite + strMolecules;
+			}
 		}
 	}
 
 	class ReactionRuleAnalysisReport {
 		protected Double symmetryFactor = 1.0;
-		protected List<Pair<RbmObject, RbmObject>> mappingList = new ArrayList<Pair<RbmObject, RbmObject>>();
+		protected List<Pair<RbmObject, RbmObject>> objmappingList = new ArrayList<Pair<RbmObject, RbmObject>>();
+		protected List<Pair<String, String>> idmappingList = new ArrayList<Pair<String, String>>();
 		protected List<Operation> operationsList = new ArrayList<Operation>();
 		public Double getSymmetryFactor() {
 			return symmetryFactor;
 		}
-		public List<Pair<RbmObject, RbmObject>> getMappingList() {
-			return mappingList;
+		public List<Pair<RbmObject, RbmObject>> getObjectMappingList() {
+			return objmappingList;
+		}
+		public List<Pair<String, String>> getIdMappingList() {
+			return idmappingList;
 		}
 		public List<Operation> getOperationsList() {
 			return operationsList;
+		}
+	}
+	
+	public class RulebasedTransformation extends SimContextTransformation {
+
+		private Map<String, RbmObject> keyMap;
+		private Map<ReactionRule, ReactionRuleAnalysisReport> rulesForwardMap;
+		private Map<ReactionRule, ReactionRuleAnalysisReport> rulesReverseMap;
+
+		public RulebasedTransformation(SimulationContext originalSimContext,
+				SimulationContext transformedSimContext,
+				ModelEntityMapping[] modelEntityMappings,
+				Map<String, RbmObject> keyMap,
+				Map<ReactionRule, ReactionRuleAnalysisReport> rulesForwardMap,
+				Map<ReactionRule, ReactionRuleAnalysisReport> rulesReverseMap) {
+			super(originalSimContext, transformedSimContext, modelEntityMappings);
+			this.keyMap = keyMap;
+			this.rulesForwardMap = rulesForwardMap;
+			this.rulesReverseMap = rulesReverseMap;
+		}
+		Map<ReactionRule, ReactionRuleAnalysisReport> getRulesForwardMap() {
+			return rulesForwardMap;
+		}
+		Map<ReactionRule, ReactionRuleAnalysisReport> getRulesReverseMap() {
+			return rulesReverseMap;
+		}
+		public Map<String, RbmObject> getIdentifierKeyMap(){
+			return keyMap;
 		}
 	}
 
@@ -156,16 +207,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 	private Map<String, RbmObject> keyMap = new LinkedHashMap<String, RbmObject>();				// master key map, only used here
 	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesForwardMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
 	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesReverseMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
-
-	Map<ReactionRule, ReactionRuleAnalysisReport> getRulesForwardMap() {
-		return rulesForwardMap;
-	}
-	Map<ReactionRule, ReactionRuleAnalysisReport> getRulesReverseMap() {
-		return rulesReverseMap;
-	}
 	
 	@Override
-	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements netGenReq_NOT_USED) {
+	final public RulebasedTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements netGenReq_NOT_USED) {
 		SimulationContext transformedSimContext;
 		keyMap.clear();
 
@@ -182,17 +226,14 @@ public class RulebasedTransformer implements SimContextTransformer {
 		transformedSimContext.refreshDependencies1(false);
 
 		ArrayList<ModelEntityMapping> entityMappings = new ArrayList<ModelEntityMapping>();
-		
 		try {
 			transform(originalSimContext,transformedSimContext,entityMappings,mathMappingCallback);
 		} catch (PropertyVetoException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
 		}
-		
 		ModelEntityMapping[] modelEntityMappings = entityMappings.toArray(new ModelEntityMapping[0]);
-		
-		return new SimContextTransformation(originalSimContext, transformedSimContext, modelEntityMappings);
+		return new RulebasedTransformation(originalSimContext, transformedSimContext, modelEntityMappings, keyMap, rulesForwardMap, rulesReverseMap);
 	}
 	
 	private void transform(SimulationContext originalSimContext, SimulationContext transformedSimulationContext, ArrayList<ModelEntityMapping> entityMappings, MathMappingCallback mathMappingCallback) throws PropertyVetoException {
@@ -413,7 +454,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.ComputeFullStandardTimeout;
 
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
-//		System.out.println(input);		// TODO: uncomment to see the xml string
+		System.out.println(input);		// TODO: uncomment to see the xml string
 		for (Map.Entry<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 			FakeSeedSpeciesInitialConditionsParameter key = entry.getKey();
 			Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -468,7 +509,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 //		}
 		
 		// TODO: uncomment here to parse the xml file!!!
-//		parseBngOutput(simContext, bngOutput);
+		parseBngOutput(simContext, bngOutput);
 	}
 	
 	
@@ -582,17 +623,20 @@ public class RulebasedTransformer implements SimContextTransformer {
 			for (Element mapElement : mapChildren) {
 				String target_id_str = mapElement.getAttributeValue("targetID");
 				String source_id_str = mapElement.getAttributeValue("sourceID");
+				
 				System.out.println("Map: target=" + target_id_str + " source=" + source_id_str);
 				RbmObject target_object = keyMap.get(target_id_str);
 				RbmObject source_object = keyMap.get(source_id_str);
-				if(target_object == null) System.out.println("!!! Missing map object " + target_id_str);
-				if(source_object == null) System.out.println("!!! Missing map object " + source_id_str);
+				if(target_object == null) System.out.println("!!! Missing map target  " + target_id_str);
+				if(source_object == null) System.out.println("!!! Missing map source " + source_id_str);
 				
-				if(target_object != null && source_object != null) {
+				if(source_object != null) {		//  target_object may be null
 					System.out.println("      target=" + target_object + " source=" + source_object);
 					Pair<RbmObject, RbmObject> mapEntry = new Pair<RbmObject, RbmObject> (target_object, source_object);
-					rar.mappingList.add(mapEntry);
+					rar.objmappingList.add(mapEntry);
 				}
+				Pair<String, String> idmapEntry = new Pair<String, String> (target_id_str, source_id_str);
+				rar.idmappingList.add(idmapEntry);
 			}
 			
 			// ListOfOperations
@@ -607,7 +651,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				if(site_object == null) System.out.println("!!! Missing map object " + site_str);
 				if(site_object != null) {
 					System.out.println("   finalState=" + finalState_str + " site=" + site_object);
-					StateChangeOperation sco = new StateChangeOperation(finalState_str, site_object);
+					StateChangeOperation sco = new StateChangeOperation(finalState_str, site_str, site_object);
 					rar.operationsList.add(sco);
 				}
 			}
@@ -621,7 +665,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
 				if(site1_object != null && site2_object != null) {
 					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
-					AddBondOperation abo = new AddBondOperation(site1_object,site2_object);
+					AddBondOperation abo = new AddBondOperation(site1_str,site2_str,site1_object,site2_object);
 					rar.operationsList.add(abo);
 				}
 			}
@@ -635,7 +679,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				if(site2_object == null) System.out.println("!!! Missing map object " + site2_str);
 				if(site1_object != null && site2_object != null) {
 					System.out.println("   site1=" + site1_object + " site2=" + site2_object);
-					DeleteBondOperation dbo = new DeleteBondOperation(site1_object,site2_object);
+					DeleteBondOperation dbo = new DeleteBondOperation(site1_str,site2_str,site1_object,site2_object);
 					rar.operationsList.add(dbo);
 				}
 			}
@@ -646,7 +690,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
 				if(id_object != null) {
 					System.out.println("   id=" + id_str);
-					AddOperation ao = new AddOperation(id_object);
+					AddOperation ao = new AddOperation(id_str,id_object);
 					rar.operationsList.add(ao);
 				}
 			}
@@ -656,20 +700,19 @@ public class RulebasedTransformer implements SimContextTransformer {
 				String delete_molecules_str = operationsElement.getAttributeValue("DeleteMolecules");
 				RbmObject id_object = keyMap.get(id_str);
 				if(id_object == null) System.out.println("!!! Missing map object " + id_str);
-				int delete_molecules_int = Integer.parseInt(delete_molecules_str);
+				int delete_molecules_int = 0;
+				if(delete_molecules_str != null) {
+					delete_molecules_int = Integer.parseInt(delete_molecules_str);
+				}
 				if(id_object != null) {
 					System.out.println("   id=" + id_str + ", DeleteMolecules=" + delete_molecules_str);
-					DeleteOperation dop = new DeleteOperation(id_object, delete_molecules_int);
+					DeleteOperation dop = new DeleteOperation(id_str,id_object, delete_molecules_int);
 					rar.operationsList.add(dop);
 				}
 			}
 		}
 		System.out.println("done parsing xml file");
 	}
-	
-
-
-
 }
 
 

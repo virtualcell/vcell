@@ -188,6 +188,7 @@ import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
+import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
@@ -2305,6 +2306,11 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 {
 	//name
 	String name = unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+	ProcessSymmetryFactor processSymmetryFactor = null;
+	Attribute symmetryFactorAttr = param.getAttribute(XMLTags.ProcessSymmetryFactorAttrTag);
+	if (symmetryFactorAttr != null){
+		processSymmetryFactor = new ProcessSymmetryFactor(Double.parseDouble(symmetryFactorAttr.getValue()));
+	}
 	
 	// selected particle
 	List<ParticleVariable> varList = new ArrayList<ParticleVariable>();
@@ -2362,7 +2368,7 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
 		}
 	}
 	
-	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, jprd, actionList);
+	ParticleJumpProcess jump = new ParticleJumpProcess(name, varList, jprd, actionList, processSymmetryFactor);
 	
 	return jump;
 }

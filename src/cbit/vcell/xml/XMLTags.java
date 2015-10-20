@@ -607,6 +607,7 @@ public class XMLTags {
 	public final static String MacroscopicRateConstantTag = "MacroscopicRateConstant";
 	public final static String InteractionRadiusTag = "InteractionRadius";
 	public final static String SelectedParticleTag = "SelectedParticle";
+	public final static String ProcessSymmetryFactorAttrTag = "ProcessSymmetryFactor";
 	public final static String ParticlePropertiesTag 		= "ParticleProperties"; // particle
 	public final static String ParticleInitialCountTag			= "ParticleInitialCount"; // particle
 	public final static String ParticleInitialCountTag_old			= "ParticleInitial"; // particle

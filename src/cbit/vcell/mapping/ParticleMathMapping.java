@@ -42,6 +42,7 @@ import cbit.vcell.math.MembraneParticleVariable;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleJumpProcess;
 import cbit.vcell.math.ParticleProperties;
+import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
@@ -723,7 +724,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			
 			// get jump process name
 			String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-			ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, bindingRadius, forwardActions);
+			ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
+			ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, bindingRadius, forwardActions, processSymmetryFactor);
 			subdomain.addParticleJumpProcess(forwardProcess);
 			
 		}
@@ -881,7 +883,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					JumpProcessRateDefinition partRateDef = new MacroscopicRateConstant(exp);
 					// create particle jump process
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-					ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions);
+					ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
+					ParticleJumpProcess forwardProcess = new ParticleJumpProcess(jpName, reactantParticles, partRateDef, forwardActions, processSymmetryFactor);
 					subdomain.addParticleJumpProcess(forwardProcess);
 				} // end of forward rate not null
 				if (reverseRate!=null)
@@ -934,7 +937,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					
 					// get jump process name
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName()+"_reverse");
-					ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions);
+					ProcessSymmetryFactor processSymmetryFactor = null; // only for NFSim/Rules for now.
+					ParticleJumpProcess reverseProcess = new ParticleJumpProcess(jpName, productParticles, partProbRate, reverseActions, processSymmetryFactor);
 					subdomain.addParticleJumpProcess(reverseProcess);
 				} //end of reverse rate not null
 			} //end of maFunc not null

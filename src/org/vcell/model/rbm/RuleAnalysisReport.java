@@ -158,12 +158,20 @@ public class RuleAnalysisReport {
 		// molecule mapping
 		for (MolecularTypeEntry reactantMolecule : forwardMolecularMapping.keySet()){
 			MolecularTypeEntry productMolecules = forwardMolecularMapping.get(reactantMolecule).get(0);
-			lines.add("map reactant molecule "+RuleAnalysis.getID(reactantMolecule)+" to "+RuleAnalysis.getID(productMolecules)+"\n");
+			if(productMolecules == null) {
+				lines.add("map "+RuleAnalysis.getID(reactantMolecule)+"\n");
+			} else {
+				lines.add("map "+RuleAnalysis.getID(reactantMolecule)+" to "+RuleAnalysis.getID(productMolecules)+"\n");
+			}
 		}
 		// component mapping
 		for (MolecularComponentEntry reactantComponent : forwardComponentMapping.keySet()){
 			MolecularComponentEntry productComponent = forwardComponentMapping.get(reactantComponent);
-			lines.add("map reactant component "+RuleAnalysis.getID(reactantComponent)+" to "+RuleAnalysis.getID(productComponent)+"\n");
+			if(productComponent == null) {
+				lines.add("map "+RuleAnalysis.getID(reactantComponent)+"\n");
+			} else {
+				lines.add("map "+RuleAnalysis.getID(reactantComponent)+" to "+RuleAnalysis.getID(productComponent)+"\n");
+			}
 		}
 		for (Operation op : operations){
 			lines.add("operation "+op+"\n");
