@@ -296,6 +296,14 @@ public class MathRuleFactory {
 		@Override
 		public boolean hasBond() {
 			return particleMolecularComponentPattern.getBondType() == ParticleBondType.Specified;
+		}
+		@Override
+		public boolean isBondAny() {
+			if(particleMolecularComponentPattern.getBondType() == ParticleBondType.Possible) {
+				return true;
+			} else {
+				return false;
+			}
 		}		
 	}
 		

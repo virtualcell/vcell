@@ -94,6 +94,7 @@ public class RuleAnalysis {
 		boolean isBoundTo(MolecularComponentEntry productComponent);
 
 		public boolean hasBond();
+		public boolean isBondAny();
 	}
 	
 	public static class ReactantBondEntry {
@@ -370,15 +371,54 @@ System.out.println(bngConsoleString);
 			for (int componentIndex=0; componentIndex<reactantMolecularComponents.size(); componentIndex++){
 				MolecularComponentEntry reactantComponentEntry = reactantMolecularComponents.get(componentIndex);
 				MolecularComponentEntry productComponentEntry = productMolecularComponents.get(componentIndex);
-				report.map(reactantComponentEntry, productComponentEntry);
+				boolean trivial = true;		// the pairs of trivial components (no bond, any state) must not be added to the map
+				if(!reactantComponentEntry.isBondAny()) {
+					trivial = false;
+				}
+				if(reactantComponentEntry.getExplicitState() != null) {
+					trivial = false;
+				}
+				if(!productComponentEntry.isBondAny()) {
+					trivial = false;
+				}
+				if(productComponentEntry.getExplicitState() != null) {
+					trivial = false;
+				}
+				if(trivial == false) {
+					report.map(reactantComponentEntry, productComponentEntry);
+				}
 			}
 		}
+		
+		//
+		// all the unmatched reactant molecules also must be mapped! (null target)
+		//
+		for (MolecularTypeEntry mte : unmatchedReactantMolecularTypeEntries){
+			List<? extends MolecularComponentEntry> mceList = mte.getMolecularComponentEntries();
+			report.addMapping(mte,null);
+			for (MolecularComponentEntry mce : mceList){
+				boolean trivial = true;		// the pairs of trivial components (no bond, any state) must not be added to the map
+				if(!mce.isBondAny()) {
+					trivial = false;
+				}
+				if(mce.getExplicitState() != null) {
+					trivial = false;
+				}
+				if(trivial == false) {
+					report.map(mce, null);
+				}
+			}
+		}
+
 		
 		//
 		// go through component mappings and look for state changes (and verify unique mapping).
 		//
 		for (MolecularComponentEntry reactantComponentEntry : report.getMappedReactantComponents()){
 			MolecularComponentEntry productComponentEntry = report.getMappedProductComponent(reactantComponentEntry);
+			if(productComponentEntry == null) {
+				continue;	// if a reactant is getting destroyed we don't generate operation
+			}
 			String reactantState = reactantComponentEntry.getExplicitState();
 			String productState = productComponentEntry.getExplicitState();
 			if (reactantState != null || productState != null){

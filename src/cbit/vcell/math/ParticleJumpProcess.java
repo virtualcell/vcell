@@ -13,16 +13,102 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
+import java.io.Serializable;
 import java.util.*;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 public class ParticleJumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName = null;
 	private List<ParticleVariable> particles = null;
 	private JumpProcessRateDefinition  rateDefinition = null;
 	private List<Action> actions = null;
+//	private ArrayList<ProcessParticleMapping> processParticleMappings = null;
+	private ProcessSymmetryFactor processSymmetryFactor = null;
+	
+public static class ProcessSymmetryFactor implements Matchable, Serializable {
+	double factor;
+	public ProcessSymmetryFactor(double factor){
+		this.factor = factor;
+	}
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof ProcessSymmetryFactor){
+			ProcessSymmetryFactor other = (ProcessSymmetryFactor)obj;
+			if (!Compare.isEqual(factor, other.factor)){
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	public double getFactor(){
+		return this.factor;
+	}
+}
+
+//public abstract static class ProcessParticleMapping implements Matchable {
+//		
+//	public abstract String getVCML();
+//		
+//}
+//	
+//public static class ProcessParticleTypeMapping extends ProcessParticleMapping {
+//	private ParticleMolecularTypePattern p1;
+//	private ParticleMolecularTypePattern p2;
+//
+//	@Override
+//	public boolean compareEqual(Matchable obj) {
+//		if (obj instanceof ProcessParticleTypeMapping){
+//			ProcessParticleTypeMapping other = (ProcessParticleTypeMapping)obj;
+//			if (!Compare.isEqual(p1, other.p1)){
+//				return false;
+//			}
+//			if (!Compare.isEqual(p2, other.p2)){
+//				return false;
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	@Override
+//	public String getVCML() {
+//		return "\t\t"+VCML.ProcessParticleTypeMapping+"\t"+p1.getMolecularType().getName()+"\t"+p2.getMolecularType().getName()+"\n";
+//	}
+//	
+//}
+//
+//public static class ProcessParticleComponentMapping extends ProcessParticleMapping {
+//	private ParticleMolecularTypePattern p1;
+//	private ParticleMolecularComponentPattern c1;
+//	
+//	private ParticleMolecularTypePattern p2;
+//	private ParticleMolecularComponentPattern c2;
+//	
+//	@Override
+//	public boolean compareEqual(Matchable obj) {
+//		if (obj instanceof ProcessParticleComponentMapping){
+//			ProcessParticleComponentMapping other = (ProcessParticleComponentMapping)obj;
+//			if (!Compare.isEqual(c1, other.c1)){
+//				return false;
+//			}
+//			if (!Compare.isEqual(c2, other.c2)){
+//				return false;
+//			}
+//			return true;
+//		}
+//		return false;
+//	}
+//
+//	@Override
+//	public String getVCML() {
+//		return "\t\t"+VCML.ProcessParticleComponentMapping+"\t"+c1.getc1.getMolecularComponent().getName()+"\t"+c2.getVCML()+"\n";
+//	}
+//	
+//}
 
 /**
  * JumpProcess constructor comment.
@@ -30,14 +116,30 @@ public class ParticleJumpProcess implements org.vcell.util.Matchable,java.io.Ser
  * @param initialExp cbit.vcell.parser.Expression
  * @param rateExp cbit.vcell.parser.Expression
  */
-public ParticleJumpProcess(String name, List<ParticleVariable> particles, JumpProcessRateDefinition rateDefinition, List<Action> actions)
+public ParticleJumpProcess(String name, List<ParticleVariable> particles, JumpProcessRateDefinition rateDefinition, List<Action> actions, ProcessSymmetryFactor processSymmetryFactor)
 {
 	processName = name;
 	this.particles = particles;
 	this.rateDefinition = rateDefinition;
 	this.actions = actions;
+	this.processSymmetryFactor = processSymmetryFactor;
 }
 
+//public void setProcessParticleMappings(ArrayList<ProcessParticleMapping> particleMappings){	
+//	this.processParticleMappings = new ArrayList<ProcessParticleMapping>(particleMappings);
+//}
+//
+//public List<ProcessParticleMapping> getProcessParticleMappings(){	
+//	return processParticleMappings;
+//}
+//
+public void setProcessParticleMappings(ProcessSymmetryFactor processSymmetryFactor){	
+	this.processSymmetryFactor = processSymmetryFactor;
+}
+
+public ProcessSymmetryFactor getProcessSymmetryFactor() {	
+	return this.processSymmetryFactor;
+}
 
 /**
  * Added by mfenwick
@@ -76,6 +178,12 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	{
 		if(!Compare.isEqualOrNull(actions,jumpProc.actions))
 		{
+			return false;
+		}
+//		if (!Compare.isEqualOrNull(processParticleMappings, jumpProc.processParticleMappings)){
+//			return false;
+//		}
+		if (!Compare.isEqualOrNull(processSymmetryFactor, jumpProc.processSymmetryFactor)){
 			return false;
 		}
 	}
@@ -164,6 +272,16 @@ public String getVCML()
 		buffer.append(action.getVCML());
 	}
 	buffer.append("\t"+" "+VCML.EndBlock+"\n");
+//	if (this.processParticleMappings != null){
+//		buffer.append("\t"+" "+VCML.ProcessParticleMappings+"{\n");
+//		for(ProcessParticleMapping mapping : this.processParticleMappings){
+//			buffer.append(mapping.getVCML());
+//		}
+//		buffer.append("\t"+" "+VCML.EndBlock+"\n");
+//	}
+	if (processSymmetryFactor!=null){
+		buffer.append("\t\t"+VCML.ProcessSymmetryFactor+"\n"+this.processSymmetryFactor+"\n");
+	}
 	return buffer.toString();	
 }
 
@@ -200,6 +318,7 @@ public static ParticleJumpProcess fromVCML(MathDescription mathDesc, CommentStri
 	ArrayList<ParticleVariable> particles = new ArrayList<ParticleVariable>();
 	JumpProcessRateDefinition particleRateDef = null;
 	ArrayList<Action> actions = new ArrayList<Action>();
+	ProcessSymmetryFactor symmetryFactor = null;
 	while(!token.equals(VCML.EndBlock)){
 		if (token.equals(VCML.SelectedParticle)){
 			token = tokens.nextToken();
@@ -234,10 +353,13 @@ public static ParticleJumpProcess fromVCML(MathDescription mathDesc, CommentStri
 			}else{
 				throw new MathFormatException("unexpected command "+token+" within "+VCML.ParticleJumpProcess+" "+name);
 			}
+		} else if (token.equals(VCML.ProcessSymmetryFactor)){
+			token = tokens.nextToken();
+			symmetryFactor = new ProcessSymmetryFactor(Double.parseDouble(token));
 		}
 		token = tokens.nextToken();
 	}
-	ParticleJumpProcess pjp = new ParticleJumpProcess(name,particles,particleRateDef,actions);
+	ParticleJumpProcess pjp = new ParticleJumpProcess(name,particles,particleRateDef,actions,symmetryFactor);
 	return pjp;
 }
 
