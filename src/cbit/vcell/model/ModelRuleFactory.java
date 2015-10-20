@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
@@ -16,6 +17,7 @@ import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
 import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
+import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 
@@ -269,10 +271,24 @@ public class ModelRuleFactory {
 			Bond bond = molecularComponentPattern.getBond();
 			return bond != null;
 		}
+
+		@Override
+		public boolean isBondAny() {
+			if(molecularComponentPattern.getBondType() == BondType.Possible) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 		
 	}
+	
+	public enum ReactionRuleDirection {
+		forward,
+		reverse
+	};
 		
-	public ModelRuleEntry createRuleEntry(ReactionRule reactionRule, int reactionRuleIndex) {
+	public ModelRuleEntry createRuleEntry(ReactionRule reactionRule, int reactionRuleIndex, ReactionRuleDirection direction) {
 
 		ModelRuleEntry rule = new ModelRuleEntry(reactionRule, reactionRuleIndex);
 		

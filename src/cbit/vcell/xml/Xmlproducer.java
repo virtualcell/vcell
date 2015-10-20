@@ -2011,6 +2011,9 @@ private org.jdom.Element getXML(ParticleJumpProcess param) {
 	org.jdom.Element particleJumpProcessElement = new org.jdom.Element(XMLTags.ParticleJumpProcessTag);
 	//name
 	particleJumpProcessElement.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	if (param.getProcessSymmetryFactor()!=null){
+		particleJumpProcessElement.setAttribute(XMLTags.ProcessSymmetryFactorAttrTag, Double.toString(param.getProcessSymmetryFactor().getFactor()));
+	}
 	// Selected Particle
 	for (ParticleVariable vpv : param.getParticleVariables()) {
 		Element e = new Element(XMLTags.SelectedParticleTag);
