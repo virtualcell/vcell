@@ -490,14 +490,15 @@ System.out.println(bngConsoleString);
 		// delete entire reactant pattern if all molecules in it are unmapped
 		//
 		for (ParticipantEntry reactantEntry : rule.getReactantEntries()){
-			boolean bAllMoleculesRemoved = true;
-			for (MolecularTypeEntry moleculesEntry : reactantEntry.getMolecularTypeEntries()){
-				if (report.getMappedProductMolecules(moleculesEntry) != null){
-					bAllMoleculesRemoved = false;
-					break;
+			
+			int nbrOfMaches = reactantEntry.getMolecularTypeEntries().size();
+			for (MolecularTypeEntry moleculeEntry : reactantEntry.getMolecularTypeEntries()){
+				if(unmatchedReactantMolecularTypeEntries.contains(moleculeEntry)) {
+					nbrOfMaches--;
 				}
 			}
-			if (bAllMoleculesRemoved){
+			
+			if(nbrOfMaches == 0) {		// all molecular type patterns of this reactant are being removed
 				//
 				// remove species pattern (and disregard all unmatched bonds and molecules belonging to that species pattern)
 				//
@@ -590,13 +591,17 @@ System.out.println(bngConsoleString);
 			Element moleculeMapEntry = new Element("MapItem");
 			map.addContent(moleculeMapEntry);
 			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
-			moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
+			if(productMolecule != null) {
+				moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
+			}
 			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
 			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
 				Element componentMapEntry = new Element("MapItem");
 				map.addContent(componentMapEntry);
 				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
-				componentMapEntry.setAttribute("targetID",getID(productComponent));
+				if(productComponent != null) {
+					componentMapEntry.setAttribute("targetID",getID(productComponent));
+				}
 				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
 			}
 		}
