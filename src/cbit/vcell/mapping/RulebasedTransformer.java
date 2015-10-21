@@ -12,6 +12,7 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.output.XMLOutputter;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
 import org.vcell.model.rbm.MolecularComponentPattern;
@@ -20,6 +21,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RuleAnalysis;
+import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -40,6 +42,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelRuleFactory.ModelMolecularComponentEntry;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
@@ -204,6 +207,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 	}
 
 	// we populate these by parsing the xml file produced by BioNetGen
+	private Element bngRootElement = null;
 	private Map<String, RbmObject> keyMap = new LinkedHashMap<String, RbmObject>();				// master key map, only used here
 	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesForwardMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
 	private Map<ReactionRule, ReactionRuleAnalysisReport> rulesReverseMap = new LinkedHashMap<ReactionRule, ReactionRuleAnalysisReport>();
@@ -510,6 +514,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		
 		// TODO: uncomment here to parse the xml file!!!
 		parseBngOutput(simContext, bngOutput);
+//		compareOutputs(simContext);
 	}
 	
 	
@@ -555,11 +560,59 @@ public class RulebasedTransformer implements SimContextTransformer {
 		}
 	}
 
+	private void compareOutputs(SimulationContext simContext) {
+		// compare the xml from BioNetGen with the one we build
+		Model model = simContext.getModel();
+		XMLOutputter outp = new XMLOutputter();
+		Element modelElement = bngRootElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		List<Element> reactionRuleChildren = new ArrayList<Element>();
+		reactionRuleChildren = listOfReactionRulesElement.getChildren("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		for (Element rreTheirs : reactionRuleChildren) {
+			rreTheirs.removeChild("RateLaw", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			String rule_id_str = rreTheirs.getAttributeValue("id");
+			rule_id_str = rule_id_str.substring(2);
+			int rrIndex = Integer.parseInt(rule_id_str);
+			String sTheirs = outp.outputString(rreTheirs);
+			sTheirs = sTheirs.replace("xmlns=\"http://www.sbml.org/sbml/level3\"", "");
+			sTheirs = sTheirs.replaceAll("\\s+","");
+
+			String rule_name_str = rreTheirs.getAttributeValue("name");
+			ReactionRule rr = null;
+			ReactionRuleDirection rd;
+			if(rule_name_str.startsWith("_reverse_")) {
+				rd = ReactionRuleDirection.reverse;
+				rule_name_str = rule_name_str.substring("_reverse_".length());
+				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
+			} else {
+				rd = ReactionRuleDirection.forward;
+				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
+			}
+
+			ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
+			RuleEntry ruleEntry = modelRuleFactory.createRuleEntry(rr, rrIndex-1, rd);
+			
+			RuleAnalysisReport report = RuleAnalysis.analyze(ruleEntry);
+			Element rreOurs = RuleAnalysis.getNFSimXML(ruleEntry, report); // remember, we have to add RateLaw
+			String sOurs = outp.outputString(rreOurs);
+			sOurs = sOurs.replace(".0", "");
+			sOurs = sOurs.replaceAll("\\s+","");
+
+			
+			if(!sTheirs.equals(sOurs)) {
+				System.out.println(sTheirs);
+				System.out.println(sOurs);
+				System.out.println("not matching!!!" + rule_name_str);
+			} else {
+				System.out.println("good match for " + rule_name_str);
+			}
+		}
+	}
 	private void parseBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
 		Model model = simContext.getModel();
 		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
-		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
-		Element modelElement = sbmlElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		bngRootElement = bngNFSimXMLDocument.getRootElement();
+		Element modelElement = bngRootElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		List<Element> reactionRuleChildren = new ArrayList<Element>();
 		reactionRuleChildren = listOfReactionRulesElement.getChildren("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
