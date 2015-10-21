@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.model.rbm.RuleAnalysis.ParticipantEntry;
@@ -350,6 +351,9 @@ public class MathRuleFactory {
 				rule.reactantMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (ParticleMolecularComponentPattern mcp : mtp.getMolecularComponentPatternList()){
+					if(mcp.getBondType() == ParticleBondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
+						continue;
+					}
 					MathMolecularComponentEntry mce = new MathMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.reactantMolecularComponentEntries.add(mce);
 					
@@ -385,6 +389,9 @@ public class MathRuleFactory {
 				rule.productMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (ParticleMolecularComponentPattern mcp : mtp.getMolecularComponentPatternList()){
+					if(mcp.getBondType() == ParticleBondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
+						continue;
+					}
 					MathMolecularComponentEntry mce = new MathMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.productMolecularComponentEntries.add(mce);
 

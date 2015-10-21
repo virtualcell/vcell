@@ -305,6 +305,9 @@ public class ModelRuleFactory {
 				rule.reactantMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
+					if(mcp.getBondType() == BondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
+						continue;
+					}
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.reactantMolecularComponentEntries.add(mce);
 					
@@ -341,6 +344,9 @@ public class ModelRuleFactory {
 				rule.productMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
+					if(mcp.getBondType() == BondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
+						continue;
+					}
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.productMolecularComponentEntries.add(mce);
 
