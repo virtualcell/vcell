@@ -3293,9 +3293,11 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
  */
 private static void setWindowFocus(Hashtable<String, Object> hashTable) throws Exception {
 	DocumentWindowManager windowManager = (DocumentWindowManager)hashTable.get(WIN_MGR_KEY);
-	DocumentEditor de = windowManager.getDocumentEditor();
-	if (de != null) {
-		de.setWindowFocus();
+	if (windowManager != null) {
+		DocumentEditor de = windowManager.getDocumentEditor();
+		if (de != null) {
+			de.setWindowFocus();
+		}
 	}
 }
 
