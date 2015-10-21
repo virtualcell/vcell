@@ -37,6 +37,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
+import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -284,7 +285,11 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 				simIDs.add(simulationInfo.getAuthoritativeVCSimulationIdentifier());
 			}
 		}
-		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
+		RequestManager rm = getRequestManager();
+		ConnectionStatus stat = rm.getConnectionStatus();
+		if (stat.getStatus( ) == ConnectionStatus.CONNECTED) {
+			rm.getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
+		}
 	} else if (doc instanceof MathModel) {
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
 		geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
