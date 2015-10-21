@@ -591,18 +591,18 @@ System.out.println(bngConsoleString);
 			Element moleculeMapEntry = new Element("MapItem");
 			map.addContent(moleculeMapEntry);
 			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
+			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
 			if(productMolecule != null) {
 				moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
 			}
-			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
 			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
 				Element componentMapEntry = new Element("MapItem");
 				map.addContent(componentMapEntry);
 				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
+				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
 				if(productComponent != null) {
 					componentMapEntry.setAttribute("targetID",getID(productComponent));
 				}
-				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
 			}
 		}
 		
@@ -613,15 +613,15 @@ System.out.println(bngConsoleString);
 				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
 				Element deleteBond = new Element("DeleteBond");
 				listOfOperations.addContent(deleteBond);
-				deleteBond.setAttribute("site2",getID(deleteBondOp.removedBondEntry.reactantComponent2));
 				deleteBond.setAttribute("site1",getID(deleteBondOp.removedBondEntry.reactantComponent1));
+				deleteBond.setAttribute("site2",getID(deleteBondOp.removedBondEntry.reactantComponent2));
 			}
 			if (op instanceof AddBondOperation){
 				AddBondOperation addBondOp = (AddBondOperation)op;
 				Element addBond = new Element("AddBond");
 				listOfOperations.addContent(addBond);
-				addBond.setAttribute("site2",getID(addBondOp.addedProductBondEntry.reactantComponent2));
 				addBond.setAttribute("site1",getID(addBondOp.addedProductBondEntry.reactantComponent1));
+				addBond.setAttribute("site2",getID(addBondOp.addedProductBondEntry.reactantComponent2));
 			}
 			if (op instanceof AddMolecularTypeOperation){
 				AddMolecularTypeOperation addMoleculeOp = (AddMolecularTypeOperation)op;
@@ -679,11 +679,11 @@ System.out.println(bngConsoleString);
 				listOfComponents.addContent(componentElement);
 				componentElement.setAttribute("id",getID(component));
 				componentElement.setAttribute("name",component.getMolecularComponentName());
-				componentElement.setAttribute("numberOfBonds",component.hasBond()?"1":"0");
 				String state = component.getExplicitState();
 				if (state != null){
 					componentElement.setAttribute("state",state);
 				}
+				componentElement.setAttribute("numberOfBonds",component.hasBond()?"1":"0");
 			}
 		}
 		Element listOfBonds = new Element("ListOfBonds");
@@ -695,8 +695,8 @@ System.out.println(bngConsoleString);
 					Element bondElement = new Element("Bond");
 					listOfBonds.addContent(bondElement);
 					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
 					bondElement.setAttribute("site1",getID(bond.reactantComponent1));
+					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
 					bAnyBonds = true;
 					count++;
 				}
@@ -708,8 +708,8 @@ System.out.println(bngConsoleString);
 					Element bondElement = new Element("Bond");
 					listOfBonds.addContent(bondElement);
 					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-					bondElement.setAttribute("site2",getID(bond.productComponent2));
 					bondElement.setAttribute("site1",getID(bond.productComponent1));
+					bondElement.setAttribute("site2",getID(bond.productComponent2));
 					bAnyBonds = true;
 					count++;
 				}
