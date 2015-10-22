@@ -2,7 +2,9 @@ package org.vcell.model.rbm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
@@ -100,8 +102,8 @@ public class RuleAnalysisReport {
 	}
 
 	private double symmetryFactor = 1;
-	private final HashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>> forwardMolecularMapping = new HashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>>();
-	private final HashMap<MolecularComponentEntry, MolecularComponentEntry> forwardComponentMapping = new HashMap<MolecularComponentEntry,MolecularComponentEntry>();
+	private final Map<MolecularTypeEntry,ArrayList<MolecularTypeEntry>> forwardMolecularMapping = new LinkedHashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>>();
+	private final Map<MolecularComponentEntry, MolecularComponentEntry> forwardComponentMapping = new LinkedHashMap<MolecularComponentEntry,MolecularComponentEntry>();
 	private final ArrayList<RuleAnalysisReport.Operation> operations = new ArrayList<RuleAnalysisReport.Operation>();
 	
 	public void addOperation(RuleAnalysisReport.Operation operation) {

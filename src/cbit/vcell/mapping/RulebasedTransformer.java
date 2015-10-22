@@ -591,13 +591,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 
 			ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
 			RuleEntry ruleEntry = modelRuleFactory.createRuleEntry(rr, rrIndex-1, rd);
-			
 			RuleAnalysisReport report = RuleAnalysis.analyze(ruleEntry);
-			Element rreOurs = RuleAnalysis.getNFSimXML(ruleEntry, report); // remember, we have to add RateLaw
+			Element rreOurs = RuleAnalysis.getNFSimXML(ruleEntry, report);
 			String sOurs = outp.outputString(rreOurs);
 			sOurs = sOurs.replace(".0", "");
 			sOurs = sOurs.replaceAll("\\s+","");
-
 			
 			if(!sTheirs.equals(sOurs)) {
 				System.out.println(sTheirs);
