@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
 import org.vcell.model.rbm.RuleAnalysis.MolecularTypeEntry;
 import org.vcell.model.rbm.RuleAnalysis.ParticipantEntry;
@@ -15,6 +14,7 @@ import org.vcell.model.rbm.RuleAnalysis.ProductBondEntry;
 import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
 import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 
+import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 
 public class MathRuleFactory {
@@ -89,6 +89,12 @@ public class MathRuleFactory {
 				productPatterns.add(product.particleSpeciesPattern);
 			}
 			return RbmUtils.toBnglStringShort(particleJumpProcess, reactantPatterns, productPatterns);
+		}
+
+		@Override
+		public Double getSymmetryFactor() {
+			ProcessSymmetryFactor processSymmetryFactor = particleJumpProcess.getProcessSymmetryFactor();
+			return processSymmetryFactor.getFactor();
 		}
 
 //		@Override
@@ -299,8 +305,16 @@ public class MathRuleFactory {
 			return particleMolecularComponentPattern.getBondType() == ParticleBondType.Specified;
 		}
 		@Override
-		public boolean isBondAny() {
+		public boolean isBondPossible() {
 			if(particleMolecularComponentPattern.getBondType() == ParticleBondType.Possible) {
+				return true;
+			} else {
+				return false;
+			}
+		}		
+		@Override
+		public boolean isBondExists() {
+			if(particleMolecularComponentPattern.getBondType() == ParticleBondType.Exists) {
 				return true;
 			} else {
 				return false;
@@ -311,7 +325,7 @@ public class MathRuleFactory {
 	public MathRuleEntry createRuleEntry(ParticleJumpProcess particleJumpProcess, int particleJumpProcessIndex) {
 
 		MathRuleEntry rule = new MathRuleEntry(particleJumpProcess, particleJumpProcessIndex);
-		
+				
 		ArrayList<ParticleSpeciesPattern> selectedPatterns = new ArrayList<ParticleSpeciesPattern>();
 		for (ParticleVariable particleVariable : particleJumpProcess.getParticleVariables()){
 			if (!(particleVariable instanceof ParticleSpeciesPattern)){

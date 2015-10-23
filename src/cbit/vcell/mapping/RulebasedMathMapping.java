@@ -881,6 +881,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
  
         MathRuleFactory mathRuleFactory = new MathRuleFactory();
         MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
+        ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);
         RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
         String ruleAnalysisSummary = mathReport.getSummary();
         
