@@ -231,7 +231,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 			if(!sTheirs.equals(sOurs)) {
 				System.out.println(sTheirs);
 				System.out.println(sOurs);
-				System.out.println("not matching!!!");
+//				System.out.println("not matching!!!");
+				throw new RuntimeException("Rule not matching\n" + sTheirs + "\n" + sOurs);
 //				BeanUtils.sendRemoteLogMessage(null, sTheirs + "\n" + sOurs);
 			} else {
 				System.out.println("good match ");
