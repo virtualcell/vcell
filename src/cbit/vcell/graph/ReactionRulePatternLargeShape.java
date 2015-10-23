@@ -269,6 +269,12 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			sps.turnHighlightOffRecursive(g);
 		}
 	}
+	
+	public void flash(String matchKey) {
+		for (SpeciesPatternLargeShape sps : speciesPatternShapeList) {
+			sps.flash(matchKey);
+		}
+	}
 
 	
 }

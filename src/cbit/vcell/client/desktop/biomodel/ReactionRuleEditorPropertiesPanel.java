@@ -842,22 +842,27 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 					if(!keyCandidates.isEmpty()) {
 						JMenu reassignMatchMenuItem = new JMenu();
-						reassignMatchMenuItem.setText("Reassign match");
+						reassignMatchMenuItem.setText("Reassign match to");
 						for(int i=0; i<keyCandidates.size(); i++) {
 							JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
 							reassignMatchMenuItem.add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
 									String oldKey = e.getActionCommand();
-									MolecularTypePattern productToReassign = reactionRule.findMatch(oldKey, mtpProductList);
-									MolecularTypePattern orphanProduct = reactionRule.findMatch(newKey, mtpProductList);
-									productToReassign.setParticipantMatchLabel(newKey);
-									orphanProduct.setParticipantMatchLabel(oldKey);
+									MolecularTypePattern orphanReactant = reactionRule.findMatch(oldKey, mtpReactantList);
+									mtp.setParticipantMatchLabel(oldKey);
+									orphanReactant.setParticipantMatchLabel(newKey);
 									// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
 									// when the tree will be gone
 									reactantTreeModel.populateTree();
 									productTreeModel.populateTree();
 									shapePanel.repaint();
+									SwingUtilities.invokeLater(new Runnable() {
+										public void run() {				
+											reactantShape.flash(oldKey);
+											productShape.flash(oldKey);
+										}
+									});
 								}
 							});
 						}
@@ -994,22 +999,27 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 					if(!keyCandidates.isEmpty()) {
 						JMenu reassignMatchMenuItem = new JMenu();
-						reassignMatchMenuItem.setText("Reassign match");
+						reassignMatchMenuItem.setText("Reassign match to");
 						for(int i=0; i<keyCandidates.size(); i++) {
 							JMenuItem menuItem = new JMenuItem(keyCandidates.get(i));
 							reassignMatchMenuItem.add(menuItem);
 							menuItem.addActionListener(new ActionListener() {
 								public void actionPerformed(ActionEvent e) {
 									String oldKey = e.getActionCommand();
-									MolecularTypePattern reactantToReassign = reactionRule.findMatch(oldKey, mtpReactantList);
-									MolecularTypePattern orphanReactant = reactionRule.findMatch(newKey, mtpReactantList);
-									reactantToReassign.setParticipantMatchLabel(newKey);
-									orphanReactant.setParticipantMatchLabel(oldKey);
+									MolecularTypePattern orphanProduct = reactionRule.findMatch(oldKey, mtpProductList);
+									mtp.setParticipantMatchLabel(oldKey);
+									orphanProduct.setParticipantMatchLabel(newKey);
 									// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
 									// when the tree will be gone
 									reactantTreeModel.populateTree();
 									productTreeModel.populateTree();
 									shapePanel.repaint();
+									SwingUtilities.invokeLater(new Runnable() {
+										public void run() {				
+											reactantShape.flash(oldKey);
+											productShape.flash(oldKey);
+										}
+									});
 								}
 							});
 						}
