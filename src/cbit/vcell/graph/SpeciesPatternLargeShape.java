@@ -556,4 +556,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 	}
 
+	public void flash(String matchKey) {
+		for(MolecularTypeLargeShape mtls : speciesShapes) {
+			mtls.flash(matchKey);
+		}
+	}
+
 }

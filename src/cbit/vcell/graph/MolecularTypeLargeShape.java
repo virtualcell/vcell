@@ -470,4 +470,27 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			mcls.turnHighlightOffRecursive(g);
 		}
 	}
+	public void flash(String matchKey) {
+		if(!(owner instanceof ReactionRule)) {
+			return;
+		}
+		if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(matchKey)) {
+			Graphics g = graphicsContext;
+			Graphics2D g2 = (Graphics2D)g;
+			Font fontOld = g2.getFont();
+			Color colorOld = g2.getColor();
+			Color color = (Color.red).darker();
+			Font font = fontOld.deriveFont(Font.BOLD);
+			Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
+			g.setFont(smallerFont);
+			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			int stringWidth = fm.stringWidth(name);
+			int textX = xPos + 11;
+			int textY =  yPos + baseHeight - 9;
+			g.setColor(color);
+			g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
+			g.setFont(fontOld);
+			g.setColor(colorOld);
+		}
+	}
 }
