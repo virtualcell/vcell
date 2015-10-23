@@ -1,13 +1,9 @@
 package org.vcell.model.rbm;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.Namespace;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.ChangeStateOperation;
@@ -16,15 +12,9 @@ import org.vcell.model.rbm.RuleAnalysisReport.DeleteMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.Operation;
 
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.server.bionetgen.BNGExecutorService;
-import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGOutput;
-
 public class RuleAnalysis {
 		
 	public static int INDEX_OFFSET = 1;
-	public static boolean computeSymmetryFactor = false;
 	
 	private RuleAnalysis(){
 	}
@@ -50,6 +40,8 @@ public class RuleAnalysis {
 		public List<ProductBondEntry> getProductBondEntries();
 
 		public String getReactionBNGLShort();
+
+		public Double getSymmetryFactor();
 	}
 	
 	public interface ParticipantEntry {
@@ -94,7 +86,8 @@ public class RuleAnalysis {
 		boolean isBoundTo(MolecularComponentEntry productComponent);
 
 		public boolean hasBond();
-		public boolean isBondAny();
+		public boolean isBondPossible();
+		public boolean isBondExists();
 	}
 	
 	public static class ReactantBondEntry {
@@ -233,89 +226,72 @@ public class RuleAnalysis {
 //	}
 	
 
-	public static double analyzeSymmetryBNG(RuleEntry rule){
-		
-		//
-		// create bngl input for this rule
-		//
-		StringWriter bnglStringWriter = new StringWriter();
-		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl_internal(rule, pw);
-		String input = bnglStringWriter.toString();
-		pw.close();
-
-		//
-		// caching recent results - if input already processed, use previous results.
-		//
-//		String md5hash = MD5.md5(input);
-//		if(isBngHashValid(input, md5hash, simContext)) {
-//			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
-//			System.out.println(s);
-//			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);	// not an error, we just want to show it in red
-//			simContext.appendToConsole(tcm);
-//			if(simContext.isInsufficientIterations()) {
-//				s = SimulationConsolePanel.getInsufficientIterationsMessage();
-//				System.out.println(s);
-//				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
-//				simContext.appendToConsole(tcm);
-//			}
-//			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
-//			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+//	public static double analyzeSymmetryBNG(RuleEntry rule){
+//		
+//		//
+//		// create bngl input for this rule
+//		//
+//		StringWriter bnglStringWriter = new StringWriter();
+//		PrintWriter pw = new PrintWriter(bnglStringWriter);
+//		RbmNetworkGenerator.writeBngl_internal(rule, pw);
+//		String input = bnglStringWriter.toString();
+//		pw.close();
+//
+//		//
+//		// caching recent results - if input already processed, use previous results.
+//		//
+////		String md5hash = MD5.md5(input);
+////		if(isBngHashValid(input, md5hash, simContext)) {
+////			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
+////			System.out.println(s);
+////			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);	// not an error, we just want to show it in red
+////			simContext.appendToConsole(tcm);
+////			if(simContext.isInsufficientIterations()) {
+////				s = SimulationConsolePanel.getInsufficientIterationsMessage();
+////				System.out.println(s);
+////				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
+////				simContext.appendToConsole(tcm);
+////			}
+////			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
+////			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+////		}
+//		
+//		BNGInput bngInput = new BNGInput(input);
+//		BNGOutput bngOutput = null;
+//		try {
+//			final BNGExecutorService bngService = new BNGExecutorService(bngInput,NetworkGenerationRequirements.StandardTimeoutMS);
+//			bngOutput = bngService.executeBNG();
+//		} catch (RuntimeException ex) {
+//			ex.printStackTrace(System.out);
+//			throw ex; //rethrow without losing context
+//		} catch (Exception ex) {
+//			ex.printStackTrace(System.out);
+//			throw new RuntimeException(ex.getMessage());
 //		}
-		
-		BNGInput bngInput = new BNGInput(input);
-		BNGOutput bngOutput = null;
-		try {
-			final BNGExecutorService bngService = new BNGExecutorService(bngInput,NetworkGenerationRequirements.StandardTimeoutMS);
-			bngOutput = bngService.executeBNG();
-		} catch (RuntimeException ex) {
-			ex.printStackTrace(System.out);
-			throw ex; //rethrow without losing context
-		} catch (Exception ex) {
-			ex.printStackTrace(System.out);
-			throw new RuntimeException(ex.getMessage());
-		}
-		
-		String bngConsoleString = bngOutput.getConsoleOutput();
-System.out.println(bngConsoleString);
-
-		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
-		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
-		Element modelElement = sbmlElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-		Element reactionRuleElement = listOfReactionRulesElement.getChild("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
-		String symmetry_factor_str = reactionRuleElement.getAttributeValue("symmetry_factor");
-		
-		return Double.parseDouble(symmetry_factor_str);
-	}
+//		
+//		String bngConsoleString = bngOutput.getConsoleOutput();
+//System.out.println(bngConsoleString);
+//
+//		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
+//		Element sbmlElement = bngNFSimXMLDocument.getRootElement();
+//		Element modelElement = sbmlElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+//		Element listOfReactionRulesElement = modelElement.getChild("ListOfReactionRules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+//		Element reactionRuleElement = listOfReactionRulesElement.getChild("ReactionRule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+//		String symmetry_factor_str = reactionRuleElement.getAttributeValue("symmetry_factor");
+//		
+//		return Double.parseDouble(symmetry_factor_str);
+//	}
 	
 	public static RuleAnalysisReport analyze(RuleEntry rule) {
 		
 		RuleAnalysisReport report = new RuleAnalysisReport();
 
-		double symmetryFactor = 1.0;
-//computeSymmetryFactor=true;
-//		if (computeSymmetryFactor){
-//			double mySymmetryFactor = analyzeSymmetry(rule);
-			
-			//
-			// try to run BNG to find the Symmetry Factor.
-			//
-			try {
-				double bngSymmetryFactor = analyzeSymmetryBNG(rule);
-				if (bngSymmetryFactor != 1){
-					System.err.println("bng computed symmetry factor which was not 1, bngSymmetryFactor is "+bngSymmetryFactor+" reaction is "+rule.getReactionBNGLShort());
-				}
-//				if (bngSymmetryFactor != mySymmetryFactor){
-//					System.err.println("mySymmetryFactor was "+mySymmetryFactor+", bngSymmetryFactor is "+bngSymmetryFactor);
-//				}
-				symmetryFactor = bngSymmetryFactor;
-			}catch (Exception e){
-				e.printStackTrace(System.out);
-			}
-//		}
+		Double symmetryFactor = rule.getSymmetryFactor();
+		if (symmetryFactor == null){
+			throw new RuntimeException("expecting non-null symmetry factor");
+		}
 		
-		report.setSymmetryFactor(symmetryFactor);		
+		report.setSymmetryFactor(symmetryFactor);
 		
 		ArrayList<MolecularTypeEntry> unmatchedReactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getReactantMolecularTypeEntries());
 		ArrayList<MolecularTypeEntry> unmatchedProductMolecularTypeEntries = new ArrayList<MolecularTypeEntry>(rule.getProductMolecularTypeEntries());
@@ -372,13 +348,13 @@ System.out.println(bngConsoleString);
 				MolecularComponentEntry reactantComponentEntry = reactantMolecularComponents.get(componentIndex);
 				MolecularComponentEntry productComponentEntry = productMolecularComponents.get(componentIndex);
 				boolean trivial = true;		// the pairs of trivial components (no bond, any state) must not be added to the map
-				if(!reactantComponentEntry.isBondAny()) {
+				if(!reactantComponentEntry.isBondPossible()) {
 					trivial = false;
 				}
 				if(reactantComponentEntry.getExplicitState() != null) {
 					trivial = false;
 				}
-				if(!productComponentEntry.isBondAny()) {
+				if(!productComponentEntry.isBondPossible()) {
 					trivial = false;
 				}
 				if(productComponentEntry.getExplicitState() != null) {
@@ -398,7 +374,7 @@ System.out.println(bngConsoleString);
 			report.addMapping(mte,null);
 			for (MolecularComponentEntry mce : mceList){
 				boolean trivial = true;		// the pairs of trivial components (no bond, any state) must not be added to the map
-				if(!mce.isBondAny()) {
+				if(!mce.isBondPossible()) {
 					trivial = false;
 				}
 				if(mce.getExplicitState() != null) {
@@ -683,7 +659,15 @@ System.out.println(bngConsoleString);
 				if (state != null){
 					componentElement.setAttribute("state",state);
 				}
-				componentElement.setAttribute("numberOfBonds",component.hasBond()?"1":"0");
+				if(component.isBondExists()) {
+					componentElement.setAttribute("numberOfBonds","+");
+				} else if (component.isBondPossible()){
+					// don't set attribute
+				} else if (component.hasBond()){
+					componentElement.setAttribute("numberOfBonds","1");
+				} else {
+					componentElement.setAttribute("numberOfBonds","0");
+				}
 			}
 		}
 		Element listOfBonds = new Element("ListOfBonds");

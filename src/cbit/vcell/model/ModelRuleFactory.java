@@ -17,10 +17,6 @@ import org.vcell.model.rbm.RuleAnalysis.ReactantBondEntry;
 import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
-import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
-import cbit.vcell.model.RbmKineticLaw.RateLawType;
-import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-
 public class ModelRuleFactory {
 	
 	public class ModelRuleEntry implements RuleEntry {
@@ -85,6 +81,11 @@ public class ModelRuleFactory {
 		@Override
 		public String getReactionBNGLShort() {
 			return RbmUtils.toBnglStringShort(reactionRule);
+		}
+
+		@Override
+		public Double getSymmetryFactor() {
+			return null; // go ask BNG?
 		}
 
 	}
@@ -273,8 +274,17 @@ public class ModelRuleFactory {
 		}
 
 		@Override
-		public boolean isBondAny() {
+		public boolean isBondPossible() {
 			if(molecularComponentPattern.getBondType() == BondType.Possible) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		@Override
+		public boolean isBondExists() {
+			if(molecularComponentPattern.getBondType() == BondType.Exists) {
 				return true;
 			} else {
 				return false;
