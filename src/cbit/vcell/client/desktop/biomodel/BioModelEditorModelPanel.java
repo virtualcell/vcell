@@ -53,6 +53,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -61,6 +62,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
@@ -360,7 +362,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newMemButton.setVisible(false);
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal() 
 //			|| selectedIndex == ModelPanelTabID.structure_diagram.ordinal()
-			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() > 1)) {
+			|| selectedIndex == ModelPanelTabID.species_table.ordinal() && (bioModel == null || bioModel.getModel().getNumStructures() < 1)) {
 			newButton.setVisible(false);
 		} else {
 			newButton.setVisible(true);
@@ -369,6 +371,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
 				newButton.setText("Add New Compartment");
 				newMemButton.setVisible(true);
+			} else if(selectedIndex == ModelPanelTabID.species_table.ordinal()) {
+				if(bioModel.getModel().getNumStructures() <= 1) {
+					newButton.setIcon(null);
+					newButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+				} else {
+					newButton.setIcon(new DownArrowIcon());
+					newButton.setHorizontalTextPosition(SwingConstants.LEFT);
+				}
 			}
 		}
 		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
@@ -1131,11 +1141,28 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 	}
 	
+	Object newObject;
 	private void newButtonPressed() throws ModelException, PropertyVetoException {
+		newObject = null;
 		computeCurrentSelectedTable();
-		Object newObject = null;
 		if (currentSelectedTable == speciesTable) {
-			newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+			if( bioModel.getModel().getNumStructures() == 1) {
+				newObject = bioModel.getModel().createSpeciesContext(bioModel.getModel().getStructures()[0]);
+			} else if( bioModel.getModel().getNumStructures() > 1) {
+				final JPopupMenu menu = new JPopupMenu("Choose compartment");
+				for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+					Structure s = bioModel.getModel().getStructure(i);
+					String sName = s.getName();
+					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menu.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							newObject = bioModel.getModel().createSpeciesContext(s);
+						}
+					});
+				}
+				menu.show(newButton, 0, newButton.getHeight());
+			}
 		} else if (currentSelectedTable == molecularTypeTable) {
 			if(bioModel.getModel().getRbmModelContainer() != null) {
 				MolecularType mt = bioModel.getModel().getRbmModelContainer().createMolecularType();
