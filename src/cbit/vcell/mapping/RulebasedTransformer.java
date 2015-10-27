@@ -226,13 +226,26 @@ public class RulebasedTransformer implements SimContextTransformer {
 			String sOurs = outp.outputString(rreOurs);
 			sOurs = sOurs.replace(".0", "");
 			sOurs = sOurs.replaceAll("\\s+","");
-			sOurs+= "1";
 				
 			if(!sTheirs.equals(sOurs)) {
 				System.out.println(sTheirs);
 				System.out.println(sOurs);
+				char[] sTheirsChars = sTheirs.toCharArray();
+				char[] sOursChars = sOurs.toCharArray();
+				int firstMismatchIndex = -1;
+				int minLength = Math.min(sOurs.length(),sTheirs.length());
+				for (int i=0;i<minLength;i++){
+					if (sTheirsChars[i] != sOursChars[i]){
+						firstMismatchIndex = i;
+						break;
+					}
+				}
+				
+				int startingIndex = Math.max(0, firstMismatchIndex-500);
+				int endingIndexOurs = Math.min(sOurs.length(), firstMismatchIndex+500);
+				int endingIndexTheirs = Math.min(sTheirs.length(), firstMismatchIndex+500);
 //				System.out.println("not matching!!!");
-				throw new RuntimeException("Rule not matching\n" + sTheirs + "\n" + sOurs);
+				throw new RuntimeException("Rule not matching\n" + sTheirs.substring(startingIndex, endingIndexTheirs) + "\n" + sOurs.substring(startingIndex, endingIndexOurs));
 //				BeanUtils.sendRemoteLogMessage(null, sTheirs + "\n" + sOurs);
 			} else {
 				System.out.println("good match ");
