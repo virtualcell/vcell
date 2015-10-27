@@ -648,25 +648,35 @@ public class RuleAnalysis {
 			if (molecule.getMatchLabel()!=null){
 				moleculeElement.setAttribute("label",molecule.getMatchLabel());
 			}
-			Element listOfComponents = new Element("ListOfComponents");
-			moleculeElement.addContent(listOfComponents);
-			for (MolecularComponentEntry component : molecule.getMolecularComponentEntries()){
-				Element componentElement = new Element("Component");
-				listOfComponents.addContent(componentElement);
-				componentElement.setAttribute("id",getID(component));
-				componentElement.setAttribute("name",component.getMolecularComponentName());
-				String state = component.getExplicitState();
-				if (state != null){
-					componentElement.setAttribute("state",state);
-				}
-				if(component.isBondExists()) {
-					componentElement.setAttribute("numberOfBonds","+");
-				} else if (component.isBondPossible()){
-					// don't set attribute
-				} else if (component.hasBond()){
-					componentElement.setAttribute("numberOfBonds","1");
-				} else {
-					componentElement.setAttribute("numberOfBonds","0");
+			if (molecule.getMolecularComponentEntries().size()>0){
+				Element listOfComponents = new Element("ListOfComponents");
+				moleculeElement.addContent(listOfComponents);
+				for (MolecularComponentEntry component : molecule.getMolecularComponentEntries()){
+					boolean bStateSpecified = false;
+					boolean bBondSpecified = false;
+					Element componentElement = new Element("Component");
+					componentElement.setAttribute("id",getID(component));
+					componentElement.setAttribute("name",component.getMolecularComponentName());
+					String state = component.getExplicitState();
+					if (state != null){
+						bStateSpecified = true;
+						componentElement.setAttribute("state",state);
+					}
+					if(component.isBondExists()) {
+						componentElement.setAttribute("numberOfBonds","+");
+						bBondSpecified = true;
+					} else if (component.isBondPossible()){
+						componentElement.setAttribute("numberOfBonds","?");
+					} else if (component.hasBond()){
+						componentElement.setAttribute("numberOfBonds","1");
+						bBondSpecified = true;
+					} else {
+						componentElement.setAttribute("numberOfBonds","0");
+						bBondSpecified = true;
+					}
+					if (bStateSpecified || bBondSpecified){
+						listOfComponents.addContent(componentElement);
+					}
 				}
 			}
 		}
