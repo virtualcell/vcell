@@ -4,9 +4,12 @@ import java.awt.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
@@ -155,9 +158,23 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	
 	public SpeciesPattern() {
 	}
-	public SpeciesPattern(SpeciesPattern sp) {		// copy constructor
-		for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-			molecularTypePatterns.add(new MolecularTypePattern(mtp));
+	public SpeciesPattern(SpeciesPattern thatSp) {		// copy constructor
+		Map<RbmElementAbstract, RbmElementAbstract> thatThisMap = new LinkedHashMap<RbmElementAbstract, RbmElementAbstract>();
+		for(MolecularTypePattern thatMtp : thatSp.getMolecularTypePatterns()) {
+			MolecularTypePattern thisMtp = new MolecularTypePattern(thatMtp, thatThisMap);
+			molecularTypePatterns.add(thisMtp);
+			thatThisMap.put(thatMtp, thisMtp);
+		}
+		// now all thisMtp and thisMcp are constructed we can go through all the bonds in thatSp and reconstruct them in thisSp
+		for(MolecularTypePattern thatMtp : thatSp.getMolecularTypePatterns()) {
+			for(MolecularComponentPattern thatMcp : thatMtp.getComponentPatternList()) {
+				MolecularComponentPattern thisMcp = (MolecularComponentPattern)thatThisMap.get(thatMcp);
+				Bond thatBond = thatMcp.getBond();
+				if(thatBond != null) {
+					Bond thisBond = new Bond((MolecularTypePattern)thatThisMap.get(thatBond.molecularTypePattern), (MolecularComponentPattern)thatThisMap.get(thatBond.molecularComponentPattern));
+					thisMcp.setBond(thisBond);
+				}
+			}
 		}
 	}
 	
