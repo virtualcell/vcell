@@ -870,11 +870,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel, false);
+				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel, false, bReactantsZone);
 				
 			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
 				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-				manageComponentPatternFromShape(mcp, locationContext, reactantTreeModel, true);			
+				manageComponentPatternFromShape(mcp, locationContext, reactantTreeModel, true, bReactantsZone);			
 			}
 		// ---------------------------------------- product zone ---------------------------------------------
 		} else if(!bReactantsZone) {
@@ -1027,16 +1027,80 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel, false);
+				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel, false, bReactantsZone);
 				
 			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
 				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-				manageComponentPatternFromShape(mcp, locationContext, productTreeModel, true);			
+				manageComponentPatternFromShape(mcp, locationContext, productTreeModel, true, bReactantsZone);			
 			}
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
-	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, final ReactionRulePropertiesTreeModel treeModel, boolean showStateOnly) {
+	
+	private MolecularTypePattern getReactantMoleculeOfComponent(MolecularComponentPattern mcpReactant) {
+		if(mcpReactant == null) {
+			throw new RuntimeException("Null ComponentPattern in Reaction Rule " + reactionRule);
+		}
+		for(ReactantPattern rp : reactionRule.getReactantPatterns()) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					if(mcp == mcpReactant) {
+						return mtp;
+					}
+				}
+			}
+		}
+		throw new RuntimeException("Missing MolecularType Pattern for ComponentPattern " + mcpReactant.getDisplayName() + " in Reaction Rule " + reactionRule);
+	}
+	private MolecularTypePattern getMatchingProductMolecule(MolecularTypePattern mtpReactant) {
+		if(mtpReactant.hasExplicitParticipantMatch()) {
+			// easy if our mtp is matched
+			for(ProductPattern pp : reactionRule.getProductPatterns()) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(mtpReactant.getParticipantMatchLabel())) {
+						return mtp;
+					}
+				}
+			}
+		} else {
+			for(ProductPattern pp : reactionRule.getProductPatterns()) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.getMolecularType().getName().equals(mtpReactant.getMolecularType().getName())) {
+						if(mtp.hasExplicitParticipantMatch()) {
+							continue;
+						}
+						// the first one with same name and without match is our product mtp
+						return mtp;
+					}
+				}
+			}
+		}
+		return null;	// couldn't find a corresponding product mtp for the reactant mtp
+	}
+	
+	private void reflectStateToProduct(MolecularComponentPattern mcpReactant, ComponentStatePattern cspReactant) {
+		MolecularTypePattern mtpReactant = getReactantMoleculeOfComponent(mcpReactant);
+		MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
+		if(mtpProduct == null) {
+			return;
+		}
+		for(MolecularComponentPattern mcp : mtpProduct.getComponentPatternList()) {
+			if(mcp.getMolecularComponent() != mcpReactant.getMolecularComponent()) {
+				continue;
+			}
+			ComponentStatePattern csp = new ComponentStatePattern();	// use this if isAny
+			if(!cspReactant.isAny()) {
+				ComponentStateDefinition csd = cspReactant.getComponentStateDefinition();
+				csp = new ComponentStatePattern(csd);
+			}
+			mcp.setComponentStatePattern(csp);
+		}
+	}
+	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, 
+			final ReactionRulePropertiesTreeModel treeModel, boolean showStateOnly, boolean bIsReactant) {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
@@ -1058,17 +1122,19 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						String name = e.getActionCommand();
-						if(name.equals(ComponentStatePattern.strAny)) {
-							ComponentStatePattern csp = new ComponentStatePattern();
-							mcp.setComponentStatePattern(csp);
-						} else {
+						ComponentStatePattern csp = new ComponentStatePattern();
+						if(!name.equals(ComponentStatePattern.strAny)) {
 							String csdName = e.getActionCommand();
 							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
 							if(csd == null) {
 								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
 							}
-							ComponentStatePattern csp = new ComponentStatePattern(csd);
-							mcp.setComponentStatePattern(csp);
+							csp = new ComponentStatePattern(csd);
+						}
+						mcp.setComponentStatePattern(csp);
+						if(bIsReactant) {
+							reflectStateToProduct(mcp, csp);
+							productTreeModel.populateTree();
 						}
 						treeModel.populateTree();
 //						shapePanel.repaint();
