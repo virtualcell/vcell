@@ -47,10 +47,12 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 			}
 		}
 	}
-	public MolecularTypePattern(MolecularTypePattern mtp) {
-		this.molecularType = mtp.getMolecularType();
-		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-			componentPatternList.add(new MolecularComponentPattern(mcp));
+	public MolecularTypePattern(MolecularTypePattern thatMtp, Map<RbmElementAbstract, RbmElementAbstract> thatThisMap) {
+		this.molecularType = thatMtp.getMolecularType();
+		for(MolecularComponentPattern thatMcp : thatMtp.getComponentPatternList()) {
+			MolecularComponentPattern thisMcp = new MolecularComponentPattern(thatMcp);
+			componentPatternList.add(thisMcp);
+			thatThisMap.put(thatMcp, thisMcp);
 		}
 	}
 	
