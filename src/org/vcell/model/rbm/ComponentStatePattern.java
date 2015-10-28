@@ -32,6 +32,17 @@ public class ComponentStatePattern extends RbmElementAbstract implements Matchab
 		this.componentStateDefinition = componentStateDefinition;
 	}
 	
+	public ComponentStatePattern(ComponentStatePattern that) {
+		// copy constructor
+		if(that == null) {
+			this.bAny = true;
+			this.componentStateDefinition = null;
+		} else {
+			this.bAny = that.isAny();
+			this.componentStateDefinition = that.getComponentStateDefinition();
+		}
+	}
+
 	public boolean isAny(){
 		return bAny;
 	}

@@ -63,11 +63,21 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 			componentStatePattern = new ComponentStatePattern();
 		}
 	}
-	
-	public MolecularComponentPattern(MolecularComponentPattern mcp) {
+	// !!! copy constructor - do never call this standalone because the bonds will be probably pointing wrong
+	// normally this should only be called from within the copy constructor of a species pattern
+	public MolecularComponentPattern(MolecularComponentPattern that) {
 		super();
-		this.molecularComponent = mcp.getMolecularComponent();
-		this.componentStatePattern = mcp.getComponentStatePattern();	// TODO: here we get lazy and don't create new state
+		this.molecularComponent = that.getMolecularComponent();
+		if(that.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
+			this.componentStatePattern = null;		// if the component has no states then the component pattern must be null
+		} else {
+			this.componentStatePattern = new ComponentStatePattern(that.getComponentStatePattern());	// we clone the component state pattern
+		}
+		// we can't initialize the bond here properly, we are in the middle of cloning and the 
+		// corresponding mtp and mcp may not be created yet
+		this.bondId = that.getBondId();
+		this.bondType = that.getBondType();
+		this.bond = null;
 	}
 
 	public  boolean isFullyDefined(){
