@@ -1,7 +1,11 @@
 package org.vcell.model.rbm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.jdom.Element;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
@@ -451,6 +455,10 @@ public class RuleAnalysis {
 			//
 			MolecularComponentEntry reactantComponent1 = report.getReactantComponentEntry(addedProductBond.productComponent1);
 			MolecularComponentEntry reactantComponent2 = report.getReactantComponentEntry(addedProductBond.productComponent2);
+			if(reactantComponent1 == null || reactantComponent2 == null) {
+				// TODO: need to find out what's causing this, for now we just catch it
+				throw new RuntimeException("Null reactant component(s) for bond entry while generationg an addBond operation");
+			}
 			ReactantBondEntry addedReactantBond = new ReactantBondEntry(reactantComponent1, reactantComponent2);
 			report.addOperation(new RuleAnalysisReport.AddBondOperation(addedReactantBond));
 		}
@@ -684,30 +692,70 @@ public class RuleAnalysis {
 		boolean bAnyBonds = false;
 		if (participant.getParticipantType() == ParticipantType.Reactant){
 			int count = 0;
+			Map<String,String> bondSiteMap = new HashMap<String, String>();
 			for (ReactantBondEntry bond : rule.getReactantBondEntries()){
 				if (bond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
-					Element bondElement = new Element("Bond");
-					listOfBonds.addContent(bondElement);
-					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-					bondElement.setAttribute("site1",getID(bond.reactantComponent1));
-					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
-					bAnyBonds = true;
-					count++;
+					if(bond.reactantComponent1 == null || bond.reactantComponent2 == null) {
+						throw new RuntimeException("Bond site(s) are null when trying to build the bond map.");
+					}
+					bondSiteMap.put(getID(bond.reactantComponent1), getID(bond.reactantComponent2));
 				}
 			}
+			SortedSet<String> keys = new TreeSet<String>(bondSiteMap.keySet());
+			for (String key : keys) { 
+				String value = bondSiteMap.get(key);
+				Element bondElement = new Element("Bond");
+				listOfBonds.addContent(bondElement);
+				bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+				bondElement.setAttribute("site1", key);
+				bondElement.setAttribute("site2", value);
+				bAnyBonds = true;
+				count++;
+			}
+//			for (ReactantBondEntry bond : rule.getReactantBondEntries()){
+//				if (bond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+//					Element bondElement = new Element("Bond");
+//					listOfBonds.addContent(bondElement);
+//					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+//					bondElement.setAttribute("site1",getID(bond.reactantComponent1));
+//					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
+//					bAnyBonds = true;
+//					count++;
+//				}
+//			}
 		}else{
 			int count = 0;
+			Map<String,String> bondSiteMap = new HashMap<String, String>();
 			for (ProductBondEntry bond : rule.getProductBondEntries()){
 				if (bond.productComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
-					Element bondElement = new Element("Bond");
-					listOfBonds.addContent(bondElement);
-					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-					bondElement.setAttribute("site1",getID(bond.productComponent1));
-					bondElement.setAttribute("site2",getID(bond.productComponent2));
-					bAnyBonds = true;
-					count++;
+					if(bond.productComponent1 == null || bond.productComponent2 == null) {
+						throw new RuntimeException("Bond site(s) are null when trying to build the bond map.");
+					}
+					bondSiteMap.put(getID(bond.productComponent1), getID(bond.productComponent2));
 				}
 			}
+			SortedSet<String> keys = new TreeSet<String>(bondSiteMap.keySet());
+			for (String key : keys) { 
+				String value = bondSiteMap.get(key);
+				Element bondElement = new Element("Bond");
+				listOfBonds.addContent(bondElement);
+				bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+				bondElement.setAttribute("site1", key);
+				bondElement.setAttribute("site2", value);
+				bAnyBonds = true;
+				count++;
+			}
+//			for (ProductBondEntry bond : rule.getProductBondEntries()){
+//				if (bond.productComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
+//					Element bondElement = new Element("Bond");
+//					listOfBonds.addContent(bondElement);
+//					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
+//					bondElement.setAttribute("site1",getID(bond.productComponent1));
+//					bondElement.setAttribute("site2",getID(bond.productComponent2));
+//					bAnyBonds = true;
+//					count++;
+//				}
+//			}
 		}
 		if (bAnyBonds){
 			root.addContent(listOfBonds);
