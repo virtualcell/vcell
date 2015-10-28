@@ -104,6 +104,12 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 	}
 
 	public final List<MolecularComponentPattern> getComponentPatternList() {
+		List<MolecularComponentPattern> cpl = new ArrayList<MolecularComponentPattern>();
+		for(MolecularComponent mc : molecularType.getComponentList()) {
+			MolecularComponentPattern mcp = getMolecularComponentPattern(mc);
+			cpl.add(mcp);
+		}
+		componentPatternList = cpl;
 		return componentPatternList;
 	}
 
