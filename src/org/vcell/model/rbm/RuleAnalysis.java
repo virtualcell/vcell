@@ -600,6 +600,8 @@ public class RuleAnalysis {
 				deleteBond.setAttribute("site1",getID(deleteBondOp.removedBondEntry.reactantComponent1));
 				deleteBond.setAttribute("site2",getID(deleteBondOp.removedBondEntry.reactantComponent2));
 			}
+		}
+		for (Operation op : report.getOperations()){
 			if (op instanceof AddBondOperation){
 				AddBondOperation addBondOp = (AddBondOperation)op;
 				Element addBond = new Element("AddBond");
@@ -607,12 +609,16 @@ public class RuleAnalysis {
 				addBond.setAttribute("site1",getID(addBondOp.addedProductBondEntry.reactantComponent1));
 				addBond.setAttribute("site2",getID(addBondOp.addedProductBondEntry.reactantComponent2));
 			}
+		}
+		for (Operation op : report.getOperations()){
 			if (op instanceof AddMolecularTypeOperation){
 				AddMolecularTypeOperation addMoleculeOp = (AddMolecularTypeOperation)op;
 				Element addMolecule = new Element("Add");
 				listOfOperations.addContent(addMolecule);
 				addMolecule.setAttribute("id",getID(addMoleculeOp.unmatchedProductMoleculeEntry));
 			}
+		}
+		for (Operation op : report.getOperations()){
 			if (op instanceof DeleteMolecularTypeOperation){
 				DeleteMolecularTypeOperation deleteMolecule = (DeleteMolecularTypeOperation)op;
 				Element delete = new Element("Delete");
@@ -620,6 +626,8 @@ public class RuleAnalysis {
 				delete.setAttribute("id",getID(deleteMolecule.removedReactantMolecularEntry));
 				delete.setAttribute("DeleteMolecules","0");
 			}
+		}
+		for (Operation op : report.getOperations()){
 			if (op instanceof DeleteParticipantOperation){
 				DeleteParticipantOperation deleteParticipant = (DeleteParticipantOperation)op;
 				Element delete = new Element("Delete");
@@ -627,6 +635,8 @@ public class RuleAnalysis {
 				delete.setAttribute("id",getID(deleteParticipant.removedParticipantEntry));
 				delete.setAttribute("DeleteMolecules","0");
 			}
+		}
+		for (Operation op : report.getOperations()){
 			if (op instanceof ChangeStateOperation){
 				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
 				Element changeState = new Element("StateChange");
@@ -712,17 +722,6 @@ public class RuleAnalysis {
 				bAnyBonds = true;
 				count++;
 			}
-//			for (ReactantBondEntry bond : rule.getReactantBondEntries()){
-//				if (bond.reactantComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
-//					Element bondElement = new Element("Bond");
-//					listOfBonds.addContent(bondElement);
-//					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-//					bondElement.setAttribute("site1",getID(bond.reactantComponent1));
-//					bondElement.setAttribute("site2",getID(bond.reactantComponent2));
-//					bAnyBonds = true;
-//					count++;
-//				}
-//			}
 		}else{
 			int count = 0;
 			Map<String,String> bondSiteMap = new HashMap<String, String>();
@@ -745,17 +744,6 @@ public class RuleAnalysis {
 				bAnyBonds = true;
 				count++;
 			}
-//			for (ProductBondEntry bond : rule.getProductBondEntries()){
-//				if (bond.productComponent1.getMolecularTypeEntry().getParticipantEntry() == participant){
-//					Element bondElement = new Element("Bond");
-//					listOfBonds.addContent(bondElement);
-//					bondElement.setAttribute("id",getID(participant)+"_B"+(count+INDEX_OFFSET));
-//					bondElement.setAttribute("site1",getID(bond.productComponent1));
-//					bondElement.setAttribute("site2",getID(bond.productComponent2));
-//					bAnyBonds = true;
-//					count++;
-//				}
-//			}
 		}
 		if (bAnyBonds){
 			root.addContent(listOfBonds);
