@@ -1087,8 +1087,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		if(mtpProduct == null) {
 			return;
 		}
-		for(MolecularComponentPattern mcp : mtpProduct.getComponentPatternList()) {
-			if(mcp.getMolecularComponent() != mcpReactant.getMolecularComponent()) {
+		for(MolecularComponentPattern mcpProduct : mtpProduct.getComponentPatternList()) {
+			if(mcpProduct.getMolecularComponent() != mcpReactant.getMolecularComponent()) {
 				continue;
 			}
 			ComponentStatePattern csp = new ComponentStatePattern();	// use this if isAny
@@ -1096,9 +1096,32 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				ComponentStateDefinition csd = cspReactant.getComponentStateDefinition();
 				csp = new ComponentStatePattern(csd);
 			}
-			mcp.setComponentStatePattern(csp);
+			mcpProduct.setComponentStatePattern(csp);
 		}
 	}
+	private void reflectBondToProduct(MolecularComponentPattern mcpReactant) {
+		if(mcpReactant.getBondType() == BondType.Specified) {
+			return;		// we don't transfer to product explicit bonds
+		}
+		MolecularTypePattern mtpReactant = getReactantMoleculeOfComponent(mcpReactant);
+		MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
+		if(mtpProduct == null) {
+			return;
+		}
+		for(MolecularComponentPattern mcpProduct : mtpProduct.getComponentPatternList()) {
+			if(mcpProduct.getMolecularComponent() != mcpReactant.getMolecularComponent()) {
+				continue;
+			}
+			// finally we have the mcpProduct we need to modify
+			if(mcpProduct.getBondType() == BondType.Specified) {
+				// we reset the partner to none first
+				mcpProduct.getBond().molecularComponentPattern.setBondType(BondType.None);
+				mcpProduct.getBond().molecularComponentPattern.setBond(null);
+			}
+			mcpProduct.setBondType(mcpReactant.getBondType());
+			mcpProduct.setBond(null);		}
+	}
+
 	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, 
 			final ReactionRulePropertiesTreeModel treeModel, boolean showStateOnly, boolean bIsReactant) {
 		popupFromShapeMenu.removeAll();
@@ -1230,6 +1253,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 					// TODO: replace the populate tree with reactantPatternShapeList.update() and productPatternShapeList.update()
 					// when the tree will be gone
+					if(bIsReactant) {
+						reflectBondToProduct(mcp);
+						productTreeModel.populateTree();
+					}
+
 					treeModel.populateTree();
 //					shapePanel.repaint();				
 				}
