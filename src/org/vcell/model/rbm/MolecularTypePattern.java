@@ -129,6 +129,7 @@ public class MolecularTypePattern extends RbmElementAbstract implements Matchabl
 		firePropertyChange(PROPERTY_NAME_COMPONENT_PATTERN_LIST, oldValue, newValue);
 	}
 	
+	@Deprecated
 	public void swapComponentPatterns(MolecularComponent one, MolecularComponent two) {
 		// Collections.swap(List<?> list, int i, int j);
 		MolecularComponentPattern a = getMolecularComponentPattern(one);

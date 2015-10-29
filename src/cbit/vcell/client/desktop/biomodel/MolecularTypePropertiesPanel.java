@@ -807,7 +807,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					mcList.add(fromIndex, to);
 					molecularTypeTreeModel.populateTree();
 					molecularType.firePropertyChange("name", "aaa", "bbb");
-					swapComponentPatterns(molecularType, from, to);
+//					swapComponentPatterns(molecularType, from, to);
 				}
 			});
 			popupFromShapeMenu.add(moveRightMenuItem);
@@ -830,7 +830,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					mcList.add(fromIndex, to);
 					molecularTypeTreeModel.populateTree();
 					molecularType.firePropertyChange("name", "aaa", "bbb");
-					swapComponentPatterns(molecularType, from, to);
+//					swapComponentPatterns(molecularType, from, to);
 				}
 			});
 			popupFromShapeMenu.add(moveLeftMenuItem);
@@ -937,6 +937,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
 	
+	@Deprecated
 	private void swapComponentPatterns(MolecularType mt, MolecularComponent a, MolecularComponent b) {
 		Model model = bioModel.getModel();
 		if(model == null) {
