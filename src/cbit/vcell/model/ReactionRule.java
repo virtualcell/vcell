@@ -642,6 +642,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	public BondType getReactantComponentBondType(MolecularComponentPattern mcpProduct) {
 		MolecularTypePattern mtpProduct = getProductMoleculeOfComponent(mcpProduct);
 		MolecularTypePattern mtpReactant = getMatchingReactantMolecule(mtpProduct);
+		if(mtpReactant == null) {
+			return null;	// possible if this product has no matching explicit or implicit reactant
+		}
 		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 			if(mcpReactant.getMolecularComponent() != mcpProduct.getMolecularComponent()) {
 				continue;
@@ -656,6 +659,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		MolecularTypePattern mtpProduct = getProductMoleculeOfComponent(mcpProduct);
 		MolecularTypePattern mtpReactant = getMatchingReactantMolecule(mtpProduct);
+		if(mtpReactant == null) {
+			return null;	// // possible if this product has no matching explicit or implicit reactant
+		}
 		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 			if(mcpReactant.getMolecularComponent() != mcpProduct.getMolecularComponent()) {
 				continue;
@@ -664,28 +670,18 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		return null;
 	}
-	// -----------------------------------------------------------------------------------------------------------------------------------
 	
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() instanceof SpeciesPattern && evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
-			for (ReactantPattern rp : reactantPatterns) {
-				if (rp == evt.getSource()) {
-					resolveBonds(ReactionRuleParticipantType.Reactant);
-//					checkReactantPatterns(null);
-//					checkProductPatterns(null);
-					return;
-				}
+	public static MolecularComponentPattern getMatchingComponent(MolecularTypePattern whereMolecularPattern, MolecularComponentPattern whichComponentPattern) {
+		// we match the molecular component pattern by molecular component
+		MolecularComponent whichComponent = whichComponentPattern.getMolecularComponent();
+		for(MolecularComponentPattern mcpCandidate : whereMolecularPattern.getComponentPatternList()) {
+			if(mcpCandidate.getMolecularComponent() == whichComponent) {
+				return mcpCandidate;
 			}
-			for (ProductPattern pp : productPatterns) {
-				if (pp == evt.getSource()) {
-					resolveBonds(ReactionRuleParticipantType.Product);
-//					checkProductPatterns(null);
-					return;
-				}
-			}
-			resolveMatches();
-		}		
+		}
+		return null;	// if looking in the wrong molecule, which may not have a matching component
 	}
+	// -----------------------------------------------------------------------------------------------------------------------------------
 	
 //	private void setReactantWarning(String newValue) {
 //		if (reactantWarning == newValue) {
@@ -764,31 +760,49 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		return true;
 	}
-
+	// --------------------------------------------------------------------------------------------------
+	//
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getSource() instanceof SpeciesPattern && evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
+			for (ReactantPattern rp : reactantPatterns) {
+				if (rp == evt.getSource()) {
+					resolveBonds(ReactionRuleParticipantType.Reactant);
+//					checkReactantPatterns(null);
+//					checkProductPatterns(null);
+					return;
+				}
+			}
+			for (ProductPattern pp : productPatterns) {
+				if (pp == evt.getSource()) {
+					resolveBonds(ReactionRuleParticipantType.Product);
+//					checkProductPatterns(null);
+					return;
+				}
+			}
+			resolveMatches();
+		}		
+	}
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		eventHandler.addPropertyChangeListener(listener);
 	}
-
 	public void addVetoableChangeListener(VetoableChangeListener listener) {
 		eventHandler.addVetoableChangeListener(listener);
 	}
-
 	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 		eventHandler.firePropertyChange(propertyName, oldValue, newValue);
 	}
-
 	public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws PropertyVetoException {
 		eventHandler.fireVetoableChange(propertyName, oldValue, newValue);
 	}
-
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		eventHandler.removePropertyChangeListener(listener);
 	}
-
 	public void removeVetoableChangeListener(VetoableChangeListener listener) {
 		eventHandler.removeVetoableChangeListener(listener);
 	}
 	
+	// -----------------------------------------------------------------------------------------------------
+	//
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.ReactionRule, this);
 		if(name == null || name.isEmpty()) {
@@ -934,8 +948,112 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 //			String message = "No reactant shares the match id " + key + " with the product molecule " + pMatches.get(key).getDisplayName();
 //			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 //		}
+		
+		// invalid combinations of bonds / states for corresponding reactant/product component pairs
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtpReactant : sp.getMolecularTypePatterns()) {
+				MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
+				// mtpProduct may be null (perhaps we don't have yet any explicit or implicit match for this reactant)
+				if(mtpProduct == null) {
+					break;
+				}
+				for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+					MolecularComponentPattern mcpProduct = ReactionRule.getMatchingComponent(mtpProduct, mcpReactant);	// search for a match of the component in this product molecule
+					if(mcpProduct == null) {
+						throw new RuntimeException("Reactant Site " + mcpReactant.getDisplayName() + " is missing its matching Product Site.");
+					}
+					boolean incompatibleBonds = false;
+					switch(mcpReactant.getBondType()) {
+					case Exists:
+						switch(mcpProduct.getBondType()) {
+						case Exists:
+							break;
+						case None:
+							incompatibleBonds = true;
+							break;
+						case Possible:
+							incompatibleBonds = true;
+							break;
+						case Specified:
+							incompatibleBonds = true;
+							break;
+						}
+						break;
+					case None:
+						switch(mcpProduct.getBondType()) {
+						case Exists:
+							incompatibleBonds = true;
+							break;
+						case None:
+							break;
+						case Possible:
+							incompatibleBonds = true;
+							break;
+						case Specified:
+							break;
+						}
+						break;
+					case Possible:
+						switch(mcpProduct.getBondType()) {
+						case Exists:
+							incompatibleBonds = true;
+							break;
+						case None:
+							incompatibleBonds = true;
+							break;
+						case Possible:
+							break;
+						case Specified:
+							incompatibleBonds = true;
+							break;
+						}
+						break;
+					case Specified:
+						switch(mcpProduct.getBondType()) {
+						case Exists:
+							incompatibleBonds = true;
+							break;
+						case None:
+							break;
+						case Possible:
+							incompatibleBonds = true;
+							break;
+						case Specified:
+							break;
+						}
+						break;
+					}	// ----- end of bonds switch
+					if(incompatibleBonds) {
+						String message = "Reactant " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
+						message += " and its matching Product " + MolecularComponentPattern.typeName + " " + mcpProduct.getDisplayName() + " have incompatible Bond Types.";
+						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+					}
+					boolean incompatibleStates = true;
+					if(mcpReactant.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
+						// nothing to do if there are no States defined
+					} else {
+						ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
+						ComponentStatePattern cspProduct = mcpProduct.getComponentStatePattern();
+						if(cspReactant == null || cspProduct == null) {
+							String message = "Required " + ComponentStatePattern.typeName + " missing for " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
+							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+						}
+						if(cspReactant.isAny() && cspProduct.isAny()) {
+							incompatibleStates = false;
+						} else if(!cspReactant.isAny() && !cspProduct.isAny()) {
+							incompatibleStates = false;
+						}
+						if(incompatibleStates) {
+							String message = "Reactant " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
+							message += " and its matching Product " + MolecularComponentPattern.typeName + " " + mcpProduct.getDisplayName() + " have incompatible States";
+							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));						}
+					}
+				}
+			}
+		}
 	}
-
+	
 	public RbmKineticLaw getKineticLaw() {
 		return this.kineticLaw;
 	}

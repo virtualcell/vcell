@@ -371,7 +371,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 							}
 							if(isInvalid) {
 								msg += ".";
-								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 							}
 						}
 					}
@@ -418,7 +418,7 @@ public void checkComponentStateConsistency(IssueContext issueContext, List<Issue
 			} else {						// we check if mcpThis has any of these states... it should!
 				if((cspThis == null) || cspThis.isAny() || (cspThis.getComponentStateDefinition() == null)) {
 					String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " must be in an explicit State.";
-					issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.Severity.ERROR));
 				} else {
 					String csdNameThis = cspThis.getComponentStateDefinition().getName();
 					if(csdNameThis.isEmpty() || (mcThat.getComponentStateDefinition(csdNameThis) == null) ) {
@@ -431,6 +431,7 @@ public void checkComponentStateConsistency(IssueContext issueContext, List<Issue
 	}
 }
 // I think this should never fire issues, that's why I keep issue severity to error to force further investigation
+// TODO: oct 30, 2015: hasn't fired in 9 months, we replace the issues with exception just to protect ourselves against regressions
 private void checkMolecularTypeConsistency(IssueContext issueContext, List<Issue> issueList, MolecularType mtThat, MolecularTypePattern mtpThis) {
 	issueContext = issueContext.newChildContext(ContextType.SpeciesContext, this);
 	Map<String, MolecularComponent> hashThat = new HashMap<String, MolecularComponent>();
@@ -453,11 +454,13 @@ private void checkMolecularTypeConsistency(IssueContext issueContext, List<Issue
 	// any component still present in hashThis it means that it has been deleted in the molecular types definition and is now invalid
 	for (String key : hashThat.keySet()) {
 		String msg = "All components in the " + mtThat.getDisplayType() + " definition must be present. Missing: " + key + ".";
-		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+		throw new RuntimeException(msg);
+//		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 	}
 	for (String key : hashThis.keySet()) {
 		String msg = "Component " + key + " is no longer defined for the " + mtThat.getDisplayType() + " and must be removed.";
-		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+		throw new RuntimeException(msg);
+//		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 	}
 }
 
@@ -495,7 +498,7 @@ private void checkBondsSufficiency(IssueContext issueContext, List<Issue> issueL
 	if(atLeastOneBad) {
 		String msg = "Each Molecular Pattern of the Species Pattern " + sp.toString() + " needs at least one explicit Bond.\n";
 		IssueSource parent = issueContext.getContextObject();
-		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(parent, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 	}
 }
 public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
