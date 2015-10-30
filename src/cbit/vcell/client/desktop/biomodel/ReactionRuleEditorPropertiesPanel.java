@@ -1037,53 +1037,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
 	
-	private MolecularTypePattern getReactantMoleculeOfComponent(MolecularComponentPattern mcpReactant) {
-		if(mcpReactant == null) {
-			throw new RuntimeException("Null ComponentPattern in Reaction Rule " + reactionRule);
-		}
-		for(ReactantPattern rp : reactionRule.getReactantPatterns()) {
-			SpeciesPattern sp = rp.getSpeciesPattern();
-			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-					if(mcp == mcpReactant) {
-						return mtp;
-					}
-				}
-			}
-		}
-		throw new RuntimeException("Missing MolecularType Pattern for ComponentPattern " + mcpReactant.getDisplayName() + " in Reaction Rule " + reactionRule);
-	}
-	private MolecularTypePattern getMatchingProductMolecule(MolecularTypePattern mtpReactant) {
-		if(mtpReactant.hasExplicitParticipantMatch()) {
-			// easy if our mtp is matched
-			for(ProductPattern pp : reactionRule.getProductPatterns()) {
-				SpeciesPattern sp = pp.getSpeciesPattern();
-				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-					if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(mtpReactant.getParticipantMatchLabel())) {
-						return mtp;
-					}
-				}
-			}
-		} else {
-			for(ProductPattern pp : reactionRule.getProductPatterns()) {
-				SpeciesPattern sp = pp.getSpeciesPattern();
-				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-					if(mtp != null && mtp.getMolecularType().getName().equals(mtpReactant.getMolecularType().getName())) {
-						if(mtp.hasExplicitParticipantMatch()) {
-							continue;
-						}
-						// the first one with same name and without match is our product mtp
-						return mtp;
-					}
-				}
-			}
-		}
-		return null;	// couldn't find a corresponding product mtp for the reactant mtp
-	}
-	
 	private void reflectStateToProduct(MolecularComponentPattern mcpReactant, ComponentStatePattern cspReactant) {
-		MolecularTypePattern mtpReactant = getReactantMoleculeOfComponent(mcpReactant);
-		MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
+		MolecularTypePattern mtpReactant = reactionRule.getReactantMoleculeOfComponent(mcpReactant);
+		MolecularTypePattern mtpProduct = reactionRule.getMatchingProductMolecule(mtpReactant);
 		if(mtpProduct == null) {
 			return;
 		}
@@ -1103,8 +1059,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		if(mcpReactant.getBondType() == BondType.Specified) {
 			return;		// we don't transfer to product explicit bonds
 		}
-		MolecularTypePattern mtpReactant = getReactantMoleculeOfComponent(mcpReactant);
-		MolecularTypePattern mtpProduct = getMatchingProductMolecule(mtpReactant);
+		MolecularTypePattern mtpReactant = reactionRule.getReactantMoleculeOfComponent(mcpReactant);
+		MolecularTypePattern mtpProduct = reactionRule.getMatchingProductMolecule(mtpReactant);
 		if(mtpProduct == null) {
 			return;
 		}
@@ -1114,12 +1070,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			// finally we have the mcpProduct we need to modify
 			if(mcpProduct.getBondType() == BondType.Specified) {
-				// we reset the partner to none first
-				mcpProduct.getBond().molecularComponentPattern.setBondType(BondType.None);
-				mcpProduct.getBond().molecularComponentPattern.setBond(null);
+				// we don't reset an explicit bond, we assume that the user knew what he was doing
+//				mcpProduct.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+//				mcpProduct.getBond().molecularComponentPattern.setBond(null);
+//				mcpProduct.setBondType(mcpReactant.getBondType());
+//				mcpProduct.setBond(null);
+			} else {
+				mcpProduct.setBondType(mcpReactant.getBondType());
+				mcpProduct.setBond(null);	// bond type can be none, exist or possible
 			}
-			mcpProduct.setBondType(mcpReactant.getBondType());
-			mcpProduct.setBond(null);		}
+		}
 	}
 
 	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, 
@@ -1127,7 +1087,44 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
+		boolean anyStateProhibited = false;
+		boolean explicitStateProhibited = false;
 		
+		boolean existBondProhibited = false;
+		boolean noneBondProhibited = false;
+		boolean possibleBondProhibited = false;
+		boolean specifiedBondProhibited = false;
+		
+		if(!bIsReactant) {		// product has restrictions for states and bonds, depending on reactant
+			BondType reactantComponentBondType = reactionRule.getReactantComponentBondType(mcp);
+			if(reactantComponentBondType != null && reactantComponentBondType == BondType.Exists) {
+//				existBondProhibited = true;
+				noneBondProhibited = true;
+				possibleBondProhibited = true;
+				specifiedBondProhibited = true;
+			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.None) {
+				existBondProhibited = true;
+//				noneBondProhibited = true;
+				possibleBondProhibited = true;
+//				specifiedBondProhibited = true;
+			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.Possible) {
+				existBondProhibited = true;
+				noneBondProhibited = true;
+//				possibleBondProhibited = true;
+				specifiedBondProhibited = true;
+			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.Specified) {
+				existBondProhibited = true;
+//				noneBondProhibited = true;
+				possibleBondProhibited = true;
+//				specifiedBondProhibited = true;
+			}
+			ComponentStatePattern reactantComponentStatePattern = reactionRule.getReactantComponentState(mcp);
+			if(reactantComponentStatePattern != null && reactantComponentStatePattern.isAny()) {
+				explicitStateProhibited = true;
+			} else if(reactantComponentStatePattern != null && !reactantComponentStatePattern.isAny()) {
+				anyStateProhibited = true;
+			}
+		}
 		// ------------------------------------------------------------------- State
 		if(mc.getComponentStateDefinitions().size() != 0) {
 			JMenu editStateMenu = new JMenu();
@@ -1141,6 +1138,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			for(String name : itemList) {
 				JMenuItem menuItem = new JMenuItem(name);
+				if(!bIsReactant) {
+					if(name.equals(ComponentStatePattern.strAny) && anyStateProhibited) {
+						menuItem.setEnabled(false);
+					} else if(!name.equals(ComponentStatePattern.strAny) && explicitStateProhibited) {
+						menuItem.setEnabled(false);
+					}
+				}
 				editStateMenu.add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
@@ -1203,6 +1207,18 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		for(String name : itemMap.keySet()) {
 			JMenuItem menuItem = new JMenuItem(name);
+			if(!bIsReactant) {
+				if(name.equals(noneString) && noneBondProhibited) {
+					menuItem.setEnabled(false);
+				} else if(name.equals(existsString) && existBondProhibited) {
+					menuItem.setEnabled(false);
+				} else if(name.equals(possibleString) && possibleBondProhibited) {
+					menuItem.setEnabled(false);
+				} else if(!name.equals(noneString) && !name.equals(existsString) && !name.equals(possibleString) && specifiedBondProhibited) {
+					menuItem.setEnabled(false);
+				}
+			}
+			
 			editBondMenu.add(menuItem);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
