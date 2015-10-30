@@ -16,6 +16,7 @@ import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypeMapping;
 import org.vcell.model.rbm.MolecularTypePattern;
@@ -549,6 +550,121 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			throw new RuntimeException("Found more than one MolecularTypePatterns to remove matching the key " + keyToRemove);
 		}
 	}
+	
+	// -----------------------------------------------------------------------------------------------------------------------------------
+	//
+	public MolecularTypePattern getReactantMoleculeOfComponent(MolecularComponentPattern mcpReactant) {
+		if(mcpReactant == null) {
+			throw new RuntimeException("Null ComponentPattern in Reaction Rule " + this);
+		}
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					if(mcp == mcpReactant) {
+						return mtp;
+					}
+				}
+			}
+		}
+		throw new RuntimeException("Missing MolecularType Pattern for ComponentPattern " + mcpReactant.getDisplayName() + " in Reaction Rule " + this);
+	}
+	public MolecularTypePattern getProductMoleculeOfComponent(MolecularComponentPattern mcpProduct) {
+		if(mcpProduct == null) {
+			throw new RuntimeException("Null ComponentPattern in Reaction Rule " + this);
+		}
+		for(ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+					if(mcp == mcpProduct) {
+						return mtp;
+					}
+				}
+			}
+		}
+		throw new RuntimeException("Missing MolecularType Pattern for ComponentPattern " + mcpProduct.getDisplayName() + " in Reaction Rule " + this);
+	}
+	public MolecularTypePattern getMatchingProductMolecule(MolecularTypePattern mtpReactant) {
+		if(mtpReactant.hasExplicitParticipantMatch()) {
+			// easy if our mtp is matched
+			for(ProductPattern pp : getProductPatterns()) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(mtpReactant.getParticipantMatchLabel())) {
+						return mtp;
+					}
+				}
+			}
+		} else {
+			for(ProductPattern pp : getProductPatterns()) {
+				SpeciesPattern sp = pp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.getMolecularType().getName().equals(mtpReactant.getMolecularType().getName())) {
+						if(mtp.hasExplicitParticipantMatch()) {
+							continue;
+						}
+						// the first one with same name and without match is our product mtp
+						return mtp;
+					}
+				}
+			}
+		}
+		return null;	// couldn't find a corresponding product mtp for the reactant mtp
+	}
+	public MolecularTypePattern getMatchingReactantMolecule(MolecularTypePattern mtpProduct) {
+		if(mtpProduct.hasExplicitParticipantMatch()) {
+			// easy if our mtp is matched
+			for(ReactantPattern rp : getReactantPatterns()) {
+				SpeciesPattern sp = rp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(mtpProduct.getParticipantMatchLabel())) {
+						return mtp;
+					}
+				}
+			}
+		} else {
+			for(ReactantPattern rp : getReactantPatterns()) {
+				SpeciesPattern sp = rp.getSpeciesPattern();
+				for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+					if(mtp != null && mtp.getMolecularType().getName().equals(mtpProduct.getMolecularType().getName())) {
+						if(mtp.hasExplicitParticipantMatch()) {
+							continue;
+						}
+						// the first one with same name and without match is our product mtp
+						return mtp;
+					}
+				}
+			}
+		}
+		return null;	// couldn't find a corresponding reactant mtp for the product mtp
+	}
+	public BondType getReactantComponentBondType(MolecularComponentPattern mcpProduct) {
+		MolecularTypePattern mtpProduct = getProductMoleculeOfComponent(mcpProduct);
+		MolecularTypePattern mtpReactant = getMatchingReactantMolecule(mtpProduct);
+		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+			if(mcpReactant.getMolecularComponent() != mcpProduct.getMolecularComponent()) {
+				continue;
+			}
+			return mcpReactant.getBondType();
+		}
+		return null;
+	}
+	public ComponentStatePattern getReactantComponentState(MolecularComponentPattern mcpProduct) {
+		if(mcpProduct.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
+			return null;
+		}
+		MolecularTypePattern mtpProduct = getProductMoleculeOfComponent(mcpProduct);
+		MolecularTypePattern mtpReactant = getMatchingReactantMolecule(mtpProduct);
+		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
+			if(mcpReactant.getMolecularComponent() != mcpProduct.getMolecularComponent()) {
+				continue;
+			}
+			return mcpReactant.getComponentStatePattern();
+		}
+		return null;
+	}
+	// -----------------------------------------------------------------------------------------------------------------------------------
 	
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() instanceof SpeciesPattern && evt.getPropertyName().equals(SpeciesPattern.PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS)) {
