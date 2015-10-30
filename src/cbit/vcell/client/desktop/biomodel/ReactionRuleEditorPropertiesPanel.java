@@ -1117,13 +1117,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 //				noneBondProhibited = true;
 				possibleBondProhibited = true;
 //				specifiedBondProhibited = true;
-			}
+			}	// if it's null nothing is prohibited
 			ComponentStatePattern reactantComponentStatePattern = reactionRule.getReactantComponentState(mcp);
 			if(reactantComponentStatePattern != null && reactantComponentStatePattern.isAny()) {
 				explicitStateProhibited = true;
 			} else if(reactantComponentStatePattern != null && !reactantComponentStatePattern.isAny()) {
 				anyStateProhibited = true;
-			}
+			}		// if reactantComponentStatePattern is null nothing is prohibited, we may not have a matching reactant for this product
 		}
 		// ------------------------------------------------------------------- State
 		if(mc.getComponentStateDefinitions().size() != 0) {
