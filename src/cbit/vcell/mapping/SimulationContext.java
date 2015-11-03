@@ -46,6 +46,7 @@ import org.vcell.util.document.Versionable;
 import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.client.task.DocumentValid;
 import cbit.vcell.data.DataContext;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -90,6 +91,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
@@ -2432,6 +2434,9 @@ public MathMapping createNewMathMapping() {
 }
 
 public MathMapping createNewMathMapping(MathMappingCallback callback, NetworkGenerationRequirements networkGenReq) {
+	
+	DocumentValid.checkIssuesForErrors(this);
+	
 	mostRecentlyCreatedMathMapping = null;
 	switch (applicationType) {
 	case NETWORK_STOCHASTIC:
