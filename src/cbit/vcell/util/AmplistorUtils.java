@@ -94,6 +94,18 @@ public class AmplistorUtils {
 		}
 	}
 	
+	public static int getObjectSize(String urlStr,AmplistorCredential amplistorCredential) throws Exception{
+		CheckOPHelper checkOPHelper = null;
+		try{
+			URL httpURL = new URL(urlStr);
+			checkOPHelper = ampliCheckOP(httpURL, amplistorCredential, AMPLI_OP_METHOD.GET, null, AMPLI_OP_KIND.FILE,null);
+			String size = checkOPHelper.httpURLConnection.getHeaderField("X-Ampli-Size");
+			return Integer.parseInt(size);
+		}finally{
+			if(checkOPHelper != null && checkOPHelper.httpURLConnection != null){checkOPHelper.httpURLConnection.disconnect();}
+		}
+	}
+
 	public static byte[] getObjectData(String urlStr,AmplistorCredential amplistorCredential) throws Exception{
 		CheckOPHelper checkOPHelper = null;
 		try{
