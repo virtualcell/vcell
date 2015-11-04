@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PysideVCell", "PysideVCell.pyproj", "{72EB346C-0861-4337-8CB3-92E9078EDF7B}"
 EndProject
 Global
