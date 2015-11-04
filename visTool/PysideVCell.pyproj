@@ -5,13 +5,13 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{72eb346c-0861-4337-8cb3-92e9078edf7b}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>visMainCLI.py</StartupFile>
-    <SearchPath>pyvcell;thrift;\Program Files\LLNL\VisIt 2.8.1;\Program Files\LLNL\VisIt 2.8.1\lib\site-packages</SearchPath>
+    <StartupFile>visMainStandalone_VTK.py</StartupFile>
+    <SearchPath>\Program Files\LLNL\VisIt 2.8.1;\Program Files\LLNL\VisIt 2.8.1\lib\site-packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <InterpreterId>{dffc46f7-75ac-4f26-9876-0ea437c6e148}</InterpreterId>
+    <InterpreterId>{7f12762b-bb71-4f66-9791-5c85d704fc2d}</InterpreterId>
     <InterpreterVersion>2.7</InterpreterVersion>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
@@ -21,9 +21,6 @@
     <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="asynchClientTask.py" />
-    <Compile Include="lineoutAsynchClientTask.py" />
-    <Compile Include="asynchClientTaskManager.py" />
     <Compile Include="numpy\add_newdocs.py" />
     <Compile Include="numpy\compat\py3k.py" />
     <Compile Include="numpy\compat\setup.py" />
@@ -372,22 +369,36 @@
     <Compile Include="thrift\TSerialization.py" />
     <Compile Include="thrift\TTornado.py" />
     <Compile Include="thrift\__init__.py" />
-    <Compile Include="visClipOperatorContext.py" />
-    <Compile Include="visContextVisit.py" />
-    <Compile Include="visDataContext.py" />
-    <Compile Include="visDataSetChooserDialog.py" />
-    <Compile Include="visGuiQueryControls.py" />
-    <Compile Include="timeSeriesAsynchClientTask.py" />
-    <Compile Include="visContextVTK.py" />
-    <Compile Include="visGui.py" />
-    <Compile Include="visContextVisitImpl.py" />
-    <Compile Include="visGuiSliceControls.py" />
+    <Compile Include="visContext\visContextVisit\asynchClientTask.py" />
+    <Compile Include="visContext\visContextVisit\asynchClientTaskManager.py" />
+    <Compile Include="visContext\visContextVisit\lineoutAsynchClientTask.py" />
+    <Compile Include="visContext\visContextVisit\timeSeriesAsynchClientTask.py" />
+    <Compile Include="visContext\visContextAbstract.py" />
+    <Compile Include="visContext\visContextFake\visContextFake.py" />
+    <Compile Include="visContext\visContextFake\__init__.py" />
+    <Compile Include="visContext\visContextVisit\visClipOperatorContext.py" />
+    <Compile Include="visContext\visContextVisit\visContextVisit.py" />
+    <Compile Include="visContext\visContextVisit\visContextVisitImpl.py" />
+    <Compile Include="visContext\visContextVisit\__init__.py" />
+    <Compile Include="visContext\visContextVTK\visContextVTK.py" />
+    <Compile Include="visContext\visContextVTK\__init__.py" />
+    <Compile Include="visContext\__init__.py" />
+    <Compile Include="visgui\dataSetChooserGroupBox.py" />
+    <Compile Include="visgui\visDataContext.py" />
+    <Compile Include="visgui\visDataSetChooserDialog.py" />
+    <Compile Include="visgui\visGui.py" />
+    <Compile Include="visgui\visGuiQueryControls.py" />
+    <Compile Include="visgui\visGuiSliceControls.py" />
+    <Compile Include="visgui\__init__.py" />
+    <Compile Include="visMainCLI_Debug.py" />
     <Compile Include="visMainCLI.py" />
+    <Compile Include="visMainStandalone_Fake.py" />
     <Compile Include="visMainStandalone_VTK.py" />
-    <Compile Include="visQt.py" />
-    <Compile Include="visContextAbstract.py" />
+    <Compile Include="visgui\visQt.py" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="{7f12762b-bb71-4f66-9791-5c85d704fc2d}\2.7" />
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\2.7" />
     <InterpreterReference Include="{9bcd6947-fb5e-4257-9ef6-8a639c630bbb}\2.7" />
   </ItemGroup>
   <ItemGroup>
@@ -463,6 +474,11 @@
     <Folder Include="thrift\protocol\" />
     <Folder Include="thrift\server\" />
     <Folder Include="thrift\transport\" />
+    <Folder Include="visContext\" />
+    <Folder Include="visContext\visContextFake\" />
+    <Folder Include="visContext\visContextVisit\" />
+    <Folder Include="visContext\visContextVTK\" />
+    <Folder Include="visgui\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="numpy\add_newdocs.pyc" />

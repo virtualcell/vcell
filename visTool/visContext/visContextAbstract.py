@@ -1,12 +1,22 @@
 import sys
 
-import visQt
+from visgui import visQt
 QtCore = visQt.QtCore
-QtGui = visQt.QtGui
+
+#
+# a decorator which provides @overrides(interface_name) for overridden methods
+# similar to #Overrides in java
+#
+def overrides(interface_class):
+    def overrider(method):
+        assert(method.__name__ in dir(interface_class))
+        return method
+    return overrider
 
 
-from visDataContext import VisDataContext
-
+#
+# abstract class for visContext
+#
 class visContextAbstract(object):
     """description of class"""
     def __init__(self):
@@ -17,20 +27,20 @@ class visContextAbstract(object):
     def getRenderWindow(self,windowID):
         raise NotImplementedError()
 
-    def getBareRenderWindow(self):
+    def installEventFilter(self, eventFilter):
        raise NotImplementedError()
 
     def openOne(self,filename,variableName,bSameDomain):
-       raise NotImplementedError()
+        assert(isinstance(filename,basestring))
+        assert(isinstance(variableName,basestring))
+        assert(isinstance(bSameDomain,bool))
+        raise NotImplementedError()
 
     def getMDVariableNames(self):
        raise NotImplementedError()
 
     def getVariableName(self):
        raise NotImplementedError()
-
-    #def setVariable(self,varName):
-    #   raise NotImplementedError()
 
     # abstract method
     def quit(self):
@@ -57,6 +67,12 @@ class visContextAbstract(object):
     def getOperatorPercent(self):
        raise NotImplementedError()
 
+    def getPick(self, screenX, screenY):
+        raise NotImplementedError()
+
+    def getPickMode(self):
+        raise NotImplementedError()
+
     def setOperatorProject2d(self, bProject2d):
        assert isinstance(bProject2d, bool)
        raise NotImplementedError()
@@ -65,10 +81,14 @@ class visContextAbstract(object):
        raise NotImplementedError()
         
     def setMinColormapValue(self,minValue):
-       raise NotImplementedError()
+        assert isinstance(minValue,int) or isinstance(minValue,float) or instance(minValue, double)
+        raise NotImplementedError()
         
     def setMaxColormapValue(self,maxValue):
-       raise NotImplementedError()
+        assert isinstance(maxValue,int) or isinstance(maxValue,float) or instance(maxValue, double)
+        raise NotImplementedError()
 
-    def lineout(self,start,end):
-       raise NotImplementedError()
+    def doLineout(self, startPoint, endPoint, dataReadyCallback = None, onErrorCallback = None): # points must be tuples
+        assert isinstance(startPoint, tuple)
+        assert isinstance(endPoint, tuple)
+        raise NotImplementedError()

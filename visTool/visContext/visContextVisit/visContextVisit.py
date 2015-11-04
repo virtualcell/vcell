@@ -1,44 +1,28 @@
-import visContextAbstract
+import visContext
+from visContext.visContextAbstract import visContextAbstract
+from visContext.visContextAbstract import overrides
 from visContextVisitImpl import VisContextVisitImpl
-import visClipOperatorContext
 from visClipOperatorContext import VisClipOperatorContext
 
-class visContextVisit(visContextAbstract.visContextAbstract):
-
-
+class visContextVisit(visContextAbstract):
 
     def __init__(self):
         self._visContextImpl = VisContextVisitImpl()
-        self._visClipOperatorContext = visClipOperatorContext.VisClipOperatorContext()
+        self._visClipOperatorContext = VisClipOperatorContext()
     
+    @overrides(visContextAbstract)
     def getRenderWindow(self, parent):
         return self._visContextImpl.getRenderWindow(parent)
 
-    def getBareRenderWindow(self):
-        return self._visContextImpl.getBareRenderWindow()
+    @overrides(visContextAbstract)
+    def installEventFilter(self, eventFilter):
+        return self._visContextImpl.getBareRenderWindow().centralWidget().installEventFilter(eventFilter)
 
-    def _openOne(self, filename, vtuVariableName, bSameDomain):
-        self._visContextImpl._openOne(filename, vtuVariableName, bSameDomain)
-
-
+    @overrides(visContextAbstract)
     def getMDVariableNames(self):
         return self._visContextImpl.getMDVariableNames()
 
-    def getVariable(self):
-        return self._visContextImpl.getVariable()
- 
-    def getPickMode(self):
-        return self._visContextImpl.getPickMode()
-
-    def setPickMode(self, newMode):
-        self._visContextImpl.setPickMode(newMode)
-
-    def resetPickLetter(self):
-        self._visContextImpl.resetPickLetter()
-
-    def _updateDisplay(self):
-        self._visContextImpl._updateDisplay()
-
+    @overrides(visContextAbstract)
     def setOperatorEnabled(self, bEnable):
         # self._visContextImpl.setOperatorEnabled(bEnable)
         self._visClipOperatorContext.setCurrentOperatorEnabled(bEnable)
@@ -46,9 +30,11 @@ class visContextVisit(visContextAbstract.visContextAbstract):
             self._visContextImpl.setOperatorEnabled(bEnable)
             self._visContextImpl.updatePlot()
 
+    @overrides(visContextAbstract)
     def getOperatorEnabled(self):
         return self._visContextImpl.getOperatorEnabled()
 
+    @overrides(visContextAbstract)
     def setOperatorAxis(self, axis):
         # self._visContextImpl.setOperatorAxis(axis)
         self._visClipOperatorContext.setCurrentOperatorAxis(axis)
@@ -56,9 +42,11 @@ class visContextVisit(visContextAbstract.visContextAbstract):
             self._visContextImpl.setOperatorAxis(axis)
             self._visContextImpl.updatePlot()
 
+    @overrides(visContextAbstract)
     def getOperatorAxis(self):
         return self._visContextImpl.getOperatorAxis()
 
+    @overrides(visContextAbstract)
     def setOperatorPercent(self, percent):
         # self._visContextImpl.setOperatorPercent(percent)
         self._visClipOperatorContext.setCurrentOperatorPercent(percent)
@@ -66,9 +54,11 @@ class visContextVisit(visContextAbstract.visContextAbstract):
             self._visContextImpl.setOperatorPercent(percent)
             self._visContextImpl.updatePlot()
 
+    @overrides(visContextAbstract)
     def getOperatorPercent(self):
         return self._visContextImpl.getOperatorPercent()
 
+    @overrides(visContextAbstract)
     def setOperatorProject2d(self, bProject2d):
         # self._visContextImpl.setOperatorProject2d(bProject2d)
         self._visClipOperatorContext.setCurrentProject2d(bProject2d)
@@ -76,59 +66,38 @@ class visContextVisit(visContextAbstract.visContextAbstract):
             self._visContextImpl.setOperatorProject2d(bProject2d)
             self._visContextImpl.updatePlot()
 
+    @overrides(visContextAbstract)
     def getOperatorProject2d(self):
         return self._visContextImpl.getOperatorProject2d()
 
+    @overrides(visContextAbstract)
     def quit(self):
         self._visContextImpl.quit()
             
-    def clearPicks(self):
-        self._visContextImpl.clearPicks()
-
-    def _getSliceAttributes(self):
-        return self._visContextImpl._getSliceAttributes()
-
-    def _getClipAttributes(self):
-        return self._visContextImpl._getClipAttributes()
-
+    @overrides(visContextAbstract)
     def setMaxColormapValue(self, max):
         self._visContextImpl.setMaxColormapValue(max)
 
+    @overrides(visContextAbstract)
     def setMinColormapValue(self, min):
         self._visContextImpl.setMinColormapValue(min)
 
+    @overrides(visContextAbstract)
     def doLineout(self, startPoint, endPoint, dataReadyCallback = None, onErrorCallback = None): # points must be tuples
         self._visContextImpl.doLineout(startPoint, endPoint, dataReadyCallback = None, onErrorCallback = None)
 
+    @overrides(visContextAbstract)
     def openOne(self, filename, vtuVariableName, bSameDomain):
         self._visContextImpl.openOne(filename, vtuVariableName, bSameDomain)
 
-    #def doTimeSeries(self, point, dataReadyCallback = None, onErrorCallback = None):
-        #self._visContextImpl.doTimeSeries(self, point, dataReadyCallback = None, onErrorCallback = None)
-
-    def setActiveWindow(self, windowIndex): 
-        self._visContextImpl.setActiveWindow(windowIndex)
-
-    def _getDefaultPseudoColorAttributes(self):
-        return self._visContextImpl._getDefaultPseudoColorAttributes()
-
-    def _getMetaData(self):
-        return self._visContextImpl._getMetaData()
-
-    def _getMinSpatialExtents(self):
-        return self._visContextImpl._getMinSpatialExtents()
-
-    def _getMaxSpatialExtents(self):
-        return self._visContextImpl._getMaxSpatialExtents()
-
-    def setPickAttributes(self):   
-        self._visContextImpl.setPickAttributes()
-
+    @overrides(visContextAbstract)
     def getPick(self, screenX, screenY):
         return self._visContextImpl.getPick(screenX, screenY)
 
-    def getOtherWindow(self, windowName):
-        return self._visContextImpl.getOtherWindow(windowName)
+    @overrides(visContextAbstract)
+    def getPickMode(self):
+        return self._visContextImpl.getPickMode()
 
-    def getOtherWindowNames(self):
-        self._visContextImpl.getOtherWindowNames()
+    @overrides(visContextAbstract)
+    def getVariableName(self):
+        return self._visContextImpl.getVariable();

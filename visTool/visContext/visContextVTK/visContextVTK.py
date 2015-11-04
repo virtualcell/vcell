@@ -7,14 +7,21 @@ import vtk.qt4
 import vtk.qt4.QVTKRenderWindowInteractor
 print("vtk imported without an exception")
 
-from visContextAbstract import *
+import visgui.visQt as visQt
+QtCore = visQt.QtCore
+QtGui = visQt.QtGui
+
+
+import visContext
+from visContext.visContextAbstract import visContextAbstract
+from visContext.visContextAbstract import overrides
 
 
 class visContextVTK(visContextAbstract):
 
     def __init__(self):
         visContextAbstract.__init__(self)
-        self._var = ""
+        #self._var = ""
         self._frame = None
         self._widget = None
         self._dataset = None
@@ -23,7 +30,7 @@ class visContextVTK(visContextAbstract):
         assert isinstance(self._dataset,Dataset) or self._dataset == None
         assert isinstance(self._plot,Plot) or self._dataset == None
  
-        self._variable = None
+        #self._variable = None
 
         self._currentOperator = None  # None, "Slice", "Clip"
         self._currentPlot = None      # None, ("Pseudocolor", varName)
@@ -32,6 +39,7 @@ class visContextVTK(visContextAbstract):
         self._operatorPercent = 50
         self._operatorProject2d = False
 
+    @overrides(visContextAbstract)
     def getRenderWindow(self,parent):
         if self._frame == None:
             self._parent = parent
@@ -53,16 +61,19 @@ class visContextVTK(visContextAbstract):
 
         return self._frame
 
-    def getDataset(self):
-        return self._dataset
+    @overrides(visContextAbstract)
+    def installEventFilter(self, eventFilter):
+        assert isinstance(self._frame, QtGui.QFrame)
+        self._frame.installEventFilter(eventFilter)
 
-    def open(self,filename):
+    @overrides(visContextAbstract)
+    def openOne(self,filename,variableName,bSameDomain):
         print("in visContextVTK.open(): begin")
-        self._var = None
+        #self._var = None
         filename = str(filename)
         print("filename is "+filename)
         self._dataset = Dataset(filename)
-        self._plot = PseudocolorPlot(self._dataset,None)
+        self._plot = PseudocolorPlot(self._dataset,variableName)
         actor = self._plot.getActor()
        # Add the actor to the scene
 
@@ -73,12 +84,18 @@ class visContextVTK(visContextAbstract):
         self.renWin=self._widget.GetRenderWindow()
         self.renWin.AddRenderer(renderer)
 
-    def getVariableNames(self):
-        if self._dataset != None:
-            return self._dataset.getVariableNames();
-        raise Exception("no variables ... no dataset")
+        self._setVariable(variableName)
 
-    def setVariable(self,var):
+    @overrides(visContextAbstract)
+    def getVariableName(self):
+        if (self._plot != None):
+            return self._plot.getVar()
+
+    @overrides(visContextAbstract)
+    def getPickMode(self):
+        return (self._plot != None)
+
+    def _setVariable(self,var):
         print("in visContextVTK.setVariable("+str(var)+"): begin")
         self._plot.setVariable(var)
         actor = self._plot.getActor()
@@ -92,56 +109,52 @@ class visContextVTK(visContextAbstract):
         self.renWin.AddRenderer(renderer)
         self._widget.repaint()
 
+    def _updateDisplay(self):
+        self._widget.repaint()
+
+    @overrides(visContextAbstract)
     def quit(self):
         pass # nothing special to close
 
+    @overrides(visContextAbstract)
     def setOperatorEnabled(self, bEnable):
         assert isinstance(bEnable,bool)
         self._operatorEnabled = bEnable
         self._updateDisplay()
 
+    @overrides(visContextAbstract)
     def getOperatorEnabled(self):
         return self._operatorEnabled
 
+    @overrides(visContextAbstract)
     def setOperatorAxis(self, axis):
         assert (axis in (0,1,2))
         self._operatorAxis = axis;
         self._updateDisplay()
        
+    @overrides(visContextAbstract)
     def getOperatorAxis(self):
         return self._operatorAxis
     
+    @overrides(visContextAbstract)
     def setOperatorPercent(self, percent):
         assert ((percent >=0) and (percent <=100))
         self._operatorPercent = percent
         self._updateDisplay()
 
+    @overrides(visContextAbstract)
     def getOperatorPercent(self):
         return self._operatorPercent
 
+    @overrides(visContextAbstract)
     def setOperatorProject2d(self, bProject2d):
         assert isinstance(bProject2d, bool)
         self._operatorProject2d = bProject2d
         self._updateDisplay()
 
+    @overrides(visContextAbstract)
     def getOperatorProject2d(self):
         return self._operatorProject2d
-
-    def setTimeIndex(self, index):
-        nStates = visit.TimeSliderGetNStates()      
-        print(index)
-        visit.SetTimeSliderState(index) 
-        visit.DrawPlots()
-
-    def getNumberOfTimePoints(self):
-        if (self._dataset == None):
-            return 0
-        return self._dataset.getNumberOfTimePoints()    
-    
-    def getTimes(self):
-        if (self._dataset == None):
-            return []
-        return self._dataset.getTimes()
 
 
 class Dataset(object):
