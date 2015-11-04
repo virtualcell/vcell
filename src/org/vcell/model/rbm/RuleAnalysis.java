@@ -592,6 +592,16 @@ public class RuleAnalysis {
 		
 		Element listOfOperations = new Element("ListOfOperations");
 		root.addContent(listOfOperations);
+		
+		for (Operation op : report.getOperations()){
+			if (op instanceof ChangeStateOperation){
+				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
+				Element changeState = new Element("StateChange");
+				listOfOperations.addContent(changeState);
+				changeState.setAttribute("site",getID(changeStateOp.reactantComponentEntry));
+				changeState.setAttribute("finalState",changeStateOp.newState);
+			}
+		}
 		for (Operation op : report.getOperations()){
 			if (op instanceof DeleteBondOperation){
 				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
@@ -634,15 +644,6 @@ public class RuleAnalysis {
 				listOfOperations.addContent(delete);
 				delete.setAttribute("id",getID(deleteParticipant.removedParticipantEntry));
 				delete.setAttribute("DeleteMolecules","0");
-			}
-		}
-		for (Operation op : report.getOperations()){
-			if (op instanceof ChangeStateOperation){
-				ChangeStateOperation changeStateOp = (ChangeStateOperation)op;
-				Element changeState = new Element("StateChange");
-				listOfOperations.addContent(changeState);
-				changeState.setAttribute("site",getID(changeStateOp.reactantComponentEntry));
-				changeState.setAttribute("finalState",changeStateOp.newState);
 			}
 		}
 		return root;
