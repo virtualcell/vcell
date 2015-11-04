@@ -271,6 +271,9 @@ public String getVCML()
 	for(Action action : actions){
 		buffer.append(action.getVCML());
 	}
+	if (processSymmetryFactor!=null){
+		buffer.append("\t\t"+VCML.ProcessSymmetryFactor+"\n"+this.processSymmetryFactor.getFactor()+"\n");
+	}
 	buffer.append("\t"+" "+VCML.EndBlock+"\n");
 //	if (this.processParticleMappings != null){
 //		buffer.append("\t"+" "+VCML.ProcessParticleMappings+"{\n");
@@ -279,9 +282,6 @@ public String getVCML()
 //		}
 //		buffer.append("\t"+" "+VCML.EndBlock+"\n");
 //	}
-	if (processSymmetryFactor!=null){
-		buffer.append("\t\t"+VCML.ProcessSymmetryFactor+"\n"+this.processSymmetryFactor+"\n");
-	}
 	return buffer.toString();	
 }
 
