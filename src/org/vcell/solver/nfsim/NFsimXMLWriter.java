@@ -11,9 +11,13 @@ import java.util.Map;
 
 import org.jdom.Comment;
 import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
+import org.vcell.util.PropertyLoader;
 
+import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -53,20 +57,20 @@ public class NFsimXMLWriter {
 	
 	public static class Bond {
 		public final String bondID;		// this is the ID we show in the xml file, format RR0_RP0_B0
-		public final int bondId;		// TODO: get rid of this
+//		public final int bondId;		// TODO: get rid of this
 		public final ParticleSpeciesPattern speciesPattern;
 		
-		Bond(ParticleSpeciesPattern speciesPattern, int bondId){
-			this("", speciesPattern, bondId);
-		}
-		Bond(String bondID, ParticleSpeciesPattern speciesPattern, int bondId){
+//		Bond(ParticleSpeciesPattern speciesPattern, int bondId){
+//			this("", speciesPattern, bondId);
+//		}
+		Bond(String bondID, ParticleSpeciesPattern speciesPattern){
 			this.bondID = bondID;
 			this.speciesPattern = speciesPattern;
-			this.bondId = bondId;
+//			this.bondId = bondId;
 		}
 		@Override
 		public int hashCode() {
-			return speciesPattern.hashCode() + bondId + bondID.hashCode();
+			return speciesPattern.hashCode() + bondID.hashCode();
 		}
 		@Override
 		public boolean equals(Object obj) {
@@ -76,9 +80,6 @@ public class NFsimXMLWriter {
 					return false;
 				}
 				if (speciesPattern != other.speciesPattern){
-					return false;
-				}
-				if (bondId != other.bondId){
 					return false;
 				}
 				return true;
@@ -717,7 +718,7 @@ public class NFsimXMLWriter {
 		for(int moleculeIndex = 0; moleculeIndex < reactantSpeciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++) {
 			ParticleMolecularTypePattern molecularTypePattern = reactantSpeciesPattern.getParticleMolecularTypePatterns().get(moleculeIndex);
 			Element moleculeElement = new Element("Molecule");
-			String moleculeID = patternID + "_M" + moleculeIndex;
+			String moleculeID = patternID + "_M" + (moleculeIndex+1);
 			moleculeElement.setAttribute("id", moleculeID);
 			moleculeElement.setAttribute("name", molecularTypePattern.getMolecularType().getName());
 
@@ -798,7 +799,7 @@ public class NFsimXMLWriter {
 			if (var instanceof ParticleObservable){
 				ParticleObservable particleObservable = (ParticleObservable)var;
 				Element observableElement = new Element("Observable");
-				String observableId = "O" + observableIndex;
+				String observableId = "O" + (observableIndex+1);
 				observableElement.setAttribute("id", observableId);
 				observableElement.setAttribute("name", particleObservable.getName());
 				observableElement.setAttribute("type", particleObservable.getType().getText());
@@ -809,6 +810,23 @@ public class NFsimXMLWriter {
 				observableIndex++;
 			}
 		}
+
+        Format format = Format.getPrettyFormat();
+		XMLOutputter outp = new XMLOutputter(format);
+		String sOurs = outp.outputString(listOfObservablesElement);
+//		System.out.println("==================== Our Observables ===================================================================");
+//		System.out.println(sOurs);
+//		System.out.println("========================================================================================================");
+		//
+		// Saving the observables, as produced by us
+		// in debug configurations add to command line   -Ddebug.user=danv
+		//
+		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
+			System.out.println("Saving our observables");
+			RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\ourObservables.txt", sOurs);
+		}
+
 		return listOfObservablesElement;
 	}
 	
@@ -821,7 +839,7 @@ public class NFsimXMLWriter {
 //			Element patternElement = new Element("Pattern");
 			Element patternElement;
 			try {
-				String molecularPatternID = "P" + molecularPatternIndex;
+				String molecularPatternID = "P" + (molecularPatternIndex+1);
 				patternElement = getReactionParticipantPattern(prefix0, molecularPatternID, (VolumeParticleSpeciesPattern)pattern, "Pattern");
 				listOfPatternsElement.addContent(patternElement);
 			} catch (SolverException e) {
@@ -957,7 +975,9 @@ public class NFsimXMLWriter {
 				case Specified:{
 					if (particleMolecularComponentPattern.getBondId()>=0){
 						componentElement.setAttribute("numberOfBonds", "1");
-						Bond bond = new Bond(speciesPattern, particleMolecularComponentPattern.getBondId());
+						String bondID = prefix1.substring(0, prefix1.lastIndexOf("_"));
+						bondID = bondID + "_B" + particleMolecularComponentPattern.getBondId();
+						Bond bond = new Bond(bondID, speciesPattern);
 						BondSites bondSites = bondSitesMap.get(bond);
 						if (bondSites == null){
 							BondSites newBondSite = new BondSites();
@@ -1044,7 +1064,7 @@ public class NFsimXMLWriter {
 					if (particleMolecularComponentPattern.getBondId()>=0){
 						componentElement.setAttribute("numberOfBonds","1");
 						String bondID = reactionRuleID + "_" + patternID + "_B" + particleMolecularComponentPattern.getBondId();
-						Bond bond = new Bond(bondID, speciesPattern, particleMolecularComponentPattern.getBondId());
+						Bond bond = new Bond(bondID, speciesPattern);
 						BondSites bondSites = bondSitesMap.get(bond);
 						if (bondSites == null){
 							BondSites newBondSite = new BondSites();
