@@ -891,7 +891,7 @@ private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> pr
 		}
 		else
 		{
-			printWriter.println();
+			printWriter.println(reacts.get(0).getName());
 		}
 	}
 }
