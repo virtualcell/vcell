@@ -369,7 +369,6 @@ class VCellPysideApp(QtGui.QMainWindow):
         dialog.show()
 
 
-    
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
 #        domain = dialog.getSelectedDomain()
@@ -394,8 +393,15 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._visDataContext.setCurrentDataSet(sim);
             self._visDataContext.setCurrentDataSetTimePoints(vcellProxy2.getClient().getTimePoints(sim))
             self._visDataContext.setCurrentTimeIndex(0)
+            
+            def successCallback(results):
+                print("_onSimulationSelected: openOne() success "+str(results));
 
-            self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,False)
+            def errorCallback(errorMessage):
+                print("_onSimulationSelected: openOne() error: "+str(errorMessage));
+    
+
+            self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,False,successCallback,errorCallback)
 
             #vcellProxy2.getClient().displayPostProcessingDataInVCell(sim)
  
@@ -456,7 +462,14 @@ class VCellPysideApp(QtGui.QMainWindow):
                 timeIndex = self._visDataContext.getCurrentTimeIndex()
                 bSameDomain = (oldVariable.domainName == newVariable.domainName)
                 newFilename = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,newVariable,timeIndex)
-                self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain)
+                
+                def successCallback(results):
+                    print("_onSelectedVariableChanged: openOne() success "+str(results));
+
+                def errorCallback(errorMessage):
+                    print("_onSelectedVariableChanged: openOne() error: "+str(errorMessage));
+    
+                self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain, successCallback, errorCallback)
             except Exception as exc:
                 print(exc.message)
                 msgBox = QtGui.QMessageBox()
@@ -505,7 +518,14 @@ class VCellPysideApp(QtGui.QMainWindow):
         finally:
             vcellProxy2.close()
             
-        self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True)
+                
+        def successCallback(results):
+            print("_onTimeSliderChanged: openOne() success "+str(results));
+
+        def errorCallback(errorMessage):
+            print("_onTimeSliderChanged: openOne() error: "+str(errorMessage));
+    
+        self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True,successCallback,errorCallback)
 
 
 

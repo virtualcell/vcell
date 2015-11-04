@@ -303,13 +303,13 @@ class VisContextVisitImpl(visContextAbstract):
         except:
             print("visContextVisitImpl: Problem creating lineoutAsynchTask or adding it to the asynchTaskManager")
 
-    def openOne(self, filename, vtuVariableName, bSameDomain):
+    def openOne(self, filename, vtuVariableName, bSameDomain, onSuccessCallback, onErrorCallback):
         assert(isinstance(filename,basestring))
         assert(isinstance(vtuVariableName,basestring))
         assert(isinstance(bSameDomain,bool))
         print "\n\nvisContextVisit: openOne("+filename+","+vtuVariableName+","+str(bSameDomain)+") ... PREPARING ASYNCH TASK"
         try:
-            _openOneAsynchTask = OpenOneAsynchTask(self,filename,vtuVariableName,bSameDomain, None, None)
+            _openOneAsynchTask = OpenOneAsynchTask(self,filename,vtuVariableName,bSameDomain, onSuccessCallback, onErrorCallback)
             self._asynchTaskManager.addTask(_openOneAsynchTask)
         except exceptions.BaseException as exc:
             print("\n\nvisContextVisit: openOne() failed to create or dispatch task")

@@ -87,8 +87,8 @@ class visContextVisit(visContextAbstract):
         self._visContextImpl.doLineout(startPoint, endPoint, dataReadyCallback = None, onErrorCallback = None)
 
     @overrides(visContextAbstract)
-    def openOne(self, filename, vtuVariableName, bSameDomain):
-        self._visContextImpl.openOne(filename, vtuVariableName, bSameDomain)
+    def openOne(self, filename, vtuVariableName, bSameDomain, onSuccessCallback, onErrorCallback):
+        self._visContextImpl.openOne(filename, vtuVariableName, bSameDomain, onSuccessCallback,onErrorCallback)
 
     @overrides(visContextAbstract)
     def getPick(self, screenX, screenY):
