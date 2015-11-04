@@ -1,6 +1,8 @@
 package cbit.vcell.mapping;
 
 import java.beans.PropertyVetoException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -22,11 +24,10 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
-import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
-import org.vcell.model.rbm.RuleAnalysis.RuleEntry;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
@@ -35,22 +36,18 @@ import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.math.MathRuleFactory;
 import cbit.vcell.math.MathRuleFactory.MathRuleEntry;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ModelRuleFactory.ModelMolecularComponentEntry;
 import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelRuleFactory.ReactionRuleDirection;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.ModelRuleFactory;
 import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
@@ -65,7 +62,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.xml.XMLTags;
 
 public class RulebasedTransformer implements SimContextTransformer {
 
@@ -562,6 +558,17 @@ public class RulebasedTransformer implements SimContextTransformer {
 		
 		// TODO: uncomment here to parse the xml file!!!
 		parseBngOutput(simContext, bngOutput);
+		
+		//
+		// Saving the observables, as produced by bionetgen
+		// in debug configurations add to command line   -Ddebug.user=danv
+		//
+		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
+			System.out.println("Saving their observables");
+			parseObservablesBngOutput(simContext, bngOutput);
+		}
+	
 //		compareOutputs(simContext);
 	}
 	
@@ -655,6 +662,39 @@ public class RulebasedTransformer implements SimContextTransformer {
 //		}
 //	}
 
+	public static void saveAsText(String filename, String text) {
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new FileWriter(filename));
+			writer.write( text);
+		} catch ( IOException e) {
+		} finally {
+			try {
+				if ( writer != null) {
+					writer.close( );
+				}
+			} catch ( IOException e) {
+			}
+		}
+	}
+	private void parseObservablesBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
+		Model model = simContext.getModel();
+		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
+		bngRootElement = bngNFSimXMLDocument.getRootElement();
+		Element modelElement = bngRootElement.getChild("model", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		Element listOfObservablesElement = modelElement.getChild("ListOfObservables", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+
+		XMLOutputter outp = new XMLOutputter();
+		String sTheirs = outp.outputString(listOfObservablesElement);
+		sTheirs = sTheirs.replace("xmlns=\"http://www.sbml.org/sbml/level3\"", "");
+//		System.out.println("==================== Their Observables ===================================================================");
+//		System.out.println(sTheirs);
+//		System.out.println("=======================================================================================");
+		saveAsText("c:\\TEMP\\ddd\\theirObservables.txt", sTheirs);
+		
+//		sTheirs = sTheirs.replaceAll("\\s+","");
+	}
+	
 	private void parseBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
 		Model model = simContext.getModel();
 		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
