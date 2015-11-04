@@ -3,12 +3,13 @@ import sys, os
 import visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
-import visContextAbstract
+import visContext
+from visContext.visContextAbstract import visContextAbstract;
 import vcellProxy
 import pyvcell
 
 class DataSetChooserDialog(QtGui.QDialog):
-    
+
     simulationSelected = QtCore.Signal(QtCore.QObject)
 
     def __init__(self, parent=None):
@@ -22,7 +23,7 @@ class DataSetChooserDialog(QtGui.QDialog):
     def initUI(self, vis):
         self._vis = vis
 
-        assert isinstance(self._vis,visContextAbstract.visContextAbstract)
+        assert isinstance(self._vis,visContextAbstract)
         self.setObjectName("queryControlWidget")
         selfSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         selfSizePolicy.setHorizontalStretch(0)
@@ -103,6 +104,8 @@ class DataSetChooserDialog(QtGui.QDialog):
         if (currentIndex == None):
             return(None)
         self._selectedSim = self._dataSetComboBox.itemData(currentIndex)
+        if (visQt.isPyQt4() and isinstance(self._selectedSim, QtCore.QVariant)):
+            self._selectedSim = self._selectedSim.toPyObject()
         #currentIndex = self._domainChoiceComboBox.currentIndex()
         #if (currentIndex == None):
         #    return(None)

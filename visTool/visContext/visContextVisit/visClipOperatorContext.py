@@ -1,4 +1,3 @@
-import pyvcell
 from numbers import Number
 
 class VisClipOperatorContext(object):

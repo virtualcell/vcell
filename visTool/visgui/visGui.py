@@ -7,14 +7,13 @@ Qt = visQt.QtCore.Qt
 
 import zipfile, StringIO, glob, urllib2
 
-import visContextAbstract
 import visGuiSliceControls
 import visGuiQueryControls
 import visDataSetChooserDialog
 import vcellProxy
 import pyvcell
+from visContext import visContextAbstract
 import visDataContext
-import visClipOperatorContext
 
 
 
@@ -35,7 +34,7 @@ class MouseEventFilter(QtCore.QObject):
     def eventFilter(self, obj, event):
 
         #print ("pickmode = "+str(self._vis.getPickMode()))
-        if (self._vis.getPickMode() == 1) and (self._vis.getVariable() is not None):
+        if (self._vis.getPickMode() == 1) and (self._vis.getVariableName() is not None):
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == Qt.LeftButton:
                     #print("emitting pressed.")
@@ -209,8 +208,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._statusBar.setObjectName("statusBar")
         self.setStatusBar(self._statusBar)
 
-        actionOpen = QtGui.QAction(self);
-        actionOpen.setObjectName("actionOpen")
+        #actionOpen = QtGui.QAction(self);
+        #actionOpen.setObjectName("actionOpen")
         actionOpenSimFromOpenVCellModels = QtGui.QAction(self)
         actionOpenSimFromOpenVCellModels.setObjectName("actionOpenSimFromOpenVCellModels")
         actionExit = QtGui.QAction(self);
@@ -240,8 +239,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         #
         # set up all connections
         #
-        actionOpen.setStatusTip("Open file")
-        actionOpen.triggered.connect(self._showLoadFile)
+        #actionOpen.setStatusTip("Open file")
+        #actionOpen.triggered.connect(self._showLoadFile)
         actionOpenSimFromOpenVCellModels.setStatusTip("Open Sim from VCell open models")
         actionOpenSimFromOpenVCellModels.triggered.connect(self._showOpenSimFromVCellOpenModels)
         actionExit.setStatusTip("Exit viewer")
@@ -276,7 +275,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._mouseEventFilter.pressed.connect(self._onMouseButtonPressedForPick)
         print("About to install mouse filter")
         
-        self._vis.getBareRenderWindow().centralWidget().installEventFilter(self._mouseEventFilter)
+        self._vis.installEventFilter(self._mouseEventFilter)
         ##renderWindow.installEventFilter(self._mouseEventFilter)
         #print(str(dir(self._mouseEventFilter)))
         #print("Other window names = ")
@@ -294,8 +293,9 @@ class VCellPysideApp(QtGui.QMainWindow):
  
     def _onMouseButtonPressedForPick(self,pos, size):
         #print("Mouse button pressed.  pos = "+str(pos)+"   size="+str(size))
-        self._vis.clearPicks()
-        self._showStatusMessage(self._vis.getPick(pos.x(),size.height()-pos.y()))   # note screen to window coordinate system translation in the Y (screen) axis
+#        self._vis.clearPicks()
+        pickText = self._vis.getPick(pos.x(),size.height()-pos.y())
+        self._showStatusMessage(pickText)   # note screen to window coordinate system translation in the Y (screen) axis
 
 
     def _onClearPicksButtonPressed(self):
@@ -325,37 +325,37 @@ class VCellPysideApp(QtGui.QMainWindow):
         finally:
             vcellProxy2.close()
 
-    def _showLoadFile(self):
-        print('showLoadFile()')
-        if visQt.isPyside():
-            fnames,pattern = QtGui.QFileDialog.getOpenFileNames(self, 'Open file', '/.', "VTK (*.vtu *.vtk);;all files (*.*)")
-        elif visQt.isPyQt4():
-            fnames = QtGui.QFileDialog.getOpenFileName(self, 'Open file', '/.', "VTK (*.vtu *.vtk);;all files (*.*)")
+ #   def _showLoadFile(self):
+ #       print('showLoadFile()')
+ #       if visQt.isPyside():
+ #           fnames,pattern = QtGui.QFileDialog.getOpenFileNames(self, 'Open file', '/.', "VTK (*.vtu *.vtk);;all files (*.*)")
+ #       elif visQt.isPyQt4():
+ #           fnames = QtGui.QFileDialog.getOpenFileName(self, 'Open file', '/.', "VTK (*.vtu *.vtk);;all files (*.*)")
 
- #       fname = "C:\Developer\eclipse\workspace\pyVCell\PysideVCell\data\5323530454\SimID_533617164_0__0_.feature_EC_*.vtk database"
-        if (fnames == None or len(fnames)==0):
-            return
+ ##       fname = "C:\Developer\eclipse\workspace\pyVCell\PysideVCell\data\5323530454\SimID_533617164_0__0_.feature_EC_*.vtk database"
+ #       if (fnames == None or len(fnames)==0):
+ #           return
 
-        self._vis.open(fnames)
+ #       self._vis.open(fnames)
+ #       print ("\n\n\n\n\ngetting var names .... self._vis.getVariableNames()\n\n\n\n\n");
+ #       varNames = self._vis.getVariableNames()
+ #       assert isinstance(self._variableListWidget,QtGui.QListWidget)
+ #       self._variableListWidget.clear()
+ #       self._variableListWidget.addItems(varNames)
+ #       if visQt.isPyside():
+ #           self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
+ #       elif visQt.isPyQt4:
+ #           self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
 
-        varNames = self._vis.getVariableNames()
-        assert isinstance(self._variableListWidget,QtGui.QListWidget)
-        self._variableListWidget.clear()
-        self._variableListWidget.addItems(varNames)
-        if visQt.isPyside():
-            self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
-        elif visQt.isPyQt4:
-            self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
-
-        times = self._vis.getTimes()
-        if times == None or len(times)==0:
-            self._timeSlider.setMinimum(0)
-            self._timeSlider.setMaximum(0)
-            self._timeLabel.setText("0.0")
-        else:
-            self._timeSlider.setMinimum(0)
-            self._timeSlider.setMaximum(len(times)-1)
-            self._timeLabel.setText("0.0")
+ #       times = self._vis.getTimes()
+ #       if times == None or len(times)==0:
+ #           self._timeSlider.setMinimum(0)
+ #           self._timeSlider.setMaximum(0)
+ #           self._timeLabel.setText("0.0")
+ #       else:
+ #           self._timeSlider.setMinimum(0)
+ #           self._timeSlider.setMaximum(len(times)-1)
+ #           self._timeLabel.setText("0.0")
 
     def _showOpenSimFromVCellOpenModels(self):
         try:

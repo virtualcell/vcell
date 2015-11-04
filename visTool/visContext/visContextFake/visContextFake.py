@@ -1,11 +1,13 @@
 import sys
 
-import visQt
+import visgui
+from visgui import visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 
-from visContextAbstract import visContextAbstract
-from visDataContext import VisDataContext
+import visContext
+from visContext.visContextAbstract import visContextAbstract
+from visContext.visContextAbstract import overrides
 
 class FakeRenderWindow(QtGui.QWidget):
 
@@ -54,64 +56,73 @@ class visContextFake(visContextAbstract):
         assert isinstance(self._varName,str) or (self._varName == None)
 
     # abstract method
+    @overrides(visContextAbstract)
     def getRenderWindow(self,windowID):
         return self._renderWindow
 
-    def getBareRenderWindow(self):
-        return self._renderWindow.getBareRenderWindow()
+    @overrides(visContextAbstract)
+    def installEventFilter(self, eventFilter):
+        self._renderWindow.getBareRenderWindow().centralWidget().installEventFilter(eventFilter)
 
+
+    @overrides(visContextAbstract)
     def openOne(self,filename,variableName,bSameDomain):
         assert(isinstance(filename,basestring))
         assert(isinstance(variableName,basestring))
         assert(isinstance(bSameDomain,bool))
         print "\n\nvisContextFake: openOne("+filename+","+variableName+","+str(bSameDomain)+")"
 
+    @overrides(visContextAbstract)
     def getMDVariableNames(self):
         return ["var1", "var2"]
 
-    def getVariable(self):
-        return self._varName
-
-    #def setVariable(self,varName):
-    #    self._varName = varName;
-    #    print "\n\nvisContextFake.setVariableName("+varName+")"
-
-    # abstract method
+    @overrides(visContextAbstract)
     def quit(self):
         pass
 
+    @overrides(visContextAbstract)
     def setOperatorEnabled(self, bEnable):
         assert isinstance(bEnable,bool)
         self._operatorEnabled = bEnable
 
+    @overrides(visContextAbstract)
     def getOperatorEnabled(self):
         return self._operatorEnabled
 
+    @overrides(visContextAbstract)
     def setOperatorAxis(self, axis):
         assert (axis in (0,1,2))
        
+    @overrides(visContextAbstract)
     def getOperatorAxis(self):
         pass
     
+    @overrides(visContextAbstract)
     def setOperatorPercent(self, percent):
         assert ((percent >=0) and (percent <=100))
         self._operatorPercent = percent;
 
+    @overrides(visContextAbstract)
     def getOperatorPercent(self):
         return self._operatorPercent
 
+    @overrides(visContextAbstract)
     def setOperatorProject2d(self, bProject2d):
         assert isinstance(bProject2d, bool)
         self._operatorProject2d = bProject2d
 
+    @overrides(visContextAbstract)
     def getOperatorProject2d(self):
         return self._operatorProject2d
         
+    @overrides(visContextAbstract)
     def setMinColormapValue(self,minValue):
         pass
         
+    @overrides(visContextAbstract)
     def setMaxColormapValue(self,maxValue):
         pass
 
-    def lineout(self,start,end):
-        pass
+    #@overrides(visContextAbstract)
+    #def lineout(self,start,end):
+    #    pass

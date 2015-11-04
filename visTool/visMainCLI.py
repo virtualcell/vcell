@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append(os.path.dirname(__file__))
 
-import visQt
+import visgui.visQt as visQt
 
 #import numpy
 
@@ -15,9 +15,10 @@ visQt.initPyside()
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 
-from visContextVisit import visContextVisit as visContext
-import visGui
+import visContext
+from visgui import visGui
 
-vis = visContext()
+visContext.init_with_Visit()
+vis = visContext.visContext()
 ex = visGui.VCellPysideApp(vis)
 ex.show()
