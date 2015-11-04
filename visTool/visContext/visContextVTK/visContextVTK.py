@@ -67,7 +67,7 @@ class visContextVTK(visContextAbstract):
         self._frame.installEventFilter(eventFilter)
 
     @overrides(visContextAbstract)
-    def openOne(self,filename,variableName,bSameDomain):
+    def openOne(self,filename,variableName,bSameDomain,onSuccessCallback,onErrorCallback):
         print("in visContextVTK.open(): begin")
         #self._var = None
         filename = str(filename)
@@ -85,6 +85,7 @@ class visContextVTK(visContextAbstract):
         self.renWin.AddRenderer(renderer)
 
         self._setVariable(variableName)
+        onSuccessCallback(None)
 
     @overrides(visContextAbstract)
     def getVariableName(self):

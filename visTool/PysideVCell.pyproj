@@ -369,10 +369,7 @@
     <Compile Include="thrift\TSerialization.py" />
     <Compile Include="thrift\TTornado.py" />
     <Compile Include="thrift\__init__.py" />
-    <Compile Include="visContext\visContextVisit\asynchClientTask.py" />
-    <Compile Include="visContext\visContextVisit\asynchClientTaskManager.py" />
-    <Compile Include="visContext\visContextVisit\lineoutAsynchClientTask.py" />
-    <Compile Include="visContext\visContextVisit\timeSeriesAsynchClientTask.py" />
+    <Compile Include="visContext\visContextVisit\asynchTaskManager.py" />
     <Compile Include="visContext\visContextAbstract.py" />
     <Compile Include="visContext\visContextFake\visContextFake.py" />
     <Compile Include="visContext\visContextFake\__init__.py" />

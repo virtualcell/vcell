@@ -30,7 +30,7 @@ class visContextAbstract(object):
     def installEventFilter(self, eventFilter):
        raise NotImplementedError()
 
-    def openOne(self,filename,variableName,bSameDomain):
+    def openOne(self,filename,variableName,bSameDomain,onSuccessCallback,onErrorCallback):
         assert(isinstance(filename,basestring))
         assert(isinstance(variableName,basestring))
         assert(isinstance(bSameDomain,bool))

@@ -66,11 +66,12 @@ class visContextFake(visContextAbstract):
 
 
     @overrides(visContextAbstract)
-    def openOne(self,filename,variableName,bSameDomain):
+    def openOne(self,filename,variableName,bSameDomain,onSuccessCallback,onErrorCallback):
         assert(isinstance(filename,basestring))
         assert(isinstance(variableName,basestring))
         assert(isinstance(bSameDomain,bool))
         print "\n\nvisContextFake: openOne("+filename+","+variableName+","+str(bSameDomain)+")"
+        onSuccessCallback(None)
 
     @overrides(visContextAbstract)
     def getMDVariableNames(self):
