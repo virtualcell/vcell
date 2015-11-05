@@ -14,6 +14,7 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
@@ -216,13 +217,32 @@ public class RulebasedTransformer implements SimContextTransformer {
 			String sTheirs = outp.outputString(rreTheirs);
 			sTheirs = sTheirs.replace("xmlns=\"http://www.sbml.org/sbml/level3\"", "");
 			sTheirs = sTheirs.replaceAll("\\s+","");
+			
+//			String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+//			if (debugUser.equals("danv") || debugUser.equals("mblinov"))
+//			{
+//				System.out.println("Saving their rules");
+//		        Format format = Format.getPrettyFormat();
+//				XMLOutputter outpEx = new XMLOutputter(format);
+//				String sTheirsEx = outpEx.outputString(rreTheirs);
+//				RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\theirRules.txt", sTheirsEx);
+//			}
 
 			RuleAnalysisReport report = RuleAnalysis.analyze(mathRuleEntry);
 			Element rreOurs = RuleAnalysis.getNFSimXML(mathRuleEntry, report);
 			String sOurs = outp.outputString(rreOurs);
 			sOurs = sOurs.replace(".0", "");
 			sOurs = sOurs.replaceAll("\\s+","");
-				
+
+//			if (debugUser.equals("danv") || debugUser.equals("mblinov"))
+//			{
+//				System.out.println("Saving our rules");
+//		        Format format = Format.getPrettyFormat();
+//				XMLOutputter outpEx = new XMLOutputter(format);
+//				String sOursEx = outpEx.outputString(rreOurs);
+//				RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\ourRules.txt", sOursEx);
+//			}
+			
 			if(!sTheirs.equals(sOurs)) {
 				System.out.println(sTheirs);
 				System.out.println(sOurs);
