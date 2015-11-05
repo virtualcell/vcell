@@ -60,7 +60,7 @@ class visContextAbstract(object):
     def getOperatorAxis(self):
        raise NotImplementedError()
     
-    def setOperatorPercent(self, percent):
+    def setOperatorPercent(self, percent, onSuccessCallback, onErrorCallback):
        assert ((percent >=0) and (percent <=100))
        raise NotImplementedError()
 
