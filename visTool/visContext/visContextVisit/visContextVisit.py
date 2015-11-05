@@ -47,12 +47,19 @@ class visContextVisit(visContextAbstract):
         return self._visContextImpl.getOperatorAxis()
 
     @overrides(visContextAbstract)
-    def setOperatorPercent(self, percent):
-        # self._visContextImpl.setOperatorPercent(percent)
+    def setOperatorPercent(self, percent, onSuccessCallback, onErrorCallback):
+        assert ((percent >=0) and (percent <=100))
         self._visClipOperatorContext.setCurrentOperatorPercent(percent)
         if (percent != self._visContextImpl.getOperatorPercent()):
-            self._visContextImpl.setOperatorPercent(percent)
-            self._visContextImpl.updatePlot()
+            self._visContextImpl.setOperatorPercent(self._visClipOperatorContext, onSuccessCallback, onErrorCallback)
+
+    #@overrides(visContextAbstract)
+    #def setOperatorPercent(self, percent):
+    #    # self._visContextImpl.setOperatorPercent(percent)
+    #    self._visClipOperatorContext.setCurrentOperatorPercent(percent)
+    #    if (percent != self._visContextImpl.getOperatorPercent()):
+    #        self._visContextImpl.setOperatorPercent(percent)
+    #        self._visContextImpl.updatePlot()
 
     @overrides(visContextAbstract)
     def getOperatorPercent(self):

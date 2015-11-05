@@ -20,6 +20,7 @@ from asynchTaskManager import AsynchTaskManager
 import vcellProxy
 from visContext.visContextAbstract import visContextAbstract
 from visContext.visContextAbstract import overrides
+from visClipOperatorContext import VisClipOperatorContext
 
 
 class PlotWindow(QtGui.QWidget):
@@ -168,9 +169,12 @@ class VisContextVisitImpl(visContextAbstract):
             self._currentPlot = ("Pseudocolor",str(self._variable))
 
         #
-        # add new operator if needed
+        # if operator needed, set operator attributes (add new operator if needed)
         #
         if (self._operatorEnabled == True and self._currentPlot != None):
+            #
+            # if no operator, then add one
+            #
             if (self._currentOperator == None):
                 if (self._operatorProject2d):
                     print("    _updateDisplay() - adding operator 'Slice'")
@@ -181,6 +185,9 @@ class VisContextVisitImpl(visContextAbstract):
                     visit.AddOperator("Clip")
                     self._currentOperator = "Clip"
             
+            #
+            # set operator attributes
+            #
             if (self._currentOperator == "Slice"):
                 print("    _updateDisplay() - setting operator options for 'Slice'")
                 visit.SetOperatorOptions(self._getSliceAttributes())
@@ -215,10 +222,15 @@ class VisContextVisitImpl(visContextAbstract):
     def getOperatorAxis(self):
         return self._operatorAxis
     
-    def setOperatorPercent(self, percent):
-        assert ((percent >=0) and (percent <=100))
-        self._operatorPercent = percent
-        # self._updatePlot()
+    def setOperatorPercent(self, visClipOperatorContext, onSuccessCallback, onErrorCallback):
+        assert (isinstance(visClipOperatorContext,VisClipOperatorContext))
+        print "\n\nvisContextVisitImpl: updateOperatorPercent("+str(visClipOperatorContext.getCurrentOperatorPercent())+") ... PREPARING ASYNCH TASK"
+        try:
+            _updateOperatorPercentAsynchTask = UpdateOperatorPercentAsynchTask(self, visClipOperatorContext, onSuccessCallback, onErrorCallback)
+            self._asynchTaskManager.addTask(_updateOperatorPercentAsynchTask)
+        except exceptions.BaseException as exc:
+            print("\n\nvisContextVisit: updateOperatorPercent() failed to create or dispatch task")
+            print(exc.message)
 
     def getOperatorPercent(self):
         return self._operatorPercent
@@ -579,6 +591,55 @@ class UpdatePlotAsynchTask(AsynchTask):
  
     def done(self):
         print("UpdatePlotAsynchTask.done()")
+        assert(self._state == self.STATE_DONE) # current state - end state
+
+################################################################
+# Asynch Task for updating plot after operator settings change
+################################################################
+
+class UpdateOperatorPercentAsynchTask(AsynchTask):
+
+
+    STATE_INITIAL = "initial"
+    STATE_PLOT_CONFIRM = "Plot Confirm"
+    STATE_DONE = "done"
+
+    def __init__(self, vis, visClipOperatorContext, dataReadyCallback = None,  onErrorCallback = None):
+        super(UpdateOperatorPercentAsynchTask, self).__init__("UpdateOperatorPercent", dataReadyCallback, onErrorCallback)
+        assert(isinstance(vis,VisContextVisitImpl))
+        assert(isinstance(visClipOperatorContext,VisClipOperatorContext))
+
+        print "\n\UpdateOperatorPercentAsynchTask.__init__()"
+        self._state = self.STATE_INITIAL
+        self._vis = vis
+        self._visClipOperatorContext = visClipOperatorContext
+        print("openOne initial state = "+str(self._state))
+
+        self._stateFunctions = {
+            self.STATE_INITIAL:                     self.requestPlot, 
+            self.STATE_PLOT_CONFIRM:                self.confirmPlot,
+            self.STATE_DONE:                        self.done}
+
+    @overrides(AsynchTask)
+    def doStep(self):
+        self._stateFunctions[self._state]()
+        return self._state == self.STATE_DONE
+
+    def requestPlot(self):
+        print("UpdateOperatorPercentAsynchTask.requestPlot()")
+        assert(self._state == self.STATE_INITIAL) # current state
+        self._vis._operatorPercent = self._visClipOperatorContext.getCurrentOperatorPercent()
+        self._vis._updateDisplay()
+        self._state = self.STATE_PLOT_CONFIRM  # new state
+
+    def confirmPlot(self):
+        # noop state (should we check something)
+        print("UpdateOperatorPercentAsynchTask.confirmPlot()")
+        assert(self._state == self.STATE_PLOT_CONFIRM) # current state
+        self._state = self.STATE_DONE # new state
+ 
+    def done(self):
+        print("UpdateOperatorPercentAsynchTask.done()")
         assert(self._state == self.STATE_DONE) # current state - end state
 
 
