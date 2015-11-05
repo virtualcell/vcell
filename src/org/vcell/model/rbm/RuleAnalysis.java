@@ -2,6 +2,7 @@ package org.vcell.model.rbm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -500,20 +501,32 @@ public class RuleAnalysis {
 			}
 		}
 		
-		//
-		// add RemoveBond operations
-		//
-		for (ReactantBondEntry removedBond : unmatchedReactantBonds){
-			report.addOperation(new RuleAnalysisReport.DeleteBondOperation(removedBond));
-		}
 		
 		//
 		// delete molecule
+		// first we build a set of all the molecular type IDs getting deleted and then create the delete bond operations
 		//
+		List<String> deletedMolecules = new ArrayList<String>();
 		for (MolecularTypeEntry unmatchedMolecularTypeEntry : unmatchedReactantMolecularTypeEntries){
+			deletedMolecules.add(getID(unmatchedMolecularTypeEntry));
 			report.addOperation(new RuleAnalysisReport.DeleteMolecularTypeOperation(unmatchedMolecularTypeEntry));
 		}
-		
+		//
+		// add DeleteBond operations
+		// we make sure to skip any bond for which the molecule at EITHER end gets deleted
+		//
+		for (ReactantBondEntry removedBond : unmatchedReactantBonds){
+			String component1id = getID(removedBond.reactantComponent1);
+			String molecule1id = component1id.substring(0, component1id.lastIndexOf("_"));
+			String component2id = getID(removedBond.reactantComponent2);
+			String molecule2id = component2id.substring(0, component2id.lastIndexOf("_"));
+			
+			if(deletedMolecules.contains(molecule1id) || deletedMolecules.contains(molecule2id)) {
+				;	// do nothing if at least one of the 2 molecules of the bond gets deleted
+			} else {
+				report.addOperation(new RuleAnalysisReport.DeleteBondOperation(removedBond));
+			}
+		}
 		return report;
 	}
 
@@ -569,29 +582,64 @@ public class RuleAnalysis {
 //		listOfRateConstants.addContent(rateConstant);
 //		rateConstant.setAttribute("value",rule.getForwardRateConstantName());
 		
-		Element map = new Element("Map");
-		root.addContent(map);
-		for (MolecularTypeEntry mappedReactantMolecule : report.getMappedReactantMolecules()){
-			Element moleculeMapEntry = new Element("MapItem");
-			map.addContent(moleculeMapEntry);
-			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
-			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
-			if(productMolecule != null) {
-				moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
+		// we build a map of strings with the source ID as keys and target ID as content
+		Map<String, String> idMap = new LinkedHashMap<String, String>();
+		for (MolecularTypeEntry ractantMolecule : report.getMappedReactantMolecules()){
+			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(ractantMolecule).get(0);
+			if(productMolecule == null) {
+				idMap.put(getID(ractantMolecule), null);
+			} else {
+				idMap.put(getID(ractantMolecule), getID(productMolecule));
 			}
-			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
-				Element componentMapEntry = new Element("MapItem");
-				map.addContent(componentMapEntry);
+			for (MolecularComponentEntry reactantComponent : ractantMolecule.getMolecularComponentEntries()){
 				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
-				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
-				if(productComponent != null) {
-					componentMapEntry.setAttribute("targetID",getID(productComponent));
+				if(productComponent == null) {
+					idMap.put(getID(reactantComponent), null);
+				} else {
+					idMap.put(getID(reactantComponent), getID(productComponent));
 				}
 			}
 		}
+		Element map = new Element("Map");
+		root.addContent(map);
+		SortedSet<String> keys = new TreeSet<String>(idMap.keySet());	// we create the map sorted by sourceID
+		for (String sourceID : keys) {
+			String targetID = idMap.get(sourceID);
+			Element mapItem = new Element("MapItem");
+			map.addContent(mapItem);
+			mapItem.setAttribute("sourceID", sourceID);
+			if(targetID != null) {
+				mapItem.setAttribute("targetID", targetID);
+			}
+		}
+	
+		
+//		Element map = new Element("Map");
+//		root.addContent(map);
+//		for (MolecularTypeEntry mappedReactantMolecule : report.getMappedReactantMolecules()){
+//			Element moleculeMapEntry = new Element("MapItem");
+//			map.addContent(moleculeMapEntry);
+//			MolecularTypeEntry productMolecule = report.getMappedProductMolecules(mappedReactantMolecule).get(0);
+//			moleculeMapEntry.setAttribute("sourceID",getID(mappedReactantMolecule));
+//			if(productMolecule != null) {
+//				moleculeMapEntry.setAttribute("targetID",getID(productMolecule));
+//			}
+//			for (MolecularComponentEntry reactantComponent : mappedReactantMolecule.getMolecularComponentEntries()){
+//				Element componentMapEntry = new Element("MapItem");
+//				map.addContent(componentMapEntry);
+//				MolecularComponentEntry productComponent = report.getMappedProductComponent(reactantComponent);
+//				componentMapEntry.setAttribute("sourceID",getID(reactantComponent));
+//				if(productComponent != null) {
+//					componentMapEntry.setAttribute("targetID",getID(productComponent));
+//				}
+//			}
+//		}
 		
 		Element listOfOperations = new Element("ListOfOperations");
 		root.addContent(listOfOperations);
+		if(report.getOperations().isEmpty()) {
+			listOfOperations.addContent(" ");	// we want <ListOfOperations> </ListOfOperations> rather than <ListOfOperations/>
+		}
 		
 		for (Operation op : report.getOperations()){
 			if (op instanceof ChangeStateOperation){
