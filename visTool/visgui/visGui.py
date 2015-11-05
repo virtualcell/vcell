@@ -535,7 +535,15 @@ class VCellPysideApp(QtGui.QMainWindow):
        # self._vis.enableOperatorMode(True)
        # self._vis.setProject2d(self._sliceControl.getShowAsImageCheckbox().isChecked())
         print("_onSliceSliderChanged() is hard-coding project2d and enable=true")
-        self._vis.setOperatorPercent(newPercent)
+
+
+        def successCallback(results):
+            print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
+
+        def errorCallback(errorMessage):
+            print("_onSliceSliderChanged: updateOperatorPercent() error: "+str(errorMessage));
+    
+        self._vis.setOperatorPercent(newPercent, successCallback, errorCallback)
        # print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
 
     def _onSliceAxisChange(self):
