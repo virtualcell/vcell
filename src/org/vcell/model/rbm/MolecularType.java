@@ -9,6 +9,7 @@ import java.util.List;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.IssueCategory;
@@ -161,9 +162,11 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		issueContext = issueContext.newChildContext(ContextType.MolecularType, this);
 		if(name == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is null", Issue.Severity.ERROR));
 		} else if(name.equals("")) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is empty", Issue.SEVERITY_WARNING));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is empty", Issue.Severity.ERROR));
+		} else if(!name.equals(TokenMangler.fixTokenStrict(name))) {
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is invalid", Issue.Severity.ERROR));
 		}
 		if(componentList == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is null", Issue.SEVERITY_ERROR));
@@ -177,12 +180,10 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
 				}
 			}
-			
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
 			}
 		}
-		
 	}
 	
 	public boolean isHighlighted() {
