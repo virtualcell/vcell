@@ -49,6 +49,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.server.bionetgen.BNGException;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
@@ -183,11 +184,22 @@ public class NetworkTransformer implements SimContextTransformer {
 		try {
 			final BNGExecutorService bngService = new BNGExecutorService(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
+		} catch (BNGException ex) {
+			ex.printStackTrace(System.out);
+			System.out.println("bionetgen exception");
+			if(ex.getMessage().contains("was asked to write the network, but no reactions were found")) {
+				RuntimeException rex = new RuntimeException("Specified species and reaction rules are not sufficient to define reaction network.");
+				throw rex;
+			} else {
+				throw ex; //rethrow without losing context
+			}
 		} catch (RuntimeException ex) {
 			ex.printStackTrace(System.out);
-			throw ex; //rethrow without losing context
+			System.out.println("runtime exception");
+			throw ex;
 		} catch (Exception ex) {
 			ex.printStackTrace(System.out);
+			System.out.println("other exception");
 			throw new RuntimeException(ex.getMessage());
 		}
 		
