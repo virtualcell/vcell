@@ -365,6 +365,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			
 			boolean bReversible = true;
+//			if(rs.getNumProducts() == 0) {
+//				bReversible = false;
+//			}
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
 			rr.setStructure(rs.getStructure());
 		

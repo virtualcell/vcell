@@ -209,7 +209,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				String msg = "Reactant " + cnt + " does not have any molecules.\n";
 //				warning.append(msg);
 				if(issueList != null) {
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 				}
 			} else {
 				rp.getSpeciesPattern().checkSpeciesPattern(issueContext, issueList);
@@ -236,7 +236,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				String msg = "Product " + cnt + " does not have any molecules.\n";
 //				warning.append(msg);
 				if(issueList != null) {
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 				}
 			} else {
 				pp.getSpeciesPattern().checkSpeciesPattern(issueContext, issueList);
@@ -810,6 +810,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		if(reactantPatterns == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.Severity.ERROR));
+		} else if(reactantPatterns.isEmpty()) {
+			String msg = typeName + " " + name + " does not have any Reactants.\n";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		} else {
 			checkReactantPatterns(issueContext, issueList);
 			for (ReactantPattern rp : reactantPatterns) {
@@ -819,6 +822,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		if(productPatterns == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Product Pattern is null", Issue.Severity.ERROR));
+		} else if(productPatterns.isEmpty()) {
+			String msg = typeName + " " + name + " does not have any Products.\n";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 		} else {
 			checkProductPatterns(issueContext, issueList);
 			for (ProductPattern pp : productPatterns) {

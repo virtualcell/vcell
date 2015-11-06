@@ -566,6 +566,9 @@ public class RuleAnalysis {
 			Element reactantElement = getParticipantEntry(rule,reactantEntry);
 			listOfReactantPatterns.addContent(reactantElement);
 		}
+		if(rule.getReactantEntries().isEmpty()) {
+			listOfReactantPatterns.addContent(" ");	// we want <ListOfReactantPatterns> </ListOfReactantPatterns> rather than <ListOfReactantPatterns/>
+		}
 		
 		Element listOfProductPatterns = new Element("ListOfProductPatterns");
 		root.addContent(listOfProductPatterns);
@@ -573,6 +576,10 @@ public class RuleAnalysis {
 			Element productElement = getParticipantEntry(rule,productEntry);
 			listOfProductPatterns.addContent(productElement);
 		}
+		if(rule.getProductEntries().isEmpty()) {
+			listOfProductPatterns.addContent(" ");	// we want <ListOfProductPatterns> </ListOfProductPatterns> rather than <ListOfProductPatterns/>
+		}
+
 		
 //		Element rateLaw = new Element("RateLaw");
 //		root.addContent(rateLaw);
@@ -611,6 +618,9 @@ public class RuleAnalysis {
 			if(targetID != null) {
 				mapItem.setAttribute("targetID", targetID);
 			}
+		}
+		if(keys.isEmpty()) {
+			map.addContent(" ");	// we want <Map> </Map> rather than <Map/>
 		}
 	
 		
