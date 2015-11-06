@@ -1407,7 +1407,13 @@ public class RbmUtils {
 	
 	public static String toBnglStringLong_internal(ReactionRule reactionRule) {
 		String str = reactionRule.getName() + ":\t";
+		if(reactionRule.getReactantPatterns().isEmpty()) {
+			str += "0";
+		}
 		str += toBnglStringShort(reactionRule);
+		if(reactionRule.getProductPatterns().isEmpty()) {
+			str += " 0";	// this is the new syntax for Trash!!! 
+		}
 		str += "\t\t";
 		switch (reactionRule.getKineticLaw().getRateLawType()){
 		case MassAction:{
