@@ -14,6 +14,8 @@ import vcellProxy
 import pyvcell
 from visContext import visContextAbstract
 import visDataContext
+from Queue import Queue
+from threading import Lock
 
 
 
@@ -77,6 +79,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.resourcedir = ""
         self._selectedVariable = None
         self.__parse_command_line()
+        self.sliderQueue = Queue()
+        self.sliderLock = Lock()
         self.initUI()
   
     def __parse_command_line(self):
@@ -248,15 +252,16 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._variableListWidget.clicked.connect(self._onSelectedVariableChanged)
         self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
 
-        self._sliceControl.getEnableCheckbox().setChecked(self._vis.getOperatorEnabled())
+        self._sliceControl.setChecked(self._vis.getOperatorEnabled())
         self._sliceControl.getSliceSlider().setValue(self._vis.getOperatorPercent())
         self._sliceControl.getShowAsImageCheckbox().setChecked(self._vis.getOperatorProject2d())
         self._sliceControl.getSlice_X_AxisRadioButton().setChecked(self._vis.getOperatorAxis()==0)
         self._sliceControl.getSlice_Y_AxisRadioButton().setChecked(self._vis.getOperatorAxis()==1)
         self._sliceControl.getSlice_Z_AxisRadioButton().setChecked(self._vis.getOperatorAxis()==2)
 
-        self._sliceControl.getEnableCheckbox().clicked.connect(self._onSliceEnableCheckboxPressed)
+        self._sliceControl.clicked.connect(self._onSliceEnableCheckboxPressed)
         self._sliceControl.getSliceSlider().valueChanged.connect(self._onSliceSliderChanged)
+        #self._sliceControl.getSliceSlider().sliderReleased.connect(self._onSliceSliderChanged)
         self._sliceControl.getShowAsImageCheckbox().clicked.connect(self._onSliceAsImageCheckboxPressed)
         self._sliceControl.getSlice_X_AxisRadioButton().clicked.connect(self._onSliceAxisChange)
         self._sliceControl.getSlice_Y_AxisRadioButton().clicked.connect(self._onSliceAxisChange)
@@ -527,24 +532,43 @@ class VCellPysideApp(QtGui.QMainWindow):
     
         self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True,successCallback,errorCallback)
 
-
+    def sliderQ(self,newSlidePos):
+        try:
+            self.sliderLock.acquire()
+            if self.sliderQueue.qsize() != 0:
+                assert self.sliderQueue.qsize() == 1
+                lastPos = self.sliderQueue.get(False)
+                self.sliderQueue.task_done()
+                if newSlidePos == None:
+                    return (lastPos,True)
+                self.sliderQueue.put(newSlidePos)
+                return (newSlidePos,True)
+            else:
+                assert newSlidePos != None
+                self.sliderQueue.put(newSlidePos)
+                return (newSlidePos,False)
+        finally:
+            self.sliderLock.release()
 
     def _onSliceSliderChanged(self):
-        print('_onSliceSliderChanged()')
-        newPercent = self._sliceControl.getSliceSlider().sliderPosition()
-       # self._vis.enableOperatorMode(True)
-       # self._vis.setProject2d(self._sliceControl.getShowAsImageCheckbox().isChecked())
-        print("_onSliceSliderChanged() is hard-coding project2d and enable=true")
+        lastSlidePos = self.sliderQ(self._sliceControl.getSliceSlider().sliderPosition())
+        if lastSlidePos[1] == False:
+            print('_onSliceSliderChanged()')
+            #self._vis.enableOperatorMode(True)
+            #self._vis.setProject2d(self._sliceControl.getShowAsImageCheckbox().isChecked())
+            print("_onSliceSliderChanged() is hard-coding project2d and enable=true")
 
-
-        def successCallback(results):
-            print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
-
-        def errorCallback(errorMessage):
-            print("_onSliceSliderChanged: updateOperatorPercent() error: "+str(errorMessage));
+            def successCallback(results):
+                print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
+                checkSlidePos = self.sliderQ(None)
+                if checkSlidePos[0] != results:
+                    self._onSliceSliderChanged()
+            def errorCallback(errorMessage):
+                print("_onSliceSliderChanged: updateOperatorPercent() error: "+str(errorMessage));
+                self.sliderQ(None) #clear queue
     
-        self._vis.setOperatorPercent(newPercent, successCallback, errorCallback)
-       # print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
+            self._vis.setOperatorPercent(lastSlidePos[0], successCallback, errorCallback)
+            # print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
 
     def _onSliceAxisChange(self):
         print('_onSliceAxisChange()')
@@ -566,7 +590,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
     def _onSliceEnableCheckboxPressed(self):
         print('_onSliceEnableCheckboxPressed()')
-        if self._sliceControl.getEnableCheckbox().isChecked():
+        if self._sliceControl.isChecked():
             self._vis.setOperatorEnabled(True)
         else:
             self._vis.setOperatorEnabled(False)

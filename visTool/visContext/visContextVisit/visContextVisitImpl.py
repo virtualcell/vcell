@@ -22,6 +22,7 @@ from visContext.visContextAbstract import visContextAbstract
 from visContext.visContextAbstract import overrides
 from visClipOperatorContext import VisClipOperatorContext
 
+from copy import deepcopy
 
 class PlotWindow(QtGui.QWidget):
  
@@ -612,7 +613,7 @@ class UpdateOperatorPercentAsynchTask(AsynchTask):
         print "\n\UpdateOperatorPercentAsynchTask.__init__()"
         self._state = self.STATE_INITIAL
         self._vis = vis
-        self._visClipOperatorContext = visClipOperatorContext
+        self._visClipOperatorContext = deepcopy(visClipOperatorContext)
         print("openOne initial state = "+str(self._state))
 
         self._stateFunctions = {
@@ -642,6 +643,9 @@ class UpdateOperatorPercentAsynchTask(AsynchTask):
         print("UpdateOperatorPercentAsynchTask.done()")
         assert(self._state == self.STATE_DONE) # current state - end state
 
+    @overrides(AsynchTask)
+    def getResults(self):
+        return self._visClipOperatorContext.getCurrentOperatorPercent()
 
 ########################################################################
 # Asynchronous Task for performing a line-out

@@ -1,10 +1,10 @@
-import sys, os
+﻿import sys, os
 
 import visQt
 QtCore = visQt.QtCore
 QtGui = visQt.QtGui
 
-class sliceControl(QtGui.QWidget):
+class sliceControl(QtGui.QGroupBox):
     
     def __init__(self, parent):
         super(sliceControl,self).__init__(parent)
@@ -12,6 +12,9 @@ class sliceControl(QtGui.QWidget):
         self.initUI()
   
     def initUI(self):
+        self.setTitle("Slice Control")
+        self.setCheckable(True)
+        self.setChecked(False)
         self.setObjectName("sliceControlWidget")
         selfSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         selfSizePolicy.setHorizontalStretch(0)
@@ -22,11 +25,11 @@ class sliceControl(QtGui.QWidget):
         gridLayout = QtGui.QGridLayout(self)
         gridLayout.setObjectName("gridLayout")
 
-        self._enableCheckbox = QtGui.QCheckBox()
-        self._enableCheckbox.setObjectName("enableCheckbox")
-        self._enableCheckbox.setText("slice control")
+        #self._enableCheckbox = QtGui.QCheckBox()
+        #self._enableCheckbox.setObjectName("enableCheckbox")
+        #self._enableCheckbox.setText("slice control")
 
-        gridLayout.addWidget(self._enableCheckbox, 0, 0, 1, 1)
+        #gridLayout.addWidget(self._enableCheckbox, 0, 0, 1, 1)
 
         self._slice_X_AxisRadioButton = QtGui.QRadioButton(self);
         self._slice_X_AxisRadioButton.setObjectName("xAxisRadioButton")
@@ -54,16 +57,39 @@ class sliceControl(QtGui.QWidget):
         self._sliceButtonGroup.addButton(self._slice_Y_AxisRadioButton)
         self._sliceButtonGroup.addButton(self._slice_Z_AxisRadioButton)
 
+        self.slicecntnr = QtGui.QWidget(self)
+        cntnrSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.DefaultType)
+        self.slicecntnr.setSizePolicy(cntnrSizePolicy)
+        cntnrgridLayout = QtGui.QGridLayout(self.slicecntnr)
+        #cntnrgridLayout.setAlignment(self.slicecntnr,QtCore.Qt.AlignLeft)
+
+        self._minlabel = QtGui.QLabel(self)
+        self._minlabel.setText("0")
+        #self._minlabel.setAlignment(QtCore.Qt.AlignLeft)
+        #cntnrgridLayout.setAlignment(self._minlabel,QtCore.Qt.AlignLeft)
+        labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
+        self._minlabel.setSizePolicy(labelSizePolicy)
+        cntnrgridLayout.addWidget(self._minlabel, 0, 0, 1, 1)
+
+        self._maxlabel = QtGui.QLabel(self)
+        self._maxlabel.setText("100")
+        labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
+        self._maxlabel.setSizePolicy(labelSizePolicy)
+        cntnrgridLayout.addWidget(self._maxlabel, 0, 2, 1, 1)
+
+
         self._sliceSlider = QtGui.QSlider(self)
         self._sliceSlider.setObjectName("sliceSlider")
-        sliderSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
-        sliderSizePolicy.setHorizontalStretch(0)
+        sliderSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Slider)
+        sliderSizePolicy.setHorizontalStretch(100)
         sliderSizePolicy.setVerticalStretch(0)
         sliderSizePolicy.setHeightForWidth(self._sliceSlider.sizePolicy().hasHeightForWidth())
         self._sliceSlider.setSizePolicy(sliderSizePolicy)
         self._sliceSlider.setOrientation(QtCore.Qt.Horizontal)
 
-        gridLayout.addWidget(self._sliceSlider, 2, 0, 1, 3)
+        cntnrgridLayout.addWidget(self._sliceSlider, 0, 1, 1, 1)
+
+        gridLayout.addWidget(self.slicecntnr, 2, 0, 1, 3)
 
         verticalSpacer1 = QtGui.QSpacerItem(20, 15, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum);
 
@@ -94,6 +120,6 @@ class sliceControl(QtGui.QWidget):
     def getSlice_Z_AxisRadioButton(self):
         return self._slice_Z_AxisRadioButton
 
-    def getEnableCheckbox(self):
-        return self._enableCheckbox;
+    #def getEnableCheckbox(self):
+    #    return self._enableCheckbox;
 
