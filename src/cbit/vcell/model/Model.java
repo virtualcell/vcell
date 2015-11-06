@@ -2295,8 +2295,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	//
 	// get issues from species contexts (species patterns)
 	//
+	int seedSpeciesCount = 0;
 	for (int i = 0; i < fieldSpeciesContexts.length; i++){
+		if(fieldSpeciesContexts[i].hasSpeciesPattern()) {
+			seedSpeciesCount++;
+		}
 		fieldSpeciesContexts[i].gatherIssues(issueContext, issueList);
+	}
+	if(seedSpeciesCount == 0 && !rbmModelContainer.getReactionRuleList().isEmpty()) {
+		String msg = "At least one seed species is required.";
+		issueList.add(new Issue(this,issueContext, IssueCategory.Identifiers,msg,Issue.Severity.WARNING));
 	}
 	
 	//
