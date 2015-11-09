@@ -127,6 +127,9 @@ public enum SolverDescription {
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
 	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
+	      
+	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
+	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.NFSIM,null,"KISAO",false)
       ;
 
 	public enum SolverFeature {
@@ -153,7 +156,8 @@ public enum SolverDescription {
 		Feature_Rulebased("Rule based"),
 		Feature_ServerOnly("Server only execution"),
 		Feature_Parallel("Parallel execution"),
-		Feature_Hybrid("Hybrid: both Deterministic and Stochastic")
+		Feature_Hybrid("Hybrid: both Deterministic and Stochastic"),
+		Feature_Moving("Moving Membrane"),
 		;
 
 		private final String name;
@@ -196,6 +200,11 @@ public enum SolverDescription {
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
 			return s.isSpatial() && !s.isSpatialHybrid() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
+	
+	public static final Collection<SolverFeature> MovingBoundaryFeatureSet = new SolverFeatureSet(
+			SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,
+			s -> s.isMovingMembrane( ),
+			MovingBoundary,30);
 	
 	/*
 	 * rule-based solvers

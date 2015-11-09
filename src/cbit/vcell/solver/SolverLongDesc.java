@@ -478,5 +478,11 @@ interface SolverLongDesc {
    	     + Description_PARAMETERS_TO_BE_SET +
    			"<li>" + Description_Stochastic_RANDOM_SEED + "</li>"
    	     + "</html>";
+    
+    static final String MB =
+   	     "<html>"
+   	     + "<center><h3>DISPLAY_LABEL_TOKEN</h3></center>" +
+   	    		 "Moving Boundary is a spatial solver which handles Moving Boundaries"
+	     + "</html>";
     		
 }

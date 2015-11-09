@@ -63,6 +63,8 @@ public class PropertyLoader {
 	// NFSim
 	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
 	
+	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
+	
 	//Stoch properties
 	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);	
 	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);

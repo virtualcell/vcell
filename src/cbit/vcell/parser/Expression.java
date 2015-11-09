@@ -38,6 +38,7 @@ public class Expression implements java.io.Serializable, org.vcell.util.Matchabl
    private static long derivativeCount = 0;
    private static long substituteCount = 0;
    private static long bindCount = 0;
+   private static final Expression ZERO = new Expression(0); 
    
 /**
  * This method was created in VisualAge.
@@ -639,7 +640,7 @@ public boolean isRelational() {
  * @return boolean
  */
 public boolean isZero() {
-	return compareEqual(new Expression(0.0));
+	return compareEqual(ZERO);
 }
 /**
  * This method was created by a SmartGuide.
@@ -988,5 +989,13 @@ substituteCount++;////////////////////////////////
 		   return null;
 	   }
    }
+
+/**
+ * @param e
+ * @return true if e is not null and not {@link Expression#isZero()}
+ */
+public static boolean notZero(Expression e) {
+	return e != null && ( ! e.isZero() );
+}
 }
 
