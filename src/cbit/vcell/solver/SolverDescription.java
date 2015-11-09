@@ -35,33 +35,33 @@ public enum SolverDescription {
 	   ForwardEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Forward Euler 1st","Forward Euler (First Order, Fixed Time Step)","Forward Euler (First Order, Fixed Time Step)",
 	      SolverLongDesc.FORWARD_EULER, 1,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000030", false), 
-	      
+	      null, null, "KISAO:0000030", false),
+
 	   RungeKutta2(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 2nd","Runge-Kutta (Second Order, Fixed Time Step)","Runge-Kutta (Second Order, Fixed Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA2, 2,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000064", false), 
-	      
+	      null, null, "KISAO:0000064", false),
+
 	   RungeKutta4(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Runge-Kutta 4th","Runge-Kutta (Fourth Order, Fixed Time Step)","Runge-Kutta (Fourth Order, Fixed Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA4, 4,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000032", false), 
-	      
+	      null, null, "KISAO:0000032", false),
+
 	   RungeKuttaFehlberg(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Runge-Kutta-Fehlberg","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)","Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
 	      SolverLongDesc.RUNGE_KUTTA_FEHLBERG, 4,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000086", false), 
-	      
+	      null, null, "KISAO:0000086", false),
+
 	   AdamsMoulton(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Adams-Moulton 5th","Adams-Moulton (Fifth Order, Fixed Time Step)","Adams-Moulton (Fifth Order, Fixed Time Step)",
 	      SolverLongDesc.ADAMS_MOULTON, 5,SupportedTimeSpec.DEFAULT,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_JVMRequired},
-	      null, null, "KISAO:0000280", false), 
-	      
+	      null, null, "KISAO:0000280", false),
+
 	   IDA(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "IDA","IDA (Variable Order, Variable Time Step, ODE/DAE)","IDA (Variable Order, Variable Time Step, ODE/DAE)",
 	      SolverLongDesc.IDA, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, null, "KISAO:0000283", false), 
-	      
+	      SolverExecutable.SundialsOde, null, "KISAO:0000283", false),
+
 	      /**
 	       * this is the compiled Solver we don't support any more. Left present to load old models that use it, but they
 	       * won't execute
@@ -69,67 +69,67 @@ public enum SolverDescription {
 	   FiniteVolume(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit Compiled","Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)","Finite Volume, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtSpatiallyUniform},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", true), 
-	      
+	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", true),
+
 	   StochGibson(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson","Gibson (Next Reaction Stochastic Method)","Gibson (Next Reaction Stochastic Method)",
 	      SolverLongDesc.STOCH_GIBSON, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Gibson, null, "KISAO:0000027", false), 
-	      
+	      SolverExecutable.Gibson, null, "KISAO:0000027", false),
+
 	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
 	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_EM, null, "KISAO:0000352", false), 
-	      
+	      SolverExecutable.Hybrid_EM, null, "KISAO:0000352", false),
+
 	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil, null, "KISAO:0000352", false), 
-	      
+	      SolverExecutable.Hybrid_Mil, null, "KISAO:0000352", false),
+
 	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil_Adaptive, null, "KISAO:0000352", false), 
-	      
+	      SolverExecutable.Hybrid_Mil_Adaptive, null, "KISAO:0000352", false),
+
 	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
 	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false), 
-	      
+	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false),
+
 	   FiniteVolumeStandalone(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit","Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)","Finite Volume Standalone, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME_STANDALONE, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_FastSystem, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false), 
-	      
+	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false),
+
 	   CombinedSundials(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Combined IDA/CVODE","Combined Stiff Solver (IDA/CVODE)","Combined Stiff Solver (IDA/CVODE)",
 	      SolverLongDesc.COMBINED_SUNDIALS, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
-	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events}, 
-	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false), 
-	      
+	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
+	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false),
+
       SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
 	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false), 
-	      
+	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false),
+
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_DataProcessingInstructions},
-	      SolverExecutable.Smoldyn, null, "KISAO:0000057", false), 
-	      
+	      SolverExecutable.Smoldyn, null, "KISAO:0000057", false),
+
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step), Experimental","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
-	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions, 
+	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions,
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_Parallel},
-	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285", 
-	      VCellCodeVersion.CURRENT.compare(5,4) < 0), 
-	      
+	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285",
+	      VCellCodeVersion.CURRENT.compare(5,4) < 0),
+
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
 	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
-	      
+
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
-	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.NFSIM,null,"KISAO",false)
+	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.MOVING_B,null,"KISAO",false)
       ;
 
 	public enum SolverFeature {
@@ -172,40 +172,40 @@ public enum SolverDescription {
 	/*
 	 * Spatial solvers
 	 */
-	public static final Collection<SolverFeature> SpatialHybridFeatureSet = new SolverFeatureSet (  
+	public static final Collection<SolverFeature> SpatialHybridFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Hybrid, SolverFeature.Feature_Deterministic,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isSpatialHybrid(); }},
 		FiniteVolumeStandalone,50);
-	
-	public static final Collection<SolverFeature> SpatialStochasticFeatureSet = new SolverFeatureSet ( 
+
+	public static final Collection<SolverFeature> SpatialStochasticFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) {
 			return desc.isSpatialStoch() && !desc.isSpatialHybrid(); }},
 		Smoldyn,40);
-	
-	public static final Collection<SolverFeature> PdeFastSystemFeatureSet = new SolverFeatureSet ( 
+
+	public static final Collection<SolverFeature> PdeFastSystemFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) {
 			return desc.isSpatial() && !desc.isSpatialHybrid() && desc.hasFastSystems( ) && !desc.isSpatialStoch(); }},
 		FiniteVolumeStandalone,30);
-	
+
 	public static final Collection<SolverFeature> PdeFeatureSetWithDirichletAtMembrane =  new SolverFeatureSet(
 		SolverFeature.Feature_DirichletAtMembraneBoundary,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) {
 			return s.isSpatial() &&  !s.isSpatialHybrid( )  && s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		Chombo,20);
-		
+
 	public static final Collection<SolverFeature> PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet(
 		SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector s) {
 			return s.isSpatial() && !s.isSpatialHybrid() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		SundialsPDE,10);
-	
+
 	public static final Collection<SolverFeature> MovingBoundaryFeatureSet = new SolverFeatureSet(
 			SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,
 			s -> s.isMovingMembrane( ),
 			MovingBoundary,30);
-	
+
 	/*
 	 * rule-based solvers
 	 */
@@ -213,39 +213,39 @@ public enum SolverDescription {
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isRuleBased(); }},
 		NFSim,100);
-	
+
 	/*
 	 * Non-spatial solvers
 	 */
-	public static final Collection<SolverFeature> NonSpatialStochasticFeatureSet = new SolverFeatureSet ( 
+	public static final Collection<SolverFeature> NonSpatialStochasticFeatureSet = new SolverFeatureSet (
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic,
 		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { return desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		StochGibson,100);
-	
+
 	public static final Collection<SolverFeature> OdeFeatureSet =  new SolverFeatureSet(
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) {
 			return !desc.isSpatial() && !desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
-		
+
 	public static final Collection<SolverFeature> OdeFastSystemFeatureSet =  new SolverFeatureSet(
 		SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem,
-		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) { 
+		new SolverFeatureSet.Filter() { public boolean supports(SolverSelector desc) {
 			return !desc.isSpatial() && desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
-	
+
 	//this one is not like the others
-	public static final Collection<SolverFeature> DiscontinutiesFeatureSet = Arrays.asList(new SolverFeature[]{  
+	public static final Collection<SolverFeature> DiscontinutiesFeatureSet = Arrays.asList(new SolverFeature[]{
 		SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities
 	});
-	
+
 	/**
 	 * explicit boolean for readability
 	 */
 	private static enum TimeSpecCreated {
 		UNIFORM, DEFAULT
 	}
-	
+
 	/**
 	 * explicit boolean for readability
 	 */
@@ -253,7 +253,7 @@ public enum SolverDescription {
 		CONSTANT,
 		VARIABLE
 	}
-	
+
 	/**
 	 * explicit boolean for readability
 	 */
@@ -278,23 +278,23 @@ public enum SolverDescription {
 			this.explicit = explicit;
 			this.uniform = uniform;
 		}
-		
+
 		boolean supports(OutputTimeSpec outputTimeSpec) {
 			return (def && outputTimeSpec.isDefault() )
 				|| (explicit && outputTimeSpec.isExplicit() )
 				|| (uniform  && outputTimeSpec.isUniform( ) );
 		}
 	}
-	
+
 	private final boolean variableTimeStep;
-	private final boolean errorTolerance; 
-	private final TimeSpecCreated timeSpecType; 
-	private final String shortDisplayLabel; 
-	private final String displayLabel; 
-	private final String databaseName; 
-	private final String fullDescription; 
-	private final int timeOrder; 
-	private final SupportedTimeSpec supportedTimeSpec; 
+	private final boolean errorTolerance;
+	private final TimeSpecCreated timeSpecType;
+	private final String shortDisplayLabel;
+	private final String displayLabel;
+	private final String databaseName;
+	private final String fullDescription;
+	private final int timeOrder;
+	private final SupportedTimeSpec supportedTimeSpec;
 	private final Set<SolverFeature> supportedFeatures;
 	private final SolverExecutable solverExecutable;
 	/**
@@ -303,7 +303,7 @@ public enum SolverDescription {
 	public final VersionedLibrary versionedLibrary;
 	public final String kisao;
 	public final boolean deprecated;
-	
+
 	private SolverDescription(TimeStep ts, ErrorTol et,TimeSpecCreated tst,
 			String shortDisplayLabel,
 			String displayLabel, String databaseName,
@@ -350,7 +350,7 @@ public enum SolverDescription {
 	public String getFullDescription() {
 		return fullDescription;
 	}
-	
+
 	/**
 	 * does this require a special license?
 	 * @param sl license to test for
@@ -361,7 +361,7 @@ public enum SolverDescription {
 		return licensedLibrary == sl;
 	}
 	*/
-	
+
 	/**
 	 * replace DISPLAY_LABEL_TOKEN with displayName
 	 * @param full not null
@@ -380,7 +380,7 @@ public enum SolverDescription {
 	 * @return cbit.vcell.solver.OutputTimeSpec
 	 * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
 	 */
-	public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
+	public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription)
 	{
 		switch (timeSpecType) {
 		case UNIFORM:
@@ -405,7 +405,7 @@ public enum SolverDescription {
 		//backward compatibility special case
 		dbNameMap.put(ALTERNATE_CVODE_Description,CVODE);
 	}
-	
+
 	/**
 	 * lookup name in given map
 	 * @param map not null
@@ -443,11 +443,11 @@ public enum SolverDescription {
 	}
 
 	public boolean hasVariableTimestep() {
-		return variableTimeStep; 
+		return variableTimeStep;
 	}
 
 	public boolean hasErrorTolerance() {
-		return errorTolerance; 
+		return errorTolerance;
 	}
 
 	/**
@@ -522,7 +522,7 @@ public enum SolverDescription {
 	public boolean supports(Collection<SolverFeature> features) {
 		return supportedFeatures.containsAll(features);
 	}
-	
+
 	/**
 	 * contains this particular feature?
 	 */
@@ -547,13 +547,13 @@ public enum SolverDescription {
 	public Set<SolverFeature> getSupportedFeatures() {
 		return Collections.unmodifiableSet(supportedFeatures);
 	}
-	
+
 	/**
-	 * get solvers which support math description 
+	 * get solvers which support math description
 	 * @param mathDescription
 	 * @return non-empty collection
 	 * @throws IllegalStateException if mathDescription has invalid state
-	 * @throws UnsupportedOperationException if state not supported 
+	 * @throws UnsupportedOperationException if state not supported
 	 */
 	public static Collection<SolverDescription> getSupportingSolverDescriptions(SolverSelector mathDescription) {
 		SolverSelector.Checker.validate(mathDescription);
@@ -564,11 +564,11 @@ public enum SolverDescription {
 			}
 		}
 		if (!solvers.isEmpty( )) {
-			return solvers; 
+			return solvers;
 		}
 		throw new UnsupportedOperationException("Can't get descriptions for " + SolverSelector.Explain.describe(mathDescription) );
 	}
-	
+
 	/**
 	 * default solver for math description
 	 * @param mathDescription
@@ -588,15 +588,15 @@ public enum SolverDescription {
 		}
 		throw new UnsupportedOperationException("Can't get default solver for " + mathDescription);
 	}
-	
-	public boolean isChomboSolver() 
+
+	public boolean isChomboSolver()
 	{
-		return this == Chombo; 
+		return this == Chombo;
 	}
 
-	public boolean isNFSimSolver() 
+	public boolean isNFSimSolver()
 	{
-		return this == NFSim; 
+		return this == NFSim;
 	}
 
 	/**
@@ -605,7 +605,7 @@ public enum SolverDescription {
 	 * @return true if they'[re the same
 	 */
 	public boolean compareEqual(SolverDescription other) {
-		return this == other; 
+		return this == other;
 	}
 
 }
