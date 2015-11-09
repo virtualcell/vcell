@@ -9,7 +9,6 @@
  */
 
 package cbit.vcell.math;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -402,6 +401,10 @@ public void setVelocityX(Expression velocityX) {
 
 public void setVelocityY(Expression velocityY) {
 	this.velocityY = velocityY;
+}
+
+public boolean isMoving( ) {
+	return Expression.notZero(velocityX) || Expression.notZero(velocityY);
 }
 
 /**

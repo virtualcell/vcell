@@ -82,7 +82,7 @@ public class TestMathDescription implements SolverSelector {
 			tmd.nextState();
 			Checker.validate(tmd);
 			System.out.println (tmd.isSpatial() + " " + tmd.isSpatialHybrid() + " " + tmd.hasFastSystems() + " " + tmd.isSpatialStoch() + " " + tmd.hasDirichletAtMembrane()
-					+ " " + tmd.isNonSpatialStoch());
+					+ " " + tmd.isNonSpatialStoch() + " " + tmd.isMovingMembrane());
 		}
 	}
 	
@@ -94,7 +94,8 @@ public class TestMathDescription implements SolverSelector {
 				 + " sp stoch " + isSpatialStoch()
 				 + "  ns stoch " + isNonSpatialStoch()
 				 + " fast  " + hasFastSystems()
-				 + " diri  " + hasDirichletAtMembrane();
+				 + " diri  " + hasDirichletAtMembrane()
+				 + " moving  " + isMovingMembrane(); 
 	}
 
 	/* (non-Javadoc)
@@ -105,10 +106,17 @@ public class TestMathDescription implements SolverSelector {
 		int masked = bits&32;
 		return masked != 0;
 	}
+	
+	public boolean isMovingMembrane() {
+		int masked = bits&64;
+		return masked != 0;
+	}
 
 	@Override
 	public boolean isRuleBased() {
-		throw new UnsupportedOperationException("isRuleBased is not implemented in this JUnit test.");
+		//throw new UnsupportedOperationException("isRuleBased is not implemented in this JUnit test.");
+		return false;
 	}
+
 
 }

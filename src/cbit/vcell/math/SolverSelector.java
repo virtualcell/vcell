@@ -1,5 +1,9 @@
 package cbit.vcell.math;
 
+import java.util.function.Predicate;
+
+import org.vcell.util.BeanUtils;
+
 
 /**
  * boolean getters of {@link MathDescription} that
@@ -23,6 +27,8 @@ public interface SolverSelector {
 	
 	public abstract boolean isRuleBased();
 	
+	public abstract boolean isMovingMembrane();
+
 	/**
 	 * validator
 	 */
@@ -49,6 +55,7 @@ public interface SolverSelector {
 		}
 		/**
 		 * common implementation of {@link #isValid(SolverSelector)} and {@link #validate(SolverSelector)} logic
+		 * This is out of date, should include rule based states
 		 * @param ss
 		 * @return null if good, error message if not
 		 */
@@ -62,6 +69,11 @@ public interface SolverSelector {
 			if (ss.isSpatialHybrid() && !ss.isSpatial()) {
 				return ": invalid state: spatial hybrid must be spatial";
 			}
+			if (ss.isMovingMembrane() && ( !ss.isSpatial() || ss.isRuleBased() ) ) {
+				return ": invalid state: moving boundary must be spatial and not rule based"; 
+			}
+			
+			
 			return null;
 		}
 	}

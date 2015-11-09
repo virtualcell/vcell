@@ -10,9 +10,11 @@
 
 package cbit.vcell.solvers;
 import java.io.File;
+import java.io.PrintWriter;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.SimResampleInfoProvider;
 
@@ -31,6 +33,7 @@ import cbit.vcell.solver.server.SolverStatus;
 public class MovingBoundarySolver extends SimpleCompiledSolver {
 	private SimResampleInfoProvider simResampleInfoProvider;
 	private Geometry resampledGeometry = null;
+	private final String inputFilename;
 	
 	public static final int HESM_KEEP_AND_CONTINUE = 0;
 	public static final int HESM_THROW_EXCEPTION = 1;
@@ -48,14 +51,16 @@ public class MovingBoundarySolver extends SimpleCompiledSolver {
 public MovingBoundarySolver (SimulationTask simTask, File dir, SessionLog sessionLog, boolean bMsging) throws SolverException {
 	super(simTask, dir, sessionLog, bMsging);
 	if (! simTask.getSimulation().isSpatial()) {
-		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
+		throw new SolverException("Cannot use MovingBoundary on non-spatial simulation");
 	}
 	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
+	inputFilename = getBaseName() + ".xml";
 }
 
 @Override
 protected String[] getMathExecutableCommand() {
-	throw new UnsupportedOperationException(); 
+	String exeName = PropertyLoader.getRequiredProperty(PropertyLoader.MOVING_BOUNDARY_EXE);
+	return new String[] {exeName,"--config",inputFilename};
 }
 
 
@@ -150,6 +155,14 @@ protected void initialize() throws SolverException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
+	String outputName = getBaseName() + ".h5";
+	
+	try (PrintWriter pw = new PrintWriter(inputFilename)) {
+		MovingBoundaryFileWriter mbfw = new MovingBoundaryFileWriter(pw, simTask, resampledGeometry, bMessaging,outputName) ;
+		mbfw.write();
+	} catch (Exception e) {
+		throw new SolverException("Can't open input file "+ inputFilename, e);
+	}
 	
 	setMathExecutable(new MathExecutable(getMathExecutableCommand()));
 

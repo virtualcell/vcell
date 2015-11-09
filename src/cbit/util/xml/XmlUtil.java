@@ -20,8 +20,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -276,6 +278,26 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 //utility method with default settings. 
 	public static String xmlToString(Element root) {		
 		return xmlToString(root,false);		        
+	}
+	
+	/**
+	 * @param doc non-null
+	 * @param writer non-null
+	 * @param bTrimAllWhiteSpace remove whitespace from output
+	 * @throws IOException
+	 */
+	public static void writeXml(Document doc, Writer writer, boolean bTrimAllWhiteSpace) throws IOException 
+	{
+		Objects.requireNonNull(doc);
+		Objects.requireNonNull(writer);
+		
+		XMLOutputter xmlOut = new XMLOutputter();
+		Format f = Format.getPrettyFormat();
+	    if (bTrimAllWhiteSpace) {
+	    	f.setTextMode(Format.TextMode.TRIM_FULL_WHITE);
+	    } 
+		xmlOut.setFormat(f);
+		xmlOut.output(doc, writer);
 	}
 	
 	public static void writeXmlToStream(Element root, boolean bTrimAllWhiteSpace, OutputStream outStream) throws IOException
