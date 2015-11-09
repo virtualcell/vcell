@@ -373,13 +373,27 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
+    def modalProgress(self,message):
+        if True:
+            return
+
+        if message != None:
+            self.progress = QtGui.QProgressDialog(message, None, 0, 1, self)
+            self.progress.setWindowModality(Qt.WindowModal)
+            self.progress.setMinimumDuration(0)
+            self.progress.setMinimum(0)
+            self.progress.setMaximum(1)
+            self.progress.setValue(0)
+        else:
+            self.progress.setValue(1)
+            self.progress = None
 
     def _onSimulationSelected(self, dialog):
         sim = dialog.getSelectedSimulation()
 #        domain = dialog.getSelectedDomain()
         dialog.close()
         print(sim)
-
+        self.modalProgress("Loading...")
         vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
             vcellProxy2.open()
@@ -401,10 +415,11 @@ class VCellPysideApp(QtGui.QMainWindow):
             
             def successCallback(results):
                 print("_onSimulationSelected: openOne() success "+str(results));
+                self.modalProgress(None)
 
             def errorCallback(errorMessage):
                 print("_onSimulationSelected: openOne() error: "+str(errorMessage));
-    
+                self.modalProgress(None)
 
             self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,False,successCallback,errorCallback)
 
@@ -418,6 +433,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         finally:
             vcellProxy2.close()
+
 
         print("List of variable names from VCellProxy is:")
         varDisplayNames = [varInfo.variableDisplayName for varInfo in variables];
@@ -522,7 +538,6 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         finally:
             vcellProxy2.close()
-            
                 
         def successCallback(results):
             print("_onTimeSliderChanged: openOne() success "+str(results));
