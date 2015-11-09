@@ -2,6 +2,7 @@ package org.vcell.util.gui.exporter;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Objects;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.UserCancelException;
@@ -14,7 +15,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 @SuppressWarnings("serial")
 public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 	/**
@@ -22,7 +23,7 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 	 */
 	public static final String SIM_KEY = "selectedSimulation";
 	
-	private static final String[] FNAMES = {".smoldynInput", ".txt"};
+	private static final String[] FNAMES = {SMOLDYN_INPUT_FILE_EXTENSION, ".txt"};
 	private Simulation selectedSim = null;
 
 	
@@ -53,13 +54,13 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 		}
 		String chosenSimulationName = (String)choice;
 		Simulation chosenSimulation = chosenSimContext.getSimulation(chosenSimulationName);
-		VCAssert.assertValid(chosenSimulation);
+		Objects.requireNonNull(chosenSimulation);
 		ctx.hashTable.put(SIM_KEY, chosenSimulation); //PENDING delete
 		selectedSim = chosenSimulation;
 	}
 	@Override
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
-		VCAssert.assertValid(selectedSim);
+		Objects.requireNonNull(selectedSim);
 		
 			int scanCount = selectedSim.getScanCount();
 			if(scanCount > 1) // has parameter scan
@@ -69,7 +70,7 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 				{
 					SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 					// Need to export each parameter scan into a separate file
-					String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
+					String newExportFileName = baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION;
 					exportFile = new File(newExportFileName);
 					
 					PrintWriter pw = new PrintWriter(exportFile);

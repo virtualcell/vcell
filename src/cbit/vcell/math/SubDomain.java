@@ -11,6 +11,7 @@
 package cbit.vcell.math;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -546,6 +547,13 @@ public Equation getEquation(Variable variable) {
  */
 public Enumeration<Equation> getEquations() {
 	return equationList.elements();
+}
+
+/**
+ * @return equations as unmodifiable collection
+ */
+public Collection<Equation> getEquationCollection( ) {
+	return Collections.unmodifiableCollection(equationList);
 }
 
 

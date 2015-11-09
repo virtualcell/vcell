@@ -9,14 +9,13 @@
  */
 
 package cbit.vcell.solvers;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Objects;
 
+import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ISize;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
@@ -25,20 +24,20 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
 
@@ -48,20 +47,26 @@ import cbit.vcell.solver.server.SolverFileWriter;
  * @author: Dan Vasilescu
  */
 public class MovingBoundaryFileWriter extends SolverFileWriter {
-	private File userDirectory = null;
-	private Geometry resampledGeometry = null;
-	private File inputFile = null;
-	
-public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask, Geometry resampledGeometry, File dir) {	// for optimization only, no messaging
-	this (pw, simTask, resampledGeometry, dir, false);
-}
+//	private final File inputFile;
+//	private final PrintWriter writer;
+	private final Simulation simulation;
+	private final MathDescription mathDesc;
+	private final Geometry geometry;
+	private MembraneSubDomain theMembrane = null;
+	private final String outputName;
+	/**
+	 * temporary pending fixing MovingBoundary C++ to handle advection on per-species basis
+	 */
+	private Element problem;
 
-public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, File dir, boolean arg_bMessaging) {
+public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName) {
 	super(pw, simTask, arg_bMessaging);
-	this.resampledGeometry = resampledGeometry;
-	userDirectory = dir;
-	inputFile = new File(userDirectory,"MovingBoundary.xml");
-//	inputFile = new File(userDirectory,"SimID_"+simTask.getSimulationJobID()+".xml");
+//	inputFile = new File(dir,"MovingBoundary" + simTask.getTaskID() + ".xml");
+
+	simulation = simTask.getSimulation();
+	mathDesc = simulation.getMathDescription();
+	geometry = mathDesc.getGeometry();
+	this.outputName = outputName;
 }
 
 
@@ -69,54 +74,45 @@ public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometr
 @Override
 public void write(String[] parameterNames) throws Exception {
 	// TODO Auto-generated method stub
-	
+
 }
 @Override
 public void write() throws Exception {
-	FileOutputStream fos = new FileOutputStream(inputFile);
 	try {
-		NFsimSimulationOptions nfsimSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
+		Document doc = new Document();
 		Element root = writeMovingBoundaryXML(simTask);
-		XmlUtil.writeXmlToStream(root, false, fos);
-	}finally{
-		if (fos!=null){
-			fos.close();
-		}
+		doc.setRootElement(root);
+		XmlUtil.writeXml(doc, printWriter,false);
+	} catch (Exception e) {
+		throw new SolverException("Can't write input to solver",e);
 	}
 }
 
-public static void test(SimulationTask simTask, Geometry resampledGeometry) {
-	try {
-		StringWriter simulationInputStringWriter = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(simulationInputStringWriter,true);		
-
-		MovingBoundaryFileWriter movingBoundaryFileWriter = new MovingBoundaryFileWriter(printWriter, simTask, resampledGeometry, new File("c:\\temp\\MovingBoundary\\"));
-		movingBoundaryFileWriter.write();
-		// TODO Auto-generated method stub
-	} catch (Exception e){
-		e.printStackTrace(System.out);
-	}
-}
-
+/**
+ * @return number of subdomain which are {@link CompartmentSubDomain}s with {@link PdeEquation}s
+ */
 private int subdomainsSanityCheck() {
 	int subdomainsWithPdeEquations = 0;
-	Simulation simulation = simTask.getSimulation();
-	MathDescription mathDesc = simulation.getMathDescription();
-	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
-	while (enum1.hasMoreElements()) {
-		SubDomain sd = enum1.nextElement();
+	for (SubDomain sd : mathDesc.getSubDomainCollection()) {
 		if (sd instanceof CompartmentSubDomain) {
-			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
-			System.out.println("compartment " + csd.getName());
-			Enumeration<Equation> enum_equ = csd.getEquations();
-			while (enum_equ.hasMoreElements()){
-				Equation equation = enum_equ.nextElement();
-				if (equation instanceof PdeEquation){
+			for (Equation eq : sd.getEquationCollection())  {
+				if (eq instanceof PdeEquation){
 					subdomainsWithPdeEquations++;
 					break;
 				}
 			}
+			continue;
 		}
+		MembraneSubDomain msd = BeanUtils.downcast(MembraneSubDomain.class, sd);
+		if (msd != null) {
+			if (theMembrane != null) {
+				throw new IllegalArgumentException("only one membrane currently supported");
+			}
+			theMembrane = msd;
+		}
+	}
+	if (theMembrane == null) {
+         throw new IllegalArgumentException("non membrane found");
 	}
 	return subdomainsWithPdeEquations;
 }
@@ -125,11 +121,12 @@ private int subdomainsSanityCheck() {
 //	XML producer - here all the work is done
 //
 public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverException {
+	try {
 	int subdomainsWithPdeEquations = subdomainsSanityCheck();
 	if(subdomainsWithPdeEquations != 1) {
 		throw new RuntimeException("MovingBoundary Solver only accepts ONE subdomain containing PDE equations.");
 	}
-	
+
 	Element rootElement = new Element(MBTags.MovingBoundarySetup);
 	rootElement.addContent(getXMLProblem());	// problem
 	rootElement.addContent(getXMLReport());		// report
@@ -137,263 +134,228 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 	rootElement.addContent(getXMLTrace());		// trace
 	rootElement.addContent(getXMLDebug());		// debug
 	return rootElement;
+	} catch (Exception e) {
+		throw new SolverException("Can't generate MovingBoundary input", e);
+	}
 }
 // ------------------------------------------------- problem
-private Element getXMLProblem() {
-	Element e = new Element(MBTags.problem);
-	
-//	e.addContent(getXMLnoOperation());
-//	e.addContent(getXMLspecialFront());
+private Element getXMLProblem() throws ExpressionException, MathException {
+	Element e = problem = new Element(MBTags.problem);
+
 	e.addContent(getXMLxLimits());
 	e.addContent(getXMLyLimits());
-	
-	e.addContent(getnumNodesX());
-	e.addContent(getnumNodesY());
+	{
+		ISize isize = simulation.getMeshSpecification().getSamplingSize();
+		e.addContent(getnumNodesX(isize));
+		e.addContent(getnumNodesY(isize));
+	}
+
 	e.addContent(getfrontToNodeRatio());
-	e.addContent(getmaxTime());
-	e.addContent(gettimeStep());
+
+	{
+		SolverTaskDescription std = simulation.getSolverTaskDescription();
+		e.addContent(getmaxTime(std));
+		e.addContent(gettimeStep(std));
+	}
+
 	e.addContent(getLevelFunction());
 	e.addContent(getfrontVelocityFunctionX());
 	e.addContent(getfrontVelocityFunctionY());
-
 	e.addContent(getXMLphysiology());
 
 	return e;
 }
-private Element getXMLnoOperation() {
-	Element e = new Element(MBTags.noOperation);
-	e.addContent(getcircle());
-	return e;
-}
-private Element getcircle() {
-	Element e = new Element(MBTags.circle);
-	Element e1 = null;
-	e1 = new Element(MBTags.originx);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("0");
-	e.addContent(e1);
-	e1 = new Element(MBTags.originy);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("0");
-	e.addContent(e1);
-	e1 = new Element(MBTags.radius);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("1");
-	e.addContent(e1);
-	e1 = new Element(MBTags.velocityx);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("1");
-	e.addContent(e1);
-	e1 = new Element(MBTags.thetaIncrement);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("THETA");
-	e.addContent(e1);
-	return e;
-}
-private Element getXMLspecialFront() {
-	Element e = new Element(MBTags.specialFront);
-	e.addContent(getexpandingCircle());
-	return e;
-}
-private Element getexpandingCircle() {
-	Element e = new Element(MBTags.expandingCircle);
-	Element e1 = null;
-	e1 = new Element(MBTags.theta);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText(".01");
-	e.addContent(e1);
-	e1 = new Element(MBTags.radiusExpression);
-	e1.setAttribute("mode", "HARDCODED");
-	e1.setText("1+sin(t)");
-	e.addContent(e1);
-	return e;
-}
-private Element getXMLxLimits() {
-	Element e = new Element(MBTags.xLimits);
-	Element e1 = null;
-	e1 = new Element(MBTags.low);
-	double l = simTask.getSimulation().getMathDescription().getGeometry().getOrigin().getX();
-	e1.setText(l+"");
+
+private Element getGeoLimit(String coordinateLabel, Double low, Double high) {
+	Element e = new Element(coordinateLabel);
+	Element e1 = new Element(MBTags.low);
+	e1.setText(low.toString());
 	e.addContent(e1);
 	e1 = new Element(MBTags.high);		// sim.math.geometry.origin.x + sim.math.geometry.extent.x
-	double h = l + simTask.getSimulation().getMathDescription().getGeometry().getExtent().getX();
-	e1.setText(h+"");
+	Double h = low + high;
+	e1.setText(h.toString());
 	e.addContent(e1);
 	return e;
 }
+
+private Element getXMLxLimits() {
+	double low = geometry.getOrigin().getX();
+	double high = low + geometry.getExtent().getX();
+	return getGeoLimit(MBTags.xLimits,low,high);
+}
+
 private Element getXMLyLimits() {
-	Element e = new Element(MBTags.yLimits);
-	Element e1 = null;
-	e1 = new Element(MBTags.low);
-	double l = simTask.getSimulation().getMathDescription().getGeometry().getOrigin().getY();
-	e1.setText(l+"");
-	e.addContent(e1);
-	e1 = new Element(MBTags.high);
-	double h = l + simTask.getSimulation().getMathDescription().getGeometry().getExtent().getY();
-	e1.setText(h+"");
-	e.addContent(e1);
-	return e;
+	double low = geometry.getOrigin().getY();
+	double high = low + geometry.getExtent().getY();
+	return getGeoLimit(MBTags.yLimits,low,high);
 }
-private Element getnumNodesX() {
+
+private Element getnumNodesX(ISize isize) {
+	Objects.requireNonNull(isize);
 	Element e = new Element(MBTags.numNodesX);
-	int x = simTask.getSimulation().getMeshSpecification().getSamplingSize().getX();
-	e.setText(x+"");
+	Integer x = isize.getX();
+	e.setText(x.toString());
 	return e;
 }
-private Element getnumNodesY() {
+
+private Element getnumNodesY(ISize isize) {
+	Objects.requireNonNull(isize);
 	Element e = new Element(MBTags.numNodesY);
-	int y = simTask.getSimulation().getMeshSpecification().getSamplingSize().getY();
-	e.setText(y+"");
+	Integer y = isize.getY();
+	e.setText(y.toString());
 	return e;
 }
+
 private Element getfrontToNodeRatio() {
 	Element e = new Element(MBTags.frontToNodeRatio);
 	e.setAttribute("mode", "HARDCODED");
 	e.setText("5");
 	return e;
 }
-private Element getmaxTime() {
+private Element getmaxTime(SolverTaskDescription std) {
+	Objects.requireNonNull(std);
 	Element e = new Element(MBTags.maxTime);
-	double endingTime = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+	double endingTime = std.getTimeBounds().getEndingTime();
 	e.setText(endingTime+"");
 	return e;
 }
-private Element gettimeStep() {
+private Element gettimeStep(SolverTaskDescription std) {
+	Objects.requireNonNull(std);
 	Element e = new Element(MBTags.timeStep);
-	double defaultTimeStep = simTask.getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+	double defaultTimeStep = std.getTimeStep().getDefaultTimeStep();
 	e.setText(defaultTimeStep+"");
 	return e;
 }
-private Element getLevelFunction() {
+private Element getLevelFunction() throws ExpressionException {
 	Element e = new Element(MBTags.levelFunction);
 	// geometry shape encode in "LevelFunction".
-	Geometry geometry = simTask.getSimulation().getMathDescription().getGeometry();
 	GeometrySpec geometrySpec = geometry.getGeometrySpec();
 	if (geometry.getGeometrySpec().hasImage()){
 		throw new RuntimeException("image-based geometry not yet supported");
 	}
 	else{
-		Expression[] rvachevExps;
-		try {
-			rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
+			Expression[] rvachevExps = FiniteVolumeFileWriter.convertAnalyticGeometryToRvachevFunction(geometrySpec);
 			if (rvachevExps.length == 2){
 				Expression levelFunction = rvachevExps[0];
 				String content = levelFunction.infix();
 				e.setText(content);
 			}
-		} catch (ExpressionException e1) {
-			e1.printStackTrace();
-		}
+			else {
+				throw new IllegalArgumentException("Can't get level function, expected 2 RvachevFunction expressions, got " + rvachevExps.length);
+			}
 	}
 	return e;
 }
-private Element getfrontVelocityFunctionX() {
-	Element e = new Element(MBTags.frontVelocityFunctionX);
-	e.setAttribute("mode", "HARDCODED");
-	e.setText("1");
-	return e;
+
+/**
+ * @param e can be null
+ * @return flatted expression or "0" if e null or equivalent to 0
+ * @throws ExpressionException
+ * @throws MathException
+ */
+private String expressionAsString(Expression e) throws ExpressionException, MathException {
+	if (Expression.notZero(e)) {
+		return flattenExpression(e);
+	}
+	return "0";
 }
-private Element getfrontVelocityFunctionY() {
-	Element e = new Element(MBTags.frontVelocityFunctionY);
-	e.setAttribute("mode", "HARDCODED");
-	e.setText("0");
+private Element getFrontVelocity(String tag, Expression ex) throws ExpressionException, MathException {
+	Element e = new Element(tag);
+	e.setText(expressionAsString(ex));
 	return e;
+
 }
-private Element getXMLphysiology() {
-	Element e = new Element(MBTags.physiology);
-	
-//	SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getTaskID());
-//	Variable[] variables = simulationSymbolTable.getVariables();
-//	for(Variable v : variables) {
-//		if(v instanceof VolVariable && simTask.getSimulation().getMathDescription().isPDE((VolVariable)v)) {
-//			System.out.println(v.getName() + ", " + v.getClass().getSimpleName());
-//			e.addContent(getSpecies((VolVariable)v));
-//		}
-//	}
-	
-	Simulation simulation = simTask.getSimulation();
-	MathDescription mathDesc = simulation.getMathDescription();
-	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
-	while (enum1.hasMoreElements()) {		
-		SubDomain sd = enum1.nextElement();
+private Element getfrontVelocityFunctionX() throws ExpressionException, MathException {
+	Objects.requireNonNull(theMembrane);
+	return getFrontVelocity(MBTags.frontVelocityFunctionX,theMembrane.getVelocityX());
+}
+private Element getfrontVelocityFunctionY() throws ExpressionException, MathException {
+	Objects.requireNonNull(theMembrane);
+	return getFrontVelocity(MBTags.frontVelocityFunctionY,theMembrane.getVelocityY());
+}
+private Element getXMLphysiology() throws ExpressionException, MathException {
+	final Element e = new Element(MBTags.physiology);
+
+	mathDesc.getSubDomainCollection().stream().forEach( s -> manageCompartment(e,  s));
+	return e;
+
+}
+private void manageCompartment(Element e, SubDomain sd) {
+	try {
 		if (sd instanceof CompartmentSubDomain) {
-			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
-			System.out.println("compartment " + csd.getName());
-			
-			e = manageCompartment(e, csd);
+			for ( Equation equation : sd.getEquationCollection()) {
+				if (equation.getVariable().getDomain().getName().equals(sd.getName()))
+				{
+					System.out.println("ignore:   " + equation.getVariable().getName());
+				}
+
+				if (equation instanceof PdeEquation){
+					System.out.println("add this: " + equation.getVariable().getName());
+					e.addContent(getSpecies((PdeEquation)equation));
+				}
+			}
 		}
+	} catch(Exception exc) {
+		throw new RuntimeException("error managing compartment",exc);
 	}
-	return e;
 }
-private Element manageCompartment(Element e, CompartmentSubDomain csd)
-{
-	Enumeration<Equation> enum_equ = csd.getEquations();
-	while (enum_equ.hasMoreElements()){
-		Equation equation = enum_equ.nextElement();
-		if (equation.getVariable().getDomain().getName().equals(csd.getName()))
-		{
-			System.out.println("ignore:   " + equation.getVariable().getName());
-		}
-		
-		if (equation instanceof PdeEquation){
-			System.out.println("add this: " + equation.getVariable().getName());
-			e.addContent(getSpecies((PdeEquation)equation));
-		}	
+
+/**
+ * set and annotate expression value; optionally include even if null. If ex is null and always == false, does nothing
+ * @param dest element to set
+ * @param ex to evaluate, could be null
+ * @param always if true, set element even if expression null
+ * @throws ExpressionException
+ * @throws MathException
+ */
+private void setExpression(Element dest, Expression ex, boolean always) throws ExpressionException, MathException {
+	if (ex !=null) {
+		dest.setAttribute("value",ex.infix( ));
+		dest.setText(flattenExpression(ex));
+		return;
 	}
-	return e;
+	if (always) {
+		dest.setAttribute("value","null");
+		dest.setText("0");
+	}
 }
+
 // TODO: flatten here
-private Element getSpecies(PdeEquation eq) {
+private Element getSpecies(PdeEquation eq) throws ExpressionException, MathException {
 	Element e = new Element(MBTags.species);
 	e.setAttribute("name", eq.getVariable().getName());
-	
+
 	Element e1 = null;
 	e1 = new Element(MBTags.initial);
 	Expression ex = eq.getInitialExpression();
-	if(ex != null) {
-		e1.setAttribute("value", ex.infix());
-		e1.setText(flattenExpression(ex));
-	}
+	setExpression(e1, ex, false);
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.source);
 	ex = eq.getDiffusionExpression();
-	if(ex != null) {
-		e1.setAttribute("value", ex.infix());
-		e1.setText(flattenExpression(ex));
-	}
+	setExpression(e1, ex, false);
 	e.addContent(e1);
-	
-	e1 = new Element(MBTags.diffusionConstant);
+
+	e1 = new Element(MBTags.diffusion);
 	ex = eq.getRateExpression();
-	if(ex != null) {
-		e1.setAttribute("value", ex.infix());
-		e1.setText(flattenExpression(ex));
-	}
+	setExpression(e1, ex, false);
 	e.addContent(e1);
 
 	e1 = new Element(MBTags.advectVelocityFunctionX);
 	ex = eq.getVelocityX();
-	if(ex != null) {
-		e1.setAttribute("value", ex.infix());
-		e1.setText(flattenExpression(ex));
-	} else {
-		e1.setText("0");
-	}
+	setExpression(e1, ex, true);
 	e.addContent(e1);
+	problem.addContent((Element)e1.clone());
+
 	e1 = new Element(MBTags.advectVelocityFunctionY);
 	ex = eq.getVelocityY();
-	if(ex != null) {
-		e1.setAttribute("value", ex.infix());
-		e1.setText(flattenExpression(ex));
-	} else {
-		e1.setText("0");
-	}
+	setExpression(e1, ex, true);
 	e.addContent(e1);
+	problem.addContent((Element)e1.clone());
 	return e;
 }
 
-private String flattenExpression(Expression ex) {
+private String flattenExpression(Expression ex) throws ExpressionException, MathException {
 	String name = ex.infix();
 //	Simulation simulation = simTask.getSimulation();
 	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
@@ -401,20 +363,14 @@ private String flattenExpression(Expression ex) {
 	Variable[] variables = simTask.getSimulationJob().getSimulationSymbolTable().getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if(variables[i].getName().equals(name)) {
-		
+
 			Expression rfexp = new Expression(ex);
-			try {
 				rfexp.bindExpression(simSymbolTable);
 				rfexp = simSymbolTable.substituteFunctions(rfexp).flatten();
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-			} catch (MathException e) {
-				e.printStackTrace();
-			}
 			return rfexp.infix();
 		}
 	}
-	return null;
+	return name;
 }
 
 private Element getSpecies(VolVariable v) {
@@ -422,7 +378,7 @@ private Element getSpecies(VolVariable v) {
 	e.setAttribute("name", v.getName());
 	Element e1 = null;
 	e1 = new Element(MBTags.source);
-	
+
 	Expression ex = v.getExpression();
 	if(ex != null) {
 		e1.setText(ex.infix());
@@ -448,8 +404,7 @@ private Element getdeleteExisting() {
 }
 private Element getoutputFilename() {
 	Element e = new Element(MBTags.outputFilename);
-	e.setAttribute("mode", "HARDCODED");
-	e.setText("figsix-10-4.h5");
+	e.setText(outputName);
 	return e;
 }
 private Element getdatasetName() {
@@ -483,13 +438,13 @@ private Element gettimeReport() {
 		e.addContent(e1);
 	} else if (outTimeSpec instanceof DefaultOutputTimeSpec) {
 		DefaultOutputTimeSpec defaultOutputTimeSpec = (DefaultOutputTimeSpec)outTimeSpec;
-		double step = defaultOutputTimeSpec.getKeepEvery();
+		Integer step = defaultOutputTimeSpec.getKeepEvery();
 		double startTime = 0.0; // hard code
 		e1 = new Element(MBTags.startTime);
 		e1.setText("0");
 		e.addContent(e1);
 		e1 = new Element(MBTags.step);
-		e1.setText(step+"");
+		e1.setText(step.toString());
 		e.addContent(e1);
 	}
 	return e;
@@ -531,66 +486,68 @@ private Element getXMLDebug() {
 }
 
 
-public class MBTags {
-	public static final String MovingBoundarySetup		= "MovingBoundarySetup";
-	
-	public static final String problem					= "problem";
-	public static final String noOperation				= "noOperation";
-	public static final String circle					= "circle";
-	public static final String originx					= "originx";
-	public static final String originy					= "originy";
-	public static final String radius					= "radius";
-	public static final String velocityx				= "velocityx";
-	public static final String theta					= "theta";
-	public static final String thetaIncrement			= "thetaIncrement";
-	
-	public static final String specialFront				= "specialFront";
-	public static final String expandingCircle			= "expandingCircle";
-	public static final String radiusExpression			= "radiusExpression";
-	
-	public static final String xLimits					= "xLimits";
-	public static final String yLimits					= "yLimits";
-	public static final String low						= "low";
-	public static final String high						= "high";
-	public static final String numNodesX				= "numNodesX";
-	public static final String numNodesY				= "numNodesY";
-	public static final String frontToNodeRatio			= "frontToNodeRatio";
-	public static final String maxTime					= "maxTime";
-	public static final String timeStep					= "timeStep";
-	public static final String diffusionConstant		= "diffusionConstant";
-	public static final String levelFunction			= "levelFunction";
-	public static final String advectVelocityFunctionX	= "advectVelocityFunctionX";
-	public static final String advectVelocityFunctionY	= "advectVelocityFunctionY";
-	public static final String frontVelocityFunctionX	= "frontVelocityFunctionX";
-	public static final String frontVelocityFunctionY	= "frontVelocityFunctionY";
-	
-	public static final String physiology				= "physiology";
-	public static final String species					= "species";
-	public static final String name						= "name";
-	public static final String source					= "source";
-	public static final String initial					= "initial";
-	public static final String concentration			= "concentration";
+@SuppressWarnings("unused")
+private class MBTags {
+	private static final String MovingBoundarySetup		= "MovingBoundarySetup";
 
-	public static final String report					= "report";
-	public static final String deleteExisting			= "deleteExisting";
-	public static final String outputFilename			= "outputFilename";
-	public static final String datasetName				= "datasetName";
-	public static final String annotation				= "annotation";
-	public static final String series					= "series";
-	public static final String timeReport				= "timeReport";
-	public static final String startTime				= "startTime";
-	public static final String step						= "step";
-	public static final String interval					= "interval";
+	private static final String problem					= "problem";
+	private static final String noOperation				= "noOperation";
+	private static final String circle					= "circle";
+	private static final String originx					= "originx";
+	private static final String originy					= "originy";
+	private static final String radius					= "radius";
+	private static final String velocityx				= "velocityx";
+	private static final String theta					= "theta";
+	private static final String thetaIncrement			= "thetaIncrement";
 
-	public static final String progress					= "progress";
-	public static final String percent					= "percent";
-	public static final String estimateProgress			= "estimateProgress";
-	
-	public static final String trace					= "trace";
-	public static final String level					= "level";
-	public static final String traceFilename			= "traceFilename";
+	private static final String specialFront				= "specialFront";
+	private static final String expandingCircle			= "expandingCircle";
+	private static final String radiusExpression			= "radiusExpression";
 
-	public static final String matlabDebug				= "matlabDebug";
+	private static final String xLimits					= "xLimits";
+	private static final String yLimits					= "yLimits";
+	private static final String low						= "low";
+	private static final String high						= "high";
+	private static final String numNodesX				= "numNodesX";
+	private static final String numNodesY				= "numNodesY";
+	private static final String frontToNodeRatio			= "frontToNodeRatio";
+	private static final String maxTime					= "maxTime";
+	private static final String timeStep					= "timeStep";
+	private static final String diffusion		        = "diffusion";
+	private static final String diffusionConstant		= "diffusionConstant";
+	private static final String levelFunction			= "levelFunction";
+	private static final String advectVelocityFunctionX	= "advectVelocityFunctionX";
+	private static final String advectVelocityFunctionY	= "advectVelocityFunctionY";
+	private static final String frontVelocityFunctionX	= "frontVelocityFunctionX";
+	private static final String frontVelocityFunctionY	= "frontVelocityFunctionY";
+
+	private static final String physiology				= "physiology";
+	private static final String species					= "species";
+	private static final String name						= "name";
+	private static final String source					= "source";
+	private static final String initial					= "initial";
+	private static final String concentration			= "concentration";
+
+	private static final String report					= "report";
+	private static final String deleteExisting			= "deleteExisting";
+	private static final String outputFilename			= "outputFilename";
+	private static final String datasetName				= "datasetName";
+	private static final String annotation				= "annotation";
+	private static final String series					= "series";
+	private static final String timeReport				= "timeReport";
+	private static final String startTime				= "startTime";
+	private static final String step						= "step";
+	private static final String interval					= "interval";
+
+	private static final String progress					= "progress";
+	private static final String percent					= "percent";
+	private static final String estimateProgress			= "estimateProgress";
+
+	private static final String trace					= "trace";
+	private static final String level					= "level";
+	private static final String traceFilename			= "traceFilename";
+
+	private static final String matlabDebug				= "matlabDebug";
 }
 
 

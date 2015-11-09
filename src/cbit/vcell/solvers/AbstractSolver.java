@@ -12,12 +12,8 @@ package cbit.vcell.solvers;
 
 
 import java.io.File;
-import java.util.ArrayList;
 
 import org.vcell.util.ConfigurationException;
-import org.vcell.util.Issue;
-import org.vcell.util.IssueContext;
-import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.math.Constant;
@@ -206,10 +202,10 @@ protected void fireSolverStopped() {
 
 
 /**
- * getCurrentTime method comment.
+ * get name for solver files, without extension 
  */
 protected final String getBaseName() {
-	return (new File(getSaveDirectory(), simTask.getSimulationJob().getSimulationJobID()).getPath());
+	return new File(getSaveDirectory(), simTask.getSimulationJob().getSimulationJobID()).getPath();
 }
 
 

@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Vector;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.swing.event.ChangeEvent;
@@ -1736,6 +1738,7 @@ public boolean hasPeriodicBoundaryCondition() {
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
+
 
 
 /**
@@ -3518,6 +3521,15 @@ public boolean hasSpeciesObservable() {
 		}
 	}
 	return false;
+}
+
+@Override
+public boolean isMovingMembrane( ) {
+	Predicate<SubDomain> movingMembrane = s ->  {
+		MembraneSubDomain m = BeanUtils.downcast(MembraneSubDomain.class, s);
+		return m != null && m.isMoving();
+	};
+	return subDomainList.stream().filter(movingMembrane).findAny().isPresent();
 }
 
 }
