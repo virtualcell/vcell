@@ -91,6 +91,10 @@ class VisContextVisitImpl(visContextAbstract):
         self._infoWindowDockWidget = visQt.QtGui.QDockWidget()
         self._infoWindowDockWidget.setWidget(visit.pyside_support.GetOtherWindow("Information")) 
         self.setPickMode(1)
+        #
+        # Start ComputeEngine explicitly to avoid setup dialog later when opening first database
+        #
+        visit.OpenComputeEngine("localhost",("-np","1","-nn","1"))
 
 
 
@@ -511,6 +515,10 @@ class OpenOneAsynchTask(AsynchTask):
         self._stateFunctions[self._state]()
         return self._state == self.STATE_DONE
 
+    @overrides(AsynchTask)
+    def getResults(self):
+        return None
+
     def doOpenDatabase(self):
         print("OpenOneAsynchTask.doOpenDatabase()")
         assert(self._state == self.STATE_INITIAL) # current state
@@ -577,6 +585,10 @@ class UpdatePlotAsynchTask(AsynchTask):
     def doStep(self):
         self._stateFunctions[self._state]()
         return self._state == self.STATE_DONE
+
+    @overrides(AsynchTask)
+    def getResults(self):
+        return None
 
     def requestPlot(self):
         print("UpdatePlotAsynchTask.requestPlot()")
@@ -688,6 +700,10 @@ class LineoutAsynchTask(AsynchTask):
     def doStep(self):
         self._stateFunctions[self._state]()
         return self._state == self.STATE_DONE
+
+    @overrides(AsynchTask)
+    def getResults(self):
+        return None
 
     def doLineout(self):
         print("LineoutAsynchTask.doLineout()")
