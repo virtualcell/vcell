@@ -39,6 +39,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 
 /**
  * Insert the type's description here.
@@ -130,7 +131,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					{
 						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
-						String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
+						String newExportFileName = baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION;
 						exportFile = new File(newExportFileName);
 						
 						PrintWriter pw = new PrintWriter(exportFile);
@@ -312,7 +313,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					{
 						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
-						String newExportFileName = baseExportFileName + "_" + i + ".smoldynInput";
+						String newExportFileName = baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION;
 						exportFile = new File(newExportFileName);
 						
 						PrintWriter pw = new PrintWriter(exportFile);
