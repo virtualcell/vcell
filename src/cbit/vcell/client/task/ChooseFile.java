@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -43,7 +44,9 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mathmodel.MathModel;
+import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
@@ -56,14 +59,14 @@ public class ChooseFile extends ExportTask {
 	 * extension user typed info file chooser
 	 */
 	private String extensionUserProvided = null;
-	
+
 	public ChooseFile() {
 		super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
 	}
-	
+
 	/**
 	 * removes extension, if any and stores in {@link #extensionUserProvided}
-	 * @param userProvided could be null 
+	 * @param userProvided could be null
 	 * @return userProvided with extension removed if present
 	 */
 	private String recordAndRemoveExtension(String userProvided) {
@@ -75,17 +78,17 @@ public class ChooseFile extends ExportTask {
 	private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
 
 		File oldPath = userPreferences.getCurrentDialogPath();
-		File newPath = selectedFile.getParentFile();                  
+		File newPath = selectedFile.getParentFile();
 		if (!newPath.equals(oldPath)) {
 			userPreferences.setCurrentDialogPath(newPath);
 		}
 		System.out.println("New preferred file path: " + newPath.getAbsolutePath() + ", Old preferred file path: " + oldPath.getAbsolutePath());
 	}
-	
+
 	/**
 	 * warn user if file asks
 	 * @param selectedFile may be null
-	 * @param parent should not be null 
+	 * @param parent should not be null
 	 * @param userPreferences
 	 */
 	private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
@@ -117,13 +120,13 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	}
 	//check to see if we've changed extension from what user entered
 	if (extensionUserProvided  != null && !extensionUserProvided.isEmpty()) {
-		String fp = exportFile.getAbsolutePath(); 
-		String currentExt = FilenameUtils.getExtension( fp ); 
+		String fp = exportFile.getAbsolutePath();
+		String currentExt = FilenameUtils.getExtension( fp );
 		if (!extensionUserProvided.equals(currentExt)) {
-			hashTable.put(RENAME_KEY, fp); 
+			hashTable.put(RENAME_KEY, fp);
 		}
 	}
-	
+
 	hashTable.put(EXPORT_FILE, exportFile);
 }
 
@@ -136,11 +139,11 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
-	SelectorExtensionFilter forceFileFilter = null; 
+	SelectorExtensionFilter forceFileFilter = null;
 	{
 		Object obj = hashTable.get(FORCE_FILE_FILTER);
 		if (obj != null) {
-			VCAssert.ofType(obj, SelectorExtensionFilter.class); 
+			VCAssert.ofType(obj, SelectorExtensionFilter.class);
 			forceFileFilter = (SelectorExtensionFilter) obj;
 			VCAssert.assertTrue(forceFileFilter.supports(Selector.FULL_MODEL), "only " + Selector.FULL_MODEL + " filters supported for force file filter");
 		}
@@ -157,9 +160,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	boolean nonspatialDeterministicSim = false;
 	boolean stochasticSim = false;
 	@SuppressWarnings("unused")
-	boolean bnglSim = false; //add logic to set this 
+	boolean bnglSim = false; //add logic to set this
 	for (SimulationContext sc : simContexts) {
-		if (sc.isStoch()) {
+		if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
 			stochasticSim = true;
 		}
 		else {
@@ -176,7 +179,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		List<FileFilter> dlist = FileFilters.supports(SelectorExtensionFilter.Selector.DEFAULT);
 		VCAssert.assertTrue(dlist.size( ) == 1, "Exactly one filter must be designated default");
 		defaultFileFilter = dlist.get(0);
-		Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical 
+		Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical
 		filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.FULL_MODEL));
 		if (spatialDeterministicSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SPATIAL));
@@ -187,16 +190,16 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		if (stochasticSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.STOCHASTIC));
 		}
-		/*add BNGL selector here 
+		/*add BNGL selector here
 		if (bnglSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.BNGL));
 		}
 		*/
-		
+
 		for (FileFilter f : filters) {
 			fileChooser.addChoosableFileFilter(f);
 		}
-		
+
 		/*
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_12);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
@@ -209,11 +212,11 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF); 
+		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 		*/
-		
-	} 
+
+	}
 	else {
 		defaultFileFilter = forceFileFilter;
 	}
@@ -222,21 +225,21 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	// Set the default file filter...
 	fileChooser.setFileFilter(defaultFileFilter);
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
-	
+
 	fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");
 	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
 		// user didn't choose save
 		throw UserCancelException.CANCEL_FILE_SELECTION;
-	} 
+	}
 	File selectedFile = fileChooser.getSelectedFile();
 	FileFilter gfileFilter = fileChooser.getFileFilter();
 	VCAssert.ofType(gfileFilter, SelectorExtensionFilter.class);
 	//only ExtensionFilters should have been added;
-	SelectorExtensionFilter fileFilter =  (SelectorExtensionFilter) gfileFilter; 
+	SelectorExtensionFilter fileFilter =  (SelectorExtensionFilter) gfileFilter;
 	if (selectedFile == null) {
 		// no file selected (no name given)
 		throw UserCancelException.CANCEL_FILE_SELECTION;
-	} 
+	}
 	final File fileUserSpecified = selectedFile.getCanonicalFile();
 	///
 	String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
@@ -244,7 +247,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		selectedFileName += extensionUserProvided;
 	}
 	else {
-		selectedFileName += fileFilter.getPrimaryExtension(); 
+		selectedFileName += fileFilter.getPrimaryExtension();
 	}
 	selectedFile = new File(selectedFileName);
 
@@ -268,7 +271,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		else if (!fileFilter.supports(SelectorExtensionFilter.Selector.SPATIAL)) {
 			continue;
 		}
-		if (sc.isStoch()) {
+		if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
 			if (!fileFilter.supports(SelectorExtensionFilter.Selector.STOCHASTIC)) {
 				continue;
 			}
@@ -289,9 +292,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	SimulationContext chosenSimContext = null;
 	if (applicableSimContexts.size() == 1){
 		chosenSimContext = applicableSimContexts.get(0);
-	} 
+	}
 	/*
-		else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) && 
+		else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_22.getDescription()) &&
@@ -390,9 +393,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //	if (isSbml) {
 //		// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
 //		Structure[] structures = bioModel.getModel().getStructures();
-//		// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
+//		// get the nonspatial simulationContexts corresponding to names in applicableAppNameList
 //		// This is needed in ApplnSelectionAndStructureSizeInputPanel
-//		
+//
 //		SimulationContext[] applicableSimContexts = applicableSimContext.toArray(new SimulationContext[applicableSimContext.size()]);
 //
 //		String strucName = null;
@@ -424,7 +427,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //			hashTable.put("selectedSimContext", chosenSimContext);
 //
 //			GeometryContext geoContext = chosenSimContext.getGeometryContext();
-//			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) { 
+//			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_31_SPATIAL.getDescription())) {
 //				// calculate structure Sizes only if appln is not spatial
 //				structSize = applnStructInputPanel.getStructureSize();
 //				// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set
@@ -438,7 +441,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //							" of all compartments are known. Sufficient information is not available to perform this computation." +
 //							"\n\nThis can be fixed by going back to the application '" + chosenSimContext.getName() + "' and setting structure sizes in the 'StructureMapping' tab.");
 //					throw UserCancelException.CANCEL_XML_TRANSLATION;
-//				} 
+//				}
 //				if (!geoContext.isAllSizeSpecifiedPositive() && geoContext.isAllVolFracAndSurfVolSpecified()) {
 //					Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 //					StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
@@ -477,14 +480,14 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //					}
 //				} else if (simOption == JOptionPane.CANCEL_OPTION || simOption == JOptionPane.CLOSED_OPTION) {
 //					// User did not choose a simulation whose overrides are required to be exported.
-//					// Without that information, cannot export successfully into SBML, 
+//					// Without that information, cannot export successfully into SBML,
 //					// Hence canceling the entire export to SBML operation.
 //					throw UserCancelException.CANCEL_XML_TRANSLATION;
 //				}
-//			} 
+//			}
 //		} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 //			// User did not choose to set size for any structure.
-//			// Without that information, cannot export successfully into SBML, 
+//			// Without that information, cannot export successfully into SBML,
 //			// Hence canceling the entire export to SBML operation.
 //			throw UserCancelException.CANCEL_XML_TRANSLATION;
 //		}
@@ -495,7 +498,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //			String base = FilenameUtils.getBaseName(selectedFileName);
 //			String path = FilenameUtils.getPath(selectedFileName);
 //			base += "_"  + TokenMangler.mangleToSName(chosenSimulation.getName());
-//			selectedFileName = path + base + ext; 
+//			selectedFileName = path + base + ext;
 //			selectedFile.renameTo(new File(selectedFileName));
 //		}
 //		resetPreferredFilePath(selectedFile, userPreferences);
@@ -533,12 +536,12 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-	
+
 	// set the default file filter...
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
-	
+
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
-	
+
 	fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
 	if (fileChooser.showSaveDialog(comp) != JFileChooser.APPROVE_OPTION) {
 		// user didn't choose save
@@ -558,12 +561,12 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
 				selectedFile = new File(selectedFileName + ".pdf");
 			}
-			
+
 			if (fileFilter==null) {
 				throw new Exception("No file save type was selected.");
 			}
 			checkForOverwrites(selectedFile, comp, userPreferences);
-			
+
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
 			resetPreferredFilePath(selectedFile, userPreferences);
@@ -605,7 +608,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	// set the default file filter...
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
     fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(mathModel.getName())));
-	
+
 	fileChooser.setDialogTitle("Export Virtual Cell MathModel As...");
 	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
 		// user didn't choose save
@@ -630,8 +633,8 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
 				selectedFile = new File(selectedFileName + ".pdf");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(".smoldynInput") ||(n.endsWith(".txt")))) {
-				selectedFile = new File(selectedFileName + ".smoldynInput");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(SMOLDYN_INPUT_FILE_EXTENSION) ||(n.endsWith(".txt")))) {
+				selectedFile = new File(selectedFileName + SMOLDYN_INPUT_FILE_EXTENSION);
 			}
 			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 			// put the filter in the hash so the export task knows what to do...
@@ -641,7 +644,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				mathModel.getMathDescription().getGeometry().getDimension() != 0) {
 				throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
 			}
-			// Select a spatial stochastic simulation to export 
+			// Select a spatial stochastic simulation to export
 			else if(fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription()))
 			{
 				Simulation[] sims = mathModel.getSimulations();
@@ -660,12 +663,12 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				if(chosenSimulation != null)
 				{
 					hashTable.put("selectedSimulation", chosenSimulation);
-					
-					
+
+
 					File tempOutputFile = new File(selectedFileName);
 		    		if(!FileFilters.FILE_FILTER_SMOLDYN_INPUT.accept(tempOutputFile)){
     					if(tempOutputFile.getName().indexOf(".") == -1){
-    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName() + ".smoldynInput");
+    						tempOutputFile = new File(tempOutputFile.getParentFile(),tempOutputFile.getName() + SMOLDYN_INPUT_FILE_EXTENSION);
     					}else{
     						throw new Exception("Smoldyn input file has to be a text document with extension of either 'smoldynInput' or 'txt'");
     					}
@@ -679,9 +682,9 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 		    		}
 		    		selectedFile = tempOutputFile;
 				}
-				
+
 			}
-			
+
 			resetPreferredFilePath(selectedFile, userPreferences);
 
 			return selectedFile;
@@ -693,13 +696,13 @@ private static class SimContextAdapter {
 	final SimulationContext simCtx;
 
 	SimContextAdapter(SimulationContext simCtx) {
-		VCAssert.assertValid(simCtx);
+		Objects.requireNonNull(simCtx);
 		this.simCtx = simCtx;
 	}
 
 	@Override
 	public String toString() {
-		return simCtx.getName(); 
+		return simCtx.getName();
 	}
 }
 
