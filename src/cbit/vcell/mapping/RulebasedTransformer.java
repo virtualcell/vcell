@@ -369,7 +369,6 @@ public class RulebasedTransformer implements SimContextTransformer {
 //				bReversible = false;
 //			}
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
-			rr.setStructure(rs.getStructure());
 		
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
 			Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
