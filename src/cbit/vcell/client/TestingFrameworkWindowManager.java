@@ -35,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.apache.log4j.Logger;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -70,7 +71,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.TFGenerateReport;
 import cbit.vcell.client.task.TFRefresh;
-import cbit.vcell.client.task.TFRemoveTestCriteria;
 import cbit.vcell.client.task.TFUpdateRunningStatus;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -87,8 +87,8 @@ import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.StochVolVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
@@ -108,11 +108,11 @@ import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
 import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
 import cbit.vcell.numericstest.EditTestSuiteOP;
 import cbit.vcell.numericstest.LoadTestInfoOP;
-import cbit.vcell.numericstest.RemoveTestCriteriaOP;
 import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
 import cbit.vcell.numericstest.LoadTestInfoOpResults;
 import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
 import cbit.vcell.numericstest.RemoveTestCasesOP;
+import cbit.vcell.numericstest.RemoveTestCriteriaOP;
 import cbit.vcell.numericstest.RemoveTestResultsOP;
 import cbit.vcell.numericstest.RemoveTestSuiteOP;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -137,6 +137,7 @@ import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
@@ -145,7 +146,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -157,7 +157,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * @author: Anuradha Lakshminarayana
  */
 public class TestingFrameworkWindowManager extends TopLevelWindowManager implements DataViewerManager {
-	
+	private static Logger lg = Logger.getLogger(TestingFrameworkWindowManager.class);
 	
 	public static final int COPY_REGRREF = 0;
 	public static final int ASSIGNORIGINAL_REGRREF = 1;
@@ -356,9 +356,12 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 						}
 					}
 				}catch(Throwable e){
-					errors.append("Error collecting BioModel for TestCase "+
-						(testCases[i].getVersion() != null?"Name="+testCases[i].getVersion().getName():"TCKey="+testCases[i].getTCKey())+"\n"+
-							e.getClass().getName()+" "+e.getMessage()+"\n");
+					String identifier = testCases[i].getVersion() != null?"Name="+testCases[i].getVersion().getName():"TCKey="+testCases[i].getTCKey();
+					if (lg.isInfoEnabled()) {
+						lg.info(identifier,e);
+					}
+					errors.append("Error collecting BioModel for TestCase "+ identifier + '\n' +
+							e.getClass().getName()+" "+e.getMessage()+'\n');
 				}
 			}
 		//}
@@ -2703,7 +2706,7 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
 	getAddTestCaseDialog().setMessage("");
 	getAddTestCaseDialog().setMessage(addTCPanel); 
 	getAddTestCaseDialog().setValue(null);
-	JDialog d = getAddTestCaseDialog().createDialog(requester, "Add New TestCase:");
+	JDialog d = getAddTestCaseDialog().createDialog(requester, "New TestCase:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	DialogUtils.showModalJDialogOnTop(d, requester);
@@ -2722,7 +2725,7 @@ private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester
 	getAddTestSuiteDialog().setMessage("");
 	getAddTestSuiteDialog().setMessage(addTSPanel);
 	getAddTestSuiteDialog().setValue(null);
-	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"Add New TestSuite"));
+	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"New TestSuite"));
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	DialogUtils.showModalJDialogOnTop(d, requester);

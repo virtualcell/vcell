@@ -89,7 +89,7 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 	}
 
 	private void initialize(){
-		addNewButton = new JButton("Add New");
+		addNewButton = new JButton("New Application");
 		deleteButton = new JButton("Delete");
 		textFieldSearch = new JTextField(10);
 		textFieldSearch.putClientProperty("JTextField.variant", "search");
@@ -145,5 +145,6 @@ public abstract class BioModelEditorRightSidePanel<T> extends DocumentEditorSubP
 		int[] rows = table.getSelectedRows();
 		deleteButton.setEnabled(rows != null && rows.length > 0 && (rows.length > 1 || tableModel.getValueAt(rows[0]) != null));
 		setSelectedObjectsFromTable(table, tableModel);
+
 	}
 }

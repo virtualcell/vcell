@@ -365,10 +365,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			newButton.setVisible(false);
 		} else {
 			newButton.setVisible(true);
-			newButton.setText("Add New");
-			// For structureTable tab, newButton should show 'Add New Compartment'; 'Add New Membrane' button should be visible.
+			// For structureTable tab, newButton should show 'New Compartment'; 'New Membrane' button should be visible.
 			if (selectedIndex == ModelPanelTabID.structure_table.ordinal()) {
-				newButton.setText("Add New Compartment");
+				newButton.setText("New Compartment");
 				newMemButton.setVisible(true);
 			} else if(selectedIndex == ModelPanelTabID.species_table.ordinal()) {
 				if(bioModel.getModel().getNumStructures() <= 1) {
@@ -378,12 +377,17 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					newButton.setIcon(new DownArrowIcon());
 					newButton.setHorizontalTextPosition(SwingConstants.LEFT);
 				}
+				newButton.setText("New Species");
+			} else if(selectedIndex == ModelPanelTabID.observables_table.ordinal()) {
+				newButton.setText("New Observable");		
+			} else if(selectedIndex == ModelPanelTabID.species_definitions_table.ordinal()) {
+				newButton.setText("New Molecule");		
 			}
 		}
 		if (selectedIndex == ModelPanelTabID.reaction_table.ordinal()) {
-			newButton.setText("Add New Reaction");
+			newButton.setText("New Reaction");
 			newButton2.setVisible(true);
-			newButton2.setText("Add New Rule");
+			newButton2.setText("New Rule");
 			duplicateButton.setVisible(true);
 		} else {
 			newButton2.setVisible(false);
@@ -489,9 +493,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initialize(){
-		newButton = new JButton("Add New");
-		newButton2 = new JButton("Add New Rule");
-		newMemButton = new JButton("Add New Membrane");
+		newButton = new JButton("New");
+		newButton2 = new JButton("New Rule");
+		newMemButton = new JButton("New Membrane");
 		deleteButton = new JButton("Delete");
 		duplicateButton = new JButton("Duplicate");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
@@ -1800,7 +1804,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		Model model = getModel();
 		reactionEditorPanel.setModel(model);
 		while (true) {
-			int confirm = DialogUtils.showComponentOKCancelDialog(this, reactionEditorPanel, "Add New Reaction");
+			int confirm = DialogUtils.showComponentOKCancelDialog(this, reactionEditorPanel, "New Reaction");
 			if (confirm == javax.swing.JOptionPane.OK_OPTION) {
 				Structure reactionStructure = reactionEditorPanel.getStructure();
 				String reactionName = reactionEditorPanel.getReactionName();
