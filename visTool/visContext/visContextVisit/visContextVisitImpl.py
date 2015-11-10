@@ -1,4 +1,4 @@
-﻿try:
+try:
     import exceptions
     import sys
     import os
