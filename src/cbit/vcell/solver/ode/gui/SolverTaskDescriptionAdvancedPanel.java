@@ -723,8 +723,9 @@ private void initialize() {
 		java.awt.GridBagConstraints gbc1 = new java.awt.GridBagConstraints();
 		gbc1.gridx = 0; 
 		gbc1.gridy = gridy;
-		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc1.fill = java.awt.GridBagConstraints.BOTH;
 		gbc1.weightx = 1.0;
+		gbc1.weighty = 1.0;
 		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getChomboTimeBoundsPanel(), gbc1);
 
