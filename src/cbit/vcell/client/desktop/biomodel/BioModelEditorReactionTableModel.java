@@ -320,8 +320,8 @@ public class BioModelEditorReactionTableModel extends BioModelEditorRightSideTab
 						// when editing an existing reaction rule
 						ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputValue, oldReactionRule.getStructure(), bioModel);
 						if(newReactionRule != null) {
-							oldReactionRule.setProductPatterns(newReactionRule.getProductPatterns(), false);
-							oldReactionRule.setReactantPatterns(newReactionRule.getReactantPatterns(), false);
+							oldReactionRule.setProductPatterns(newReactionRule.getProductPatterns(), false, false);
+							oldReactionRule.setReactantPatterns(newReactionRule.getReactantPatterns(), false, false);
 //							String name = oldReactionRule.getName();
 //							RbmKineticLaw kl = oldReactionRule.getKineticLaw();
 //							Structure st = oldReactionRule.getStructure();

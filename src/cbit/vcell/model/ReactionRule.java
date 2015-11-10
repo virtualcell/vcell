@@ -39,6 +39,7 @@ import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -157,26 +158,59 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		return false;
 	}
 	
+	public static ReactionRule duplicate(ReactionRule oldRule) throws ExpressionBindingException {
+		Model m = oldRule.getModel();
+		Structure s = oldRule.getStructure();
+		boolean bR = oldRule.isReversible();
+		String newName = ReactionRule.deriveReactionName(oldRule);
+		ReactionRule newRule = new ReactionRule(m, newName, s, bR);
+		
+		RateLawType rateLawType = oldRule.getKineticLaw().getRateLawType();
+		if(rateLawType != RateLawType.MassAction) {
+			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
+		}
+		RbmKineticLaw kineticLaw = new RbmKineticLaw(newRule, rateLawType);
+		RbmKineticLaw.duplicate(kineticLaw, oldRule);
+
+		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			ReactantPattern newrp = new ReactantPattern(newsp, oldrp.getStructure());
+			newRule.addReactant(newrp, false, false);		// don't try to resolve matches or bonds, we want to mirror whatever is in the old rule
+		}
+		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			ProductPattern newpp = new ProductPattern(newsp, oldpp.getStructure());
+			newRule.addProduct(newpp, false, false);
+		}
+		kineticLaw.bind(newRule);
+		return newRule;
+	}
+	
 	public void addReactant(ReactantPattern reactant) {
 		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 		newValue.add(reactant);
-		setReactantPatterns(newValue, true);		
+		setReactantPatterns(newValue, true, true);		
 	}
 	// when reading from the database we want to preserve the matches we saved, so bResolveMatches is false
 	public void addReactant(ReactantPattern reactant, boolean bResolveMatches) {
 		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 		newValue.add(reactant);
-		setReactantPatterns(newValue, bResolveMatches);		
+		setReactantPatterns(newValue, bResolveMatches, true);		
+	}
+	public void addReactant(ReactantPattern reactant, boolean bResolveMatches, boolean bResolveBonds) {
+		List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
+		newValue.add(reactant);
+		setReactantPatterns(newValue, bResolveMatches, bResolveBonds);		
 	}
 	public void removeReactant(ReactantPattern reactant) {
 		if (reactantPatterns.contains(reactant)) {
 			List<ReactantPattern> newValue = new ArrayList<ReactantPattern>(reactantPatterns);
 			newValue.remove(reactant);
-			setReactantPatterns(newValue, true);	
+			setReactantPatterns(newValue, true, true);	
 		}
 	}
 	
-	public void setReactantPatterns(List<ReactantPattern> newValue, boolean bResolveMatches) {
+	public void setReactantPatterns(List<ReactantPattern> newValue, boolean bResolveMatches, boolean bResolveBonds) {
 		List<ReactantPattern> oldValue = reactantPatterns;
 		if (oldValue != null) {
 			for (ReactantPattern rp : oldValue) {
@@ -188,7 +222,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			for (ReactantPattern rp : newValue) {
 				rp.getSpeciesPattern().addPropertyChangeListener(this);				
 			}
-			resolveBonds(ReactionRuleParticipantType.Reactant);
+			if(bResolveBonds) {
+				resolveBonds(ReactionRuleParticipantType.Reactant);
+			}
 		}
 		firePropertyChange(ReactionRule.PROPERTY_NAME_REACTANT_PATTERNS, oldValue, newValue);
 //		checkReactantPatterns(null);
@@ -303,22 +339,27 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	public void addProduct(ProductPattern product) {
 		List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
 		newValue.add(product);
-		setProductPatterns(newValue, true);		
+		setProductPatterns(newValue, true, true);		
 	}
 	public void addProduct(ProductPattern product, boolean bResolveMatches) {
 		List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
 		newValue.add(product);
-		setProductPatterns(newValue, bResolveMatches);		
+		setProductPatterns(newValue, bResolveMatches, true);		
+	}
+	public void addProduct(ProductPattern product, boolean bResolveMatches, boolean bResolveBonds) {
+		List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
+		newValue.add(product);
+		setProductPatterns(newValue, bResolveMatches, bResolveBonds);		
 	}
 	
 	public void removeProduct(ProductPattern product) {
 		if (productPatterns.contains(product)) {
 			List<ProductPattern> newValue = new ArrayList<ProductPattern>(productPatterns);
 			newValue.remove(product);
-			setProductPatterns(newValue, true);
+			setProductPatterns(newValue, true, true);
 		}
 	}	
-	public void setProductPatterns(List<ProductPattern> newValue, boolean bResolveMatches) {
+	public void setProductPatterns(List<ProductPattern> newValue, boolean bResolveMatches, boolean bResolveBonds) {
 		List<ProductPattern> oldValue = productPatterns;
 		if (oldValue != null) {
 			for (ProductPattern pp : oldValue) {
@@ -330,7 +371,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			for (ProductPattern pp : newValue) {
 				pp.getSpeciesPattern().addPropertyChangeListener(this);
 			}
-			resolveBonds(ReactionRuleParticipantType.Product);
+			if(bResolveBonds) {
+				resolveBonds(ReactionRuleParticipantType.Product);
+			}
 		}
 		firePropertyChange(ReactionRule.PROPERTY_NAME_PRODUCT_PATTERNS, oldValue, newValue);
 //		checkProductPatterns(null);
@@ -1175,7 +1218,20 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		addPropertyChangeListener(this);
 //		removeVetoableChangeListener(this);
 //		addVetoableChangeListener(this);
-
+	}
+	
+	public static String deriveReactionName(ReactionRule rr) {
+		int count=0;
+		String baseName = rr.getName() + "_";
+		String newName = "";
+		while (true) {
+			newName = baseName + count;
+			if ((rr.getModel().getReactionStep(newName) == null) && (rr.getModel().getRbmModelContainer().getReactionRule(newName) == null)){
+				break;
+			}
+			count++;
+		}
+		return newName;
 	}
 
 	//TODO: almost identical to findStateUsage() below - pay attention to keep both in sync

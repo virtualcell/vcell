@@ -175,6 +175,9 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 					thisMcp.setBond(thisBond);
 				}
 			}
+			// we also reproduce all the matches
+			MolecularTypePattern thisMtp = (MolecularTypePattern)thatThisMap.get(thatMtp);
+			thisMtp.setParticipantMatchLabel(thatMtp.getParticipantMatchLabel());
 		}
 	}
 	
