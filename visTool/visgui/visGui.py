@@ -82,6 +82,16 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.sliderQueue = Queue()
         self.sliderLock = Lock()
         self.initUI()
+
+    def closeEvent(self, event):
+        self._vis.quit()
+        ## do stuff
+        #if self.canExit():
+        #    print("canExit() true")
+        #    event.accept() # let the window close
+        #else:
+        #    print("canExit() false")
+        #    event.ignore()
   
     def __parse_command_line(self):
         i = 0
@@ -509,10 +519,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         print('_onSaveImagePushButtonPressed()')
 
     def _exitApplication(self):
-        print('closing visContext')
         self._vis.quit()
-        print('closing qt application')
-        QtCore.QCoreApplication.quit()
 
     def _onTimeSliderChanged(self):
         print('_onTimeSliderChanged()')
