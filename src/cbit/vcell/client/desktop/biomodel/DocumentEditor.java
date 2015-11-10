@@ -627,6 +627,7 @@ private void construcutPopupMenu() {
 	boolean bDelete = false;
 	boolean bNewBiomodel = false;
 	boolean bRemoveApps = false;
+	DocumentEditorTreeFolderClass folderClass = null;
 	for (TreePath tp : selectedPaths) {
 		Object obj = tp.getLastPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -639,7 +640,7 @@ private void construcutPopupMenu() {
 		BioModelNode selectedNode = (BioModelNode) obj;
 		Object userObject = selectedNode.getUserObject();
 		if (userObject instanceof DocumentEditorTreeFolderNode) {
-			DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
+			folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 			if (folderClass == DocumentEditorTreeFolderClass.APPLICATIONS_NODE) {
 				bAddNewApp = true;
 				if(selectedNode.getChildCount() > 0){
@@ -667,7 +668,7 @@ private void construcutPopupMenu() {
 	}
 	if (bAddNewApp) {
 		if (addNewAppMenu == null) {
-			addNewAppMenu = new JMenu("Add New");
+			addNewAppMenu = new JMenu("New Application");
 			addNewAppDeterministicMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_DETERMINISTIC_APPLICATION);
 			addNewAppDeterministicMenuItem.addActionListener(eventHandler);
 			addNewAppStochasticMenuItem = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
@@ -688,10 +689,22 @@ private void construcutPopupMenu() {
 		popupMenu.add(removeAppsMenu);		
 	}
 	if (bAddNew) {
-		if (addNewMenuItem == null) {
-			addNewMenuItem = new javax.swing.JMenuItem("Add New");
-			addNewMenuItem.addActionListener(eventHandler);
+		String addText = "New";
+		if (folderClass == DocumentEditorTreeFolderClass.REACTIONS_NODE) {
+			addText += " Reaction";
+		} else if(folderClass == DocumentEditorTreeFolderClass.STRUCTURES_NODE) {
+			addText += " Compartment";
+		} else if(folderClass == DocumentEditorTreeFolderClass.SPECIES_NODE) {
+			addText += " Species";
+		} else if(folderClass == DocumentEditorTreeFolderClass.MOLECULAR_TYPES_NODE) {
+			addText += " Molecule";
+		} else if(folderClass == DocumentEditorTreeFolderClass.OBSERVABLES_NODE) {
+			addText += " Observable";
+		} else if(folderClass == DocumentEditorTreeFolderClass.MATH_SIMULATIONS_NODE) {
+			addText += " Simulation";
 		}
+		addNewMenuItem = new javax.swing.JMenuItem(addText);
+		addNewMenuItem.addActionListener(eventHandler);
 		popupMenu.add(addNewMenuItem);
 	}
 	if (bRename) {

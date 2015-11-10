@@ -186,7 +186,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 	}
 	
 	private void initialize(){
-		addNewButton = new JButton("Add New Global Parameter");
+		addNewButton = new JButton("New Global Parameter");
 		addNewButton.addActionListener(eventHandler);
 		deleteButton = new JButton("Delete Global Parameter(s)");
 		deleteButton.setEnabled(false);
