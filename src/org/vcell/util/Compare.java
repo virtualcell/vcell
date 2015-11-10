@@ -618,6 +618,7 @@ public static boolean isEqualFields(Matchable lhs, Matchable rhs) {
 				}
 			}
 		}
+		return true;
 	}
 	catch (Exception e) {
 		e.printStackTrace();
