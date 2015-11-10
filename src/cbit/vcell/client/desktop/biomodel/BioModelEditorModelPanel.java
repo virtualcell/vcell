@@ -39,7 +39,6 @@ import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -53,7 +52,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -62,7 +60,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.EntityImpl;
@@ -95,9 +92,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ReactionCartoonEditorPanel;
 import cbit.vcell.graph.ReactionCartoonTool;
-import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
-import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.structures.AllStructureSuite;
 import cbit.vcell.mapping.SimulationContext;
@@ -123,6 +118,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 
 @SuppressWarnings("serial")
@@ -173,6 +169,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	private JButton newMemButton = null;
 	private JButton deleteButton = null;
 	private JButton pathwayButton = null;
+	private JButton duplicateButton = null;
 	private JPopupMenu pathwayPopupMenu = null;
 	private JMenuItem showPathwayMenuItem = null;
 	private JMenuItem editPathwayMenuItem = null;
@@ -247,6 +244,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 				deleteButtonPressed();
 			} else if (e.getSource() == pathwayButton) {
 				getPathwayPopupMenu().show(pathwayButton, 0, pathwayButton.getHeight());
+			} else if (e.getSource() == duplicateButton) {
+				duplicateButtonPressed();
 			} else if (e.getSource() == showPathwayMenuItem) {
 				showPathwayLinks();
 			} else if (e.getSource() == editPathwayMenuItem) {
@@ -385,12 +384,15 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 			newButton.setText("Add New Reaction");
 			newButton2.setVisible(true);
 			newButton2.setText("Add New Rule");
+			duplicateButton.setVisible(true);
 		} else {
 			newButton2.setVisible(false);
+			duplicateButton.setVisible(false);
 		}
 		
 		deleteButton.setEnabled(false);
 		pathwayButton.setEnabled(false);
+		duplicateButton.setEnabled(false);
 		getShowPathwayMenuItem().setEnabled(false);
 		Object[] selectedObjects = null;
 		if (selectedIndex == ModelPanelTabID.reaction_diagram.ordinal()) {
@@ -413,6 +415,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		}
 		if (selectedObjects != null) {				
 			deleteButton.setEnabled(selectedObjects.length > 0);
+			if (selectedObjects.length == 1 && selectedObjects[0] instanceof ReactionRule) {
+				duplicateButton.setEnabled(true);
+			}
 			if (selectedObjects.length == 1 && selectedObjects[0] instanceof BioModelEntityObject) {
 				pathwayButton.setEnabled(true);
 				if (bioModel.getRelationshipModel().getRelationshipObjects((BioModelEntityObject) selectedObjects[0]).size() > 0) {
@@ -488,6 +493,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newButton2 = new JButton("Add New Rule");
 		newMemButton = new JButton("Add New Membrane");
 		deleteButton = new JButton("Delete");
+		duplicateButton = new JButton("Duplicate");
 		pathwayButton = new JButton("Pathway Links", new DownArrowIcon());
 		pathwayButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		textFieldSearch = new JTextField();
@@ -545,17 +551,24 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		buttonPanel.add(deleteButton, gbc);
+		buttonPanel.add(duplicateButton, gbc);
 				
 		gbc = new GridBagConstraints();
 		gbc.gridx = 4;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
+		buttonPanel.add(deleteButton, gbc);
+				
+		gbc = new GridBagConstraints();
+		gbc.gridx = 5;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.LINE_END;
 		buttonPanel.add(pathwayButton, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
+		gbc.gridx = 6;
 		gbc.gridy = 0;
 		gbc.weightx = 0.5;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -563,14 +576,14 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,5)), gbc);		
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
+		gbc.gridx = 7;
 		gbc.gridy = 0;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(4,4,4,4);
 		buttonPanel.add(new JLabel("Search "), gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 7;
+		gbc.gridx = 8;
 		gbc.gridy = 0;
 		gbc.weightx = 1.5;
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -604,6 +617,8 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 		newButton.addActionListener(eventHandler);
 		newButton2.addActionListener(eventHandler);
 		newMemButton.addActionListener(eventHandler);
+		duplicateButton.addActionListener(eventHandler);
+		duplicateButton.setEnabled(false);
 		deleteButton.addActionListener(eventHandler);
 		deleteButton.setEnabled(false);
 		pathwayButton.addActionListener(eventHandler);
@@ -1275,6 +1290,29 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					break;
 				}
 			}
+		}
+	}
+	
+	private void duplicateButtonPressed() {
+		System.out.println("Duplicate Button Pressed");
+		computeCurrentSelectedTable();
+		if (currentSelectedTable != reactionsTable) {
+			return;
+		}
+		int row = currentSelectedTable.getSelectedRow();
+		System.out.println("Duplicate Button Pressed for row " + row);
+		ModelProcess mp = reactionTableModel.getValueAt(row);
+		if(!(mp instanceof ReactionRule)) {
+			return;
+		}
+		ReactionRule oldRule = (ReactionRule)mp;
+		try {
+			ReactionRule newRule = ReactionRule.duplicate(oldRule);
+			Model m = oldRule.getModel();
+			m.getRbmModelContainer().addReactionRule(newRule);
+		} catch (PropertyVetoException | ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Problem duplicating " + ReactionRule.typeName + " " + oldRule.getDisplayName());
 		}
 	}
 
