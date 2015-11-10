@@ -73,6 +73,7 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 		} else {
 			this.componentStatePattern = new ComponentStatePattern(that.getComponentStatePattern());	// we clone the component state pattern
 		}
+		this.bVisible = that.isbVisible();
 		// we can't initialize the bond here properly, we are in the middle of cloning and the 
 		// corresponding mtp and mcp may not be created yet
 		this.bondId = that.getBondId();
