@@ -108,6 +108,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	}
         
 	private void initialize() {
+		addNewButton.setName("New Application");
 		addNewButton.setIcon(new DownArrowIcon());
 		addNewButton.setHorizontalTextPosition(SwingConstants.LEFT);
 		moreActionsButton = new JButton("More Copy Actions");

@@ -417,7 +417,7 @@ private void addAnalyticSubVolume() {
 				addCancelJPanel.add(helpButton);
 			}
 			
-			JButton addJButton = new JButton("Add New Subdomain");
+			JButton addJButton = new JButton("New Subdomain");
 			addJButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					d.dispose();
