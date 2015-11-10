@@ -335,6 +335,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 			String newInput = new String(charArrayOut, 0, numReadOut);
 			setNewOutputString(newInput);
 			outString += newInput;
+//			System.err.println(newInput);
 		}
 		if (numReadErr > 0) {
 			String newInput = new String(charArrayErr, 0, numReadErr);
