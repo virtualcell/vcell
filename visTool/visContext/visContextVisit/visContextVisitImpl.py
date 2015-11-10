@@ -1,6 +1,7 @@
-try:
+﻿try:
     import exceptions
     import sys
+    import os
     import visit
     import visit.evalfuncs
     import visit.frontend
@@ -249,7 +250,12 @@ class VisContextVisitImpl(visContextAbstract):
         return self._operatorProject2d
 
     def quit(self):
-        visit.Close()
+        if sys.platform == "win32":
+            # This works on Windows
+            os.kill(os.getpid(), -9)
+        else:
+            # This works on Mac/Linux
+            os.system("kill -9 %d" % os.getpid())
 
     def clearPicks(self):
         if (self.getVariable() is not None):
