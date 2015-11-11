@@ -2,21 +2,21 @@
 # GENERAL INCLUDE FILE FOR COMMON VCELL VARIABLES
 #
 #
-# Java 8 current, 8 evaluation switch
-JAVA_NUM=0
-if [ $JAVA_NUM -eq 8 ]; then
+# Java 7 / 8 switch
+JAVA_NUM=8
+if [ $JAVA_NUM -ne 8 ]; then
 	JAVA_VERSION=current
 	JDK_VERSION=currentjdk
 else
-	JAVA_VERSION=currentEval
-	JDK_VERSION=currentjdkEval
+	JAVA_VERSION=current8
+	JDK_VERSION=currentjdk8
 fi
 
 #--------------------------------------
 # common definitions
 #--------------------------------------
-common_site=test4
-common_batchSystemType=SGE
+common_site=GENERATED
+common_batchSystemType=GENERATED
 
 common_vcellInstallDir=/share/apps/vcell2
 buildsupport=${common_vcellInstallDir}/buildsupport
@@ -41,38 +41,38 @@ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${buildsupport}/$JDK_VERSION/jre/lib/amd64/xawt
 export LD_LIBRARY_PATH
 
 common_jre=${common_vcellInstallDir}/java/$JAVA_VERSION/bin/java
-common_jvm_jars=${common_siteResDir}/vcellAll.jar:${common_siteResDir}/jta.jar:${common_siteResDir}/gson-2.2.2.jar:${common_siteResDir}/vtk.jar:${common_siteResDir}/libKiSAO.jar:${common_siteResDir}/jdom-1.1.3.jar:${common_siteResDir}/jdom-contrib-1.1.3.jar:${common_siteResDir}/jaxen-1.1.1.jar:${common_siteResDir}/xom-1.2.1.jar:${common_siteResDir}/mdbtools-java.jar:${common_siteResDir}/httpclient-4.3.5.jar:${common_siteResDir}/httpcore-4.3.2.jar:${common_siteResDir}/commons-cli-1.2.jar:${common_siteResDir}/jgraphx_2.2.0.5.jar:${common_siteResDir}/colt_1.2.0.jar:${common_siteResDir}/libthrift-0.9.2.jar:${common_siteResDir}/commons-io-2.4.jar:${common_siteResDir}/commons-lang3-3.4.jar:${common_siteResDir}/activemq-core-5.6.0.jar:${common_siteResDir}/camel-jms-2.9.2.jar:${common_siteResDir}/geronimo-j2ee-management_1.1_spec-1.0.1.jar:${common_siteResDir}/geronimo-jms_1.1_spec-1.1.1.jar:${common_siteResDir}/geronimo-jta_1.0.1B_spec-1.0.1.jar:${common_siteResDir}/slf4j-api-1.6.4.jar:${common_siteResDir}/slf4j-log4j12-1.6.4.jar:${common_siteResDir}/log4j-1.2.16.jar:${common_siteResDir}/kahadb-5.6.0.jar:${common_siteResDir}/xercesImpl-2.7.1.jar:${common_siteResDir}/icu4j-3.4.4.jar:${common_siteResDir}/iri-0.7.jar:${common_siteResDir}/lucene-core-2.3.1.jar:${common_siteResDir}/stax-api-1.0.1.jar:${common_siteResDir}/wstx-asl-3.2.9.jar:${common_siteResDir}/xml-apis.jar:${common_siteResDir}/new_activation.jar:${common_siteResDir}/NetCDF2_2_20_VCell.jar:${common_siteResDir}/new_mail.jar:${common_siteResDir}/GlgGraphLayoutNG.jar:${common_siteResDir}/thirdParty.jar:${common_siteResDir}/jai_codec.jar:${common_siteResDir}/jai_core.jar:${common_siteResDir}/js.jar:${common_siteResDir}/script-api.jar:${common_siteResDir}/script-js.jar:${common_siteResDir}/sesame-rio-turtle-2.6.2.jar:${common_siteResDir}/sesame-util-2.6.2.jar:${common_siteResDir}/commons-math3-3.4.jar:${common_siteResDir}/ojdbc5.jar:${common_siteResDir}/libsbmlj.jar:${common_siteResDir}/jmf.jar:${common_siteResDir}/axis.jar:${common_siteResDir}/jaxrpc.jar:${common_siteResDir}/commons-discovery-0.2.jar:${common_siteResDir}/commons-logging-1.0.4.jar:${common_siteResDir}/wsdl4j-1.5.1.jar:${common_siteResDir}/jhall.jar:${common_siteResDir}/netty-3.2.5.Final.jar:${common_siteResDir}/sesame-model-2.6.2.jar:${common_siteResDir}/sesame-rio-api-2.6.2.jar:${common_siteResDir}/sesame-rio-n3-2.6.2.jar:${common_siteResDir}/sesame-rio-rdfxml-2.6.2.jar:${common_siteResDir}/jamtio.jar:${common_siteResDir}/jhdf5.jar:${common_siteResDir}/jhdf5obj.jar:${common_siteResDir}/jhdfobj.jar:${common_siteResDir}/mongo-2.8.0.jar:${common_siteResDir}/ucp.jar:${common_siteResDir}/sshj-0.8.1.jar:${common_siteResDir}/jlibsedml.jar:${common_siteResDir}/jmathml.jar:${common_siteResDir}/commons-compress-1.8.1.jar
+common_jvm_jars=GENERATED
 
 #--------------------------------------
 # rmi bootstrap services (http port, high port)
 #    common definitions
 #--------------------------------------
-bootstrap_mainclass=cbit.vcell.message.server.bootstrap.LocalVCellBootstrap
+bootstrap_mainclass=GENERATED
 bootstrap_policyfile=${common_siteCfgDir}/java.policy
-bootstrap_rmihost=rmi-alpha.cam.uchc.edu
+bootstrap_rmihost=GENERATED
 bootstrap_jmxhost=${bootstrap_rmihost}
 bootstrap_memoryGB=1
 
 #--------------------------------------
 # rmi bootstrap services (http port) "vcellbootstrap_http"
 #--------------------------------------
-bootstrap_http_rmiport=-1
-bootstrap_http_jmxport=-1
+bootstrap_http_rmiport=GENERATED
+bootstrap_http_jmxport=GENERATED
 bootstrap_http_processLabel=${common_site}-rmi-http
 
 #--------------------------------------
 # rmi bootstrap services (high port) "vcellbootstrap_high"
 #--------------------------------------
-bootstrap_high_rmiport=40113
-bootstrap_high_jmxport=12313
+bootstrap_high_rmiport=GENERATED
+bootstrap_high_jmxport=GENERATED
 bootstrap_high_processLabel=${common_site}-rmi-high
 
 #--------------------------------------
 # vcell service "vcellservice"
 #--------------------------------------
-vcellservice_mainclass=cbit.vcell.message.server.combined.VCellServices
-vcellservice_jmxhost=vcellservice.cam.uchc.edu
-vcellservice_jmxport=12370
+vcellservice_mainclass=GENERATED
+vcellservice_jmxhost=GENERATED
+vcellservice_jmxport=GENERATED
 vcellservice_processLabel=${common_site}-master
 
 vcellservice_memoryGB=5
@@ -80,43 +80,31 @@ vcellservice_memoryGB=5
 #--------------------------------------
 # solver preProcessor "JavaPreprocessor64"
 #--------------------------------------
-preprocessor_mainclass=cbit.vcell.message.server.sim.SolverPreprocessor
+preprocessor_mainclass=GENERATED
 preprocessor_memoryMB=5000
 
 #--------------------------------------
 # solver postProcessor "JavaPostprocessor64"
 #--------------------------------------
-postprocessor_mainclass=cbit.vcell.message.server.sim.SolverPostprocessor
+postprocessor_mainclass=GENERATED
 postprocessor_memoryMB=5000
 
 #--------------------------------------
 # Java Solver "JavaSimExe64"
 #--------------------------------------
-javasolver_mainclass=cbit.vcell.message.server.sim.JavaSimulationExecutable
+javasolver_mainclass=GENERATED
 javasolver_memoryMB=1000
 
 #--------------------------------------
 # result set crawler
 #--------------------------------------
-resultset_crawler_mainclass=cbit.vcell.modeldb.ResultSetCrawler
+resultset_crawler_mainclass=GENERATED
 resultset_crawler_memoryMB=3000
 
 #--------------------------------------
 # Check VCell Alive Nagios Monitor
 #--------------------------------------
-check_vcell_alive_mainclass=org.vcell.monitor.nagios.NagiosVCellCheck
+check_vcell_alive_mainclass=GENERATED
 check_vcell_alive_memoryMB=20
-check_vcell_alive_nagiospw=nagcmd
+check_vcell_alive_nagiospw=GENERATED
 
-
-#
-# Generated Batch System Environment Block
-#
-export PATH=/opt/gridengine/bin/lx26-amd64:$PATH
-export SGE_CELL=default
-export SGE_ARCH=lx26-amd64
-export SGE_EXECD_PORT=537
-export SGE_QMASTER_PORT=536
-export SGE_ROOT=/opt/gridengine
-export LD_LIBRARY_PATH=/opt/gridengine/lib/lx26-amd64:$LD_LIBRARY_PATH
-export DRMAA_PATH=/opt/gridengine/lib/lx26-amd64/libdrmaa.so.1.0
