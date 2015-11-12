@@ -70,6 +70,47 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 			return "<html><b>" + name + "</b></html>";
 		}
 		// we only show the component we want to bond with
+		public String toHtmlStringLong(MolecularTypePattern mtpFrom, MolecularComponent mcFrom, SpeciesPattern sp, int colorIndex) 
+		{
+			String strBondType = molecularTypePattern.getMolecularType().getName() + "(" + molecularTypePattern.getIndex() + ")";
+			String strBondComponent = molecularComponentPattern.getMolecularComponent().getName() + "(" + molecularComponentPattern.getMolecularComponent().getIndex() + ")";
+
+			String sfrom = mtpFrom.getMolecularType().getName() + mtpFrom.getIndex() + mcFrom.getName();
+			String sto = molecularTypePattern.getMolecularType().getName() + molecularTypePattern.getIndex() + molecularComponentPattern.getMolecularComponent().getName();
+			System.out.println("Linking " + sfrom + " to " + sto);
+			
+//			String str = mtpFrom.getIndex() + "(" + mcFrom.getName() + ")";
+//			str += " to " +  molecularTypePattern.getIndex() + "(" + molecularComponentPattern.getMolecularComponent().getName() + ")";
+//			return "<html>Bond from " + str + "</html>";
+			
+			String str = toString();
+			return "<html>" + str + "</html>";
+			
+//			Color c = RbmTreeCellRenderer.bondHtmlColors[colorIndex];
+//			String colorTextStart = "<font color=" + "\"rgb(" + c.getRed() + "," + c.getGreen() + "," + c.getBlue() + ")\">";
+//			String colorTextEnd = "</font>";
+//			String str = "";
+//			for(int i = 0; i < sp.getMolecularTypePatterns().size(); i++) {
+//				if(i != 0) str += ".";
+//				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
+//				if(mtp.equals(molecularTypePattern)) {		// our component is in this molecular type pattern
+//					str += "<b>" + mtp.getMolecularType().getName() + "</b>(";
+//					for(int j = 0; j < mtp.getMolecularType().getComponentList().size(); j++) {
+//						MolecularComponent mc = mtp.getMolecularType().getComponentList().get(j);
+//						if(mc.equals(molecularComponentPattern.getMolecularComponent())) {
+//							str += colorTextStart + "<b>" + mc.getName() + "</b>" + colorTextEnd;
+//							break;		// found it, don't need to look at other components
+//						}
+//					}
+//					str += ")";
+//				} else {
+//					str += mtp.getMolecularType().getName() + "()";
+//				}
+//			}
+//			return "<html>Bond to " + str + "</html>";
+		}
+
+		// we only show the component we want to bond with
 		public String toHtmlStringLong(SpeciesPattern sp, int colorIndex) 
 		{
 			String strBondType = molecularTypePattern.getMolecularType().getName() + "(" + molecularTypePattern.getIndex() + ")";
@@ -123,7 +164,8 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 				if(strThisType.equals(strThatType) || strThisType.equals(strBondType)) {
 					str += "<b>" + mtpThis.getMolecularType().getName() + "</b>(";
 				} else {
-					str += mtpThis.getMolecularType().getName() + "()";
+//					str += mtpThis.getMolecularType().getName() + "()";
+					str += mtpThis.getMolecularType().getName() + "";
 					continue;	// we don't look at the components of the unmatches types
 				}
 				boolean foundComponentMatch = false;
@@ -134,7 +176,8 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 					if((strThisType.equals(strThatType) && strThisComponent.equals(strThatComponent)) || 
 						(strThisType.equals(strBondType) && strThisComponent.equals(strBondComponent))) {
 						if(foundComponentMatch) str += ",";		// both components are on this molecular type
-						str += colorTextStart + "<b>" + mcThis.getName() + "</b>" + colorTextEnd;
+//						str += colorTextStart + "<b>" + mcThis.getName() + "</b>" + colorTextEnd;
+						str += colorTextStart + "<b>" + mcThis.getName() + "!" + colorIndex + "</b>" + colorTextEnd;
 						foundComponentMatch = true;
 					}
 				}
@@ -196,6 +239,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	public final List<MolecularTypePattern> getMolecularTypePatterns() {
 		return molecularTypePatterns;
 	}
+	// TODO: fix this !!!  it will return the FIRST mtp out of many possible !!!
 	public final MolecularTypePattern getMolecularTypePattern(String name) {
 		for(MolecularTypePattern mtp : molecularTypePatterns) {
 			if(mtp.getMolecularType().getName().equals(name)) {
@@ -204,11 +248,48 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		}
 		return null;
 	}
+	public final MolecularTypePattern getMolecularTypePattern(String mtName, int index) {
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			if(mtp.getMolecularType().getName().equals(mtName) && mtp.getIndex() == index) {
+				return mtp;
+			}
+		}
+		return null;
+	}
 
+	// call this every time when the order or number of elements in the molecularTypePatterns list might have changed
+	// TODO: stop directly modifying the molecularTypePatterns list outside this class !!!
+	public void recalculateIndexes() {
+		for (int i = 0; i < molecularTypePatterns.size(); i++) {
+			molecularTypePatterns.get(i).setIndex(i+1);		// recalculate the indexes
+		}
+	}
 	public final void setMolecularTypePatterns(List<MolecularTypePattern> newValue) {
 		List<MolecularTypePattern> oldValue = molecularTypePatterns;
-		this.molecularTypePatterns = newValue;		
+		this.molecularTypePatterns = newValue;
+		recalculateIndexes();
 		firePropertyChange(PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS, oldValue, newValue);
+	}
+	
+	public void shiftLeft(MolecularTypePattern from) {
+		int fromIndex = molecularTypePatterns.indexOf(from);
+		if(fromIndex == 0) {			// already the first element
+			return;
+		}
+		int toIndex = fromIndex-1;
+		MolecularTypePattern to = molecularTypePatterns.remove(toIndex);
+		molecularTypePatterns.add(fromIndex, to);
+		recalculateIndexes();
+	}
+	public void shiftRight(MolecularTypePattern from) {
+		int fromIndex = molecularTypePatterns.indexOf(from);
+		if(molecularTypePatterns.size() == fromIndex+1) {		// already the last element
+			return;
+		}
+		int toIndex = fromIndex+1;
+		MolecularTypePattern to = molecularTypePatterns.remove(toIndex);
+		molecularTypePatterns.add(fromIndex, to);
+		recalculateIndexes();
 	}
 	
 	@Override
@@ -236,12 +317,38 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		}
 	}
 	
+	public void resetStates() {
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				if(mcp.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
+					break;		// this component can't have states, nothing to do
+				}
+				ComponentStatePattern csp = new ComponentStatePattern();
+				mcp.setComponentStatePattern(csp);	// reset to any state
+			}
+		}
+	}
+	public void resetBonds() {
+		// ATTENTION: used just for display purposes (sp small shape), the reset is incomplete (bond id for example, other flags)
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				mcp.setBondType(BondType.Possible);
+				mcp.setBond(null);
+			}
+		}
+	}
+	public void setBond(MolecularTypePattern mtpTo, MolecularComponentPattern mcpTo, MolecularTypePattern mtpFrom, MolecularComponentPattern mcpFrom) {
+		// ATTENTION: used just for display purposes (sp small shape), the set is incomplete (bond id for example, other flags)
+		mcpFrom.setBond(new Bond(mtpTo, mcpTo));
+		mcpFrom.setBondType(BondType.Specified);
+		mcpTo.setBond(new Bond(mtpFrom, mcpFrom));
+		mcpTo.setBondType(BondType.Specified);
+	}
+	
 	public void resolveBonds() {
 		List<MolecularTypePattern> molecularTypePatterns = getMolecularTypePatterns();
-		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
-			molecularTypePatterns.get(i).setIndex(i+1);
-		}
-
+		recalculateIndexes();
+		
 		// clear all the bonds now
 		for (MolecularTypePattern mtp : molecularTypePatterns) {
 			for (MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
