@@ -1,6 +1,7 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -11,6 +12,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.Icon;
 
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
@@ -24,12 +27,15 @@ import org.vcell.util.Issue;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.graph.AbstractComponentShape.BondPair;
 
-public class SpeciesPatternSmallShape extends AbstractComponentShape {
+public class SpeciesPatternSmallShape extends AbstractComponentShape implements Icon {
 
+	private static final int baseHeight = 14;
 	private static final int separationWidth = 1;		// width between 2 molecular type patterns
+	
 	private int xPos = 0;
 	private int yPos = 0;
 	private int width = 0;
+	private int height = baseHeight;
 	private List<MolecularTypeSmallShape> speciesShapes = new ArrayList<MolecularTypeSmallShape>();
 	private boolean isSelected = false;
 	
@@ -194,5 +200,20 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape {
 
 		g2.setFont(fontOld);
 		g2.setColor(colorOld);
+	}
+
+	@Override
+	public void paintIcon(Component c, Graphics g, int x, int y) {
+		paintSelf(g);
+	}
+
+	@Override
+	public int getIconWidth() {
+		return width;
+	}
+
+	@Override
+	public int getIconHeight() {
+		return height;
 	}
 }
