@@ -18,7 +18,6 @@ from Queue import Queue
 from threading import Lock
 
 
-
 # adapted from visitusers.org PySide_Recipes page.
 class MouseEventFilter(QtCore.QObject):      
     pressed  = QtCore.Signal(QtCore.QPoint,QtCore.QSize)
@@ -82,6 +81,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.sliderQueue = Queue()
         self.sliderLock = Lock()
         self.initUI()
+        self.progress = None
 
     def closeEvent(self, event):
         self._vis.quit()
@@ -383,27 +383,35 @@ class VCellPysideApp(QtGui.QMainWindow):
             return
         dialog.show()
 
+    CONST_MODALPROGRESSMAX = 25
     def modalProgress(self,message):
-        if True:
-            return
-
+        #count = len(self.findChildren(QtGui.QDialog))
         if message != None:
-            self.progress = QtGui.QProgressDialog(message, None, 0, 1, self)
-            self.progress.setWindowModality(Qt.WindowModal)
-            self.progress.setMinimumDuration(0)
-            self.progress.setMinimum(0)
-            self.progress.setMaximum(1)
-            self.progress.setValue(0)
-        else:
+            if self.progress == None:
+                self.progress = QtGui.QProgressDialog(message, None, 0, self.CONST_MODALPROGRESSMAX)
+                self.progress.setWindowModality(Qt.WindowModal)
+                self.progress.setMinimumDuration(0)
             self.progress.setValue(1)
-            self.progress = None
+            # Make timer to animate progress bar because progress is unknown
+            self.timer = QtCore.QTimer()
+            self.timer.timeout.connect(lambda : (self.progress.setValue(((self.progress.value()+1) if (self.progress.value()<(self.CONST_MODALPROGRESSMAX-1)) else (self.CONST_MODALPROGRESSMAX-1)))))
+            self.timer.start(1000) # 1 second
+        else:
+            self.timer.stop()
+            self.progress.setValue(self.CONST_MODALPROGRESSMAX)
+            
 
     def _onSimulationSelected(self, dialog):
-        sim = dialog.getSelectedSimulation()
-#        domain = dialog.getSelectedDomain()
-        dialog.close()
-        print(sim)
-        self.modalProgress("Loading...")
+       sim = dialog.getSelectedSimulation()
+       dialog.close()
+       print(sim)
+       print("---------- Starting Dialog ----------")
+       self.modalProgress("Loading '"+sim.simName+"'...")
+
+       self.lst = LoadSimThread(sim,self)
+       self.lst.start()
+
+    def _onSimulationSelected0(self, sim):
         vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
             vcellProxy2.open()
@@ -554,6 +562,8 @@ class VCellPysideApp(QtGui.QMainWindow):
     
         self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True,successCallback,errorCallback)
 
+    CONST_POSITION = 0
+    CONST_WASNEW = 1
     def sliderQ(self,newSlidePos):
         try:
             self.sliderLock.acquire()
@@ -574,7 +584,7 @@ class VCellPysideApp(QtGui.QMainWindow):
 
     def _onSliceSliderChanged(self):
         lastSlidePos = self.sliderQ(self._sliceControl.getSliceSlider().sliderPosition())
-        if lastSlidePos[1] == False:
+        if lastSlidePos[VCellPysideApp.CONST_WASNEW] == False:
             print('_onSliceSliderChanged()')
             #self._vis.enableOperatorMode(True)
             #self._vis.setProject2d(self._sliceControl.getShowAsImageCheckbox().isChecked())
@@ -589,7 +599,7 @@ class VCellPysideApp(QtGui.QMainWindow):
                 print("_onSliceSliderChanged: updateOperatorPercent() error: "+str(errorMessage));
                 self.sliderQ(None) #clear queue
     
-            self._vis.setOperatorPercent(lastSlidePos[0], successCallback, errorCallback)
+            self._vis.setOperatorPercent(lastSlidePos[VCellPysideApp.CONST_POSITION], successCallback, errorCallback)
             # print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
 
     def _onSliceAxisChange(self):
@@ -657,3 +667,13 @@ class VCellPysideApp(QtGui.QMainWindow):
     def reportError(self, errorMessage):
         print("ERROR MESSAGE:")
         print(str(errorMessage))
+
+
+class LoadSimThread(QtCore.QThread):
+    def __init__(self, sim, app, parent = None):
+        QtCore.QThread.__init__(self,parent)
+        self._sim = sim
+        self._app = app
+    def run(self):
+        self._app._onSimulationSelected0(self._sim)
+
