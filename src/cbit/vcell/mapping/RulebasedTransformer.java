@@ -364,10 +364,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				throw new RuntimeException("Only Mass Action Kinetics supported at this time, reaction \""+rs.getName()+"\" uses kinetic law type \""+rs.getKinetics().getName()+"\"");
 			}
 			
-			boolean bReversible = true;
-//			if(rs.getNumProducts() == 0) {
-//				bReversible = false;
-//			}
+			boolean bReversible = rs.isReversible();
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
 		
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
@@ -585,11 +582,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 		// Saving the observables, as produced by bionetgen
 		// in debug configurations add to command line   -Ddebug.user=danv
 		//
-		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
-		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
-			System.out.println("Saving their observables");
-			parseObservablesBngOutput(simContext, bngOutput);
-		}
+//		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+//		if (debugUser.equals("danv") || debugUser.equals("mblinov")){
+//			System.out.println("Saving their observables");
+//			parseObservablesBngOutput(simContext, bngOutput);
+//		}
 	
 //		compareOutputs(simContext);
 	}
