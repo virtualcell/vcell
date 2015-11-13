@@ -2062,7 +2062,8 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 	}
 	String xmlString = FileUtils.readFileToString(simtaskFile);
 	SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
-	if (simTask.getSimulation().getSolverTaskDescription().getChomboSolverSpec().isSaveChomboOutput()==false){
+	if (!simTask.getSimulation().getSolverTaskDescription().getChomboSolverSpec().isSaveChomboOutput()
+			&& !simTask.getSimulation().getSolverTaskDescription().isParallel()){
 		throw new RuntimeException("Export of Chombo simulations to VTK requires chombo data, select 'Chombo' data format in simulation solver options and rerun simulation.");
 	}
 	Enumeration<SubDomain> subdomainEnum = simTask.getSimulation().getMathDescription().getSubDomains();
