@@ -284,6 +284,11 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	if (fieldKinetics!=null){
 		fieldKinetics.gatherIssues(issueContext,issueList);
 	}
+	if(fieldName != null && fieldName.startsWith("_reverse_")) {
+		String msg = "The prefix '_reverse_' is a BioNetGen reserved keyword. Please rename the " + getDisplayType() + ".";
+		issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+	}
+
 	if (structure instanceof Membrane){
 		if(fieldKinetics instanceof MassActionKinetics) {
 			if((getNumReactants() > 1) || (getNumProducts() > 1)) {
