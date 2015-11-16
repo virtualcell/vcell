@@ -224,6 +224,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
+			message = "Unable to generate Math for Application " + simContext.getName() + ".\n" + message;
 			throw new RuntimeException(message);
 		}
 		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
@@ -231,6 +232,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, message);
 			simContext.appendToConsole(tcm);
 			simContext.setMd5hash(null);
+			message = "Unable to generate Math for Application " + simContext.getName() + ".\n" + message;
 			throw new RuntimeException(message);
 		}
 		
