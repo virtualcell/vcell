@@ -195,6 +195,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
@@ -980,18 +981,25 @@ public void createBioModelFromApplication(final BioModelWindowManager requester,
 					public boolean isInterrupted() { return false; }
 				};
 			MathMapping transformedMathMapping = simContext.createNewMathMapping(dummyCallback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
-//			simContext.setMathDescription(transformedMathMapping.getMathDescription());
 			
 			BioModel newBioModel = new BioModel(null);
 			SimulationContext transformedSimContext = transformedMathMapping.getTransformation().transformedSimContext;
-			newBioModel.setModel(transformedSimContext.getModel());
+			Model newModel = transformedSimContext.getModel();
+			newBioModel.setModel(newModel);
 			
-			RbmModelContainer rbmmc = newBioModel.getModel().getRbmModelContainer();
+			RbmModelContainer rbmmc = newModel.getRbmModelContainer();
 			for(RbmObservable o : rbmmc.getObservableList()) {
 				rbmmc.removeObservable(o);
 			}
 			for(ReactionRule r : rbmmc.getReactionRuleList()) {
 				rbmmc.removeReactionRule(r);
+			}
+			for(ReactionStep rs : newModel.getReactionSteps()) {
+				String oldName = rs.getName();
+				if(oldName.startsWith("_reverse_")) {
+					String newName = newModel.getReactionName("rev", oldName.substring("_reverse_".length()));
+					rs.setName(newName);
+				}
 			}
 			
 			hashTable.put("newBioModel", newBioModel);
