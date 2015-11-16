@@ -2453,6 +2453,22 @@ public boolean isReactionNameInUse(String candidateName) {
 	}
 	return true;
 }
+public String getReactionName(String prefix, String suffix) {
+	String candidate = prefix + "_" + suffix;
+	if(!isReactionNameInUse(candidate)) {
+		return candidate;
+	}
+	int count=0;
+	String reactionName = prefix + "_" + suffix;;
+	while (true) {
+		reactionName = prefix + count + "_" + suffix;
+		if ((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
+			break;
+		}
+		count++;
+	}
+	return reactionName;
+}
 public String getReactionName(String candidate) {
 	if(!isReactionNameInUse(candidate)) {
 		return candidate;
