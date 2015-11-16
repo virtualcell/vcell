@@ -851,6 +851,10 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if(name == null || name.isEmpty()) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Label is missing", Issue.Severity.ERROR));
 		}
+		if(name != null && name.startsWith("_reverse_")) {
+			String msg = "The prefix '_reverse_' is a BioNetGen reserved keyword. Please rename the " + typeName + ".";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+		}
 		if(reactantPatterns == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Reactant Pattern is null", Issue.Severity.ERROR));
 		} else if(reactantPatterns.isEmpty()) {

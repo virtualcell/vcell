@@ -922,8 +922,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		}
 		int index = 0;
+		Graphics gc = splitPane.getRightComponent().getGraphics();
 		for(String name : itemMap.keySet()) {
-			Graphics gc = splitPane.getRightComponent().getGraphics();
 			JMenuItem menuItem = new JMenuItem(name);
 			if(index > 2) {
 				Bond b = itemMap.get(name);
