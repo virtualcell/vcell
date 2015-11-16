@@ -150,6 +150,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         gridLayout_4.setObjectName("gridLayout_4")
         self._variableListWidget = QtGui.QListWidget(variableGroup);
         self._variableListWidget.setObjectName("variableList")
+        self._variableListWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         sizePolicy1 = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
@@ -434,6 +435,9 @@ class VCellPysideApp(QtGui.QMainWindow):
             def successCallback(results):
                 print("_onSimulationSelected: openOne() success "+str(results));
                 self.modalProgress(None)
+                self._variableListWidget.setCurrentRow(0)
+                self._variableListWidget.item(0).setSelected(True)
+                self._variableListWidget.setFocus()
 
             def errorCallback(errorMessage):
                 print("_onSimulationSelected: openOne() error: "+str(errorMessage));
@@ -464,12 +468,13 @@ class VCellPysideApp(QtGui.QMainWindow):
         assert isinstance(self._variableListWidget,QtGui.QListWidget)
         self._variableListWidget.clear()
         
-
+        
         self._variableListWidget.addItems(varDisplayNames)
-        if visQt.isPyside():
-            self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
-        elif visQt.isPyQt4:
-            self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
+        #if visQt.isPyside():
+        #    #self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
+        #    self._variableListWidget.item(0).setSelected(True)
+        #elif visQt.isPyQt4:
+        #    self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
 
         times = self._visDataContext.getCurrentDataSetTimePoints()
         if times == None or len(times)==0:
