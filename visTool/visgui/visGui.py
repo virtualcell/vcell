@@ -78,7 +78,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.resourcedir = ""
         self._selectedVariable = None
         self.__parse_command_line()
-        self.sliderQueue = Queue()
+        self.sliceSliderQueue = Queue()
+        self.timeSliderQueue = Queue()
         self.sliderLock = Lock()
         self.initUI()
         self.progress = None
@@ -211,8 +212,9 @@ class VCellPysideApp(QtGui.QMainWindow):
         timecntnrgridLayout.addWidget(self._timeSlider, 0, 1, 1, 1)
 
         boxLayout_time.addWidget(self.timecntnr)
-        self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
-        self._timeSlider.valueChanged.connect(lambda: self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentDataSetTimePoints()[self._timeSlider.value()])))
+        #self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
+        #self._timeSlider.valueChanged.connect(lambda: self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentDataSetTimePoints()[self._timeSlider.value()])))
+        self._timeSlider.valueChanged.connect(self._onTimeSliderChanged)
         #---------------------------------------------------------
 
         gridLayout_3.addWidget(self.timeGroup, 0, 0, 1, 1)
@@ -553,6 +555,16 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._vis.quit()
 
     def _onTimeSliderChanged(self):
+        self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentDataSetTimePoints()[self._timeSlider.value()]))
+        #lastSlidePos = self.sliderQ(self._timeSlider.sliderPosition())
+        lastSlidePos = self.sliderQ(self._timeSlider.value(),self.timeSliderQueue)
+        if lastSlidePos[VCellPysideApp.CONST_WASNEW] == False:
+            self.lst = TimeChangedThread(self)
+            self.lst.start()
+
+    def _onTimeSliderChanged0(self):
+        QtCore.QThread.msleep(250)
+
         print('_onTimeSliderChanged()')
         newIndex = self._timeSlider.sliderPosition()
         vcellProxy2 = vcellProxy.VCellProxyHandler()
@@ -563,7 +575,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             sim = self._visDataContext.getCurrentDataSet()
             print("New current Time Point should be: "+str(self._visDataContext.getCurrentDataSetTimePoints()[newIndex]))
             print("new current Time Point is: "+str(self._visDataContext.getCurrentTimePoint()))
-            self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentTimePoint()))
+            #self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentTimePoint()))
             dataFileName = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(
                 self._visDataContext.getCurrentDataSet(),
                 self._visDataContext.getCurrentVariable(),
@@ -579,34 +591,40 @@ class VCellPysideApp(QtGui.QMainWindow):
                 
         def successCallback(results):
             print("_onTimeSliderChanged: openOne() success "+str(results));
+            checkSlidePos = self.sliderQ(None,self.timeSliderQueue)
+            if checkSlidePos[VCellPysideApp.CONST_POSITION] != self._visDataContext.getCurrentTimeIndex():
+                self._onTimeSliderChanged()
 
         def errorCallback(errorMessage):
             print("_onTimeSliderChanged: openOne() error: "+str(errorMessage));
-    
+            self.sliderQ(None,self.timeSliderQueue) #clear queue
+
         self._vis.openOne(dataFileName,self._visDataContext.getCurrentVariable().variableVtuName,True,successCallback,errorCallback)
 
     CONST_POSITION = 0
     CONST_WASNEW = 1
-    def sliderQ(self,newSlidePos):
+    def sliderQ(self,newSlidePos,theSliderQueue):
         try:
             self.sliderLock.acquire()
-            if self.sliderQueue.qsize() != 0:
-                assert self.sliderQueue.qsize() == 1
-                lastPos = self.sliderQueue.get(False)
-                self.sliderQueue.task_done()
+            if theSliderQueue.qsize() != 0:
+                assert theSliderQueue.qsize() == 1
+                lastPos = theSliderQueue.get(False)
+                theSliderQueue.task_done()
                 if newSlidePos == None:
                     return (lastPos,True)
-                self.sliderQueue.put(newSlidePos)
+                theSliderQueue.put(newSlidePos)
                 return (newSlidePos,True)
             else:
                 assert newSlidePos != None
-                self.sliderQueue.put(newSlidePos)
+                theSliderQueue.put(newSlidePos)
                 return (newSlidePos,False)
         finally:
             self.sliderLock.release()
 
     def _onSliceSliderChanged(self):
-        lastSlidePos = self.sliderQ(self._sliceControl.getSliceSlider().sliderPosition())
+        lastSlidePos = self.sliderQ(self._sliceControl.getSliceSlider().sliderPosition(),self.sliceSliderQueue)
+        self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(lastSlidePos[VCellPysideApp.CONST_POSITION]))
+        #CONST_SLICE_TITLE
         if lastSlidePos[VCellPysideApp.CONST_WASNEW] == False:
             print('_onSliceSliderChanged()')
             #self._vis.enableOperatorMode(True)
@@ -615,12 +633,12 @@ class VCellPysideApp(QtGui.QMainWindow):
 
             def successCallback(results):
                 print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
-                checkSlidePos = self.sliderQ(None)
-                if checkSlidePos[0] != results:
+                checkSlidePos = self.sliderQ(None,self.sliceSliderQueue)
+                if checkSlidePos[VCellPysideApp.CONST_POSITION] != results:
                     self._onSliceSliderChanged()
             def errorCallback(errorMessage):
                 print("_onSliceSliderChanged: updateOperatorPercent() error: "+str(errorMessage));
-                self.sliderQ(None) #clear queue
+                self.sliderQ(None,self.sliceSliderQueue) #clear queue
     
             self._vis.setOperatorPercent(lastSlidePos[VCellPysideApp.CONST_POSITION], successCallback, errorCallback)
             # print("_onTimeSliderChanged("+str(newIndex)+", class="+str(newIndex.__class__)+")")
@@ -700,3 +718,9 @@ class LoadSimThread(QtCore.QThread):
     def run(self):
         self._app._onSimulationSelected0(self._sim)
 
+class TimeChangedThread(QtCore.QThread):
+    def __init__(self, app,parent = None):
+        QtCore.QThread.__init__(self,parent)
+        self._app = app
+    def run(self):
+        self._app._onTimeSliderChanged0()
