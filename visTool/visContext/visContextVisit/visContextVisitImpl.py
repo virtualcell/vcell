@@ -130,13 +130,13 @@ class VisContextVisitImpl(visContextAbstract):
     def resetPickLetter(self):
         visit.ResetPickLetter()
 
-    def _updateDisplay(self):
+    def _updateDisplay(self,bSameDomain):
         print("")
         print("_updateDisplay() - start  ..... variable="+str(self._variable)+", plot="+str(self._currentPlot)+", op="+str(self._currentOperator)+", opEnabled="+str(self._operatorEnabled))
         #
         # remove old plot if not applicable
         #
-        if (self._currentPlot != None and (self._variable == None or (self._currentPlot[1] != self._variable))):
+        if (bSameDomain == False or (self._currentPlot != None and (self._variable == None or (self._currentPlot[1] != self._variable)))):
             print("    _updateDisplay() - removing plots and operators")
             visit.DeleteAllPlots()
             self._currentPlot = None
@@ -547,8 +547,8 @@ class OpenOneAsynchTask(AsynchTask):
     def requestPlot(self):
         print("OpenOneAsynchTask.requestPlot()")
         assert(self._state == self.STATE_PLOT_UPDATE_REQUEST) # current state
-        self._vis._variable = self._vtuVariableName 
-        self._vis._updateDisplay()
+        self._vis._variable = self._vtuVariableName
+        self._vis._updateDisplay(self._bSameDomain)
         self._state = self.STATE_PLOT_CONFIRM # new state
 
     def confirmPlot(self):
@@ -599,7 +599,7 @@ class UpdatePlotAsynchTask(AsynchTask):
     def requestPlot(self):
         print("UpdatePlotAsynchTask.requestPlot()")
         assert(self._state == self.STATE_INITIAL) # current state
-        self._vis._updateDisplay()
+        self._vis._updateDisplay(True)
         self._state = self.STATE_PLOT_CONFIRM  # new state
 
     def confirmPlot(self):
@@ -648,7 +648,7 @@ class UpdateOperatorPercentAsynchTask(AsynchTask):
         print("UpdateOperatorPercentAsynchTask.requestPlot()")
         assert(self._state == self.STATE_INITIAL) # current state
         self._vis._operatorPercent = self._visClipOperatorContext.getCurrentOperatorPercent()
-        self._vis._updateDisplay()
+        self._vis._updateDisplay(True)
         self._state = self.STATE_PLOT_CONFIRM  # new state
 
     def confirmPlot(self):
