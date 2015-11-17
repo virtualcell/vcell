@@ -170,38 +170,52 @@ class VCellPysideApp(QtGui.QMainWindow):
         gridLayout_3.addWidget(self._queryControl, 3, 0, 1 , 1)
 
 
-        timeGroup = QtGui.QGroupBox(frame)
-        timeGroup.setObjectName("timeGroup")
+        self.timeGroup = QtGui.QGroupBox(frame)
+        self.timeGroup.setObjectName("timeGroup")
+        self.timeGroup.setTitle("Time")
         sizePolicyTimegroup = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Minimum)
         sizePolicyTimegroup.setHorizontalStretch(0)
         sizePolicyTimegroup.setVerticalStretch(0)
-        sizePolicyTimegroup.setHeightForWidth(timeGroup.sizePolicy().hasHeightForWidth())
-        timeGroup.setSizePolicy(sizePolicyTimegroup)
-        boxLayout_time = QtGui.QVBoxLayout(timeGroup)
+        sizePolicyTimegroup.setHeightForWidth(self.timeGroup.sizePolicy().hasHeightForWidth())
+        self.timeGroup.setSizePolicy(sizePolicyTimegroup)
+
+        boxLayout_time = QtGui.QVBoxLayout(self.timeGroup)
         boxLayout_time.setObjectName("boxLayout_time")
-        self._timeSlider = QtGui.QSlider(timeGroup)
-        self._timeSlider.setObjectName("timeSlider")
-        self._timeSlider.setTickInterval(1)
-        self._timeSlider.setPageStep(1)
-        sizePolicyTimeslider = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicyTimeslider.setHorizontalStretch(0)
-        sizePolicyTimeslider.setVerticalStretch(0)
-        sizePolicyTimeslider.setHeightForWidth(self._timeSlider.sizePolicy().hasHeightForWidth())
-        self._timeSlider.setSizePolicy(sizePolicyTimeslider)
+
+        # Time Controls----------------------------------------------------
+        self.timecntnr = QtGui.QWidget(self)
+        cntnrSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.DefaultType)
+        self.timecntnr.setSizePolicy(cntnrSizePolicy)
+        timecntnrgridLayout = QtGui.QGridLayout(self.timecntnr)
+
+        self._timeminlabel = QtGui.QLabel(self)
+        self._timeminlabel.setText("0")
+        labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
+        self._timeminlabel.setSizePolicy(labelSizePolicy)
+        timecntnrgridLayout.addWidget(self._timeminlabel, 0, 0, 1, 1)
+
+        self._timemaxlabel = QtGui.QLabel(self)
+        self._timemaxlabel.setText("1.0")
+        labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
+        self._timemaxlabel.setSizePolicy(labelSizePolicy)
+        timecntnrgridLayout.addWidget(self._timemaxlabel, 0, 2, 1, 1)
+
+        self._timeSlider = QtGui.QSlider(self)
+        self._timeSlider.setObjectName("sliceSlider")
+        sliderSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Slider)
+        sliderSizePolicy.setHorizontalStretch(100)
+        sliderSizePolicy.setVerticalStretch(0)
+        sliderSizePolicy.setHeightForWidth(self._timeSlider.sizePolicy().hasHeightForWidth())
+        self._timeSlider.setSizePolicy(sliderSizePolicy)
         self._timeSlider.setOrientation(QtCore.Qt.Horizontal)
+        timecntnrgridLayout.addWidget(self._timeSlider, 0, 1, 1, 1)
 
-        self._timeLabel = QtGui.QLabel(timeGroup)
-        self._timeSlider.setObjectName("timeLabel")
-        self._timeLabel.setText("<time>")
-        sizePolicyTimelabel = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Fixed)
-        sizePolicyTimelabel.setHorizontalStretch(0)
-        sizePolicyTimelabel.setVerticalStretch(0)
-        sizePolicyTimelabel.setHeightForWidth(self._timeLabel.sizePolicy().hasHeightForWidth())
+        boxLayout_time.addWidget(self.timecntnr)
+        self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
+        self._timeSlider.valueChanged.connect(lambda: self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentDataSetTimePoints()[self._timeSlider.value()])))
+        #---------------------------------------------------------
 
-        boxLayout_time.addWidget(self._timeLabel)
-        boxLayout_time.addWidget(self._timeSlider)
-
-        gridLayout_3.addWidget(timeGroup, 0, 0, 1, 1)
+        gridLayout_3.addWidget(self.timeGroup, 0, 0, 1, 1)
 
         gridLayout.addWidget(frame, 0, 0, 1, 1)
 
@@ -244,7 +258,6 @@ class VCellPysideApp(QtGui.QMainWindow):
         tabWidget.setTabText(tabWidget.indexOf(sliceTab), "Plot")
         #tabWidget.setTabText(tabWidget.indexOf(volumeTab),"Volume")
         variableGroup.setTitle("Variables")
-        timeGroup.setTitle("Time")
         menuFile.setTitle("File")
 
 
@@ -261,7 +274,6 @@ class VCellPysideApp(QtGui.QMainWindow):
         actionExit.setStatusTip("Exit viewer")
         actionExit.triggered.connect(self._exitApplication)
         self._variableListWidget.clicked.connect(self._onSelectedVariableChanged)
-        self._timeSlider.sliderReleased.connect(self._onTimeSliderChanged)
 
         self._sliceControl.setChecked(self._vis.getOperatorEnabled())
         self._sliceControl.getSliceSlider().setValue(self._vis.getOperatorPercent())
@@ -432,6 +444,40 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._visDataContext.setCurrentDataSetTimePoints(vcellProxy2.getClient().getTimePoints(sim))
             self._visDataContext.setCurrentTimeIndex(0)
             
+            print("List of variable names from VCellProxy is:")
+            varDisplayNames = [varInfo.variableDisplayName for varInfo in variables];
+            print("var display names: "+str(varDisplayNames))
+            varVtuNames = [varInfo.variableVtuName for varInfo in variables];
+            print("var mesh names: "+str(varVtuNames))
+            print("\nThe list of variable names from the MDServer is:")
+            #print(self._vis.getMDVariableNames())
+
+            assert isinstance(self._variableListWidget,QtGui.QListWidget)
+            self._variableListWidget.clear()
+        
+        
+            self._variableListWidget.addItems(varDisplayNames)
+            #if visQt.isPyside():
+            #    #self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
+            #    self._variableListWidget.item(0).setSelected(True)
+            #elif visQt.isPyQt4:
+            #    self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
+
+            times = self._visDataContext.getCurrentDataSetTimePoints()
+            self._timeSlider.blockSignals(True)
+            if times == None or len(times)==0:
+                self._timeSlider.setMinimum(0)
+                self._timeSlider.setMaximum(0)
+                self.timeGroup.setTitle("Time: 0.0")
+            else:
+                self._timeSlider.setMinimum(0)
+                self._timeSlider.setMaximum(len(times)-1)
+                self.timeGroup.setTitle("Time: 0.0")
+                self._timemaxlabel.setText(str(times[len(times)-1]))
+
+            self._timeSlider.setValue(0)
+            self._timeSlider.blockSignals(False)
+
             def successCallback(results):
                 print("_onSimulationSelected: openOne() success "+str(results));
                 self.modalProgress(None)
@@ -457,34 +503,6 @@ class VCellPysideApp(QtGui.QMainWindow):
             vcellProxy2.close()
 
 
-        print("List of variable names from VCellProxy is:")
-        varDisplayNames = [varInfo.variableDisplayName for varInfo in variables];
-        print("var display names: "+str(varDisplayNames))
-        varVtuNames = [varInfo.variableVtuName for varInfo in variables];
-        print("var mesh names: "+str(varVtuNames))
-        print("\nThe list of variable names from the MDServer is:")
-        #print(self._vis.getMDVariableNames())
-
-        assert isinstance(self._variableListWidget,QtGui.QListWidget)
-        self._variableListWidget.clear()
-        
-        
-        self._variableListWidget.addItems(varDisplayNames)
-        #if visQt.isPyside():
-        #    #self._variableListWidget.setCurrentItem(QtGui.QListWidgetItem(str(0)))
-        #    self._variableListWidget.item(0).setSelected(True)
-        #elif visQt.isPyQt4:
-        #    self._variableListWidget.setItemSelected(QtGui.QListWidgetItem(str(0)),True)
-
-        times = self._visDataContext.getCurrentDataSetTimePoints()
-        if times == None or len(times)==0:
-            self._timeSlider.setMinimum(0)
-            self._timeSlider.setMaximum(0)
-            self._timeLabel.setText("0.0")
-        else:
-            self._timeSlider.setMinimum(0)
-            self._timeSlider.setMaximum(len(times)-1)
-            self._timeLabel.setText("0.0")
 
     def _getStatusBar(self):
         return self._statusBar
@@ -545,7 +563,7 @@ class VCellPysideApp(QtGui.QMainWindow):
             sim = self._visDataContext.getCurrentDataSet()
             print("New current Time Point should be: "+str(self._visDataContext.getCurrentDataSetTimePoints()[newIndex]))
             print("new current Time Point is: "+str(self._visDataContext.getCurrentTimePoint()))
-            self._timeLabel.setText(str(self._visDataContext.getCurrentTimePoint()))
+            self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentTimePoint()))
             dataFileName = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(
                 self._visDataContext.getCurrentDataSet(),
                 self._visDataContext.getCurrentVariable(),
