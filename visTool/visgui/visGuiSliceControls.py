@@ -11,8 +11,9 @@ class sliceControl(QtGui.QGroupBox):
         assert isinstance(parent,QtGui.QWidget)
         self.initUI()
   
+    CONST_SLICE_TITLE = "Slice:"
     def initUI(self):
-        self.setTitle("Slice Control")
+        self.setTitle(sliceControl.CONST_SLICE_TITLE)
         self.setCheckable(True)
         self.setChecked(False)
         self.setObjectName("sliceControlWidget")
