@@ -70,7 +70,7 @@ public class RbmMolecularTypeTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+					icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
 				}
 			} else if (userObject instanceof MolecularComponent) {
 				BioModelNode parentNode = (BioModelNode) node.getParent();

@@ -93,6 +93,7 @@ import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 
 
@@ -742,7 +743,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = splitPane.getRightComponent().getGraphics();
-				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
 				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -936,6 +937,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
 				Icon icon = new SpeciesPatternSmallShape(1,4, spBond, gc, observable, false);
+				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
 			}
 			editBondMenu.add(menuItem);
@@ -1040,7 +1042,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
 					menuItem.setIcon(icon);
 					getAddFromTreeMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {

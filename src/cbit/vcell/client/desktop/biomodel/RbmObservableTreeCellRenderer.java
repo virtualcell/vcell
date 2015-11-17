@@ -74,7 +74,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmMolecularTypeSimpleIcon;;
 				} else {
 					Graphics gc = owner.getGraphics();
-					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), gc, molecularTypePattern.getMolecularType());
+					icon = new MolecularTypeSmallShape(1, 5, molecularTypePattern.getMolecularType(), gc, molecularTypePattern.getMolecularType(), null);
 				}
 			} else if (userObject instanceof MolecularComponentPattern) {
 				MolecularComponentPattern mcp = (MolecularComponentPattern) userObject;

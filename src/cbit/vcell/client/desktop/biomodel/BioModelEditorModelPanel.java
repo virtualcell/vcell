@@ -906,7 +906,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new MolecularTypeSmallShape(4, 3, mt, cellContext, mt);
+								stls = new MolecularTypeSmallShape(4, 3, mt, cellContext, mt, null);
 							}
 						}
 					} else {
