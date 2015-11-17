@@ -239,15 +239,16 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	public final List<MolecularTypePattern> getMolecularTypePatterns() {
 		return molecularTypePatterns;
 	}
-	// TODO: fix this !!!  it will return the FIRST mtp out of many possible !!!
-	public final MolecularTypePattern getMolecularTypePattern(String name) {
+	public final List<MolecularTypePattern> getMolecularTypePatterns(String name) {
+		List<MolecularTypePattern> mtpList = new ArrayList<MolecularTypePattern>();
 		for(MolecularTypePattern mtp : molecularTypePatterns) {
 			if(mtp.getMolecularType().getName().equals(name)) {
-				return mtp;
+				mtpList.add(mtp);
 			}
 		}
-		return null;
+		return mtpList;
 	}
+	
 	public final MolecularTypePattern getMolecularTypePattern(String mtName, int index) {
 		for(MolecularTypePattern mtp : molecularTypePatterns) {
 			if(mtp.getMolecularType().getName().equals(mtName) && mtp.getIndex() == index) {
