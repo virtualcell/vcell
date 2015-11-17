@@ -120,7 +120,9 @@ import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
@@ -988,7 +990,7 @@ private void updateShape() {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = shapePanel.getGraphics();
-				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
 				menuItem.setIcon(icon);
 				addMenuItem.add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -1018,14 +1020,7 @@ private void updateShape() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
 					SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
-					List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-					int fromIndex = mtpList.indexOf(from);
-					if(mtpList.size() == fromIndex+1) {		// already the last element
-						return;
-					}
-					int toIndex = fromIndex+1;
-					MolecularTypePattern to = mtpList.remove(toIndex);
-					mtpList.add(fromIndex, to);
+					sp.shiftRight(from);
 					speciesPropertiesTreeModel.populateTree();
 				}
 			});
@@ -1040,14 +1035,7 @@ private void updateShape() {
 				public void actionPerformed(ActionEvent e) {
 					MolecularTypePattern from = (MolecularTypePattern)selectedObject;
 					SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
-					List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-					int fromIndex = mtpList.indexOf(from);
-					if(fromIndex == 0) {			// already the first element
-						return;
-					}
-					int toIndex = fromIndex-1;
-					MolecularTypePattern to = mtpList.remove(toIndex);
-					mtpList.add(fromIndex, to);
+					sp.shiftLeft(from);
 					speciesPropertiesTreeModel.populateTree();
 				}
 			});
@@ -1124,7 +1112,7 @@ private void updateShape() {
 			return;
 		}
 		
-		// ------------------------------------------------------------------------------------------- Bonds
+		// ---------------------------------------------------------------------------- Bonds
 		final MolecularTypePattern mtp = locationContext.getMolecularTypePattern();
 		final SpeciesPattern sp = locationContext.getSpeciesPattern();
 		
@@ -1151,12 +1139,28 @@ private void updateShape() {
 				} else {
 					index = sp.nextBondId();
 				}
-//				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
-				itemMap.put(b.toHtmlStringLong(sp, index), b);
+				itemMap.put(b.toHtmlStringLong(sp, mtp, mc, index), b);
+//				itemMap.put(b.toHtmlStringLong(sp, index), b);
 			}
 		}
+		int index = 0;
+		Graphics gc = shapePanel.getGraphics();
 		for(String name : itemMap.keySet()) {
 			JMenuItem menuItem = new JMenuItem(name);
+			if(index > 0) {
+				Bond b = itemMap.get(name);
+				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
+				spBond.resetBonds();
+				spBond.resetStates();
+				MolecularTypePattern mtpFrom = spBond.getMolecularTypePattern(mtp.getMolecularType().getName(), mtp.getIndex());
+				MolecularComponentPattern mcpFrom = mtpFrom.getMolecularComponentPattern(mc);
+				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
+				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
+				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
+				Icon icon = new SpeciesPatternSmallShape(1,4, spBond, gc, fieldSpeciesContext, false);
+				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
+				menuItem.setIcon(icon);
+			}
 			editBondMenu.add(menuItem);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -1207,6 +1211,7 @@ private void updateShape() {
 					}
 				}
 			});
+			index++;
 		}
 		popupFromShapeMenu.add(editBondMenu);
 	}	
@@ -1280,7 +1285,7 @@ private void updateShape() {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
 					menuItem.setIcon(icon);
 					getAddMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {
