@@ -27,7 +27,7 @@ import org.vcell.util.Issue;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.graph.AbstractComponentShape.BondPair;
 
-public class SpeciesPatternSmallShape extends AbstractComponentShape implements Icon {
+public class SpeciesPatternSmallShape extends AbstractComponentShape implements AbstractShape, Icon {
 
 	private static final int baseHeight = 14;
 	private static final int separationWidth = 1;		// width between 2 molecular type patterns
@@ -38,15 +38,22 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	private int height = baseHeight;
 	private List<MolecularTypeSmallShape> speciesShapes = new ArrayList<MolecularTypeSmallShape>();
 	private boolean isSelected = false;
+	private DisplayRequirements displayRequirements = DisplayRequirements.normal;
 	
 	final Graphics graphicsContext;
 	
+	private final AbstractShape parentShape = null;
 	private Displayable owner;
 	private SpeciesPattern sp;
 	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
 	
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
+	public enum DisplayRequirements {
+		normal,
+		highlightBonds,
+	}
+	
 	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner,
 			boolean isSelected) {
 		this.owner = owner;
@@ -59,14 +66,14 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, graphicsContext, owner);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, graphicsContext, owner, this);
 			speciesShapes.add(stls);
 			return;
 		}
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, graphicsContext, owner);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, graphicsContext, owner, this);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
@@ -159,8 +166,11 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	}
 	
 	public void paintSelf(Graphics g) {
-		final int offset = 2;			// initial lenth of vertical bar
-
+		int offset = 2;			// initial lenth of vertical bar
+		if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
+			offset = 2;			// we can make it 1 pixel taller perhaps but there's no need
+		}
+		
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeSmallShape.paintDummy(g, xPos, yPos);
 		}
@@ -203,17 +213,28 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	}
 
 	@Override
+	// We don't have parent shape here
+	public AbstractShape getParentShape() {
+		return null;
+	}
+	public DisplayRequirements getDisplayRequirements() {
+		return displayRequirements;
+	}
+	public void setDisplayRequirements(DisplayRequirements displayRequirements) {
+		this.displayRequirements = displayRequirements;
+	}
+
+	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 		paintSelf(g);
 	}
-
 	@Override
 	public int getIconWidth() {
 		return width;
 	}
-
 	@Override
 	public int getIconHeight() {
 		return height;
 	}
+
 }

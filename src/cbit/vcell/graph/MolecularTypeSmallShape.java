@@ -28,9 +28,10 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.model.Model.RbmModelContainer;
 
-public class MolecularTypeSmallShape implements Icon {
+public class MolecularTypeSmallShape implements AbstractShape, Icon {
 	
 	private static final int baseWidth = 11;
 	private static final int baseHeight = 9;
@@ -48,11 +49,13 @@ public class MolecularTypeSmallShape implements Icon {
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
 	private final Displayable owner;
+	private final AbstractShape parentShape;
 	
 	List <MolecularComponentSmallShape> componentShapes = new ArrayList<MolecularComponentSmallShape>();
 
-	public MolecularTypeSmallShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
+		this.parentShape = parentShape;
 		this.mt = null;
 		this.mtp = null;
 		this.xPos = xPos;
@@ -63,8 +66,9 @@ public class MolecularTypeSmallShape implements Icon {
 		height = baseHeight + MolecularComponentSmallShape.componentDiameter / 2;
 		// no species pattern - this is a plain species context
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
+		this.parentShape = parentShape;
 		this.mt = mtp.getMolecularType();
 		this.mtp = mtp;
 		this.xPos = xPos;
@@ -76,7 +80,7 @@ public class MolecularTypeSmallShape implements Icon {
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mcp, graphicsContext, owner);
+			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mcp, graphicsContext, owner, this);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
 		
@@ -91,13 +95,14 @@ public class MolecularTypeSmallShape implements Icon {
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, graphicsContext, owner);
+			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mcp, graphicsContext, owner, this);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
 		}
 	}
-	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeSmallShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
+		this.parentShape = parentShape;
 		this.mt = mt;
 		this.mtp = null;
 		this.xPos = xPos;
@@ -107,7 +112,7 @@ public class MolecularTypeSmallShape implements Icon {
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
 		for(int i=numComponents-1; i >=0; i--) {
 			MolecularComponent mc = getMolecularType().getComponentList().get(i);
-			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, graphicsContext, owner);
+			MolecularComponentSmallShape mlcls = new MolecularComponentSmallShape(100, 50, mc, graphicsContext, owner, this);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentSmallShape.componentSeparation;
 		}
 		
@@ -120,7 +125,7 @@ public class MolecularTypeSmallShape implements Icon {
 			int y = yPos + height - MolecularComponentSmallShape.componentDiameter;
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
-			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, graphicsContext, owner);
+			MolecularComponentSmallShape mcss = new MolecularComponentSmallShape(rightPos, y-2, mc, graphicsContext, owner, this);
 			offsetFromRight += mcss.getWidth() + MolecularComponentSmallShape.componentSeparation;
 			componentShapes.add(0, mcss);
 		}
@@ -161,6 +166,17 @@ public class MolecularTypeSmallShape implements Icon {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public AbstractShape getParentShape() {
+		return parentShape ;
+	}
+	public DisplayRequirements getDisplayRequirements() {
+		if(parentShape == null) {
+			return DisplayRequirements.normal;
+		}
+		return parentShape.getDisplayRequirements();
 	}
 	
 	public void paintSelf(Graphics g) {

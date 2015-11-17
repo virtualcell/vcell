@@ -9,15 +9,17 @@ import java.awt.Graphics2D;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
+import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
 
-public class MolecularComponentSmallShape extends AbstractComponentShape {
+public class MolecularComponentSmallShape extends AbstractComponentShape implements AbstractShape {
 	
 	static final int componentSeparation = 1;		// distance between components
 	static final int componentDiameter = 8;			// diameter of the component (circle)
@@ -32,19 +34,21 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	private final MolecularComponent mc;
 	private final MolecularComponentPattern mcp;
 	private final Displayable owner;
-
+	private final AbstractShape parentShape;
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
+		this.parentShape = parentShape;
 		this.mcp = null;
 		this.mc = mc;
 		this.graphicsContext = graphicsContext;
 		xPos = rightPos-width;
 		yPos = y;
 	}
-	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner) {
+	public MolecularComponentSmallShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner, AbstractShape parentShape) {
 		this.owner = owner;
+		this.parentShape = parentShape;
 		this.mcp = mcp;
 		this.mc = mcp.getMolecularComponent();
 		this.graphicsContext = graphicsContext;
@@ -70,6 +74,41 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 	}
 	
 	private Color setComponentColor() {
+		if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
+			return setComponentColorHighlightBonds();
+		} else {
+			return setComponentColorNormal();
+		}
+	}
+	private Color setComponentColorHighlightBonds() {
+		if(owner == null) {
+			return componentBad;
+		}
+		Color componentColor = componentBad;
+		if(owner instanceof MolecularType) {
+			componentColor = componentHidden;
+		} else if(owner instanceof SpeciesContext) {
+			if(mcp.getBondType() == BondType.Specified) {
+				componentColor = Color.green;
+			} else {
+				componentColor = componentHidden;
+			}
+		} else if(mcp != null && owner instanceof RbmObservable) {
+			if(mcp.getBondType() == BondType.Specified) {
+				componentColor = Color.green;
+			} else {
+				componentColor = componentHidden;
+			}
+		} else if(owner instanceof ReactionRule || owner instanceof SimpleReaction) {
+			if(mcp.getBondType() == BondType.Specified) {
+				componentColor = Color.green;
+			} else {
+				componentColor = componentHidden;
+			}
+		}
+		return componentColor;
+	}
+	private Color setComponentColorNormal() {
 		if(owner == null) {
 			return componentBad;
 		}
@@ -121,7 +160,17 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 //		}
 //		return componentColor;
 	}
-
+	
+	@Override
+	public AbstractShape getParentShape() {
+		return parentShape ;
+	}
+	public DisplayRequirements getDisplayRequirements() {
+		if(parentShape == null) {
+			return DisplayRequirements.normal;
+		}
+		return parentShape.getDisplayRequirements();
+	}
 
 	public void paintSelf(Graphics g) {
 		paintComponent(g);
@@ -138,7 +187,11 @@ public class MolecularComponentSmallShape extends AbstractComponentShape {
 		g2.drawOval(xPos, yPos, componentDiameter, componentDiameter);
 		
 		if(mc.getComponentStateDefinitions().size()>0) {
-			g2.setColor(componentYellow);
+			if(getDisplayRequirements() == DisplayRequirements.highlightBonds) {
+				g2.setColor(componentHidden);
+			} else {
+				g2.setColor(componentYellow);
+			}
 			g2.fillOval(xPos + width - 5, yPos-2, 5, 5);
 			g.setColor(Color.darkGray);
 			g2.drawOval(xPos + width - 5, yPos-2, 5, 5);
