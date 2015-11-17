@@ -593,14 +593,24 @@ public class RulebasedTransformer implements SimContextTransformer {
 	
 	
 	private void extractMolecules(SpeciesPattern sp, Model model, Element participantPatternElement) {
+		List <MolecularTypePattern> mtpUsedAlreadyList = new ArrayList <MolecularTypePattern>();
 		Element listOfMoleculesElement = participantPatternElement.getChild("ListOfMolecules", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		List<Element> moleculeChildren = new ArrayList<Element>();
 		moleculeChildren = listOfMoleculesElement.getChildren("Molecule", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 		for (Element moleculeElement : moleculeChildren) {
 			String molecule_id_str = moleculeElement.getAttributeValue("id");
 			String molecule_name_str = moleculeElement.getAttributeValue("name");
-			MolecularTypePattern mtp = sp.getMolecularTypePattern(molecule_name_str);
-			if(mtp == null) System.out.println("!!! Missing molecule " + molecule_name_str);
+			List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns(molecule_name_str);
+			if(mtpList.isEmpty()) System.out.println("!!! Missing molecule " + molecule_name_str);
+			MolecularTypePattern mtp = null;
+			for(MolecularTypePattern mtpCandidate : mtpList) {
+				if(mtpUsedAlreadyList.contains(mtpCandidate)) {
+					continue;
+				}
+				mtp = mtpCandidate;		// this mtp is the next in line unused, so we associate it with this id
+				mtpUsedAlreadyList.add(mtpCandidate);
+				break;
+			}
 			System.out.println("     molecule  id=" + molecule_id_str + ", name=" + molecule_name_str);
 			keyMap.put(molecule_id_str, mtp);
 
