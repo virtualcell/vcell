@@ -24,8 +24,6 @@ import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkDoubleArray;
-import vtk.vtkUnstructuredGrid;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.OutputContext;
@@ -76,39 +74,12 @@ public class ChomboVtkFileWriter {
 		}
 	}
 
-	List<ChomboCellIndices> getVolumeCellIndices(vtkUnstructuredGrid usGrid){
-		vtkDoubleArray boxLevelArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXLEVEL);
-		double[] boxLevelData = boxLevelArray.GetJavaArray();
-		vtkDoubleArray boxNumberArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXNUMBER);
-		double[] boxNumberData = boxNumberArray.GetJavaArray();
-		vtkDoubleArray boxIndexArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXINDEX);
-		double[] boxIndexData = boxIndexArray.GetJavaArray();
-
-		ArrayList<ChomboCellIndices> chomboCellIndices = new ArrayList<ChomboCellIndices>();
-		for (int i=0;i<boxLevelData.length;i++){
-			chomboCellIndices.add(new SimpleChomboCellIndices((int)boxLevelData[i],(int)boxNumberData[i],(int)boxIndexData[i]));
-		}
-		return chomboCellIndices;
-	}
-	
-	List<ChomboVisMembraneIndex> getMembraneCellIndices(vtkUnstructuredGrid usGrid){
-		vtkDoubleArray membraneIndexArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_MEMBRANE_INDEX);
-		double[] membraneIndexData = membraneIndexArray.GetJavaArray();
-
-		ArrayList<ChomboVisMembraneIndex> chomboMembraneIndices = new ArrayList<ChomboVisMembraneIndex>();
-		for (int i=0;i<membraneIndexData.length;i++){
-			chomboMembraneIndices.add(new SimpleChomboVisMembraneIndex((int)membraneIndexData[i]));
-		}
-		return chomboMembraneIndices;
-	}
-	
 	public File[] writeVtuExportFiles(ChomboFiles chomboFiles, File destinationDirectory, ProgressListener progressListener) throws Exception{
 		if (destinationDirectory==null || !destinationDirectory.isDirectory()){
 			throw new RuntimeException("destinationDirectory '"+destinationDirectory+" not valid");
 		}
 		ArrayList<File> files = new ArrayList<File>();
 		int numFiles = chomboFiles.getDomains().size() * chomboFiles.getTimeIndices().size();
-		VtkGridUtils vtkGridUtils = new VtkGridUtils();
 		HashMap<String, VisMesh> domainMeshMap = new HashMap<String, VisMesh>();
 		int filesProcessed = 0;
 		for (int timeIndex : chomboFiles.getTimeIndices()){
@@ -125,10 +96,8 @@ public class ChomboVtkFileWriter {
 				boolean bMembrane = false;
 				VisMeshData visMeshData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
 				VisDataset.VisDomain visDomain = new VisDataset.VisDomain(chomboDomain.getName(),visMesh,visMeshData);
-				vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
 				File file = new File(destinationDirectory,chomboFiles.getCannonicalFilePrefix(visDomain.getName(),timeIndex)+".vtu");
-				vtkGridUtils.write(vtkgrid, file.getPath());
-				vtkgrid.Delete(); // if needed for garbage collection
+				VtkGridUtils.writeVolumeVtkGrid(visDomain,file);
 				files.add(file);
 				
 				if (chomboMeshData.getMembraneVarData().size() > 0)
@@ -136,9 +105,7 @@ public class ChomboVtkFileWriter {
 					bMembrane = true;
 					String filename = chomboFiles.getSimID() + "_" + chomboFiles.getJobIndex() + "_VCellVariableSolution_" + String.format("%06d",timeIndex);
 					File memfile = new File(destinationDirectory,filename+".vtu");
-					vtkgrid = vtkGridUtils.getMembraneVtkGrid(visMesh, chomboMeshData);
-					vtkGridUtils.write(vtkgrid, memfile.getPath());
-					vtkgrid.Delete();
+					VtkGridUtils.writeMembraneVtkGrid(visMesh, chomboMeshData, memfile);
 					files.add(memfile);
 				}
 
@@ -154,7 +121,6 @@ public class ChomboVtkFileWriter {
 
 	public double[] getVtuMeshData(ChomboFiles chomboFiles, OutputContext outputContext, File destinationDirectory, double time, VtuVarInfo var, int timeIndex) throws Exception {
 		
-		VtkGridUtils vtkGridUtils = new VtkGridUtils();
 		ChomboDataset chomboDataset = ChomboFileReader.readDataset(chomboFiles,chomboFiles.getTimeIndices().get(timeIndex));
 		String domainName = var.domainName;
 		ChomboDomain chomboDomain = chomboDataset.getDomain(domainName);
@@ -164,7 +130,6 @@ public class ChomboVtkFileWriter {
 		if (!meshFile.exists()){
 			writeEmptyMeshFiles(chomboFiles, destinationDirectory, null);
 		}
-		vtkUnstructuredGrid usGrid = vtkGridUtils.read(meshFile.getPath());
 		
 		double data[] = null;
 		
@@ -174,8 +139,7 @@ public class ChomboVtkFileWriter {
 				break;
 			}
 			case VARIABLEDOMAIN_MEMBRANE: {
-				List<ChomboVisMembraneIndex> cellIndices = getMembraneCellIndices(usGrid);
-				usGrid.Delete();
+				List<ChomboVisMembraneIndex> cellIndices = VtkGridUtils.getChomboMembraneCellIndices(meshFile);
 				data = chomboMeshData.getMembraneCellData(var.name, cellIndices);
 				break;
 			}
@@ -189,8 +153,7 @@ public class ChomboVtkFileWriter {
 				break;
 			}
 			case VARIABLEDOMAIN_VOLUME: {
-				List<ChomboCellIndices> cellIndices = getVolumeCellIndices(usGrid);
-				usGrid.Delete();
+				List<ChomboCellIndices> cellIndices = VtkGridUtils.getChomboVolumeCellIndices(meshFile);
 				data = chomboMeshData.getVolumeCellData(var.name, cellIndices);
 				break;
 			}
@@ -315,7 +278,6 @@ public class ChomboVtkFileWriter {
 		ArrayList<File> meshFiles = new ArrayList<File>();
 		int timeIndex = 0;
 		
-		VtkGridUtils vtkGridUtils = new VtkGridUtils();
 		HashMap<String, VisMesh> domainMeshMap = new HashMap<String, VisMesh>();
 		ChomboDataset chomboDataset;
 		try {
@@ -333,7 +295,6 @@ public class ChomboVtkFileWriter {
 			}
 			VisMeshData visMeshData = new ChomboVisMeshData(chomboMeshData, visMesh, false);
 			VisDataset.VisDomain visDomain = new VisDataset.VisDomain(chomboDomain.getName(),visMesh,visMeshData);
-			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
 			String domainName = visDomain.getName();
 			
 			//
@@ -341,8 +302,7 @@ public class ChomboVtkFileWriter {
 			//
 			{
 			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, domainName);
-			vtkGridUtils.write(vtkgrid, volumeMeshFile.getPath());
-			vtkgrid.Delete(); // if needed for garbage collection
+			VtkGridUtils.writeVolumeVtkGrid(visDomain, volumeMeshFile);
 			meshFiles.add(volumeMeshFile);
 			}
 						
@@ -350,12 +310,10 @@ public class ChomboVtkFileWriter {
 				//
 				// write membrane mesh file
 				//
-				vtkgrid = vtkGridUtils.getMembraneVtkGrid(visMesh, chomboMeshData);
 				String membraneDomainName = domainName+MEMBRANE;
 				
 				File membraneMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, membraneDomainName);
-				vtkGridUtils.write(vtkgrid, membraneMeshFile.getPath());
-				vtkgrid.Delete(); // if needed for garbage collection
+				VtkGridUtils.writeMembraneVtkGrid(visMesh, chomboMeshData, membraneMeshFile);
 				meshFiles.add(membraneMeshFile);
 			}
 		}

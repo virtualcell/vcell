@@ -21,8 +21,6 @@ import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkDoubleArray;
-import vtk.vtkUnstructuredGrid;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFunctionDefinitions;
@@ -278,12 +276,8 @@ public class CartesianMeshVtkFileWriter {
 				};
 				
 				VisDataset.VisDomain visDomain = new VisDataset.VisDomain(anyDomain,visMesh,visMeshData);
-				VtkGridUtils vtkGridUtils = new VtkGridUtils();
-				vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
-				vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
 				File file = getVtuMeshAndDataFileName(destinationDirectory, vcellFiles, visDomain.getName(), timeIndex);
-				vtkGridUtils.write(vtkgridSmoothed, file.getPath());
-				vtkgrid.Delete(); 			// is needed for garbage collection? 
+				VtkGridUtils.writeSmoothedVtkGrid(visDomain, file);
 				//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
 				files.add(file);
 				filesProcessed++;
@@ -306,6 +300,17 @@ public class CartesianMeshVtkFileWriter {
 		return new File(directory,vcellFiles.getCannonicalFilePrefix(domainName,timeIndex)+".vtu");
 	}
 
+	public static class CartesianMeshIndices {
+		public final int numCells;
+		public final double[] regionIndices;
+		public final double[] globalIndices;
+		
+		public CartesianMeshIndices(int numCells, double[] regionIndices,	double[] globalIndices) {
+			this.numCells = numCells;
+			this.regionIndices = regionIndices;
+			this.globalIndices = globalIndices;
+		}
+	}
 
 	public double[] getVtuMeshData(VCellSimFiles vcellFiles,  OutputContext outputContext, SimDataBlock simDataBlock, File destinationDirectory, VtuVarInfo var, final double time) throws Exception {
 		//
@@ -316,50 +321,28 @@ public class CartesianMeshVtkFileWriter {
 		String domainName = var.domainName;
 		File vtuMeshFile = getVtuMeshFileName(vcellFiles, var.domainName);
 		
-		vtkUnstructuredGrid vtkUnstructuredGrid = null;
-		int numCells = -1;
-		double[] globalIndexValues = null;
-		int maxGlobalIndex = 0;
-		double[] regionIndexValues = null;
-		int maxRegionIndex = 0;
-		try {
+		if (!vtuMeshFile.exists()){
+			writeEmptyMeshFiles(vcellFiles, destinationDirectory, null);
 			if (!vtuMeshFile.exists()){
-				writeEmptyMeshFiles(vcellFiles, destinationDirectory, null);
-				if (!vtuMeshFile.exists()){
-					throw new RuntimeException("failed to find vtk mesh file "+vtuMeshFile.getAbsolutePath());
-				}
-			}
-			VtkGridUtils vtkGridUtils = new VtkGridUtils();
-			vtkUnstructuredGrid = vtkGridUtils.read(vtuMeshFile.getAbsolutePath());
-			vtkUnstructuredGrid.BuildLinks();
-	
-			final String globalIndexVarName = GLOBAL_INDEX_VAR;
-			final String regionIdVarName = REGION_ID_VAR;
-			
-			int numberOfArrays = vtkUnstructuredGrid.GetCellData().GetNumberOfArrays();
-			for (int i=0;i<numberOfArrays;i++){
-				String arrayName = vtkUnstructuredGrid.GetCellData().GetArrayName(i);
-				System.out.println("Array("+i+") named \""+arrayName+"\"");
-			}
-			vtkDoubleArray globalIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(globalIndexVarName);
-			globalIndexValues = globalIndexArray.GetJavaArray();
-			maxGlobalIndex = 0;
-			for (double globalIndex : globalIndexValues){
-				maxGlobalIndex = Math.max((int)globalIndex,maxGlobalIndex);
-			}
-			
-			vtkDoubleArray regionIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(regionIdVarName);
-			regionIndexValues = regionIndexArray.GetJavaArray();
-			maxRegionIndex = 0;
-			for (double regionIndex : regionIndexValues){
-				maxRegionIndex = Math.max((int)regionIndex,maxRegionIndex);
-			}
-			numCells = vtkUnstructuredGrid.GetCells().GetNumberOfCells();
-		} finally {
-			if (vtkUnstructuredGrid!=null){
-				vtkUnstructuredGrid.Delete();
+				throw new RuntimeException("failed to find vtk mesh file "+vtuMeshFile.getAbsolutePath());
 			}
 		}
+		final String globalIndexVarName = GLOBAL_INDEX_VAR;
+		final String regionIdVarName = REGION_ID_VAR;
+		
+		CartesianMeshIndices cartesianMeshIndices = VtkGridUtils.readCartesianMeshIndices(vtuMeshFile, globalIndexVarName, regionIdVarName);
+		double[] globalIndexValues = cartesianMeshIndices.globalIndices;
+		int maxGlobalIndex = 0;
+		for (double globalIndex : globalIndexValues){
+			maxGlobalIndex = Math.max((int)globalIndex,maxGlobalIndex);
+		}
+		
+		double[] regionIndexValues = cartesianMeshIndices.regionIndices;
+		int maxRegionIndex = 0;
+		for (double regionIndex : regionIndexValues){
+			maxRegionIndex = Math.max((int)regionIndex,maxRegionIndex);
+		}
+		int numCells = cartesianMeshIndices.numCells;
 		
 		String vcellName = var.name;
 		System.out.println("CartesianMeshVtkFileWriter.getVtuMeshData(): reading data for variable "+vcellName+" at time "+time);
@@ -560,13 +543,8 @@ public class CartesianMeshVtkFileWriter {
 			};
 			
 			VisDataset.VisDomain visDomain = new VisDataset.VisDomain(domainName,visMesh,visMeshData);
-			VtkGridUtils vtkGridUtils = new VtkGridUtils();
-			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
-			vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
 			File file = getVtuMeshFileName(vcellFiles, visDomain.getName());
-			vtkGridUtils.write(vtkgridSmoothed, file.getPath());
-			vtkgrid.Delete(); 			// is needed for garbage collection? 
-			//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
+			VtkGridUtils.writeSmoothedVtkGrid(visDomain, file);
 			files.add(file);
 			filesProcessed++;
 			if (progressListener!=null){
