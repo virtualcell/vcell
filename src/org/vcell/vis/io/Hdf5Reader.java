@@ -95,22 +95,22 @@ public class Hdf5Reader {
 		}
 		throw new RuntimeException("failed to find attribute "+name);
 	}
-	
+
 	public static double getDoubleAttribute(Group group, String name) throws Exception{
 		Attribute attr = getAttribute(group,name);
 		return ((double[])attr.getValue())[0];
 	}
-	
+
 	public static float getFloatAttribute(Group group, String name) throws Exception{
 		Attribute attr = getAttribute(group,name);
 		return ((float[])attr.getValue())[0];
 	}
-	
+
 	public static int getIntAttribute(Group group, String name) throws Exception{
 		Attribute attr = getAttribute(group,name);
 		return ((int[])attr.getValue())[0];
 	}
-	
+
 	public static String getStringAttribute(Group group, String name) throws Exception{
 		Attribute attr = getAttribute(group,name);
 		return ((String[])attr.getValue())[0];
@@ -120,7 +120,7 @@ public class Hdf5Reader {
 		String str = getStringAttribute(group, name);
 		return parseAttrString(str,defaultZ);
 	}
-	
+
 	public static Group getChildGroup(Group group, String name){
 		List<HObject> memberList = group.getMemberList();
 		for (HObject member : memberList) {
@@ -134,8 +134,8 @@ public class Hdf5Reader {
 		}
 		throw new RuntimeException("child group '"+name+"' not found");
 	}
-	
-	public static Hdf5Reader.DataColumn[] getDataTable(Group group, String name) throws HDF5Exception{
+
+	public static Hdf5Reader.DataColumn[] getDataTable(Group group, String name) throws Exception{
 		List<HObject> memberList = group.getMemberList();
 		for (HObject member : memberList) {
 			if (member.getName().equals(name)){
@@ -191,6 +191,6 @@ public class Hdf5Reader {
 			throw new RuntimeException("cannot parse, unexpected array size "+valueList.size());
 		}
 	}
-	
-	
+
+
 }
