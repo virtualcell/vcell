@@ -37,7 +37,6 @@ import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
  * @author: Ion Moraru
  */
 public class ODEDataViewer extends DataViewer {
-    protected transient ActionListener actionListener = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private PlotPane ivjPlotPane1 = null;
@@ -67,11 +66,6 @@ public ODEDataViewer() {
 	super();
 	initialize();
 }
-
-public synchronized void addActionListener(ActionListener l) {
-	actionListener = AWTEventMulticaster.add(actionListener, l);
-}
-
 
 /**
  * connEtoM2:  (ODESolverPlotSpecificationPanel1.singleXPlot2D --> PlotPane1.plot2D)
@@ -114,7 +108,7 @@ private synchronized void connPtoP1SetTarget() {
  * {@link AsynchClientTask} method
  * @param ht
  */
-private synchronized void calculateFilterTask(Hashtable<String,Object> ht) {
+private void calculateFilterTask(Hashtable<String,Object> ht) {
 	//
 	// this method is synchronized because it can be called from ClientTaskDispatcher thread
 	// from multiple invocations, this will force them to execute serially.
@@ -136,14 +130,6 @@ private void firePropertyChangeTask(Hashtable<String,Object> ht) {
 
 	
 }
-
-
-protected void fireActionPerformed(ActionEvent e) {
-	if (actionListener != null) {
-		actionListener.actionPerformed(e);
-	}         
-}
-
 
 /**
  * Method generated to support the promotion of the exportMonitorPanel attribute.
@@ -301,12 +287,6 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
-
-
-public synchronized void removeActionListener(ActionListener l) {
-	actionListener = AWTEventMulticaster.remove(actionListener, l);
-}
-
 
 /**
  * Sets the odeSolverResultSet property (cbit.vcell.solver.ode.ODESolverResultSet) value.
