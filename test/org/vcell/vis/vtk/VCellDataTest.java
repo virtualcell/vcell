@@ -1,18 +1,14 @@
-package org.vcell.vis;
+package org.vcell.vis.vtk;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
 import org.vcell.vis.vcell.CartesianMesh;
-import org.vcell.vis.vtk.SimpleVTKViewer;
-import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.resource.ResourceUtil;
-import vtk.vtkUnstructuredGrid;
 
 public class VCellDataTest {
 
@@ -72,15 +68,14 @@ public class VCellDataTest {
 				allDomainNames.addAll(mesh.getMembraneDomainNames());
 				for (String domain : allDomainNames){
 					for (int timeIndex=0;timeIndex<vcellFiles.getTimes().size();timeIndex++){
-						String filename = new File(destinationDirectory,vcellFiles.getCannonicalFilePrefix(domain,timeIndex)+".vtu").getAbsolutePath();
-						VtkGridUtils vtkGridUtils = new VtkGridUtils();
-						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
-						vtkgrid.BuildLinks();
-	
-						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
-						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
-						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
-						simpleViewer.showGrid(vtkgrid, varName0, varName1);
+//						String filename = new File(destinationDirectory,vcellFiles.getCannonicalFilePrefix(domain,timeIndex)+".vtu").getAbsolutePath();
+//						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
+//						vtkgrid.BuildLinks();
+//	
+//						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
+//						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
+//						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
+//						simpleViewer.showGrid(vtkgrid, varName0, varName1);
 						Thread.sleep(1000);
 					}
 				}

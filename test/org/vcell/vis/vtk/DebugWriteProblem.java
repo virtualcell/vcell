@@ -1,4 +1,4 @@
-package org.vcell.vis;
+package org.vcell.vis.vtk;
 
 import org.vcell.vis.core.Vect3D;
 import org.vcell.vis.vismesh.VisDataset.VisDomain;
@@ -7,9 +7,6 @@ import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
-import org.vcell.vis.vtk.VtkGridUtils;
-
-import vtk.vtkUnstructuredGrid;
 
 public class DebugWriteProblem {
 
@@ -93,15 +90,15 @@ public class DebugWriteProblem {
 			};
 			
 			VisDomain visDomain = new VisDomain("domain1",visMesh,visData);
-			VtkGridUtils vtkGridUtils = new VtkGridUtils();
-			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
-			String filenameASCII = "testASCII.vtk";
-			String filenameBinary = "testBinary.vtk";
-			vtkGridUtils.writeXML(vtkgrid, filenameASCII, true);
-			vtkGridUtils.writeXML(vtkgrid, filenameBinary, false);
-			vtkgrid = vtkGridUtils.read(filenameBinary);
-			//vtkgrid.s
-			vtkgrid.BuildLinks();
+//			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
+//			String filenameASCII = "testASCII.vtk";
+//			String filenameBinary = "testBinary.vtk";
+//			vtkGridUtils.writeXML(vtkgrid, filenameASCII, true);
+//			vtkGridUtils.writeXML(vtkgrid, filenameBinary, false);
+//			vtkgrid = vtkGridUtils.read(filenameBinary);
+//			vtkgrid.BuildLinks();
+			
+			
 //			SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
 //			String[] varNames = visDomain.getVisMeshData().getVarNames();
 //			simpleViewer.showGrid(vtkgrid, varNames[0], varNames[1]);
