@@ -45,6 +45,7 @@ import vtk.vtkPolyData;
 import vtk.vtkPolygon;
 import vtk.vtkPolyhedron;
 import vtk.vtkQuad;
+import vtk.vtkReferenceInformation;
 import vtk.vtkTetra;
 import vtk.vtkTriangle;
 import vtk.vtkUnstructuredGrid;
@@ -267,7 +268,8 @@ public class VtkGridUtils {
 //		writeLegacy(vtkgrid,filename,true);
 	}
 
-	public static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
+	public synchronized static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
+		try {
 			vtkPolyData vtkpolydata = new vtkPolyData();
 			vtkPoints vtkpoints = new vtkPoints();
 			int polygonType = new vtkPolygon().GetCellType();
@@ -327,7 +329,19 @@ public class VtkGridUtils {
 				}
 			}
 			return visTets.toArray(new VisTetrahedron[0]);
+		}finally{
+			cleanupVtk();
 		}
+	}
+	
+	private synchronized static void cleanupVtk(){
+		vtk.vtkObjectBase.JAVA_OBJECT_MANAGER.deleteAll();
+		vtkReferenceInformation info = vtk.vtkObjectBase.JAVA_OBJECT_MANAGER.gc(true);
+		System.out.println("vtk garbage collection : "+info.toString());
+		if (info.getTotalNumberOfObjectsStillReferenced()>0){
+			System.out.println("vtk total number of objects still referenced = "+info.getTotalNumberOfObjectsStillReferenced());
+		}
+	}
 
 	private static vtkUnstructuredGrid smoothUnstructuredGridSurface(vtkUnstructuredGrid grid){
 		
@@ -470,94 +484,114 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 
-	public static void writeSmoothedVtkGrid(VisDomain visDomain, File file) throws IOException {
-		vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
+	public synchronized static void writeSmoothedVtkGrid(VisDomain visDomain, File file) throws IOException {
 		try {
+			vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
 			vtk.vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
 			write(vtkgridSmoothed, file.getPath());
 			//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
-		}finally{
 			vtkgrid.Delete(); 			// is needed for garbage collection?
+		}finally{
+			cleanupVtk();
 		}
 	}
 	
-	public static CartesianMeshIndices readCartesianMeshIndices(File vtuMeshFile, String globalIndexVarName, String regionIdVarName){
-		vtkUnstructuredGrid vtkUnstructuredGrid = read(vtuMeshFile.getAbsolutePath());
-		vtkUnstructuredGrid.BuildLinks();
-
-		int numberOfArrays = vtkUnstructuredGrid.GetCellData().GetNumberOfArrays();
-		for (int i=0;i<numberOfArrays;i++){
-			String arrayName = vtkUnstructuredGrid.GetCellData().GetArrayName(i);
-			System.out.println("Array("+i+") named \""+arrayName+"\"");
-		}
-		vtkDoubleArray globalIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(globalIndexVarName);
-		double[] globalIndexValues = globalIndexArray.GetJavaArray();
-		int maxGlobalIndex = 0;
-		for (double globalIndex : globalIndexValues){
-			maxGlobalIndex = Math.max((int)globalIndex,maxGlobalIndex);
-		}
-		
-		vtkDoubleArray regionIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(regionIdVarName);
-		double[] regionIndexValues = regionIndexArray.GetJavaArray();
-		int maxRegionIndex = 0;
-		for (double regionIndex : regionIndexValues){
-			maxRegionIndex = Math.max((int)regionIndex,maxRegionIndex);
-		}
-		int numCells = vtkUnstructuredGrid.GetCells().GetNumberOfCells();
-		
-		CartesianMeshIndices cartesianMeshIndices = new CartesianMeshIndices(numCells, regionIndexValues, globalIndexValues);
-		return cartesianMeshIndices;
-	}
-
-	public static void writeVolumeVtkGrid(VisDomain visDomain, File volumeMeshFile) throws IOException {
-		vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
-		write(vtkgrid, volumeMeshFile.getPath());
-		vtkgrid.Delete(); // if needed for garbage collection
-	}
-
-	public static void writeMembraneVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData, File memfile) {
-		vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visMesh, chomboMeshData);
-		write(vtkgrid, memfile.getPath());
-		vtkgrid.Delete();
-	}
-
-	public static List<ChomboCellIndices> getChomboVolumeCellIndices(File meshFile){
-		vtkUnstructuredGrid usGrid = read(meshFile.getPath());
-
-		vtkDoubleArray boxLevelArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXLEVEL);
-		double[] boxLevelData = boxLevelArray.GetJavaArray();
-		vtkDoubleArray boxNumberArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXNUMBER);
-		double[] boxNumberData = boxNumberArray.GetJavaArray();
-		vtkDoubleArray boxIndexArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXINDEX);
-		double[] boxIndexData = boxIndexArray.GetJavaArray();
-
-		ArrayList<ChomboCellIndices> chomboCellIndices = new ArrayList<ChomboCellIndices>();
-		for (int i=0;i<boxLevelData.length;i++){
-			chomboCellIndices.add(new SimpleChomboCellIndices((int)boxLevelData[i],(int)boxNumberData[i],(int)boxIndexData[i]));
-		}
-		usGrid.Delete();
-		return chomboCellIndices;
-	}
-	
-	public static List<ChomboVisMembraneIndex> getChomboMembraneCellIndices(File meshFile){
-		vtkUnstructuredGrid usGrid = read(meshFile.getPath());
-
-		vtkCellData cellData = usGrid.GetCellData();
-		vtkDoubleArray membraneIndexArray = (vtkDoubleArray)cellData.GetArray(ChomboMeshData.BUILTIN_VAR_MEMBRANE_INDEX);
-		double[] membraneIndexData = membraneIndexArray.GetJavaArray();
-
-		ArrayList<ChomboVisMembraneIndex> chomboMembraneIndices = new ArrayList<ChomboVisMembraneIndex>();
-		for (int i=0;i<membraneIndexData.length;i++){
-			chomboMembraneIndices.add(new SimpleChomboVisMembraneIndex((int)membraneIndexData[i]));
-		}
-		usGrid.Delete();
-		return chomboMembraneIndices;
-	}
-	
-	public static void writeDataArrayToNewVtkFile(File emptyMeshFile, String varName, double[] data, File newMeshFile) throws IOException{
-		vtkUnstructuredGrid vtkgrid = null;
+	public synchronized static CartesianMeshIndices readCartesianMeshIndices(File vtuMeshFile, String globalIndexVarName, String regionIdVarName){
 		try {
-			vtkgrid = read(emptyMeshFile.getCanonicalPath());
+			vtkUnstructuredGrid vtkUnstructuredGrid = read(vtuMeshFile.getAbsolutePath());
+			vtkUnstructuredGrid.BuildLinks();
+	
+			int numberOfArrays = vtkUnstructuredGrid.GetCellData().GetNumberOfArrays();
+			for (int i=0;i<numberOfArrays;i++){
+				String arrayName = vtkUnstructuredGrid.GetCellData().GetArrayName(i);
+				System.out.println("Array("+i+") named \""+arrayName+"\"");
+			}
+			vtkDoubleArray globalIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(globalIndexVarName);
+			double[] globalIndexValues = globalIndexArray.GetJavaArray();
+			int maxGlobalIndex = 0;
+			for (double globalIndex : globalIndexValues){
+				maxGlobalIndex = Math.max((int)globalIndex,maxGlobalIndex);
+			}
+			
+			vtkDoubleArray regionIndexArray = (vtkDoubleArray)vtkUnstructuredGrid.GetCellData().GetArray(regionIdVarName);
+			double[] regionIndexValues = regionIndexArray.GetJavaArray();
+			int maxRegionIndex = 0;
+			for (double regionIndex : regionIndexValues){
+				maxRegionIndex = Math.max((int)regionIndex,maxRegionIndex);
+			}
+			int numCells = vtkUnstructuredGrid.GetCells().GetNumberOfCells();
+			
+			CartesianMeshIndices cartesianMeshIndices = new CartesianMeshIndices(numCells, regionIndexValues, globalIndexValues);
+			return cartesianMeshIndices;
+		}finally{
+			cleanupVtk();
+		}
+	}
+
+	public synchronized static void writeVolumeVtkGrid(VisDomain visDomain, File volumeMeshFile) throws IOException {
+		try {
+			vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
+			write(vtkgrid, volumeMeshFile.getPath());
+			vtkgrid.Delete(); // if needed for garbage collection
+		}finally{
+			cleanupVtk();
+		}
+	}
+
+	public synchronized static void writeMembraneVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData, File memfile) {
+		try {
+			vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visMesh, chomboMeshData);
+			write(vtkgrid, memfile.getPath());
+			vtkgrid.Delete();
+		}finally{
+			cleanupVtk();
+		}
+	}
+
+	public synchronized static List<ChomboCellIndices> getChomboVolumeCellIndices(File meshFile){
+		try {
+			vtkUnstructuredGrid usGrid = read(meshFile.getPath());
+	
+			vtkDoubleArray boxLevelArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXLEVEL);
+			double[] boxLevelData = boxLevelArray.GetJavaArray();
+			vtkDoubleArray boxNumberArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXNUMBER);
+			double[] boxNumberData = boxNumberArray.GetJavaArray();
+			vtkDoubleArray boxIndexArray = (vtkDoubleArray)usGrid.GetCellData().GetArray(ChomboMeshData.BUILTIN_VAR_BOXINDEX);
+			double[] boxIndexData = boxIndexArray.GetJavaArray();
+	
+			ArrayList<ChomboCellIndices> chomboCellIndices = new ArrayList<ChomboCellIndices>();
+			for (int i=0;i<boxLevelData.length;i++){
+				chomboCellIndices.add(new SimpleChomboCellIndices((int)boxLevelData[i],(int)boxNumberData[i],(int)boxIndexData[i]));
+			}
+			usGrid.Delete();
+			return chomboCellIndices;
+		}finally{
+			cleanupVtk();
+		}
+	}
+	
+	public synchronized static List<ChomboVisMembraneIndex> getChomboMembraneCellIndices(File meshFile){
+		try {
+			vtkUnstructuredGrid usGrid = read(meshFile.getPath());
+	
+			vtkCellData cellData = usGrid.GetCellData();
+			vtkDoubleArray membraneIndexArray = (vtkDoubleArray)cellData.GetArray(ChomboMeshData.BUILTIN_VAR_MEMBRANE_INDEX);
+			double[] membraneIndexData = membraneIndexArray.GetJavaArray();
+	
+			ArrayList<ChomboVisMembraneIndex> chomboMembraneIndices = new ArrayList<ChomboVisMembraneIndex>();
+			for (int i=0;i<membraneIndexData.length;i++){
+				chomboMembraneIndices.add(new SimpleChomboVisMembraneIndex((int)membraneIndexData[i]));
+			}
+			usGrid.Delete();
+			return chomboMembraneIndices;
+		}finally{
+			cleanupVtk();
+		}
+	}
+	
+	public synchronized static void writeDataArrayToNewVtkFile(File emptyMeshFile, String varName, double[] data, File newMeshFile) throws IOException{
+		try {
+			vtkUnstructuredGrid vtkgrid = read(emptyMeshFile.getCanonicalPath());
 			vtkgrid.BuildLinks();
 			
 			//
@@ -573,10 +607,9 @@ public class VtkGridUtils {
 			// write mesh and data to the file for that domain and time
 			//
 			write(vtkgrid, newMeshFile.getAbsolutePath());
+			vtkgrid.Delete();
 		} finally {
-			if (vtkgrid != null){
-				vtkgrid.Delete();
-			}
+			cleanupVtk();
 		}
 	}
 
