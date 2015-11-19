@@ -1,4 +1,4 @@
-package org.vcell.vis;
+package org.vcell.vis.vtk;
 
 
 import java.io.File;
@@ -6,10 +6,6 @@ import java.util.List;
 
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.mapping.ChomboVtkFileWriter;
-import org.vcell.vis.vtk.SimpleVTKViewer;
-import org.vcell.vis.vtk.VtkGridUtils;
-
-import vtk.vtkUnstructuredGrid;
 
 
 public class MeshTest {
@@ -108,14 +104,13 @@ public class MeshTest {
 				for (String domain : chomboFiles.getDomains()){
 					for (int timeIndex : timeIndices){
 						String filename = new File(destinationDirectory,chomboFiles.getCannonicalFilePrefix(domain,timeIndex)+".vtu").getAbsolutePath();
-						VtkGridUtils vtkGridUtils = new VtkGridUtils();
-						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
-						vtkgrid.BuildLinks();
-	
-						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
-						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
-						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
-						simpleViewer.showGrid(vtkgrid, varName0, varName1);
+//						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
+//						vtkgrid.BuildLinks();
+//	
+//						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
+//						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
+//						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
+//						simpleViewer.showGrid(vtkgrid, varName0, varName1);
 						Thread.sleep(1000);
 					}
 				}

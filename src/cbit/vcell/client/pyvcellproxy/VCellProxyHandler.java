@@ -5,7 +5,6 @@ import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
@@ -25,8 +24,6 @@ import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.vtk.VtkGridUtils;
 
-import vtk.vtkDoubleArray;
-import vtk.vtkUnstructuredGrid;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.MathModelWindowManager;
@@ -240,32 +237,8 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		// get empty mesh file for this domain (getEmptyMeshFile() will ensure that the file exists or create it).
 		//
 		File emptyMeshFile = getEmptyMeshFile(simulationDataSetRef, var.getDomainName());
-		VtkGridUtils vtkGridUtils = new VtkGridUtils();
-		
-		vtkUnstructuredGrid vtkgrid = null;
-		try {
-			vtkgrid = vtkGridUtils.read(emptyMeshFile.getCanonicalPath());
-			vtkgrid.BuildLinks();
-			
-			//
-			// add cell data array to the empty mesh for this variable
-			//
-			vtkDoubleArray dataArray = new vtkDoubleArray();
-			dataArray.SetName(var.getVariableVtuName());
-			dataArray.SetJavaArray(data);
-			vtkgrid.GetCellData().AddArray(dataArray);
-			
-			//
-			// write mesh and data to the file for that domain and time
-			//
-			vtkGridUtils.write(vtkgrid, meshFileForVariableAndTime.getAbsolutePath());
-			
-			return meshFileForVariableAndTime.getAbsolutePath();
-		} finally {
-			if (vtkgrid != null){
-				vtkgrid.Delete();
-			}
-		}
+		VtkGridUtils.writeDataArrayToNewVtkFile(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
+		return meshFileForVariableAndTime.getAbsolutePath();
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new ThriftDataAccessException("failed to retrieve data file for variable "+var.getVariableVtuName()+" at time index "+timeIndex);
