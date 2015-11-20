@@ -83,6 +83,20 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.sliderLock = Lock()
         self.initUI()
         self.progress = None
+        self.otherEventsQueue = Queue()
+        self.otherEventTimer = QtCore.QTimer(self)
+        self.otherEventTimer.timeout.connect(self.otherEventHandler)
+        self.otherEventTimer.start(1000) # runs always on main thread checking for otherEvents deposited from non-main threads
+
+    def otherEventHandler(self): # display modal message box with text from queue on the main thread
+        if self.otherEventsQueue.empty() != True:
+            self.modalProgress(None)
+            displayThis = self.otherEventsQueue.get()
+            self.otherEventsQueue.task_done()
+            msgBox = QtGui.QMessageBox(self)
+            msgBox.setWindowModality(Qt.WindowModal)
+            msgBox.setText(displayThis)
+            msgBox.show()
 
     def closeEvent(self, event):
         self._vis.quit()
@@ -424,6 +438,7 @@ class VCellPysideApp(QtGui.QMainWindow):
        self.modalProgress("Loading '"+sim.simName+"'...")
 
        self.lst = LoadSimThread(sim,self)
+       #self.lst.finished.connect(self.otherEventHandler)
        self.lst.start()
 
     def _onSimulationSelected0(self, sim):
@@ -497,9 +512,7 @@ class VCellPysideApp(QtGui.QMainWindow):
  
         except Exception as exc:
             print(exc.message)
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Exception occurred while retrieving data\n"+exc.message)
-            msgBox.exec_()
+            self.otherEventsQueue.put("Exception occurred while retrieving data\n"+exc.message)
             return
         finally:
             vcellProxy2.close()
