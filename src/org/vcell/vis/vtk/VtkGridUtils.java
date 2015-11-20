@@ -269,6 +269,7 @@ public class VtkGridUtils {
 	}
 
 	public synchronized static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
+		long beginTime = System.currentTimeMillis();
 		try {
 			vtkPolyData vtkpolydata = new vtkPolyData();
 			vtkPoints vtkpoints = new vtkPoints();
@@ -330,13 +331,19 @@ public class VtkGridUtils {
 			}
 			return visTets.toArray(new VisTetrahedron[0]);
 		}finally{
-			cleanupVtk();
+			long beforeCleanupMS = System.currentTimeMillis();
+//			cleanupVtk();
+//			long afterCleanupMS = System.currentTimeMillis();
+			System.out.println("createTetrahedra() worktime = "+(beforeCleanupMS-beginTime)+"ms");
 		}
 	}
 	
-	private synchronized static void cleanupVtk(){
+	private static void cleanupVtk(){
+		long beforeCleanupMS = System.currentTimeMillis();
 		vtk.vtkObjectBase.JAVA_OBJECT_MANAGER.deleteAll();
-		vtkReferenceInformation info = vtk.vtkObjectBase.JAVA_OBJECT_MANAGER.gc(true);
+		vtkReferenceInformation info = vtk.vtkObjectBase.JAVA_OBJECT_MANAGER.gc(false);
+		long afterCleanupMS = System.currentTimeMillis();
+		System.out.println("VtkGridUtils() cleanup time="+(afterCleanupMS-beforeCleanupMS)+"ms");
 		System.out.println("vtk garbage collection : "+info.toString());
 		if (info.getTotalNumberOfObjectsStillReferenced()>0){
 			System.out.println("vtk total number of objects still referenced = "+info.getTotalNumberOfObjectsStillReferenced());
