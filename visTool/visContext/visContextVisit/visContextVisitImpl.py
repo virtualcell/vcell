@@ -450,16 +450,16 @@ class VisContextVisitImpl(visContextAbstract):
         print(visit.SetPickAttributes(pickAttributes))
         visit.SetWindowMode("zone pick")
 
-    def getPick(self, screenX, screenY):
-        self.setPickAttributes()
-        visit.ZonePick(screenX,screenY,self.getVariable())
-        #print("Pick done. Data: "+str(visit.GetPickOutput()))
-        pickOutputObject = visit.GetPickOutputObject()
-        visit.SetWindowMode("navigate")
-        if pickOutputObject is not None:
-            return ("Pick of "+str(self.getVariable())+" at point "+str(pickOutputObject['point'])+ " is: "+str(pickOutputObject[self.getVariable()]))
-        else:
-            return ("No Data.  Click on plot for values.")
+    def getPick(self, screenX, screenY, onSuccessCallback, onErrorCallback):
+        #assert(isinstance(screenX,int))
+        #assert(isinstance(screenY,int))
+        print "\n\nvisContextVisitImpl: getPick("+str(screenX)+","+str(screenY)+") ... PREPARING ASYNCH TASK"
+        try:
+            _pickAsynchTask = PickAsynchTask(self,screenX,screenY, onSuccessCallback, onErrorCallback)
+            self._asynchTaskManager.addTask(_pickAsynchTask)
+        except exceptions.BaseException as exc:
+            print("\n\nvisContextVisit: getPick() failed to create or dispatch task")
+            print(exc.message)
 
     def getOtherWindow(self, windowName):
         assert isinstance(windowName, basestring)
@@ -665,6 +665,69 @@ class UpdateOperatorPercentAsynchTask(AsynchTask):
     def getResults(self):
         return self._visClipOperatorContext.getCurrentOperatorPercent()
 
+
+################################################################
+# Asynch Task for getting a pick from the current plot
+################################################################
+
+class PickAsynchTask(AsynchTask):
+
+
+    STATE_INITIAL = "initial"
+#    STATE_PLOT_CONFIRM = "Plot Confirm"
+    STATE_DONE = "done"
+
+    def __init__(self, vis, screenX, screenY, dataReadyCallback = None,  onErrorCallback = None):
+        super(PickAsynchTask, self).__init__("Pick", dataReadyCallback, onErrorCallback)
+        #assert(isinstance(screenX,int))
+        #assert(isinstance(screenY,int))
+        assert(isinstance(vis,VisContextVisitImpl))
+ 
+        print "\n\PickAsynchTask.__init__()"
+        self._state = self.STATE_INITIAL
+        self._vis = vis
+        self._screenX = screenX
+        self._screenY = screenY
+        self._pickOutputObject = None
+        print("getPick() initial state = "+str(self._state))
+
+        self._stateFunctions = {
+            self.STATE_INITIAL:                     self.requestPick, 
+            self.STATE_DONE:                        self.done}
+
+    @overrides(AsynchTask)
+    def doStep(self):
+        self._stateFunctions[self._state]()
+        return self._state == self.STATE_DONE
+
+    def requestPick(self):
+        print("PickAsynchTask.requestPick()")
+        assert(self._state == self.STATE_INITIAL) # current state
+        self._vis.setPickAttributes()
+        visit.ZonePick(self._screenX,self._screenY,self._vis.getVariable())
+        #print("Pick done. Data: "+str(visit.GetPickOutput()))
+        self._pickOutputObject = visit.GetPickOutputObject()
+        visit.SetWindowMode("navigate")
+        self._state = self.STATE_DONE  # new state
+
+    #def confirmPlot(self):
+    #    # noop state (should we check something)
+    #    print("PickAsynchTask.confirmPlot()")
+    #    assert(self._state == self.STATE_PLOT_CONFIRM) # current state
+    #    self._state = self.STATE_DONE # new state
+ 
+    def done(self):
+        print("PickAsynchTask.done()")
+        assert(self._state == self.STATE_DONE) # current state - end state
+
+    @overrides(AsynchTask)
+    def getResults(self):
+        if self._pickOutputObject is not None:
+            return ("Pick of "+str(self._vis.getVariable())+" at point "+str(self._pickOutputObject['point'])+ " is: "+str(self._pickOutputObject[self._vis.getVariable()]))
+        else:
+            return ("No Data.  Click on plot for values.")
+
+ 
 ########################################################################
 # Asynchronous Task for performing a line-out
 #

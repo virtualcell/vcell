@@ -332,14 +332,18 @@ class VCellPysideApp(QtGui.QMainWindow):
         #print(str(dir(hpw)))
         #pickWindow.installEventFilter(hpw)
         
-
-
  
     def _onMouseButtonPressedForPick(self,pos, size):
         #print("Mouse button pressed.  pos = "+str(pos)+"   size="+str(size))
-#        self._vis.clearPicks()
-        pickText = self._vis.getPick(pos.x(),size.height()-pos.y())
-        self._showStatusMessage(pickText)   # note screen to window coordinate system translation in the Y (screen) axis
+        def successCallback(results):
+            print("_onMouseButtonPressedForPick: getPick() success "+str(results));
+            self._showStatusMessage(results)   # note screen to window coordinate system translation in the Y (screen) axis
+
+        def errorCallback(errorMessage):
+            print("_onMouseButtonPressedForPick: getPick() error: "+str(errorMessage));
+            self._showStatusMessage("Exception occurred while retrieving data\n"+errorMessage)
+
+        self._vis.getPick(pos.x(),size.height()-pos.y(), successCallback, errorCallback)
 
 
     def _onClearPicksButtonPressed(self):
