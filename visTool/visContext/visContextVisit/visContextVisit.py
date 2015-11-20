@@ -98,8 +98,8 @@ class visContextVisit(visContextAbstract):
         self._visContextImpl.openOne(filename, vtuVariableName, bSameDomain, onSuccessCallback,onErrorCallback)
 
     @overrides(visContextAbstract)
-    def getPick(self, screenX, screenY):
-        return self._visContextImpl.getPick(screenX, screenY)
+    def getPick(self, screenX, screenY, dataReadyCallback = None, onErrorCallback = None):
+        return self._visContextImpl.getPick(screenX, screenY, dataReadyCallback, onErrorCallback)
 
     @overrides(visContextAbstract)
     def getPickMode(self):

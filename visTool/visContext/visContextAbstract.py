@@ -67,7 +67,7 @@ class visContextAbstract(object):
     def getOperatorPercent(self):
        raise NotImplementedError()
 
-    def getPick(self, screenX, screenY):
+    def getPick(self, screenX, screenY, dataReadyCallback, onErrorCallback):
         raise NotImplementedError()
 
     def getPickMode(self):
