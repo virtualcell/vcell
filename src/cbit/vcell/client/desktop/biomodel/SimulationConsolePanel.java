@@ -44,12 +44,10 @@ public class SimulationConsolePanel extends JPanel {
 	private SimulationContext fieldSimulationContext;
 	private JTextPane netGenConsoleText;
 	
-	private int currentIterationSpecies = 0;
-	private int previousIterationSpecies = 0;
-	
-	public final static int speciesLimit = 1000;
-	public final static int reactionsLimit = 3000;
+	public final static int speciesLimit = 1000;			// 1000
+	public final static int reactionsLimit = 3000;			// 3000
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
+
 	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
 		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
 	}
@@ -143,56 +141,25 @@ public class SimulationConsolePanel extends JPanel {
 		String string = newCallbackMessage.getText();
 		StyledDocument doc = netGenConsoleText.getStyledDocument();
 		SimpleAttributeSet keyWord = new SimpleAttributeSet();
-		System.out.println(string);
 		try {
 		switch(status) {
 		case Clean:			// clean console, display task initialization message
-			previousIterationSpecies = 0;
-			currentIterationSpecies = 0;
 			netGenConsoleText.setText("");
-			if(string != null && !string.isEmpty()) {
-				doc.insertString(doc.getLength(), string + "\n", null);
-			}
-			break;
-		case TaskStart:			// display task initialization message
-			doc.insertString(doc.getLength(), string + "\n", null);
-			break;
-			
-			
-		case TaskEnd:
-			doc.insertString(doc.getLength(), string + "\n", null);
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
-				String s = getInsufficientIterationsMessage();
-				StyleConstants.setForeground(keyWord, Color.RED);
-				doc.insertString(doc.getLength(), s + "\n", keyWord);
-				fieldSimulationContext.setInsufficientIterations(true);
-			}
 			break;
 		case TaskStopped:
 			StyleConstants.setForeground(keyWord, Color.RED);
 			StyleConstants.setBold(keyWord, true);
 			doc.insertString(doc.getLength(), "  " + string + "\n", keyWord);
-			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
-			currentIterationSpecies = 0;
 			break;
-		
-			
 		case Notification:		// normal notification, just display the string
 			doc.insertString(doc.getLength(), string + "\n", null);
 			break;
-		case Detail:			// specific details, string will be processed, details extracted, formatted, etc
-			processDetail(string, doc);
+		case Error:			// display this in red, bold
+			StyleConstants.setForeground(keyWord, Color.RED);
+			StyleConstants.setBold(keyWord, true);
+			doc.insertString(doc.getLength(), string + "\n", keyWord);
 			break;
-		case DetailBatch:		// like above, but all details arrive in just one single shot, we can do some post processing
-			processDetail(string, doc);
-			if(previousIterationSpecies != currentIterationSpecies) {
-				StyleConstants.setForeground(keyWord, Color.RED);
-				String s = getInsufficientIterationsMessage();
-				doc.insertString(doc.getLength(), s + "\n", keyWord);
-				fieldSimulationContext.setInsufficientIterations(true);
-			}
-			break;
-		case Error:			// display this in red
+		case Warning:			// display this in red
 			StyleConstants.setForeground(keyWord, Color.RED);
 			doc.insertString(doc.getLength(), string + "\n", keyWord);
 			break;
@@ -203,36 +170,7 @@ public class SimulationConsolePanel extends JPanel {
 			System.out.println(e);
 		}
 	}
-	public void processDetail(String string, StyledDocument doc)
-			throws BadLocationException {
-		String split[];
-		split = string.split("\\n");
-		for(String s : split) {
-			if(s.startsWith("CPU TIME: total"))  {
-				doc.insertString(doc.getLength(), "  " + s + "\n", null);
-			} else if (s.startsWith("Iteration")) {
-				String species = "species";
-				s = "    " + s.substring(0, s.indexOf("species") + species.length());
-				doc.insertString(doc.getLength(), s + "\n", null);
-				checkMaxIterationConsistency(s);
-			}
-		}
-	}
-	private void checkMaxIterationConsistency(String s) {
-		Pattern pattern = Pattern.compile("\\w+");
-		Matcher matcher = pattern.matcher(s);
-		try {
-		for(int i=0; matcher.find(); i++) {
-			if(i==2) {
-				previousIterationSpecies = currentIterationSpecies;
-				currentIterationSpecies = Integer.parseInt(matcher.group());
-			}
-		}
-		} catch(NumberFormatException nfe) {
-			
-		}
-	}
-	
+
 	private void refreshInterface() {
 		
 		String text1 = "Simulation Console for: ";
