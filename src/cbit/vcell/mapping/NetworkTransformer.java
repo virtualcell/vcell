@@ -304,8 +304,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		msg = "Adding " + outputSpec.getBNGParams().length + " parameters to model, " + elapsedTime + " ms";
-//		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
-//		simContext.appendToConsole(tcm);
 		System.out.println(msg);
 		
 		// ---- Species ------------------------------------------------------------------------------------------------------------
@@ -358,42 +356,6 @@ public class NetworkTransformer implements SimContextTransformer {
 				}	
 				count++;
 			}
-
-//			// TODO: old way of generating complicated name from the pattern
-//			if(s.getName() != null) {	// for seed species we generate a name from the species pattern
-//				nameRoot = s.getName();
-//				speciesPatternString = s.getName();
-//				nameRoot = nameRoot.replaceAll("[!?~]+", "");
-//				nameRoot = TokenMangler.fixTokenStrict(nameRoot);
-//				while(true) {
-//					if(nameRoot.endsWith("_")) {		// clean all the '_' at the end, if any
-//						nameRoot = nameRoot.substring(0, nameRoot.length()-1);
-//					} else {
-//						break;
-//					}
-//				}
-//				if(Model.isNameUnused(nameRoot, model) && !sMap.containsKey(nameRoot) && !scMap.containsKey(nameRoot)) {
-//					speciesName = nameRoot;		// the name is good and unused
-//				} else {
-//					nameRoot += "_";
-//					while (true) {
-//						speciesName = nameRoot + count;	
-//						if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
-//							break;
-//						}	
-//						count++;
-//					}
-//				}
-//			} else {			// for plain species it works as before
-//				while (true) {
-//					speciesName = nameRoot + count;	
-//					if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
-//						break;
-//					}	
-//					count++;
-//				}
-//			}
-//			System.out.println(speciesName);
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
 			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
 			speciesContext.setName(speciesName);
@@ -513,8 +475,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		msg = "Adding " + outputSpec.getBNGSpecies().length + " species to model, " + elapsedTime + " ms";
-//		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
-//		simContext.appendToConsole(tcm);
 		System.out.println(msg);
 		
 		// ---- Reactions -----------------------------------------------------------------------------------------------------
@@ -671,8 +631,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		msg = "Adding " + outputSpec.getBNGReactions().length + " reactions to model, " + elapsedTime + " ms";
-//		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
-//		simContext.appendToConsole(tcm);
 		System.out.println(msg);
 		// clean all the reaction rules
 		model.getRbmModelContainer().getReactionRuleList().clear();
@@ -718,8 +676,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
-//		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
-//		simContext.appendToConsole(tcm);
 		System.out.println(msg);
 
 		} catch (PropertyVetoException ex) {
@@ -742,8 +698,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		
 		System.out.println("Done transforming");		
 		msg = "Generating math...";
-//		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, msg);
-//		simContext.appendToConsole(tcm);
 		System.out.println(msg);
 		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);

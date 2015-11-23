@@ -309,13 +309,13 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private RateRule[] fieldRateRules = null;
 	public static final String FLUOR_DATA_NAME = "fluor";
 
-	private transient ArrayList<TaskCallbackMessage> consoleNotificationList = new ArrayList<TaskCallbackMessage>();
-
+	private transient TaskCallbackProcessor tcp = new TaskCallbackProcessor(this);
+	// not related with the cache below but used at the same time. NOT transient
+	private boolean bInsufficientIterations = false;
 	// Cache of the BNGOutputSpec produced by running bng.exe
 	// This operation has no relationship whatsoever with caching of the MathMapping below
 	private transient String md5hash = null;
 	private transient BNGOutputSpec mostRecentlyCreatedOutputSpec = null;	// valid only if the hash is verified
-	private boolean bInsufficientIterations = false;		// not related with the cache but used at the same time
 	
 	// Cache the most recent Math Mapping
 	// This operation has no relationship whatsoever with caching of the BNGLOutputSpec above
@@ -2596,23 +2596,17 @@ public MathMapping getMostRecentlyCreatedMathMapping(){
 	return this.mostRecentlyCreatedMathMapping;
 }
 
-public void setConsoleNotificationList(ArrayList<TaskCallbackMessage> consoleNotificationList) {
-	this.consoleNotificationList = consoleNotificationList;
+public void setTaskCallbackProcessor(TaskCallbackProcessor tcp) {
+	this.tcp = tcp;
 }
-public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
-	return consoleNotificationList;
+public final TaskCallbackProcessor getTaskCallbackProcessor() {
+	return tcp;
 }
 public void appendToConsole(TaskCallbackMessage message) {
-	if(message.getStatus() == TaskCallbackStatus.Clean) {
-		consoleNotificationList.clear();	// clear console notification list
-	}
-	consoleNotificationList.add(message);	// add them all to the list as they come
-	firePropertyChange("appendToConsole", "", message);
+	tcp.appendToConsole(message);
 }
 public void playConsoleNotificationList() {
-	for(TaskCallbackMessage message : consoleNotificationList) {
-		firePropertyChange("appendToConsole", "", message);
-	}
+	tcp.playConsoleNotificationList();
 }
 
 @Override
