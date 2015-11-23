@@ -10,7 +10,8 @@ public class TaskCallbackMessage {
 		Notification,
 		DetailBatch,
 		Detail,
-		Error,
+		Error,		// red, bold
+		Warning,	// red
 		Other;
 	}
 
