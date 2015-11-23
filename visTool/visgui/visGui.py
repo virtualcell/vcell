@@ -128,6 +128,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         centralwidget.setObjectName("centralwidget")
         gridLayout = QtGui.QGridLayout(centralwidget);
         gridLayout.setObjectName("gridLayout")
+        gridLayout.setColumnStretch(1,1)
         tabWidget = QtGui.QTabWidget(centralwidget);
         tabWidget.setObjectName("tabWidget")
         sliceTab = QtGui.QWidget();
