@@ -65,7 +65,7 @@ class sliceControl(QtGui.QGroupBox):
         #cntnrgridLayout.setAlignment(self.slicecntnr,QtCore.Qt.AlignLeft)
 
         self._minlabel = QtGui.QLabel(self)
-        self._minlabel.setText("0")
+        self._minlabel.setText("0%")
         #self._minlabel.setAlignment(QtCore.Qt.AlignLeft)
         #cntnrgridLayout.setAlignment(self._minlabel,QtCore.Qt.AlignLeft)
         labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
@@ -73,7 +73,7 @@ class sliceControl(QtGui.QGroupBox):
         cntnrgridLayout.addWidget(self._minlabel, 0, 0, 1, 1)
 
         self._maxlabel = QtGui.QLabel(self)
-        self._maxlabel.setText("100")
+        self._maxlabel.setText("100%")
         labelSizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Label)
         self._maxlabel.setSizePolicy(labelSizePolicy)
         cntnrgridLayout.addWidget(self._maxlabel, 0, 2, 1, 1)
