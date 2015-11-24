@@ -1,8 +1,11 @@
 package org.vcell.vis.vismesh;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import org.vcell.vis.core.Vect3D;
+import org.vcell.vis.mapping.chombo.ChomboCellIndices;
 
-public class VisPolygon implements ChomboCellIndices {
+public final class VisPolygon implements ChomboCellIndices, Matchable {
 	
 	private int[] pointIndices;
 	private final int level;
@@ -67,6 +70,33 @@ public class VisPolygon implements ChomboCellIndices {
 			z += point.z;
 		}
 		return new Vect3D(x/numP,y/numP,z/numP);
+	}
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof VisPolygon){
+			VisPolygon other = (VisPolygon)obj;
+			if (!Compare.isEqual(pointIndices, other.pointIndices)){
+				return false;
+			}
+			if (level != other.level){
+				return false;
+			}
+			if (boxNumber != other.boxNumber){
+				return false;
+			}
+			if (boxIndex != other.boxIndex){
+				return false;
+			}
+			if (fraction != other.fraction){
+				return false;
+			}
+			if (regionIndex != other.regionIndex){
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 }

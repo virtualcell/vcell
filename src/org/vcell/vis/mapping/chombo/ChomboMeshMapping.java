@@ -1,4 +1,4 @@
-package org.vcell.vis.mapping;
+package org.vcell.vis.mapping.chombo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,6 @@ import org.vcell.util.ISize;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
 import org.vcell.vis.chombo.ChomboBox;
-import org.vcell.vis.chombo.ChomboDataset;
 import org.vcell.vis.chombo.ChomboDataset.ChomboDomain;
 import org.vcell.vis.chombo.ChomboLevel;
 import org.vcell.vis.chombo.ChomboLevel.Covering;
@@ -17,19 +16,15 @@ import org.vcell.vis.chombo.ChomboLevelData;
 import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.core.Face;
-import org.vcell.vis.vismesh.VisDataset;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisLine;
 import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
 import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vismesh.VisSurfaceTriangle;
-import org.vcell.vis.vismesh.VisTetrahedron;
 import org.vcell.vis.vismesh.VisVoxel;
-import org.vcell.vis.vtk.VtkGridUtils;
 
 
 public class ChomboMeshMapping {
@@ -328,54 +323,54 @@ public class ChomboMeshMapping {
 	    return visMesh;
 	}
 
-	public VisDataset fromChomboDataset(ChomboDataset chomboDataset) {
-		VisDataset visDataset = new VisDataset();
-		for (ChomboDomain chomboDomain : chomboDataset.getDomains()){
-			ChomboMeshData chomboMeshData = chomboDomain.getChomboMeshData();
-			ChomboMeshMapping chomboMeshMapping = new ChomboMeshMapping();
-			VisMesh visMesh = chomboMeshMapping.fromMeshData(chomboMeshData, chomboDomain);
-			
-			boolean bMembrane = false;
-			VisMeshData visMeshVolumeData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
-			VisDataset.VisDomain visVolumeDomain = new VisDataset.VisDomain(chomboDomain.getName(),visMesh,visMeshVolumeData);
-			visDataset.addDomain(visVolumeDomain);
-			
-			bMembrane = true;
-			VisMeshData visMeshMembraneData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
-			VisDataset.VisDomain visMembraneDomain = new VisDataset.VisDomain(chomboDomain.getName()+"_MEMBRANE",visMesh,visMeshMembraneData);
-			visDataset.addDomain(visMembraneDomain);
-		}
-		
-		check(visDataset);
-		return visDataset;
-	}
-	
-	public void check(VisDataset visDataset){
-		VisMesh visMesh = visDataset.getDomains().get(0).getVisMesh();
-		for (VisPolyhedron visPolyhedron : visMesh.getPolyhedra()){
-			if (visPolyhedron instanceof VisVoxel){
-				VisVoxel visVoxel = (VisVoxel)visPolyhedron;
-				for (int p : visVoxel.getPointIndices()){
-					VisPoint vp = visMesh.getPoints().get(p);
-					if (vp==null){
-						throw new RuntimeException("couldn't find point "+p);
-					}
-				}
-			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
-				VisIrregularPolyhedron visIrregularPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
-				for (PolyhedronFace face : visIrregularPolyhedron.getFaces()){
-					for (int p : face.getVertices()){
-						VisPoint vp = visMesh.getPoints().get(p);
-						if (vp==null){
-							throw new RuntimeException("couldn't find point "+p);
-						}
-					}
-				}
-			}
-		}
-		LG.debug("ChomboMeshMapping:check() first mesh passed the point test");
-	}
-	
+//	public VisDataset fromChomboDataset(ChomboDataset chomboDataset) {
+//		VisDataset visDataset = new VisDataset();
+//		for (ChomboDomain chomboDomain : chomboDataset.getDomains()){
+//			ChomboMeshData chomboMeshData = chomboDomain.getChomboMeshData();
+//			ChomboMeshMapping chomboMeshMapping = new ChomboMeshMapping();
+//			VisMesh visMesh = chomboMeshMapping.fromMeshData(chomboMeshData, chomboDomain);
+//			
+//			boolean bMembrane = false;
+//			VisMeshData visMeshVolumeData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
+//			VisDomain visVolumeDomain = new VisDomain(chomboDomain.getName(),visMesh,visMeshVolumeData);
+//			visDataset.addDomain(visVolumeDomain);
+//			
+//			bMembrane = true;
+//			VisMeshData visMeshMembraneData = new ChomboVisMeshData(chomboMeshData, visMesh, bMembrane);
+//			VisDomain visMembraneDomain = new VisDomain(chomboDomain.getName()+"_MEMBRANE",visMesh,visMeshMembraneData);
+//			visDataset.addDomain(visMembraneDomain);
+//		}
+//		
+//		check(visDataset);
+//		return visDataset;
+//	}
+//	
+//	public void check(VisDataset visDataset){
+//		VisMesh visMesh = visDataset.getDomains().get(0).getVisMesh();
+//		for (VisPolyhedron visPolyhedron : visMesh.getPolyhedra()){
+//			if (visPolyhedron instanceof VisVoxel){
+//				VisVoxel visVoxel = (VisVoxel)visPolyhedron;
+//				for (int p : visVoxel.getPointIndices()){
+//					VisPoint vp = visMesh.getPoints().get(p);
+//					if (vp==null){
+//						throw new RuntimeException("couldn't find point "+p);
+//					}
+//				}
+//			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
+//				VisIrregularPolyhedron visIrregularPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
+//				for (PolyhedronFace face : visIrregularPolyhedron.getFaces()){
+//					for (int p : face.getVertices()){
+//						VisPoint vp = visMesh.getPoints().get(p);
+//						if (vp==null){
+//							throw new RuntimeException("couldn't find point "+p);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		LG.debug("ChomboMeshMapping:check() first mesh passed the point test");
+//	}
+
 	private static class VoxelPoint {
 		final Integer p;
 		final VisPoint vp;
@@ -560,11 +555,12 @@ public class ChomboMeshMapping {
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p2, p1} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p4, p2} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p2, p4, p1} ));
-					VisTetrahedron[] delaunayTets = VtkGridUtils.createTetrahedra(clippedPolyhedron, visMesh);
-			
-					for (VisTetrahedron tet : delaunayTets){
-						newPolyhedraList.add(tet);
-					}
+					
+					newPolyhedraList.add(clippedPolyhedron);
+//					VisTetrahedron[] delaunayTets = VtkGridUtils.createTetrahedra(clippedPolyhedron, visMesh);
+//					for (VisTetrahedron tet : delaunayTets){
+//						newPolyhedraList.add(tet);
+//					}
 				}else{ // fraction < 1.0
 					newPolyhedraList.add(visPolyhedron);
 				}
