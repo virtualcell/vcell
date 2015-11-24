@@ -87,6 +87,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.otherEventTimer = QtCore.QTimer(self)
         self.otherEventTimer.timeout.connect(self.otherEventHandler)
         self.otherEventTimer.start(1000) # runs always on main thread checking for otherEvents deposited from non-main threads
+        self.minMaxExtents = None
 
     def otherEventHandler(self): # display modal message box with text from queue on the main thread
         if self.otherEventsQueue.empty() != True:
@@ -501,7 +502,8 @@ class VCellPysideApp(QtGui.QMainWindow):
             self._timeSlider.blockSignals(False)
 
             def successCallback(results):
-                print("_onSimulationSelected: openOne() success "+str(results));
+                self.minMaxExtents = results
+                print("_onSimulationSelected: openOne() success "+str(self.minMaxExtents));
                 self.modalProgress(None)
                 self._variableListWidget.setCurrentRow(0)
                 self._variableListWidget.item(0).setSelected(True)
@@ -546,7 +548,9 @@ class VCellPysideApp(QtGui.QMainWindow):
                 newFilename = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,newVariable,timeIndex)
                 
                 def successCallback(results):
-                    print("_onSelectedVariableChanged: openOne() success "+str(results));
+                    self.minMaxExtents = results
+                    print("_onSelectedVariableChanged: openOne() success "+str(self.minMaxExtents));
+                    self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().value())))
 
                 def errorCallback(errorMessage):
                     print("_onSelectedVariableChanged: openOne() error: "+str(errorMessage));
@@ -639,9 +643,37 @@ class VCellPysideApp(QtGui.QMainWindow):
         finally:
             self.sliderLock.release()
 
+    CONST_MIN_EXTENT = 0
+    CONST_MAX_EXTENT = 1
+    CONST_EXTENT_X = 0
+    CONST_EXTENT_Y = 1
+    CONST_EXTENT_Z = 2
+    def getExtentAlongSliderAxis(self,position):
+        #checkSlidePos = self.sliderQ(None,self.sliceSliderQueue)
+        ext = None
+        if self.minMaxExtents != None:
+            if self._sliceControl.getSlice_X_AxisRadioButton().isChecked():
+                print "X checked"
+                ext = self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_X] + \
+                    ((self.minMaxExtents[VCellPysideApp.CONST_MAX_EXTENT][VCellPysideApp.CONST_EXTENT_X] - self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_X]) * \
+                    position/100)
+            elif self._sliceControl.getSlice_Y_AxisRadioButton().isChecked():
+                print "Y checked"
+                ext = self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_Y] + \
+                    ((self.minMaxExtents[VCellPysideApp.CONST_MAX_EXTENT][VCellPysideApp.CONST_EXTENT_Y] - self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_Y]) * \
+                    position/100)
+            elif self._sliceControl.getSlice_Z_AxisRadioButton().isChecked():
+                print "Z checked"
+                ext = self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_Z] + \
+                    ((self.minMaxExtents[VCellPysideApp.CONST_MAX_EXTENT][VCellPysideApp.CONST_EXTENT_Z] - self.minMaxExtents[VCellPysideApp.CONST_MIN_EXTENT][VCellPysideApp.CONST_EXTENT_Z]) * \
+                    position/100)
+        print ext
+        return ext
+
     def _onSliceSliderChanged(self):
         lastSlidePos = self.sliderQ(self._sliceControl.getSliceSlider().sliderPosition(),self.sliceSliderQueue)
-        self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(lastSlidePos[VCellPysideApp.CONST_POSITION]))
+        #self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(lastSlidePos[VCellPysideApp.CONST_POSITION]))
+        self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(lastSlidePos[VCellPysideApp.CONST_POSITION])))
         #CONST_SLICE_TITLE
         if lastSlidePos[VCellPysideApp.CONST_WASNEW] == False:
             print('_onSliceSliderChanged()')
@@ -650,8 +682,8 @@ class VCellPysideApp(QtGui.QMainWindow):
             print("_onSliceSliderChanged() is hard-coding project2d and enable=true")
 
             def successCallback(results):
-                print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
                 checkSlidePos = self.sliderQ(None,self.sliceSliderQueue)
+                print("_onSliceSliderChanged: updateOperatorPercent() success "+str(results));
                 if checkSlidePos[VCellPysideApp.CONST_POSITION] != results:
                     self._onSliceSliderChanged()
             def errorCallback(errorMessage):
@@ -671,6 +703,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         elif self._sliceControl.getSlice_Z_AxisRadioButton().isChecked():
             axis = 2
         self._vis.setOperatorAxis(axis)
+        self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().sliderPosition())))
 
     def _onSliceAsImageCheckboxPressed(self):
         print('_onSlicePlanePushButtonPressed()')
@@ -683,9 +716,11 @@ class VCellPysideApp(QtGui.QMainWindow):
         print('_onSliceEnableCheckboxPressed()')
         if self._sliceControl.isChecked():
             self._vis.setOperatorEnabled(True)
+            print "----------"+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().value()))
+            self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().value())))
         else:
             self._vis.setOperatorEnabled(False)
-
+            self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE)
 
     def _onSetPickModeCheckBoxStateChanged(self):
         if self._queryControl.getSetPickModeCheckBox().isChecked():
