@@ -5,7 +5,12 @@ import java.io.File;
 import java.util.List;
 
 import org.vcell.vis.io.ChomboFiles;
-import org.vcell.vis.mapping.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+
+import vtk.vtkUnstructuredGrid;
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.ResourceUtil;
 
 
 public class MeshTest {
@@ -16,6 +21,12 @@ public class MeshTest {
 	 */
 	public static void main(String[] args) {
 		try {
+			long beginLibLoadMS = System.currentTimeMillis();
+			OperatingSystemInfo.getInstance();
+			ResourceUtil.loadNativeLibraries("D:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\nativelibs\\win64");
+			NativeLib.VTK.load();
+			long endLibLoadMS = System.currentTimeMillis();
+			System.out.println("native libs loaded, "+(endLibLoadMS-beginLibLoadMS)+" ms");
 //			String meshFile = "C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\SimData\\SimID_85232385_0_.mesh.hdf5";
 //			String[] volFiles = new String[] {
 //					"C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\SimData\\SimID_85232385_0_000075.feature_EC.vol0.hdf5",
@@ -104,14 +115,15 @@ public class MeshTest {
 				for (String domain : chomboFiles.getDomains()){
 					for (int timeIndex : timeIndices){
 						String filename = new File(destinationDirectory,chomboFiles.getCannonicalFilePrefix(domain,timeIndex)+".vtu").getAbsolutePath();
-//						vtkUnstructuredGrid vtkgrid = vtkGridUtils.read(filename);
-//						vtkgrid.BuildLinks();
-//	
-//						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
-//						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
+						vtkUnstructuredGrid vtkgrid = VtkGridUtils.read(filename);
+						vtkgrid.BuildLinks();
+						//VtkGridUtils.wr
+	
+						String varName0 = vtkgrid.GetCellData().GetArrayName(0);
+						String varName1 = vtkgrid.GetCellData().GetArrayName(1);
 //						SimpleVTKViewer simpleViewer = new SimpleVTKViewer();
 //						simpleViewer.showGrid(vtkgrid, varName0, varName1);
-						Thread.sleep(1000);
+//						Thread.sleep(1000);
 					}
 				}
 			}

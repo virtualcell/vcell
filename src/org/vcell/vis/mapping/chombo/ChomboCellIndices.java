@@ -1,4 +1,4 @@
-package org.vcell.vis.vismesh;
+package org.vcell.vis.mapping.chombo;
 
 public interface ChomboCellIndices {
 

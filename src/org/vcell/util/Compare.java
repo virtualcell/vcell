@@ -518,6 +518,32 @@ public static boolean isEqualStrict(Matchable v1[], Matchable v2[]) {
 	return true;
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ * @param v1 java.util.Vector
+ * @param v2 java.util.Vector
+ */
+public static boolean isEqualStrict(List<? extends Matchable> v1, List<? extends Matchable> v2) {
+	if (v1==null || v2==null){
+		throw new RuntimeException("Compare.isEqualStrict(List<Matchable>,List<Matchable>) received null argument(s)");
+	}
+	if (v1.size() != v2.size()){
+		return logFailure();
+	}
+
+	//
+	// check that each array is the same (and elements are in the same order)
+	//
+	for (int i=0;i<v1.size();i++){
+		if (!v1.get(i).compareEqual(v2.get(i))){
+			return logFailure();
+		}
+	}
+
+	return true;
+}
+
 public static <KeyType extends Matchable, ValueType extends Matchable> boolean isEqual(HashMap<KeyType, ValueType> map1, HashMap<KeyType, ValueType> map2) {
 	//
 	// compare entries from map1 to map2

@@ -3,8 +3,8 @@ package org.vcell.vis.chombo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.vcell.vis.vismesh.ChomboCellIndices;
-import org.vcell.vis.vismesh.ChomboVisMembraneIndex;
+import org.vcell.vis.mapping.chombo.ChomboCellIndices;
+import org.vcell.vis.mapping.chombo.ChomboVisMembraneIndex;
 
 public class ChomboMeshData {
 	public final static String BUILTIN_VAR_BOXLEVEL = "level";

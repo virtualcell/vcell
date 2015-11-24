@@ -3,23 +3,24 @@ package org.vcell.vis.vtk;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.chombo.ChomboMeshData;
-import org.vcell.vis.mapping.CartesianMeshVtkFileWriter.CartesianMeshIndices;
-import org.vcell.vis.mapping.ChomboVtkFileWriter.SimpleChomboCellIndices;
-import org.vcell.vis.mapping.ChomboVtkFileWriter.SimpleChomboVisMembraneIndex;
-import org.vcell.vis.vismesh.ChomboCellIndices;
-import org.vcell.vis.vismesh.ChomboVisMembraneIndex;
-import org.vcell.vis.vismesh.VisDataset.VisDomain;
+import org.vcell.vis.mapping.VisDomain;
+import org.vcell.vis.mapping.VisMeshData;
+import org.vcell.vis.mapping.chombo.ChomboCellIndices;
+import org.vcell.vis.mapping.chombo.ChomboVisMembraneIndex;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter.SimpleChomboCellIndices;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter.SimpleChomboVisMembraneIndex;
+import org.vcell.vis.mapping.vcell.CartesianMeshIndices;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisLine;
 import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
 import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
@@ -116,7 +117,21 @@ public class VtkGridUtils {
 		        vtkgrid.InsertNextCell(polygonType,pts);
 		    }
 		}
-		boolean bInitializedFaces = false;
+//		boolean bInitializedFaces = false;
+		List<VisPolyhedron> originalPolyhedra = vMesh.getPolyhedra();
+		//
+		// replace any VisIrregularPolyhedron with a list of VisTetrahedron
+		//
+		ArrayList<VisPolyhedron> newPolyhedra = new ArrayList<VisPolyhedron>();
+		for (VisPolyhedron origPolyhedron : vMesh.getPolyhedra()) {
+			if (origPolyhedron instanceof VisIrregularPolyhedron){
+				VisIrregularPolyhedron clippedPolyhedron = (VisIrregularPolyhedron)originalPolyhedra;
+				VisTetrahedron[] tets = createTetrahedra(clippedPolyhedron, vMesh);
+				newPolyhedra.addAll(Arrays.asList(tets));
+			}else{
+				newPolyhedra.add(origPolyhedron);
+			}
+		}
 		for (VisPolyhedron visPolyhedron : vMesh.getPolyhedra()) {
 			if (visPolyhedron instanceof VisVoxel){
 				VisVoxel voxel = (VisVoxel)visPolyhedron;
@@ -134,18 +149,18 @@ public class VtkGridUtils {
 			        pts.InsertNextId(p);
 			    }
 		        vtkgrid.InsertNextCell(tetraType,pts);
-			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
-				VisIrregularPolyhedron irregPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
-			    vtkIdList faceStreamList = new vtkIdList();
-			    int[] faceStream = irregPolyhedron.getVtkFaceStream();
-			    for (int p : faceStream){
-			        faceStreamList.InsertNextId(p);
-			    }
-			    if (!bInitializedFaces && vtkgrid.GetNumberOfCells()>0){
-				    vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells());
-				}
-				bInitializedFaces = true;
-				vtkgrid.InsertNextCell(polyhedronType, faceStreamList);
+//			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
+//				VisIrregularPolyhedron irregPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
+//			    vtkIdList faceStreamList = new vtkIdList();
+//			    int[] faceStream = irregPolyhedron.getVtkFaceStream();
+//			    for (int p : faceStream){
+//			        faceStreamList.InsertNextId(p);
+//			    }
+//			    if (!bInitializedFaces && vtkgrid.GetNumberOfCells()>0){
+//				    vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells());
+//				}
+//				bInitializedFaces = true;
+//				vtkgrid.InsertNextCell(polyhedronType, faceStreamList);
 			}else{
 				throw new RuntimeException("unsupported polyhedron type: "+visPolyhedron.getClass().getName());
 			}
@@ -184,24 +199,24 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 
-	private static void writeLegacy(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
-		vtkUnstructuredGridWriter writer = new vtkUnstructuredGridWriter();
-		if (bASCII){
-			writer.SetFileTypeToASCII();
-		}else{
-			writer.SetFileTypeToBinary();
-		}
-		
-		writer.SetInputDataObject(vtkgrid);
-		writer.SetFileName(filename);
-		writer.Update();
-		long length = new File(filename).length();
-		if (LG.isInfoEnabled()) {
-			LG.info("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
-		}
-	}
+//	private static void writeLegacy(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
+//		vtkUnstructuredGridWriter writer = new vtkUnstructuredGridWriter();
+//		if (bASCII){
+//			writer.SetFileTypeToASCII();
+//		}else{
+//			writer.SetFileTypeToBinary();
+//		}
+//		
+//		writer.SetInputDataObject(vtkgrid);
+//		writer.SetFileName(filename);
+//		writer.Update();
+//		long length = new File(filename).length();
+//		if (LG.isInfoEnabled()) {
+//			LG.info("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+//		}
+//	}
 	
-	static void writeXML(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
+	private static void writeXML(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
 		vtkXMLUnstructuredGridWriter writer = new vtkXMLUnstructuredGridWriter();
 		if (bASCII){
 			writer.SetDataModeToAscii();
@@ -268,7 +283,7 @@ public class VtkGridUtils {
 //		writeLegacy(vtkgrid,filename,true);
 	}
 
-	public synchronized static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
+	private static VisTetrahedron[] createTetrahedra(VisIrregularPolyhedron clippedPolyhedron, VisMesh visMesh){
 		long beginTime = System.currentTimeMillis();
 		try {
 			vtkPolyData vtkpolydata = new vtkPolyData();
@@ -491,7 +506,7 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 
-	public synchronized static void writeSmoothedVtkGrid(VisDomain visDomain, File file) throws IOException {
+	public synchronized static void writeCartesianMeshSmoothedVtkGrid(VisDomain visDomain, File file) throws IOException {
 		try {
 			vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
 			vtk.vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
@@ -535,7 +550,7 @@ public class VtkGridUtils {
 		}
 	}
 
-	public synchronized static void writeVolumeVtkGrid(VisDomain visDomain, File volumeMeshFile) throws IOException {
+	public synchronized static void writeChomboVolumeVtkGrid(VisDomain visDomain, File volumeMeshFile) throws IOException {
 		try {
 			vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain);
 			write(vtkgrid, volumeMeshFile.getPath());
@@ -545,7 +560,7 @@ public class VtkGridUtils {
 		}
 	}
 
-	public synchronized static void writeMembraneVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData, File memfile) {
+	public synchronized static void writeChomboMembraneVtkGrid(VisMesh visMesh, ChomboMeshData chomboMeshData, File memfile) {
 		try {
 			vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visMesh, chomboMeshData);
 			write(vtkgrid, memfile.getPath());

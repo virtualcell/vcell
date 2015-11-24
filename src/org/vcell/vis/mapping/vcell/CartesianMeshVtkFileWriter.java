@@ -1,4 +1,4 @@
-package org.vcell.vis.mapping;
+package org.vcell.vis.mapping.vcell;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,10 +13,10 @@ import org.vcell.vis.io.DataSet;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
+import org.vcell.vis.mapping.VisDomain;
+import org.vcell.vis.mapping.VisMeshData;
 import org.vcell.vis.vcell.CartesianMesh;
-import org.vcell.vis.vismesh.VisDataset;
 import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPolygon;
 import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vtk.VtkGridUtils;
@@ -275,9 +275,9 @@ public class CartesianMeshVtkFileWriter {
 					
 				};
 				
-				VisDataset.VisDomain visDomain = new VisDataset.VisDomain(anyDomain,visMesh,visMeshData);
+				VisDomain visDomain = new VisDomain(anyDomain,visMesh,visMeshData);
 				File file = getVtuMeshAndDataFileName(destinationDirectory, vcellFiles, visDomain.getName(), timeIndex);
-				VtkGridUtils.writeSmoothedVtkGrid(visDomain, file);
+				VtkGridUtils.writeCartesianMeshSmoothedVtkGrid(visDomain, file);
 				//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
 				files.add(file);
 				filesProcessed++;
@@ -298,18 +298,6 @@ public class CartesianMeshVtkFileWriter {
 
 	private File getVtuMeshAndDataFileName(File directory, VCellSimFiles vcellFiles, String domainName, int timeIndex) {
 		return new File(directory,vcellFiles.getCannonicalFilePrefix(domainName,timeIndex)+".vtu");
-	}
-
-	public static class CartesianMeshIndices {
-		public final int numCells;
-		public final double[] regionIndices;
-		public final double[] globalIndices;
-		
-		public CartesianMeshIndices(int numCells, double[] regionIndices,	double[] globalIndices) {
-			this.numCells = numCells;
-			this.regionIndices = regionIndices;
-			this.globalIndices = globalIndices;
-		}
 	}
 
 	public double[] getVtuMeshData(VCellSimFiles vcellFiles,  OutputContext outputContext, SimDataBlock simDataBlock, File destinationDirectory, VtuVarInfo var, final double time) throws Exception {
@@ -542,9 +530,9 @@ public class CartesianMeshVtkFileWriter {
 				
 			};
 			
-			VisDataset.VisDomain visDomain = new VisDataset.VisDomain(domainName,visMesh,visMeshData);
+			VisDomain visDomain = new VisDomain(domainName,visMesh,visMeshData);
 			File file = getVtuMeshFileName(vcellFiles, visDomain.getName());
-			VtkGridUtils.writeSmoothedVtkGrid(visDomain, file);
+			VtkGridUtils.writeCartesianMeshSmoothedVtkGrid(visDomain, file);
 			files.add(file);
 			filesProcessed++;
 			if (progressListener!=null){
