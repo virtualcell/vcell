@@ -1,6 +1,8 @@
 package org.vcell.vis.core;
 
-public class Vect3D {
+import org.vcell.util.Matchable;
+
+public class Vect3D implements Matchable {
 	public final double x;
 	public final double y;
 	public final double z;
@@ -18,5 +20,17 @@ public class Vect3D {
 	public String toStringKey(int precision){
 		String formatString = "%."+precision+"f";
 		return "("+String.format(formatString,x)+","+String.format(formatString,y)+","+String.format(formatString,z)+")";
+	}
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof Vect3D){
+			Vect3D other = (Vect3D)obj;
+			if (x!=other.x || y!=other.y || z!=other.z){
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }

@@ -1,6 +1,10 @@
 package org.vcell.vis.vismesh;
 
-public class VisLine implements ChomboVisMembraneIndex {
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.vis.mapping.chombo.ChomboVisMembraneIndex;
+
+public class VisLine implements ChomboVisMembraneIndex, Matchable {
 	
 	private final int p1;
 	private final int p2;
@@ -25,5 +29,23 @@ public class VisLine implements ChomboVisMembraneIndex {
 	public int getChomboIndex() {
 		return chomboIndex;
 	}
-	
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof VisLine){
+			VisLine other = (VisLine) obj;
+			if (p1 != other.p1){
+				return false;
+			}
+			if (p2 != other.p2){
+				return false;
+			}
+			if (chomboIndex != other.chomboIndex){
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
 }

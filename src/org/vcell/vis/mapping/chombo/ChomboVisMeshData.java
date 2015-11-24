@@ -1,11 +1,11 @@
-package org.vcell.vis.mapping;
+package org.vcell.vis.mapping.chombo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.vcell.vis.chombo.ChomboMeshData;
+import org.vcell.vis.mapping.VisMeshData;
 import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisMeshData;
 
 public class ChomboVisMeshData implements VisMeshData {
 	private final ChomboMeshData chomboMeshData;

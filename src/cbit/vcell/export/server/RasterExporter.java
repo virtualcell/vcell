@@ -25,8 +25,8 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
-import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
-import org.vcell.vis.mapping.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
 import cbit.image.SourceDataInfo;
 import cbit.image.gui.ImagePlaneManager;

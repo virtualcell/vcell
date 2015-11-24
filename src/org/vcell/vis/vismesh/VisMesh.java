@@ -3,9 +3,11 @@ package org.vcell.vis.vismesh;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 import org.vcell.vis.core.Vect3D;
 
-public class VisMesh {
+public class VisMesh implements Matchable {
 	private final int dimension;
 	private final Vect3D origin;
 	private final Vect3D extent;
@@ -80,6 +82,42 @@ public class VisMesh {
 
 	public List<VisPoint> getSurfacePoints() {
 		return surfacePoints;
+	}
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof VisMesh){
+			VisMesh other = (VisMesh)obj;
+			if (dimension != other.dimension){
+				return false;
+			}
+			if (!Compare.isEqual(origin,other.origin)){
+				return false;
+			}
+			if (!Compare.isEqual(extent,other.extent)){
+				return false;
+			}
+			if (!Compare.isEqualStrict(points,other.points)){
+				return false;				
+			}
+			if (!Compare.isEqualStrict(polygons,other.polygons)){
+				return false;				
+			}
+			if (!Compare.isEqualStrict(polyhedra,other.polyhedra)){
+				return false;				
+			}
+			if (!Compare.isEqualStrict(surfaceTriangles,other.surfaceTriangles)){
+				return false;				
+			}
+			if (!Compare.isEqualStrict(lines,other.lines)){
+				return false;				
+			}
+			if (!Compare.isEqualStrict(surfacePoints,other.surfacePoints)){
+				return false;				
+			}			
+			return true;
+		}
+		return false;
 	}
 
 }

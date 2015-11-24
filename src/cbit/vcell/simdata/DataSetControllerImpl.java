@@ -70,8 +70,8 @@ import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
-import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
-import org.vcell.vis.mapping.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 
 import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;

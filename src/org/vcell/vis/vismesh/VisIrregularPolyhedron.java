@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 public class VisIrregularPolyhedron implements VisPolyhedron {
 	
 	private final int level;
@@ -12,7 +15,7 @@ public class VisIrregularPolyhedron implements VisPolyhedron {
 	private final double fraction;
 	private final int regionIndex;
 
-	public static class PolyhedronFace {
+	public static class PolyhedronFace implements Matchable {
 		private final int[] vertices;
 		
 		public PolyhedronFace(int[] vertices){
@@ -21,6 +24,18 @@ public class VisIrregularPolyhedron implements VisPolyhedron {
 		
 		public int[] getVertices(){
 			return this.vertices;
+		}
+
+		@Override
+		public boolean compareEqual(Matchable obj) {
+			if (obj instanceof PolyhedronFace){
+				PolyhedronFace other = (PolyhedronFace)obj;
+				if (!Compare.isEqual(vertices, other.vertices)){
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
 	}
 
@@ -95,5 +110,32 @@ public class VisIrregularPolyhedron implements VisPolyhedron {
 			intFaceStream[i] = faceStream.get(i);
 		}
 		return intFaceStream;
+	}
+
+	@Override
+	public boolean compareEqual(Matchable obj) {
+		if (obj instanceof VisIrregularPolyhedron){
+			VisIrregularPolyhedron other = (VisIrregularPolyhedron) obj;
+			if (level != other.level){
+				return false;
+			}
+			if (boxNumber != other.boxNumber){
+				return false;
+			}
+			if (boxIndex != other.boxIndex){
+				return false;
+			}
+			if (fraction != other.fraction){
+				return false;
+			}
+			if (regionIndex != other.regionIndex){
+				return false;
+			}
+			if (!Compare.isEqualStrict(polyhedronFaces, other.polyhedronFaces)){
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }

@@ -1,11 +1,11 @@
 package org.vcell.vis.vtk;
 
 import org.vcell.vis.core.Vect3D;
-import org.vcell.vis.vismesh.VisDataset.VisDomain;
+import org.vcell.vis.mapping.VisDomain;
+import org.vcell.vis.mapping.VisMeshData;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisMeshData;
 import org.vcell.vis.vismesh.VisPoint;
 
 public class DebugWriteProblem {

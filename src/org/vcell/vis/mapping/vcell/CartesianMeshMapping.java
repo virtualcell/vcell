@@ -1,4 +1,4 @@
-package org.vcell.vis.mapping;
+package org.vcell.vis.mapping.vcell;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,13 +7,9 @@ import org.vcell.util.ISize;
 import org.vcell.vis.core.Box3D;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vcell.MembraneElement;
-import org.vcell.vis.vismesh.VisDataset;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
 import org.vcell.vis.vismesh.VisMesh;
 import org.vcell.vis.vismesh.VisPoint;
 import org.vcell.vis.vismesh.VisPolygon;
-import org.vcell.vis.vismesh.VisPolyhedron;
 import org.vcell.vis.vismesh.VisVoxel;
 
 public class CartesianMeshMapping {
@@ -325,30 +321,30 @@ public class CartesianMeshMapping {
 	    return visMesh;
 	}
 
-	public void check(VisDataset visDataset){
-		VisMesh visMesh = visDataset.getDomains().get(0).getVisMesh();
-		for (VisPolyhedron visPolyhedron : visMesh.getPolyhedra()){
-			if (visPolyhedron instanceof VisVoxel){
-				VisVoxel visVoxel = (VisVoxel)visPolyhedron;
-				for (int p : visVoxel.getPointIndices()){
-					VisPoint vp = visMesh.getPoints().get(p);
-					if (vp==null){
-						throw new RuntimeException("couldn't find point "+p);
-					}
-				}
-			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
-				VisIrregularPolyhedron visIrregularPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
-				for (PolyhedronFace face : visIrregularPolyhedron.getFaces()){
-					for (int p : face.getVertices()){
-						VisPoint vp = visMesh.getPoints().get(p);
-						if (vp==null){
-							throw new RuntimeException("couldn't find point "+p);
-						}
-					}
-				}
-			}
-		}
-		System.out.println("ChomboMeshMapping:check() first mesh passed the point test");
-	}
+//	public void check(VisDataset visDataset){
+//		VisMesh visMesh = visDataset.getDomains().get(0).getVisMesh();
+//		for (VisPolyhedron visPolyhedron : visMesh.getPolyhedra()){
+//			if (visPolyhedron instanceof VisVoxel){
+//				VisVoxel visVoxel = (VisVoxel)visPolyhedron;
+//				for (int p : visVoxel.getPointIndices()){
+//					VisPoint vp = visMesh.getPoints().get(p);
+//					if (vp==null){
+//						throw new RuntimeException("couldn't find point "+p);
+//					}
+//				}
+//			}else if (visPolyhedron instanceof VisIrregularPolyhedron){
+//				VisIrregularPolyhedron visIrregularPolyhedron = (VisIrregularPolyhedron)visPolyhedron;
+//				for (PolyhedronFace face : visIrregularPolyhedron.getFaces()){
+//					for (int p : face.getVertices()){
+//						VisPoint vp = visMesh.getPoints().get(p);
+//						if (vp==null){
+//							throw new RuntimeException("couldn't find point "+p);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		System.out.println("ChomboMeshMapping:check() first mesh passed the point test");
+//	}
 	
 }

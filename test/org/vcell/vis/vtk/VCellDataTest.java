@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
-import org.vcell.vis.mapping.CartesianMeshVtkFileWriter;
+import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
 import org.vcell.vis.vcell.CartesianMesh;
 
 import cbit.vcell.resource.ResourceUtil;
