@@ -523,7 +523,9 @@ class OpenOneAsynchTask(AsynchTask):
 
     @overrides(AsynchTask)
     def getResults(self):
-        return None
+        dbName0 = visit.GetPlotList().GetPlots(0).GetDatabaseName()
+        metaData0 = visit.GetMetaData(dbName0)
+        return (metaData0.GetMeshes(0).minSpatialExtents,metaData0.GetMeshes(0).maxSpatialExtents)
 
     def doOpenDatabase(self):
         print("OpenOneAsynchTask.doOpenDatabase()")
