@@ -194,8 +194,13 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	}
 	printWriter.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
 
-	if(stochOpt.isUseCustomSeed())
+	if(stochOpt.isUseCustomSeed()) {
   		printWriter.println("SEED"+"\t"+stochOpt.getCustomSeed());
+	} else {	// we generate our own random seed
+		RandomDataGenerator rdg = new RandomDataGenerator();
+		int randomSeed = rdg.nextInt(1, Integer.MAX_VALUE);
+		printWriter.println("SEED"+"\t"+randomSeed);
+	}
   	printWriter.println("</control>");
   	printWriter.println();
 
