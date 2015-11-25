@@ -173,6 +173,10 @@ class VisContextVisitImpl(visContextAbstract):
             visit.AddPlot("Pseudocolor", str(self._variable))
             visit.SetPlotOptions(self._pseudocolorAttributes)
             self._currentPlot = ("Pseudocolor",str(self._variable))
+            # Turn off display database name in plot window to reduce clutter
+            attributes = visit.AnnotationAttributes()
+            attributes.databaseInfoFlag=0
+            visit.SetAnnotationAttributes(attributes)
 
         #
         # if operator needed, set operator attributes (add new operator if needed)
