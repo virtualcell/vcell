@@ -1,4 +1,4 @@
-import PySide.QtCore as QtCore
+﻿import PySide.QtCore as QtCore
 import PySide.QtGui as QtGui
 from PySide.QtGui import QApplication
 import exceptions
@@ -13,19 +13,19 @@ class AsynchTaskManager(object):
     def __init__(self, parent):
         self._asynchTaskList=[]
         self._timer = QtCore.QTimer(parent)
-        self._timer.setInterval(10)
+        self._timer.setInterval(50)
         self._timer.connect(QtCore.SIGNAL("timeout()"),self.doNextTaskStep)
         self._timer.start()                    
 
     def doNextTaskStep(self):
-        #
-        # manage system cursor here (should probably be done in the GUI directly).
-        #
-        if (len(self._asynchTaskList) > 0):
-            print("Checking Tasks.  There are "+str(len(self._asynchTaskList))+" tasks in the list now")
-            QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
-        else:
-            QApplication.restoreOverrideCursor()
+        ##
+        ## manage system cursor here (should probably be done in the GUI directly).
+        ##
+        #if (len(self._asynchTaskList) > 0):
+        #    print("Checking Tasks.  There are "+str(len(self._asynchTaskList))+" tasks in the list now")
+        #    QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        #else:
+        #    QApplication.restoreOverrideCursor()
 
         #
         # take a single step of the task on 'top of stack'

@@ -86,18 +86,27 @@ class VCellPysideApp(QtGui.QMainWindow):
         self.otherEventsQueue = Queue()
         self.otherEventTimer = QtCore.QTimer(self)
         self.otherEventTimer.timeout.connect(self.otherEventHandler)
-        self.otherEventTimer.start(1000) # runs always on main thread checking for otherEvents deposited from non-main threads
+        self.otherEventTimer.start(250) # runs always on main thread checking for otherEvents deposited from non-main threads
         self.minMaxExtents = None
 
     def otherEventHandler(self): # display modal message box with text from queue on the main thread
         if self.otherEventsQueue.empty() != True:
-            self.modalProgress(None)
-            displayThis = self.otherEventsQueue.get()
-            self.otherEventsQueue.task_done()
-            msgBox = QtGui.QMessageBox(self)
-            msgBox.setWindowModality(Qt.WindowModal)
-            msgBox.setText(displayThis)
-            msgBox.show()
+            nextElem = self.otherEventsQueue.get()
+            if isinstance(nextElem,str):
+                self.modalProgress(None)
+                self.otherEventsQueue.task_done()
+                msgBox = QtGui.QMessageBox(self)
+                msgBox.setWindowModality(Qt.WindowModal)
+                msgBox.setText(nextElem)
+                msgBox.show()
+            elif isinstance(nextElem,tuple):
+                #print("---------------"+str(isinstance(nextElem,str))+" "+repr(nextElem))
+                if nextElem[0] == "cursorWait" and QtGui.QApplication.overrideCursor() == None:
+                    QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+                elif nextElem[0] == "cursorRestore":
+                    QtCore.QCoreApplication.instance().restoreOverrideCursor()
+                self.otherEventsQueue.task_done()
+                self.otherEventHandler()
 
     def closeEvent(self, event):
         self._vis.quit()
@@ -423,8 +432,8 @@ class VCellPysideApp(QtGui.QMainWindow):
         #count = len(self.findChildren(QtGui.QDialog))
         if message != None:
             if self.progress == None:
-                self.progress = QtGui.QProgressDialog(message, None, 0, self.CONST_MODALPROGRESSMAX)
-                self.progress.setWindowModality(Qt.WindowModal)
+                self.progress = QtGui.QProgressDialog(message, None, 0, self.CONST_MODALPROGRESSMAX) #default application modal
+                #self.progress.setWindowModality(Qt.WindowModal) #if only wondow modal wanted
                 self.progress.setMinimumDuration(0)
             self.progress.setValue(1)
             # Make timer to animate progress bar because progress is unknown
@@ -504,10 +513,10 @@ class VCellPysideApp(QtGui.QMainWindow):
             def successCallback(results):
                 self.minMaxExtents = results
                 print("_onSimulationSelected: openOne() success "+str(self.minMaxExtents));
-                self.modalProgress(None)
                 self._variableListWidget.setCurrentRow(0)
                 self._variableListWidget.item(0).setSelected(True)
                 self._variableListWidget.setFocus()
+                self.modalProgress(None)
 
             def errorCallback(errorMessage):
                 print("_onSimulationSelected: openOne() error: "+str(errorMessage));
@@ -530,6 +539,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         return self._statusBar
 
     def _onSelectedVariableChanged(self):
+        self.otherEventsQueue.put(("cursorWait",None))
         currentText = self._variableListWidget.selectedItems()
         if currentText != None and len(currentText)>0:
             firstItem = currentText[0]
@@ -548,11 +558,14 @@ class VCellPysideApp(QtGui.QMainWindow):
                 newFilename = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,newVariable,timeIndex)
                 
                 def successCallback(results):
+                    self.otherEventsQueue.put(("cursorRestore",None))
                     self.minMaxExtents = results
                     print("_onSelectedVariableChanged: openOne() success "+str(self.minMaxExtents));
-                    self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().value())))
+                    if self._sliceControl.isChecked():
+                        self._sliceControl.setTitle(visGuiSliceControls.sliceControl.CONST_SLICE_TITLE+" "+str(self.getExtentAlongSliderAxis(self._sliceControl.getSliceSlider().value())))
 
                 def errorCallback(errorMessage):
+                    self.otherEventsQueue.put(("cursorRestore",None))
                     print("_onSelectedVariableChanged: openOne() error: "+str(errorMessage));
     
                 self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain, successCallback, errorCallback)
@@ -577,6 +590,7 @@ class VCellPysideApp(QtGui.QMainWindow):
         self._vis.quit()
 
     def _onTimeSliderChanged(self):
+        self.otherEventsQueue.put(("cursorWait",None))
         self.timeGroup.setTitle("Time: "+str(self._visDataContext.getCurrentDataSetTimePoints()[self._timeSlider.value()]))
         #lastSlidePos = self.sliderQ(self._timeSlider.sliderPosition())
         lastSlidePos = self.sliderQ(self._timeSlider.value(),self.timeSliderQueue)
@@ -612,12 +626,14 @@ class VCellPysideApp(QtGui.QMainWindow):
             vcellProxy2.close()
                 
         def successCallback(results):
+            self.otherEventsQueue.put(("cursorRestore",None))
             print("_onTimeSliderChanged: openOne() success "+str(results));
             checkSlidePos = self.sliderQ(None,self.timeSliderQueue)
             if checkSlidePos[VCellPysideApp.CONST_POSITION] != self._visDataContext.getCurrentTimeIndex():
                 self._onTimeSliderChanged()
 
         def errorCallback(errorMessage):
+            self.otherEventsQueue.put(("cursorRestore",None))
             print("_onTimeSliderChanged: openOne() error: "+str(errorMessage));
             self.sliderQ(None,self.timeSliderQueue) #clear queue
 
