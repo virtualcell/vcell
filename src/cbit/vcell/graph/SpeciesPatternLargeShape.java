@@ -334,7 +334,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			stls.paintSelf(g);
 		}
 		if(owner instanceof RbmObservable) {
-			endText = "Right click here to add a molecule.";
+//			endText = "Right click here to add a molecule.";
+			endText = "";
 		}
 		
 //		// matches between molecular types - only within reaction rules
@@ -521,7 +522,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.setColor(colorOld);
 		}
 		if(!endText.isEmpty()) {
-			g.drawString(endText, getRightEnd() + 15, yPos + 20);
+			g.drawString(endText, getRightEnd() + 20, yPos + 20);
 		}
 	}
 

@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -46,7 +45,6 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -77,7 +75,6 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
@@ -826,12 +823,12 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			popupFromShapeMenu.add(deleteMenuItem);
 			
 		} else if (selectedObject instanceof MolecularComponentPattern) {
-			manageComponentPatternFromShape(selectedObject, locationContext, false);
+			manageComponentPatternFromShape(selectedObject, locationContext, ShowWhat.ShowBond);
 			bDelete = false;
 			
 		} else if (selectedObject instanceof ComponentStatePattern) {
 			MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-			manageComponentPatternFromShape(mcp, locationContext, true);
+			manageComponentPatternFromShape(mcp, locationContext, ShowWhat.ShowState);
 		}
 		if (bRename) {
 			popupFromShapeMenu.add(getRenameFromShapeMenuItem());
@@ -849,12 +846,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
 	
-	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, boolean showStateOnly) {
+	private enum ShowWhat {
+		ShowState,
+		ShowBond
+	}
+	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, ShowWhat showWhat) {
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
 		popupFromShapeMenu.removeAll();
 		// ------------------------------------------------------------------- State
-		if(mc.getComponentStateDefinitions().size() != 0) {
+		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
 			JMenu editStateMenu = new JMenu();
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
@@ -887,7 +888,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 			popupFromShapeMenu.add(editStateMenu);
 		}
-		if(showStateOnly) {
+		if(showWhat == ShowWhat.ShowState) {
 			return;
 		}
 		// ------------------------------------------------------------------------------------------- Bonds
