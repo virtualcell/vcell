@@ -517,6 +517,9 @@ class VCellPysideApp(QtGui.QMainWindow):
                 self._variableListWidget.item(0).setSelected(True)
                 self._variableListWidget.setFocus()
                 self.modalProgress(None)
+                print(str(sim))
+                newTtitle = "VCell Visit View " + ("(Math)" if sim.isMathModel else "(Bio) ") + (('\''+sim.simulationContextName+"\'->") if sim.simulationContextName != None else '') + '\''+sim.simName+'\''
+                self.setWindowTitle(newTtitle)
 
             def errorCallback(errorMessage):
                 print("_onSimulationSelected: openOne() error: "+str(errorMessage));
