@@ -50,7 +50,6 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
@@ -58,7 +57,6 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ParticipantMatchLabelLocal;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.MolecularComponentLargeShape;
@@ -105,10 +103,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JSplitPane splitPaneTrees = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
 	private JTree rightClickSourceTree;
-	private JEditorPane warningPane;
 	
-//	private JCheckBox showDetailsCheckBox;
-
 	private JPopupMenu popupMenu;
 	private JMenu addMenu;
 	private JMenuItem addReactantMenuItem;
@@ -858,11 +853,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel, false, bReactantsZone);
+				manageComponentPatternFromShape(selectedObject, locationContext, reactantTreeModel, ShowWhat.ShowBond, bReactantsZone);
 				
 			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
 				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-				manageComponentPatternFromShape(mcp, locationContext, reactantTreeModel, true, bReactantsZone);			
+				manageComponentPatternFromShape(mcp, locationContext, reactantTreeModel, ShowWhat.ShowState, bReactantsZone);			
 			}
 		// ---------------------------------------- product zone ---------------------------------------------
 		} else if(!bReactantsZone) {
@@ -1001,11 +996,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			} else if(selectedObject instanceof MolecularComponentPattern) {	// edit bond / edit state
-				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel, false, bReactantsZone);
+				manageComponentPatternFromShape(selectedObject, locationContext, productTreeModel, ShowWhat.ShowBond, bReactantsZone);
 				
 			} else if(selectedObject instanceof ComponentStatePattern) {		// edit state
 				MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-				manageComponentPatternFromShape(mcp, locationContext, productTreeModel, true, bReactantsZone);			
+				manageComponentPatternFromShape(mcp, locationContext, productTreeModel, ShowWhat.ShowState, bReactantsZone);			
 			}
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
@@ -1056,8 +1051,12 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 
+	private enum ShowWhat {
+		ShowState,
+		ShowBond
+	}
 	public void manageComponentPatternFromShape(final Object selectedObject, PointLocationInShapeContext locationContext, 
-			final ReactionRulePropertiesTreeModel treeModel, boolean showStateOnly, boolean bIsReactant) {
+			final ReactionRulePropertiesTreeModel treeModel, ShowWhat showWhat, boolean bIsReactant) {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
@@ -1100,7 +1099,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}		// if reactantComponentStatePattern is null nothing is prohibited, we may not have a matching reactant for this product
 		}
 		// ------------------------------------------------------------------- State
-		if(mc.getComponentStateDefinitions().size() != 0) {
+		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
 			JMenu editStateMenu = new JMenu();
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
@@ -1144,7 +1143,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			popupFromShapeMenu.add(editStateMenu);
 		}
-		if(showStateOnly) {
+		if(showWhat == ShowWhat.ShowState) {
 			return;
 		}
 		

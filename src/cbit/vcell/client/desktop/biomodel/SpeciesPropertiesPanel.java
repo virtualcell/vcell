@@ -14,12 +14,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -28,7 +26,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -81,7 +78,6 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmElementAbstract;
-import org.vcell.model.rbm.SeedSpecies;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
@@ -94,7 +90,6 @@ import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.http.uniprot.UniProtConstants;
 import org.vcell.sybil.util.miriam.XRefToURN;
 import org.vcell.util.Compare;
-import org.vcell.util.Displayable;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
@@ -108,13 +103,11 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditorTreeFolderClass;
-import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
@@ -123,9 +116,7 @@ import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
-import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.common.VCellErrorMessages;
 /**
  * Insert the type's description here.
@@ -146,7 +137,6 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private SpeciesPropertiesTreeModel speciesPropertiesTreeModel = null;
 	private JScrollPane scrollPane;
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-	private JTree rightClickSourceTree = null;
 	
 	private EventHandler eventHandler = new EventHandler();
 
@@ -1058,24 +1048,29 @@ private void updateShape() {
 			popupFromShapeMenu.add(deleteMenuItem);
 			
 		} else if(selectedObject instanceof MolecularComponentPattern) {
-			manageComponentPatternFromShape(selectedObject, locationContext, false);		
+			manageComponentPatternFromShape(selectedObject, locationContext, ShowWhat.ShowBond);		
 			
 		} else if(selectedObject instanceof ComponentStatePattern) {
 			MolecularComponentPattern mcp = ((ComponentStateLargeShape)deepestShape).getMolecularComponentPattern();
-			manageComponentPatternFromShape(mcp, locationContext, true);
+			manageComponentPatternFromShape(mcp, locationContext, ShowWhat.ShowState);
 			
 		} else {
 			System.out.println("Where am I ???");
 		}
 		popupFromShapeMenu.show(e.getComponent(), mousePoint.x, mousePoint.y);
 	}
-	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, boolean showStateOnly) {
+	
+	private enum ShowWhat {
+		ShowState,
+		ShowBond
+	}
+	public void manageComponentPatternFromShape(final RbmElementAbstract selectedObject, PointLocationInShapeContext locationContext, ShowWhat showWhat) {
 		popupFromShapeMenu.removeAll();
 		final MolecularComponentPattern mcp = (MolecularComponentPattern)selectedObject;
 		final MolecularComponent mc = mcp.getMolecularComponent();
 		
 		// ------------------------------------------------------------------- State
-		if(mc.getComponentStateDefinitions().size() != 0) {
+		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
 			JMenu editStateMenu = new JMenu();
 			editStateMenu.setText("Edit State");
 			editStateMenu.removeAll();
@@ -1108,7 +1103,7 @@ private void updateShape() {
 			}
 			popupFromShapeMenu.add(editStateMenu);
 		}
-		if(showStateOnly) {
+		if(showWhat == ShowWhat.ShowState) {
 			return;
 		}
 		
