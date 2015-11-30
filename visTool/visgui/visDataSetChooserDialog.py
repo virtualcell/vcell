@@ -1,4 +1,4 @@
-import sys, os
+﻿import sys, os
 
 import visQt
 QtCore = visQt.QtCore
@@ -15,7 +15,8 @@ class DataSetChooserDialog(QtGui.QDialog):
     def __init__(self, parent=None):
         super(DataSetChooserDialog, self).__init__(parent)
         self.setWindowTitle("Choose result set")
-        self._dataSetComboBox = None
+        self._simTable = None
+        self.simList = None
         self._selectedSim = None
 #        self._domainSelected = None
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -30,16 +31,20 @@ class DataSetChooserDialog(QtGui.QDialog):
         selfSizePolicy.setVerticalStretch(0)
         selfSizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(selfSizePolicy)
-        self.setMinimumSize(300,150)
+        self.setMinimumSize(300,200)
         gridLayout = QtGui.QGridLayout(self)
         gridLayout.setObjectName("gridLayout")
 
-        self._dataSetComboBox = QtGui.QComboBox(self)
+        self._simTable = QtGui.QTableWidget(self)
+        self._simTable.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self._simTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self._simTable.setColumnCount(3)
+        self._simTable.setHorizontalHeaderLabels(("Simulation","Application","Model"))
 #        self._domainChoiceComboBox = QtGui.QComboBox(self)
 #        self._dataSetComboBox.activated.connect(self._changeSimulationSelectionAction)
 
 
-        gridLayout.addWidget(self._dataSetComboBox,0,0,) 
+        gridLayout.addWidget(self._simTable,0,0,) 
  #       gridLayout.addWidget(self._domainChoiceComboBox,1,0) 
         openButton = QtGui.QPushButton("Open",self)
         cancelButton = QtGui.QPushButton("Cancel",self)
@@ -52,30 +57,42 @@ class DataSetChooserDialog(QtGui.QDialog):
         gridLayout.addLayout(buttonLayout,2,0)
 
         # Get available simulation dataset of open models from the VCell client
-        simList = None
+        self.simList = None
         vcellProxy2 = vcellProxy.VCellProxyHandler()
         try:
             print("calling vcellProxy2.getSimsFromOpenModels()")
             vcellProxy2.open()
-            simList = vcellProxy2.getClient().getSimsFromOpenModels()
+            self.simList = vcellProxy2.getClient().getSimsFromOpenModels()
         except:
-            simList = None
+            self.simList = None
             print("Exception looking for open model datasets")
         finally:
             vcellProxy2.close()
-        print(simList)
-        if (simList==None or len(simList)==0):
+        print(self.simList)
+        if (self.simList==None or len(self.simList)==0):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("VCell not running or no models open")
             msgBox.exec_()
             raise Exception("No simulations found")
             return
 
-        # populate the QComboBox if we found datasets
-        for sim in simList:
-            self._dataSetComboBox.addItem(sim.simName,sim)
+        # populate the QTableWidget if we found datasets
+        self._simTable.setRowCount(len(self.simList))
+        for i,sim in enumerate(self.simList):
+            self._simTable.setItem(i,2,QtGui.QTableWidgetItem(sim.simName))
+            self._simTable.setItem(i,1,QtGui.QTableWidgetItem("(math)" if sim.simulationContextName == None else sim.simulationContextName))
+            self._simTable.setItem(i,0,QtGui.QTableWidgetItem(sim.modelName))
+            #self._dataSetComboBox.addItem(sim.simName,sim)
             #self._changeSimulationSelectionAction()
 
+        self._simTable.resizeColumnsToContents()
+
+        vwidth = self._simTable.verticalHeader().width()
+        hwidth = self._simTable.horizontalHeader().length()
+        swidth = self._simTable.style().pixelMetric(QtGui.QStyle.PM_ScrollBarExtent)
+        fwidth = self._simTable.frameWidth() * 2
+        self.resize(vwidth + hwidth + swidth + fwidth,self.size().height())
+        #self._simTable.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     #def _changeSimulationSelectionAction(self):
     #    print('starting _changeSimulationSelectionAction')
@@ -100,10 +117,10 @@ class DataSetChooserDialog(QtGui.QDialog):
 
 
     def _openButtonPressedAction(self):
-        currentIndex = self._dataSetComboBox.currentIndex()
+        currentIndex = self._simTable.currentRow()
         if (currentIndex == None):
             return(None)
-        self._selectedSim = self._dataSetComboBox.itemData(currentIndex)
+        self._selectedSim = self.simList[currentIndex]
         if (visQt.isPyQt4() and isinstance(self._selectedSim, QtCore.QVariant)):
             self._selectedSim = self._selectedSim.toPyObject()
         #currentIndex = self._domainChoiceComboBox.currentIndex()
