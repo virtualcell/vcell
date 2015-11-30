@@ -38,6 +38,7 @@ struct SimulationDataSetRef {
    6: required int jobIndex;
    7: required bool isMathModel;
    8: optional string simulationContextName;
+   9: required string modelName;
 }
 typedef list<SimulationDataSetRef> SimulationDataSetRefList
 
