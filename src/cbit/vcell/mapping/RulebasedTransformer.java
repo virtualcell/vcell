@@ -379,9 +379,12 @@ public class RulebasedTransformer implements SimContextTransformer {
 				fR.setName(forwardRateName);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
 				rR.setName(reverseRateName);
-				kineticLaw.setParameterValue(fR, forwardRateExp, true);
-				kineticLaw.setParameterValue(rR, reverseRateExp, true);
-				
+				if(rs.hasReactant()) {
+					kineticLaw.setParameterValue(fR, forwardRateExp, true);
+				}
+				if(rs.hasProduct()) {
+					kineticLaw.setParameterValue(rR, reverseRateExp, true);
+				}
 				//
 				// set values of local user-defined parameters also (user defined).
 				//
