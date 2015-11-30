@@ -184,6 +184,7 @@ class SimulationDataSetRef:
    - jobIndex
    - isMathModel
    - simulationContextName
+   - modelName
   """
 
   thrift_spec = (
@@ -196,9 +197,10 @@ class SimulationDataSetRef:
     (6, TType.I32, 'jobIndex', None, None, ), # 6
     (7, TType.BOOL, 'isMathModel', None, None, ), # 7
     (8, TType.STRING, 'simulationContextName', None, None, ), # 8
+    (9, TType.STRING, 'modelName', None, None, ), # 9
   )
 
-  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None,):
+  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None, modelName=None,):
     self.simId = simId
     self.simName = simName
     self.modelId = modelId
@@ -207,6 +209,7 @@ class SimulationDataSetRef:
     self.jobIndex = jobIndex
     self.isMathModel = isMathModel
     self.simulationContextName = simulationContextName
+    self.modelName = modelName
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -257,6 +260,11 @@ class SimulationDataSetRef:
           self.simulationContextName = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 9:
+        if ftype == TType.STRING:
+          self.modelName = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -299,6 +307,10 @@ class SimulationDataSetRef:
       oprot.writeFieldBegin('simulationContextName', TType.STRING, 8)
       oprot.writeString(self.simulationContextName)
       oprot.writeFieldEnd()
+    if self.modelName is not None:
+      oprot.writeFieldBegin('modelName', TType.STRING, 9)
+      oprot.writeString(self.modelName)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -317,6 +329,8 @@ class SimulationDataSetRef:
       raise TProtocol.TProtocolException(message='Required field jobIndex is unset!')
     if self.isMathModel is None:
       raise TProtocol.TProtocolException(message='Required field isMathModel is unset!')
+    if self.modelName is None:
+      raise TProtocol.TProtocolException(message='Required field modelName is unset!')
     return
 
 
@@ -330,6 +344,7 @@ class SimulationDataSetRef:
     value = (value * 31) ^ hash(self.jobIndex)
     value = (value * 31) ^ hash(self.isMathModel)
     value = (value * 31) ^ hash(self.simulationContextName)
+    value = (value * 31) ^ hash(self.modelName)
     return value
 
   def __repr__(self):

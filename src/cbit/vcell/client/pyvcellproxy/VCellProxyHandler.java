@@ -101,6 +101,7 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 						simulationDataSetReference.setUserkey(simInfo.getVersion().getOwner().getID().toString());
 						simulationDataSetReference.setIsMathModel(modelDocument instanceof MathModel);
 						simulationDataSetReference.setJobIndex(jobIndex);
+						simulationDataSetReference.setModelName(modelDocument.getName());
 						if (modelDocument instanceof BioModel){
 							BioModel bm = (BioModel) modelDocument; 
 							simulationDataSetReference.setSimulationContextName(simulation.getSimulationOwner().getName());

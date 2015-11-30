@@ -432,10 +432,11 @@ class VCellPysideApp(QtGui.QMainWindow):
         #count = len(self.findChildren(QtGui.QDialog))
         if message != None:
             if self.progress == None:
-                self.progress = QtGui.QProgressDialog(message, None, 0, self.CONST_MODALPROGRESSMAX) #default application modal
+                self.progress = QtGui.QProgressDialog('...', None, 0, self.CONST_MODALPROGRESSMAX) #default application modal
                 #self.progress.setWindowModality(Qt.WindowModal) #if only wondow modal wanted
                 self.progress.setMinimumDuration(0)
             self.progress.setValue(1)
+            self.progress.setLabelText(message)
             # Make timer to animate progress bar because progress is unknown
             self.timer = QtCore.QTimer()
             self.timer.timeout.connect(lambda : (self.progress.setValue(((self.progress.value()+1) if (self.progress.value()<(self.CONST_MODALPROGRESSMAX-1)) else (self.CONST_MODALPROGRESSMAX-1)))))
@@ -446,13 +447,14 @@ class VCellPysideApp(QtGui.QMainWindow):
             
 
     def _onSimulationSelected(self, dialog):
-       sim = dialog.getSelectedSimulation()
+       selectedSim = dialog.getSelectedSimulation()
        dialog.close()
-       print(sim)
+       print("-----")
+       print(selectedSim)
        print("---------- Starting Dialog ----------")
-       self.modalProgress("Loading '"+sim.simName+"'...")
+       self.modalProgress("Loading '"+selectedSim.simName+"'...")
 
-       self.lst = LoadSimThread(sim,self)
+       self.lst = LoadSimThread(selectedSim,self)
        #self.lst.finished.connect(self.otherEventHandler)
        self.lst.start()
 
@@ -518,7 +520,7 @@ class VCellPysideApp(QtGui.QMainWindow):
                 self._variableListWidget.setFocus()
                 self.modalProgress(None)
                 print(str(sim))
-                newTtitle = "VCell Visit View " + ("(Math)" if sim.isMathModel else "(Bio) ") + (('\''+sim.simulationContextName+"\'->") if sim.simulationContextName != None else '') + '\''+sim.simName+'\''
+                newTtitle = "VCell Visit View " + ("(Math)" if sim.isMathModel else "(Bio) ") + '\''+sim.modelName+'\'->' + (('\''+sim.simulationContextName+"\'->") if sim.simulationContextName != None else '') + '\''+sim.simName+'\''
                 self.setWindowTitle(newTtitle)
 
             def errorCallback(errorMessage):
