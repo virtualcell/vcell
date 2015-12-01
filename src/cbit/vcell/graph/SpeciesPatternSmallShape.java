@@ -45,7 +45,8 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	private final AbstractShape parentShape = null;
 	private Displayable owner;
 	private SpeciesPattern sp;
-	private String endText = new String();	// we display this after the Shape, it's position is outside "width"
+	private String startText = new String();	// we display this before the Shape (positioned left of xPos - attention!)
+	private String endText = new String();		// we display this after the Shape, it's position is outside "width"
 	
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
@@ -161,6 +162,9 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		}
 		return xRightmostMolecularType + widthRightmostMolecularType;
 	}
+	public void addStartText(final String string) {
+		this.startText = string;
+	}
 	public void addEndText(final String string) {
 		this.endText = string;
 	}
@@ -171,6 +175,21 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			offset = 2;			// we can make it 1 pixel taller perhaps but there's no need
 		}
 		
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Font fontOld = g.getFont();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		if(!startText.isEmpty()) {
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Color fontColor = Color.black;
+			g2.setFont(font);
+			g2.setColor(fontColor);
+			g2.drawString(startText, xPos-18, yPos+9);
+		}
+		g2.setFont(fontOld);
+		g2.setColor(colorOld);
+		
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
 			MolecularTypeSmallShape.paintDummy(g, xPos, yPos);
 		}
@@ -178,10 +197,6 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		for(MolecularTypeSmallShape stls : speciesShapes) {
 			stls.paintSelf(g);
 		}
-
-		Graphics2D g2 = (Graphics2D)g;
-		Color colorOld = g2.getColor();
-		Font fontOld = g.getFont();
 
 		// bonds
 		for(int i=0; i<bondPairs.size(); i++) {
@@ -205,7 +220,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			Color fontColor = Color.black;
 			g2.setFont(font);
 			g2.setColor(fontColor);
-			g2.drawString(endText, getRightEnd() + 4, yPos + 9);
+			g2.drawString(endText, getRightEnd()+3, yPos+9);
 		}
 
 		g2.setFont(fontOld);
@@ -230,10 +245,12 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	}
 	@Override
 	public int getIconWidth() {
+//		return xPos + width;
 		return width;
 	}
 	@Override
 	public int getIconHeight() {
+//		return 2 + height;
 		return height;
 	}
 
