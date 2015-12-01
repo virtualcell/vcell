@@ -993,7 +993,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 										spss.addEndText("->");
 									}
 								}
-								xPos += spss.getWidth() + 10;
+								xPos += spss.getWidth() + 14;
 								spssList.add(spss);
 							}
 							
@@ -1005,7 +1005,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
-								xPos += spss.getWidth() + 10;
+								xPos += spss.getWidth() + 14;
 								spssList.add(spss);
 							}
 						} else {
@@ -1025,14 +1025,20 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								xPos += spss.getWidth() + offset;
 								spssList.add(spss);
 							}
-							xPos+= 6;
+							xPos+= 8;
 							for(int i = 0; i<rs.getNumProducts(); i++) {
 								SpeciesPattern sp = rs.getProduct(i).getSpeciesContext().getSpeciesPattern();
+								if(i==0 && rs.getNumReactants() == 0) {
+									xPos += 14;
+								}
 								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rs, isSelected);
+								if(i==0 && rs.getNumReactants() == 0) {
+									spss.addStartText("->");
+								}
 								if(i < rs.getNumProducts()-1) {
 									spss.addEndText("+");
 								}
-								xPos += spss.getWidth() + 25;
+								xPos += spss.getWidth() + 26;
 								spssList.add(spss);
 							}
 						}
