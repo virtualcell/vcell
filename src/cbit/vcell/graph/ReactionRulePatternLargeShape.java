@@ -62,7 +62,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 						sps.addEndText("->");
 					}
 				}
-				xOffset = sps.getRightEnd() + 42;	// distance between species patterns
+				xOffset = sps.getRightEnd() + 48;	// distance between species patterns
 				speciesPatternShapeList.add(sps);
 			}
 		} else {
@@ -77,7 +77,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
-				xOffset = sps.getRightEnd() + 42;	// distance between species patterns
+				xOffset = sps.getRightEnd() + 48;	// distance between species patterns
 				speciesPatternShapeList.add(sps);
 			}
 		}
