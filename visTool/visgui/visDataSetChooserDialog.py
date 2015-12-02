@@ -7,6 +7,7 @@ import visContext
 from visContext.visContextAbstract import visContextAbstract;
 import vcellProxy
 import pyvcell
+from operator import attrgetter
 
 class DataSetChooserDialog(QtGui.QDialog):
 
@@ -38,8 +39,8 @@ class DataSetChooserDialog(QtGui.QDialog):
         self._simTable = QtGui.QTableWidget(self)
         self._simTable.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self._simTable.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        self._simTable.setColumnCount(3)
-        self._simTable.setHorizontalHeaderLabels(("Simulation","Application","Model"))
+        self._simTable.setColumnCount(4)
+        self._simTable.setHorizontalHeaderLabels(("Model","Application","Simulation","jobIndex"))
 #        self._domainChoiceComboBox = QtGui.QComboBox(self)
 #        self._dataSetComboBox.activated.connect(self._changeSimulationSelectionAction)
 
@@ -63,9 +64,15 @@ class DataSetChooserDialog(QtGui.QDialog):
             print("calling vcellProxy2.getSimsFromOpenModels()")
             vcellProxy2.open()
             self.simList = vcellProxy2.getClient().getSimsFromOpenModels()
-        except:
+            # Progressively sort
+            self.simList.sort(key=attrgetter('jobIndex'))
+            self.simList.sort(key=attrgetter('simName'))
+            #self.simList.sort(key=lambda sim: '(math)' if sim.isMathModel else sim.simulationContextName)
+            self.simList.sort(key=attrgetter('simulationContextName'))
+            self.simList.sort(key=attrgetter('modelName'))
+        except Exception as simFromModelException:
             self.simList = None
-            print("Exception looking for open model datasets")
+            print("Exception looking for open model datasets "+repr(simFromModelException))
         finally:
             vcellProxy2.close()
         print(self.simList)
@@ -79,9 +86,10 @@ class DataSetChooserDialog(QtGui.QDialog):
         # populate the QTableWidget if we found datasets
         self._simTable.setRowCount(len(self.simList))
         for i,sim in enumerate(self.simList):
-            self._simTable.setItem(i,2,QtGui.QTableWidgetItem(sim.simName))
-            self._simTable.setItem(i,1,QtGui.QTableWidgetItem("(math)" if sim.simulationContextName == None else sim.simulationContextName))
             self._simTable.setItem(i,0,QtGui.QTableWidgetItem(sim.modelName))
+            self._simTable.setItem(i,1,QtGui.QTableWidgetItem("(math)" if sim.simulationContextName == None else sim.simulationContextName))
+            self._simTable.setItem(i,2,QtGui.QTableWidgetItem(sim.simName))
+            self._simTable.setItem(i,3,QtGui.QTableWidgetItem(str(sim.jobIndex)))
             #self._dataSetComboBox.addItem(sim.simName,sim)
             #self._changeSimulationSelectionAction()
 
