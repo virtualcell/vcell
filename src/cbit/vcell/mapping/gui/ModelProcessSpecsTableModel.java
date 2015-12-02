@@ -24,6 +24,8 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ModelProcess;
 import cbit.vcell.model.ReactionRule;
@@ -36,19 +38,51 @@ import cbit.vcell.model.SimpleReaction;
  */
 @SuppressWarnings("serial")
 public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProcessSpec> implements java.beans.PropertyChangeListener {
-	public static final int COLUMN_NAME = 0;
-	public static final int COLUMN_TYPE = 1;
-	public static final int COLUMN_ENABLED = 2;
-	public static final int COLUMN_FAST = 3;
-	private final static String LABELS[] = { "Name", "Type", "Enabled", "Fast" };
+	public enum ColumnType {
+		COLUMN_NAME("Name"),
+		COLUMN_TYPE("Type"),
+		COLUMN_ENABLED("Enabled"),
+		COLUMN_FAST("Fast");
+		
+		public final String label;
+		private ColumnType(String label){
+			this.label = label;
+		}
+	}
+	ArrayList<ColumnType> columns = new ArrayList<ColumnType>();
+
 	private SimulationContext fieldSimulationContext = null;
 	
 /**
  * ModelProcessSpecsTableModel constructor comment.
  */
 public ModelProcessSpecsTableModel(ScrollTable table) {
-	super(table, LABELS);
+	super(table);
+	refreshColumns();
 	addPropertyChangeListener(this);
+}
+
+@Override
+public String getColumnName(int columnIndex){
+	return columns.get(columnIndex).label;
+}
+
+private void refreshColumns(){
+	columns.clear();
+	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
+	if(getSimulationContext() == null) {
+		return;
+	}
+	if (getSimulationContext().getApplicationType() == Application.RULE_BASED_STOCHASTIC){
+		columns.remove(ColumnType.COLUMN_FAST);
+	}
+	if (getSimulationContext().getApplicationType() == Application.NETWORK_STOCHASTIC){
+		columns.remove(ColumnType.COLUMN_FAST);
+	}
+}
+@Override
+public int getColumnCount() {
+	return columns.size();
 }
 
 private String searchText;
@@ -91,7 +125,8 @@ protected List<ModelProcessSpec> computeData() {
  * @param column int
  */
 public Class<?> getColumnClass(int column) {
-	switch (column){
+	ColumnType columnType = columns.get(column);
+	switch (columnType){
 		case COLUMN_NAME:{
 			return ModelProcess.class;
 		}
@@ -110,13 +145,13 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-@Override
-public int getColumnCount() {
-	if (fieldSimulationContext == null || !fieldSimulationContext.isStoch()) {
-		return super.getColumnCount();
-	}
-	return super.getColumnCount() - 1;
-}
+//@Override
+//public int getColumnCount() {
+//	if (fieldSimulationContext == null || !fieldSimulationContext.isStoch()) {
+//		return super.getColumnCount();
+//	}
+//	return super.getColumnCount() - 1;
+//}
 
 /**
  * Gets the simulationContext property (cbit.vcell.mapping.SimulationContext) value.
@@ -131,7 +166,8 @@ public SimulationContext getSimulationContext() {
  */
 public Object getValueAt(int row, int col) {
 	ModelProcessSpec modelProcessSpec = getValueAt(row);
-	switch (col){
+	ColumnType columnType = columns.get(col);
+	switch (columnType){
 		case COLUMN_NAME:{
 			return modelProcessSpec.getModelProcess();
 		}
@@ -162,17 +198,41 @@ public Object getValueAt(int row, int col) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	if (columnIndex == COLUMN_ENABLED){
+	ColumnType columnType = columns.get(columnIndex);
+	switch (columnType){
+	case COLUMN_ENABLED:{
 		return true;
-	}else if (columnIndex == COLUMN_FAST && getSimulationContext()!=null){
-		ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
-		//
-		// the "fast" column is only editable if not FluxReaction
-		//
-		return (ModelProcessSpec.getModelProcess() instanceof SimpleReaction);
-	}else{
+	}
+	case COLUMN_FAST:{
+		if(getSimulationContext()!=null) {
+			ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
+			//
+			// the "fast" column is only editable if not FluxReaction
+			//
+			return (ModelProcessSpec.getModelProcess() instanceof SimpleReaction);
+		}
 		return false;
 	}
+	default:{
+		return false;
+	}
+	}
+	
+//	if (columnType == COLUMN_ENABLED){
+//		return true;
+//	}
+//	if(columnType == COLUMN_FAST && fieldSimulationContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
+//		return false;		// rulebased applications never allow fast
+//	}
+//	if (columnIndex == COLUMN_FAST && getSimulationContext()!=null){
+//		ModelProcessSpec ModelProcessSpec = getValueAt(rowIndex);
+//		//
+//		// the "fast" column is only editable if not FluxReaction
+//		//
+//		return (ModelProcessSpec.getModelProcess() instanceof SimpleReaction);
+//	}else{
+//		return false;
+//	}
 }
 /**
 	 * This method gets called when a bound property is changed.
@@ -225,6 +285,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 		}
 	}
 	fieldSimulationContext = simulationContext;
+	refreshColumns();
 	if (simulationContext!=null){
 		simulationContext.addPropertyChangeListener(this);
 		ReactionContext reactionContext = fieldSimulationContext.getReactionContext();
@@ -250,8 +311,9 @@ private void refreshData() {
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	ModelProcessSpec modelProcessSpec = getValueAt(rowIndex);
+	ColumnType columnType = columns.get(columnIndex);
 	try {
-		switch (columnIndex){
+		switch (columnType){
 			case COLUMN_ENABLED:{
 				boolean bEnabled = ((Boolean)aValue).booleanValue();
 				if (modelProcessSpec instanceof ReactionSpec){
@@ -305,8 +367,8 @@ private class ModelProcessSpecComparator implements Comparator<ModelProcessSpec>
 	}
 	
 	public int compare(ModelProcessSpec parm1, ModelProcessSpec parm2){
-		
-		switch (index) {
+		ColumnType columnType = columns.get(index);
+		switch (columnType) {
 			case COLUMN_NAME:{
 				int bCompare = parm1.getModelProcess().getName().compareToIgnoreCase(parm2.getModelProcess().getName());
 				return ascending ? bCompare : -bCompare;
