@@ -1,6 +1,7 @@
 package org.vcell.vis.mapping.chombo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -9,22 +10,24 @@ import org.vcell.util.ISize;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
 import org.vcell.vis.chombo.ChomboBox;
-import org.vcell.vis.chombo.ChomboDataset.ChomboDomain;
+import org.vcell.vis.chombo.ChomboDataset.ChomboCombinedVolumeMembraneDomain;
 import org.vcell.vis.chombo.ChomboLevel;
 import org.vcell.vis.chombo.ChomboLevel.Covering;
 import org.vcell.vis.chombo.ChomboLevelData;
 import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.core.Face;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
-import org.vcell.vis.vismesh.VisLine;
-import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisPoint;
-import org.vcell.vis.vismesh.VisPolygon;
-import org.vcell.vis.vismesh.VisPolyhedron;
-import org.vcell.vis.vismesh.VisSurfaceTriangle;
-import org.vcell.vis.vismesh.VisVoxel;
+import org.vcell.vis.vismesh.thrift.ChomboSurfaceIndex;
+import org.vcell.vis.vismesh.thrift.ChomboVolumeIndex;
+import org.vcell.vis.vismesh.thrift.PolyhedronFace;
+import org.vcell.vis.vismesh.thrift.Vect3D;
+import org.vcell.vis.vismesh.thrift.VisIrregularPolyhedron;
+import org.vcell.vis.vismesh.thrift.VisLine;
+import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vismesh.thrift.VisPoint;
+import org.vcell.vis.vismesh.thrift.VisPolygon;
+import org.vcell.vis.vismesh.thrift.VisSurfaceTriangle;
+import org.vcell.vis.vismesh.thrift.VisVoxel;
 
 
 public class ChomboMeshMapping {
@@ -34,16 +37,30 @@ public class ChomboMeshMapping {
 		
 	}
 
-	public VisMesh fromMeshData(ChomboMeshData chomboMeshData, ChomboDomain chomboDomain){
+	public VisMesh fromMeshData(ChomboMeshData chomboMeshData, ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain){
 		int dimension = chomboMeshData.getMesh().getDimension();
 		if (dimension==2){
 			return fromMeshData2D(chomboMeshData);
 		}else if (dimension==3){
-			return fromMeshData3D(chomboMeshData, chomboDomain);
+			return fromMeshData3D(chomboMeshData, chomboCombinedVolumeMembraneDomain);
 		}else{
 			throw new RuntimeException("unsupported mesh dimension = "+dimension);
 		}
 	}
+	
+	private Vect3D toThrift(org.vcell.vis.core.Vect3D vect3D){
+		return new Vect3D(vect3D.x,vect3D.y,vect3D.z);
+	}
+	
+	public String toStringKey(VisPoint visPoint){
+		return toStringKey(visPoint, 8);
+	}
+	
+	public String toStringKey(VisPoint visPoint, int precision){
+		String formatString = "%."+precision+"f";
+		return "("+String.format(formatString,visPoint.x)+","+String.format(formatString,visPoint.y)+","+String.format(formatString,visPoint.z)+")";
+	}
+
 	
 	private VisMesh fromMeshData2D(ChomboMeshData chomboMeshData){
 	    ChomboMesh chomboMesh = chomboMeshData.getMesh();
@@ -56,7 +73,7 @@ public class ChomboMeshMapping {
 	    int dimension = chomboMeshData.getMesh().getDimension();
 	
 	    int z = 0;
-	    VisMesh visMesh = new VisMesh(chomboMesh.getDimension(),chomboMesh.getOrigin(), chomboMesh.getExtent()); // invoke VisMesh() constructor
+	    VisMesh visMesh = new VisMesh(chomboMesh.getDimension(),toThrift(chomboMesh.getOrigin()), toThrift(chomboMesh.getExtent())); // invoke VisMesh() constructor
 	    int currPointIndex = 0;
 	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
 	    double originX = chomboMesh.getOrigin().x;
@@ -79,16 +96,17 @@ public class ChomboMeshMapping {
 	        }
 	        
 	        VisPoint newVisPoint = new VisPoint(px,py,pz);
-	        String coordKey = newVisPoint.toStringKey();
+	        String coordKey = toStringKey(newVisPoint);
 	        pointDict.put(coordKey, currPointIndex);
-	        visMesh.addPoint(newVisPoint);
-	        visMesh.addSurfacePoint(newVisPoint);
+	        visMesh.addToPoints(newVisPoint);
+	        visMesh.addToSurfacePoints(newVisPoint);
 	        currPointIndex += 1;
 	        
 	    }
 	    for (ChomboBoundaries.Segment segment : chomboBoundaries.getSegments()){
-	    	VisLine newVisLine = new VisLine(segment.getP1(),segment.getP2(),segment.getChomboIndex());
-	    	visMesh.addLine(newVisLine);
+	    	VisLine newVisLine = new VisLine(segment.getP1(),segment.getP2());
+	    	newVisLine.setChomboSurfaceIndex(new ChomboSurfaceIndex(segment.getChomboIndex()));
+	    	visMesh.addToVisLines(newVisLine);
 	    }
 	
 	    for (int levelIndex=0; levelIndex < chomboMesh.getNumLevels(); levelIndex++){
@@ -131,48 +149,49 @@ public class ChomboMeshMapping {
 	                        //  maxX,minY
 	                        //
 	                        VisPoint p1Coord = new VisPoint(minX,minY,z);
-	                        String p1Key = p1Coord.toStringKey();
+	                        String p1Key = toStringKey(p1Coord);
 	                        Integer i1 = pointDict.get(p1Key);
 	                        if (i1 == null){
 	                            pointDict.put(p1Key,currPointIndex);
 	                            i1 = currPointIndex;
-	                            visMesh.addPoint(p1Coord);
+	                            visMesh.addToPoints(p1Coord);
 	                            currPointIndex++;
 	                        }
 	
 	                        VisPoint p2Coord = new VisPoint(minX,maxY,z);
-	                        String p2Key = p2Coord.toStringKey();
+	                        String p2Key = toStringKey(p2Coord);
 	                        Integer i2 = pointDict.get(p2Key);
 	                        if (i2 == null){
 	                            pointDict.put(p2Key,currPointIndex);
 	                            i2 = currPointIndex;
-	                            visMesh.addPoint(p2Coord);
+	                            visMesh.addToPoints(p2Coord);
 	                            currPointIndex++;
 	                        }
 	
 	                        VisPoint p3Coord = new VisPoint(maxX,maxY,z);
-	                        String p3Key = p3Coord.toStringKey();
+	                        String p3Key = toStringKey(p3Coord);
 	                        Integer i3 = pointDict.get(p3Key);
 	                        if (i3 == null){
 	                            pointDict.put(p3Key, currPointIndex);
 	                            i3 = currPointIndex;
-	                            visMesh.addPoint(p3Coord);
+	                            visMesh.addToPoints(p3Coord);
 	                            currPointIndex++;
 	                        }
 	
 	                        VisPoint p4Coord = new VisPoint(maxX,minY,z);
-	                        String p4Key = p4Coord.toStringKey();
+	                        String p4Key = toStringKey(p4Coord);
 	                        Integer i4 = pointDict.get(p4Key);
 	                        if (i4 == null){
 	                            pointDict.put(p4Key,currPointIndex);
 	                            i4 = currPointIndex;
-	                            visMesh.addPoint(p4Coord);
+	                            visMesh.addToPoints(p4Coord);
 	                            currPointIndex++;
 	                        }
 	            
-	                        VisPolygon quad = new VisPolygon(new int[] { i1,i2,i3,i4 },levelIndex,boxNumber,boxIndex,fraction,-1);
+	                        VisPolygon quad = new VisPolygon(Arrays.asList(new Integer[] {i1,i2,i3,i4}));
+	                        quad.setChomboVolumeIndex(new ChomboVolumeIndex(levelIndex,boxNumber,boxIndex,fraction));
 	                      //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-	                        visMesh.addPolygon(quad);
+	                        visMesh.addToPolygons(quad);
 	                    }
 	                }
 	            }
@@ -182,7 +201,7 @@ public class ChomboMeshMapping {
 	    return visMesh;
 	}
 
-	private VisMesh fromMeshData3D(ChomboMeshData chomboMeshData, ChomboDomain chomboDomain){
+	private VisMesh fromMeshData3D(ChomboMeshData chomboMeshData, ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain){
 		int dimension = chomboMeshData.getMesh().getDimension();
 		if (dimension!=3){
 			throw new RuntimeException("expecting a 3D mesh");
@@ -195,7 +214,9 @@ public class ChomboMeshMapping {
 	    int numY = size.getY();
 	    int numZ = size.getZ();
 	
-	    VisMesh visMesh = new VisMesh(chomboMesh.getDimension(),chomboMesh.getOrigin(), chomboMesh.getExtent()); // invoke VisMesh() constructor
+	    Vect3D origin = new Vect3D(chomboMesh.getOrigin().x,chomboMesh.getOrigin().y,chomboMesh.getOrigin().z);
+	    Vect3D extent = new Vect3D(chomboMesh.getExtent().x,chomboMesh.getExtent().y,chomboMesh.getExtent().z);
+	    VisMesh visMesh = new VisMesh(chomboMesh.getDimension(),origin, extent); // invoke VisMesh() constructor
 	    int currPointIndex = 0;
 	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
 	    double originX = chomboMesh.getOrigin().x;
@@ -215,17 +236,18 @@ public class ChomboMeshMapping {
 	        pz = (pz-originZ)*(numZ)/extentZ*2-1;
 	        
 	        VisPoint newVisPoint = new VisPoint(px,py,pz);
-	        String coordKey = newVisPoint.toStringKey();
+	        String coordKey = toStringKey(newVisPoint);
 	        pointDict.put(coordKey, currPointIndex);
-	        visMesh.addPoint(newVisPoint);
-	        visMesh.addSurfacePoint(newVisPoint);
+	        visMesh.addToPoints(newVisPoint);
+	        visMesh.addToSurfacePoints(newVisPoint);
 	        currPointIndex += 1;	        
 	    }
 	    for (ChomboBoundaries.SurfaceTriangle surfaceTriangle : chomboBoundaries.getSurfaceTriangles()){
-	    	VisSurfaceTriangle newVisSurfaceTriangle = new VisSurfaceTriangle(
-	    			new int[] { surfaceTriangle.getP1(),surfaceTriangle.getP2(), surfaceTriangle.getP3() },
-	    			surfaceTriangle.getChomboIndex(), surfaceTriangle.getFace());
-	    	visMesh.addSurfaceTriangle(newVisSurfaceTriangle);
+	    	List<Integer> vertices = Arrays.asList(new Integer[] { surfaceTriangle.getP1(),surfaceTriangle.getP2(), surfaceTriangle.getP3() });
+			org.vcell.vis.vismesh.thrift.Face face = org.vcell.vis.vismesh.thrift.Face.valueOf(surfaceTriangle.getFace().name());
+			VisSurfaceTriangle newVisSurfaceTriangle = new VisSurfaceTriangle(vertices, face);
+			newVisSurfaceTriangle.setChomboSurfaceIndex(new ChomboSurfaceIndex(surfaceTriangle.getChomboIndex()));
+	    	visMesh.addToSurfaceTriangles(newVisSurfaceTriangle);
 	    }
 	
 	    for (int levelIndex=0; levelIndex < chomboMesh.getNumLevels(); levelIndex++){
@@ -297,29 +319,30 @@ public class ChomboMeshMapping {
 		                        		new VisPoint(minX,maxY,maxZ),  // p6
 		                        		new VisPoint(maxX,maxY,maxZ),  // p7
 		                        };
-		                        int[] indices = new int[8];
+		                        Integer[] indices = new Integer[8];
 		                        for (int v=0;v<8;v++){
 		                        	VisPoint visPoint = visPoints[v];
-			                        String key = visPoint.toStringKey();
+			                        String key = toStringKey(visPoint);
 			                        Integer i = pointDict.get(key);
 			                        if (i == null){
 			                            pointDict.put(key,currPointIndex);
 			                            i = currPointIndex;
-			                            visMesh.addPoint(visPoint);
+			                            visMesh.addToPoints(visPoint);
 			                            currPointIndex++;
 			                        }
 			                        indices[v] = i;
 		                        }
-		                        VisVoxel voxel = new VisVoxel(indices,levelIndex,boxNumber,boxIndex,fraction,-1);
+		                        VisVoxel voxel = new VisVoxel(Arrays.asList(indices));
+		                        voxel.setChomboVolumeIndex(new ChomboVolumeIndex(levelIndex,boxNumber,boxIndex,fraction));
 		                      //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-		                        visMesh.addPolyhedron(voxel);
+		                        visMesh.addToVisVoxels(voxel);
 		                    }
 		                }
 	                }
 	            }
 	        }
 	    }
-	    cropVoxels(visMesh, chomboBoundaries,chomboDomain);
+	    cropVoxels(visMesh, chomboBoundaries,chomboCombinedVolumeMembraneDomain);
 	    return visMesh;
 	}
 
@@ -444,144 +467,141 @@ public class ChomboMeshMapping {
 				;
 	}
 	
-	private void cropVoxels(VisMesh visMesh, ChomboBoundaries chomboBoundaries, ChomboDomain chomboDomain){
+	private void cropVoxels(VisMesh visMesh, ChomboBoundaries chomboBoundaries, ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain){
 		if (visMesh.getDimension()!=3){
 			throw new RuntimeException("expecting 3D mesh");
 		}
-		List<VisPolyhedron> origPolyhedraList = visMesh.getPolyhedra();
-		ArrayList<VisPolyhedron> newPolyhedraList = new ArrayList<VisPolyhedron>();
+		List<VisVoxel> origVoxelList = visMesh.getVisVoxels();
+		ArrayList<VisVoxel> newVoxelList = new ArrayList<VisVoxel>();
 		List<VisPoint> points = visMesh.getPoints();
 		List<VisSurfaceTriangle> triangles = visMesh.getSurfaceTriangles();
-		for (VisPolyhedron visPolyhedron : origPolyhedraList){
-			if (visPolyhedron instanceof VisVoxel){
-				VisVoxel visVoxel = (VisVoxel)visPolyhedron;
-				int[] polyhedronPointIndices = visVoxel.getPointIndices();
-				if (visVoxel.getFraction() < 1.0){
-					
-					int p0 = polyhedronPointIndices[0];
-					int p1 = polyhedronPointIndices[1];
-					int p2 = polyhedronPointIndices[2];
-					int p3 = polyhedronPointIndices[3];
-					int p4 = polyhedronPointIndices[4];
-					int p5 = polyhedronPointIndices[5];
-					int p6 = polyhedronPointIndices[6];
-					int p7 = polyhedronPointIndices[7];
-					
-					VisPoint vp0 = points.get(p0);
-					VisPoint vp1 = points.get(p1);
-					VisPoint vp2 = points.get(p2);
-					VisPoint vp3 = points.get(p3);
-					VisPoint vp4 = points.get(p4);
-					VisPoint vp5 = points.get(p5);
-					VisPoint vp6 = points.get(p6);
-					VisPoint vp7 = points.get(p7);
-					
-					ArrayList<VisSurfaceTriangle> intersectingTriangles = new ArrayList<VisSurfaceTriangle>();
-					for (VisSurfaceTriangle triangle : triangles){
-						boolean bInRange = true;
-						for (int pi = 0; pi < 3; pi ++)
-						{
-							VisPoint tp = points.get(triangle.getPointIndices()[pi]);
-							if (!inLoHi(tp, vp0, vp7)) {
-								bInRange = false;
-							}
-						}
-						if (bInRange)
-						{
-							intersectingTriangles.add(triangle);
+		for (VisVoxel visVoxel : origVoxelList){
+			List<Integer> polyhedronPointIndices = visVoxel.getPointIndices();
+			if (visVoxel.getChomboVolumeIndex().getFraction() < 1.0){
+				
+				int p0 = polyhedronPointIndices.get(0);
+				int p1 = polyhedronPointIndices.get(1);
+				int p2 = polyhedronPointIndices.get(2);
+				int p3 = polyhedronPointIndices.get(3);
+				int p4 = polyhedronPointIndices.get(4);
+				int p5 = polyhedronPointIndices.get(5);
+				int p6 = polyhedronPointIndices.get(6);
+				int p7 = polyhedronPointIndices.get(7);
+				
+				VisPoint vp0 = points.get(p0);
+				VisPoint vp1 = points.get(p1);
+				VisPoint vp2 = points.get(p2);
+				VisPoint vp3 = points.get(p3);
+				VisPoint vp4 = points.get(p4);
+				VisPoint vp5 = points.get(p5);
+				VisPoint vp6 = points.get(p6);
+				VisPoint vp7 = points.get(p7);
+				
+				ArrayList<VisSurfaceTriangle> intersectingTriangles = new ArrayList<VisSurfaceTriangle>();
+				for (VisSurfaceTriangle triangle : triangles){
+					boolean bInRange = true;
+					for (int pi = 0; pi < 3; pi ++)
+					{
+						VisPoint tp = points.get(triangle.getPointIndices().get(pi));
+						if (!inLoHi(tp, vp0, vp7)) {
+							bInRange = false;
 						}
 					}
-					if (intersectingTriangles.size()==0){
-						LG.info("fraction<1.0 but found no triangles");
-						newPolyhedraList.add(visPolyhedron);
-						continue;
+					if (bInRange)
+					{
+						intersectingTriangles.add(triangle);
 					}
-	
-	        //       p6-------------------p7
-          //      /|                   /|
-          //     / |                  / |
-          //   p4-------------------p5  |
-          //    |  |                 |  |      face number         coordinates
-          //    |  |                 |  |
-          //    |  |                 |  |         5   3            z   y
-          //    |  p2................|..p3        |  /             |  /
-          //    | /                  | /          | /              | /
-          //    |/                   |/           |/               |/
-          //   p0-------------------p1       0 ---'---- 1          '----- x
-	        //                                     /|
-	        //								                    / |
-	        //                                   2  4
-	
-					BorderCellInfo borderCellInfo = chomboBoundaries.getMeshMetrics().getBorderCellInfo(intersectingTriangles.get(0).getChomboIndex());
-					//
-					// have o flip the inside/outside if domain ordinal is > 0 ... note that "^" is the exclusive or ... to flip a bit
-					//
-					boolean bFlip = chomboDomain.getOrdinal()>0;
-					VoxelPoint[] v = new VoxelPoint[] { 
-							new VoxelPoint(p0,vp0,bFlip ^ borderCellInfo.isCornerInside(0)), 
-							new VoxelPoint(p1,vp1,bFlip ^ borderCellInfo.isCornerInside(1)), 
-							new VoxelPoint(p2,vp2,bFlip ^ borderCellInfo.isCornerInside(2)), 
-							new VoxelPoint(p3,vp3,bFlip ^ borderCellInfo.isCornerInside(3)), 
-							new VoxelPoint(p4,vp4,bFlip ^ borderCellInfo.isCornerInside(4)), 
-							new VoxelPoint(p5,vp5,bFlip ^ borderCellInfo.isCornerInside(5)), 
-							new VoxelPoint(p6,vp6,bFlip ^ borderCellInfo.isCornerInside(6)), 
-							new VoxelPoint(p7,vp7,bFlip ^ borderCellInfo.isCornerInside(7)) };
-					// choosing an arbitrary face (A,B,C,D) see below
-					//
-					//   pA   pB
-					//
-					//   pD   pC
-					//
-	
-					// face 0 (X-)
-					VoxelFace face0 = new VoxelFace(Face.Xm, v[0], v[4], v[6], v[2]);
-					// face 1 (X+)
-					VoxelFace face1 = new VoxelFace(Face.Xp, v[1], v[3], v[7], v[5]);
-					// face 2 (Y-)
-					VoxelFace face2 = new VoxelFace(Face.Ym, v[0], v[1], v[5], v[4]);
-					// face 3 (Y+)
-					VoxelFace face3 = new VoxelFace(Face.Yp, v[2], v[3], v[7], v[6]);
-					// face 4 (Z-)
-					VoxelFace face4 = new VoxelFace(Face.Zm, v[0], v[2], v[3], v[1]);
-					// face 5 (Z+)
-					VoxelFace face5 = new VoxelFace(Face.Zp, v[4], v[5], v[7], v[6]);
-	
-					ClippedVoxel clippedVoxel = new ClippedVoxel(face0,face1,face2,face3,face4,face5);
-					clippedVoxel.surfaceTriangles.addAll(intersectingTriangles);
-					
-					VisIrregularPolyhedron clippedPolyhedron = createClippedPolyhedron(clippedVoxel, visMesh, visVoxel);
+				}
+				if (intersectingTriangles.size()==0){
+					LG.info("fraction<1.0 but found no triangles");
+					newVoxelList.add(visVoxel);
+					continue;
+				}
+
+      //       p6-------------------p7
+      //      /|                   /|
+      //     / |                  / |
+      //   p4-------------------p5  |
+      //    |  |                 |  |      face number         coordinates
+      //    |  |                 |  |
+      //    |  |                 |  |         5   3            z   y
+      //    |  p2................|..p3        |  /             |  /
+      //    | /                  | /          | /              | /
+      //    |/                   |/           |/               |/
+      //   p0-------------------p1       0 ---'---- 1          '----- x
+      //                                     /|
+      //								                    / |
+      //                                   2  4
+
+				BorderCellInfo borderCellInfo = chomboBoundaries.getMeshMetrics().getBorderCellInfo(intersectingTriangles.get(0).getChomboSurfaceIndex().getIndex());
+				//
+				// have o flip the inside/outside if domain ordinal is > 0 ... note that "^" is the exclusive or ... to flip a bit
+				//
+				boolean bFlip = chomboCombinedVolumeMembraneDomain.getOrdinal()>0;
+				VoxelPoint[] v = new VoxelPoint[] { 
+						new VoxelPoint(p0,vp0,bFlip ^ borderCellInfo.isCornerInside(0)), 
+						new VoxelPoint(p1,vp1,bFlip ^ borderCellInfo.isCornerInside(1)), 
+						new VoxelPoint(p2,vp2,bFlip ^ borderCellInfo.isCornerInside(2)), 
+						new VoxelPoint(p3,vp3,bFlip ^ borderCellInfo.isCornerInside(3)), 
+						new VoxelPoint(p4,vp4,bFlip ^ borderCellInfo.isCornerInside(4)), 
+						new VoxelPoint(p5,vp5,bFlip ^ borderCellInfo.isCornerInside(5)), 
+						new VoxelPoint(p6,vp6,bFlip ^ borderCellInfo.isCornerInside(6)), 
+						new VoxelPoint(p7,vp7,bFlip ^ borderCellInfo.isCornerInside(7)) };
+				// choosing an arbitrary face (A,B,C,D) see below
+				//
+				//   pA   pB
+				//
+				//   pD   pC
+				//
+
+				// face 0 (X-)
+				VoxelFace face0 = new VoxelFace(Face.Xm, v[0], v[4], v[6], v[2]);
+				// face 1 (X+)
+				VoxelFace face1 = new VoxelFace(Face.Xp, v[1], v[3], v[7], v[5]);
+				// face 2 (Y-)
+				VoxelFace face2 = new VoxelFace(Face.Ym, v[0], v[1], v[5], v[4]);
+				// face 3 (Y+)
+				VoxelFace face3 = new VoxelFace(Face.Yp, v[2], v[3], v[7], v[6]);
+				// face 4 (Z-)
+				VoxelFace face4 = new VoxelFace(Face.Zm, v[0], v[2], v[3], v[1]);
+				// face 5 (Z+)
+				VoxelFace face5 = new VoxelFace(Face.Zp, v[4], v[5], v[7], v[6]);
+
+				ClippedVoxel clippedVoxel = new ClippedVoxel(face0,face1,face2,face3,face4,face5);
+				clippedVoxel.surfaceTriangles.addAll(intersectingTriangles);
+				
+				VisIrregularPolyhedron clippedPolyhedron = createClippedPolyhedron(clippedVoxel, visMesh, visVoxel);
 //VisIrregularPolyhedron clippedPolyhedron = new VisIrregularPolyhedron(visVoxel.getLevel(),visVoxel.getBoxNumber(),visVoxel.getBoxIndex(),visVoxel.getFraction());
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p1, p4} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p2, p1} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p0, p4, p2} ));
 //clippedPolyhedron.addFace(new PolyhedronFace(new int[] { p2, p4, p1} ));
-					
-					newPolyhedraList.add(clippedPolyhedron);
+				
+				visMesh.addToIrregularPolyhedra(clippedPolyhedron);
 //					VisTetrahedron[] delaunayTets = VtkGridUtils.createTetrahedra(clippedPolyhedron, visMesh);
 //					for (VisTetrahedron tet : delaunayTets){
 //						newPolyhedraList.add(tet);
 //					}
-				}else{ // fraction < 1.0
-					newPolyhedraList.add(visPolyhedron);
-				}
-			}else{ // not a voxel
-				newPolyhedraList.add(visPolyhedron);
+			}else{ 
+				// fraction >= 1.0
+				newVoxelList.add(visVoxel);
 			}
 		} // for loop (orig polyhedra)
-		visMesh.getPolyhedra().clear();
-		visMesh.getPolyhedra().addAll(newPolyhedraList);
+		visMesh.getVisVoxels().clear();
+		visMesh.getVisVoxels().addAll(newVoxelList);
 	}
 	
 	private VisIrregularPolyhedron createClippedPolyhedron(ClippedVoxel clippedVoxel, VisMesh visMesh, VisVoxel oldVoxel){
-		VisIrregularPolyhedron visIrregularPolyhedron = new VisIrregularPolyhedron(oldVoxel.getLevel(),oldVoxel.getBoxNumber(),oldVoxel.getBoxIndex(),oldVoxel.getFraction(),oldVoxel.getRegionIndex());
+		VisIrregularPolyhedron visIrregularPolyhedron = new VisIrregularPolyhedron();
+		visIrregularPolyhedron.setChomboVolumeIndex(new ChomboVolumeIndex(oldVoxel.getChomboVolumeIndex()));
 		
 		//
 		// add triangles
 		//
 		for (VisSurfaceTriangle triangle : clippedVoxel.surfaceTriangles){
-			int[] triangleIndices = triangle.getPointIndices();
+			List<Integer> triangleIndices = triangle.getPointIndices();
 			PolyhedronFace polyhedronFace = new PolyhedronFace(triangleIndices);
-			visIrregularPolyhedron.addFace(polyhedronFace);
+			visIrregularPolyhedron.addToPolyhedronFaces(polyhedronFace);
 		}
 		
 		VoxelFace[] voxelFaces = new VoxelFace[] { 
@@ -590,11 +610,11 @@ public class ChomboMeshMapping {
 		for (VoxelFace voxelFace : voxelFaces){
 			
 			VisSurfaceTriangle triangleForThisFace = clippedVoxel.getSurfaceTriangle(voxelFace.face);
-			int[] triangleIndices = null;
+			List<Integer> triangleIndices = null;
 			VisPoint[] trianglePoints = null;
 			if (triangleForThisFace!=null){
 				triangleIndices = triangleForThisFace.getPointIndices();
-				trianglePoints = new VisPoint[] { visMesh.getPoints().get(triangleIndices[0]),  visMesh.getPoints().get(triangleIndices[1]),  visMesh.getPoints().get(triangleIndices[2]) };
+				trianglePoints = new VisPoint[] { visMesh.getPoints().get(triangleIndices.get(0)),  visMesh.getPoints().get(triangleIndices.get(1)),  visMesh.getPoints().get(triangleIndices.get(2)) };
 			}
 
 			ArrayList<Integer> indices = new ArrayList<Integer>();
@@ -605,7 +625,7 @@ public class ChomboMeshMapping {
 			if (triangleIndices!=null){
 				for (int i=0;i<3;i++){
 					if (isColinear(voxelFace.p0.vp, trianglePoints[i], voxelFace.p1.vp)){
-						indices.add(triangleIndices[i]);
+						indices.add(triangleIndices.get(i));
 					}
 				}
 			}
@@ -615,7 +635,7 @@ public class ChomboMeshMapping {
 			if (triangleIndices!=null){
 				for (int i=0;i<3;i++){
 					if (isColinear(voxelFace.p1.vp, trianglePoints[i], voxelFace.p2.vp)){
-						indices.add(triangleIndices[i]);
+						indices.add(triangleIndices.get(i));
 					}
 				}
 			}
@@ -625,7 +645,7 @@ public class ChomboMeshMapping {
 			if (triangleIndices!=null){
 				for (int i=0;i<3;i++){
 					if (isColinear(voxelFace.p2.vp, trianglePoints[i], voxelFace.p3.vp)){
-						indices.add(triangleIndices[i]);
+						indices.add(triangleIndices.get(i));
 					}
 				}
 			}
@@ -635,7 +655,7 @@ public class ChomboMeshMapping {
 			if (triangleIndices!=null){
 				for (int i=0;i<3;i++){
 					if (isColinear(voxelFace.p3.vp, trianglePoints[i], voxelFace.p0.vp)){
-						indices.add(triangleIndices[i]);
+						indices.add(triangleIndices.get(i));
 					}
 				}
 			}
@@ -644,12 +664,9 @@ public class ChomboMeshMapping {
 //indices.add(voxelFace.p2.p);
 //indices.add(voxelFace.p3.p);
 			if (indices.size()>=3){
-				int[] indexArray = new int[indices.size()];
-				for (int i=0;i<indices.size();i++){
-					indexArray[i] = indices.get(i);
-				}
+				ArrayList<Integer> indexArray = new ArrayList<Integer>(indices);
 				PolyhedronFace polyFace = new PolyhedronFace(indexArray);
-				visIrregularPolyhedron.addFace(polyFace);
+				visIrregularPolyhedron.addToPolyhedronFaces(polyFace);
 			}
 		}		
 		return visIrregularPolyhedron;
@@ -676,15 +693,16 @@ public class ChomboMeshMapping {
 		}
 		List<VisPolygon> polygons = visMesh.getPolygons();
 		List<VisPoint> points = visMesh.getPoints();
-		List<VisLine> lines = visMesh.getLines();
+		List<VisLine> lines = visMesh.getVisLines();
 		for (VisPolygon polygon : polygons){
-			int[] polygonPointIndices = polygon.getPointIndices();
-			if (polygon.getFraction() < 1.0 && polygonPointIndices.length == 4){
+			List<Integer> polygonPointIndices = polygon.getPointIndices();
+			double fraction = polygon.getChomboVolumeIndex().getFraction();
+			if (fraction < 1.0 && polygonPointIndices.size() == 4){
 				
-				int p0 = polygonPointIndices[0];
-				int p1 = polygonPointIndices[1];
-				int p2 = polygonPointIndices[2];
-				int p3 = polygonPointIndices[3];
+				int p0 = polygonPointIndices.get(0);
+				int p1 = polygonPointIndices.get(1);
+				int p2 = polygonPointIndices.get(2);
+				int p3 = polygonPointIndices.get(3);
 				
 				VisPoint point0 = points.get(p0);
 				VisPoint point1 = points.get(p1);
@@ -731,16 +749,16 @@ public class ChomboMeshMapping {
 							//    1      2                        1      2
 							//
 							if (p0x == s1x && p0y == s2y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { segment.getP2(), segment.getP1(), p1, p2, p3});
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(), segment.getP1(), p1, p2, p3} ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(), p0, segment.getP1() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(), p0, segment.getP1() } ));
 							    }
 							} else if (p0x == s2x && p0y == s1y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { segment.getP1(), segment.getP2(), p1, p2, p3 });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(), segment.getP2(), p1, p2, p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),p0,segment.getP2() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),p0,segment.getP2() } ));
 							    }
 							// case 2) { (remove point one && replace with segment
 							//
@@ -749,16 +767,16 @@ public class ChomboMeshMapping {
 							//    1  s2  2        1  s2               s2  2
 							//
 							} else if (p1x == s1x && p1y == s2y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,segment.getP1(),segment.getP2(),p2,p3 });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,segment.getP1(),segment.getP2(),p2,p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),p1,segment.getP2() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),p1,segment.getP2() } ));
 							    }
 							} else if (p1x == s2x && p1y == s1y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,segment.getP2(),segment.getP1(),p2,p3 });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,segment.getP2(),segment.getP1(),p2,p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(),p1,segment.getP1() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(),p1,segment.getP1() } ));
 							    }
 							// case 3) { (remove point two && replace with segment
 							//
@@ -767,16 +785,16 @@ public class ChomboMeshMapping {
 							//    1  s1  2           s1  2           1  s1   
 							//
 							} else if (p2x == s1x && p2y == s2y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,p1,segment.getP2(),segment.getP1(),p3 });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,segment.getP2(),segment.getP1(),p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(),p2,segment.getP1() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(),p2,segment.getP1() } ));
 							    }
 							} else if (p2x == s2x && p2y == s1y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,p1,segment.getP1(),segment.getP2(),p3 });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,segment.getP1(),segment.getP2(),p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),p2,segment.getP2() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),p2,segment.getP2() } ));
 							    }
 							// case 4) { (remove point three && replace with segment
 							//
@@ -785,16 +803,16 @@ public class ChomboMeshMapping {
 							//    1      2                           1      2
 							//
 							} else if (p3x == s1x && p3y == s2y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,p1,p2,segment.getP1(),segment.getP2() });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,p2,segment.getP1(),segment.getP2() } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),p3,segment.getP2() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),p3,segment.getP2() } ));
 							    }
 							} else if (p3x == s2x && p3y == s1y) {
-							    if (polygon.getFraction() > 0.5) {
-							    	polygon.setPointIndices(new int[] { p0,p1,p2,segment.getP2(),segment.getP1() });
+							    if (fraction > 0.5) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,p2,segment.getP2(),segment.getP1() } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(),p3,segment.getP1() });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(),p3,segment.getP1() } ));
 							    }
 							// case 5) { (remove points 0 && 1 verticle cut)
 							//
@@ -804,17 +822,17 @@ public class ChomboMeshMapping {
 							//
 							} else if (p0y == s1y && p1y == s2y) {
 							    boolean bigleft = ((s1x-p0x)+(s2x-p0x) > p3x-p0x);
-							    if ((polygon.getFraction() > 0.5 && bigleft) || (polygon.getFraction() <= 0.5 && !bigleft)) {
-							    	polygon.setPointIndices(new int[] { p0,p1,segment.getP2(),segment.getP1() });
+							    if ((fraction > 0.5 && bigleft) || (fraction <= 0.5 && !bigleft)) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,segment.getP2(),segment.getP1() } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),segment.getP2(),p2,p3 });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),segment.getP2(),p2,p3 } ));
 							    }
 							}else if (p0y == s2y && p1y == s1y) {
 							    boolean bigleft = ((s1x-p0x)+(s2x-p0x) > p3x-p0x);
-							    if ((polygon.getFraction() > 0.5 && bigleft) || (polygon.getFraction() <= 0.5 && !bigleft)) {
-							    	polygon.setPointIndices(new int[] { p0,p1,segment.getP1(),segment.getP2() });
+							    if ((fraction > 0.5 && bigleft) || (fraction <= 0.5 && !bigleft)) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,p1,segment.getP1(),segment.getP2() } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(),segment.getP1(),p2,p3 });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(),segment.getP1(),p2,p3 } ));
 							    }
 							// case 6) { (remove points 0 && 1 horizontal cut)
 							//
@@ -824,17 +842,17 @@ public class ChomboMeshMapping {
 							//
 							} else if (p0x == s1x && p3x == s2x) {
 							    boolean bigtop = ((s1y-p0y)+(s2y-p0y) > p1y-p0y);
-							    if ((polygon.getFraction() > 0.5 && bigtop) || (polygon.getFraction() <= 0.5 && !bigtop)) {
-							    	polygon.setPointIndices(new int[] { p0,segment.getP1(),segment.getP2(),p3 });
+							    if ((fraction > 0.5 && bigtop) || (fraction <= 0.5 && !bigtop)) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,segment.getP1(),segment.getP2(),p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP2(),segment.getP1(),p1,p2 });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP2(),segment.getP1(),p1,p2 } ));
 							    }
 							} else if (p0x == s2x && p3x == s1x) {
 							    boolean bigtop = ((s1y-p0y)+(s2y-p0y) > p1y-p0y);
-							    if ((polygon.getFraction() > 0.5 && bigtop) || (polygon.getFraction() <= 0.5 && !bigtop)) {
-							    	polygon.setPointIndices(new int[] { p0,segment.getP2(),segment.getP1(),p3 });
+							    if ((fraction > 0.5 && bigtop) || (fraction <= 0.5 && !bigtop)) {
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { p0,segment.getP2(),segment.getP1(),p3 } ));
 							    } else {
-							    	polygon.setPointIndices(new int[] { segment.getP1(),segment.getP2(),p1,p2 });
+							    	polygon.setPointIndices(Arrays.asList( new Integer[] { segment.getP1(),segment.getP2(),p1,p2 } ));
 							    }
 							} else {
 							    LG.warn("found the segment for this polygon, don't know how to crop this one yet");

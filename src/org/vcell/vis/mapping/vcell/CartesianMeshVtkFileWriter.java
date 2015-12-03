@@ -9,16 +9,14 @@ import java.util.List;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.vis.io.CartesianMeshFileReader;
-import org.vcell.vis.io.DataSet;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.mapping.VisDomain;
-import org.vcell.vis.mapping.VisMeshData;
 import org.vcell.vis.vcell.CartesianMesh;
-import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisPolygon;
-import org.vcell.vis.vismesh.VisPolyhedron;
+import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
+import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
+import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.mapping.DiffEquMathMapping;
@@ -90,214 +88,18 @@ public class CartesianMeshVtkFileWriter {
 	}
 	
 	public File[] writeVtuExportFiles(VCellSimFiles vcellFiles, File destinationDirectory, ProgressListener progressListener) throws Exception{
-		if (destinationDirectory==null || !destinationDirectory.isDirectory()){
-			throw new RuntimeException("destinationDirectory '"+destinationDirectory+" not valid");
-		}
-		//
-		// read the simplified cartesian mesh
-		//
-		CartesianMeshFileReader reader = new CartesianMeshFileReader();
-		CartesianMesh mesh = reader.readFromFiles(vcellFiles);
-		final int numVolumeElements = mesh.getSize().getXYZ();
-		final int numVolumeRegions = mesh.getNumVolumeRegions();
-		final int numMembraneRegions = mesh.getNumMembraneRegions();
-		
-		//
-		// for each volume domain in mesh, extract the associated VisMesh
-		//
-		List<String> volumeDomainNames = mesh.getVolumeDomainNames();
-		HashMap<String, VisMesh> domainMeshMap = new HashMap<String, VisMesh>();
-		for (String volumeDomainName : volumeDomainNames){
-			CartesianMeshMapping meshMapping = new CartesianMeshMapping();
-			VisMesh visMesh = meshMapping.fromMeshData(mesh, volumeDomainName, true);
-			domainMeshMap.put(volumeDomainName, visMesh);
-		}
-		
-		//
-		// for each membrane domain in mesh, extract the associated VisMesh
-		//
-		List<String> membraneDomainNames = mesh.getMembraneDomainNames();
-		for (String membraneDomainName : membraneDomainNames){
-			CartesianMeshMapping meshMapping = new CartesianMeshMapping();
-			VisMesh visMesh = meshMapping.fromMeshData(mesh, membraneDomainName, false);
-			domainMeshMap.put(membraneDomainName, visMesh);
-		}
-		
-		ArrayList<String> allDomainNames = new ArrayList<String>();
-		allDomainNames.addAll(volumeDomainNames);
-		allDomainNames.addAll(membraneDomainNames);
-		
-		int numFiles = vcellFiles.getTimes().size() * allDomainNames.size();
-		ArrayList<File> files = new ArrayList<File>();
-		int filesProcessed = 0;
-		int timeIndex = 0;
-		for (final double time : vcellFiles.getTimes()){
-			final File zipFile = vcellFiles.getZipFile(time);
-			File pdeFile = vcellFiles.getZipEntry(time);
-
-			final DataSet dataSet = new DataSet();
-			dataSet.read(pdeFile, zipFile);
-			String[] dataNames = dataSet.getDataNames();
-			
-			for (String anyDomain : allDomainNames){
-				final boolean bVolume = volumeDomainNames.contains(anyDomain);
-				//
-				// find the globalIndexes for each domain element - use this to extract the domain-only data.
-				//
-				VisMesh visMesh = domainMeshMap.get(anyDomain);
-				int tmpNumCells;
-				int[] tmpRegionIndices;
-				int[] tmpGlobalIndices;
-				if (bVolume){
-					if (visMesh.getDimension()==2){
-						List<VisPolygon> polygons = visMesh.getPolygons();
-						tmpNumCells = polygons.size();
-						tmpGlobalIndices = new int[tmpNumCells];
-						tmpRegionIndices = new int[tmpNumCells];
-						int index = 0;
-						for (VisPolygon poly : polygons){
-							tmpGlobalIndices[index] = poly.getBoxIndex();
-							tmpRegionIndices[index] = poly.getRegionIndex();
-							index++;
-						}
-					}else if (visMesh.getDimension()==3){
-						List<VisPolyhedron> polyhedra = visMesh.getPolyhedra();
-						tmpNumCells = polyhedra.size();
-						tmpGlobalIndices = new int[tmpNumCells];
-						tmpRegionIndices = new int[tmpNumCells];
-						int index = 0;
-						for (VisPolyhedron poly : polyhedra){
-							tmpGlobalIndices[index] = poly.getBoxIndex();
-							tmpRegionIndices[index] = poly.getRegionIndex();
-							index++;
-						}
-					}else{
-						throw new RuntimeException("mesh dimension "+visMesh.getDimension()+" not supported for volume mesh VTK export");
-					}
-				}else{ // !bVolume
-					if (visMesh.getDimension()==3){
-						List<VisPolygon> polygons = visMesh.getPolygons();
-						tmpNumCells = polygons.size();
-						tmpGlobalIndices = new int[tmpNumCells];
-						tmpRegionIndices = new int[tmpNumCells];
-						int index = 0;
-						for (VisPolygon poly : polygons){
-							tmpGlobalIndices[index] = poly.getBoxIndex();
-							tmpRegionIndices[index] = poly.getRegionIndex();
-							index++;
-						}
-					}else if (visMesh.getDimension()==2){
-						throw new RuntimeException("data for 2D mesh membranes not yet supported");
-//						List<VisLine> lines = visMesh.getLines();
-//						tmpNumCells = lines.size();
-//						tmpGlobalIndices = new int[tmpNumCells];
-//						tmpRegionIndices = new int[tmpNumCells];
-//						int index = 0;
-//						for (VisLine line : lines){
-//							tmpGlobalIndices[index] = line.getBoxIndex();
-//							tmpRegionIndices[index] = line.getRegionIndex();
-//							index++;
-//						}
-					}else{
-						throw new RuntimeException("mesh dimension "+visMesh.getDimension()+" not supported for volume mesh VTK export");
-					}
-				}
-				final int[] volumeRegionIndices = tmpRegionIndices;
-				final int[] globalIndices = tmpGlobalIndices;
-				final int numCells = tmpNumCells;
-				//
-				// get the variables defined for this domain (always include the global index for now)
-				//
-				final ArrayList<String> domainVarNames = new ArrayList<String>();
-				for (String dataName : dataNames){
-					if (dataName.contains("::")){
-						if (dataName.startsWith(anyDomain+"::")){
-							domainVarNames.add(dataName);
-						}else{
-							System.out.println("skipping variable "+dataName);
-						}
-					}else{
-						domainVarNames.add(dataName);
-					}
-				}
-				final String globalIndexVarName = GLOBAL_INDEX_VAR;
-				final String regionIdVarName = REGION_ID_VAR;
-				domainVarNames.add(globalIndexVarName);
-				domainVarNames.add(regionIdVarName);
-				
-				VisMeshData visMeshData = new VisMeshData(){
-					@Override
-					public String[] getVarNames() {
-						return domainVarNames.toArray(new String[domainVarNames.size()]);
-					}
-
-					@Override
-					public double getTime() {
-						return time;
-					}
-
-					@Override
-					public double[] getData(String var) throws IOException {
-						int sizeDomain = globalIndices.length;
-						double[] domainData = new double[sizeDomain];
-
-						if (var.equals(globalIndexVarName)){
-							for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-								domainData[domainIndex] = globalIndices[domainIndex];
-							}
-						}else if (var.equals(regionIdVarName)){
-							for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-								domainData[domainIndex] = volumeRegionIndices[domainIndex];
-							}
-						}else{
-							double[] globalData = dataSet.getData(var, zipFile);
-							if (!bVolume && (globalData.length == numMembraneRegions)){
-								// skip for now.
-								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-									domainData[domainIndex] = globalData[0];
-								}
-							}else if (bVolume && (globalData.length == numVolumeRegions)){
-								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-									domainData[domainIndex] = globalData[volumeRegionIndices[domainIndex]];
-								}
-							}else if (globalData.length == numCells || globalData.length == numVolumeElements){
-								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-									domainData[domainIndex] = globalData[globalIndices[domainIndex]];
-								}
-							}else{
-								for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-									domainData[domainIndex] = -9999999.0;
-								}
-							}
-						}
-						return domainData;
-					}
-					
-				};
-				
-				VisDomain visDomain = new VisDomain(anyDomain,visMesh,visMeshData);
-				File file = getVtuMeshAndDataFileName(destinationDirectory, vcellFiles, visDomain.getName(), timeIndex);
-				VtkGridUtils.writeCartesianMeshSmoothedVtkGrid(visDomain, file);
-				//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
-				files.add(file);
-				filesProcessed++;
-				if (progressListener!=null){
-					progressListener.progress(((double)filesProcessed)/numFiles);
-				}
-			}
-			timeIndex++;
-		}
-		return files.toArray(new File[0]);
-
+		throw new RuntimeException("not yet implemented");
 	}
 	
+
 	private File getVtuMeshFileName(VCellSimFiles vcellFiles, String domainName) {
 		File directory = vcellFiles.cartesianMeshFile.getParentFile();
 		return new File(directory,vcellFiles.getCannonicalFilePrefix(domainName)+".vtu");
 	}
 
-	private File getVtuMeshAndDataFileName(File directory, VCellSimFiles vcellFiles, String domainName, int timeIndex) {
-		return new File(directory,vcellFiles.getCannonicalFilePrefix(domainName,timeIndex)+".vtu");
+	private File getFiniteVolumeIndexDataFileName(VCellSimFiles vcellFiles, String domainName) {
+		File directory = vcellFiles.cartesianMeshFile.getParentFile();
+		return new File(directory,vcellFiles.getCannonicalFilePrefix(domainName)+".fvindex");
 	}
 
 	public double[] getVtuMeshData(VCellSimFiles vcellFiles,  OutputContext outputContext, SimDataBlock simDataBlock, File destinationDirectory, VtuVarInfo var, final double time) throws Exception {
@@ -306,31 +108,25 @@ public class CartesianMeshVtkFileWriter {
 		// read the indicing arrays from this file to know how to reorder the data into the vtk cell data order.
 		// return the vtk cell data
 		//
-		String domainName = var.domainName;
 		File vtuMeshFile = getVtuMeshFileName(vcellFiles, var.domainName);
+		File finiteVolumeIndexDataFile = getFiniteVolumeIndexDataFileName(vcellFiles, var.domainName);
 		
-		if (!vtuMeshFile.exists()){
+		if (!finiteVolumeIndexDataFile.exists()){
 			writeEmptyMeshFiles(vcellFiles, destinationDirectory, null);
-			if (!vtuMeshFile.exists()){
-				throw new RuntimeException("failed to find vtk mesh file "+vtuMeshFile.getAbsolutePath());
+			if (!finiteVolumeIndexDataFile.exists()){
+				throw new RuntimeException("failed to find finite volume index file "+finiteVolumeIndexDataFile.getAbsolutePath());
 			}
 		}
-		final String globalIndexVarName = GLOBAL_INDEX_VAR;
-		final String regionIdVarName = REGION_ID_VAR;
 		
-		CartesianMeshIndices cartesianMeshIndices = VtkGridUtils.readCartesianMeshIndices(vtuMeshFile, globalIndexVarName, regionIdVarName);
-		double[] globalIndexValues = cartesianMeshIndices.globalIndices;
+		FiniteVolumeIndexData finiteVolumeIndexData = VtkGridUtils.readFiniteVolumeIndexData(finiteVolumeIndexDataFile);
 		int maxGlobalIndex = 0;
-		for (double globalIndex : globalIndexValues){
-			maxGlobalIndex = Math.max((int)globalIndex,maxGlobalIndex);
+		int maxRegionIndex = 0;
+		for (FiniteVolumeIndex fvIndex : finiteVolumeIndexData.finiteVolumeIndices){
+			maxGlobalIndex = Math.max((int)fvIndex.globalIndex,maxGlobalIndex);
+			maxRegionIndex = Math.max((int)fvIndex.regionIndex,maxRegionIndex);
 		}
 		
-		double[] regionIndexValues = cartesianMeshIndices.regionIndices;
-		int maxRegionIndex = 0;
-		for (double regionIndex : regionIndexValues){
-			maxRegionIndex = Math.max((int)regionIndex,maxRegionIndex);
-		}
-		int numCells = cartesianMeshIndices.numCells;
+		int numCells = finiteVolumeIndexData.finiteVolumeIndices.size();
 		
 		String vcellName = var.name;
 		System.out.println("CartesianMeshVtkFileWriter.getVtuMeshData(): reading data for variable "+vcellName+" at time "+time);
@@ -344,13 +140,13 @@ public class CartesianMeshVtkFileWriter {
 		if (cartesianMeshData.length >= numCells){
 			// data is not from region variable, uses global indices
 			for (int vtkCellIndex=0; vtkCellIndex < numCells; vtkCellIndex++){
-				int cartesianMeshGlobalIndex = (int)globalIndexValues[vtkCellIndex];
+				int cartesianMeshGlobalIndex = (int)finiteVolumeIndexData.finiteVolumeIndices.get(vtkCellIndex).globalIndex;
 				vtkData[vtkCellIndex] = cartesianMeshData[cartesianMeshGlobalIndex];
 			}
 		}else{
 			// data is from region variable, uses region indices
 			for (int vtkCellIndex=0; vtkCellIndex < numCells; vtkCellIndex++){
-				int cartesianMeshRegionIndex = (int)regionIndexValues[vtkCellIndex];
+				int cartesianMeshRegionIndex = (int)finiteVolumeIndexData.finiteVolumeIndices.get(vtkCellIndex).regionIndex;
 				vtkData[vtkCellIndex] = cartesianMeshData[cartesianMeshRegionIndex];
 			}
 		}
@@ -434,106 +230,15 @@ public class CartesianMeshVtkFileWriter {
 		int filesProcessed = 0;
 			
 		for (final String domainName : allDomainNames){
-			final boolean bVolume = volumeDomainNames.contains(domainName);
 			//
 			// find the globalIndexes for each domain element - use this to extract the domain-only data.
 			//
 			VisMesh visMesh = domainMeshMap.get(domainName);
-			int[] tmpRegionIndices;
-			int[] tmpGlobalIndices;
-			if (bVolume){
-				if (visMesh.getDimension()==2){
-					List<VisPolygon> polygons = visMesh.getPolygons();
-					int numCells = polygons.size();
-					tmpGlobalIndices = new int[numCells];
-					tmpRegionIndices = new int[numCells];
-					int index = 0;
-					for (VisPolygon poly : polygons){
-						tmpGlobalIndices[index] = poly.getBoxIndex();
-						tmpRegionIndices[index] = poly.getRegionIndex();
-						index++;
-					}
-				}else if (visMesh.getDimension()==3){
-					List<VisPolyhedron> polyhedra = visMesh.getPolyhedra();
-					int numCells = polyhedra.size();
-					tmpGlobalIndices = new int[numCells];
-					tmpRegionIndices = new int[numCells];
-					int index = 0;
-					for (VisPolyhedron poly : polyhedra){
-						tmpGlobalIndices[index] = poly.getBoxIndex();
-						tmpRegionIndices[index] = poly.getRegionIndex();
-						index++;
-					}
-				}else{
-					throw new RuntimeException("mesh dimension "+visMesh.getDimension()+" not supported for volume mesh VTK export");
-				}
-			}else{ // !bVolume
-				if (visMesh.getDimension()==3){
-					List<VisPolygon> polygons = visMesh.getPolygons();
-					int numCells = polygons.size();
-					tmpGlobalIndices = new int[numCells];
-					tmpRegionIndices = new int[numCells];
-					int index = 0;
-					for (VisPolygon poly : polygons){
-						tmpGlobalIndices[index] = poly.getBoxIndex();
-						tmpRegionIndices[index] = poly.getRegionIndex();
-						index++;
-					}
-				}else if (visMesh.getDimension()==2){
-					throw new RuntimeException("data for 2D mesh membranes not yet supported");
-//						List<VisLine> lines = visMesh.getLines();
-//						int numCells = lines.size();
-//						tmpGlobalIndices = new int[numCells];
-//						tmpRegionIndices = new int[numCells];
-//						int index = 0;
-//						for (VisLine line : lines){
-//							tmpGlobalIndices[index] = line.getBoxIndex();
-//							tmpRegionIndices[index] = line.getRegionIndex();
-//							index++;
-//						}
-				}else{
-					throw new RuntimeException("mesh dimension "+visMesh.getDimension()+" not supported for volume mesh VTK export");
-				}
-			}
-			final int[] volumeRegionIndices = tmpRegionIndices;
-			final int[] globalIndices = tmpGlobalIndices;
-
-			VisMeshData visMeshData = new VisMeshData(){
-				@Override
-				public String[] getVarNames() {
-					return new String[] { GLOBAL_INDEX_VAR, REGION_ID_VAR };
-				}
-
-				@Override
-				public double getTime() {
-					return 0.0;
-				}
-
-				@Override
-				public double[] getData(String var) throws IOException {
-					int sizeDomain = globalIndices.length;
-					double[] domainData = new double[sizeDomain];
-
-					if (var.equals(GLOBAL_INDEX_VAR)){
-						for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-							domainData[domainIndex] = globalIndices[domainIndex];
-						}
-					}else if (var.equals(REGION_ID_VAR)){
-						for (int domainIndex=0;domainIndex < sizeDomain; domainIndex++){
-							domainData[domainIndex] = volumeRegionIndices[domainIndex];
-						}
-					}else{
-						throw new RuntimeException("unexpected var");
-					}
-					return domainData;
-				}
-				
-			};
-			
-			VisDomain visDomain = new VisDomain(domainName,visMesh,visMeshData);
-			File file = getVtuMeshFileName(vcellFiles, visDomain.getName());
-			VtkGridUtils.writeCartesianMeshSmoothedVtkGrid(visDomain, file);
-			files.add(file);
+			VisDomain visDomain = new VisDomain(domainName,visMesh);
+			File vtuFile = getVtuMeshFileName(vcellFiles, visDomain.getName());
+			File fvIndexDataFileName = getFiniteVolumeIndexDataFileName(vcellFiles, domainName);
+			VtkGridUtils.writeFiniteVolumeSmoothedVtkGridAndIndexData(visDomain, vtuFile, fvIndexDataFileName);
+			files.add(vtuFile);
 			filesProcessed++;
 			if (progressListener!=null){
 				progressListener.progress(((double)filesProcessed)/numFiles);

@@ -11,19 +11,19 @@ import java.util.Set;
 public class ChomboFiles {
 	
 	class ChomboFileEntry {
-		private final String domainName;
+		private final String volumeDomainName;
 		private final int timeIndex;
 		private final File file;
 		
-		public ChomboFileEntry(String domainName, int timeIndex, File file) {
+		public ChomboFileEntry(String volumeDomainName, int timeIndex, File file) {
 			super();
-			this.domainName = domainName;
+			this.volumeDomainName = volumeDomainName;
 			this.timeIndex = timeIndex;
 			this.file = file;
 		}
 
-		public String getDomainName() {
-			return domainName;
+		public String getVolumeDomainName() {
+			return volumeDomainName;
 		}
 
 		public int getTimeIndex() {
@@ -64,18 +64,18 @@ public class ChomboFiles {
 		dataFiles.add(new ChomboFileEntry(domainName,timeIndex,file));
 	}
 
-	public Set<String> getDomains() {
+	public Set<String> getVolumeDomainNames() {
 		HashSet<String> domainNames = new HashSet<String>();
 		for (ChomboFileEntry entry : dataFiles){
-			domainNames.add(entry.domainName);
+			domainNames.add(entry.volumeDomainName);
 		}
 		return domainNames;
 	}
 	
-	public List<File> getDataFiles(String domainName){
+	public List<File> getDataFilesFromVolumeDomainName(String volumeDomainName){
 		ArrayList<File> domainDataFiles = new ArrayList<File>();
 		for (ChomboFileEntry entry : dataFiles){
-			if (entry.domainName.equals(domainName)){
+			if (entry.volumeDomainName.equals(volumeDomainName)){
 				domainDataFiles.add(entry.file);
 			}
 		}
@@ -87,13 +87,13 @@ public class ChomboFiles {
 		return domainDataFiles;
 	}
 
-	public File getDataFile(String domain, int timeIndex) {
+	public File getDataFileFromVolumeDomainName(String volumeDomainName, int timeIndex) {
 		for (ChomboFileEntry entry : dataFiles){
-			if (entry.domainName.equals(domain) && entry.timeIndex==timeIndex){
+			if (entry.volumeDomainName.equals(volumeDomainName) && entry.timeIndex==timeIndex){
 				return entry.file;
 			}
 		}
-		throw new RuntimeException("no data found for domain '"+domain+"' and timeIndex "+timeIndex);
+		throw new RuntimeException("no data found for domain '"+volumeDomainName+"' and timeIndex "+timeIndex);
 	}
 
 	public List<Integer> getTimeIndices() {
