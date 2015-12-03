@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;

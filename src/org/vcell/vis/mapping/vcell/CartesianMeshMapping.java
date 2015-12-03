@@ -1,5 +1,6 @@
 package org.vcell.vis.mapping.vcell;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -7,10 +8,12 @@ import org.vcell.util.ISize;
 import org.vcell.vis.core.Box3D;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vcell.MembraneElement;
-import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisPoint;
-import org.vcell.vis.vismesh.VisPolygon;
-import org.vcell.vis.vismesh.VisVoxel;
+import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
+import org.vcell.vis.vismesh.thrift.Vect3D;
+import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vismesh.thrift.VisPoint;
+import org.vcell.vis.vismesh.thrift.VisPolygon;
+import org.vcell.vis.vismesh.thrift.VisVoxel;
 
 public class CartesianMeshMapping {
 	
@@ -31,6 +34,15 @@ public class CartesianMeshMapping {
 		}
 	}
 	
+	public String toStringKey(VisPoint visPoint){
+		return toStringKey(visPoint, 8);
+	}
+	
+	public String toStringKey(VisPoint visPoint, int precision){
+		String formatString = "%."+precision+"f";
+		return "("+String.format(formatString,visPoint.x)+","+String.format(formatString,visPoint.y)+","+String.format(formatString,visPoint.z)+")";
+	}
+
 	private VisMesh fromMesh2DVolume(CartesianMesh cartesianMesh, String domainName){
 	    ISize size = cartesianMesh.getSize();
 	    int numX = size.getX();
@@ -39,7 +51,9 @@ public class CartesianMeshMapping {
 	    int dimension = 2;
 	   
 	    int z = 0;
-	    VisMesh visMesh = new VisMesh(dimension,cartesianMesh.getOrigin(), cartesianMesh.getExtent()); // invoke VisMesh() constructor
+	    Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
+	    Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
+	    VisMesh visMesh = new VisMesh(dimension,origin, extent); // invoke VisMesh() constructor
 	    int currPointIndex = 0;
 	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
 	    List<Integer> volumeRegionIDs = cartesianMesh.getVolumeRegionIDs(domainName);
@@ -65,48 +79,49 @@ public class CartesianMeshMapping {
 	                    //  maxX,minY
 	                    //
 	                    VisPoint p1Coord = new VisPoint(minX,minY,z);
-	                    String p1Key = p1Coord.toStringKey();
+	                    String p1Key = toStringKey(p1Coord);
 	                    Integer i1 = pointDict.get(p1Key);
 	                    if (i1 == null){
 	                        pointDict.put(p1Key,currPointIndex);
 	                        i1 = currPointIndex;
-	                        visMesh.addPoint(p1Coord);
+	                        visMesh.addToPoints(p1Coord);
 	                        currPointIndex++;
 	                    }
 	
 	                    VisPoint p2Coord = new VisPoint(minX,maxY,z);
-	                    String p2Key = p2Coord.toStringKey();
+	                    String p2Key = toStringKey(p2Coord);
 	                    Integer i2 = pointDict.get(p2Key);
 	                    if (i2 == null){
 	                        pointDict.put(p2Key,currPointIndex);
 	                        i2 = currPointIndex;
-	                        visMesh.addPoint(p2Coord);
+	                        visMesh.addToPoints(p2Coord);
 	                        currPointIndex++;
 	                    }
 	
 	                    VisPoint p3Coord = new VisPoint(maxX,maxY,z);
-	                    String p3Key = p3Coord.toStringKey();
+	                    String p3Key = toStringKey(p3Coord);
 	                    Integer i3 = pointDict.get(p3Key);
 	                    if (i3 == null){
 	                        pointDict.put(p3Key, currPointIndex);
 	                        i3 = currPointIndex;
-	                        visMesh.addPoint(p3Coord);
+	                        visMesh.addToPoints(p3Coord);
 	                        currPointIndex++;
 	                    }
 	
 	                    VisPoint p4Coord = new VisPoint(maxX,minY,z);
-	                    String p4Key = p4Coord.toStringKey();
+	                    String p4Key = toStringKey(p4Coord);
 	                    Integer i4 = pointDict.get(p4Key);
 	                    if (i4 == null){
 	                        pointDict.put(p4Key,currPointIndex);
 	                        i4 = currPointIndex;
-	                        visMesh.addPoint(p4Coord);
+	                        visMesh.addToPoints(p4Coord);
 	                        currPointIndex++;
 	                    }
 	        
-	                    VisPolygon quad = new VisPolygon(new int[] { i1,i2,i3,i4 },0,0,volumeIndex,0,cartesianMesh.getVolumeRegionIndex(volumeIndex));
+	                    VisPolygon quad = new VisPolygon(Arrays.asList(new Integer[] { i1,i2,i3,i4 }));
+	                    quad.setFiniteVolumeIndex(new FiniteVolumeIndex(volumeIndex,cartesianMesh.getVolumeRegionIndex(volumeIndex)));
 	                  //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-	                    visMesh.addPolygon(quad);
+	                    visMesh.addToPolygons(quad);
 		            } // end if
 	    		    volumeIndex++;
 			    } // end i
@@ -121,7 +136,9 @@ public class CartesianMeshMapping {
 	    int numY = size.getY();
 	    int dimension = 3;
 	   
-	    VisMesh visMesh = new VisMesh(dimension,cartesianMesh.getOrigin(), cartesianMesh.getExtent()); // invoke VisMesh() constructor
+	    Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
+	    Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
+	    VisMesh visMesh = new VisMesh(dimension, origin, extent); // invoke VisMesh() constructor
 	    int currPointIndex = 0;
 	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
 	    List<MembraneElement> membraneElements = cartesianMesh.getMembraneElements(domainName);
@@ -193,45 +210,46 @@ public class CartesianMeshMapping {
             //
             // make sure vertices are added to model without duplicates and get the assigned identifier.
             //
-            String p1Key = p1Coord.toStringKey();
+            String p1Key = toStringKey(p1Coord);
             Integer i1 = pointDict.get(p1Key);
             if (i1 == null){
                 pointDict.put(p1Key,currPointIndex);
                 i1 = currPointIndex;
-                visMesh.addPoint(p1Coord);
+                visMesh.addToPoints(p1Coord);
                 currPointIndex++;
             }
 
-            String p2Key = p2Coord.toStringKey();
+            String p2Key = toStringKey(p2Coord);
             Integer i2 = pointDict.get(p2Key);
             if (i2 == null){
                 pointDict.put(p2Key,currPointIndex);
                 i2 = currPointIndex;
-                visMesh.addPoint(p2Coord);
+                visMesh.addToPoints(p2Coord);
                 currPointIndex++;
             }
 
-            String p3Key = p3Coord.toStringKey();
+            String p3Key = toStringKey(p3Coord);
             Integer i3 = pointDict.get(p3Key);
             if (i3 == null){
                 pointDict.put(p3Key, currPointIndex);
                 i3 = currPointIndex;
-                visMesh.addPoint(p3Coord);
+                visMesh.addToPoints(p3Coord);
                 currPointIndex++;
             }
 
-            String p4Key = p4Coord.toStringKey();
+            String p4Key = toStringKey(p4Coord);
             Integer i4 = pointDict.get(p4Key);
             if (i4 == null){
                 pointDict.put(p4Key,currPointIndex);
                 i4 = currPointIndex;
-                visMesh.addPoint(p4Coord);
+                visMesh.addToPoints(p4Coord);
                 currPointIndex++;
             }
 
-            VisPolygon quad = new VisPolygon(new int[] { i1,i2,i3,i4 },0,0,membraneElement.getMembraneIndex(),0,cartesianMesh.getMembraneRegionIndex(membraneElement.getMembraneIndex()));
+            VisPolygon quad = new VisPolygon(Arrays.asList( new Integer[] { i1,i2,i3,i4 } ));
+            quad.setFiniteVolumeIndex(new FiniteVolumeIndex(membraneElement.getMembraneIndex(),cartesianMesh.getMembraneRegionIndex(membraneElement.getMembraneIndex())));
           //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-            visMesh.addPolygon(quad);
+            visMesh.addToPolygons(quad);
 
 	    }
 	    return visMesh;
@@ -244,7 +262,9 @@ public class CartesianMeshMapping {
 	    int numZ = size.getZ();
 	    int dimension = 3;
 	   
-	    VisMesh visMesh = new VisMesh(dimension,cartesianMesh.getOrigin(), cartesianMesh.getExtent()); // invoke VisMesh() constructor
+	    Vect3D origin = new Vect3D(cartesianMesh.getOrigin().x,cartesianMesh.getOrigin().y,cartesianMesh.getOrigin().z);
+	    Vect3D extent = new Vect3D(cartesianMesh.getExtent().x,cartesianMesh.getExtent().y,cartesianMesh.getExtent().z);
+	    VisMesh visMesh = new VisMesh(dimension, origin, extent); // invoke VisMesh() constructor
 	    int currPointIndex = 0;
 	    HashMap<String,Integer> pointDict = new HashMap<String,Integer>();
 	    List<Integer> volumeRegionIDs = cartesianMesh.getVolumeRegionIDs(domainName);
@@ -297,22 +317,23 @@ public class CartesianMeshMapping {
 	                    		new VisPoint(minX,maxY,maxZ),  // p6
 	                    		new VisPoint(maxX,maxY,maxZ),  // p7
 	                    };
-	                    int[] indices = new int[8];
+	                    Integer[] indices = new Integer[8];
 	                    for (int v=0;v<8;v++){
 	                    	VisPoint visPoint = visPoints[v];
-	                        String key = visPoint.toStringKey();
+	                        String key = toStringKey(visPoint);
 	                        Integer p = pointDict.get(key);
 	                        if (p == null){
 	                            pointDict.put(key,currPointIndex);
 	                            p = currPointIndex;
-	                            visMesh.addPoint(visPoint);
+	                            visMesh.addToPoints(visPoint);
 	                            currPointIndex++;
 	                        }
 	                        indices[v] = p;
 	                    }
-	                    VisVoxel voxel = new VisVoxel(indices,0,0,volumeIndex,0,cartesianMesh.getVolumeRegionIndex(volumeIndex));
+	                    VisVoxel voxel = new VisVoxel(Arrays.asList( indices ));
+	                    voxel.setFiniteVolumeIndex(new FiniteVolumeIndex(volumeIndex,cartesianMesh.getVolumeRegionIndex(volumeIndex)));
 	                  //  print('adding a cell at level '+str(currLevel.getLevel())+" from "+str(p1Coord)+" to "+str(p3Coord))
-	                    visMesh.addPolyhedron(voxel);
+	                    visMesh.addToVisVoxels(voxel);
 	 	            } // end if
 	    		    volumeIndex++;
 		        } // end for i
