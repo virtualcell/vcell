@@ -128,12 +128,11 @@ public class CodeUtil {
                 Method methods[];
                 methods = oClass.getDeclaredMethods();
                 for (Method m : methods) {
-                	System.out.println(m.getName());
                     boolean noParams = m.getParameterTypes().length == 0;
                     int modifiers = m.getModifiers();
                     boolean isPublic = Modifier.isPublic(modifiers);
                     boolean isNotStatic = !Modifier.isStatic(modifiers);
-                    boolean hasReturn = m.getReturnType() != Void.TYPE; 
+                    boolean hasReturn = m.getReturnType() != Void.TYPE;
                     if (isPublic && isNotStatic && noParams && hasReturn) {
                         buffer.append(m.getName());
                         buffer.append("() = ");
@@ -168,10 +167,10 @@ public class CodeUtil {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * does string start with any of prefixes?
-     * @param stub not null 
+     * @param stub not null
      * @param prefixes not null
      * @return true if does
      */
@@ -185,7 +184,7 @@ public class CodeUtil {
     	}
     	return false;
     }
-    
+
     /**
      * invoke all accessible no-argument methods with return values on Object o
      * and display the results. Warning: this may cause unwanted side-effects if
@@ -194,7 +193,7 @@ public class CodeUtil {
      * @param o
      *            Object to query
      * @param numberParents number of superclasses in inheritance hierarchy to go up
-     * @param prefixes prefixes methods must start with 
+     * @param prefixes prefixes methods must start with
      * @return new line separated list of results
      */
     public static String callStatusMethods(Object o, int numberParents, Collection<String> prefixes) {
@@ -212,7 +211,7 @@ public class CodeUtil {
                     int modifiers = m.getModifiers();
                     boolean isPublic = Modifier.isPublic(modifiers);
                     boolean isNotStatic = !Modifier.isStatic(modifiers);
-                    boolean hasReturn = m.getReturnType() != Void.TYPE; 
+                    boolean hasReturn = m.getReturnType() != Void.TYPE;
                     if (isPublic && isNotStatic && noParams && hasReturn) {
                         final String name = m.getName();
                         if (startsWith(name,prefixes)) {
