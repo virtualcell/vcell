@@ -17,14 +17,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import oracle.ucp.UniversalConnectionPoolAdapter;
 import oracle.ucp.UniversalConnectionPoolException;
 import oracle.ucp.admin.UniversalConnectionPoolManager;
 import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
+import oracle.ucp.jdbc.JDBCConnectionPoolStatistics;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 
+import org.apache.axis.utils.BeanUtils;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -32,6 +37,7 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
+import edu.uchc.connjur.spectrumtranslator.CodeUtil;
 import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
@@ -43,17 +49,13 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 	private String connectionCacheName = null;
 	private PoolDataSource poolDataSource = null;
 	private SessionLog log = null;
-	private TimerTask refreshConnectionTask = new TimerTask() {
-		public void run() {
-			refreshConnections();
-		}
-	};
+	private final ScheduledExecutorService executorService;
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
-	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName), 
-			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL), 
-			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid), 
-			PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));	
+	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
+			PropertyLoader.getRequiredProperty(PropertyLoader.dbPassword));
 }
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverName, String argConnectURL, String argUserid, String argPassword) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, UniversalConnectionPoolException {
@@ -70,9 +72,9 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	poolDataSource.setUser(argUserid);
 	poolDataSource.setPassword(argPassword);
 	connectionPoolManaager.createConnectionPool((UniversalConnectionPoolAdapter)poolDataSource);
-	// set cache properties    
+	// set cache properties
 	poolDataSource.setMinPoolSize(2);
-	poolDataSource.setMaxPoolSize(5);
+	poolDataSource.setMaxPoolSize(10);
 	poolDataSource.setInitialPoolSize(2);
 //	java.util.Properties prop = new java.util.Properties();
 //	prop.setProperty("MinLimit", "1");
@@ -83,16 +85,30 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 ////	prop.setProperty("AbandonedConnectionTimeout", "300");  //  seconds
 ////	prop.setProperty("ValidateConnection", "true");
 //	oracleDataSource.setConnectionCacheProperties (prop);
-	
-	// when vcell runs in local model, every time reconnnect, it will create a new 
-	// OraclePoolingConnectionFactory which causes same cache error. So add current time 
+
+	// when vcell runs in local model, every time reconnnect, it will create a new
+	// OraclePoolingConnectionFactory which causes same cache error. So add current time
 	// to cache name.
-	
+
 //	oracleDataSource.setConnectionCacheName(connectionCacheName); // this cache's name
 //	connectionPoolManaager.startConnectionPool(connectionCacheName);
-	
-	Timer timer = new Timer(ExecutionTrace.justClassName(OraclePoolingConnectionFactory.class));
-	timer.schedule(refreshConnectionTask, 2*60*1000, 2*60*1000);
+
+	executorService = new ScheduledThreadPoolExecutor(1);
+	executorService.scheduleAtFixedRate(( ) -> refreshConnections( ), 2,2,TimeUnit.MINUTES);
+	executorService.scheduleAtFixedRate(( ) -> statCheck( ), 0,2,TimeUnit.MINUTES);
+}
+
+private void statCheck( ) {
+	try {
+		//oracle internal implementation is synchronized, so shouldn't need synchronization here
+		//if (poolDataSource.getAvailableConnectionsCount() < 5) {
+			JDBCConnectionPoolStatistics stats = poolDataSource.getStatistics();
+			log.print(CodeUtil.callStatusMethods(stats, 0));
+		//}
+	} catch (Exception e) {
+		log.exception(e);
+	}
+
 }
 
 public synchronized void closeAll() throws java.sql.SQLException {
@@ -161,17 +177,17 @@ private static boolean validate(Connection conn) {
 		System.out.println("testing metadata...failed");
 		e.printStackTrace(System.out);
 		return false;
-	}			
+	}
 	try {
 		conn.getAutoCommit();
 	} catch (Exception e) {
 		System.out.println("testing autocommit...failed");
 		e.printStackTrace(System.out);
 		return false;
-	}			
-		
+	}
+
 	try {
-		String sql = "SELECT * from " + UserTable.table.getTableName() + 
+		String sql = "SELECT * from " + UserTable.table.getTableName() +
 				" WHERE " + UserTable.table.id + "=0";
 
 		Statement stmt = conn.createStatement();
@@ -183,7 +199,7 @@ private static boolean validate(Connection conn) {
 		} finally {
 			stmt.close();
 		}
-				
+
 	} catch (Exception e) {
 		System.out.println("query user table...failed");
 		e.printStackTrace(System.out);
@@ -195,7 +211,7 @@ private static boolean validate(Connection conn) {
 public static void main(String[] args) {
 	try {
 		PropertyLoader.loadProperties();
-	
+
 		StdoutSessionLog sessionLog = new StdoutSessionLog("aa");
 		OraclePoolingConnectionFactory fac = new OraclePoolingConnectionFactory(sessionLog);
 		Object lock = new Object();
