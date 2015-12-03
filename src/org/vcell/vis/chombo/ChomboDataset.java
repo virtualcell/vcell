@@ -5,21 +5,27 @@ import java.util.List;
 
 public class ChomboDataset {
 	
-	public static class ChomboDomain {
+	public static class ChomboCombinedVolumeMembraneDomain {
 		private final int ordinal;
-		private final String name;
+		private final String volumeDomainName;
+		private final String membraneDomainName;
 		private final ChomboMesh chomboMesh;
 		private final ChomboMeshData chomboMeshData;
 		
-		public ChomboDomain(String name, ChomboMesh chomboMesh, ChomboMeshData chomboMeshData,int ordinal){
-			this.name = name;
+		public ChomboCombinedVolumeMembraneDomain(String volumeDomainName, String membraneDomainName, ChomboMesh chomboMesh, ChomboMeshData chomboMeshData,int ordinal){
+			this.volumeDomainName = volumeDomainName;
+			this.membraneDomainName = membraneDomainName;
 			this.chomboMesh = chomboMesh;
 			this.chomboMeshData = chomboMeshData;
 			this.ordinal = ordinal;
 		}
 		
-		public String getName(){
-			return name;
+		public String getVolumeDomainName(){
+			return volumeDomainName;
+		}
+		
+		public String getMembraneDomainName(){
+			return membraneDomainName;
 		}
 		
 		public ChomboMesh getChomboMesh() {
@@ -33,38 +39,39 @@ public class ChomboDataset {
 		}
 	}
 	
-	private final ArrayList<ChomboDomain> domains = new ArrayList<ChomboDomain>(); 
+	private final ArrayList<ChomboCombinedVolumeMembraneDomain> domains = new ArrayList<ChomboCombinedVolumeMembraneDomain>(); 
 	
 	public ChomboDataset(){
 		
 	}
 	
-	public void addDomain(ChomboDomain chomboDomain){
-		domains.add(chomboDomain);
+	public void addDomain(ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain){
+		domains.add(chomboCombinedVolumeMembraneDomain);
 	}
 	
-	public ChomboDomain getDomain(String name){
-		for (ChomboDomain domain : domains){
-			if (domain.getName().equals(name)){
+	public ChomboCombinedVolumeMembraneDomain getDomainFromVolumeOrMembraneName(String name){
+		for (ChomboCombinedVolumeMembraneDomain domain : domains){
+			if (domain.getVolumeDomainName().equals(name) || domain.getMembraneDomainName().equals(name)){
 				return domain;
 			}
 		}
 		throw new RuntimeException("domain '"+name+"' not found");
 	}
 	
-	public List<String> getDomainNames(){
+	public List<String> getVolumeAndMembraneDomainNames(){
 		ArrayList<String> names = new ArrayList<String>();
-		for (ChomboDomain domain : domains){
-			names.add(domain.getName());
+		for (ChomboCombinedVolumeMembraneDomain domain : domains){
+			names.add(domain.getVolumeDomainName());
+			names.add(domain.getMembraneDomainName());
 		}
 		return names;
 	}
 
-	public ChomboDomain getDomain(int i) {
+	public ChomboCombinedVolumeMembraneDomain getDomain(int i) {
 		return domains.get(i);
 	}
 
-	public List<ChomboDomain> getDomains() {
+	public List<ChomboCombinedVolumeMembraneDomain> getCombinedVolumeMembraneDomains() {
 		return domains;
 	}
 

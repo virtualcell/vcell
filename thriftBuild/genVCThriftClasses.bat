@@ -7,3 +7,5 @@ REM Calling thrift executable separately for Java and Python code generation.  C
 .\thrift-0.9.2.exe --out ..\visTool --gen py pyVCell.thrift
 
 REM Done. Remember to refresh Eclipse and Visual Studio projects.
+.\thrift-0.9.2.exe --out ..\src --gen java VisMesh.thrift
+.\thrift-0.9.2.exe --out ..\pyvtk --gen py VisMesh.thrift

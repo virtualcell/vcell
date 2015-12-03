@@ -23,10 +23,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-//import java.util.zip.ZipFile;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -35,6 +31,11 @@ import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.HObject;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+//import java.util.zip.ZipFile;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 
