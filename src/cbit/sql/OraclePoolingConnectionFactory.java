@@ -15,21 +15,10 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import oracle.ucp.UniversalConnectionPoolAdapter;
-import oracle.ucp.UniversalConnectionPoolException;
-import oracle.ucp.admin.UniversalConnectionPoolManager;
-import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
-import oracle.ucp.jdbc.JDBCConnectionPoolStatistics;
-import oracle.ucp.jdbc.PoolDataSource;
-import oracle.ucp.jdbc.PoolDataSourceFactory;
-
-import org.apache.axis.utils.BeanUtils;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -37,8 +26,13 @@ import org.vcell.util.StdoutSessionLog;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.modeldb.UserTable;
-import edu.uchc.connjur.spectrumtranslator.CodeUtil;
-import edu.uchc.connjur.wb.ExecutionTrace;
+import oracle.ucp.UniversalConnectionPoolAdapter;
+import oracle.ucp.UniversalConnectionPoolException;
+import oracle.ucp.admin.UniversalConnectionPoolManager;
+import oracle.ucp.admin.UniversalConnectionPoolManagerImpl;
+import oracle.ucp.jdbc.JDBCConnectionPoolStatistics;
+import oracle.ucp.jdbc.PoolDataSource;
+import oracle.ucp.jdbc.PoolDataSourceFactory;
 
 /**
  * This type was created in VisualAge.y
@@ -95,7 +89,7 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 
 	executorService = new ScheduledThreadPoolExecutor(1);
 	executorService.scheduleAtFixedRate(( ) -> refreshConnections( ), 2,2,TimeUnit.MINUTES);
-	executorService.scheduleAtFixedRate(( ) -> statCheck( ), 0,2,TimeUnit.MINUTES);
+	executorService.scheduleAtFixedRate(( ) -> statCheck( ), 1,2,TimeUnit.MINUTES);
 }
 
 private void statCheck( ) {
@@ -103,7 +97,7 @@ private void statCheck( ) {
 		//oracle internal implementation is synchronized, so shouldn't need synchronization here
 		//if (poolDataSource.getAvailableConnectionsCount() < 5) {
 			JDBCConnectionPoolStatistics stats = poolDataSource.getStatistics();
-			log.print(CodeUtil.callStatusMethods(stats, 0));
+			log.print(stats.toString());
 		//}
 	} catch (Exception e) {
 		log.exception(e);
@@ -172,6 +166,7 @@ public void release(Connection con, Object lock) throws SQLException {
 
 private static boolean validate(Connection conn) {
 	try {
+		@SuppressWarnings("unused")
 		DatabaseMetaData dmd = conn.getMetaData();
 	} catch (Exception e) {
 		System.out.println("testing metadata...failed");
@@ -194,6 +189,7 @@ private static boolean validate(Connection conn) {
 		try {
 			ResultSet rset = stmt.executeQuery(sql);
 			if (rset.next()){
+				@SuppressWarnings("unused")
 				UserInfo userInfo = UserTable.table.getUserInfo(rset);
 			}
 		} finally {
