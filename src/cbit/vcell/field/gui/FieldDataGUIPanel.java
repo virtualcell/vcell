@@ -1002,7 +1002,10 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 			return;
 		}
 		//Check that the sim is in a state that can be copied
-		final SimulationInfo simInfo = simInfoHolder.simInfo;
+		final SimulationInfo simInfo = simInfoHolder.getSimInfo();
+		if(simInfo == null){
+			throw new Exception("Selected sim '"+simInfoHolder.getSimName()+"' has no simInfo (save your model and retry).");
+		}
 		SimulationStatus simStatus = clientRequestManager.getServerSimulationStatus(simInfo);
 		if(simStatus != null && (simStatus.isRunning() || simStatus.isStartRequested())){
 			throw new Exception("Can't copy 'running' simulation data from sim '"+simInfo.getName()+"'");
@@ -1010,7 +1013,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 
 		final FieldDataFileOperationSpec fdos =	FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(	null,
 			(simInfo.getParentSimulationReference() != null?simInfo.getParentSimulationReference():	simInfo.getSimulationVersion().getVersionKey()), 
-			simInfo.getOwner(),	simInfoHolder.jobIndex, clientRequestManager.getDocumentManager().getUser());
+			simInfo.getOwner(),	simInfoHolder.getJobIndex(), clientRequestManager.getDocumentManager().getUser());
 
 		AsynchClientTask[] addTasks = addNewExternalData(this,this,true);
 		AsynchClientTask[] taskArray = new AsynchClientTask[1 + addTasks.length];
@@ -1026,7 +1029,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 											simInfo.getSimulationVersion().getVersionKey()
 									),
 									simInfo.getOwner(),
-									simInfoHolder.jobIndex));
+									simInfoHolder.getJobIndex()));
 				//Create (non-editable) info for display
 				fdos.origin = fdor.origin;
 				fdos.extent = fdor.extent;
