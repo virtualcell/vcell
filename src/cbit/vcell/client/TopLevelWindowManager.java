@@ -37,6 +37,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
+import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -422,27 +423,46 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 }
 
 public static abstract class OpenModelInfoHolder{
-	public final SimulationInfo simInfo;
-	public final int jobIndex;
+	private final String simName;
+	private final SimulationInfo simInfo;
+	private final int jobIndex;
 	//public final boolean isTimeUniform;
-	public final boolean isCompartmental;
+	private final boolean isCompartmental;
 	protected OpenModelInfoHolder(
+			String simName,//use this when the sim is unsaved (simInfo==null)
 			SimulationInfo argSimInfo,
 			int argJobIndex,
 			//boolean argistu,
 			boolean argisc
 			){
+		this.simName = simName;
 		simInfo = argSimInfo;
 		jobIndex = argJobIndex;
 		//isTimeUniform = argistu;
 		isCompartmental = argisc;
-		
+		if(this.simInfo != null && this.simName != null && !this.simName.equals(this.simInfo.getName())){
+			throw new IllegalArgumentException("simName '"+this.simName+"' does not match simInfo.getName '"+this.simInfo.getName()+"'");
+		}
 	}
+	public String getSimName() {
+		return simName;
+	}
+	public SimulationInfo getSimInfo() {
+		return simInfo;
+	}
+	public int getJobIndex() {
+		return jobIndex;
+	}
+	public boolean isCompartmental() {
+		return isCompartmental;
+	}
+	
 }
 public static class FDSimMathModelInfo extends OpenModelInfoHolder{
 	private Version version;
 	private MathDescription mathDescription;
 	public FDSimMathModelInfo(
+			String simName,
 			Version version,
 			MathDescription mathDescription,
 			SimulationInfo argSI,
@@ -450,7 +470,7 @@ public static class FDSimMathModelInfo extends OpenModelInfoHolder{
 			//boolean argistu,
 			boolean argisc
 			){
-		super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
+		super(simName,argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
 		this.version = version;
 		this.mathDescription = mathDescription;
 	}
@@ -465,6 +485,7 @@ public static class FDSimBioModelInfo extends OpenModelInfoHolder{
 	private Version version;
 	private SimulationContext simulationContext;
 	public FDSimBioModelInfo(
+			String simName,
 			Version version,
 			SimulationContext simulationContext,
 			SimulationInfo argSI,
@@ -472,7 +493,7 @@ public static class FDSimBioModelInfo extends OpenModelInfoHolder{
 			//boolean argistu,
 			boolean argisc
 		){
-		super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
+		super(simName,argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,argistu,*/argisc);
 		this.version = version;
 		this.simulationContext = simulationContext;
 	}
@@ -512,7 +533,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 							((FDSimMathModelInfo)simInfoHolders[i]).getMathModelVersion().getVersionKey());
 				}
 				if(bIncludeSimulations){
-					rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+					rows[colIndex++] = simInfoHolders[i].getSimName();
 					rows[colIndex++] = simInfoHolders[i].jobIndex+"";
 				}
 				rows[colIndex++] = (mmInfo==null?"New Document":mmInfo.getVersion().getName());
@@ -528,7 +549,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 							((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion().getVersionKey());
 				}
 				if(bIncludeSimulations){
-					rows[colIndex++] = simInfoHolders[i].simInfo.getName();
+					rows[colIndex++] = simInfoHolders[i].getSimName();
 					rows[colIndex++] = simInfoHolders[i].jobIndex+"";
 				}
 				rows[colIndex++] = (bmInfo==null?"New Document":bmInfo.getVersion().getName());
