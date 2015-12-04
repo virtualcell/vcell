@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,12 +27,19 @@ import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType.VariableDomain;
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.VCData;
+import cbit.vcell.solver.AnnotatedFunction;
 
 public class ChomboVtkFileWriter {
 	
-	public static final String MEMBRANE_DOMAIN_SUFFIX = "_Membrane";
+//	public static final String MEMBRANE_DOMAIN_SUFFIX = "_Membrane";
 
 	public interface ProgressListener {
 		public void progress(double percentDone);
@@ -163,7 +171,11 @@ public class ChomboVtkFileWriter {
 				for (ChomboVolumeIndex chomboVolIndex : chomboIndexData.getChomboVolumeIndices()){
 					cellIndices.add(new SimpleChomboCellIndices(chomboVolIndex.getLevel(), chomboVolIndex.getBoxNumber(), chomboVolIndex.getBoxIndex()));
 				}
-				data = chomboMeshData.getVolumeCellData(var.name, cellIndices);
+				if (var.functionExpression!=null){
+					data = evaluateFunction(var, chomboMeshData, cellIndices);
+				}else{
+					data = chomboMeshData.getVolumeCellData(var.name, cellIndices);
+				}
 				break;
 			}
 			default:{
@@ -174,7 +186,29 @@ public class ChomboVtkFileWriter {
 		return data;
 	}
 
-	public VtuVarInfo[] getVtuVarInfos(ChomboFiles chomboFiles,	OutputContext outputContext, VCData vcData) throws DataAccessException {
+	private double[] evaluateFunction(VtuVarInfo var, ChomboMeshData chomboMeshData, List<ChomboCellIndices> cellIndices) 
+			throws ExpressionException, ExpressionBindingException, DivideByZeroException {
+
+		Expression exp = new Expression(var.functionExpression);
+		String symbols[] = exp.getSymbols();
+		double[][] symbolData = new double[symbols.length][];
+		for (int s=0;s<symbols.length;s++){
+			symbolData[s] = chomboMeshData.getVolumeCellData(symbols[s], cellIndices);
+		}
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
+		exp.bindExpression(symbolTable);
+		double[] values = new double[symbols.length];
+		double[] functionData = new double[cellIndices.size()];
+		for (int c=0;c<cellIndices.size();c++){
+			for (int s=0;s<symbols.length;s++){
+				values[s] = symbolData[s][c];
+			}
+			functionData[c] = exp.evaluateVector(values);
+		}
+		return functionData;
+	}
+
+	public VtuVarInfo[] getVtuVarInfos(ChomboFiles chomboFiles,	OutputContext outputContext, VCData vcData) throws DataAccessException, IOException {
 		//
 		// read the time=0 chombo dataset into memory to get the var names (probably a more efficient way of doing this).
 		//
@@ -186,43 +220,86 @@ public class ChomboVtkFileWriter {
 			throw new DataAccessException("failed to read chombo dataset: "+e.getMessage(),e);
 		}
 		
+		DataIdentifier[] dataIdentifiers = vcData.getVarAndFunctionDataIdentifiers(outputContext);
+for (DataIdentifier di : dataIdentifiers){
+	System.out.println(((di.getDomain()!=null)?di.getDomain().getName():"none")+"::"+di.getName()+"-"+di.getVariableType());
+}
+
 		//
 		// for each ChomboDomain get list of built-in (mesh) variables, component (regular) volume variables, and Membrane Variables (still tied to the volume).
 		//
 		ArrayList<VtuVarInfo> varInfos = new ArrayList<VtuVarInfo>();
 		for (ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain : chomboDataset.getCombinedVolumeMembraneDomains()){
 			ChomboMeshData chomboMeshData = chomboCombinedVolumeMembraneDomain.getChomboMeshData();
+			
+			//
+			// process Volume variables for this combined domain (chombo stores membrane data with volume)
+			//
+			{
+			String volumeDomainName = chomboCombinedVolumeMembraneDomain.getVolumeDomainName();
+			String niceVolDomainName = volumeDomainName.replace(".feature_", "");
+			VariableDomain volVariableDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
 			for (String builtinVarName : chomboMeshData.getVolumeBuiltinNames()){
 				String varName = builtinVarName;
-				String domainName = chomboCombinedVolumeMembraneDomain.getVolumeDomainName();
-				String displayName = "("+domainName+")  "+varName;
-				VariableDomain variableDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
+				String displayName = "("+niceVolDomainName+")  "+varName;
+				String expressionString = null;
 				boolean bMeshVariable = true;
-				varInfos.add(new VtuVarInfo(varName, displayName, domainName, variableDomain, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVariable));
 			}
 			for (String componentVarName : chomboMeshData.getVolumeDataNames()){
 				String varName = componentVarName;
-				String domainName = chomboCombinedVolumeMembraneDomain.getVolumeDomainName();
-				String displayName = "("+domainName+")  "+varName;
-				VariableDomain variableDomain = VariableDomain.VARIABLEDOMAIN_VOLUME;
+				String displayName = "("+niceVolDomainName+")  "+varName;
+				String expressionString = null;
 				boolean bMeshVariable = false;
-				varInfos.add(new VtuVarInfo(varName, displayName, domainName, variableDomain, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVariable));
 			}
+			for (DataIdentifier dataID : dataIdentifiers){
+				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(niceVolDomainName)){
+					String displayName = "("+niceVolDomainName+")  "+dataID.getDisplayName();
+					String expressionString = null;
+					AnnotatedFunction f = vcData.getFunction(outputContext, dataID.getName());
+					if (f!=null){
+						expressionString = f.getExpression().infix();
+					}
+					boolean bMeshVar = false;
+					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVar));
+				}
+			}
+			}
+			
+			//
+			// process membrane variables for this combined domain (chombo stores membrane data with volume)
+			//
+			{
+			String memDomainName = chomboCombinedVolumeMembraneDomain.getMembraneDomainName();
+			String niceMemDomainName = memDomainName.replace(".feature_", "");
+			VariableDomain memVariableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
 			for (ChomboMembraneVarData membraneVarData : chomboMeshData.getMembraneVarData()){
 				String varName = membraneVarData.getName();
-				String membraneDomainName = chomboCombinedVolumeMembraneDomain.getMembraneDomainName();
-				String displayName = "("+membraneDomainName+")  "+varName;
-				VariableDomain variableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+				String displayName = "("+niceMemDomainName+")  "+varName;
+				String expressionString = null;
 				boolean bMeshVariable = false;
-				varInfos.add(new VtuVarInfo(varName, displayName, membraneDomainName, variableDomain, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, bMeshVariable));
 			}
 			for (String builtinVarName : chomboMeshData.getMembraneBuiltinNames()){
 				String varName = builtinVarName;
-				String membraneDomainName = chomboCombinedVolumeMembraneDomain.getMembraneDomainName();
-				String displayName = "("+membraneDomainName+")  "+varName;
-				VariableDomain variableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
+				String displayName = "("+niceMemDomainName+")  "+varName;
+				String expressionString = null;
 				boolean bMeshVariable = true;
-				varInfos.add(new VtuVarInfo(varName, displayName, membraneDomainName, variableDomain, bMeshVariable));
+				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, bMeshVariable));
+			}
+			for (DataIdentifier dataID : dataIdentifiers){
+				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(niceMemDomainName)){
+					String displayName = "("+memDomainName+")  "+dataID.getDisplayName();
+					String expressionString = null;
+					AnnotatedFunction f = vcData.getFunction(outputContext, dataID.getName());
+					if (f!=null){
+						expressionString = f.getExpression().infix();
+					}
+					boolean bMeshVar = false;
+					varInfos.add(new VtuVarInfo(dataID.getName(), displayName, memDomainName, memVariableDomain, expressionString, bMeshVar));
+				}
+			}
 			}
 		}
 		return varInfos.toArray(new VtuVarInfo[0]);
@@ -240,18 +317,24 @@ public class ChomboVtkFileWriter {
 		//
 		// for each domain in cartesian mesh, get the mesh file
 		//
-		Set<String> volumeDomainNames = chomboFiles.getVolumeDomainNames();
+		Set<String> volDomainNames = chomboFiles.getVolumeDomainNames();
+		Set<String> memDomainNames = chomboFiles.getMembraneDomainNames();
+		
+		Set<String> allDomainNames = new HashSet<String>();
+		allDomainNames.addAll(volDomainNames);
+		allDomainNames.addAll(memDomainNames);
+		
 		ArrayList<File> meshFiles = new ArrayList<File>();
 		ArrayList<String> domains = new ArrayList<String>();
 		//
 		// look at domains returned from chomboFiles (volume domains only) and check for existence of corresponding volume mesh files.
 		//
 		boolean bMeshFileMissing = false;
-		for (String volumeDomainName : volumeDomainNames){
-			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, volumeDomainName);
-			meshFiles.add(volumeMeshFile);
-			domains.add(volumeDomainName);
-			if (!volumeMeshFile.exists()){
+		for (String domainName : allDomainNames){
+			File meshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, domainName);
+			meshFiles.add(meshFile);
+			domains.add(domainName);
+			if (!meshFile.exists()){
 				bMeshFileMissing = true;
 			}
 		}
@@ -265,14 +348,12 @@ public class ChomboVtkFileWriter {
 		
 		//
 		// all mesh files (volume and membrane) are assumed to already exist at this point.
-		// if a membrane mesh file is not found, than it doesn't exist, if it is found add it to the list.
+		// if a mesh file is not found, then it doesn't exist, if it is found add it to the list.
 		//
-		for (String volumeDomainName : volumeDomainNames){
-			String membraneDomainName = volumeDomainName+MEMBRANE_DOMAIN_SUFFIX;
-			File membraneMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, membraneDomainName);
-			if (membraneMeshFile.exists()){
-				meshFiles.add(membraneMeshFile);
-				domains.add(membraneDomainName);
+		for (String domainName : allDomainNames){
+			File meshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, domainName);
+			if (!meshFile.exists()){
+				System.out.println("this is a problem ... can't find mesh file for "+domainName+" even after generating all meshes");
 			}
 		}
 

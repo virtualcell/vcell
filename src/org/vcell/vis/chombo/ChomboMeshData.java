@@ -1,6 +1,7 @@
 package org.vcell.vis.chombo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.vis.mapping.chombo.ChomboCellIndices;
@@ -80,6 +81,7 @@ public class ChomboMeshData {
 
 	public double[] getVolumeCellData(String var, List<? extends ChomboCellIndices> cellIndices) {
 		double[] cellData = new double[cellIndices.size()];
+		Arrays.fill(cellData, -1);
 		if (builtinNamesList.contains(var)){
 			if (var.equals(BUILTIN_VAR_BOXINDEX)){
 				int i = 0;
@@ -108,8 +110,15 @@ public class ChomboMeshData {
 			}else{
 				throw new RuntimeException("built-in variable "+var+" not yet implemented");
 			}
-		}else if (componentNamesList.contains(var)){
-			int component = getVolumeComponentIndex(var);
+		}else if (componentNamesList.contains(var) || componentNamesList.contains(var+".vol0") || componentNamesList.contains(var+".vol1")){
+			int component = -1;
+			if (componentNamesList.contains(var)){
+				component = getVolumeComponentIndex(var);
+			}else if (componentNamesList.contains(var+".vol0")){
+				component = getVolumeComponentIndex(var+".vol0");
+			}else if (componentNamesList.contains(var+".vol1")){
+				component = getVolumeComponentIndex(var+".vol1");
+			}
 			int i = 0;
 			for (ChomboCellIndices cellIndex : cellIndices){
 				int levelIndex = cellIndex.getLevel();
@@ -122,6 +131,8 @@ public class ChomboMeshData {
 				cellData[i] = value;
 				i++;
 			}
+		}else{
+			throw new RuntimeException("unable to find data for variable "+var);
 		}
 		return cellData;
 	}

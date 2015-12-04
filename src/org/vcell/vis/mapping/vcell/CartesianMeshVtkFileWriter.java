@@ -27,6 +27,7 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.VCData;
+import cbit.vcell.solver.AnnotatedFunction;
 
 
 public class CartesianMeshVtkFileWriter {
@@ -66,6 +67,7 @@ public class CartesianMeshVtkFileWriter {
 		allDomains.addAll(membraneDomainNames);
 		
 		DataIdentifier[] dataIdentifiers = vcData.getVarAndFunctionDataIdentifiers(outputContext);
+		AnnotatedFunction[] annotationFunctions = vcData.getFunctions(outputContext);
 
 		ArrayList<VtuVarInfo> varInfos = new ArrayList<VtuVarInfo>();
 		for (String domainName : allDomains){
@@ -78,11 +80,19 @@ public class CartesianMeshVtkFileWriter {
 			for (DataIdentifier dataID : dataIdentifiers){
 				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(domainName)){
 					boolean bMeshVar = isMeshVar(dataID);
-					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, bMeshVar));
+					String expressionString = null;
+					if (dataID.isFunction()){
+						for (AnnotatedFunction f : annotationFunctions){
+							if (f.getName().equals(dataID.getName())){
+								expressionString = f.getExpression().infix();
+							}
+						}
+					}
+					varInfos.add(new VtuVarInfo(dataID.getName(), "("+domainName+")  "+dataID.getDisplayName(), domainName, varDomain, expressionString, bMeshVar));
 				}
 			}
-			varInfos.add(new VtuVarInfo(GLOBAL_INDEX_VAR, "("+domainName+")  "+GLOBAL_INDEX_VAR, domainName, varDomain, true));
-			varInfos.add(new VtuVarInfo(REGION_ID_VAR, "("+domainName+")  "+REGION_ID_VAR, domainName, varDomain, true));
+			varInfos.add(new VtuVarInfo(GLOBAL_INDEX_VAR, "("+domainName+")  "+GLOBAL_INDEX_VAR, domainName, varDomain, null, true));
+			varInfos.add(new VtuVarInfo(REGION_ID_VAR, "("+domainName+")  "+REGION_ID_VAR, domainName, varDomain, null, true));
 		}
 		return varInfos.toArray(new VtuVarInfo[0]); 
 	}
