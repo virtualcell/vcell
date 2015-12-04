@@ -1,12 +1,16 @@
 package org.vcell.vis.vtk;
 
-import org.vcell.vis.core.Vect3D;
-import org.vcell.vis.mapping.VisDomain;
-import org.vcell.vis.mapping.VisMeshData;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron;
-import org.vcell.vis.vismesh.VisIrregularPolyhedron.PolyhedronFace;
-import org.vcell.vis.vismesh.VisMesh;
-import org.vcell.vis.vismesh.VisPoint;
+import java.util.Arrays;
+import java.util.List;
+
+import org.vcell.vis.vismesh.thrift.ChomboVolumeIndex;
+import org.vcell.vis.vismesh.thrift.PolyhedronFace;
+import org.vcell.vis.vismesh.thrift.Vect3D;
+import org.vcell.vis.vismesh.thrift.VisIrregularPolyhedron;
+import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vismesh.thrift.VisPoint;
+
+import vtk.vtkUnstructuredGrid;
 
 public class DebugWriteProblem {
 
@@ -23,30 +27,27 @@ public class DebugWriteProblem {
 					new VisPoint(0, 0, 1)
 			};
 			
-			visMesh.addPoint(points0[0]);
-			visMesh.addPoint(points0[1]);
-			visMesh.addPoint(points0[2]);
-			visMesh.addPoint(points0[3]);
+			visMesh.addToPoints(points0[0]);
+			visMesh.addToPoints(points0[1]);
+			visMesh.addToPoints(points0[2]);
+			visMesh.addToPoints(points0[3]);
 			
-			PolyhedronFace[] faces0 = new PolyhedronFace[] { 
-					new PolyhedronFace(new int[] { 0, 1, 3 }),
-					new PolyhedronFace(new int[] { 0, 3, 2 }),
-					new PolyhedronFace(new int[] { 0, 2, 1 }),
-					new PolyhedronFace(new int[] { 1, 3, 2 })
-			};
+			List<PolyhedronFace> faces0 = Arrays.asList( 
+					new PolyhedronFace(Arrays.asList( 0, 1, 3 )),
+					new PolyhedronFace(Arrays.asList( 0, 3, 2 )),
+					new PolyhedronFace(Arrays.asList( 0, 2, 1 )),
+					new PolyhedronFace(Arrays.asList( 1, 3, 2 ))
+					);
 
 			int level = 0;
 			int boxNumber = 0;
 			int boxIndex = 0;
 			int fraction = 0;
 
-			VisIrregularPolyhedron genPolyhedra0 = new VisIrregularPolyhedron(level, boxNumber, boxIndex, fraction, -1);
-			genPolyhedra0.addFace(faces0[0]);
-			genPolyhedra0.addFace(faces0[1]);
-			genPolyhedra0.addFace(faces0[2]);
-			genPolyhedra0.addFace(faces0[3]);
+			VisIrregularPolyhedron genPolyhedra0 = new VisIrregularPolyhedron(faces0);
+			genPolyhedra0.setChomboVolumeIndex(new ChomboVolumeIndex(level, boxNumber, boxIndex, fraction));
 			
-			visMesh.addPolyhedron(genPolyhedra0);
+			visMesh.addToIrregularPolyhedra(genPolyhedra0);
 
 			
 //			VisPoint[] points1 = new VisPoint[] { 
@@ -62,40 +63,13 @@ public class DebugWriteProblem {
 //			visMesh.addPoint(points1[3]);
 //			
 			
-			VisMeshData visData = new VisMeshData() {
-				private String[] names = new String[] { "data1", "data2" };
-				private double[] data1 = new double[] { 0.0 };
-				private double[] data2 = new double[] { 1.0 };
-				
-				@Override
-				public String[] getVarNames() {
-					return new String[] { "data1", "data2" };
-				}
-				
-				@Override
-				public double getTime() {
-					return 0.0;
-				}
-				
-				@Override
-				public double[] getData(String var) {
-					if (var.equals("data1")){
-						return data1;
-					}else if (var.equals("data2")){
-						return data2;
-					}else{
-						throw new RuntimeException("var "+var+" not found");
-					}
-				}
-			};
-			
-			VisDomain visDomain = new VisDomain("domain1",visMesh,visData);
-//			vtkUnstructuredGrid vtkgrid = vtkGridUtils.getVolumeVtkGrid(visDomain);
+		
+			vtkUnstructuredGrid vtkgrid = VtkGridUtils.getVolumeVtkGrid(visMesh);
 //			String filenameASCII = "testASCII.vtk";
 //			String filenameBinary = "testBinary.vtk";
-//			vtkGridUtils.writeXML(vtkgrid, filenameASCII, true);
-//			vtkGridUtils.writeXML(vtkgrid, filenameBinary, false);
-//			vtkgrid = vtkGridUtils.read(filenameBinary);
+//			VtkGridUtils.writeXML(vtkgrid, filenameASCII, true);
+//			VtkGridUtils.writeXML(vtkgrid, filenameBinary, false);
+//			vtkgrid = VtkGridUtils.read(filenameBinary);
 //			vtkgrid.BuildLinks();
 			
 			
