@@ -31,6 +31,7 @@ import javax.swing.border.TitledBorder;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
@@ -51,6 +52,7 @@ import cbit.vcell.client.task.ReturnBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -58,6 +60,7 @@ import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
@@ -497,6 +500,10 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 //		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 //		fieldSimulationContext.appendToConsole(tcm);
 
+		if(!checkBnglRequirements()) {
+			return;
+		}
+		
 		NetworkTransformer transformer = new NetworkTransformer();
 		MathMappingCallback dummyCallback = new MathMappingCallback() {
 			public void setProgressFraction(float percentDone) {}
@@ -561,6 +568,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		viewReactionsDialog.setVisible(true);
 	}
 	private void createModel() {
+		if(!checkBnglRequirements()) {
+			return;
+		}
 
 		DocumentWindow dw = (DocumentWindow)BeanUtils.findTypeParentOfComponent(this, DocumentWindow.class);
 		BioModelWindowManager bmwm = (BioModelWindowManager)(dw.getTopLevelWindowManager());
@@ -568,6 +578,28 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			
 		rm.createBioModelFromApplication(bmwm, "Test", fieldSimulationContext);
 	}
+
+	// before invoking bngl we check if there's at least one rule to flatten
+	public boolean checkBnglRequirements() {
+		if(!fieldSimulationContext.getGeometryContext().getModel().getRbmModelContainer().hasRules()) {
+			DialogUtils.showInfoDialog(this, "Unable to Create Reaction Network", "At least one reaction rule is required.");
+			return false;
+		}
+		
+		boolean foundEnabledRule = false;
+		for (ReactionRuleSpec rrs : fieldSimulationContext.getReactionContext().getReactionRuleSpecs()){
+			if (!rrs.isExcluded()){
+				foundEnabledRule = true;
+				break;
+			}
+		}
+		if(!foundEnabledRule) {
+			DialogUtils.showInfoDialog(this, "Unable to Create Reaction Network", "At least one reaction rule enabled for this application is required.");
+			return false;
+		}
+		return true;
+	}
+
 	@Override
 	public boolean isInterrupted() {
 		return false;
