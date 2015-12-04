@@ -91,11 +91,14 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 						DialogUtils.showWarningDialog(LoadFRAPData_PostProcessingDataPanel.this, "At least 1 BioModel or MathModel that contains a simulation with Post Processing Data must be opened before continuing.");
 						return;
 					}
-					final VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(openModelInfoHolder.simInfo.getAuthoritativeVCSimulationIdentifier(), openModelInfoHolder.jobIndex);
+					if(openModelInfoHolder.getSimInfo() == null){
+						throw new Exception("Selected sim '"+openModelInfoHolder.getSimName()+"' has no simInfo (save your model and retry).");
+					}
+					final VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(openModelInfoHolder.getSimInfo().getAuthoritativeVCSimulationIdentifier(), openModelInfoHolder.getJobIndex());
 					AsynchClientTask dataManagerTask = new AsynchClientTask("Getting Data Info...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							selectedPDEDataManager = (PDEDataManager)documentWindowManager.getRequestManager().getDataManager(null,vcSimulationDataIdentifier,!openModelInfoHolder.isCompartmental);
+							selectedPDEDataManager = (PDEDataManager)documentWindowManager.getRequestManager().getDataManager(null,vcSimulationDataIdentifier,!openModelInfoHolder.isCompartmental());
 							dataProcessingOutputInfo =
 								(DataOperationResults.DataProcessingOutputInfo)selectedPDEDataManager.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(selectedPDEDataManager.getVCDataIdentifier(),false,selectedPDEDataManager.getOutputContext()));
 						}
@@ -110,7 +113,7 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 								}
 							}
 							if(imageDataNames.size() == 0){
-								throw new Exception("No image based Post Processing Data found in '"+openModelInfoHolder.simInfo.getSimulationVersion().getName()+"'");
+								throw new Exception("No image based Post Processing Data found in '"+openModelInfoHolder.getSimInfo().getSimulationVersion().getName()+"'");
 							}
 							try{
 								list.removeListSelectionListener(listSelectionListener);

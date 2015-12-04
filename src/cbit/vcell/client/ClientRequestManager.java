@@ -4021,6 +4021,7 @@ public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulat
 								for(int k=0;k<sims[j].getScanCount();k+= 1){
 									FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
 										new FieldDataWindowManager.FDSimBioModelInfo(
+												sims[j].getName(),
 												bioModel.getVersion(),
 												simContexts[i],sims[j].getSimulationInfo(),
 												k,
@@ -4033,6 +4034,7 @@ public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulat
 						}else{
 							FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
 								new FieldDataWindowManager.FDSimBioModelInfo(
+										null,
 										bioModel.getVersion(),
 										simContexts[i],
 										null,-1,simContexts[i].getGeometry().getDimension() == 0
@@ -4052,6 +4054,7 @@ public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulat
 							for(int k=0;k<sims[i].getScanCount();k+= 1){
 								FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
 									new FieldDataWindowManager.FDSimMathModelInfo(
+											sims[i].getName(),
 											mathModel.getVersion(),
 											mathModel.getMathDescription(),
 											sims[i].getSimulationInfo(),
@@ -4065,6 +4068,7 @@ public OpenModelInfoHolder[] getOpenDesktopDocumentInfos(boolean bIncludeSimulat
 					}else{
 						FieldDataWindowManager.OpenModelInfoHolder simInfoHolder =
 							new FieldDataWindowManager.FDSimMathModelInfo(
+									null,
 									mathModel.getVersion(),
 									mathModel.getMathDescription(),
 									null,-1,mathModel.getMathDescription().getGeometry().getDimension() == 0
