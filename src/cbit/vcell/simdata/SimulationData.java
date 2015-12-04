@@ -55,6 +55,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
@@ -2077,14 +2078,29 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 					String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
 					File file = amplistorHelper.getFile(expectedFile);
 					if (file.exists()){
-						chomboFiles.addDataFile(".feature_"+subDomain.getName(), timeIndex, file);
+						String volDomainName = subDomain.getName();
+						
+						//
+						// look for membraneSubDomain 
+						//
+						String memDomainName = null;
+						Enumeration<SubDomain> subdomainEnum2 = simTask.getSimulation().getMathDescription().getSubDomains();
+						while (subdomainEnum2.hasMoreElements()){
+							SubDomain subDomain2 = subdomainEnum2.nextElement();
+							if (subDomain2 instanceof MembraneSubDomain){
+								MembraneSubDomain memSubdomain = (MembraneSubDomain)subDomain2;
+								if (memSubdomain.getInsideCompartment()==subDomain){
+									memDomainName = memSubdomain.getName();
+								}
+							}
+						}
+						chomboFiles.addDataFile(".feature_"+subDomain.getName(), volDomainName, memDomainName, timeIndex, file);
 					}else{
 						System.out.println("can't find expected chombo file : "+file.getAbsolutePath());
+						break;
 					}
 				}
 			}
-		}else{
-			System.out.println("SimulationData.getChomboFiles() ignoring subDomain "+subDomain.getName()+" because compartment type "+subDomain.getClass().getSimpleName()+" not yet supported for Chombo export");
 		}
 	}
 	return chomboFiles;

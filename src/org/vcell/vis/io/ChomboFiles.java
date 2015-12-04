@@ -11,19 +11,31 @@ import java.util.Set;
 public class ChomboFiles {
 	
 	class ChomboFileEntry {
-		private final String volumeDomainName;
+		private final String fileNamePattern;
+		private final String volDomainName;
+		private final String memDomainName;
 		private final int timeIndex;
 		private final File file;
 		
-		public ChomboFileEntry(String volumeDomainName, int timeIndex, File file) {
+		public ChomboFileEntry(String fileNamePattern, String volDomainName, String memDomainName, int timeIndex, File file) {
 			super();
-			this.volumeDomainName = volumeDomainName;
+			this.fileNamePattern = fileNamePattern;
+			this.volDomainName = volDomainName;
+			this.memDomainName = memDomainName;
 			this.timeIndex = timeIndex;
 			this.file = file;
 		}
 
-		public String getVolumeDomainName() {
-			return volumeDomainName;
+		public String getFileNamePattern() {
+			return fileNamePattern;
+		}
+
+		public String getVolDomainName() {
+			return volDomainName;
+		}
+
+		public String getMemDomainName() {
+			return memDomainName;
 		}
 
 		public int getTimeIndex() {
@@ -33,7 +45,6 @@ public class ChomboFiles {
 		public File getFile() {
 			return file;
 		}
-
 	}
 	
 	private final String simID;
@@ -60,22 +71,35 @@ public class ChomboFiles {
 		return meshFile;
 	}
 	
-	public void addDataFile(String domainName, int timeIndex, File file){
-		dataFiles.add(new ChomboFileEntry(domainName,timeIndex,file));
+	public void addDataFile(String fileNamePattern, String volDomainName, String memDomainName, int timeIndex, File file){
+		dataFiles.add(new ChomboFileEntry(fileNamePattern,volDomainName,memDomainName,timeIndex,file));
 	}
 
 	public Set<String> getVolumeDomainNames() {
 		HashSet<String> domainNames = new HashSet<String>();
 		for (ChomboFileEntry entry : dataFiles){
-			domainNames.add(entry.volumeDomainName);
+			domainNames.add(entry.volDomainName);
 		}
 		return domainNames;
 	}
 	
-	public List<File> getDataFilesFromVolumeDomainName(String volumeDomainName){
+	public Set<String> getMembraneDomainNames() {
+		HashSet<String> domainNames = new HashSet<String>();
+		for (ChomboFileEntry entry : dataFiles){
+			if (entry.memDomainName!=null){
+				domainNames.add(entry.memDomainName);
+			}
+		}
+		return domainNames;
+	}
+	
+	public List<File> getDataFilesFromDomainName(String domainName){
 		ArrayList<File> domainDataFiles = new ArrayList<File>();
 		for (ChomboFileEntry entry : dataFiles){
-			if (entry.volumeDomainName.equals(volumeDomainName)){
+			if (entry.volDomainName.equals(domainName)){
+				domainDataFiles.add(entry.file);
+			}
+			if (entry.memDomainName.equals(domainName)){
 				domainDataFiles.add(entry.file);
 			}
 		}
@@ -87,13 +111,16 @@ public class ChomboFiles {
 		return domainDataFiles;
 	}
 
-	public File getDataFileFromVolumeDomainName(String volumeDomainName, int timeIndex) {
+	public File getDataFileFromDomainName(String domainName, int timeIndex) {
 		for (ChomboFileEntry entry : dataFiles){
-			if (entry.volumeDomainName.equals(volumeDomainName) && entry.timeIndex==timeIndex){
+			if (entry.volDomainName.equals(domainName) && entry.timeIndex==timeIndex){
+				return entry.file;
+			}
+			if (entry.memDomainName!=null && entry.memDomainName.equals(domainName) && entry.timeIndex==timeIndex){
 				return entry.file;
 			}
 		}
-		throw new RuntimeException("no data found for domain '"+volumeDomainName+"' and timeIndex "+timeIndex);
+		throw new RuntimeException("no data found for domain '"+domainName+"' and timeIndex "+timeIndex);
 	}
 
 	public List<Integer> getTimeIndices() {

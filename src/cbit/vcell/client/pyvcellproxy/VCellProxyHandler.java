@@ -154,7 +154,9 @@ public List<VariableInfo> getVariableList(SimulationDataSetRef simulationDataSet
 			if (vtuVarInfo.bMeshVariable){
 				continue; // skip "mesh variables" like size, vcRegionArea, etc, globalIndex, etc.
 			}
-			varInfoList.add(new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel, vtuVarInfo.bMeshVariable));
+			VariableInfo variableInfo = new VariableInfo(vtuVarInfo.name, vtuVarInfo.displayName, vtuVarInfo.domainName, variableDomainType, unitsLabel, vtuVarInfo.bMeshVariable);
+			variableInfo.setExpressionString(vtuVarInfo.functionExpression);
+			varInfoList.add(variableInfo);
 		}
 		return varInfoList;
 	} catch (Exception e) {
@@ -229,7 +231,7 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		}else if (var.variableDomainType == DomainType.VOLUME){
 			variableDomainType = VariableDomain.VARIABLEDOMAIN_VOLUME;
 		}
-		VtuVarInfo vtuVarInfo = new VtuVarInfo(var.getVariableVtuName(),var.getVariableDisplayName(),var.getDomainName(),variableDomainType,var.isMeshVar);
+		VtuVarInfo vtuVarInfo = new VtuVarInfo(var.getVariableVtuName(),var.getVariableDisplayName(),var.getDomainName(),variableDomainType,var.getExpressionString(),var.isMeshVar);
 		List<Double> times = getTimePoints(simulationDataSetRef);
 		double time = (double)times.get(timeIndex);
 		double[] data = pdeDataManager.getVtuMeshData(vtuVarInfo, time);

@@ -4444,6 +4444,7 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 			for (int i=0;i<times.length;i++){
 				if (times[i] == time){
 					timeIndex = i;
+					break;
 				}
 			}
 			if (timeIndex<0){
