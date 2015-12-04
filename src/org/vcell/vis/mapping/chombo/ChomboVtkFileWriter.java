@@ -18,11 +18,11 @@ import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
-import org.vcell.vis.mapping.VisDomain;
 import org.vcell.vis.vismesh.thrift.ChomboIndexData;
 import org.vcell.vis.vismesh.thrift.ChomboSurfaceIndex;
 import org.vcell.vis.vismesh.thrift.ChomboVolumeIndex;
 import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.math.MathException;
@@ -148,7 +148,7 @@ public class ChomboVtkFileWriter {
 				break;
 			}
 			case VARIABLEDOMAIN_MEMBRANE: {
-				ChomboIndexData chomboIndexData = VtkGridUtils.readChomboIndexData(chomboIndexDataFile);
+				ChomboIndexData chomboIndexData = VisMeshUtils.readChomboIndexData(chomboIndexDataFile);
 				List<ChomboVisMembraneIndex> cellIndices = new ArrayList<ChomboVisMembraneIndex>();
 				for (ChomboSurfaceIndex chomboSurfaceIndex : chomboIndexData.chomboSurfaceIndices){
 					cellIndices.add(new SimpleChomboVisMembraneIndex(chomboSurfaceIndex.index));
@@ -166,7 +166,7 @@ public class ChomboVtkFileWriter {
 				break;
 			}
 			case VARIABLEDOMAIN_VOLUME: {
-				ChomboIndexData chomboIndexData = VtkGridUtils.readChomboIndexData(chomboIndexDataFile);
+				ChomboIndexData chomboIndexData = VisMeshUtils.readChomboIndexData(chomboIndexDataFile);
 				List<ChomboCellIndices> cellIndices = new ArrayList<ChomboCellIndices>();
 				for (ChomboVolumeIndex chomboVolIndex : chomboIndexData.getChomboVolumeIndices()){
 					cellIndices.add(new SimpleChomboCellIndices(chomboVolIndex.getLevel(), chomboVolIndex.getBoxNumber(), chomboVolIndex.getBoxIndex()));
@@ -387,8 +387,7 @@ for (DataIdentifier di : dataIdentifiers){
 				visMesh = chomboMeshMapping.fromMeshData(chomboMeshData, chomboCombinedVolumeMembraneDomain);
 				domainMeshMap.put(chomboCombinedVolumeMembraneDomain.getVolumeDomainName(),visMesh);
 			}
-			VisDomain visDomainVolume = new VisDomain(chomboCombinedVolumeMembraneDomain.getVolumeDomainName(),visMesh);
-			String volumeDomainName = visDomainVolume.getName();
+			String volumeDomainName = chomboCombinedVolumeMembraneDomain.getVolumeDomainName();
 			
 			//
 			// write volume mesh file
@@ -396,7 +395,7 @@ for (DataIdentifier di : dataIdentifiers){
 			{
 			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, volumeDomainName);
 			File chomboIndexDataFile = getChomboIndexDataFileName(destinationDirectory, chomboFiles, volumeDomainName);
-			VtkGridUtils.writeChomboVolumeVtkGrid(visDomainVolume, volumeMeshFile, chomboIndexDataFile);
+			VtkGridUtils.writeChomboVolumeVtkGridAndIndexData(visMesh, volumeDomainName, volumeMeshFile, chomboIndexDataFile);
 			meshFiles.add(volumeMeshFile);
 			}
 						
@@ -404,12 +403,11 @@ for (DataIdentifier di : dataIdentifiers){
 				//
 				// write membrane mesh file
 				//
-				VisDomain visDomainMembrane = new VisDomain(chomboCombinedVolumeMembraneDomain.getMembraneDomainName(),visMesh);
-				String membraneDomainName = visDomainMembrane.getName();
+				String membraneDomainName = chomboCombinedVolumeMembraneDomain.getMembraneDomainName();
 				
 				File membraneMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, membraneDomainName);
 				File membraneIndexDataFile = getChomboIndexDataFileName(destinationDirectory, chomboFiles, membraneDomainName);
-				VtkGridUtils.writeChomboMembraneVtkGrid(visDomainMembrane, membraneMeshFile, membraneIndexDataFile);
+				VtkGridUtils.writeChomboMembraneVtkGridAndIndexData(visMesh, membraneDomainName, membraneMeshFile, membraneIndexDataFile);
 				meshFiles.add(membraneMeshFile);
 			}
 		}
