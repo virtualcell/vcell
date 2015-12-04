@@ -6,14 +6,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.vcell.vis.mapping.VisDomain;
 import org.vcell.vis.vismesh.thrift.ChomboIndexData;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
 import org.vcell.vis.vismesh.thrift.PolyhedronFace;
@@ -48,6 +42,7 @@ import vtk.vtkTriangle;
 import vtk.vtkUnstructuredGrid;
 import vtk.vtkUnstructuredGridGeometryFilter;
 import vtk.vtkUnstructuredGridReader;
+import vtk.vtkUnstructuredGridWriter;
 import vtk.vtkVoxel;
 import vtk.vtkWindowedSincPolyDataFilter;
 import vtk.vtkXMLFileReadTester;
@@ -59,6 +54,7 @@ import cbit.vcell.resource.NativeLib;
 public class VtkGridUtils {
 	
 	public static final Logger LG = Logger.getLogger(VtkGridUtils.class);
+	private static final boolean bClipPolyhedra = true;
 
 	// Load VTK library and print which library was not properly loaded
 	static {
@@ -107,23 +103,22 @@ public class VtkGridUtils {
 	}
 
 
-
-//	private static void writeLegacy(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
-//		vtkUnstructuredGridWriter writer = new vtkUnstructuredGridWriter();
-//		if (bASCII){
-//			writer.SetFileTypeToASCII();
-//		}else{
-//			writer.SetFileTypeToBinary();
-//		}
-//		
-//		writer.SetInputDataObject(vtkgrid);
-//		writer.SetFileName(filename);
-//		writer.Update();
-//		long length = new File(filename).length();
-//		if (LG.isInfoEnabled()) {
-//			LG.info("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
-//		}
-//	}
+	private static void writeLegacy_not_used(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
+		vtkUnstructuredGridWriter writer = new vtkUnstructuredGridWriter();
+		if (bASCII){
+			writer.SetFileTypeToASCII();
+		}else{
+			writer.SetFileTypeToBinary();
+		}
+		
+		writer.SetInputDataObject(vtkgrid);
+		writer.SetFileName(filename);
+		writer.Update();
+		long length = new File(filename).length();
+		if (LG.isInfoEnabled()) {
+			LG.info("saved to legacy file: "+filename+" with "+((bASCII)?"ASCII":"Binary")+" data encoding, length="+length+" bytes");
+		}
+	}
 	
 	private static void writeXML(vtkUnstructuredGrid vtkgrid, String filename, boolean bASCII){
 		vtkXMLUnstructuredGridWriter writer = new vtkXMLUnstructuredGridWriter();
@@ -356,8 +351,8 @@ public class VtkGridUtils {
 		int quadType = new vtkQuad().GetCellType();
 		//int lineType = new vtkLine().GetCellType();
 		int polygonType = new vtkPolygon().GetCellType();
-		int triangleType = new vtkTriangle().GetCellType();
 		int polyhedronType = new vtkPolyhedron().GetCellType();
+		int triangleType = new vtkTriangle().GetCellType();
 		int voxelType = new vtkVoxel().GetCellType();
 		int tetraType = new vtkTetra().GetCellType();
 
@@ -402,28 +397,31 @@ public class VtkGridUtils {
 		        vtkgrid.InsertNextCell(tetraType,pts);
 			}
 		}
-//		boolean bInitializedFaces = false;
+		boolean bInitializedFaces = false;
 		if (vMesh.isSetIrregularPolyhedra()){
 			for (VisIrregularPolyhedron clippedPolyhedron : vMesh.getIrregularPolyhedra()) {
-				List<VisTetrahedron> tets = createTetrahedra(clippedPolyhedron, vMesh);
-				for (VisTetrahedron visTet : tets){
-				    vtkIdList pts = new vtkIdList();
-				    List<Integer> tetPoints = visTet.getPointIndices();
-				    for (int p : tetPoints){
-				        pts.InsertNextId(p);
+				if (bClipPolyhedra ){
+					List<VisTetrahedron> tets = createTetrahedra(clippedPolyhedron, vMesh);
+					for (VisTetrahedron visTet : tets){
+					    vtkIdList pts = new vtkIdList();
+					    List<Integer> tetPoints = visTet.getPointIndices();
+					    for (int p : tetPoints){
+					        pts.InsertNextId(p);
+					    }
+				        vtkgrid.InsertNextCell(tetraType,pts);
+					}
+				}else{
+				    vtkIdList faceStreamList = new vtkIdList();
+				    int[] faceStream = getVtkFaceStream(clippedPolyhedron);
+				    for (int p : faceStream){
+				        faceStreamList.InsertNextId(p);
 				    }
-			        vtkgrid.InsertNextCell(tetraType,pts);
+				    if (!bInitializedFaces && vtkgrid.GetNumberOfCells()>0){
+					    vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells());
+					}
+					bInitializedFaces = true;
+					vtkgrid.InsertNextCell(polyhedronType, faceStreamList);
 				}
-	//		    vtkIdList faceStreamList = new vtkIdList();
-	//		    int[] faceStream = getVtkFaceStream(clippedPolyhedron);
-	//		    for (int p : faceStream){
-	//		        faceStreamList.InsertNextId(p);
-	//		    }
-	//		    if (!bInitializedFaces && vtkgrid.GetNumberOfCells()>0){
-	//			    vtkgrid.InitializeFacesRepresentation(vtkgrid.GetNumberOfCells());
-	//			}
-	//			bInitializedFaces = true;
-	//			vtkgrid.InsertNextCell(polyhedronType, faceStreamList);
 			}
 		}		
 		vtkgrid.BuildLinks();
@@ -435,9 +433,8 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 	
-	private static vtkUnstructuredGrid getMembraneVtkGrid(VisDomain visDomain) {
+	private static vtkUnstructuredGrid getMembraneVtkGrid(VisMesh visMesh) {
 		vtkPoints vtkpoints = new vtkPoints();
-		VisMesh visMesh = visDomain.getVisMesh();
 		List<VisPoint> surfacePoints = visMesh.getSurfacePoints();
 		for (VisPoint visPoint : surfacePoints) {
 		    vtkpoints.InsertNextPoint(visPoint.x,visPoint.y,visPoint.z);
@@ -478,14 +475,13 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 
-	public synchronized static void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisDomain visDomain, File vtuFile, File indexFile) throws IOException {
+	public synchronized static void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File indexFile) throws IOException {
 		try {
-			vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visDomain.getVisMesh());
+			vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visMesh);
 			vtk.vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
 			write(vtkgridSmoothed, vtuFile.getPath());
-			VisMesh visMesh = visDomain.getVisMesh();
 			FiniteVolumeIndexData finiteVolumeIndexData = new FiniteVolumeIndexData();
-			finiteVolumeIndexData.setDomainName(visDomain.getName());
+			finiteVolumeIndexData.setDomainName(domainName);
 			if (visMesh.getDimension()==2){
 				// if volume
 				if (visMesh.isSetPolygons()){
@@ -527,7 +523,7 @@ public class VtkGridUtils {
 					System.out.println("didn't find any indices ... bad");
 				}
 			}
-			writeFiniteVolumeIndexData(indexFile, finiteVolumeIndexData);
+			VisMeshUtils.writeFiniteVolumeIndexData(indexFile, finiteVolumeIndexData);
 
 			//vtkgridSmoothed.Delete();	// is needed for garbage collection?   //superfluous with prior delete according to runtime errors with this uncommented?
 			vtkgrid.Delete(); 			// is needed for garbage collection?
@@ -536,57 +532,9 @@ public class VtkGridUtils {
 		}
 	}
 	
-	private static void writeFiniteVolumeIndexData(File finiteVolumeIndexFile, FiniteVolumeIndexData finiteVolumeIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+	public synchronized static void writeChomboVolumeVtkGridAndIndexData(VisMesh visMesh, String domainName, File volumeMeshFile, File chomboIndexFile) throws IOException {
 		try {
-			byte[] blob = serializer.serialize(finiteVolumeIndexData);
-			FileUtils.writeByteArrayToFile(finiteVolumeIndexFile, blob);
-		} catch (TException e) {
-			e.printStackTrace();
-			throw new IOException("error writing FiniteVolumeIndexData to file "+finiteVolumeIndexFile.getPath()+": "+e.getMessage(),e);
-		}
-	}
-
-	private static void writeChomboIndexData(File chomboIndexFile, ChomboIndexData chomboIndexData) throws IOException {
-		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
-		try {
-			byte[] blob = serializer.serialize(chomboIndexData);
-			FileUtils.writeByteArrayToFile(chomboIndexFile, blob);
-		} catch (TException e) {
-			e.printStackTrace();
-			throw new IOException("error writing ChomboIndexData to file "+chomboIndexFile.getPath()+": "+e.getMessage(),e);
-		}
-	}
-
-	public static FiniteVolumeIndexData readFiniteVolumeIndexData(File finiteVolumeIndexFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		byte[] blob = FileUtils.readFileToByteArray(finiteVolumeIndexFile);
-		FiniteVolumeIndexData finiteVolumeIndexData = new FiniteVolumeIndexData();
-		try {
-			deserializer.deserialize(finiteVolumeIndexData, blob);
-		} catch (TException e) {
-			e.printStackTrace();
-			throw new IOException("error reading FiniteVolumeIndexData from file "+finiteVolumeIndexFile.getPath()+": "+e.getMessage(),e);
-		}
-		return finiteVolumeIndexData;
-	}
-
-	public static ChomboIndexData readChomboIndexData(File chomboIndexDataFile) throws IOException {
-		TDeserializer deserializer = new TDeserializer(new TBinaryProtocol.Factory());
-		byte[] blob = FileUtils.readFileToByteArray(chomboIndexDataFile);
-		ChomboIndexData chomboIndexData = new ChomboIndexData();
-		try {
-			deserializer.deserialize(chomboIndexData, blob);
-		} catch (TException e) {
-			e.printStackTrace();
-			throw new IOException("error reading ChomboIndexData from file "+chomboIndexDataFile.getPath()+": "+e.getMessage(),e);
-		}
-		return chomboIndexData;
-	}
-
-	public synchronized static void writeChomboVolumeVtkGrid(VisDomain visDomain, File volumeMeshFile, File chomboIndexFile) throws IOException {
-		try {
-			VisMesh originalVisMesh = visDomain.getVisMesh();
+			VisMesh originalVisMesh = visMesh;
 			VisMesh correctedVisMesh = originalVisMesh;
 			if (originalVisMesh.isSetIrregularPolyhedra()){
 				correctedVisMesh = new VisMesh(originalVisMesh);
@@ -605,7 +553,7 @@ public class VtkGridUtils {
 			vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(correctedVisMesh);
 			write(vtkgrid, volumeMeshFile.getPath());
 			ChomboIndexData chomboIndexData = new ChomboIndexData();
-			chomboIndexData.setDomainName(visDomain.getName());
+			chomboIndexData.setDomainName(domainName);
 			if (correctedVisMesh.getDimension()==2){
 				if (correctedVisMesh.isSetPolygons()){
 					for (VisPolygon polygon : correctedVisMesh.getPolygons()){
@@ -634,23 +582,22 @@ public class VtkGridUtils {
 					System.out.println("didn't find any indices ... bad");
 				}
 			}
-			writeChomboIndexData(chomboIndexFile, chomboIndexData);
+			VisMeshUtils.writeChomboIndexData(chomboIndexFile, chomboIndexData);
 			vtkgrid.Delete(); // if needed for garbage collection
 		}finally{
 			cleanupVtk();
 		}
 	}
 
-	public synchronized static void writeChomboMembraneVtkGrid(VisDomain visDomain, File vtuFile, File chomboIndexFile) throws IOException {
+	public synchronized static void writeChomboMembraneVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File chomboIndexFile) throws IOException {
 		try {
-			vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visDomain);
+			vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visMesh);
 			write(vtkgrid, vtuFile.getPath());
-			VisMesh visMesh = visDomain.getVisMesh();
 			ChomboIndexData chomboIndexData = new ChomboIndexData();
-			if (!visDomain.getName().toUpperCase().endsWith("MEMBRANE")){
+			if (!domainName.toUpperCase().endsWith("MEMBRANE")){
 				throw new RuntimeException("expecting domain name ending with membrane");
 			}
-			chomboIndexData.setDomainName(visDomain.getName());
+			chomboIndexData.setDomainName(domainName);
 			if (visMesh.getDimension()==3){
 				if (visMesh.isSetSurfaceTriangles()){
 					for (VisSurfaceTriangle surfaceTriangle : visMesh.getSurfaceTriangles()){
@@ -667,7 +614,7 @@ public class VtkGridUtils {
 			if (chomboIndexData.chomboSurfaceIndices==null || chomboIndexData.chomboSurfaceIndices.size()==0){
 					System.out.println("didn't find any indices ... bad");
 			}
-			writeChomboIndexData(chomboIndexFile, chomboIndexData);
+			VisMeshUtils.writeChomboIndexData(chomboIndexFile, chomboIndexData);
 			vtkgrid.Delete();
 		}finally{
 			cleanupVtk();

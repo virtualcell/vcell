@@ -12,11 +12,11 @@ import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
-import org.vcell.vis.mapping.VisDomain;
 import org.vcell.vis.vcell.CartesianMesh;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
 import org.vcell.vis.vismesh.thrift.VisMesh;
+import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.mapping.DiffEquMathMapping;
@@ -128,7 +128,7 @@ public class CartesianMeshVtkFileWriter {
 			}
 		}
 		
-		FiniteVolumeIndexData finiteVolumeIndexData = VtkGridUtils.readFiniteVolumeIndexData(finiteVolumeIndexDataFile);
+		FiniteVolumeIndexData finiteVolumeIndexData = VisMeshUtils.readFiniteVolumeIndexData(finiteVolumeIndexDataFile);
 		int maxGlobalIndex = 0;
 		int maxRegionIndex = 0;
 		for (FiniteVolumeIndex fvIndex : finiteVolumeIndexData.finiteVolumeIndices){
@@ -244,10 +244,9 @@ public class CartesianMeshVtkFileWriter {
 			// find the globalIndexes for each domain element - use this to extract the domain-only data.
 			//
 			VisMesh visMesh = domainMeshMap.get(domainName);
-			VisDomain visDomain = new VisDomain(domainName,visMesh);
-			File vtuFile = getVtuMeshFileName(vcellFiles, visDomain.getName());
+			File vtuFile = getVtuMeshFileName(vcellFiles, domainName);
 			File fvIndexDataFileName = getFiniteVolumeIndexDataFileName(vcellFiles, domainName);
-			VtkGridUtils.writeFiniteVolumeSmoothedVtkGridAndIndexData(visDomain, vtuFile, fvIndexDataFileName);
+			VtkGridUtils.writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, domainName, vtuFile, fvIndexDataFileName);
 			files.add(vtuFile);
 			filesProcessed++;
 			if (progressListener!=null){
