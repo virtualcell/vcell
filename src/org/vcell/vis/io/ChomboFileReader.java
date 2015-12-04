@@ -25,6 +25,7 @@ import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
+import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
 import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
 
 public class ChomboFileReader {
@@ -198,14 +199,20 @@ public class ChomboFileReader {
 	
 	public static ChomboDataset readDataset(ChomboFiles chomboFiles, int timeIndex) throws Exception{
 		String meshFilename = chomboFiles.getMeshFile().getPath();
-		Set<String> volumeDomainNames = chomboFiles.getVolumeDomainNames();
+		List<ChomboFileEntry> chomboFileEntries = chomboFiles.getEntries();
 		ChomboDataset chomboDataset = new ChomboDataset();
 		int domainOrdinal = 0;
-		for (String volumeDomainName : volumeDomainNames){
-			File domainFile = chomboFiles.getDataFileFromVolumeDomainName(volumeDomainName,timeIndex);
+		for (ChomboFileEntry chomboFileEntry : chomboFileEntries){
+			if (chomboFileEntry.getTimeIndex()!=timeIndex){
+				continue;
+			}
+			String volDomainName = chomboFileEntry.getVolDomainName();
+			String memDomainName = chomboFileEntry.getMemDomainName();
+			File domainFile = chomboFileEntry.getFile();
+			//chomboFiles.getDataFileFromVolumeDomainName(volumeDomainName,timeIndex);
 			ChomboMeshData chomboMeshData = readMesh(meshFilename, domainFile.getPath());
 			ChomboMesh chomboMesh = chomboMeshData.getMesh();
-			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(volumeDomainName,volumeDomainName+ChomboVtkFileWriter.MEMBRANE_DOMAIN_SUFFIX,chomboMesh,chomboMeshData,domainOrdinal);
+			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(volDomainName,memDomainName,chomboMesh,chomboMeshData,domainOrdinal);
 			chomboDataset.addDomain(chomboCombinedVolumeMembraneDomain);
 			domainOrdinal++;
 		}

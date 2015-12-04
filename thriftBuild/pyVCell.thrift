@@ -25,6 +25,7 @@ struct VariableInfo{
    4: required DomainType variableDomainType;
    5: required string unitsLabel;
    6: required bool isMeshVar;
+   7: optional string expressionString;
 }
 
 typedef list<VariableInfo> VariableList

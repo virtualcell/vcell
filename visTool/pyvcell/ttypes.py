@@ -40,6 +40,7 @@ class VariableInfo:
    - variableDomainType
    - unitsLabel
    - isMeshVar
+   - expressionString
   """
 
   thrift_spec = (
@@ -50,15 +51,17 @@ class VariableInfo:
     (4, TType.I32, 'variableDomainType', None, None, ), # 4
     (5, TType.STRING, 'unitsLabel', None, None, ), # 5
     (6, TType.BOOL, 'isMeshVar', None, None, ), # 6
+    (7, TType.STRING, 'expressionString', None, None, ), # 7
   )
 
-  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None, isMeshVar=None,):
+  def __init__(self, variableVtuName=None, variableDisplayName=None, domainName=None, variableDomainType=None, unitsLabel=None, isMeshVar=None, expressionString=None,):
     self.variableVtuName = variableVtuName
     self.variableDisplayName = variableDisplayName
     self.domainName = domainName
     self.variableDomainType = variableDomainType
     self.unitsLabel = unitsLabel
     self.isMeshVar = isMeshVar
+    self.expressionString = expressionString
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -99,6 +102,11 @@ class VariableInfo:
           self.isMeshVar = iprot.readBool();
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.expressionString = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -133,6 +141,10 @@ class VariableInfo:
       oprot.writeFieldBegin('isMeshVar', TType.BOOL, 6)
       oprot.writeBool(self.isMeshVar)
       oprot.writeFieldEnd()
+    if self.expressionString is not None:
+      oprot.writeFieldBegin('expressionString', TType.STRING, 7)
+      oprot.writeString(self.expressionString)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -160,6 +172,7 @@ class VariableInfo:
     value = (value * 31) ^ hash(self.variableDomainType)
     value = (value * 31) ^ hash(self.unitsLabel)
     value = (value * 31) ^ hash(self.isMeshVar)
+    value = (value * 31) ^ hash(self.expressionString)
     return value
 
   def __repr__(self):
