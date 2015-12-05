@@ -2078,26 +2078,9 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 					String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
 					File file = amplistorHelper.getFile(expectedFile);
 					if (file.exists()){
-						String volDomainName = subDomain.getName();
-						
-						//
-						// look for membraneSubDomain 
-						//
-						String memDomainName = null;
-						Enumeration<SubDomain> subdomainEnum2 = simTask.getSimulation().getMathDescription().getSubDomains();
-						while (subdomainEnum2.hasMoreElements()){
-							SubDomain subDomain2 = subdomainEnum2.nextElement();
-							if (subDomain2 instanceof MembraneSubDomain){
-								MembraneSubDomain memSubdomain = (MembraneSubDomain)subDomain2;
-								if (memSubdomain.getInsideCompartment()==subDomain){
-									memDomainName = memSubdomain.getName();
-								}
-							}
-						}
-						chomboFiles.addDataFile(".feature_"+subDomain.getName(), volDomainName, memDomainName, timeIndex, file);
+						chomboFiles.addDataFile(".feature_"+subDomain.getName(), subDomain.getName() + ".vol" + ivol, timeIndex, file);
 					}else{
-						System.out.println("can't find expected chombo file : "+file.getAbsolutePath());
-						break;
+						LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
 					}
 				}
 			}
