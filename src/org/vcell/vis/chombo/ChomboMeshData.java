@@ -7,6 +7,9 @@ import java.util.List;
 import org.vcell.vis.mapping.chombo.ChomboCellIndices;
 import org.vcell.vis.mapping.chombo.ChomboVisMembraneIndex;
 
+import vtk.vtkMath;
+import cbit.vcell.simdata.SimDataConstants;
+
 public class ChomboMeshData {
 	public final static String BUILTIN_VAR_BOXLEVEL = "level";
 	public final static String BUILTIN_VAR_BOXNUMBER = "boxnumber";
@@ -21,6 +24,7 @@ public class ChomboMeshData {
 	private ArrayList<String> builtinNamesList = new ArrayList<String>();
 	private List<ChomboMembraneVarData> membraneDataList = new ArrayList<ChomboMembraneVarData>();
 	private final double time;
+	private int fraction0ComponentIndex = 0;
 	
 	public ChomboMeshData(ChomboMesh chomboMesh, double time){
 		this.chomboMesh = chomboMesh;
@@ -48,6 +52,13 @@ public class ChomboMeshData {
 	}
 	public String[] getVolumeDataNames(){
 		return componentNamesList.toArray(new String[0]);
+	}
+	
+	// we don't want to show components that are after fraction-0
+	public String[] getVisibleVolumeDataNames(){
+		String[] names = new String[fraction0ComponentIndex + 1];
+		System.arraycopy(getVolumeDataNames(), 0, names, 0, fraction0ComponentIndex + 1);
+		return names;
 	}
 	
 	public String[] getVolumeBuiltinNames(){
@@ -147,9 +158,14 @@ public class ChomboMeshData {
 			}
 		}
 		if (memVarData!=null){
+			vtkMath vtkmath = new vtkMath();
 			for (int i=0;i<cellData.length;i++){
 				int chomboIndex = cellIndices.get(i).getChomboIndex();
 				cellData[i] = memVarData.getRawChomboData()[chomboIndex];
+				if (cellData[i] == SimDataConstants.BASEFAB_REAL_SETVAL)
+				{
+					cellData[i] = vtkmath.Nan();
+			  }
 			}
 		}else if (var.equals(BUILTIN_VAR_MEMBRANE_INDEX)){
 			for (int i=0;i<cellData.length;i++){
@@ -167,5 +183,9 @@ public class ChomboMeshData {
 	public List<ChomboMembraneVarData> getMembraneVarData()
 	{
 		return membraneDataList;
+	}
+
+	public void setFraction0ComponentIndex(int fraction0ComponentIndex) {
+		this.fraction0ComponentIndex = fraction0ComponentIndex;
 	}
 }

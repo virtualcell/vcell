@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.Attribute;
 import ncsa.hdf.object.Dataset;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
@@ -149,6 +150,7 @@ public class ChomboFileReader {
 				chomboMeshData.addComponentName(compName);
 				if (compName.equals("fraction-0")){
 					fractionComponentIndex = i;
+					chomboMeshData.setFraction0ComponentIndex(fractionComponentIndex);
 				}
 			}
 			for (int i=0;i<numLevels;i++){
@@ -199,20 +201,14 @@ public class ChomboFileReader {
 	
 	public static ChomboDataset readDataset(ChomboFiles chomboFiles, int timeIndex) throws Exception{
 		String meshFilename = chomboFiles.getMeshFile().getPath();
-		List<ChomboFileEntry> chomboFileEntries = chomboFiles.getEntries();
+		Set<String> volumeDomainNames = chomboFiles.getVolumeDomainNames();
 		ChomboDataset chomboDataset = new ChomboDataset();
 		int domainOrdinal = 0;
-		for (ChomboFileEntry chomboFileEntry : chomboFileEntries){
-			if (chomboFileEntry.getTimeIndex()!=timeIndex){
-				continue;
-			}
-			String volDomainName = chomboFileEntry.getVolDomainName();
-			String memDomainName = chomboFileEntry.getMemDomainName();
-			File domainFile = chomboFileEntry.getFile();
-			//chomboFiles.getDataFileFromVolumeDomainName(volumeDomainName,timeIndex);
+		for (String volumeDomainName : volumeDomainNames){
+			File domainFile = chomboFiles.getDataFileFromVolumeDomainName(volumeDomainName,timeIndex);
 			ChomboMeshData chomboMeshData = readMesh(meshFilename, domainFile.getPath());
 			ChomboMesh chomboMesh = chomboMeshData.getMesh();
-			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(volDomainName,memDomainName,chomboMesh,chomboMeshData,domainOrdinal);
+			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(volumeDomainName,volumeDomainName+ChomboVtkFileWriter.MEMBRANE_DOMAIN_SUFFIX,chomboMesh,chomboMeshData,domainOrdinal);
 			chomboDataset.addDomain(chomboCombinedVolumeMembraneDomain);
 			domainOrdinal++;
 		}
@@ -235,7 +231,7 @@ public class ChomboFileReader {
 	private static void readMembraneVarData(ChomboMeshData chomboMeshData, Group rootGroup)
 	{
 			// I added solution and extrapolated_volumes group to hold all the solutions from vcell 
-		String[] groups = new String[]{"solution", "extrapolated_volumes"};
+		String[] groups = new String[]{"solution"/*, "extrapolated_volumes"*/};
 		for (String group: groups)
 		{
 			try
@@ -250,7 +246,18 @@ public class ChomboFileReader {
 						{
 							Dataset dataset = (Dataset)c;
 							String name = dataset.getName();
-							ChomboMembraneVarData vcellSolution = new ChomboMembraneVarData(name, (double[]) dataset.read());
+							List<Attribute> solAttrList = dataset.getMetadata();
+							String domain = null;
+							for (Attribute attr : solAttrList)
+							{
+								String attrName = attr.getName();
+								if (attrName.equals("domain")) {
+									Object obj = attr.getValue();
+									domain = ((String[])obj)[0];
+									break;
+								}
+							}
+							ChomboMembraneVarData vcellSolution = new ChomboMembraneVarData(name, domain, (double[]) dataset.read());
 							chomboMeshData.addMembraneVarData(vcellSolution);
 						}
 					}
