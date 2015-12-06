@@ -55,7 +55,6 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FieldFunctionDefinition;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ReservedMathSymbolEntries;
 import cbit.vcell.math.ReservedVariable;
@@ -83,6 +82,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
+import cbit.vcell.solvers.CartesianMeshChombo.FeaturePhaseVol;
 import cbit.vcell.solvers.FunctionFileGenerator;
 import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
@@ -2067,21 +2067,43 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 			&& !simTask.getSimulation().getSolverTaskDescription().isParallel()){
 		throw new RuntimeException("Export of Chombo simulations to VTK requires chombo data, select 'Chombo' data format in simulation solver options and rerun simulation.");
 	}
-	Enumeration<SubDomain> subdomainEnum = simTask.getSimulation().getMathDescription().getSubDomains();
-	while (subdomainEnum.hasMoreElements()){
-		SubDomain subDomain = subdomainEnum.nextElement();
-		if (subDomain instanceof CompartmentSubDomain){
-			for (int timeIndex : chomboFileIterationIndices){
-				for (int ivol = 0; ivol < 20; ++ ivol)
-				{
-					// can be many vol, let us try 20
-					String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
-					File file = amplistorHelper.getFile(expectedFile);
-					if (file.exists()){
-						chomboFiles.addDataFile(".feature_"+subDomain.getName(), subDomain.getName() + ".vol" + ivol, timeIndex, file);
-					}else{
-						LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
+	CartesianMeshChombo chomboMesh = (CartesianMeshChombo) mesh;
+	FeaturePhaseVol[] featurePhaseVols = chomboMesh.getFeaturePhaseVols();
+	for (int timeIndex : chomboFileIterationIndices)
+	{
+		if (featurePhaseVols == null)
+		{
+			// for old format which doesn't have featurephasevols, we need to try ivol up to 20 for each feature
+			Enumeration<SubDomain> subdomainEnum = simTask.getSimulation().getMathDescription().getSubDomains();
+			while (subdomainEnum.hasMoreElements()){
+				SubDomain subDomain = subdomainEnum.nextElement();
+				if (subDomain instanceof CompartmentSubDomain){
+					for (int ivol = 0; ivol < 20; ++ ivol)
+					{
+						// can be many vol, let us try 20
+						String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
+						File file = amplistorHelper.getFile(expectedFile);
+						if (file.exists()){
+							chomboFiles.addDataFile(".feature_"+subDomain.getName(), subDomain.getName() + ".vol" + ivol, timeIndex, file);
+						}else{
+							LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
+						}
 					}
+				}
+			}
+		}
+		else
+		{
+		  // for new format which has featurephasevols, we only need to try this many times.
+			// note: some feature + ivol doesn't have a file if there are no variables defined in that feature
+			for (FeaturePhaseVol pfv : featurePhaseVols)
+			{
+				String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+pfv.feature+".vol" + pfv.ivol + ".hdf5";
+				File file = amplistorHelper.getFile(expectedFile);
+				if (file.exists()){
+					chomboFiles.addDataFile(".feature_"+pfv.feature, pfv.feature + ".vol" + pfv.ivol, timeIndex, file);
+				}else{
+					LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
 				}
 			}
 		}
