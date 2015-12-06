@@ -17,16 +17,17 @@ public enum NativeLib {
 	NATIVE_SOLVERS("NativeSolvers"),
 	SBML("sbmlj"),
 	COPASI("vcellCopasiOptDriver"),
+	HDF5("jhdf5",false),
 	/**
 	 * SBML testing, not supported all platforms
 	 */
 	COPASI_JAVA("CopasiJava", false);
-	
+
 	private final String libName;
 	/**
 	 * indicate whether these libraries should be loaded automatically at startup
 	 */
-	public final boolean autoload; 
+	public final boolean autoload;
 	private boolean loaded = false;
 	private static final Logger lg = Logger.getLogger(NativeLib.class);
 
@@ -34,7 +35,7 @@ public enum NativeLib {
 		this.libName = libName;
 		this.autoload = true;
 	}
-	
+
 
 	private NativeLib(String libName, boolean autoload) {
 		this.libName = libName;
@@ -52,7 +53,7 @@ public enum NativeLib {
 		NativeLoader.load(libName);
 	}
 
-	public void load( ) { 
+	public void load( ) {
 		if (loaded) {
 			return;
 		}
@@ -67,7 +68,7 @@ public enum NativeLib {
 		}
 		loaded = true;
 	}
-	
+
 	/**
 	 * find whether underlying thread is complete
 	 * @return
