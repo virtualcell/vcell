@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # delay for load balancing / staggering 
 STARTUP_DELAY=${1:-0}
 sleep $STARTUP_DELAY
@@ -12,6 +12,7 @@ DIR=${0%/*}
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . $DIR/vcell.include
 . $DIR/server.include
+
 
 makelogname master
 #
@@ -41,12 +42,20 @@ jvmprop="${jvmprop} -Djava.io.tmpdir=${common_siteTmpDir}"
 jvmprop="${jvmprop} -Dlog4jConfigurationFile=${common_siteCfgDir}/log4jvcellservice.properties"
 jvmprop="${jvmprop} -Dvcell.lib=${common_siteLibDir}"
 
+jvmprop="${jvmprop} -Djava.util.prefs.systemRoot=${common_javaPrefsDir}"
+jvmprop="${jvmprop} -Djava.util.prefs.userRoot=${common_javaPrefsDir}"
+
 arguments="123 ${common_logdir} ${common_batchSystemType}"
 
 #
 # IMPORTANT:  ${procLabel} must be first because we are filtering on it for the kill script in DeployVCell.
 #
 {
+
+#ensure prefs directory exists
+sp=${common_javaPrefsDir}/.systemPrefs 
+mkdir -p $sp || { echo "Can't create $sp, exiting"; exit 1; }
+
 nohup ${common_jre} ${procLabel} ${jmxargs} -cp ${common_jvm_jars} ${jvmprop} ${vcellservice_mainclass} ${arguments} &
 
 #record pid of service
