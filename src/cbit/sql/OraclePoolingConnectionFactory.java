@@ -19,6 +19,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.vcell.util.ConfigurationException;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -44,6 +46,7 @@ public final class OraclePoolingConnectionFactory implements ConnectionFactory  
 	private PoolDataSource poolDataSource = null;
 	private SessionLog log = null;
 	private final ScheduledExecutorService executorService;
+	private static final Logger lg = Logger.getLogger(OraclePoolingConnectionFactory.class);
 
 public OraclePoolingConnectionFactory(SessionLog sessionLog) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, ConfigurationException, UniversalConnectionPoolException {
 	this(sessionLog, PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
@@ -92,19 +95,45 @@ public OraclePoolingConnectionFactory(SessionLog sessionLog, String argDriverNam
 	executorService.scheduleAtFixedRate(( ) -> statCheck( ), 1,2,TimeUnit.MINUTES);
 }
 
+/**
+ * scheduled method to check connection status. Log status if either the log4j level is already
+ * set to INFO or higher, or the number of connections is relatively low
+ */
 private void statCheck( ) {
-	try {
-		//oracle internal implementation is synchronized, so shouldn't need synchronization here
-		//if (poolDataSource.getAvailableConnectionsCount() < 5) {
-			JDBCConnectionPoolStatistics stats = poolDataSource.getStatistics();
-			log.print(stats.toString());
-		//}
-	} catch (Exception e) {
-		log.exception(e);
+	boolean infoOn = lg.isInfoEnabled();
+	if (infoOn) {
+		logStat( );
+		return;
 	}
 
+	//oracle internal implementation is synchronized, so shouldn't need synchronization here
+	try {
+		if ( poolDataSource.getAvailableConnectionsCount() >= 5) {
+			return;
+		}
+		Level lvl = lg.getLevel();
+		try {
+			lg.setLevel(Level.INFO);
+			logStat( );
+		}
+		finally {
+			lg.setLevel(lvl);
+		}
+
+	} catch (Exception e) {
+		lg.warn("trouble getting available connection count", e);
+	}
 }
 
+/**
+ * info log pool statistics; {@link #lg} {@link Logger#isInfoEnabled()} must be true for this to do anything
+ */
+private void logStat( ) {
+	if (lg.isInfoEnabled()) {
+		JDBCConnectionPoolStatistics stats = poolDataSource.getStatistics();
+		lg.info(stats.toString());
+	}
+}
 public synchronized void closeAll() throws java.sql.SQLException {
 }
 /**
@@ -136,7 +165,7 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 		conn = poolDataSource.getConnection();
 	} catch (SQLException ex) {
 		// might be invalid or stale connection
-		log.exception(ex);
+		log.print("first time #getConnection( ) fail " + ex.getMessage() + ", state " + ex.getSQLState() + ", attempting refresh");
 		// refresh cache
 		try {
 			connectionPoolManaager.refreshConnectionPool(connectionCacheName);
@@ -144,7 +173,12 @@ public synchronized Connection getConnection(Object lock) throws SQLException {
 			log.exception(e);
 		}
 		// get connection again.
-		conn = poolDataSource.getConnection();
+		try {
+			conn = poolDataSource.getConnection();
+		} catch (SQLException e) {
+			log.print("refresh failed");
+			log.exception(e);
+		}
 	}
 	if (conn == null) {
 		throw new SQLException("Cannot get a connection to the database. This could be caused by\n" +
