@@ -30,6 +30,7 @@ common_siteCfgDir=${common_siteRootDir}/configs
 common_propertyfile=${common_siteCfgDir}/vcell64.properties
 
 common_siteTmpDir=${common_siteRootDir}/tmp
+common_javaPrefsDir=${common_siteRootDir}/javaprefs
 
 common_siteLibDir=${common_siteRootDir}/lib
 LD_LIBRARY_PATH=${common_siteLibDir}:$LD_LIBRARY_PATH
