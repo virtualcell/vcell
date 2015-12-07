@@ -52,10 +52,14 @@ public abstract class VCellIcons {
 	public final static Icon rbmMolecularComponentErrIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component_err.gif"));
 	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.gif"));
 	public final static Icon rbmObservableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_observable.gif"));
-	public final static Icon rbmBondIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond.gif"));
 	public final static Icon rbmReactantIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_reactant.png"));
 	public final static Icon rbmProductIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_product.png"));
-	
+
+	public final static Icon rbmBondIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond.gif"));
+	public final static Icon rbmBondNoneIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_none.png"));
+	public final static Icon rbmBondExistsIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_exists.png"));
+	public final static Icon rbmBondPossibleIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_bond_possible.png"));
+
 	public final static Icon kineticsPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/kinetics_properties.png"));
 	public final static Icon editorPropertiesIcon = new ImageIcon(VCellIcons.class.getResource("/icons/editor_properties.png"));
 
