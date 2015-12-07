@@ -233,6 +233,11 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	} else {
 		appComponentsElement.setAttribute(XMLTags.InsufficientIterationsTag, "false");
 	}
+	if(simContext.isInsufficientMaxMolecules()) {
+		appComponentsElement.setAttribute(XMLTags.InsufficientMaxMoleculesTag, "true");
+	} else {
+		appComponentsElement.setAttribute(XMLTags.InsufficientMaxMoleculesTag, "false");
+	}
 		
 	Xmlproducer xmlProducer = new Xmlproducer(false);
 	// first fill in bioevents from simContext
@@ -334,6 +339,11 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 				simContext.setInsufficientIterations(true);
 			} else {
 				simContext.setInsufficientIterations(false);
+			}
+			if((appComponentsElement.getAttributeValue(XMLTags.InsufficientMaxMoleculesTag)!= null) && (appComponentsElement.getAttributeValue(XMLTags.InsufficientMaxMoleculesTag).equals("true"))) {
+				simContext.setInsufficientMaxMolecules(true);
+			} else {
+				simContext.setInsufficientMaxMolecules(false);
 			}
 
 			XmlReader xmlReader = new XmlReader(false);

@@ -175,6 +175,12 @@ public class NetworkTransformer implements SimContextTransformer {
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
 				simContext.appendToConsole(tcm);
 			}
+			if(simContext.isInsufficientMaxMolecules()) {
+				s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+				System.out.println(s);
+				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
+				simContext.appendToConsole(tcm);
+			}
 			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
 			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
 		}
@@ -204,6 +210,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		
 		simContext.setInsufficientIterations(false);
+		simContext.setInsufficientMaxMolecules(false);
 		String bngConsoleString = bngOutput.getConsoleOutput();
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.DetailBatch, bngConsoleString);
 		simContext.appendToConsole(tcm);

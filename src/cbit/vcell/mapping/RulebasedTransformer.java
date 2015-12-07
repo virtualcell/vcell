@@ -547,6 +547,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		}
 
 		simContext.setInsufficientIterations(false);
+		simContext.setInsufficientMaxMolecules(false);
 		String bngConsoleString = bngOutput.getConsoleOutput();
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.DetailBatch, bngConsoleString);
 //		simContext.appendToConsole(tcm);

@@ -1517,6 +1517,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	final boolean ruleBased = param.getApplicationType() == SimulationContext.Application.RULE_BASED_STOCHASTIC; 
 	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased); 
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
+	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
 	
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation

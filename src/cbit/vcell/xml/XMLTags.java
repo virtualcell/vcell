@@ -114,7 +114,8 @@ public class XMLTags {
     public static final String RuleBasedAttrTag = "RuleBased"; //rule-based , used with simulationspec Tag as an attribute
     public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
     public final static String RandomizeInitConditionTag = "RandomizeInitCondition"; //used for stochastic application. store boolean for randomizing initial condition
-    public final static String InsufficientIterationsTag = "InsufficientIterations"; // used for flattening rule based reactions
+    public final static String InsufficientIterationsTag = "InsufficientIterations"; 		// used for flattening rule based reactions
+    public final static String InsufficientMaxMoleculesTag = "InsufficientMaxMolecules";	// used for flattening rule based reactions
     //END-MATHMODEL
 
     //TAGS RELATED TO VERSION

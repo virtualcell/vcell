@@ -312,6 +312,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private transient TaskCallbackProcessor tcp = new TaskCallbackProcessor(this);
 	// not related with the cache below but used at the same time. NOT transient
 	private boolean bInsufficientIterations = false;
+	private boolean bInsufficientMaxMolecules = false;
 	// Cache of the BNGOutputSpec produced by running bng.exe
 	// This operation has no relationship whatsoever with caching of the MathMapping below
 	private transient String md5hash = null;
@@ -998,6 +999,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {
 			String message = "Max Iterations number may be insufficient.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, message, Issue.Severity.WARNING));
+		}
+		if(isInsufficientMaxMolecules()) {
+			String message = "Max Molecules / Species number may be insufficient.";
 			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, message, Issue.Severity.WARNING));
 		}
 	}
@@ -2590,6 +2595,12 @@ public boolean isInsufficientIterations() {
 }
 public void setInsufficientIterations(boolean bInsufficientIterations) {
 	this.bInsufficientIterations = bInsufficientIterations;
+}
+public boolean isInsufficientMaxMolecules() {
+	return bInsufficientMaxMolecules;
+}
+public void setInsufficientMaxMolecules(boolean bInsufficientMaxMolecules) {
+	this.bInsufficientMaxMolecules = bInsufficientMaxMolecules;
 }
 
 public MathMapping getMostRecentlyCreatedMathMapping(){
