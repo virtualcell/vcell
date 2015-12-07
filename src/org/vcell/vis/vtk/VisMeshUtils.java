@@ -10,6 +10,8 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.vcell.vis.vismesh.thrift.ChomboIndexData;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
+import org.vcell.vis.vismesh.thrift.VarData;
+import org.vcell.vis.vismesh.thrift.VisMesh;
 
 public class VisMeshUtils {
 
@@ -47,6 +49,28 @@ public class VisMeshUtils {
 		} catch (TException e) {
 			e.printStackTrace();
 			throw new IOException("error writing ChomboIndexData to file "+chomboIndexFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+
+	static void writeVisMesh(File visMeshFile, VisMesh visMesh) throws IOException {
+		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		try {
+			byte[] blob = serializer.serialize(visMesh);
+			FileUtils.writeByteArrayToFile(visMeshFile, blob);
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error writing VisMesh to file "+visMeshFile.getPath()+": "+e.getMessage(),e);
+		}
+	}
+
+	static void writeVarData(File varDataFile, VarData varData) throws IOException {
+		TSerializer serializer = new TSerializer(new TBinaryProtocol.Factory());
+		try {
+			byte[] blob = serializer.serialize(varData);
+			FileUtils.writeByteArrayToFile(varDataFile, blob);
+		} catch (TException e) {
+			e.printStackTrace();
+			throw new IOException("error writing VarData to file "+varDataFile.getPath()+": "+e.getMessage(),e);
 		}
 	}
 
