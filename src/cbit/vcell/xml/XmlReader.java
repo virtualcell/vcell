@@ -5272,6 +5272,7 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	boolean bUseConcentration = true;
 	boolean bRandomizeInitCondition = false;
 	boolean bInsufficientIterations = false;
+	boolean bInsufficientMaxMolecules = false;
 	
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true"))){
 		bStoch = true;
@@ -5290,6 +5291,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	}
 	if((param.getAttributeValue(XMLTags.InsufficientIterationsTag)!= null) && (param.getAttributeValue(XMLTags.InsufficientIterationsTag).equals("true"))) {
 		bInsufficientIterations = true;
+	}
+	if((param.getAttributeValue(XMLTags.InsufficientMaxMoleculesTag)!= null) && (param.getAttributeValue(XMLTags.InsufficientMaxMoleculesTag).equals("true"))) {
+		bInsufficientMaxMolecules = true;
 	}
 	if ((param.getAttributeValue(XMLTags.RuleBasedAttrTag)!= null) && (param.getAttributeValue(XMLTags.RuleBasedAttrTag).equals("true"))){
 		bRuleBased = true;
@@ -5362,6 +5366,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 		if(bInsufficientIterations) {
 			newsimcontext.setInsufficientIterations(bInsufficientIterations);
+		}
+		if(bInsufficientMaxMolecules) {
+			newsimcontext.setInsufficientMaxMolecules(bInsufficientMaxMolecules);
 		}
 		 
 	} catch(java.beans.PropertyVetoException e) {

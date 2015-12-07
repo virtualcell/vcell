@@ -184,6 +184,8 @@ public class StochtestRunService {
 				
 				if (simContext.isInsufficientIterations()){
 					networkGenProbs = "insufficientIterations";
+				} else if (simContext.isInsufficientMaxMolecules()){
+					networkGenProbs = "insufficientMaxMolecules";
 				}
 		    	
 		    	

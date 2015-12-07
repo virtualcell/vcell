@@ -47,6 +47,7 @@ public class SimulationConsolePanel extends JPanel {
 	public final static int speciesLimit = 1000;			// 1000
 	public final static int reactionsLimit = 3000;			// 3000
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
+	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
 
 	public final static String getSpeciesLimitExceededMessage(BNGOutputSpec outputSpec) {
 		return "Species limit exceeded: max allowed number: " + speciesLimit + ", actual number: " + outputSpec.getBNGSpecies().length + endMessage;
@@ -56,6 +57,9 @@ public class SimulationConsolePanel extends JPanel {
 	}
 	public final static String getInsufficientIterationsMessage() {
 		return "Warning: Max Iterations number may be insufficient." + endMessage;
+	}
+	public final static String getInsufficientMaxMoleculesMessage() {
+		return "Warning: Max Molecules / Species number may be insufficient." + endMessage2;
 	}
 
 
