@@ -50,7 +50,7 @@ public abstract class VCellIcons {
 	public final static Icon rbmComponentErrorIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_error.gif"));
 
 	public final static Icon rbmMolecularComponentErrIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_molecular_component_err.gif"));
-	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.gif"));
+	public final static Icon rbmComponentStateIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_component_state.png"));
 	public final static Icon rbmObservableIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_observable.gif"));
 	public final static Icon rbmReactantIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_reactant.png"));
 	public final static Icon rbmProductIcon = new ImageIcon(VCellIcons.class.getResource("/icons/rbm_product.png"));
