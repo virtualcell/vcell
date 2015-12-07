@@ -23,7 +23,7 @@ import org.vcell.vis.vismesh.thrift.ChomboSurfaceIndex;
 import org.vcell.vis.vismesh.thrift.ChomboVolumeIndex;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vtk.VisMeshUtils;
-import org.vcell.vis.vtk.VtkGridUtils;
+import org.vcell.vis.vtk.VtkService;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType.VariableDomain;
@@ -390,7 +390,7 @@ public class ChomboVtkFileWriter {
 			{
 			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, volumeDomainName);
 			File chomboIndexDataFile = getChomboIndexDataFileName(destinationDirectory, chomboFiles, volumeDomainName);
-			VtkGridUtils.writeChomboVolumeVtkGridAndIndexData(visMesh, volumeDomainName, volumeMeshFile, chomboIndexDataFile);
+			VtkService.getInstance().writeChomboVolumeVtkGridAndIndexData(visMesh, volumeDomainName, volumeMeshFile, chomboIndexDataFile);
 			meshFiles.add(volumeMeshFile);
 			}
 						
@@ -402,7 +402,7 @@ public class ChomboVtkFileWriter {
 				
 				File membraneMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, membraneDomainName);
 				File membraneIndexDataFile = getChomboIndexDataFileName(destinationDirectory, chomboFiles, membraneDomainName);
-				VtkGridUtils.writeChomboMembraneVtkGridAndIndexData(visMesh, membraneDomainName, membraneMeshFile, membraneIndexDataFile);
+				VtkService.getInstance().writeChomboMembraneVtkGridAndIndexData(visMesh, membraneDomainName, membraneMeshFile, membraneIndexDataFile);
 				meshFiles.add(membraneMeshFile);
 			}
 		}

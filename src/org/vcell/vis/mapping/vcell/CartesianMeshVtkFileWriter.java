@@ -17,7 +17,7 @@ import org.vcell.vis.vismesh.thrift.FiniteVolumeIndex;
 import org.vcell.vis.vismesh.thrift.FiniteVolumeIndexData;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vtk.VisMeshUtils;
-import org.vcell.vis.vtk.VtkGridUtils;
+import org.vcell.vis.vtk.VtkService;
 
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.MathException;
@@ -246,7 +246,7 @@ public class CartesianMeshVtkFileWriter {
 			VisMesh visMesh = domainMeshMap.get(domainName);
 			File vtuFile = getVtuMeshFileName(vcellFiles, domainName);
 			File fvIndexDataFileName = getFiniteVolumeIndexDataFileName(vcellFiles, domainName);
-			VtkGridUtils.writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, domainName, vtuFile, fvIndexDataFileName);
+			VtkService.getInstance().writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, domainName, vtuFile, fvIndexDataFileName);
 			files.add(vtuFile);
 			filesProcessed++;
 			if (progressListener!=null){
