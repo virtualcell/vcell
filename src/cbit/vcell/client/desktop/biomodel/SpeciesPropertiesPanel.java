@@ -1169,6 +1169,7 @@ private void updateShape() {
 						}
 						mcp.setBondType(BondType.None);
 						mcp.setBond(null);
+						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
 					} else if(name.equals(existsString)) {
 						if(btBefore == BondType.Specified) {	// specified -> not specified
 							// change the partner to possible
@@ -1177,6 +1178,7 @@ private void updateShape() {
 						}
 						mcp.setBondType(BondType.Exists);
 						mcp.setBond(null);
+						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
 					} else if(name.equals(possibleString)) {
 						if(btBefore == BondType.Specified) {	// specified -> not specified
 							// change the partner to possible
@@ -1185,6 +1187,7 @@ private void updateShape() {
 						}
 						mcp.setBondType(BondType.Possible);
 						mcp.setBond(null);
+						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
 					} else {
 						if (btBefore != BondType.Specified) {
 							// if we go from a non-specified to a specified we need to find the next available
@@ -1203,6 +1206,7 @@ private void updateShape() {
 						mcp.setBond(b);
 						mcp.getBond().molecularComponentPattern.setBondId(mcp.getBondId());
 						sp.resolveBonds();
+						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
 					}
 				}
 			});
