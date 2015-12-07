@@ -51,7 +51,7 @@ import vtk.vtkXMLUnstructuredGridWriter;
 //import vtk.vtkXdmfWriter;
 import cbit.vcell.resource.NativeLib;
 
-public class VtkGridUtils {
+ class VtkGridUtils extends VtkService {
 	
 	public static final Logger LG = Logger.getLogger(VtkGridUtils.class);
 	private static final boolean bClipPolyhedra = true;
@@ -68,8 +68,7 @@ public class VtkGridUtils {
 		vtkObjectBase.JAVA_OBJECT_MANAGER.getAutoGarbageCollector().SetAutoGarbageCollection(true);
 	}
 	
-	private VtkGridUtils(){
-		
+	VtkGridUtils(){	
 	}
 
 	private static int[] getVtkFaceStream(VisIrregularPolyhedron irregularPolyhedron) {
@@ -475,7 +474,8 @@ public class VtkGridUtils {
 		return vtkgrid;
 	}
 
-	public synchronized static void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File indexFile) throws IOException {
+	@Override
+	public synchronized void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File indexFile) throws IOException {
 		try {
 			vtk.vtkUnstructuredGrid vtkgrid = getVolumeVtkGrid(visMesh);
 			vtk.vtkUnstructuredGrid vtkgridSmoothed = VtkGridUtils.smoothUnstructuredGridSurface(vtkgrid);
@@ -532,7 +532,8 @@ public class VtkGridUtils {
 		}
 	}
 	
-	public synchronized static void writeChomboVolumeVtkGridAndIndexData(VisMesh visMesh, String domainName, File volumeMeshFile, File chomboIndexFile) throws IOException {
+	@Override
+	public synchronized void writeChomboVolumeVtkGridAndIndexData(VisMesh visMesh, String domainName, File volumeMeshFile, File chomboIndexFile) throws IOException {
 		try {
 			VisMesh originalVisMesh = visMesh;
 			VisMesh correctedVisMesh = originalVisMesh;
@@ -589,7 +590,8 @@ public class VtkGridUtils {
 		}
 	}
 
-	public synchronized static void writeChomboMembraneVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File chomboIndexFile) throws IOException {
+	@Override
+	public synchronized void writeChomboMembraneVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtuFile, File chomboIndexFile) throws IOException {
 		try {
 			vtkUnstructuredGrid vtkgrid = getMembraneVtkGrid(visMesh);
 			write(vtkgrid, vtuFile.getPath());
@@ -621,7 +623,8 @@ public class VtkGridUtils {
 		}
 	}
 
-	public synchronized static void writeDataArrayToNewVtkFile(File emptyMeshFile, String varName, double[] data, File newMeshFile) throws IOException{
+	@Override
+	public synchronized void writeDataArrayToNewVtkFile(File emptyMeshFile, String varName, double[] data, File newMeshFile) throws IOException{
 		try {
 			vtkUnstructuredGrid vtkgrid = read(emptyMeshFile.getCanonicalPath());
 			vtkgrid.BuildLinks();

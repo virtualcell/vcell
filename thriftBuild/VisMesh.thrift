@@ -103,6 +103,10 @@ struct ChomboIndexData {
    3: optional list<ChomboVolumeIndex> chomboVolumeIndices;
 }
 
+struct VarData {
+   1: required string varName;
+   2: required list<double> varData;
+}
 
 struct VisMesh {
    1: required int dimension;
