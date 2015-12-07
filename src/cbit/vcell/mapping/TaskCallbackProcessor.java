@@ -26,6 +26,7 @@ public class TaskCallbackProcessor {
 	private int currentIterationSpecies = 0;
 	private int previousIterationSpecies = 0;
 	private boolean needAdjustIterations = false;
+	private boolean needAdjustMaxMolecules = false;
 	
 	public TaskCallbackProcessor(SimulationContext simulationContext) {
 		this.sc = simulationContext;
@@ -56,6 +57,7 @@ public class TaskCallbackProcessor {
 			previousIterationSpecies = 0;
 			currentIterationSpecies = 0;
 			needAdjustIterations = false;
+			needAdjustMaxMolecules = false;
 			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
@@ -81,6 +83,15 @@ public class TaskCallbackProcessor {
 				sc.firePropertyChange("appendToConsole", "", tcm);
 				sc.setInsufficientIterations(true);
 			}
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
+				if(needAdjustMaxMolecules) {
+					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
+					consoleNotificationList.add(tcm);
+					sc.firePropertyChange("appendToConsole", "", tcm);
+					sc.setInsufficientMaxMolecules(true);
+				}
+			}
 			break;
 		case TaskStopped:		// by user
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
@@ -88,6 +99,7 @@ public class TaskCallbackProcessor {
 			sc.firePropertyChange("appendToConsole", "", tcm);
 			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
 			currentIterationSpecies = 0;
+			needAdjustMaxMolecules = false;	// we don't know anymore if we need to adjust the max molecules or not
 			break;
 		case Notification:		// normal notification, just display the string
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
@@ -107,6 +119,15 @@ public class TaskCallbackProcessor {
 				sc.firePropertyChange("appendToConsole", "", tcm);
 				sc.setInsufficientIterations(true);
 				needAdjustIterations = true;
+			}
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
+				if(needAdjustMaxMolecules) {
+					s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
+					consoleNotificationList.add(tcm);
+					sc.firePropertyChange("appendToConsole", "", tcm);
+					sc.setInsufficientMaxMolecules(true);
+				}
 			}
 			break;
 		case Error:	
@@ -141,6 +162,13 @@ public class TaskCallbackProcessor {
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
 				checkMaxIterationConsistency(s);
+			} else if (s.startsWith("WARNING: maximal length of aggregate is reached in reaction")) {
+//				System.out.println(s);
+				needAdjustMaxMolecules = true;	// we write the notification at the end, if various conditions are verified
+			} else {	// uncomment below to display everything
+//				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
+//				consoleNotificationList.add(tcm);
+//				sc.firePropertyChange("appendToConsole", "", tcm);
 			}
 		}
 	}
