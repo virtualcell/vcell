@@ -40,6 +40,7 @@ import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -860,6 +861,9 @@ private void startVirtualFRAP(){
 private void startVCellVisIt() {
 	try {
 		VisitSupport.launchVisTool(new ExecutableFinderDialog(this, VisitSupport.visitUserMessage)); 
+	}catch (UserCancelException e){
+		e.printStackTrace(System.out);
+		//ignore
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this, "failed to launch visTool, exception: "+e.getMessage());
