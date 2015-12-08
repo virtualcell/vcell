@@ -1071,29 +1071,39 @@ private void updateShape() {
 		
 		// ------------------------------------------------------------------- State
 		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
-			JMenu editStateMenu = new JMenu();
-			editStateMenu.setText("Edit State");
-			editStateMenu.removeAll();
-			List<String> itemList = new ArrayList<String>();
+			String prefix = "State:  ";
+			final Map<String, String> itemMap = new LinkedHashMap<String, String>();
 //			itemList.add(ComponentStatePattern.strAny);			// any is not an option for state
+			String csdCurrentName;
 			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				csdCurrentName = "";
+				if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
+					ComponentStateDefinition csdCurrent = mcp.getComponentStatePattern().getComponentStateDefinition();
+					csdCurrentName = csdCurrent.getName();
+				}
 				String name = csd.getName();
-				itemList.add(name);
+				if(name.equals(csdCurrentName)) {	// currently selected menu item is shown in bold
+					name = "<html>" + prefix + "<b>" + name + "</b></html>";
+				} else {
+					name = "<html>" + prefix + name + "</html>";
+				}
+				itemMap.put(name, csd.getName());
 			}
-			for(String name : itemList) {
+			for(String name : itemMap.keySet()) {
 				JMenuItem menuItem = new JMenuItem(name);
-				editStateMenu.add(menuItem);
+				popupFromShapeMenu.add(menuItem);
+				menuItem.setIcon(VCellIcons.rbmComponentStateIcon);
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						String name = e.getActionCommand();
+						String key = e.getActionCommand();
+						String name = itemMap.get(key);
 						if(name.equals(ComponentStatePattern.strAny)) {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {
-							String csdName = e.getActionCommand();
-							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
+							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(name);
 							if(csd == null) {
-								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
+								throw new RuntimeException("Missing ComponentStateDefinition " + name + " for Component " + mcp.getMolecularComponent().getName());
 							}
 							ComponentStatePattern csp = new ComponentStatePattern(csd);
 							mcp.setComponentStatePattern(csp);
@@ -1101,7 +1111,6 @@ private void updateShape() {
 					}
 				});
 			}
-			popupFromShapeMenu.add(editStateMenu);
 		}
 		if(showWhat == ShowWhat.ShowState) {
 			return;
@@ -1112,22 +1121,22 @@ private void updateShape() {
 		final SpeciesPattern sp = locationContext.getSpeciesPattern();
 		
 		JMenu editBondMenu = new JMenu();
-		editBondMenu.setText("Edit Bond");
+		final String specifiedString = mcp.getBondType() == BondType.Specified ? "<html><b>" + "Site bond specified" + "</b></html>" : "<html>" + "Site bond specified" + "</html>";
+		editBondMenu.setText(specifiedString);
+		editBondMenu.setToolTipText("Specified");
 		editBondMenu.removeAll();
 		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
 		
-		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
-		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
-		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		String noneString = mcp.getBondType() == BondType.None ? "<html><b>" + "Site is unbound" + "</b></html>" : "<html>" + "Site is unbound" + "</html>";
 		itemMap.put(noneString, null);
 //		itemMap.put(existsString, null);	// not a valid option for species
 //		itemMap.put(possibleString, null);	// not a valid option for species
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
-				if(b.equals(mcp.getBond())) {
-					continue;	// if the mcp has a bond already we don't offer it
-				}
+//				if(b.equals(mcp.getBond())) {
+//					continue;	// if the mcp has a bond already we don't offer it
+//				}
 				int index = 0;
 				if(mcp.getBondType() == BondType.Specified) {
 					index = mcp.getBondId();
@@ -1142,7 +1151,11 @@ private void updateShape() {
 		Graphics gc = shapePanel.getGraphics();
 		for(String name : itemMap.keySet()) {
 			JMenuItem menuItem = new JMenuItem(name);
-			if(index > 0) {
+			if(index == 0) {
+				menuItem.setIcon(VCellIcons.rbmBondNoneIcon);
+				menuItem.setToolTipText("None");
+				popupFromShapeMenu.add(menuItem);
+			} else {
 				Bond b = itemMap.get(name);
 				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
 				spBond.resetBonds();
@@ -1152,40 +1165,22 @@ private void updateShape() {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(1,4, spBond, gc, fieldSpeciesContext, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, fieldSpeciesContext, false);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
+				editBondMenu.add(menuItem);
 			}
-			editBondMenu.add(menuItem);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					String name = e.getActionCommand();
 					BondType btBefore = mcp.getBondType();
 					if(name.equals(noneString)) {
 						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							// change the partner to none since this is the only option
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.None);
 							mcp.getBond().molecularComponentPattern.setBond(null);
 						}
 						mcp.setBondType(BondType.None);
-						mcp.setBond(null);
-						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
-					} else if(name.equals(existsString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Exists);
-						mcp.setBond(null);
-						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
-					} else if(name.equals(possibleString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
-							// change the partner to possible
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
-							mcp.getBond().molecularComponentPattern.setBond(null);
-						}
-						mcp.setBondType(BondType.Possible);
 						mcp.setBond(null);
 						SwingUtilities.invokeLater(new Runnable() { public void run() { speciesPropertiesTreeModel.populateTree(); } });
 					} else {
@@ -1197,8 +1192,8 @@ private void updateShape() {
 							mcp.setBondId(bondId);
 						} else {
 							// specified -> specified
-							// change the old partner to possible, continue using the bond id
-							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
+							// change the old partner to none since it's the only available option, continue using the bond id
+							mcp.getBond().molecularComponentPattern.setBondType(BondType.None);
 							mcp.getBond().molecularComponentPattern.setBond(null);
 						}
 						mcp.setBondType(BondType.Specified);
