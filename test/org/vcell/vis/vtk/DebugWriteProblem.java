@@ -10,8 +10,6 @@ import org.vcell.vis.vismesh.thrift.VisIrregularPolyhedron;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 import org.vcell.vis.vismesh.thrift.VisPoint;
 
-import vtk.vtkUnstructuredGrid;
-
 public class DebugWriteProblem {
 
 	/**
@@ -64,7 +62,7 @@ public class DebugWriteProblem {
 //			
 			
 		
-			vtkUnstructuredGrid vtkgrid = VtkGridUtils.getVolumeVtkGrid(visMesh);
+//			vtkUnstructuredGrid vtkgrid = VtkGridUtils.getVolumeVtkGrid(visMesh);
 //			String filenameASCII = "testASCII.vtk";
 //			String filenameBinary = "testBinary.vtk";
 //			VtkGridUtils.writeXML(vtkgrid, filenameASCII, true);

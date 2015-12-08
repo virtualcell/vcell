@@ -7,7 +7,6 @@ import java.util.List;
 import org.vcell.vis.mapping.chombo.ChomboCellIndices;
 import org.vcell.vis.mapping.chombo.ChomboVisMembraneIndex;
 
-import vtk.vtkMath;
 import cbit.vcell.simdata.SimDataConstants;
 
 public class ChomboMeshData {
@@ -158,13 +157,12 @@ public class ChomboMeshData {
 			}
 		}
 		if (memVarData!=null){
-			vtkMath vtkmath = new vtkMath();
 			for (int i=0;i<cellData.length;i++){
 				int chomboIndex = cellIndices.get(i).getChomboIndex();
 				cellData[i] = memVarData.getRawChomboData()[chomboIndex];
 				if (cellData[i] == SimDataConstants.BASEFAB_REAL_SETVAL)
 				{
-					cellData[i] = vtkmath.Nan();
+					cellData[i] = Double.NaN;
 			  }
 			}
 		}else if (var.equals(BUILTIN_VAR_MEMBRANE_INDEX)){
