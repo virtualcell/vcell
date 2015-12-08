@@ -1100,34 +1100,50 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		// ------------------------------------------------------------------- State
 		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
-			JMenu editStateMenu = new JMenu();
-			editStateMenu.setText("Edit State");
-			editStateMenu.removeAll();
-			List<String> itemList = new ArrayList<String>();
-			itemList.add(ComponentStatePattern.strAny);
-			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
-				String name = csd.getName();
-				itemList.add(name);
+			String prefix = "State:  ";
+			String csdCurrentName = "";
+			final Map<String, String> itemMap = new LinkedHashMap<String, String>();
+			if(mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny()) {
+				csdCurrentName = "<html>" + prefix + "<b>" + ComponentStatePattern.strAny + "</b></html>";
+			} else {
+				csdCurrentName = "<html>" + prefix + ComponentStatePattern.strAny + "</html>";
 			}
-			for(String name : itemList) {
-				JMenuItem menuItem = new JMenuItem(name);
+			itemMap.put(csdCurrentName, ComponentStatePattern.strAny);
+			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				csdCurrentName = "";
+				if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
+					ComponentStateDefinition csdCurrent = mcp.getComponentStatePattern().getComponentStateDefinition();
+					csdCurrentName = csdCurrent.getName();
+				}
+				String name = csd.getName();
+				if(name.equals(csdCurrentName)) {	// currently selected menu item is shown in bold
+					name = "<html>" + prefix + "<b>" + name + "</b></html>";
+				} else {
+					name = "<html>" + prefix + name + "</html>";
+				}
+				itemMap.put(name, csd.getName());
+			}
+			for(String key : itemMap.keySet()) {
+				JMenuItem menuItem = new JMenuItem(key);
 				if(!bIsReactant) {
+					String name = itemMap.get(key);
 					if(name.equals(ComponentStatePattern.strAny) && anyStateProhibited) {
 						menuItem.setEnabled(false);
 					} else if(!name.equals(ComponentStatePattern.strAny) && explicitStateProhibited) {
 						menuItem.setEnabled(false);
 					}
 				}
-				editStateMenu.add(menuItem);
+				popupFromShapeMenu.add(menuItem);
+				menuItem.setIcon(VCellIcons.rbmComponentStateIcon);
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						String name = e.getActionCommand();
+						String key = e.getActionCommand();
+						String name = itemMap.get(key);
 						ComponentStatePattern csp = new ComponentStatePattern();
 						if(!name.equals(ComponentStatePattern.strAny)) {
-							String csdName = e.getActionCommand();
-							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
+							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(name);
 							if(csd == null) {
-								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
+								throw new RuntimeException("Missing ComponentStateDefinition " + name + " for Component " + mcp.getMolecularComponent().getName());
 							}
 							csp = new ComponentStatePattern(csd);
 						}
@@ -1141,7 +1157,6 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 			}
-			popupFromShapeMenu.add(editStateMenu);
 		}
 		if(showWhat == ShowWhat.ShowState) {
 			return;
@@ -1152,22 +1167,24 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		final SpeciesPattern sp = locationContext.getSpeciesPattern();
 		
 		JMenu editBondMenu = new JMenu();
-		editBondMenu.setText("Edit Bond");
+		final String specifiedString = mcp.getBondType() == BondType.Specified ? "<html><b>" + "Site bond specified" + "</b></html>" : "<html>" + "Site bond specified" + "</html>";
+		editBondMenu.setText(specifiedString);
+		editBondMenu.setToolTipText("Specified");
 		editBondMenu.removeAll();
 		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
 		
-		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
-		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
-		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		String noneString = mcp.getBondType() == BondType.None ? "<html><b>" + "Site is unbound" + "</b></html>" : "<html>" + "Site is unbound" + "</html>";
+		String existsString = mcp.getBondType() == BondType.Exists ? "<html><b>" + "Site has external bond" + "</b></html>" : "<html>" + "Site has external bond" + "</html>";	// Site is bound
+		String possibleString = mcp.getBondType() == BondType.Possible ? "<html><b>" + "Site may be bound" + "</b></html>" : "<html>" + "Site may be bound" + "</html>";
 		itemMap.put(noneString, null);
 		itemMap.put(existsString, null);
 		itemMap.put(possibleString, null);
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
-				if(b.equals(mcp.getBond())) {
-					continue;	// if the mcp has a bond already we don't offer it
-				}
+//				if(b.equals(mcp.getBond())) {
+//					continue;	// if the mcp has a bond already we don't offer it
+//				}
 				int index = 0;
 				if(mcp.getBondType() == BondType.Specified) {
 					index = mcp.getBondId();
@@ -1193,7 +1210,19 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					menuItem.setEnabled(false);
 				}
 			}
-			if(index > 2) {					// we skip None, Exists, Possible
+			if(index == 0) {
+				menuItem.setIcon(VCellIcons.rbmBondNoneIcon);
+				menuItem.setToolTipText("None");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index == 1) {
+				menuItem.setIcon(VCellIcons.rbmBondExistsIcon);
+				menuItem.setToolTipText("Exists");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index == 2) {
+				menuItem.setIcon(VCellIcons.rbmBondPossibleIcon);
+				menuItem.setToolTipText("Possible");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index > 2) {					// we skip None, Exists, Possible
 				Bond b = itemMap.get(name);
 				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
 				spBond.resetBonds();
@@ -1203,11 +1232,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(1,4, spBond, gc, reactionRule, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, reactionRule, false);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
+				editBondMenu.add(menuItem);
 			}
-			editBondMenu.add(menuItem);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					String name = e.getActionCommand();
@@ -1221,7 +1250,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						mcp.setBondType(BondType.None);
 						mcp.setBond(null);
 					} else if(name.equals(existsString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
+						if(btBefore == BondType.Specified) {	// specified -> exists
 							// change the partner to possible
 							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
 							mcp.getBond().molecularComponentPattern.setBond(null);
@@ -1229,7 +1258,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						mcp.setBondType(BondType.Exists);
 						mcp.setBond(null);
 					} else if(name.equals(possibleString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
+						if(btBefore == BondType.Specified) {	// specified -> possible
 							// change the partner to possible
 							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
 							mcp.getBond().molecularComponentPattern.setBond(null);
@@ -1261,7 +1290,6 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						reflectBondToProduct(mcp);
 						productTreeModel.populateTree();
 					}
-
 					treeModel.populateTree();
 //					shapePanel.repaint();				
 				}
