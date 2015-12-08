@@ -30,7 +30,7 @@ public class ExecutableFinderDialog implements ExecutableFinder {
 	public File find(String executableName) {
 		String retcode = DialogUtils.showOKCancelWarningDialog(parent, executableName + " not found", userMessage); 
 		if (!retcode.equals(SimpleUserMessage.OPTION_OK)){
-			return null;
+			throw UserCancelException.CANCEL_GENERIC;
 		}
 		//
 		// ask user for file location

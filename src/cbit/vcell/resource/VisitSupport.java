@@ -1,12 +1,16 @@
 package cbit.vcell.resource;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 
@@ -62,16 +66,55 @@ public class VisitSupport {
 		return new File(url.toURI());
 	}
 
+	  private static List<File> doSearch(String command[]) throws IOException{
+	    Process process = Runtime.getRuntime().exec(command);
+	    BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	    ArrayList<File> results = new ArrayList<File>();
+	    String line;
+	    while ((line = out.readLine()) != null)
+	      results.add(new File(line));
+	    return results;
+	  }
 
-	private static void launchVisToolMac(ExecutableFinder gef) throws IOException, URISyntaxException, BackingStoreException {
+	  public static Map<String,String> getMetadata(File file) throws IOException{
+	    Process process = Runtime.getRuntime().exec(new String[] {"mdls", file.getAbsolutePath()});
+	    BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
+	    HashMap<String,String> results = new HashMap<String,String>();
+	    String line;
+	    while ((line = out.readLine()) != null)
+	    {
+	      int equals = line.indexOf('=');
+	      if (equals > -1)
+	      {
+	        String key = line.substring(0, equals).trim();
+	        String value = line.substring(equals+1).trim();
+	        results.put(key, value);
+	      }
+	    }
+	    return results;
+	  }
+
+	  
+	  
+	  private static void launchVisToolMac(ExecutableFinder gef) throws IOException, URISyntaxException, BackingStoreException {
+		
+		String vname = "visit";
+		File visitExecutableRoot = null;
+		//mdfind "kMDItemContentType==com.apple.application-bundle && kMDItemFSName=='visit.app'c"
+		List<File> visitList = doSearch(new String[] {"mdfind", "kMDItemContentType==com.apple.application-bundle", "&&","kMDItemFSName=='"+vname+".app'c"});
+		if(visitList != null && visitList.size() == 1){
+			visitExecutableRoot = visitList.get(0);
+		}
+//		if(true){return;}
 		
 		File visMainCLI = getVisToolPythonScript();
-		File visitExecutable = null;
 
-		String vname = "visit";
+//		File visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
+		if(visitExecutableRoot == null){
+			visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
+		}
 		
-		File visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
-		
+		File visitExecutable = null;
 		visitExecutable = new File(visitExecutableRoot,"/Contents/Resources/bin/visit");
 		
 		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
