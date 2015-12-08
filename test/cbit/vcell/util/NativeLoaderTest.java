@@ -46,9 +46,9 @@ public class NativeLoaderTest {
 	//@Test
 	public void loadEm( ) {
 		long start = System.currentTimeMillis();
-		Future<Boolean> r = NativeLoader.load("vtk");
-		Future<Boolean> x = NativeLoader.load("vtk");
-		Future<Boolean> y = NativeLoader.load("vtk");
+		Future<Boolean> r = NativeLoader.load(NativeLib.NATIVE_SOLVERS.name());
+		Future<Boolean> x = NativeLoader.load(NativeLib.NATIVE_SOLVERS.name());
+		Future<Boolean> y = NativeLoader.load(NativeLib.NATIVE_SOLVERS.name());
 		assertTrue(r == x);
 		assertTrue(y == x);
 		long counter = 0;
