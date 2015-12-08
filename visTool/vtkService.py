@@ -18,7 +18,7 @@ from vcellvismesh.ttypes import VisPolygon
 import numpy as np
 
 
-
+import copy
 
 
 def writeChomboVolumeVtkGridAndIndexData(visMesh, domainname, vtkfile, indexfile):
@@ -28,9 +28,9 @@ def writeChomboVolumeVtkGridAndIndexData(visMesh, domainname, vtkfile, indexfile
     originalVisMesh = visMesh
     correctedVisMesh = originalVisMesh  # same mesh if no irregularPolyhedra
     if originalVisMesh.irregularPolyhedra is not None:
-        correctedVisMesh = VisMesh(originalVisMesh)
+        correctedVisMesh = copy.deepcopy(visMesh)
         if correctedVisMesh.tetrahedra is None:
-            correctedVisMesh = []
+            correctedVisMesh.tetrahedra = []
         for irregularPolyhedron in correctedVisMesh.irregularPolyhedra:
             tets = createTetrahedra(irregularPolyhedron, correctedVisMesh)
             for tet in tets:
@@ -304,8 +304,9 @@ def getVolumeVtkGrid(visMesh):
 
     if visMesh.tetrahedra != None:
         for visTet in visMesh.tetrahedra:
+            assert isinstance(visTet, VisTetrahedron)
             pts = vtk.vtkIdList()
-            tetPoints = visTet.getPointIndices()
+            tetPoints = visTet.pointIndices
             for p in tetPoints:
                 pts.InsertNextId(p)
             vtkgrid.InsertNextCell(tetraType, pts)
@@ -447,11 +448,19 @@ def createTetrahedra(clippedPolyhedron, visMesh):
     delaunayFilter.SetAlpha(0.1)
     vtkgrid2 = delaunayFilter.GetOutput()
     assert isinstance(vtkgrid2, vtk.vtkUnstructuredGrid)
-    delaunayFilter.Delete()
+
     visTets = []
     numTets = vtkgrid2.GetNumberOfCells()
     if numTets < 1:
-        print("found no tets")
+        if len(uniquePointIndices)==4:
+            visTet = VisTetrahedron(uniquePointIndices)
+            visTet.chomboVolumeIndex = clippedPolyhedron.chomboVolumeIndex
+            visTet.finiteVolumeIndex = clippedPolyhedron.finiteVolumeIndex
+            visTets.append(visTet)
+            print("made trivial tet ... maybe inside out")
+        else:
+            print("found no tets, there are "+str(len(uniquePointIndices))+" unique point indices")
+
 
     #	print("numFaces = "+str(vtkpolydata.GetNumberOfCells())+", numTets = "+str(numTets));
     for cellIndex in range(0, numTets):
@@ -481,7 +490,7 @@ def createTetrahedra(clippedPolyhedron, visMesh):
 
 
 def main():
-    try:
+#    try:
         parser = argparse.ArgumentParser()
         list_of_meshtypes = ["chombovolume", "chombomembrane", "finitevolume"]
         parser.add_argument("meshtype", help="type of visMesh processing required and index file generated", choices=list_of_meshtypes)
@@ -510,12 +519,12 @@ def main():
             writeChomboMembraneVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
         elif args.meshtype == "finitevolume":
             writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
-    except:
-        e = sys.exc_info()[0]
-        print("exception "+e)
-        sys.exit(-1)
-    else:
-        sys.exit(0)
+    # except:
+    #     e = sys.exc_info()[0]
+    #     print("exception "+e)
+    #     sys.exit(-1)
+    # else:
+    #     sys.exit(0)
 
 
 if __name__ == '__main__':

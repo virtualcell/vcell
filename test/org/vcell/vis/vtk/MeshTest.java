@@ -23,7 +23,7 @@ public class MeshTest {
 			long beginLibLoadMS = System.currentTimeMillis();
 			OperatingSystemInfo.getInstance();
 			ResourceUtil.loadNativeLibraries("D:\\Developer\\eclipse\\workspace_refactor\\VCell_5.4_clean\\nativelibs\\win64");
-			NativeLib.VTK.load();
+//			NativeLib.VTK.load();
 			long endLibLoadMS = System.currentTimeMillis();
 			System.out.println("native libs loaded, "+(endLibLoadMS-beginLibLoadMS)+" ms");
 //			String meshFile = "C:\\Developer\\eclipse\\workspace\\VCell_5.3_visfull\\SimData\\SimID_85232385_0_.mesh.hdf5";
