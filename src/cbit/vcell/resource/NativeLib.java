@@ -13,7 +13,6 @@ import cbit.vcell.util.NativeLoader;
  * @author gweatherby
  */
 public enum NativeLib {
-	VTK("vtk"),
 	NATIVE_SOLVERS("NativeSolvers"),
 	SBML("sbmlj"),
 	COPASI("vcellCopasiOptDriver"),

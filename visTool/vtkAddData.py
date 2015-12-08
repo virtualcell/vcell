@@ -15,7 +15,7 @@ import numpy as np
 
 
 def main():
-    try:
+#    try:
         parser = argparse.ArgumentParser()
         parser.add_argument("vardatafile", help="filename of input VarData to be written into output vtk file (thrift serialization via TBinaryProtocol)")
         parser.add_argument("invtkfile",help="filename of input vtk mesh (VTK XML unstructured grid")
@@ -39,12 +39,12 @@ def main():
 
         writeDataArrayToNewVtkFile(args.invtkfile, varData.varName, npdata, args.outvtkfile)
 
-    except:
-        e = sys.exc_info()[0]
-        print("exception "+e)
-        sys.exit(-1)
-    else:
-        sys.exit(0)
+    # except:
+    #     e = sys.exc_info()[0]
+    #     print("exception "+e)
+    #     sys.exit(-1)
+    # else:
+    #     sys.exit(0)
 
 
 
