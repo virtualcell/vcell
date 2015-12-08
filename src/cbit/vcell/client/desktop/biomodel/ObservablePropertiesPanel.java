@@ -740,7 +740,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = splitPane.getRightComponent().getGraphics();
-				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
+				Icon icon = new MolecularTypeSmallShape(4, 4, mt, gc, mt, null);
 				menuItem.setIcon(icon);
 				getAddFromShapeMenu().add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -856,29 +856,44 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		popupFromShapeMenu.removeAll();
 		// ------------------------------------------------------------------- State
 		if(showWhat == ShowWhat.ShowState && mc.getComponentStateDefinitions().size() != 0) {
-			JMenu editStateMenu = new JMenu();
-			editStateMenu.setText("Edit State");
-			editStateMenu.removeAll();
-			List<String> itemList = new ArrayList<String>();
-			itemList.add(ComponentStatePattern.strAny);
-			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
-				String name = csd.getName();
-				itemList.add(name);
+			String prefix = "State:  ";
+			String csdCurrentName = "";
+			final Map<String, String> itemMap = new LinkedHashMap<String, String>();
+			if(mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny()) {
+				csdCurrentName = "<html>" + prefix + "<b>" + ComponentStatePattern.strAny + "</b></html>";
+			} else {
+				csdCurrentName = "<html>" + prefix + ComponentStatePattern.strAny + "</html>";
 			}
-			for(String name : itemList) {
+			itemMap.put(csdCurrentName, ComponentStatePattern.strAny);
+			for (final ComponentStateDefinition csd : mc.getComponentStateDefinitions()) {
+				csdCurrentName = "";
+				if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
+					ComponentStateDefinition csdCurrent = mcp.getComponentStatePattern().getComponentStateDefinition();
+					csdCurrentName = csdCurrent.getName();
+				}
+				String name = csd.getName();
+				if(name.equals(csdCurrentName)) {	// currently selected menu item is shown in bold
+					name = "<html>" + prefix + "<b>" + name + "</b></html>";
+				} else {
+					name = "<html>" + prefix + name + "</html>";
+				}
+				itemMap.put(name, csd.getName());
+			}
+			for(String name : itemMap.keySet()) {
 				JMenuItem menuItem = new JMenuItem(name);
-				editStateMenu.add(menuItem);
+				popupFromShapeMenu.add(menuItem);
+				menuItem.setIcon(VCellIcons.rbmComponentStateIcon);
 				menuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						String name = e.getActionCommand();
+						String key = e.getActionCommand();
+						String name = itemMap.get(key);
 						if(name.equals(ComponentStatePattern.strAny)) {
 							ComponentStatePattern csp = new ComponentStatePattern();
 							mcp.setComponentStatePattern(csp);
 						} else {
-							String csdName = e.getActionCommand();
-							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(csdName);
+							ComponentStateDefinition csd = mcp.getMolecularComponent().getComponentStateDefinition(name);
 							if(csd == null) {
-								throw new RuntimeException("Missing ComponentStateDefinition " + csdName + " for Component " + mcp.getMolecularComponent().getName());
+								throw new RuntimeException("Missing ComponentStateDefinition " + name + " for Component " + mcp.getMolecularComponent().getName());
 							}
 							ComponentStatePattern csp = new ComponentStatePattern(csd);
 							mcp.setComponentStatePattern(csp);
@@ -886,7 +901,6 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 			}
-			popupFromShapeMenu.add(editStateMenu);
 		}
 		if(showWhat == ShowWhat.ShowState) {
 			return;
@@ -896,22 +910,27 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		final SpeciesPattern sp = locationContext.getSpeciesPattern();
 		
 		JMenu editBondMenu = new JMenu();
-		editBondMenu.setText("Edit Bond");
+		final String specifiedString = mcp.getBondType() == BondType.Specified ? "<html><b>" + "Site bond specified" + "</b></html>" : "<html>" + "Site bond specified" + "</html>";
+		editBondMenu.setText(specifiedString);
+		editBondMenu.setToolTipText("Specified");
 		editBondMenu.removeAll();
 		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
 		
-		final String noneString = "<html><b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
-		final String existsString = "<html><b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
-		final String possibleString = "<html><b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+//		String noneString = "<html>Bond:&nbsp;&nbsp;<b>" + BondType.None.symbol + "</b> " + BondType.None.name() + "</html>";
+//		String existsString = "<html>Bond:&nbsp;&nbsp;<b>" + BondType.Exists.symbol + "</b> " + BondType.Exists.name() + "</html>";
+//		String possibleString = "<html>Bond:&nbsp;&nbsp;<b>" + BondType.Possible.symbol + "</b> " + BondType.Possible.name() + "</html>";
+		String noneString = mcp.getBondType() == BondType.None ? "<html><b>" + "Site is unbound" + "</b></html>" : "<html>" + "Site is unbound" + "</html>";
+		String existsString = mcp.getBondType() == BondType.Exists ? "<html><b>" + "Site has external bond" + "</b></html>" : "<html>" + "Site has external bond" + "</html>";	// Site is bound
+		String possibleString = mcp.getBondType() == BondType.Possible ? "<html><b>" + "Site may be bound" + "</b></html>" : "<html>" + "Site may be bound" + "</html>";
 		itemMap.put(noneString, null);
 		itemMap.put(existsString, null);
 		itemMap.put(possibleString, null);
 		if(mtp != null && sp != null) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
-				if(b.equals(mcp.getBond())) {
-					continue;	// if the mcp has a bond already we don't offer it
-				}
+//				if(b.equals(mcp.getBond())) {
+//					continue;	// if the mcp has a bond already we don't offer it
+//				}
 				int index = 0;
 				if(mcp.getBondType() == BondType.Specified) {
 					index = mcp.getBondId();
@@ -927,7 +946,19 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		Graphics gc = splitPane.getRightComponent().getGraphics();
 		for(String name : itemMap.keySet()) {
 			JMenuItem menuItem = new JMenuItem(name);
-			if(index > 2) {
+			if(index == 0) {
+				menuItem.setIcon(VCellIcons.rbmBondNoneIcon);
+				menuItem.setToolTipText("None");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index == 1) {
+				menuItem.setIcon(VCellIcons.rbmBondExistsIcon);
+				menuItem.setToolTipText("Exists");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index == 2) {
+				menuItem.setIcon(VCellIcons.rbmBondPossibleIcon);
+				menuItem.setToolTipText("Possible");
+				popupFromShapeMenu.add(menuItem);
+			} else if(index > 2) {
 				Bond b = itemMap.get(name);
 				SpeciesPattern spBond = new SpeciesPattern(sp);		// clone of the sp, with only the bond of interest
 				spBond.resetBonds();
@@ -937,11 +968,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				MolecularTypePattern mtpTo = spBond.getMolecularTypePattern(b.molecularTypePattern.getMolecularType().getName(), b.molecularTypePattern.getIndex());
 				MolecularComponentPattern mcpTo = mtpTo.getMolecularComponentPattern(b.molecularComponentPattern.getMolecularComponent());
 				spBond.setBond(mtpTo, mcpTo, mtpFrom, mcpFrom);
-				Icon icon = new SpeciesPatternSmallShape(1,4, spBond, gc, observable, false);
+				Icon icon = new SpeciesPatternSmallShape(3,4, spBond, gc, observable, false);
 				((SpeciesPatternSmallShape)icon).setDisplayRequirements(DisplayRequirements.highlightBonds);
 				menuItem.setIcon(icon);
+				editBondMenu.add(menuItem);
+//			} else {
+//				if(index == 0) {
+//					menuItem.setForeground(Color.blue);
+//				}
+//				popupFromShapeMenu.add(menuItem);
 			}
-			editBondMenu.add(menuItem);
 			menuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					String name = e.getActionCommand();
@@ -956,7 +992,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 						mcp.setBond(null);
 						SwingUtilities.invokeLater(new Runnable() { public void run() { observableTreeModel.populateTree(); } });
 					} else if(name.equals(existsString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
+						if(btBefore == BondType.Specified) {	// specified -> exists
 							// change the partner to possible
 							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
 							mcp.getBond().molecularComponentPattern.setBond(null);
@@ -965,7 +1001,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 						mcp.setBond(null);
 						SwingUtilities.invokeLater(new Runnable() { public void run() { observableTreeModel.populateTree(); } });
 					} else if(name.equals(possibleString)) {
-						if(btBefore == BondType.Specified) {	// specified -> not specified
+						if(btBefore == BondType.Specified) {	// specified -> possible
 							// change the partner to possible
 							mcp.getBond().molecularComponentPattern.setBondType(BondType.Possible);
 							mcp.getBond().molecularComponentPattern.setBond(null);
@@ -1043,7 +1079,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
+					Icon icon = new MolecularTypeSmallShape(4, 4, mt, gc, mt, null);
 					menuItem.setIcon(icon);
 					getAddFromTreeMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {

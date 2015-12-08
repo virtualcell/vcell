@@ -245,13 +245,13 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	}
 	@Override
 	public int getIconWidth() {
-//		return xPos + width;
-		return width;
+		return xPos + width;
+//		return width;			// TODO: delete these after we make sure all renders correctly
 	}
 	@Override
 	public int getIconHeight() {
-//		return 2 + height;
-		return height;
+		return 2 + height;
+//		return height;			// TODO: delete these after we make sure all renders correctly
 	}
 
 }
