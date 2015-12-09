@@ -88,11 +88,11 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
 		if(argStoich < 1){
 			throw new IllegalArgumentException("Stoichiometry can't be less than 1 for reactants or products");
 		}
-		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) 
-				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE) 
-				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE)){
-			throw new IllegalArgumentException("Illegal Attempt to add non-flux to "+getReactionType()+ " reaction type");
-		}	
+//		if(!getReactionType().equals(UNKNOWN_REACTIONTYPE) 
+//				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_REVERSIBLE) 
+//				&& !getReactionType().equals(cbit.vcell.modeldb.DatabaseConstants.REACTTYPE_SIMPLE_IRREVERSIBLE)){
+//			throw new IllegalArgumentException("Illegal Attempt to add non-flux to "+getReactionType()+ " reaction type");
+//		}	
 	}
 	if(argType == RX_ELEMENT_CATALYST && argStoich != 0){
 		throw new IllegalArgumentException("Stoichiometry must be 0 for Catalysts");	
