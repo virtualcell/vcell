@@ -28,7 +28,7 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.OperatingSystemInfo;
 
 public class PropertyLoader {
-	
+
 	//must come before uses of #record method
 	private static HashMap<String, MetaProp> propMap = new HashMap<String,MetaProp>( );
 	public static final String ADMINISTRATOR_ACCOUNT = "Administrator";
@@ -62,11 +62,11 @@ public class PropertyLoader {
 
 	// NFSim
 	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
-	
+
 	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
-	
+
 	//Stoch properties
-	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);	
+	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);
 	public static final String hybridEMExecutableProperty	= record("vcell.hybridEM.executable",ValueType.EXE);
 	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
 	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
@@ -148,12 +148,15 @@ public class PropertyLoader {
 	public static final String amplistorVCellServiceURL = record("vcell.amplistor.vcellserviceurl",ValueType.GEN);
 	public static final String amplistorVCellServiceUser = record("vcell.amplistor.vcellservice.user",ValueType.GEN);
 	public static final String amplistorVCellServicePassword = record("vcell.amplistor.vcellservice.password",ValueType.GEN);
-	
+
 	public static final String installationRoot = record("vcell.installDir",ValueType.DIR);
 	public static final String vcellDownloadDir = record("vcell.downloadDir",ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",ValueType.GEN);
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", ValueType.BOOL);
-	
+	public static final String VTK_PYTHON_EXE_PATH = record("vcell.vtkPythonExecutablePath", ValueType.EXE);
+	public static final String VTK_PYTHON_MODULE_PATH = record("vcell.vtkPythonModulePath", ValueType.GEN);
+	public static final String VIS_TOOL = record("vcell.visToolPath", ValueType.DIR);
+
 	private static File systemTemporaryDirectory = null;
 	private static Logger lg = Logger.getLogger(PropertyLoader.class);
 
@@ -172,7 +175,7 @@ public class PropertyLoader {
 		EXE,
 		/**
 		 * integer number (not necessary Integer class, could be Long, e.g.)
-		 */ 
+		 */
 		INT,
 		/**
 		 * url
@@ -193,11 +196,11 @@ public class PropertyLoader {
 		 */
 		final ValueType valueType;
 		/**
-		 * is property in property file? 
+		 * is property in property file?
 		 */
 		boolean  fileSet = false;
 		/**
-		 * is property set 
+		 * is property set
 		 */
 		boolean set = false;
 		/**
@@ -215,11 +218,11 @@ public class PropertyLoader {
 
 		MetaProp(ValueType valueType) {
 			this.valueType = valueType;
-		} 
+		}
 
 	}
 	private static boolean errorsToMongo = false;
-	private static boolean checkRequired = false; 
+	private static boolean checkRequired = false;
 
 	public static void sendErrorsToMongo( )  {
 		if (errorsToMongo == false) {
@@ -237,7 +240,7 @@ public class PropertyLoader {
 	/**
 	 * * record static String in {@link #propMap}
 	 * @param in
-	 * @param vt 
+	 * @param vt
 	 * @return in
 	 */
 	private static String record(String in, ValueType vt) {
@@ -253,7 +256,7 @@ public class PropertyLoader {
 	public PropertyLoader() throws Exception {
 		loadProperties();
 	}
-	
+
 	/**
 	 * get Java's system temporary directory. This will be either a JVM default, or
 	 * a directory specified by the "java.io.tmpdir" system property
@@ -280,9 +283,9 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			return defaultValue;
-		}	
+		}
 	}
-	
+
 	public final static int getIntProperty(String propertyName, int defaultValue) {
 		try {
 			String propertyValue = System.getProperty(propertyName);
@@ -293,9 +296,9 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			return defaultValue;
-		}		
+		}
 	}
-	
+
 	public final static long getLongProperty(String propertyName, long defaultValue) {
 		try {
 			String propertyValue = System.getProperty(propertyName);
@@ -306,7 +309,7 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			return defaultValue;
-		}		
+		}
 	}
 
 
@@ -314,6 +317,7 @@ public class PropertyLoader {
 	 * This method was created in VisualAge.
 	 * @return java.lang.String
 	 * @param propertyName java.lang.String
+	 * @param defaultValue may not null
 	 */
 	public final static String getProperty(String propertyName, String defaultValue) {
 		try {
@@ -325,9 +329,9 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			return defaultValue;
-		}		
+		}
 	}
-	
+
 	/**
 	 * set to mongo if {@link #errorsToMongo} is true, or Standard out and save message for later
 	 * @param prop not null
@@ -341,15 +345,15 @@ public class PropertyLoader {
 			}
 			return;
 		}
-	
+
 		//else
-		
+
 		if (prop.message == null) {
 			prop.message = message;
 			System.err.println(message);
 		}
 	}
-	
+
 	/**
 	 * return file from property. If property value is {@value #USE_CURRENT_WORKING_DIRECTORY}, return current working directory
 	 * @param propertyName
@@ -394,7 +398,7 @@ public class PropertyLoader {
 			}
 		}catch (Exception e){
 			throw new ConfigurationException("required System property \""+propertyName+"\" not defined");
-		}		
+		}
 	}
 	public final static void loadProperties(String[] required) throws java.io.IOException {
 		loadProperties();
@@ -428,17 +432,17 @@ public class PropertyLoader {
 			where = "working directory"; //optimistic set
 			if (!propertyFile.canRead()) {
 				// then look in 'user.home' directory
-				propertyFile = new File( System.getProperty("user.home") + tail); 
+				propertyFile = new File( System.getProperty("user.home") + tail);
 				where = "users home directory"; //optimistic set
 				if (!propertyFile.canRead()) {
 					// then look in 'java.home' directory
-					propertyFile = new File(System.getProperty("java.home") + tail); 
+					propertyFile = new File(System.getProperty("java.home") + tail);
 					where = "java home directory"; //optimistic set
 				}
 			}
-		} 
+		}
 		if (propertyFile.canRead()) {
-			java.util.Properties p = new Properties(); 
+			java.util.Properties p = new Properties();
 			java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFile);
 			p.load(propFile);
 			propFile.close();
@@ -460,7 +464,7 @@ public class PropertyLoader {
 		//System.getProperties().list(System.out);
 		System.out.println("ServerID=" + getProperty(vcellServerIDProperty,"unknown")+", SoftwareVersion="+getProperty(vcellSoftwareVersion,"unknown"));
 	}
-	
+
 	/**
 	 * keyword for property substitution
 	 */
@@ -491,7 +495,7 @@ public class PropertyLoader {
 			lg.warn("failure looking for magic",e);
 		}
 	}
-	
+
 	private static void executeSubstitution(ValueType type, String os, String from, String to) {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
 		if (os.contains( osi.getOsnamePrefix() ) ) {
@@ -506,7 +510,7 @@ public class PropertyLoader {
 						if (lg.isInfoEnabled()) {
 							lg.info("replaced " + key + " value " + current + " with " + substitute);
 						}
-						
+
 					}
 				}
 			}
@@ -527,13 +531,13 @@ public class PropertyLoader {
 	private static void validateSystemProperties(String[] required) {
 		checkRequired = true;
 		Properties p = System.getProperties();
-		
+
 		for (Object propName : p.keySet()) {
 			if (propMap.containsKey(propName)) {
 				propMap.get(propName).set = true;
 			}
 		}
-		
+
 		StringBuffer validationReport = new StringBuffer();
 		for (String propName: required) {
 			MetaProp meta = propMap.get(propName);
@@ -557,7 +561,7 @@ public class PropertyLoader {
 
 	/**
 	 * helper method for pretty print
-	 * @param b if true, add "set from file" blah blah 
+	 * @param b if true, add "set from file" blah blah
 	 */
 	private static String fromFile(boolean b) {
 		if (b) {
@@ -604,7 +608,7 @@ public class PropertyLoader {
 			try {
 				Long.parseLong(value);
 			} catch (NumberFormatException e) {
-				report.append(name + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n"); 
+				report.append(name + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n");
 			}
 		case URL:
 			//not going to make trip web to verify at this point

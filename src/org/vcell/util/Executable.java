@@ -495,6 +495,7 @@ public File getWorkingDir() {
 public void setWorkingDir(File workingDir) {
 	this.workingDir = workingDir;
 }
+@Override
 public void addEnvironmentVariable(String varName,String varValue){
 	if(addedEnvironmentVariables == null){
 		addedEnvironmentVariables = new HashMap<>();
