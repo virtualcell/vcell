@@ -1,6 +1,7 @@
 package org.vcell.util;
 
 import java.io.File;
+import java.util.HashMap;
 
 /**
  * provide interface to allow switching / testing different Executable implementations
@@ -16,7 +17,7 @@ public interface IExecutable {
 
 	/**
 	 * start process, wait for exit before returning
-	 * @param expectedReturnCodes 
+	 * @param expectedReturnCodes
 	 * @throws org.vcell.util.ExecutableException if fails, or return code not in expectedReturnCodes
 	 */
 	public void start(int[] expectedReturnCodes)
@@ -28,13 +29,13 @@ public interface IExecutable {
 	 * @throws org.vcell.util.ExecutableException
 	 */
 	public void start() throws org.vcell.util.ExecutableException;
-	
+
 	public void stop();
 
 	public String getStdoutString();
 
 	public String getStderrString();
-	
+
 	public void setWorkingDir(File workingDir);
 
 	public File getWorkingDir();
@@ -44,5 +45,13 @@ public interface IExecutable {
 	public java.lang.Integer getExitValue();
 
 	public String getCommand();
+
+	/**
+	 * add additional environmental variables to new process environment
+	 * while retaining existing ones
+	 * @param varName non null
+	 * @param varValue non null
+	 */
+	void addEnvironmentVariable(String varName, String varValue);
 
 }

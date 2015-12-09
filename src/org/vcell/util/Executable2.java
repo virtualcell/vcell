@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,7 +19,7 @@ import cbit.vcell.resource.ResourceUtil;
  *
  */
 public class Executable2 implements IExecutable {
-	
+
 	private File workingDir;
 	private String commands[];
 	private String out;
@@ -24,6 +27,7 @@ public class Executable2 implements IExecutable {
 	private int exitCode;
 	private AtomicReference<ExecutableStatus> status;
 	private AtomicReference<Thread> runThread;
+	private Map<String,String> additionalEnvironmental;
 
 	public Executable2(String ... commands) {
 		super();
@@ -33,16 +37,21 @@ public class Executable2 implements IExecutable {
 		err = null;
 		status = new AtomicReference<ExecutableStatus>(ExecutableStatus.READY);
 		runThread = new AtomicReference<Thread>(null);
+		additionalEnvironmental = null;
 	}
 
 	public final void start(int[] expectedReturnCodes) throws org.vcell.util.ExecutableException {
 		out = null;
 		err = null;
-		Process process = null; 
+		Process process = null;
 		try {
 			runThread.set(Thread.currentThread()); //record for interruption via #stop
 			ProcessBuilder pb = new ProcessBuilder(commands);
-			ResourceUtil.setEnvForOperatingSystem(pb.environment());
+			Map<String, String> env = pb.environment();
+			ResourceUtil.setEnvForOperatingSystem(env);
+			if (additionalEnvironmental  != null) {
+				env.putAll(additionalEnvironmental);
+			}
 			pb.directory(workingDir);
 			process = pb.start();
 			process.getOutputStream().close(); //close standard in
@@ -59,15 +68,15 @@ public class Executable2 implements IExecutable {
 			out = sOut.getString();
 			err = sErr.getString();
 			if (sOut.getReadException() != null) {
-				throw sOut.getReadException(); 
+				throw sOut.getReadException();
 			}
 			if (sErr.getReadException() != null) {
-				throw sErr.getReadException(); 
+				throw sErr.getReadException();
 			}
 			if (codeInSet(exitCode, expectedReturnCodes)) {
 				status.set(ExecutableStatus.COMPLETE);
 			}else{
-				status.set(ExecutableStatus.getError("executable failed, return code = " + getExitValue() + "\nstderr = '" + err + "'"));				
+				status.set(ExecutableStatus.getError("executable failed, return code = " + getExitValue() + "\nstderr = '" + err + "'"));
 			}
 		} catch (InterruptedException ie)  {
 			if (getStatus( ) == ExecutableStatus.STOPPED) {
@@ -82,7 +91,7 @@ public class Executable2 implements IExecutable {
 			convertException(e);
 		}
 	}
-	
+
 	/**
 	 * set status and convert e into {@link ExecutableException}
 	 * @param e
@@ -92,7 +101,7 @@ public class Executable2 implements IExecutable {
 		status.set(ExecutableStatus.getError(e.getMessage()));
 		throw new ExecutableException("Exception executing " + Arrays.toString(commands),e);
 	}
-	
+
 	/**
 	 * is code in set
 	 * @param code
@@ -125,7 +134,7 @@ public class Executable2 implements IExecutable {
 	}
 
 	public java.lang.Integer getExitValue() {
-		return exitCode; 
+		return exitCode;
 	}
 
 	public String getCommand() {
@@ -139,7 +148,7 @@ public class Executable2 implements IExecutable {
 	public void setWorkingDir(File workingDir) {
 		this.workingDir = workingDir;
 	}
-	
+
 	@Override
 	public synchronized final void stop() {
 		if (status.get() != ExecutableStatus.STOPPED) {
@@ -150,6 +159,24 @@ public class Executable2 implements IExecutable {
 			}
 			t.interrupt();
 		}
+	}
+
+	@Override
+	public void addEnvironmentVariable(String varName, String varValue) {
+		Objects.requireNonNull(varName);
+		Objects.requireNonNull(varValue);
+		envCache().put(varName, varName);
+	}
+
+	/**
+	 * @return cache for additional environmentals, lazily created
+	 */
+	private Map<String,String> envCache( ) {
+		if (additionalEnvironmental == null) {
+			//normally don't expect many additional environmentals, so make map small
+			additionalEnvironmental = new HashMap<String, String>(3) ;
+		}
+		return additionalEnvironmental;
 	}
 
 	public static class Reader extends Thread {
@@ -166,7 +193,7 @@ public class Executable2 implements IExecutable {
 			closed = new AtomicBoolean(false);
 			setDaemon(true);
 		}
-		
+
 		@Override
 		public void run() {
 			try {
@@ -178,7 +205,7 @@ public class Executable2 implements IExecutable {
 						continue;
 					}
 					return;
-				}  
+				}
 			} catch (Exception e) {
 				if (closed.get() && e instanceof IOException && e.getMessage().toLowerCase().contains("stream closed")) {
 					return;
@@ -186,12 +213,12 @@ public class Executable2 implements IExecutable {
 				readException = e;
 			}
 		}
-		
+
 		public void close( ) throws IOException {
 			closed.set(true);
 			in.close( );
 		}
-		
+
 		public String getString( ) {
 			return oStream.toString();
 		}
