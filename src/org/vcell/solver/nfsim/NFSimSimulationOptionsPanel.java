@@ -76,17 +76,19 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
 			if (source == observableComputationHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "On-the-fly computations of observables", 
-						"<html>-notf <i>boolean</i> " +
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Compute observables at output times only", 
+						"<html><b>NFSim option</b> -notf" +
 						"<br> By default, observables are calculated on-the-fly, updating all observables at each simulation step. "
-						+ "This is necessary when rates of reactions depend on Observables. Otherwise, the values of Observables need "
-						+ "to be computed only at output steps. This is useful when the number of simulation steps between each output "
+						+ "This is necessary when rates of reactions depend on Observables. "
+						+ "<b>By checking this box, the values of Observables will be computed only at output steps.</b>"
+						+ "It <b>can not be set if functions are used</b>, as functions rely on having updated Observables at any point in a simulation."
+						+ "This will allow simulations to <b>run faster</b> if the number of simulation steps between each output "
 						+ "step is greater than the number of molecules in the system. This may or may not be true for your simulation, "
 						+ "so you should try turning on or off this option to see which is more efficient."
 						+ "</html>");
 			} else if (source == moleculeDistanceHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Distance of neighboring molecules from the site of the reaction", 
-						"<html>-utl <i>int</i> " +
+						"<html><b>NFSim option</b> -utl <i>int</i> " +
 						"<br> The universal traversal limit (UTL) sets the distance neighboring molecules have to be to the site of the reaction "
 						+ "to be updated. The default UTL is set to the size of the largest reactant pattern, which is guaranteed to produce correct "
 						+ "results because NFsim will always find the changes that apply to every reactant pattern in the system." 
@@ -100,11 +102,11 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "</html>");
 			} else if (source == aggregateBookkeepingHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Turn on aggregate bookkeeping", 
-						"<html>-cb <i>boolean</i> "
+						"<html><b>NFSim option</b> -cb "
 						+ "<br> NFsim by default tracks individual molecule agents, not complete molecular complexes. This is useful and makes "
 						+ "simulations very fast, but is not always appropriate. For example, in some systems it is necessary to block "
 						+ "intra-molecular bonds from occurring to prevent unwanted ring formation. However, to check for intra-molecular "
-						+ "bonding events, complete molecular complexes must be traversed. NFsim, however, provides an aggregate bookkeeping "
+						+ "bonding events, complete molecular complexes must be traversed. NFsim, provides an aggregate bookkeeping "
 						+ "system for molecular complexes that form by assigning each connected aggregate a unique id. Then, it becomes easy "
 						+ "to check if any two molecules are connected. The trade-off is that there is an overhead involved with maintaining "
 						+ "the bookkeeping system with a cost that depends on the size of the molecular complexes that can form."
@@ -112,28 +114,28 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 						+ "</html>");
 			} else if (source == maxMoleculesPerTypeHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Maximal number of molecules per Molecular Type", 
-						"<html>-gml <i>int</i> "
+						"<html><b>NFSim option</b> -gml <i>int</i> "
 						+ "<br> To prevent your computer from running out of memory in case you accidentally create too many molecules, "
 						+ "NFsim sets a default limit of 100,000 molecules of any particular Molecule Type from being created. If the limit "
 						+ "is exceeded, NFsim just stops running gracefully, thereby potentially saving your computer."
-						+ "<br><br> NFSim option: -gml [limit] Default: 100,000"
+						+ "<br><br> NFSim option: -gml [limit] Default: 200,000"
 						+ "</html>");
 			} else if (source == equilibrateTimeHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Equilibrate for a set time", 
-						"<html>-eq <i>time</i> "
+						"<html><b>NFSim option</b> -eq <i>time</i> "
 						+ "<br>Equilibrate the system for a set time before the simulation begins for the amount of time given. This operates "
 						+ "exactly like a normal simulation, except that the simulation time is set to zero immediately after the equilibration "
 						+ "phase and no output during equilibration is generated."
 						+ "</html>");
 			} else 	if (source == randomSeedHelpButton) {
-				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Random Seed", 
-						"<html>rand_seed <i>boolean</i> "
+				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Set specific seed", 
+						"<html><b>NFSim option</b> -seed <i>integer</i> "
 						+ "<br>Provide a seed to NFsim's random number generator so exact trajectories can be reproduced. If this line is not "
 						+ "entered, the current time is used as a seed, producing different sequences for each run."
 						+ "</html>");
 			} else if (source == preventIntraBondsHelpButton) {
 				DialogUtils.showInfoDialogAndResize(NFSimSimulationOptionsPanel.this, "Prevent intra-molecular bonds from forming", 
-						"<html>-bscb <i>boolean</i> "
+						"<html><b>NFSim option</b> -bscb"
 						+ "<br> Block same complex binding throughout the entire system. This prevents intra-molecular bonds from forming, "
 						+ "but requires complex bookkeeping to be turned on."
 						+ "</html>");
@@ -282,13 +284,13 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
-		observableComputationCheckBox = new JCheckBox("Turn off on-the-fly computations of observables.");
+		observableComputationCheckBox = new JCheckBox("Compute observables at output times only.");
 		observableComputationTextField = new JTextField();
 		observableComputationHelpButton = new JButton(" ? ");
 		observableComputationHelpButton.setFont(font);
 		observableComputationHelpButton.setBorder(border);
 		
-		moleculeDistanceCheckBox = new JCheckBox("Distance of neighboring molecules from the site of the reaction.");
+		moleculeDistanceCheckBox = new JCheckBox("Set the distance to molecules that might have to be updated:");
 		moleculeDistanceTextField = new JTextField();
 		moleculeDistanceHelpButton = new JButton(" ? ");
 		moleculeDistanceHelpButton.setFont(font);
@@ -300,7 +302,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		aggregateBookkeepingHelpButton.setFont(font);
 		aggregateBookkeepingHelpButton.setBorder(border);
 		
-		maxMoleculesPerTypeCheckBox = new JCheckBox("Maximal number of molecules per Molecular Type.");
+		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the maximal number of molecules per Molecular Type.");
 		maxMoleculesPerTypeTextField = new JTextField();
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
 		maxMoleculesPerTypeHelpButton.setFont(font);
@@ -312,7 +314,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		equilibrateTimeHelpButton.setFont(font);
 		equilibrateTimeHelpButton.setBorder(border);
 		
-		randomSeedCheckBox = new JCheckBox("Provide a seed to NFsim's random number generator.");
+		randomSeedCheckBox = new JCheckBox("Set a seed to NFsim's random number generator.");
 		randomSeedTextField = new JTextField();
 		randomSeedHelpButton.setFont(font);
 		randomSeedHelpButton.setBorder(border);
