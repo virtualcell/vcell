@@ -2041,6 +2041,26 @@ public File getSmoldynOutputFile(int timeIndex){
 	return amplistorHelper.getSmoldynOutputFile(timeIndex);
 }
 
+private void findChomboFeatureVolFile(ChomboFiles chomboFiles, VCSimulationDataIdentifier vcDataID, String subDomain, int ivol, int timeIndex)
+{
+	String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain+".vol" + ivol + ".hdf5";
+	File file = amplistorHelper.getFile(expectedFile);
+	if (file.exists()){
+		chomboFiles.addDataFile(subDomain + ".vol" + ivol, timeIndex, file);
+	}else{
+		// I changed the file name 
+		expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+"_"+subDomain+"_vol" + ivol + ".hdf5";
+	  file = amplistorHelper.getFile(expectedFile);
+	  if (file.exists()){
+			chomboFiles.addDataFile(subDomain + ".vol" + ivol, timeIndex, file);
+	  }
+	  else
+	  {
+	  	LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
+	  }
+	}
+}
+
 @Override
 public ChomboFiles getChomboFiles() throws IOException, XmlParseException, ExpressionException {
 	if (chomboFileIterationIndices==null){
@@ -2081,13 +2101,7 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 					for (int ivol = 0; ivol < 20; ++ ivol)
 					{
 						// can be many vol, let us try 20
-						String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain.getName()+".vol" + ivol + ".hdf5";
-						File file = amplistorHelper.getFile(expectedFile);
-						if (file.exists()){
-							chomboFiles.addDataFile(".feature_"+subDomain.getName(), subDomain.getName() + ".vol" + ivol, timeIndex, file);
-						}else{
-							LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
-						}
+						findChomboFeatureVolFile(chomboFiles, vcDataID, subDomain.getName(), ivol, timeIndex);
 					}
 				}
 			}
@@ -2098,13 +2112,7 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 			// note: some feature + ivol doesn't have a file if there are no variables defined in that feature
 			for (FeaturePhaseVol pfv : featurePhaseVols)
 			{
-				String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+pfv.feature+".vol" + pfv.ivol + ".hdf5";
-				File file = amplistorHelper.getFile(expectedFile);
-				if (file.exists()){
-					chomboFiles.addDataFile(".feature_"+pfv.feature, pfv.feature + ".vol" + pfv.ivol, timeIndex, file);
-				}else{
-					LG.warn("can't find expected chombo file : "+file.getAbsolutePath());
-				}
+				findChomboFeatureVolFile(chomboFiles, vcDataID, pfv.feature, pfv.ivol, timeIndex);
 			}
 		}
 	}
