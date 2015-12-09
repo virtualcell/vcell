@@ -862,7 +862,8 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 	if(simulationContext == null) {
 		rightBottomTabbedPane.remove(getSimulationConsolePanel());
 	} else {		// show the console only for bionetgen deterministic applications (flattened network)
-		if(simulationContext.isRuleBased() || simulationContext.isStoch()) {
+		if(simulationContext.getApplicationType() == Application.RULE_BASED_STOCHASTIC) {
+//		if(simulationContext.isRuleBased() || simulationContext.isStoch()) {
 //		if(simulationContext.isStoch()) {
 			rightBottomTabbedPane.remove(getSimulationConsolePanel());
 			return;
