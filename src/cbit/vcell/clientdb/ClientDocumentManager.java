@@ -1392,6 +1392,7 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 		if(reactionModel != null){
 			try{
 				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
+				reactionModel.refreshDependencies();
 			}catch(Exception e){
 				e.printStackTrace(System.out);
 				throw new DataAccessException(e.getMessage());

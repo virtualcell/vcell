@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.beans.PropertyVetoException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -197,6 +198,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC31(e);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+			if(e.getValueIsAdjusting()){
+				return;
+			}
 			if (e.getSource() == DBReactionWizardPanel.this.getParameterNameSelectionModel()) 
 				connEtoC23(e);
 			if (e.getSource() == DBReactionWizardPanel.this.getRXDescriptionLSM()) 
@@ -1553,6 +1557,7 @@ private javax.swing.JRadioButton getKeggMoleculeJRadioButton() {
 			ivjKeggMoleculeJRadioButton = new javax.swing.JRadioButton();
 			ivjKeggMoleculeJRadioButton.setName("KeggMoleculeJRadioButton");
 			ivjKeggMoleculeJRadioButton.setText("KEGG Molecule / SWISSPROT Protein");
+			ivjKeggMoleculeJRadioButton.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1576,6 +1581,7 @@ private javax.swing.JButton getKeggSpecifyJButton() {
 			ivjKeggSpecifyJButton.setName("KeggSpecifyJButton");
 			ivjKeggSpecifyJButton.setText("Specify...");
 			ivjKeggSpecifyJButton.setEnabled(false);
+			ivjKeggSpecifyJButton.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1600,6 +1606,7 @@ private javax.swing.JLabel getKeggTypeJLabel() {
 			ivjKeggTypeJLabel.setFont(ivjKeggTypeJLabel.getFont().deriveFont(Font.BOLD));
 			ivjKeggTypeJLabel.setText("Current: None Specified");
 			ivjKeggTypeJLabel.setEnabled(false);
+			ivjKeggTypeJLabel.setVisible(false);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2379,9 +2386,11 @@ private void parameterNameSelectionChanged() {
 			final String RXSTEP_HASH_VALUE_KEY = "rxStep";
 			
 			AsynchClientTask searchReactions = new AsynchClientTask("Getting Full Reaction", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-				public void run(Hashtable<String, Object> hash) throws DataAccessException {
-					ReactionStep rStep = getDocumentManager().getReactionStepAsModel(reactionStepKey).getReactionSteps()[0];
+				public void run(Hashtable<String, Object> hash) throws Exception {
+					Model reactionModel = getDocumentManager().getReactionStepAsModel(reactionStepKey);
+					ReactionStep rStep = reactionModel.getReactionStep(((ReactionStepInfo)parameNameMSO.getToObject()).getReactionName());
 					if(rStep != null){
+						rStep.rebindAllToModel(reactionModel);
 						hash.put(RXSTEP_HASH_VALUE_KEY,rStep);
 					}
 				}
@@ -2981,6 +2990,7 @@ private void setupRX(ReactionDescription dbfr) {
 			}
 			gbc.gridy = i+1;
 			getRXParticipantsJPanel().add(jcb,gbc);
+			jcb.setEnabled(false);
 		}
 		
 		gbc.gridx = 2;
