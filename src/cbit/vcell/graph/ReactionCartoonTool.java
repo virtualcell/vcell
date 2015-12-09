@@ -572,6 +572,9 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 	
 	public static void copyRelativePosition(GraphModel graphModel,BioModelEntityObject origEntity,BioModelEntityObject newEntity){
 		Shape origEntityShape = graphModel.getShapeFromModelObject(origEntity);
+		if(origEntityShape == null){//happens when using BioModel 'Searchable Reactions...'
+			return;
+		}
 		Shape newEntityShape = graphModel.getShapeFromModelObject(newEntity);
 		newEntityShape.setRelPos(new Point(origEntityShape.getRelPos()));
 		

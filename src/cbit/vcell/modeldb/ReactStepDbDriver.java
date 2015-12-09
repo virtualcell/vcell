@@ -271,54 +271,74 @@ private ReactionParticipant[] getReactionParticipants(QueryHashtable dbc, Connec
  */
 public cbit.vcell.model.Model getReactionStepAsModel(QueryHashtable dbc, Connection con, User user,KeyValue reactionStepKey) throws SQLException, DataAccessException, PropertyVetoException {
 
-	Field[] f =
-	{
-		new StarField(ReactStepTable.table)
-	};
-	
-	Table[] t =
-	{
-		BioModelTable.table,
-		ReactStepTable.table
-	};
-	
-	String condition =
-		ReactStepTable.table.id.getQualifiedColName() + " = " + reactionStepKey.toString() +
-		" AND " +
-		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
-		
-	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
-	
-	Model model = new Model("newModel");
-	ReactionStep[] rsArr = getReactionStepArray(dbc, con, model, sql);
-	if(rsArr != null && rsArr.length > 0){
-		ReactionStep reactionStep = rsArr[0];
-		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
-			if (!model.contains(rp.getSpecies())){
-				model.addSpecies(rp.getSpecies());
-			}
-			if (!model.contains(rp.getSpeciesContext())){
-				model.addSpeciesContext(rp.getSpeciesContext());
-			}
+	String sql;
+	sql = 	" SELECT " + ReactStepTable.table.modelRef.getUnqualifiedColName() +
+			" FROM " + ReactStepTable.table.getTableName() + 
+			" WHERE " + ReactStepTable.table.id.getUnqualifiedColName() + " = " + reactionStepKey.toString();
+	Statement stmt = con.createStatement();
+	try{
+		KeyValue modelKey = null;
+		ResultSet rset = stmt.executeQuery(sql);
+		if(rset.next()){
+			modelKey = new KeyValue(rset.getBigDecimal(1));
 		}
-		ArrayList<Structure> structures = new ArrayList<Structure>();
-		structures.add(reactionStep.getStructure());
-		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
-			if (!structures.contains(rp.getStructure())){
-				structures.add(rp.getStructure());
-			}
+		if(modelKey != null){
+			return (Model)modelDB.getVersionable(dbc, con, user, VersionableType.Model, modelKey);
 		}
-		model.setStructures(structures.toArray(new Structure[0]));
-		HashMap<KeyValue,StructureKeys> structureKeysMap = new HashMap<KeyValue, StructureKeys>();
-		for (Structure structure : structures){
-			StructureKeys structureKeys = getStructureKeys(dbc, con, structure.getKey());
-			structureKeysMap.put(structure.getKey(),structureKeys);
-		}
-		populateStructureAndElectricalTopology(model, structureKeysMap);
-		model.addReactionStep(reactionStep);
-		return model;
+		return null;
+	} finally {
+		stmt.close(); // Release resources include resultset
 	}
-	return null;
+
+	
+//	Field[] f =
+//	{
+//		new StarField(ReactStepTable.table)
+//	};
+//	
+//	Table[] t =
+//	{
+//		BioModelTable.table,
+//		ReactStepTable.table
+//	};
+//	
+//	String condition =
+//		ReactStepTable.table.id.getQualifiedColName() + " = " + reactionStepKey.toString() +
+//		" AND " +
+//		ReactStepTable.table.modelRef.getQualifiedColName() + " = " + BioModelTable.table.modelRef.getQualifiedColName();
+//		
+//	String sql = DatabasePolicySQL.enforceOwnershipSelect(user,f,t,condition,null);
+//	
+//	Model model = new Model("newModel");
+//	ReactionStep[] rsArr = getReactionStepArray(dbc, con, model, sql);
+//	if(rsArr != null && rsArr.length > 0){
+//		ReactionStep reactionStep = rsArr[0];
+//		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
+//			if (!model.contains(rp.getSpecies())){
+//				model.addSpecies(rp.getSpecies());
+//			}
+//			if (!model.contains(rp.getSpeciesContext())){
+//				model.addSpeciesContext(rp.getSpeciesContext());
+//			}
+//		}
+//		ArrayList<Structure> structures = new ArrayList<Structure>();
+//		structures.add(reactionStep.getStructure());
+//		for (ReactionParticipant rp : reactionStep.getReactionParticipants()){
+//			if (!structures.contains(rp.getStructure())){
+//				structures.add(rp.getStructure());
+//			}
+//		}
+//		model.setStructures(structures.toArray(new Structure[0]));
+//		HashMap<KeyValue,StructureKeys> structureKeysMap = new HashMap<KeyValue, StructureKeys>();
+//		for (Structure structure : structures){
+//			StructureKeys structureKeys = getStructureKeys(dbc, con, structure.getKey());
+//			structureKeysMap.put(structure.getKey(),structureKeys);
+//		}
+//		populateStructureAndElectricalTopology(model, structureKeysMap);
+//		model.addReactionStep(reactionStep);
+//		return model;
+//	}
+//	return null;
 }
 
 
