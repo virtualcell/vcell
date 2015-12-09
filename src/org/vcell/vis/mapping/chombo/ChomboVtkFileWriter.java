@@ -253,7 +253,9 @@ public class ChomboVtkFileWriter {
 				varInfos.add(new VtuVarInfo(varName, displayName, volumeDomainName, volVariableDomain, expressionString, bMeshVariable));
 			}
 			for (DataIdentifier dataID : dataIdentifiers){
-				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(volumeDomainName)){
+				if (dataID.isVisible() 
+						&& dataID.getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_VOLUME
+						&& (dataID.getDomain()==null || dataID.getDomain().getName().equals(volumeDomainName))){
 					String displayName = "("+volumeDomainName+")  "+dataID.getDisplayName();
 					String expressionString = null;
 					AnnotatedFunction f = vcData.getFunction(outputContext, dataID.getName());
@@ -271,7 +273,6 @@ public class ChomboVtkFileWriter {
 			//
 			{
 			String memDomainName = chomboCombinedVolumeMembraneDomain.getMembraneDomainName();
-			String niceMemDomainName = memDomainName.replace(".feature_", "");
 			VariableDomain memVariableDomain = VariableDomain.VARIABLEDOMAIN_MEMBRANE;
 			for (ChomboMembraneVarData membraneVarData : chomboMeshData.getMembraneVarData()){
 				String varName = membraneVarData.getName();
@@ -282,13 +283,15 @@ public class ChomboVtkFileWriter {
 			}
 			for (String builtinVarName : chomboMeshData.getMembraneBuiltinNames()){
 				String varName = builtinVarName;
-				String displayName = "("+niceMemDomainName+")  "+varName;
+				String displayName = "("+memDomainName+")  "+varName;
 				String expressionString = null;
 				boolean bMeshVariable = true;
 				varInfos.add(new VtuVarInfo(varName, displayName, memDomainName, memVariableDomain, expressionString, bMeshVariable));
 			}
 			for (DataIdentifier dataID : dataIdentifiers){
-				if (dataID.getDomain()==null || dataID.getDomain().getName().equals(niceMemDomainName)){
+				if (dataID.isVisible() 
+						&& dataID.getVariableType().getVariableDomain() == VariableDomain.VARIABLEDOMAIN_MEMBRANE
+						&& (dataID.getDomain()==null || dataID.getDomain().getName().equals(memDomainName))){
 					String displayName = "("+memDomainName+")  "+dataID.getDisplayName();
 					String expressionString = null;
 					AnnotatedFunction f = vcData.getFunction(outputContext, dataID.getName());

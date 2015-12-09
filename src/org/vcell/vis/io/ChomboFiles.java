@@ -11,21 +11,15 @@ import java.util.Set;
 public class ChomboFiles {
 	
 	class ChomboFileEntry {
-		private final String fileNamePattern;
 		private final String volDomainName;
 		private final int timeIndex;
 		private final File file;
 		
-		public ChomboFileEntry(String fileNamePattern, String volDomainName, int timeIndex, File file) {
+		public ChomboFileEntry(String volDomainName, int timeIndex, File file) {
 			super();
-			this.fileNamePattern = fileNamePattern;
 			this.volDomainName = volDomainName;
 			this.timeIndex = timeIndex;
 			this.file = file;
-		}
-		
-		public String getFileNamePattern() {
-			return fileNamePattern;
 		}
 
 		public String getVolDomainName() {
@@ -66,8 +60,8 @@ public class ChomboFiles {
 		return meshFile;
 	}
 	
-	public void addDataFile(String fileNamePattern, String volDomainName, int timeIndex, File file){
-		dataFiles.add(new ChomboFileEntry(fileNamePattern, volDomainName,timeIndex,file));
+	public void addDataFile(String volDomainName, int timeIndex, File file){
+		dataFiles.add(new ChomboFileEntry(volDomainName,timeIndex,file));
 	}
 
 	public Set<String> getVolumeDomainNames() {

@@ -10,13 +10,10 @@
 
 package cbit.vcell.simdata;
 
-import java.util.Comparator;
-import java.util.TreeSet;
-
 import org.vcell.util.Compare;
 
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
 
 /**
  * Insert the type's description here.
@@ -24,6 +21,7 @@ import cbit.vcell.math.Variable.Domain;
  * @author: Jim Schaff
  */
 public class DataIdentifier implements java.io.Serializable {
+	private static final String EBCHOMBO_ZZZ_IF_PREFIX = "zzz_IF_";
 	private String name = null;
 	private String displayName = null;
 	private VariableType variableType = null;
@@ -145,6 +143,11 @@ public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, 
 	DataIdentifier[] results = new DataIdentifier[treeSet.size()];
 	treeSet.toArray(results);
 	return results;
+}
+
+public boolean isVisible()
+{
+	return !name.startsWith(EBCHOMBO_ZZZ_IF_PREFIX);
 }
 
 }
