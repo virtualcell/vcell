@@ -303,7 +303,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		aggregateBookkeepingHelpButton.setBorder(border);
 		
 		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the maximal number of molecules per Molecular Type.");
-		maxMoleculesPerTypeTextField = new JTextField();
+		maxMoleculesPerTypeTextField = new JTextField(NFsimSimulationOptions.DefaultMaxMoleculesPerSpecies+"");
 		maxMoleculesPerTypeHelpButton = new JButton(" ? ");
 		maxMoleculesPerTypeHelpButton.setFont(font);
 		maxMoleculesPerTypeHelpButton.setBorder(border);

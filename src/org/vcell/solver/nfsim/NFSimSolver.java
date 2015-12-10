@@ -40,6 +40,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	public NFSimSolver(SimulationTask simTask, java.io.File directory,
 			SessionLog sessionLog, boolean bMsging) throws SolverException {
 		super(simTask, directory, sessionLog, bMsging);
+		bMessaging = false;
 	}
 
 	/**
@@ -99,14 +100,11 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 		try (PrintWriter pw = new PrintWriter(inputFilename)) {
-			NFSimFileWriter stFileWriter = new NFSimFileWriter(pw,
-					simTask, bMessaging);
+			NFSimFileWriter stFileWriter = new NFSimFileWriter(pw, simTask, bMessaging);
 			stFileWriter.write();
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
-					SimulationMessage
-							.solverAborted("Could not generate input file: "
-									+ e.getMessage())));
+					SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 			e.printStackTrace(System.out);
 			throw new SolverException(e.getMessage());
 		} 
@@ -121,9 +119,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			lg.println(NFSIM_DATA_IDENTIFIER + " " + shortOutputFilename);
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
-					SimulationMessage
-							.solverAborted("Could not generate log file: "
-									+ e.getMessage())));
+					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));
 			e.printStackTrace(System.out);
 			throw new SolverException(e.getMessage());
 		} finally {
@@ -165,7 +161,6 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		boolean observableComputationOff = nfsso.getObservableComputationOff();
 		if(observableComputationOff == true) {
 			adv.add("-notf");		// false is by default, no need to specify
-			adv.add("true");
 		}
 		Integer moleculeDistance = nfsso.getMoleculeDistance();
 		if(moleculeDistance != null) {
@@ -173,9 +168,8 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			adv.add(moleculeDistance+"");
 		}
 		boolean aggregateBookkeeping = nfsso.getAggregateBookkeeping();
-		if(aggregateBookkeeping == true) {
+		if(aggregateBookkeeping == true || simTask.getSimulation().getMathDescription().hasSpeciesObservable()) {
 			adv.add("-cb");			// false is by default, no need to specify
-			adv.add("true");
 		}
 		Integer maxMoleculesPerType = nfsso.getMaxMoleculesPerType();
 		if(maxMoleculesPerType != null) {
@@ -190,7 +184,6 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		boolean preventIntraBonds = nfsso.getPreventIntraBonds();
 		if(preventIntraBonds == true) {
 			adv.add("-bscb");			// false is by default, no need to specify
-			adv.add("true");
 		}
 		
 		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
@@ -227,15 +220,8 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		cmds.add(timeSpecOption1);
 		cmds.add(timeSpecOption2);
 		
-		if (simTask.getSimulation().getMathDescription().hasSpeciesObservable()) {
-			// To run a Species observable, you have to turn on aggregate bookkeeping
-			// with the command-line flag '-cb'. If you have large complexes,
-			// this will make your code run much slower.
-			// http://emonet.biology.yale.edu/nfsim/pages/support/support.html
-			cmds.add("-cb");
-		}
 		cmds.addAll(adv);
-		if (!bMessaging) {
+		if (bMessaging) {
 			cmds.add("-v");
 		}
 		return cmds.toArray(new String[cmds.size()]);
