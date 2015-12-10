@@ -4,13 +4,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.BeanUtils.CastInfo;
+import org.vcell.util.ProgrammingException;
+import org.vcell.util.VCAssert;
 
+import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
+import ncsa.hdf.object.h5.H5CompoundDS;
 
-public class MovingBoundaryResult {
+public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private static final String ELEM = "elements";
 
 	private final String filename;
@@ -19,100 +27,7 @@ public class MovingBoundaryResult {
 	private int lastTimeIndex_;
 
 	private TimeInfo timeInfo;
-
-	public static class DimensionInfo {
-		final double start;
-		final double end;
-		final double delta;
-		/**
-		 * currently all zeros due to bug in attribute reading of jhdf version
-		 * we're using
-		 */
-		final List<Double> values;
-
-		private DimensionInfo(double start, double end, double delta, double[] values) {
-			super();
-			this.start = start;
-			this.end = end;
-			this.delta = delta;
-			this.values = toUnmodifiableList(values);
-		}
-
-		/**
-		 * this correct despite values being wrong
-		 * @return number of mesh centers
-		 */
-		public int number( ) {
-			return values.size();
-		}
-
-		@Override
-		public String toString() {
-			return "DimensionInfo [start=" + start + ", end=" + end + ", delta=" + delta + ", values=" + values + "]";
-		}
-	}
-
-	public static class MeshInfo {
-		final double precision;
-		final double scaleFactor;
-		final DimensionInfo xinfo;
-		final DimensionInfo yinfo;
-		final int depth;
-
-		private MeshInfo(double precision, double scaleFactor, DimensionInfo xinfo, DimensionInfo yinfo, int depth) {
-			super();
-			this.precision = precision;
-			this.scaleFactor = scaleFactor;
-			this.xinfo = xinfo;
-			this.yinfo = yinfo;
-			this.depth = depth;
-		}
-
-		@Override
-		public String toString() {
-			return "MeshInfo [precision=" + precision + ", scaleFactor=" + scaleFactor + ", xinfo=" + xinfo + ", yinfo="
-					+ yinfo + ", depth=" + depth + "]";
-		}
-	}
-
-	public static class TimeInfo {
-		static class TimeStep {
-			final double time;
-			final double step;
-			private TimeStep(double time, double step) {
-				this.time = time;
-				this.step = step;
-			}
-			@Override
-			public String toString() {
-				return  "[" + time + ", " + step + "]";
-			}
-
-		}
-		final double requestedTimeStep;
-		final double endTime;
-		final double runTime;
-		final List<Double> generationTimes;
-		final List<Double> moveTimes;
-		final List<TimeStep> timeSteps;
-		private TimeInfo(double requestedTimeStep, double endTime, double runTime, double[] generationTimes,
-				double[] moveTimes, List<TimeStep> timeSteps) {
-			super();
-			this.requestedTimeStep = requestedTimeStep;
-			this.endTime = endTime;
-			this.runTime = runTime;
-			this.generationTimes = toUnmodifiableList(generationTimes);
-			this.moveTimes = toUnmodifiableList(moveTimes);
-			this.timeSteps = timeSteps;
-		}
-		@Override
-		public String toString() {
-			return "TimeInfo [requestedTimeStep=" + requestedTimeStep + ", endTime=" + endTime + ", runTime=" + runTime
-					+ ", generationTimes=" + generationTimes + ", moveTimes=" + moveTimes + ", timeSteps=" + timeSteps
-					+ "]";
-		}
-
-	}
+	private H5CompoundDS elementNode_;
 
 	public MeshInfo getMeshInfo( ) {
 		if (meshInfo == null) {
@@ -127,10 +42,6 @@ public class MovingBoundaryResult {
 	}
 
 	public int lastTimeIndex( ) {
-		if (lastTimeIndex_ >= 0) {
-			return lastTimeIndex_;
-		}
-		lastTimeIndex_ = singleInt("lastTimeIndex");
 		return lastTimeIndex_;
 	}
 
@@ -138,7 +49,6 @@ public class MovingBoundaryResult {
 		this.filename = filename;
 		meshInfo = null;
 		timeInfo = null;
-		lastTimeIndex_ = -1;
 		try {
 			// retrieve an instance of H5File
 			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
@@ -159,6 +69,7 @@ public class MovingBoundaryResult {
 			// open the file and retrieve the file structure
 			testFile.open();
 			root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
+			lastTimeIndex_ = singleInt("lastTimeIndex");
 		} catch (Exception e) {
 			throw new MovingBoundaryResultException("exception reading moving boundary result file " + filename,e);
 		}
@@ -210,16 +121,6 @@ public class MovingBoundaryResult {
 //		throw new MovingBoundaryResultException("Long " + a + " invalid integer, too big");
 //	}
 
-	/**
-	 * @param values
-	 * @return values as Unmodifiable list
-	 */
-	private static List<Double> toUnmodifiableList(double []values) {
-		Double[] v = ArrayUtils.toObject(values);
-		List<Double> r = Collections.unmodifiableList(Arrays.asList(v));
-		return r;
-	}
-
 	private DimensionInfo getDimInfo(char dim) {
 		char upper = Character.toUpperCase(dim);
 		char lower = Character.toLowerCase(dim);
@@ -260,6 +161,108 @@ public class MovingBoundaryResult {
 		}
 
 		return timeInfo;
+	}
+
+	private void validateTimeIndex(int t) {
+		if (t > lastTimeIndex_) {
+			throw new IndexOutOfBoundsException("time index " + t + " greater than max index " + lastTimeIndex_);
+		}
+	}
+
+	private H5CompoundDS elementNode( ) throws HDF5Exception {
+		if (elementNode_ == null) {
+			VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
+			elementNode_ = dpath.get();
+			elementNode_.read();
+		}
+		return this.elementNode_;
+	}
+
+	/**
+	 * @param timeIndex >= 0 and <= {@link #lastTimeIndex()}
+	 * @return
+	 */
+	public Plane getPlane(int timeIndex) {
+		VCAssert.assertTrue(timeIndex >= 0, "negative time index");
+		validateTimeIndex(timeIndex);
+		try {
+			MeshInfo mi = getMeshInfo();
+			final int numX = mi.xinfo.number();
+			final int numY = mi.yinfo.number();
+			Element elements[][] = new Element[numX][numY];
+			H5CompoundDS en = elementNode();
+			en.clearData();
+			long[] selected = en.getSelectedDims();
+			long[] start = en.getStartDims();
+			long[] stride = en.getStride( );
+			long[] d = en.getDims( );
+			long[] m = en.getMaxDims( );
+			int[] selectedIndex = en.getSelectedIndex( );
+			Arrays.fill(start, 0);
+			Arrays.fill(stride, 1);
+			selected[0] = 1;
+			start[0] = timeIndex;
+			selectedIndex[0] = 1;
+			selectedIndex[1] = 2;
+			selectedIndex[2] = 0;
+			Vector<?> data= safeCast(Vector.class,en.getData(),"elements");
+			String[] dn = en.getMemberNames();
+			double[] vols = select(double[].class,data,dn,"elements","volume");
+			int i = 0;
+			for (int x = 0; x < numX; x++) {
+				for (int y = 0; y < numY; y++) {
+					elements[x][y] = new Element(vols[i++]);
+				}
+			}
+
+			PlaneI plane = new PlaneI();
+			plane.elements = elements;
+			plane.time = getTimeInfo().generationTimes.get(timeIndex);
+			return plane;
+		} catch (Exception e) {
+			throw new RuntimeException("Can't read plane for time index " + timeIndex,e);
+		}
+	}
+
+	private static class PlaneI implements Plane {
+		Element elements[][];
+		double time;
+
+		@Override
+		public double getTime() {
+			return time;
+		}
+
+		@Override
+		public int getSizeX() {
+			return elements.length;
+		}
+		@Override
+		public int getSizeY() {
+			return elements[0].length;
+		}
+
+		@Override
+		public Element get(int x, int y) {
+			return elements[x][y];
+		}
+	}
+
+	private static<T> T select(Class<T> clzz, Vector<?> v, String[] names,String path, String childName) {
+		for (int i = 0; i < names.length; i++) {
+			if (childName.equals(names[i])) {
+				return safeCast(clzz,v.get(i), path + "/" + childName);
+			}
+		}
+		throw new ProgrammingException("No " + childName + " in " + StringUtils.join(names,",") + " children of " + path);
+	}
+
+	private static<T> T safeCast(Class<T> clzz, Object obj, String path) {
+		CastInfo<T> ci = BeanUtils.attemptCast(clzz, obj);
+		if (ci.isGood()) {
+			return ci.get();
+		}
+		throw new ProgrammingException(ci.castMessage() + " failed for " + path);
 	}
 
 	/**
