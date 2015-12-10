@@ -39,6 +39,7 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 	protected transient VetoableChangeSupport vetoChange;
 	
 	public static final String PROPERTY_NAME_RANDOM_SEED = "randomSeed";
+	public static final Integer DefaultMaxMoleculesPerSpecies = 200000;
 	
 	public NFsimSimulationOptions() {
 		removeVetoableChangeListener(this);
