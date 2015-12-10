@@ -879,7 +879,7 @@ public class NFsimXMLWriter {
 				double value = evaluateConstant(initialCount.getCount(),simulationSymbolTable);
 				Integer maxMoleculesPerType = simulationSymbolTable.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions().getMaxMoleculesPerType();
 				if (maxMoleculesPerType == null){
-					maxMoleculesPerType = new Integer(200000);
+					maxMoleculesPerType = NFsimSimulationOptions.DefaultMaxMoleculesPerSpecies;
 				}
 				if (maxMoleculesPerType.doubleValue() < value){
 					String eMessage = "The Initial count for Species '" + seedSpecies.getName() + "' is " + BigDecimal.valueOf(value).toBigInteger();
