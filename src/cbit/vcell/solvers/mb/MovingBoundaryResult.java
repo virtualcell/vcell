@@ -2,11 +2,8 @@ package cbit.vcell.solvers.mb;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Vector;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BeanUtils.CastInfo;
@@ -27,7 +24,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private int lastTimeIndex_;
 
 	private TimeInfo timeInfo;
-	private H5CompoundDS elementNode_;
+	private PlaneNodes pnodes;
 
 	public MeshInfo getMeshInfo( ) {
 		if (meshInfo == null) {
@@ -169,13 +166,35 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		}
 	}
 
-	private H5CompoundDS elementNode( ) throws HDF5Exception {
-		if (elementNode_ == null) {
-			VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
-			elementNode_ = dpath.get();
-			elementNode_.read();
+	private PlaneNodes planeNode( ) throws HDF5Exception {
+		if (pnodes == null) {
+			pnodes = new PlaneNodes( );
 		}
-		return this.elementNode_;
+		return pnodes;
+	}
+
+	/**
+	 * select plane based on first dimension
+	 * @param ds
+	 * @param first
+	 */
+	private void selectPlane(H5CompoundDS ds,int d1, int d2, int first) {
+		ds.clearData();
+		long[] selected = ds.getSelectedDims();
+		long[] start = ds.getStartDims();
+		long[] stride = ds.getStride( );
+		//long[] d = en.getDims( );
+		//long[] m = en.getMaxDims( );
+		int[] selectedIndex = ds.getSelectedIndex( );
+		Arrays.fill(start, 0);
+		Arrays.fill(stride, 1);
+		selected[0] = 1;
+		selected[1] = d1;
+		selected[2] = d2;
+		start[0] = first;
+		selectedIndex[0] = 1;
+		selectedIndex[1] = 2;
+		selectedIndex[2] = 0;
 	}
 
 	/**
@@ -190,38 +209,96 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			final int numX = mi.xinfo.number();
 			final int numY = mi.yinfo.number();
 			Element elements[][] = new Element[numX][numY];
-			H5CompoundDS en = elementNode();
-			en.clearData();
-			long[] selected = en.getSelectedDims();
-			long[] start = en.getStartDims();
-			long[] stride = en.getStride( );
-			long[] d = en.getDims( );
-			long[] m = en.getMaxDims( );
-			int[] selectedIndex = en.getSelectedIndex( );
-			Arrays.fill(start, 0);
-			Arrays.fill(stride, 1);
-			selected[0] = 1;
-			start[0] = timeIndex;
-			selectedIndex[0] = 1;
-			selectedIndex[1] = 2;
-			selectedIndex[2] = 0;
-			Vector<?> data= safeCast(Vector.class,en.getData(),"elements");
-			String[] dn = en.getMemberNames();
-			double[] vols = select(double[].class,data,dn,"elements","volume");
+			double[] vols;
+			byte[] poz;
+			{
+				H5CompoundDS en = planeNode( ).elements;
+				selectPlane(en,numX,numY,timeIndex);
+				Vector<?> data= safeCast(Vector.class,en.getData(),"elements");
+				String[] dn = en.getMemberNames();
+				vols = select(double[].class,data,dn,"elements","volume");
+				poz = select(byte[].class,data,dn,"elements","boundaryPosition");
+			}
+			double mass[][];
+			double conc[][];
+			{
+				//will need to be a loop later
+				mass = new double[1][];
+				conc = new double[1][];
+				H5CompoundDS sp = planeNode( ).species;
+				selectPlane(sp,numX,numY,timeIndex);
+				Vector<?> data= safeCast(Vector.class,sp.getData(),"species");
+				String[] dn = sp.getMemberNames();
+				mass[0] = select(double[].class,data,dn,"species","mass");
+				conc[0]= select(double[].class,data,dn,"species","uNumeric");
+			}
+
+
 			int i = 0;
 			for (int x = 0; x < numX; x++) {
 				for (int y = 0; y < numY; y++) {
-					elements[x][y] = new Element(vols[i++]);
+					Element e = new Element(vols[i],poz[i]);
+					for (int sc = 0; sc < mass.length; sc++) {
+						Species sp = new Species(mass[sc][i], conc[sc][i]);
+						e.species.add(sp);
+					}
+
+					elements[x][y] = e;
+					i++;
 				}
 			}
 
 			PlaneI plane = new PlaneI();
 			plane.elements = elements;
 			plane.time = getTimeInfo().generationTimes.get(timeIndex);
+
 			return plane;
 		} catch (Exception e) {
 			throw new RuntimeException("Can't read plane for time index " + timeIndex,e);
 		}
+	}
+
+	/**
+	 * @param clzz return type
+	 * @param v input
+	 * @param names available names
+	 * @param path info for exception message
+	 * @param childName to select
+	 * @return requested data
+	 * @throws ProgrammingException if wrong type or childName name not in names
+	 */
+	private static<T> T select(Class<T> clzz, Vector<?> v, String[] names,String path, String childName) {
+		for (int i = 0; i < names.length; i++) {
+			if (childName.equals(names[i])) {
+				return safeCast(clzz,v.get(i), path + "/" + childName);
+			}
+		}
+		throw new ProgrammingException("No " + childName + " in " + StringUtils.join(names,",") + " children of " + path);
+	}
+
+	private static<T> T safeCast(Class<T> clzz, Object obj, String path) {
+		CastInfo<T> ci = BeanUtils.attemptCast(clzz, obj);
+		if (ci.isGood()) {
+			return ci.get();
+		}
+		throw new ProgrammingException(ci.castMessage() + " failed for " + path);
+	}
+
+	/**
+	 * HDF data nodes which support planes
+	 */
+	private class PlaneNodes {
+		final H5CompoundDS elements;
+		final H5CompoundDS species;
+		PlaneNodes() throws HDF5Exception {
+			VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
+			elements = dpath.get();
+			elements.read();
+			dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"species");
+			species = dpath.get();
+			species.read( );
+		}
+
 	}
 
 	private static class PlaneI implements Plane {
@@ -247,24 +324,6 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			return elements[x][y];
 		}
 	}
-
-	private static<T> T select(Class<T> clzz, Vector<?> v, String[] names,String path, String childName) {
-		for (int i = 0; i < names.length; i++) {
-			if (childName.equals(names[i])) {
-				return safeCast(clzz,v.get(i), path + "/" + childName);
-			}
-		}
-		throw new ProgrammingException("No " + childName + " in " + StringUtils.join(names,",") + " children of " + path);
-	}
-
-	private static<T> T safeCast(Class<T> clzz, Object obj, String path) {
-		CastInfo<T> ci = BeanUtils.attemptCast(clzz, obj);
-		if (ci.isGood()) {
-			return ci.get();
-		}
-		throw new ProgrammingException(ci.castMessage() + " failed for " + path);
-	}
-
 	/**
 	 * moving boundary result exception construct
 	 */
