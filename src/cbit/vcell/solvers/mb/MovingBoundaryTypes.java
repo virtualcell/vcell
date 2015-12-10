@@ -1,5 +1,6 @@
 package cbit.vcell.solvers.mb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -70,17 +71,40 @@ public interface MovingBoundaryTypes {
 			this.mass = mass;
 			this.concentration = concentration;
 		}
+		@Override
+		public String toString() {
+			return "(mass=" + mass + ", concentration=" + concentration + ")";
+		}
 	}
+
 	public static class Element {
 		enum Position {
 			INSIDE,
 			BOUNDARY,
+			OUTSIDE;
+			@Override
+			public String toString( ) {
+				return name().toLowerCase();
+			}
 		}
-		private double volume;
-		Position position;
+		final List<Species> species;
+		final double volume;
+		final Position position;
 
-		Element(double volume) {
+		Element(double volume, byte poz) {
+			species = new ArrayList<>();
 			this.volume = volume;
+			switch(poz) {
+			case 'B':
+				position = Position.BOUNDARY;
+				break;
+			case 'I':
+				position = Position.INSIDE;
+				break;
+			default:
+				position = Position.OUTSIDE;
+				break;
+			}
 		}
 		public double getVolume() {
 			return volume;
@@ -88,6 +112,11 @@ public interface MovingBoundaryTypes {
 		public Position getPosition() {
 			return position;
 		}
+		@Override
+		public String toString() {
+			return "Element [volume=" + volume + ", position=" + position + "]";
+		}
+
 	}
 
 	public interface Plane {
