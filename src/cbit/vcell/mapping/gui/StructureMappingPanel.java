@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.mapping.gui;
+import java.awt.GridBagConstraints;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.UIManager;
@@ -222,10 +224,10 @@ private void initialize() {
 		setSize(514, 220);
 
 		java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.WEST;
 		gbc.gridx = 0; gbc.gridy = 0;
-		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getVolumeSurfaceCalculatorPanel(), gbc);
 		
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
@@ -233,7 +235,7 @@ private void initialize() {
 		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJScrollPane1.weightx = 1.0;
 		constraintsJScrollPane1.weighty = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+		constraintsJScrollPane1.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getScrollPaneTable1().getEnclosingScrollPane(), constraintsJScrollPane1);
 	
 		//set column renderer
