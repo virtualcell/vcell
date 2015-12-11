@@ -5451,9 +5451,15 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	}
 	
 	// Retrieve ReactionRuleSpecs
-	Element reactionRuleSpecsElement = tempelement.getChild(XMLTags.ReactionRuleSpecsTag);
+	Element reactionRuleSpecsElement = tempelement.getChild(XMLTags.ReactionRuleSpecsTag, vcNamespace);
 	if (reactionRuleSpecsElement != null){
-		getReactionRuleSpecs(newsimcontext, reactionRuleSpecsElement);
+		ReactionRuleSpec[] reactionRuleSpecs = getReactionRuleSpecs(newsimcontext, reactionRuleSpecsElement);
+		try {
+			newsimcontext.getReactionContext().setReactionRuleSpecs(reactionRuleSpecs);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException("A PropertyVetoException occurred while setting the ReactionRuleSpecs to the SimContext " + name,e);
+		}
 	}
 	
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
