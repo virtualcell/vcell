@@ -25,7 +25,7 @@ public class ReactionRuleSpec implements ModelProcessSpec {
 
 	public enum ReactionRuleMappingType {
 		INCLUDED("included","included"),
-		EXCLUDED("excluded","included");
+		EXCLUDED("excluded","excluded");
 		
 		private final String displayName;
 		private final String databaseName;
