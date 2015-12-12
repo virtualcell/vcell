@@ -1,6 +1,8 @@
 package org.vcell.vis.chombo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.vcell.vis.core.Vect3D;
 
@@ -12,7 +14,7 @@ public class ChomboMesh {
 	private Vect3D origin;
 	private Vect3D extent;
 	private final ArrayList<ChomboLevel> chomboLevels = new ArrayList<ChomboLevel>();
-	
+	private Map<String, Integer> featurePhaseMap = new HashMap<String, Integer>();
 	
     public ChomboMesh(){
     }
@@ -96,6 +98,25 @@ public class ChomboMesh {
 		this.extent = extent;
 	}
 
+	public void addFeaturePhase(String feature, int phase)
+	{
+		featurePhaseMap.put(feature, phase);
+	}
+	
+	public Integer getPhase(String feature) throws RuntimeException
+	{
+		if (featurePhaseMap.size() == 0)
+		{
+			return null;
+		}
+		Integer iphase = featurePhaseMap.get(feature);
+		if (iphase == null)
+		{
+			throw new RuntimeException("phase for feature " + feature + " not found");
+		}
+		return iphase;
+	}
+	
 //	public void setTime(double time) {
 //		this.time = time;
 //	}

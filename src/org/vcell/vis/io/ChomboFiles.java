@@ -9,23 +9,31 @@ import java.util.Set;
 
 
 public class ChomboFiles {
-	
-	class ChomboFileEntry {
-		private final String volDomainName;
+	public static final String MEMBRANE_DOMAIN_SUFFIX = "_Membrane";
+
+	public class ChomboFileEntry {
+		private String feature;
+		private int ivol;
 		private final int timeIndex;
 		private final File file;
 		
-		public ChomboFileEntry(String volDomainName, int timeIndex, File file) {
+		public ChomboFileEntry(String feature, int ivol, int timeIndex, File file) {
 			super();
-			this.volDomainName = volDomainName;
+			this.feature = feature;
+			this.ivol = ivol;
 			this.timeIndex = timeIndex;
 			this.file = file;
 		}
 
-		public String getVolDomainName() {
-			return volDomainName;
+		public String getVolumeDomainName()
+		{
+			return feature + ".vol" + ivol;
 		}
-
+		
+		public String getMembraneDomainName(){
+			return getVolumeDomainName() + MEMBRANE_DOMAIN_SUFFIX;
+		}
+		
 		public int getTimeIndex() {
 			return timeIndex;
 		}
@@ -34,6 +42,13 @@ public class ChomboFiles {
 			return file;
 		}
 
+		public String getFeature() {
+			return feature;
+		}
+
+		public int getIvol() {
+			return ivol;
+		}
 	}
 	
 	private final String simID;
@@ -60,40 +75,8 @@ public class ChomboFiles {
 		return meshFile;
 	}
 	
-	public void addDataFile(String volDomainName, int timeIndex, File file){
-		dataFiles.add(new ChomboFileEntry(volDomainName,timeIndex,file));
-	}
-
-	public Set<String> getVolumeDomainNames() {
-		HashSet<String> domainNames = new HashSet<String>();
-		for (ChomboFileEntry entry : dataFiles){
-			domainNames.add(entry.volDomainName);
-		}
-		return domainNames;
-	}
-	
-	public List<File> getDataFilesFromVolumeDomainName(String volumeDomainName){
-		ArrayList<File> domainDataFiles = new ArrayList<File>();
-		for (ChomboFileEntry entry : dataFiles){
-			if (entry.volDomainName.equals(volumeDomainName)){
-				domainDataFiles.add(entry.file);
-			}
-		}
-		java.util.Collections.sort(domainDataFiles,new Comparator<File>(){
-			public int compare(File o1, File o2) {
-				return o1.getPath().compareTo(o2.getPath());
-			}
-		});
-		return domainDataFiles;
-	}
-
-	public File getDataFileFromVolumeDomainName(String volumeDomainName, int timeIndex) {
-		for (ChomboFileEntry entry : dataFiles){
-			if (entry.volDomainName.equals(volumeDomainName) && entry.timeIndex==timeIndex){
-				return entry.file;
-			}
-		}
-		throw new RuntimeException("no data found for domain '"+volumeDomainName+"' and timeIndex "+timeIndex);
+	public void addDataFile(String feature, int ivol, int timeIndex, File file){
+		dataFiles.add(new ChomboFileEntry(feature, ivol,timeIndex,file));
 	}
 
 	public List<Integer> getTimeIndices() {
@@ -113,6 +96,16 @@ public class ChomboFiles {
 	
 	public List<ChomboFileEntry> getEntries(){
 		return dataFiles;
+	}
+	
+	public List<ChomboFileEntry> getEntries(int timeIndex){
+		List<ChomboFileEntry> files = new ArrayList<ChomboFileEntry>();
+		for (ChomboFileEntry entry : dataFiles){
+			if (timeIndex == entry.timeIndex){
+				files.add(entry);
+			}
+		}
+		return files;
 	}
 
 	public String getCannonicalFilePrefix(String domainName, int timeIndex) {

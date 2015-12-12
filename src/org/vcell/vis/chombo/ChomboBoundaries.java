@@ -107,35 +107,15 @@ public class ChomboBoundaries {
 			this.cornerPhaseMask = cornerPhaseMask;
 		}
 
-		public boolean isCornerInside(int vertexIndex) {
-			switch (vertexIndex){
-			case 0: {
-				return ((cornerPhaseMask & 0x00000001) != 0);
+		// if the bit is 1, it's in phase 1
+		public boolean isVertexInPhase1(int vertexIndex) {
+			if (vertexIndex >= 0 && vertexIndex < 8)
+			{
+			  return (cornerPhaseMask & (0x1 << vertexIndex)) != 0;
 			}
-			case 1: {
-				return ((cornerPhaseMask & 0x00000002) != 0);
-			}
-			case 2: {
-				return ((cornerPhaseMask & 0x00000004) != 0);
-			}
-			case 3: {
-				return ((cornerPhaseMask & 0x00000008) != 0);
-			}
-			case 4: {
-				return ((cornerPhaseMask & 0x00000010) != 0);
-			}
-			case 5: {
-				return ((cornerPhaseMask & 0x00000020) != 0);
-			}
-			case 6: {
-				return ((cornerPhaseMask & 0x00000040) != 0);
-			}
-			case 7: {
-				return ((cornerPhaseMask & 0x00000080) != 0);
-			}
-			default:{
+			else
+			{
 				throw new RuntimeException("unexpected vertex index "+vertexIndex);
-			}
 			}
 		}
 	}
