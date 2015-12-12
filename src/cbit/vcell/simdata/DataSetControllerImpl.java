@@ -4415,7 +4415,7 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 		try {
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
-			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
+			File primaryDirectory = getPrimaryUserDir(vcdataID.getOwner(), false);
 			VtuFileContainer vtuFiles = chomboVTKFileWriter.getEmptyVtuMeshFiles(chomboFiles, primaryDirectory);
 			return vtuFiles;
 		}catch (Exception e){

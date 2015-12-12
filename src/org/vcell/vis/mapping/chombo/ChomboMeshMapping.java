@@ -16,9 +16,9 @@ import org.vcell.vis.chombo.ChomboLevel.Covering;
 import org.vcell.vis.chombo.ChomboLevelData;
 import org.vcell.vis.chombo.ChomboMesh;
 import org.vcell.vis.chombo.ChomboMeshData;
-import org.vcell.vis.core.Face;
 import org.vcell.vis.vismesh.thrift.ChomboSurfaceIndex;
 import org.vcell.vis.vismesh.thrift.ChomboVolumeIndex;
+import org.vcell.vis.vismesh.thrift.Face;
 import org.vcell.vis.vismesh.thrift.PolyhedronFace;
 import org.vcell.vis.vismesh.thrift.Vect3D;
 import org.vcell.vis.vismesh.thrift.VisIrregularPolyhedron;
@@ -429,7 +429,7 @@ public class ChomboMeshMapping {
 
 		public VisSurfaceTriangle getSurfaceTriangle(Face face) {
 			for (VisSurfaceTriangle tri : surfaceTriangles){
-				if (tri.getFace().equals(face)){
+				if (tri.getFace() == face){  // enum compare
 					return tri;
 				}
 			}
@@ -537,16 +537,13 @@ public class ChomboMeshMapping {
 				//
 				// have o flip the inside/outside if domain ordinal is > 0 ... note that "^" is the exclusive or ... to flip a bit
 				//
-				boolean bFlip = chomboCombinedVolumeMembraneDomain.getOrdinal()>0;
-				VoxelPoint[] v = new VoxelPoint[] { 
-						new VoxelPoint(p0,vp0,bFlip ^ borderCellInfo.isCornerInside(0)), 
-						new VoxelPoint(p1,vp1,bFlip ^ borderCellInfo.isCornerInside(1)), 
-						new VoxelPoint(p2,vp2,bFlip ^ borderCellInfo.isCornerInside(2)), 
-						new VoxelPoint(p3,vp3,bFlip ^ borderCellInfo.isCornerInside(3)), 
-						new VoxelPoint(p4,vp4,bFlip ^ borderCellInfo.isCornerInside(4)), 
-						new VoxelPoint(p5,vp5,bFlip ^ borderCellInfo.isCornerInside(5)), 
-						new VoxelPoint(p6,vp6,bFlip ^ borderCellInfo.isCornerInside(6)), 
-						new VoxelPoint(p7,vp7,bFlip ^ borderCellInfo.isCornerInside(7)) };
+				VoxelPoint[] v = new VoxelPoint[8];
+				for (int i = 0; i < 8; ++ i)
+				{
+					int p = polyhedronPointIndices.get(i);
+					VisPoint vp = points.get(p);
+					v[i] = new VoxelPoint(p,vp,chomboCombinedVolumeMembraneDomain.shouldIncludeVertex(borderCellInfo.isVertexInPhase1(i)));
+				}
 				// choosing an arbitrary face (A,B,C,D) see below
 				//
 				//   pA   pB
