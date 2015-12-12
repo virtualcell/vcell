@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
@@ -16,6 +14,7 @@ import org.vcell.vis.chombo.ChomboMembraneVarData;
 import org.vcell.vis.chombo.ChomboMeshData;
 import org.vcell.vis.io.ChomboFileReader;
 import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vis.vismesh.thrift.ChomboIndexData;
@@ -317,19 +316,19 @@ public class ChomboVtkFileWriter {
 	
 	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, File destinationDirectory) throws IOException, MathException, DataAccessException {
 		//
-		// for each domain in cartesian mesh, get the mesh file
+		// find mesh for each file at time 0
 		//
-		Set<String> volumeDomainNames = chomboFiles.getVolumeDomainNames();
+		List<ChomboFileEntry> chomboFileEntries = chomboFiles.getEntries(0);
 		ArrayList<File> meshFiles = new ArrayList<File>();
 		ArrayList<String> domains = new ArrayList<String>();
 		//
 		// look at domains returned from chomboFiles (volume domains only) and check for existence of corresponding volume mesh files.
 		//
 		boolean bMeshFileMissing = false;
-		for (String volumeDomainName : volumeDomainNames){
-			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, volumeDomainName);
+		for (ChomboFileEntry cfe : chomboFileEntries){
+			File volumeMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, cfe.getVolumeDomainName());
 			meshFiles.add(volumeMeshFile);
-			domains.add(volumeDomainName);
+			domains.add(cfe.getVolumeDomainName());
 			if (!volumeMeshFile.exists()){
 				bMeshFileMissing = true;
 			}
@@ -346,8 +345,8 @@ public class ChomboVtkFileWriter {
 		// all mesh files (volume and membrane) are assumed to already exist at this point.
 		// if a membrane mesh file is not found, than it doesn't exist, if it is found add it to the list.
 		//
-		for (String volumeDomainName : volumeDomainNames){
-			String membraneDomainName = volumeDomainName+MEMBRANE_DOMAIN_SUFFIX;
+		for (ChomboFileEntry cfe : chomboFileEntries){
+			String membraneDomainName = cfe.getMembraneDomainName();
 			File membraneMeshFile = getVtuMeshFileName(destinationDirectory, chomboFiles, membraneDomainName);
 			if (membraneMeshFile.exists()){
 				meshFiles.add(membraneMeshFile);

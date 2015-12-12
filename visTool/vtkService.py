@@ -81,7 +81,7 @@ def writeChomboMembraneVtkGridAndIndexData(visMesh, domainname, vtkfile, indexfi
     if visMesh.dimension == 3:
         if visMesh.surfaceTriangles is not None:
             for  surfaceTriangle in visMesh.surfaceTriangles:
-                chomboIndexData.chomboSurfaceIndices.append(surfaceTriangle.chomboSurfaceIndex())
+                chomboIndexData.chomboSurfaceIndices.append(surfaceTriangle.chomboSurfaceIndex)
     elif visMesh.dimension == 2:
         if visMesh.visLines is not None:
             for visLine in visMesh.visLines:

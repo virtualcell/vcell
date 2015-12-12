@@ -3,29 +3,29 @@ package org.vcell.vis.chombo;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
+
 public class ChomboDataset {
-	
+		
 	public static class ChomboCombinedVolumeMembraneDomain {
 		private final int ordinal;
-		private final String volumeDomainName;
-		private final String membraneDomainName;
+		private ChomboFileEntry chomboFileEntry;
 		private final ChomboMesh chomboMesh;
 		private final ChomboMeshData chomboMeshData;
 		
-		public ChomboCombinedVolumeMembraneDomain(String volumeDomainName, String membraneDomainName, ChomboMesh chomboMesh, ChomboMeshData chomboMeshData,int ordinal){
-			this.volumeDomainName = volumeDomainName;
-			this.membraneDomainName = membraneDomainName;
+		public ChomboCombinedVolumeMembraneDomain(ChomboFileEntry chomboFileEntry, ChomboMesh chomboMesh, ChomboMeshData chomboMeshData,int ordinal){
+			this.chomboFileEntry = chomboFileEntry;
 			this.chomboMesh = chomboMesh;
 			this.chomboMeshData = chomboMeshData;
 			this.ordinal = ordinal;
 		}
 		
 		public String getVolumeDomainName(){
-			return volumeDomainName;
+			return chomboFileEntry.getVolumeDomainName();
 		}
 		
 		public String getMembraneDomainName(){
-			return membraneDomainName;
+			return chomboFileEntry.getMembraneDomainName();
 		}
 		
 		public ChomboMesh getChomboMesh() {
@@ -34,8 +34,13 @@ public class ChomboDataset {
 		public ChomboMeshData getChomboMeshData() {
 			return chomboMeshData;
 		}
-		public int getOrdinal(){
-			return this.ordinal;
+		
+		public boolean shouldIncludeVertex(boolean bInPhase1)
+		{
+			// if the point is in phase 1, return true if the domain is also in phase 1 otherwise false 
+			// if the phase info does not exist, use old logic
+			Integer iphase = chomboMesh.getPhase(chomboFileEntry.getFeature());
+			return iphase == null ? ((ordinal > 0) ^ bInPhase1) : (bInPhase1 ? iphase == 1 : iphase == 0);
 		}
 	}
 	

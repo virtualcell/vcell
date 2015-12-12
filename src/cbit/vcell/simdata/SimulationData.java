@@ -2046,13 +2046,13 @@ private void findChomboFeatureVolFile(ChomboFiles chomboFiles, VCSimulationDataI
 	String expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+".feature_"+subDomain+".vol" + ivol + ".hdf5";
 	File file = amplistorHelper.getFile(expectedFile);
 	if (file.exists()){
-		chomboFiles.addDataFile(subDomain + ".vol" + ivol, timeIndex, file);
+		chomboFiles.addDataFile(subDomain, ivol, timeIndex, file);
 	}else{
 		// I changed the file name 
 		expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+"_"+subDomain+"_vol" + ivol + ".hdf5";
 	  file = amplistorHelper.getFile(expectedFile);
 	  if (file.exists()){
-			chomboFiles.addDataFile(subDomain + ".vol" + ivol, timeIndex, file);
+			chomboFiles.addDataFile(subDomain, ivol, timeIndex, file);
 	  }
 	  else
 	  {

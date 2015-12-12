@@ -2,7 +2,6 @@ package org.vcell.vis.io;
 
 import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -28,6 +27,9 @@ import org.vcell.vis.core.Face;
 import org.vcell.vis.core.Vect3D;
 import org.vcell.vis.io.ChomboFiles.ChomboFileEntry;
 import org.vcell.vis.mapping.chombo.ChomboVtkFileWriter;
+
+import cbit.vcell.solvers.CartesianMeshChombo;
+import cbit.vcell.solvers.CartesianMeshChombo.FeaturePhaseVol;
 
 public class ChomboFileReader {
 	//private static final String METRICS_DATASET = "metrics";
@@ -57,7 +59,14 @@ public class ChomboFileReader {
 			chomboMesh.setDimension(Hdf5Reader.getIntAttribute(meshGroup,MESH_ATTR_DIMENSION));		
 			chomboMesh.setExtent(Hdf5Reader.getVect3DAttribute(meshGroup,MESH_ATTR_EXTENT,1.0));
 			chomboMesh.setOrigin(Hdf5Reader.getVect3DAttribute(meshGroup,MESH_ATTR_ORIGIN,0.0));
-	
+			
+			// it's very wasteful here, but what can I do?
+			CartesianMeshChombo cartesianMeshChombo = CartesianMeshChombo.readMeshFile(new File(meshFileName));
+			for (FeaturePhaseVol fpv : cartesianMeshChombo.getFeaturePhaseVols())
+			{
+				chomboMesh.addFeaturePhase(fpv.feature, fpv.iphase);
+			}
+			
 			//Hdf5Reader.DataColumn[] metricsColumns = Hdf5Reader.getDataTable(meshGroup,METRICS_DATASET);
 			if (chomboMesh.getDimension()==2){
 				Hdf5Reader.DataColumn[] segmentColumns = Hdf5Reader.getDataTable(meshGroup,"segments");
@@ -201,14 +210,14 @@ public class ChomboFileReader {
 	
 	public static ChomboDataset readDataset(ChomboFiles chomboFiles, int timeIndex) throws Exception{
 		String meshFilename = chomboFiles.getMeshFile().getPath();
-		Set<String> volumeDomainNames = chomboFiles.getVolumeDomainNames();
 		ChomboDataset chomboDataset = new ChomboDataset();
 		int domainOrdinal = 0;
-		for (String volumeDomainName : volumeDomainNames){
-			File domainFile = chomboFiles.getDataFileFromVolumeDomainName(volumeDomainName,timeIndex);
+		for (ChomboFileEntry cfe : chomboFiles.getEntries(timeIndex))
+		{
+			File domainFile = cfe.getFile();
 			ChomboMeshData chomboMeshData = readMesh(meshFilename, domainFile.getPath());
 			ChomboMesh chomboMesh = chomboMeshData.getMesh();
-			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(volumeDomainName,volumeDomainName+ChomboVtkFileWriter.MEMBRANE_DOMAIN_SUFFIX,chomboMesh,chomboMeshData,domainOrdinal);
+			ChomboDataset.ChomboCombinedVolumeMembraneDomain chomboCombinedVolumeMembraneDomain = new ChomboDataset.ChomboCombinedVolumeMembraneDomain(cfe,chomboMesh,chomboMeshData,domainOrdinal);
 			chomboDataset.addDomain(chomboCombinedVolumeMembraneDomain);
 			domainOrdinal++;
 		}
