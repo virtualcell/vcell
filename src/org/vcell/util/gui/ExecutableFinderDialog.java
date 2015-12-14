@@ -10,6 +10,7 @@ import org.vcell.util.UserCancelException;
 import cbit.vcell.resource.ResourceUtil.ExecutableFinder;
 
 public class ExecutableFinderDialog implements ExecutableFinder {
+	public static final String FIND = "Find...";
 	final String userMessage;
 	final Component parent;
 	
@@ -28,8 +29,8 @@ public class ExecutableFinderDialog implements ExecutableFinder {
 
 	@Override
 	public File find(String executableName) {
-		String retcode = DialogUtils.showOKCancelWarningDialog(parent, executableName + " not found", userMessage); 
-		if (!retcode.equals(SimpleUserMessage.OPTION_OK)){
+		String retcode = DialogUtils.showWarningDialog(parent, executableName + " not found",userMessage, new String[] {FIND,"Cancel"}, FIND);
+		if (retcode != null && !retcode.equals(FIND)){
 			throw UserCancelException.CANCEL_GENERIC;
 		}
 		//

@@ -12,16 +12,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.prefs.BackingStoreException;
 
 import org.apache.log4j.Logger;
+import org.vcell.util.Executable;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.gui.ExecutableFinderDialog;
 
 import cbit.vcell.resource.ResourceUtil.ExecutableFinder;
 
 public class VisitSupport {
 
+	public static final String VISIT_EXEC_NAME = "visit";
+	
 	public static class VisitFolderFileFilter implements FileFilter {
 
 		ArrayList<String> excludeList = null;
@@ -42,8 +47,12 @@ public class VisitSupport {
 	}
 	
 	private static final Logger lg = Logger.getLogger(VisitSupport.class);
-	public static final String visitUserMessage = "If VisIt is installed (from https://wci.llnl.gov/codes/visit/) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
 
+	public static String getVisitManualFindMessage(String visitURL,String executableName){
+		//https://wci.llnl.gov/codes/visit/
+		return "If VisIt is installed (from "+visitURL+") but not in the system path, then press press '"+ExecutableFinderDialog.FIND+"' and navigate to '"+executableName+"'.\nElse please install VisIt, restart VCell, and try again";
+
+	}
 	
 	public static File getVisToolPythonScript()
 	{
@@ -96,30 +105,24 @@ public class VisitSupport {
 
 	  
 	  
-	  private static void launchVisToolMac(ExecutableFinder gef) throws IOException, URISyntaxException, BackingStoreException {
+	  private static void launchVisToolMac(File visitExecutable) throws IOException, URISyntaxException, BackingStoreException, InterruptedException {
 		
-		String vname = "visit";
-		File visitExecutableRoot = null;
-		//mdfind "kMDItemContentType==com.apple.application-bundle && kMDItemFSName=='visit.app'c"
-		List<File> visitList = doSearch(new String[] {"mdfind", "kMDItemContentType==com.apple.application-bundle", "&&","kMDItemFSName=='"+vname+".app'c"});
-		if(visitList != null && visitList.size() == 1){
-			visitExecutableRoot = visitList.get(0);
-		}
-//		if(true){return;}
-		
+		  if(visitExecutable == null){
+			  File visitExecutableRoot = null;
+			  List<File> visitList = doSearch(new String[] {"mdfind", "kMDItemContentType==com.apple.application-bundle", "&&","kMDItemFSName=='"+VISIT_EXEC_NAME+".app'c"});
+			  if(visitList != null && visitList.size() == 1){
+				  visitExecutableRoot = visitList.get(0);
+			  }
+			  if(visitExecutableRoot == null){
+				  visitExecutableRoot = ResourceUtil.getExecutable(VISIT_EXEC_NAME,false);
+			  }
+			  visitExecutable = new File(visitExecutableRoot,"/Contents/Resources/bin/visit");
+		  }
+		  if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
+			  throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
+		  }
+		  
 		File visMainCLI = getVisToolPythonScript();
-
-//		File visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
-		if(visitExecutableRoot == null){
-			visitExecutableRoot = ResourceUtil.getExecutable(vname,false,gef);
-		}
-		
-		File visitExecutable = null;
-		visitExecutable = new File(visitExecutableRoot,"/Contents/Resources/bin/visit");
-		
-		if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
-			throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
-		}
 		if (!visMainCLI.exists() || !visMainCLI.isFile()){
 			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
 		}
@@ -161,34 +164,29 @@ public class VisitSupport {
 		}
 	}
 	
-	public static void launchVisTool(ExecutableFinder executableFinder) throws IOException, ExecutableException, URISyntaxException, BackingStoreException
+	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, BackingStoreException, InterruptedException
 	{
-		
 		if (OperatingSystemInfo.getInstance().isMac()) {
-			launchVisToolMac(executableFinder);
+			launchVisToolMac(visitExecutable);
 			return;
 		}
-		
-			File script = 				getVisToolShellScript();
-			File visMainCLI =           getVisToolPythonScript();
-			File visitExecutable = null;
+
+		if(visitExecutable == null){
 			
-			String vname = "visit";
-			//String msg = "<html>If VisIt is installed (from <a href=\"https://wci.llnl.gov/codes/visit/\">https://wci.llnl.gov/codes/visit/</a>) but not in the system path, then press press OK and navigate to the executable.\n Else, install VisIt, restart VCell, and try again";
-			visitExecutable = ResourceUtil.getExecutable(vname,false,executableFinder);
+			visitExecutable = ResourceUtil.getExecutable(VISIT_EXEC_NAME,false);
 			
-			if (!script.exists() || !script.isFile()){
-				throw new IOException("script not found, "+script.getAbsolutePath()); 
-			}
 			if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
 				throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
 			}
-			if (!visMainCLI.exists() || !visMainCLI.isFile()){
-				throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
-			}
-			if (lg.isInfoEnabled()) {
-				lg.info("Starting VCellVisIt as a sub-process");
-			}
+		}
+		
+		File visMainCLI =           getVisToolPythonScript();
+		if (!visMainCLI.exists() || !visMainCLI.isFile()){
+			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
+		}
+		if (lg.isInfoEnabled()) {
+			lg.info("Starting VCellVisIt as a sub-process");
+		}
 			//
 			// get existing environment variables and add visit command and python script to it.
 			//
@@ -217,19 +215,30 @@ public class VisitSupport {
 			vcellHomeVisMainCLI.setExecutable(true);
 			
 			
-			envVarList.add("visitcmd="+visitExecutable.getPath());
+			envVarList.add("visitcmd="+/*"\""+*/visitExecutable.getPath()/*+"\""*/);
 			envVarList.add("pythonscript="+vcellHomeVisMainCLI.getPath().replace("\\", "/"));
 			//envVarList.add("pythonscript="+visMainCLI.toURI().toASCIIString());
-			String st = "\""+script.getCanonicalPath()+"\"";
-			System.out.println(st);
 			
 
 			
-			String[] cmdStringArray = new String[] {"cmd", "/K", "start", "\""+"\"", st};
-			@SuppressWarnings("unused")			
-			Process process = Runtime.getRuntime().exec(
-					cmdStringArray, 
-					envVarList.toArray(new String[0]));
+			String[] cmdStringArray = new String[] {"cmd", "/K","start","\"\"" ,visitExecutable.getPath(),"-cli" ,"-uifile", vcellHomeVisMainCLI.getPath().replace("\\", "/")};
+//			@SuppressWarnings("unused")
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try{
+					Executable exec = new Executable(cmdStringArray);
+//					Executable exec = new Executable(new String[] {st});
+					for(String var:envVarList){
+						StringTokenizer st2 = new StringTokenizer(var, "=");
+						exec.addEnvironmentVariable(st2.nextToken(), st2.nextToken());
+					}
+					exec.start();
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+			}).start();
 			if (lg.isInfoEnabled()) {
 				lg.info("Started VCellVisIt");
 			}
