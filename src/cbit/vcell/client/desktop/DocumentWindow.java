@@ -22,8 +22,10 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.EventObject;
 import java.util.Hashtable;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -39,6 +41,7 @@ import javax.swing.JTextArea;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
@@ -859,15 +862,30 @@ private void startVirtualFRAP(){
 }
 
 private void startVCellVisIt() {
-	try {
-		VisitSupport.launchVisTool(new ExecutableFinderDialog(this, VisitSupport.visitUserMessage)); 
-	}catch (UserCancelException e){
-		e.printStackTrace(System.out);
-		//ignore
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		DialogUtils.showErrorDialog(this, "failed to launch visTool, exception: "+e.getMessage());
-	}
+	AsynchClientTask findVisitTask = new AsynchClientTask("Searching for VisIt...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			try{
+				VisitSupport.launchVisTool(null);
+			}catch(Exception e){
+				e.printStackTrace();
+				OperatingSystemInfo osi = OperatingSystemInfo.getInstance();
+				String executableName = ResourceUtil.getExecutableName(VisitSupport.VISIT_EXEC_NAME, false, osi);
+				File executableLocation =
+					new ExecutableFinderDialog(DocumentWindow.this,
+						VisitSupport.getVisitManualFindMessage("https://wci.llnl.gov/codes/visit/",executableName)).find(executableName);
+				VisitSupport.launchVisTool(executableLocation);
+			}
+		}
+	};
+	ProgressDialogListener progressDialogListener = new ProgressDialogListener() {
+		@Override
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			System.out.println(newEvent);
+		}
+	};
+//	ClientTaskDispatcher.dispatch(requester,           hash,              tasks,                                  customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+	ClientTaskDispatcher.dispatch(DocumentWindow.this, new Hashtable<>(), new AsynchClientTask[] {findVisitTask}, null,         true,               false,         true,       progressDialogListener, false);
 }
 /**
  * Return the tool menu.

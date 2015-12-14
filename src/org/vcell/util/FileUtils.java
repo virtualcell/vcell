@@ -197,14 +197,18 @@ public static String readFileToString(File file) throws IOException {
  * return all directories, recursively
  * @param rootDir
  * @return all subdirectories
+ * @throws InterruptedException 
  */
-public static Collection<File> getAllDirectoriesCollection(File rootDir) {
+public static Collection<File> getAllDirectoriesCollection(File rootDir) throws InterruptedException {
 	ArrayList<File> allDirectories = new ArrayList<File>();
 	if (rootDir.canRead()){
 		
 		File[] files = rootDir.listFiles();
         if (files!=null){
-			for (File file : rootDir.listFiles()){
+			for (File file : files){
+				if(Thread.currentThread().isInterrupted()){// (e.g. from AsyncProgressPopup)
+					Thread.sleep(1);//clear and throw InterruptedException
+				}
 				if (file.exists() && file.isDirectory() && file.canRead()){
 					allDirectories.add(file);
 					allDirectories.addAll(Arrays.asList(getAllDirectories(file)));
@@ -218,8 +222,9 @@ public static Collection<File> getAllDirectoriesCollection(File rootDir) {
  * return all directories, recursively (array version)
  * @param rootDir
  * @return all subdirectories
+ * @throws InterruptedException 
  */
-public static File[] getAllDirectories(File rootDir) {
+public static File[] getAllDirectories(File rootDir) throws InterruptedException {
 	Collection<File> allDirectories = getAllDirectoriesCollection(rootDir);
 	return allDirectories.toArray(new File[allDirectories.size()]);
 }
