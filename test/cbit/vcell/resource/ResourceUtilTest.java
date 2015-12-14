@@ -18,8 +18,8 @@ public class ResourceUtilTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	
 	//@Test
-	public void findTest() throws FileNotFoundException, BackingStoreException {
-		 File f = ResourceUtil.getExecutable(TEST_EXE, false,null);
+	public void findTest() throws FileNotFoundException, BackingStoreException, InterruptedException {
+		 File f = ResourceUtil.getExecutable(TEST_EXE, false);
 		 System.out.println(f.getAbsolutePath());
 	}
 	

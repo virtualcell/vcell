@@ -35,6 +35,7 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
@@ -95,8 +96,15 @@ public class ResourceUtil {
 	 * class which can help find executable via some means
 	 */
 	public interface ExecutableFinder {
-		File find(String executableName);
+		File find(String executableName) throws UserCancelException;
 	}
+	public static String getExecutableName(String baseName,boolean useBitSuffix,OperatingSystemInfo osi){
+		if (useBitSuffix) {
+			return baseName + osi.getExeBitSuffix();
+		}else {
+			return baseName + osi.getExeSuffix(); 
+		}
+	}
 	/**
 	 * get executable based on name; will try stored values, common program names and optional finder 
 	 * @param name
@@ -105,20 +113,17 @@ public class ResourceUtil {
 	 * @return executable file if it can be found
 	 * @throws FileNotFoundException if it can't
 	 * @throws BackingStoreException 
-	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException, BackingStoreException	{
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		String executableName = name;
-		if (useBitSuffix) {
-			executableName += osi.getExeBitSuffix();
-		}
-		else {
-			executableName += osi.getExeSuffix(); 
-		}
+	 * @throws InterruptedException 
+	 */	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, BackingStoreException, InterruptedException	{
+		String executableName = null;
+//		try{
+		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );		executableName = getExecutableName(name, useBitSuffix, osi);
 		if (ExeCache.isCached(executableName)) {
 			return ExeCache.get(executableName);
 		}
 		//		// check the system path first		//
 		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
-		if (!exes.isEmpty()) {
+		if (exes != null && !exes.isEmpty()) {
 			return ExeCache.store(executableName, exes.iterator().next());
 		}
 		//		// not in path, look in common places		//		if (osi.isWindows()){
@@ -136,19 +141,8 @@ public class ResourceUtil {
 						return ExeCache.store(executableName, exes.iterator().next());
 					}
 				}
-			}		}
-//		if (osi.isMac()){
-//			File macVisApp = new File("/Applications/VisIt.app");
-//			if (macVisApp.canRead() && (new File(macVisApp, "/Contents/Resources/bin/visit")).canExecute()) {
-//				return macVisApp;
-//			}
-//		}
-		if (efinder != null) {
-			File f = efinder.find(executableName);
-			if (f != null) {
-				return ExeCache.store(executableName, f);
-			}
-		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
+			}		}		
+		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
 	 * @return system path directories
 	 * @throws RuntimeException if PATH environmental not set
 	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
@@ -245,6 +239,7 @@ public class ResourceUtil {
 		 */
 		static void forgetExecutableLocations( ) throws BackingStoreException {
 			prefs.clear();
+			cache.clear();
 		}
 	
 	}	
