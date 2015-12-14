@@ -725,7 +725,8 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
-					Expression rsRateUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(reactionStep.getStructure())));
+					VCUnitDefinition probRateUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
+					Expression rsRateUnitFactor = getUnitFactor(probRateUnit.divideBy(modelUnitSystem.getFluxReactionUnit()));
 					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
 					{
 											
@@ -737,11 +738,9 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						}
 						SpeciesContext scReactant = fluxFunc.getReactants().get(0).getSpeciesContext();
 						
-						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(scReactant.getStructure())));
-						Expression scStructureSize = new Expression(scReactant.getStructure().getStructureSize(), getNameScope());
-						Expression scExpr = new Expression(scReactant, getNameScope());
+						Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scReactant),getNameScope());
 
-						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scExpr, Expression.div(scUnitFactor,scStructureSize));
+						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scConcExpr);
 
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
@@ -789,11 +788,9 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						}
 						SpeciesContext scProduct = fluxFunc.getProducts().get(0).getSpeciesContext();
 						
-						Expression scUnitFactor = getUnitFactor(modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getSubstanceUnit(scProduct.getStructure())));
-						Expression scStructureSize = new Expression(scProduct.getStructure().getStructureSize(), getNameScope());
-						Expression scExpr = new Expression(scProduct, getNameScope());
+						Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scProduct),getNameScope());
 
-						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scExpr, Expression.div(scUnitFactor,scStructureSize));
+						Expression probExp = Expression.mult(rate, rsRateUnitFactor, rsStructureSize, scConcExpr);
 						
 						ProbabilityParameter probRevParm = null;
 						try{
