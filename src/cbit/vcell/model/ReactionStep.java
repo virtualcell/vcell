@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -513,6 +514,16 @@ public int getNumReactants() {
 	}
 	return count;
 }
+public List<Reactant> getReactants() {
+	List<Reactant> rList = new ArrayList<Reactant>();
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Reactant) {
+			rList.add((Reactant)p);
+		}
+	}
+	return rList;
+}
 
 public int getNumProducts() {
 	if(!hasProduct()) {
@@ -527,6 +538,17 @@ public int getNumProducts() {
 	}
 	return count;
 }
+public List<Product> getProducts() {
+	List<Product> pList = new ArrayList<Product>();
+	for(int i=0; i<getReactionParticipants().length; i++) {
+		ReactionParticipant p = getReactionParticipants(i);
+		if(p instanceof Product) {
+			pList.add((Product)p);
+		}
+	}
+	return pList;
+}
+
 public Reactant getReactant(String name) {
 	if(!hasReactant()) {
 		return null;
