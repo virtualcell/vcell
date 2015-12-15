@@ -368,13 +368,41 @@ public class RulebasedTransformer implements SimContextTransformer {
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
 		
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
-			Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
-			String forwardRateName = massActionKinetics.getForwardRateParameter().getName();
-			Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
-			String reverseRateName = massActionKinetics.getReverseRateParameter().getName();
+			
+			List<Reactant> rList = rs.getReactants();
+			List<Product> pList = rs.getProducts();
+
+			int numReactants = 0;		// counting the stoichiometry - 2A+B means 3 reactants
+			for(Reactant r : rList) {
+				numReactants += r.getStoichiometry();
+				if(numReactants > 2) {
+					String message = "NFSim doesn't support more than 2 reactants within a reaction: " + name;
+					throw new RuntimeException(message);
+				}
+			}
+			int numProducts = 0;
+			for(Product p : pList) {
+				numProducts += p.getStoichiometry();
+				if(numProducts > 2) {
+					String message = "NFSim doesn't support more than 2 products within a reaction: " + name;
+					throw new RuntimeException(message);
+				}
+			}
+			
 			RateLawType rateLawType = RateLawType.MassAction;
 			RbmKineticLaw kineticLaw = new RbmKineticLaw(rr, rateLawType);
 			try {
+				String forwardRateName = massActionKinetics.getForwardRateParameter().getName();
+				Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
+				if(rList.size() == 1 && numReactants == 2) {			// one reactant with stoichiometry == 2
+					forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
+				}
+						
+				String reverseRateName = massActionKinetics.getReverseRateParameter().getName();
+				Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
+				if(pList.size() == 1 && numProducts == 2) {				// one product with stoichiometry == 2
+					reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
+				}
 				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				fR.setName(forwardRateName);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
@@ -428,8 +456,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 			ModelParameter[] mpList = rs.getModel().getModelParameters();
 			ModelParameter mp = rs.getModel().getModelParameter(kpList[0].getName());
 			
-			ReactionParticipant[] pList = rs.getReactionParticipants();
-			for(ReactionParticipant p : pList) {
+			ReactionParticipant[] rpList = rs.getReactionParticipants();
+			for(ReactionParticipant p : rpList) {
 				if(p instanceof Reactant) {
 					int stoichiometry = p.getStoichiometry();
 					// TODO: must not reuse the SP of the species, must make new deep constructor
@@ -471,15 +499,15 @@ public class RulebasedTransformer implements SimContextTransformer {
 				newModel.getRbmModelContainer().removeReactionRule(rr);
 				continue;
 			}
-			// NFSim doesn't support more then 2 reactants / products
-			if(rr.getReactantPatterns().size() > 2) {
-				String message = "NFSim doesn't support more than 2 reactants within a reaction rule: " + rr.getDisplayName();
-				throw new RuntimeException(message);
-			}
-			if(rr.getProductPatterns().size() > 2) {
-				String message = "NFSim doesn't support more than 2 products within a reaction rule: " + rr.getDisplayName();
-				throw new RuntimeException(message);
-			}
+//			// NFSim doesn't support more then 2 reactants / products
+//			if(rr.getReactantPatterns().size() > 2) {
+//				String message = "NFSim doesn't support more than 2 reactants within a reaction rule: " + rr.getDisplayName();
+//				throw new RuntimeException(message);
+//			}
+//			if(rr.getProductPatterns().size() > 2) {
+//				String message = "NFSim doesn't support more than 2 products within a reaction rule: " + rr.getDisplayName();
+//				throw new RuntimeException(message);
+//			}
 		}
 		
 		// now that we generated the rules we can delete the reaction steps they're coming from
