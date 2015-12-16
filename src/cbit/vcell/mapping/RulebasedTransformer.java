@@ -366,12 +366,10 @@ public class RulebasedTransformer implements SimContextTransformer {
 			
 			boolean bReversible = rs.isReversible();
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
-		
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
 			
 			List<Reactant> rList = rs.getReactants();
 			List<Product> pList = rs.getProducts();
-
 			int numReactants = 0;		// counting the stoichiometry - 2A+B means 3 reactants
 			for(Reactant r : rList) {
 				numReactants += r.getStoichiometry();
@@ -383,8 +381,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 			int numProducts = 0;
 			for(Product p : pList) {
 				numProducts += p.getStoichiometry();
-				if(numProducts > 2) {
-					String message = "NFSim doesn't support more than 2 products within a reaction: " + name;
+				if(bReversible && numProducts > 2) {
+					String message = "NFSim doesn't support more than 2 products within a reversible reaction: " + name;
 					throw new RuntimeException(message);
 				}
 			}
@@ -395,14 +393,49 @@ public class RulebasedTransformer implements SimContextTransformer {
 				String forwardRateName = massActionKinetics.getForwardRateParameter().getName();
 				Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
 				if(rList.size() == 1 && numReactants == 2) {			// one reactant with stoichiometry == 2
-					forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
+					if(numProducts == 1 && rList.get(0).getName().equals(pList.get(0).getName())) {
+						;				// 2a -> a    do nothing, symmetry factor is 1
+					} else if(numProducts == 2 && pList.size() == 2) {
+						String candidate = rList.get(0).getName();
+						int count = 0;
+						for(Product p : pList) {
+							if(candidate.equals(p.getName())) {
+								count++;
+							}
+						}
+						if(count == 1) {
+							;			// 2a -> a + b   do nothing, symmetry factor is 1
+						} else {
+							forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
+						}
+					} else {
+						forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
+					}
 				}
 						
 				String reverseRateName = massActionKinetics.getReverseRateParameter().getName();
 				Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
 				if(pList.size() == 1 && numProducts == 2) {				// one product with stoichiometry == 2
-					reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
+					if(numReactants == 1 && pList.get(0).getName().equals(rList.get(0).getName())) {
+						;				// a <- 2a    do nothing, symmetry factor is 1
+					} else if(numReactants == 2 && rList.size() == 2) {
+						String candidate = pList.get(0).getName();
+						int count = 0;
+						for(Reactant r : rList) {
+							if(candidate.equals(r.getName())) {
+								count++;
+							}
+						}
+						if(count == 1) {
+							;			// a + b <- 2a   do nothing, symmetry factor is 1
+						} else {
+							reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
+						}
+					} else {
+						reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
+					}
 				}
+				
 				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				fR.setName(forwardRateName);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
@@ -477,15 +510,16 @@ public class RulebasedTransformer implements SimContextTransformer {
 					}
 				}
 			}
-			// NFSim doesn't support more then 2 reactants / products
-			if(rr.getReactantPatterns().size() > 2) {
-				String message = "NFSim doesn't support more than 2 reactants within a reaction: " + name;
-				throw new RuntimeException(message);
-			}
-			if(rr.getProductPatterns().size() > 2) {
-				String message = "NFSim doesn't support more than 2 products within a reaction: " + name;
-				throw new RuntimeException(message);
-			}
+// commented code below is probably obsolete, we verify (above) in the reaction the number of participants, 
+// no need to do it again in the corresponding rule
+//			if(rr.getReactantPatterns().size() > 2) {
+//				String message = "NFSim doesn't support more than 2 reactants within a reaction: " + name;
+//				throw new RuntimeException(message);
+//			}
+//			if(rr.getProductPatterns().size() > 2) {
+//				String message = "NFSim doesn't support more than 2 products within a reaction: " + name;
+//				throw new RuntimeException(message);
+//			}
 			newModel.removeReactionStep(rs);
 			newModel.getRbmModelContainer().addReactionRule(rr);
 		}
@@ -499,15 +533,6 @@ public class RulebasedTransformer implements SimContextTransformer {
 				newModel.getRbmModelContainer().removeReactionRule(rr);
 				continue;
 			}
-//			// NFSim doesn't support more then 2 reactants / products
-//			if(rr.getReactantPatterns().size() > 2) {
-//				String message = "NFSim doesn't support more than 2 reactants within a reaction rule: " + rr.getDisplayName();
-//				throw new RuntimeException(message);
-//			}
-//			if(rr.getProductPatterns().size() > 2) {
-//				String message = "NFSim doesn't support more than 2 products within a reaction rule: " + rr.getDisplayName();
-//				throw new RuntimeException(message);
-//			}
 		}
 		
 		// now that we generated the rules we can delete the reaction steps they're coming from
