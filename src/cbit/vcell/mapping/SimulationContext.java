@@ -974,8 +974,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				String message = "NFSim doesn't support more than 2 reactants within a reaction rule.";
 				issueVector.add(new Issue(rr, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 			}
-			if(rr.getProductPatterns().size() > 2) {
-				String message = "NFSim doesn't support more than 2 products within a reaction rule.";
+			if(rr.isReversible() && rr.getProductPatterns().size() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reversible reaction rule.";
 				issueVector.add(new Issue(rr, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 			}
 		}
@@ -988,8 +988,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				String message = "NFSim doesn't support more than 2 reactants within a reaction step.";
 				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 			}
-			if(rs.getNumProducts() > 2) {
-				String message = "NFSim doesn't support more than 2 products within a reaction step.";
+			if(rs.isReversible() && rs.getNumProducts() > 2) {
+				String message = "NFSim doesn't support more than 2 products within a reversible reaction step.";
 				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 			}
 		}
