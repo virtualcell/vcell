@@ -2,15 +2,12 @@ package org.vcell.vis.vtk;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.Executable2;
 import org.vcell.util.ExecutableException;
 import org.vcell.util.IExecutable;
 import org.vcell.util.PropertyLoader;
-import org.vcell.vis.vismesh.thrift.VarData;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
 public class VtkServicePython extends VtkService {
@@ -73,28 +70,6 @@ public class VtkServicePython extends VtkService {
 		} catch (ExecutableException e) {
 			e.printStackTrace();
 			throw new RuntimeException("vtkService.py invocation failed: "+e.getMessage(),e);
-		}
-	}
-
-
-	@Override
-	public void writeDataArrayToNewVtkFile(File emptyMeshFile, String variableVtuName, double[] data, File newMeshFile) throws IOException {
-//		VtkGridUtils vtkGridUtils = new VtkGridUtils();
-//		vtkGridUtils.writeDataArrayToNewVtkFile(emptyMeshFile, variableVtuName, data, newMeshFile);
-		if (lg.isDebugEnabled()) {
-			lg.debug("writeDataArrayToNewVtkFile (python) for variable "+variableVtuName);
-		}
-		String baseFilename = newMeshFile.getName().replace(".vtu","");
-		File varDataFile = File.createTempFile(baseFilename+"_"+variableVtuName+"_", ".vardata", newMeshFile.getParentFile());
-		VarData varData = new VarData(variableVtuName, Arrays.asList(ArrayUtils.toObject(data)));
-		VisMeshUtils.writeVarData(varDataFile, varData);
-		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/vtkAddData.py",varDataFile.getAbsolutePath(),emptyMeshFile.getAbsolutePath(),newMeshFile.getAbsolutePath() };
-		IExecutable exe = prepareExecutable(cmd);
-		try {
-			exe.start();
-		} catch (ExecutableException e) {
-			e.printStackTrace();
-			throw new RuntimeException("vtkAddData.py invocation failed: "+e.getMessage(),e);
 		}
 	}
 

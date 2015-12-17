@@ -1402,96 +1402,6 @@ class ChomboIndexData:
   def __ne__(self, other):
     return not (self == other)
 
-class VarData:
-  """
-  Attributes:
-   - varName
-   - varData
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'varName', None, None, ), # 1
-    (2, TType.LIST, 'varData', (TType.DOUBLE,None), None, ), # 2
-  )
-
-  def __init__(self, varName=None, varData=None,):
-    self.varName = varName
-    self.varData = varData
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.varName = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.varData = []
-          (_etype66, _size63) = iprot.readListBegin()
-          for _i67 in xrange(_size63):
-            _elem68 = iprot.readDouble();
-            self.varData.append(_elem68)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('VarData')
-    if self.varName is not None:
-      oprot.writeFieldBegin('varName', TType.STRING, 1)
-      oprot.writeString(self.varName)
-      oprot.writeFieldEnd()
-    if self.varData is not None:
-      oprot.writeFieldBegin('varData', TType.LIST, 2)
-      oprot.writeListBegin(TType.DOUBLE, len(self.varData))
-      for iter69 in self.varData:
-        oprot.writeDouble(iter69)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.varName is None:
-      raise TProtocol.TProtocolException(message='Required field varName is unset!')
-    if self.varData is None:
-      raise TProtocol.TProtocolException(message='Required field varData is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.varName)
-    value = (value * 31) ^ hash(self.varData)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class VisMesh:
   """
   Attributes:
@@ -1565,88 +1475,88 @@ class VisMesh:
       elif fid == 4:
         if ftype == TType.LIST:
           self.points = []
-          (_etype73, _size70) = iprot.readListBegin()
-          for _i74 in xrange(_size70):
-            _elem75 = VisPoint()
-            _elem75.read(iprot)
-            self.points.append(_elem75)
+          (_etype66, _size63) = iprot.readListBegin()
+          for _i67 in xrange(_size63):
+            _elem68 = VisPoint()
+            _elem68.read(iprot)
+            self.points.append(_elem68)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.polygons = []
-          (_etype79, _size76) = iprot.readListBegin()
-          for _i80 in xrange(_size76):
-            _elem81 = VisPolygon()
-            _elem81.read(iprot)
-            self.polygons.append(_elem81)
+          (_etype72, _size69) = iprot.readListBegin()
+          for _i73 in xrange(_size69):
+            _elem74 = VisPolygon()
+            _elem74.read(iprot)
+            self.polygons.append(_elem74)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 6:
         if ftype == TType.LIST:
           self.irregularPolyhedra = []
-          (_etype85, _size82) = iprot.readListBegin()
-          for _i86 in xrange(_size82):
-            _elem87 = VisIrregularPolyhedron()
-            _elem87.read(iprot)
-            self.irregularPolyhedra.append(_elem87)
+          (_etype78, _size75) = iprot.readListBegin()
+          for _i79 in xrange(_size75):
+            _elem80 = VisIrregularPolyhedron()
+            _elem80.read(iprot)
+            self.irregularPolyhedra.append(_elem80)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.LIST:
           self.tetrahedra = []
-          (_etype91, _size88) = iprot.readListBegin()
-          for _i92 in xrange(_size88):
-            _elem93 = VisTetrahedron()
-            _elem93.read(iprot)
-            self.tetrahedra.append(_elem93)
+          (_etype84, _size81) = iprot.readListBegin()
+          for _i85 in xrange(_size81):
+            _elem86 = VisTetrahedron()
+            _elem86.read(iprot)
+            self.tetrahedra.append(_elem86)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 8:
         if ftype == TType.LIST:
           self.visVoxels = []
-          (_etype97, _size94) = iprot.readListBegin()
-          for _i98 in xrange(_size94):
-            _elem99 = VisVoxel()
-            _elem99.read(iprot)
-            self.visVoxels.append(_elem99)
+          (_etype90, _size87) = iprot.readListBegin()
+          for _i91 in xrange(_size87):
+            _elem92 = VisVoxel()
+            _elem92.read(iprot)
+            self.visVoxels.append(_elem92)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.LIST:
           self.surfaceTriangles = []
-          (_etype103, _size100) = iprot.readListBegin()
-          for _i104 in xrange(_size100):
-            _elem105 = VisSurfaceTriangle()
-            _elem105.read(iprot)
-            self.surfaceTriangles.append(_elem105)
+          (_etype96, _size93) = iprot.readListBegin()
+          for _i97 in xrange(_size93):
+            _elem98 = VisSurfaceTriangle()
+            _elem98.read(iprot)
+            self.surfaceTriangles.append(_elem98)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 10:
         if ftype == TType.LIST:
           self.visLines = []
-          (_etype109, _size106) = iprot.readListBegin()
-          for _i110 in xrange(_size106):
-            _elem111 = VisLine()
-            _elem111.read(iprot)
-            self.visLines.append(_elem111)
+          (_etype102, _size99) = iprot.readListBegin()
+          for _i103 in xrange(_size99):
+            _elem104 = VisLine()
+            _elem104.read(iprot)
+            self.visLines.append(_elem104)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 11:
         if ftype == TType.LIST:
           self.surfacePoints = []
-          (_etype115, _size112) = iprot.readListBegin()
-          for _i116 in xrange(_size112):
-            _elem117 = VisPoint()
-            _elem117.read(iprot)
-            self.surfacePoints.append(_elem117)
+          (_etype108, _size105) = iprot.readListBegin()
+          for _i109 in xrange(_size105):
+            _elem110 = VisPoint()
+            _elem110.read(iprot)
+            self.surfacePoints.append(_elem110)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1675,57 +1585,57 @@ class VisMesh:
     if self.points is not None:
       oprot.writeFieldBegin('points', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.points))
-      for iter118 in self.points:
-        iter118.write(oprot)
+      for iter111 in self.points:
+        iter111.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.polygons is not None:
       oprot.writeFieldBegin('polygons', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.polygons))
-      for iter119 in self.polygons:
-        iter119.write(oprot)
+      for iter112 in self.polygons:
+        iter112.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.irregularPolyhedra is not None:
       oprot.writeFieldBegin('irregularPolyhedra', TType.LIST, 6)
       oprot.writeListBegin(TType.STRUCT, len(self.irregularPolyhedra))
-      for iter120 in self.irregularPolyhedra:
-        iter120.write(oprot)
+      for iter113 in self.irregularPolyhedra:
+        iter113.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.tetrahedra is not None:
       oprot.writeFieldBegin('tetrahedra', TType.LIST, 7)
       oprot.writeListBegin(TType.STRUCT, len(self.tetrahedra))
-      for iter121 in self.tetrahedra:
-        iter121.write(oprot)
+      for iter114 in self.tetrahedra:
+        iter114.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.visVoxels is not None:
       oprot.writeFieldBegin('visVoxels', TType.LIST, 8)
       oprot.writeListBegin(TType.STRUCT, len(self.visVoxels))
-      for iter122 in self.visVoxels:
-        iter122.write(oprot)
+      for iter115 in self.visVoxels:
+        iter115.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.surfaceTriangles is not None:
       oprot.writeFieldBegin('surfaceTriangles', TType.LIST, 9)
       oprot.writeListBegin(TType.STRUCT, len(self.surfaceTriangles))
-      for iter123 in self.surfaceTriangles:
-        iter123.write(oprot)
+      for iter116 in self.surfaceTriangles:
+        iter116.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.visLines is not None:
       oprot.writeFieldBegin('visLines', TType.LIST, 10)
       oprot.writeListBegin(TType.STRUCT, len(self.visLines))
-      for iter124 in self.visLines:
-        iter124.write(oprot)
+      for iter117 in self.visLines:
+        iter117.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.surfacePoints is not None:
       oprot.writeFieldBegin('surfacePoints', TType.LIST, 11)
       oprot.writeListBegin(TType.STRUCT, len(self.surfacePoints))
-      for iter125 in self.surfacePoints:
-        iter125.write(oprot)
+      for iter118 in self.surfacePoints:
+        iter118.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

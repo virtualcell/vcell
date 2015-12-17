@@ -1,19 +1,43 @@
 import sys
+
+import vtk
+
 sys.path.append('./')
-from pyvcell import VCellProxy
-from pyvcell.ttypes import *
-from thrift import Thrift
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
+import vcellProxy
 
-transport = TSocket.TSocket('localhost',	9090)
-transport = TTransport.TBufferedTransport(transport)
-protocol = TBinaryProtocol.TBinaryProtocol(transport)
-client = VCellProxy.Client(protocol)
-transport.open()
+vcellProxy2 = vcellProxy.VCellProxyHandler()
+try:
+    vcellProxy2.open()
 
-simList = client.getSimsFromSelectedModel()
-#print(simList.__len__)
-print('\n')
-print(simList)
+    # transport = TSocket.TSocket('localhost', 9090)
+    # transport = TTransport.TBufferedTransport(transport)
+    # protocol = TBinaryProtocol.TBinaryProtocol(transport)
+    # client = VCellProxy.Client(protocol)
+    # transport.open()
+
+    simList = vcellProxy2.getClient().getSimsFromOpenModels()
+    print('\n')
+    print(simList)
+    sim = simList[0]
+    variables = vcellProxy2.getClient().getVariableList(sim)
+    timePoints = vcellProxy2.getClient().getTimePoints(sim)
+    print(variables)
+    print(timePoints)
+    var = variables[0]
+    timeIndex = len(timePoints)-1
+    dataFileName = vcellProxy2.getClient().getDataSetFileOfVariableAtTimeIndex(sim,var,timeIndex)
+    reader = vtk.vtkXMLUnstructuredGridReader()
+    reader.SetFileName(dataFileName)
+    reader.Update()
+    output = reader.GetOutput()
+    assert isinstance(output, vtk.vtkUnstructuredGrid)
+    cellData = output.GetCellData()
+    scalar_range = output.GetScalarRange()
+    print('scalar range = '+str(scalar_range))
+    print("done")
+    # print(simList.__len__)
+except:
+    e = sys.exe_info()[0]
+    print("error: "+str(e))
+finally:
+    vcellProxy2.close()
