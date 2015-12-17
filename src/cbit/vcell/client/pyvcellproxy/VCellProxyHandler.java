@@ -22,6 +22,7 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
+import org.vcell.vis.vtk.VisMeshUtils;
 import org.vcell.vis.vtk.VtkService;
 
 import cbit.vcell.biomodel.BioModel;
@@ -240,7 +241,7 @@ public String getDataSetFileOfVariableAtTimeIndex(SimulationDataSetRef simulatio
 		// get empty mesh file for this domain (getEmptyMeshFile() will ensure that the file exists or create it).
 		//
 		File emptyMeshFile = getEmptyMeshFile(simulationDataSetRef, var.getDomainName());
-		VtkService.getInstance().writeDataArrayToNewVtkFile(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
+		VisMeshUtils.writeCellDataToVtu(emptyMeshFile, var.getVariableVtuName(), data, meshFileForVariableAndTime);
 		return meshFileForVariableAndTime.getAbsolutePath();
 	} catch (Exception e) {
 		e.printStackTrace();
