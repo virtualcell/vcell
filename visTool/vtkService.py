@@ -15,11 +15,10 @@ from vcellvismesh.ttypes import VisTetrahedron
 from vcellvismesh.ttypes import VisLine
 from vcellvismesh.ttypes import VisPolygon
 
-import numpy as np
-
+from pyvcell.ttypes import SimulationDataSetRef
+from pyvcell.ttypes import VariableInfo
 
 import copy
-
 
 def writeChomboVolumeVtkGridAndIndexData(visMesh, domainname, vtkfile, indexfile):
     assert isinstance(visMesh, VisMesh)
@@ -193,30 +192,85 @@ def writevtk(vtkgrid, filename):
     print("wrote to file "+str(filename))
 
 
-from vtk.util import numpy_support
 #
 # create a single-variable vtu file
 #
 def writeDataArrayToNewVtkFile(emptyMeshFile, varName, data, newMeshFile):
-    assert isinstance(data, np.ndarray)
-    vtkgrid = readvtk(emptyMeshFile)
-    assert isinstance(vtkgrid, vtk.vtkUnstructuredGrid)
+    assert type(emptyMeshFile) is str
+    assert type(varName) is str
+    assert type(newMeshFile) is str
+    try:
+        #raise ImportError("dummy exception")
+        import numpy as np
+        from vtk.util import numpy_support
+        print("writing varData using numpy")
+
+        data = np.array(data)
+        vtkgrid = readvtk(emptyMeshFile)
+        assert isinstance(vtkgrid, vtk.vtkUnstructuredGrid)
+
+        #
+        # add cell data array to the empty mesh for this variable
+        #
+        dataArray = vtk.vtkDoubleArray()
+        dataArray = numpy_support.numpy_to_vtk(data)
+        assert isinstance(dataArray, vtk.vtkDoubleArray)
+        dataArray.SetName(varName)
+        cellData = vtkgrid.GetCellData()
+        assert isinstance(cellData, vtk.vtkCellData)
+        cellData.AddArray(dataArray)
+
+        #
+        # write mesh and data to the file for that domain and time
+        #
+        writevtk(vtkgrid, newMeshFile)
+
+    except ImportError as nonumpy:
+        import array
+        print("writing varData using array package")
+
+        print type(data)
+        print str(data)
+        data = array.array('d', data)
+        vtkgrid = readvtk(emptyMeshFile)
+        assert isinstance(vtkgrid, vtk.vtkUnstructuredGrid)
+
+        #
+        # add cell data array to the empty mesh for this variable
+        #
+        dataArray = vtk.vtkDoubleArray()
+        dataArray.SetVoidArray(data, len(data), 1)
+        dataArray.SetNumberOfComponents(1)
+        dataArray.SetName(varName)
+        cellData = vtkgrid.GetCellData()
+        assert isinstance(cellData, vtk.vtkCellData)
+        cellData.AddArray(dataArray)
+
+        #
+        # write mesh and data to the file for that domain and time
+        #
+        writevtk(vtkgrid, newMeshFile)
+
+
+def getPopulatedMeshFileLocation(basedir, simulationDataSetRef, varInfo, timeIndex):
+    assert type(basedir) is str
+    assert isinstance(simulationDataSetRef, SimulationDataSetRef)
+    assert isinstance(varInfo, VariableInfo)
+    assert type(timeIndex) is int
+
+    #create the dataset directory if necessary
+    if not os.path.isdir(basedir):
+        os.makedirs(basedir)
 
     #
-    # add cell data array to the empty mesh for this variable
+    # compose the specific mesh filename
     #
-    dataArray = vtk.vtkDoubleArray()
-    dataArray = numpy_support.numpy_to_vtk(data)
-    assert isinstance(dataArray, vtk.vtkDoubleArray)
-    dataArray.SetName(varName)
-    cellData = vtkgrid.GetCellData()
-    assert isinstance(cellData, vtk.vtkCellData)
-    cellData.AddArray(dataArray)
-
-    #
-    # write mesh and data to the file for that domain and time
-    #
-    writevtk(vtkgrid, newMeshFile)
+    timeIndexStr = "%06d" % timeIndex
+    domainName = varInfo.domainName
+    varName = varInfo.variableVtuName.replace(":", "_")
+    simStr = "SimID_" + simulationDataSetRef.simId + "_" + str(simulationDataSetRef.jobIndex)
+    vtuDataFile = os.path.join(basedir, simStr + "__" + domainName + "__" + varName + "__" + timeIndexStr + ".vtu")
+    return vtuDataFile
 
 
 def getMembraneVtkGrid(visMesh):

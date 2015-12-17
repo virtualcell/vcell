@@ -20,6 +20,4 @@ public abstract class VtkService {
 	public abstract void writeChomboVolumeVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException;
 
 	public abstract void writeFiniteVolumeSmoothedVtkGridAndIndexData(VisMesh visMesh, String domainName, File vtkFile, File indexFile) throws IOException;
-
-	public abstract void writeDataArrayToNewVtkFile(File emptyMeshFile, String variableVtuName, double[] data, File meshFileForVariableAndTime) throws IOException;
 }
