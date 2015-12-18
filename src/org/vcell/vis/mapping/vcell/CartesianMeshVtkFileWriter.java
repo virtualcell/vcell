@@ -118,7 +118,6 @@ public class CartesianMeshVtkFileWriter {
 		// read the indicing arrays from this file to know how to reorder the data into the vtk cell data order.
 		// return the vtk cell data
 		//
-		File vtuMeshFile = getVtuMeshFileName(vcellFiles, var.domainName);
 		File finiteVolumeIndexDataFile = getFiniteVolumeIndexDataFileName(vcellFiles, var.domainName);
 		
 		if (!finiteVolumeIndexDataFile.exists()){

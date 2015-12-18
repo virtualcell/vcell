@@ -1,24 +1,25 @@
 import argparse
-import sys
+import copy
 import os
 
-from vtk import *
+import sys
+import traceback
 
+import vtk
+
+from pyvcell.ttypes import SimulationDataSetRef
+from pyvcell.ttypes import VariableInfo
 from thrift.TSerialization import TBinaryProtocol
 from thrift.TSerialization import deserialize
 from thrift.TSerialization import serialize
 from vcellvismesh.ttypes import ChomboIndexData
 from vcellvismesh.ttypes import FiniteVolumeIndexData
 from vcellvismesh.ttypes import VisIrregularPolyhedron
-from vcellvismesh.ttypes import VisMesh
-from vcellvismesh.ttypes import VisTetrahedron
 from vcellvismesh.ttypes import VisLine
+from vcellvismesh.ttypes import VisMesh
 from vcellvismesh.ttypes import VisPolygon
+from vcellvismesh.ttypes import VisTetrahedron
 
-from pyvcell.ttypes import SimulationDataSetRef
-from pyvcell.ttypes import VariableInfo
-
-import copy
 
 def writeChomboVolumeVtkGridAndIndexData(visMesh, domainname, vtkfile, indexfile):
     assert isinstance(visMesh, VisMesh)
@@ -164,7 +165,7 @@ def readvtk(vtkfile):
     if tester.TestReadFile() != 1:
         raise Exception("expecting XML formatted VTK unstructured grid")
 
-    reader = vtkXMLUnstructuredGridReader()
+    reader = vtk.vtkXMLUnstructuredGridReader()
     reader.SetFileName(vtkfile)
     reader.Update()
     vtkgrid = reader.GetOutput()
@@ -178,15 +179,17 @@ def readvtk(vtkfile):
 # write a vtkUnstructuredGrid to the XML format
 #
 def writevtk(vtkgrid, filename):
-    writer = vtkXMLUnstructuredGridWriter()
+    writer = vtk.vtkXMLUnstructuredGridWriter()
     bASCII = False
     if bASCII:
         writer.SetDataModeToAscii()
     else:
         writer.SetCompressorTypeToNone()
         writer.SetDataModeToBinary()
-
-    writer.SetInputDataObject(vtkgrid)
+    try:
+        writer.SetInputData(vtkgrid)
+    except AttributeError:
+        writer.SetInput(vtkgrid)
     writer.SetFileName(filename)
     writer.Update()
     print("wrote to file "+str(filename))
@@ -315,11 +318,11 @@ def getVolumeVtkGrid(visMesh):
     assert isinstance(visMesh, VisMesh)
     bClipPolyhedra = True
 
-    vtkpoints = vtkPoints()
+    vtkpoints = vtk.vtkPoints()
     for visPoint in visMesh.points:
         vtkpoints.InsertNextPoint(visPoint.x, visPoint.y, visPoint.z)
 
-    vtkgrid = vtkUnstructuredGrid()
+    vtkgrid = vtk.vtkUnstructuredGrid()
     vtkgrid.Allocate(len(visMesh.points), len(visMesh.points))
     vtkgrid.SetPoints(vtkpoints)
 
@@ -407,7 +410,10 @@ def smoothUnstructuredGridSurface(vtkGrid):
     ugGeometryFilter = vtk.vtkUnstructuredGridGeometryFilter()
     ugGeometryFilter.PassThroughPointIdsOn()
     ugGeometryFilter.MergingOff()
-    ugGeometryFilter.SetInputData(vtkGrid)
+    try:
+        ugGeometryFilter.SetInputData(vtkGrid)
+    except AttributeError:
+        ugGeometryFilter.SetInput(vtkGrid)
     ugGeometryFilter.Update()
     surfaceUnstructuredGrid = ugGeometryFilter.GetOutput()
     assert isinstance(surfaceUnstructuredGrid, vtk.vtkUnstructuredGrid)
@@ -427,13 +433,19 @@ def smoothUnstructuredGridSurface(vtkGrid):
 
     geometryFilter = vtk.vtkGeometryFilter()
     assert isinstance(geometryFilter, vtk.vtkGeometryFilter)
-    geometryFilter.SetInputData(surfaceUnstructuredGrid)
+    try:
+        geometryFilter.SetInputData(surfaceUnstructuredGrid)
+    except AttributeError:
+        geometryFilter.SetInput(surfaceUnstructuredGrid)
     geometryFilter.Update()
     polyData = geometryFilter.GetOutput()
     assert isinstance(polyData, vtk.vtkPolyData)
 
     filter = vtk.vtkWindowedSincPolyDataFilter()
-    filter.SetInputData(polyData)
+    try:
+        filter.SetInputData(polyData)
+    except AttributeError:
+        filter.SetInput(polyData)
     filter.SetNumberOfIterations(15)
     filter.BoundarySmoothingOff()
     filter.FeatureEdgeSmoothingOff()
@@ -497,7 +509,10 @@ def createTetrahedra(clippedPolyhedron, visMesh):
         vtkpolydata.InsertNextCell(polygonType, faceIdList)
 
     delaunayFilter = vtk.vtkDelaunay3D()
-    delaunayFilter.SetInputData(vtkpolydata)
+    try:
+        delaunayFilter.SetInputData(vtkpolydata)
+    except AttributeError:
+        delaunayFilter.SetInput(vtkpolydata)
     delaunayFilter.Update()
     delaunayFilter.SetAlpha(0.1)
     vtkgrid2 = delaunayFilter.GetOutput()
@@ -544,7 +559,7 @@ def createTetrahedra(clippedPolyhedron, visMesh):
 
 
 def main():
-#    try:
+    try:
         parser = argparse.ArgumentParser()
         list_of_meshtypes = ["chombovolume", "chombomembrane", "finitevolume"]
         parser.add_argument("meshtype", help="type of visMesh processing required and index file generated", choices=list_of_meshtypes)
@@ -573,12 +588,15 @@ def main():
             writeChomboMembraneVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
         elif args.meshtype == "finitevolume":
             writeFiniteVolumeSmoothedVtkGridAndIndexData(visMesh, args.domainname, args.vtkfile, args.indexfile)
-    # except:
-    #     e = sys.exc_info()[0]
-    #     print("exception "+e)
-    #     sys.exit(-1)
-    # else:
-    #     sys.exit(0)
+
+    except:
+        e_info = sys.exc_info()
+        traceback.print_exception(e_info[0],e_info[1],e_info[2],file=sys.stdout)
+        sys.stderr.write("exception: "+str(e_info[0])+": "+str(e_info[1])+"\n")
+        sys.stderr.flush()
+        sys.exit(-1)
+    else:
+        sys.exit()
 
 
 if __name__ == '__main__':
