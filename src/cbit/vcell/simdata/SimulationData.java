@@ -2074,7 +2074,7 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 	String expectedMeshfile = vcDataID.getID()+".mesh.hdf5";
 	File meshFile = amplistorHelper.getFile(expectedMeshfile);
 	
-	ChomboFiles chomboFiles = new ChomboFiles(vcDataID.getID(), vcDataID.getJobIndex(), meshFile);
+	ChomboFiles chomboFiles = new ChomboFiles(vcDataID.getSimulationKey(), vcDataID.getJobIndex(), meshFile);
 
 	String simtaskFilePath = vcDataID.getID()+"_0.simtask.xml";
 	File simtaskFile = amplistorHelper.getFile(simtaskFilePath);
@@ -2130,7 +2130,7 @@ public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccess
 		throw new RuntimeException("cannot process vtk, vcDataId not "+VCSimulationDataIdentifier.class.getSimpleName());
 	}
 	VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)vcDataId;
-	VCellSimFiles vcellSimFiles = new VCellSimFiles(vcSimDataID.getSimulationKey().toString(),vcSimDataID.getJobIndex(),cartesianMeshFile, meshMetricsFile, subdomainFile, logFile, postprocessingFile);
+	VCellSimFiles vcellSimFiles = new VCellSimFiles(vcSimDataID.getSimulationKey(),vcSimDataID.getJobIndex(),cartesianMeshFile, meshMetricsFile, subdomainFile, logFile, postprocessingFile);
 	refreshLogFile();
 	double[] times = getDataTimes();
 	for (int i=0;i<times.length;i++){
