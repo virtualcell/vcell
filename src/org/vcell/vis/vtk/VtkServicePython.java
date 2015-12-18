@@ -66,7 +66,7 @@ public class VtkServicePython extends VtkService {
 		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/vtkService.py",visMeshType,domainName,visMeshFile.getAbsolutePath(),vtkFile.getAbsolutePath(),indexFile.getAbsolutePath() };
 		IExecutable exe = prepareExecutable(cmd);
 		try {
-			exe.start();
+			exe.start(new int[] { 0 });
 		} catch (ExecutableException e) {
 			e.printStackTrace();
 			throw new RuntimeException("vtkService.py invocation failed: "+e.getMessage(),e);
@@ -75,7 +75,7 @@ public class VtkServicePython extends VtkService {
 
 	private IExecutable prepareExecutable(String[] cmd) {
 		if (lg.isInfoEnabled()) {
-			lg.info("python command string:" + StringUtils.join(cmd));
+			lg.info("python command string:" + StringUtils.join(cmd," "));
 		}
 		Executable2 exe = new Executable2(cmd);
 		if (PYTHON_MODULE_PATH != null) {
