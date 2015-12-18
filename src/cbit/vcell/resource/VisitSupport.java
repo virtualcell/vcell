@@ -119,7 +119,7 @@ public class VisitSupport {
 			  visitExecutable = new File(visitExecutableRoot,"/Contents/Resources/bin/visit");
 		  }
 		  if (visitExecutable==null || !visitExecutable.exists() || !visitExecutable.isFile()){
-			  throw new IOException("visit executable not found, "+visitExecutable.getAbsolutePath());
+			  throw new IOException("visit executable not found");
 		  }
 		  
 		File visMainCLI = getVisToolPythonScript();
@@ -163,14 +163,38 @@ public class VisitSupport {
 			lg.info("Started VCellVisIt");
 		}
 	}
-	
+	public static void launchVisToolLinux(File visitExecutable) throws ExecutableException,IOException{
+		if(visitExecutable == null){
+			  File userDir = new File(System.getProperty("user.home"));
+			  System.out.println(userDir.getAbsolutePath()+" "+userDir.exists());
+			  //find -L ~/ -name 'visit' -executable -type f -print
+			  //'find -L /home/frm -name 'visit' -executable -type f -print'
+			  Executable exec =
+				new Executable(new String[] {"/bin/sh","-c","find -L "+userDir.getAbsolutePath()+" -maxdepth 4 -name 'visit' -executable -type f -print"});
+//			  exec.setWorkingDir(userDir);
+			  exec.start();
+			  System.out.println(exec.getExitValue());
+			  System.out.println(exec.getStdoutString());
+				//		  System.out.println(exec.getStderrString());
+			  if(exec.getExitValue() == 0){
+				  visitExecutable = new File(exec.getStdoutString().trim());
+			  }
+		}
+		System.out.println(visitExecutable.getAbsolutePath());
+		if(visitExecutable == null || !visitExecutable.exists() || !visitExecutable.isFile()){
+			throw new IOException("visit executable not found");
+		}
+	}
 	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, BackingStoreException, InterruptedException
 	{
 		if (OperatingSystemInfo.getInstance().isMac()) {
 			launchVisToolMac(visitExecutable);
 			return;
+		}else if (OperatingSystemInfo.getInstance().isLinux()) {
+			launchVisToolLinux(visitExecutable);
+			return;
 		}
-
+		//MSWindows
 		if(visitExecutable == null){
 			
 			visitExecutable = ResourceUtil.getExecutable(VISIT_EXEC_NAME,false);
