@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.solver.Simulation;
+
 public class VCellSimFiles {
 	
 	class VCellSimFileEntry {
@@ -20,7 +24,7 @@ public class VCellSimFiles {
 		}
 	}
 	
-	private final String simID;
+	private final KeyValue simKey;
 	private final int jobIndex;
 	public final File cartesianMeshFile;
 	public final File meshMetricsFile;
@@ -30,9 +34,9 @@ public class VCellSimFiles {
 	public final File postprocessingFile;
 	
 	
-	public VCellSimFiles(String simID, int jobIndex, File cartesianMeshFile, File meshMetricsFile, File subdomainFile, File logFile, File postprocessingFile) {
+	public VCellSimFiles(KeyValue simKey, int jobIndex, File cartesianMeshFile, File meshMetricsFile, File subdomainFile, File logFile, File postprocessingFile) {
 		super();
-		this.simID = simID;
+		this.simKey = simKey;
 		this.jobIndex = jobIndex;
 		this.cartesianMeshFile = cartesianMeshFile;
 		this.meshMetricsFile = meshMetricsFile;
@@ -79,11 +83,11 @@ public class VCellSimFiles {
 	}
 
 	public String getCannonicalFilePrefix(String domainName) {
-		return simID+"_"+jobIndex+"_"+domainName;
+		return Simulation.createSimulationID(simKey)+"_"+jobIndex+"_"+domainName;
 	}
 
 	public String getCannonicalFilePrefix(String domainName, int timeIndex) {
-		return simID+"_"+jobIndex+"_"+domainName+"_"+String.format("%06d",timeIndex);
+		return Simulation.createSimulationID(simKey)+"_"+jobIndex+"_"+domainName+"_"+String.format("%06d",timeIndex);
 	}
 
 }

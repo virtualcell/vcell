@@ -3,6 +3,7 @@ package org.vcell.vis.vtk;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.vcell.util.document.KeyValue;
 import org.vcell.vis.io.CartesianMeshFileReader;
 import org.vcell.vis.io.VCellSimFiles;
 import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
@@ -19,7 +20,7 @@ public class VCellDataTest {
 		try {
 			ResourceUtil.setNativeLibraryDirectory();
 
-			String simKey = "1661241954";
+			KeyValue simKey = new KeyValue("1661241954");
 			String pathPrefix = "C:\\Users\\schaff\\.vcell\\simdata\\user\\";
 			
 			File meshFile = new File(pathPrefix + "SimID_"+simKey+"_0_.mesh");

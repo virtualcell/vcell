@@ -3,9 +3,11 @@ package org.vcell.vis.io;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import org.vcell.util.document.KeyValue;
+
+import cbit.vcell.solver.Simulation;
 
 
 public class ChomboFiles {
@@ -51,14 +53,14 @@ public class ChomboFiles {
 		}
 	}
 	
-	private final String simID;
+	private final KeyValue simKey;
 	private final int jobIndex;
 	private final File meshFile;
 	private ArrayList<ChomboFileEntry> dataFiles = new ArrayList<ChomboFileEntry>();
 	
-	public ChomboFiles(String simID, int jobIndex, File meshFile) {
+	public ChomboFiles(KeyValue simKey, int jobIndex, File meshFile) {
 		super();
-		this.simID = simID;
+		this.simKey = simKey;
 		this.jobIndex = jobIndex;
 		this.meshFile = meshFile;
 	}
@@ -67,9 +69,9 @@ public class ChomboFiles {
 		return this.jobIndex;
 	}
 	
-	public String getSimID(){
-		return this.simID;
-	}
+//	public KeyValue getSimID(){
+//		return this.simID;
+//	}
 
 	public File getMeshFile() {
 		return meshFile;
@@ -109,11 +111,11 @@ public class ChomboFiles {
 	}
 
 	public String getCannonicalFilePrefix(String domainName, int timeIndex) {
-		return getSimID()+"_"+getJobIndex()+"_"+domainName+"_"+String.format("%06d",timeIndex);
+		return Simulation.createSimulationID(simKey)+"_"+getJobIndex()+"_"+domainName+"_"+String.format("%06d",timeIndex);
 	}
 
 	public String getCannonicalFilePrefix(String domainName) {
-		return getSimID()+"_"+getJobIndex()+"_"+domainName;
+		return Simulation.createSimulationID(simKey)+"_"+getJobIndex()+"_"+domainName;
 	}
 
 }
