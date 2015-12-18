@@ -575,6 +575,7 @@ class VCellPysideApp(QtGui.QMainWindow):
     
                 self._vis.openOne(newFilename, newVariable.variableVtuName, bSameDomain, successCallback, errorCallback)
             except Exception as exc:
+                self.otherEventsQueue.put(("cursorRestore",None))
                 print(exc.message)
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Exception occurred: "+exc.message)
