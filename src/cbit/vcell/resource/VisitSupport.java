@@ -164,6 +164,7 @@ public class VisitSupport {
 		}
 	}
 	public static void launchVisToolLinux(File visitExecutable) throws ExecutableException,IOException{
+		File mpirun = null;
 		if(visitExecutable == null){
 			  File userDir = new File(System.getProperty("user.home"));
 			  System.out.println(userDir.getAbsolutePath()+" "+userDir.exists());
@@ -179,11 +180,95 @@ public class VisitSupport {
 			  if(exec.getExitValue() == 0){
 				  visitExecutable = new File(exec.getStdoutString().trim());
 			  }
+			  
+			  //look for mpirun starting 2 levels above visit executable dir location
+			  exec =
+				new Executable(new String[] {"/bin/sh","-c","find -L "+visitExecutable.getParentFile().getParent()+" -maxdepth 6 -name 'mpirun' -executable -type f -print"});
+			  exec.start();
+			  System.out.println(exec.getExitValue());
+			  System.out.println(exec.getStdoutString());
+				//		  System.out.println(exec.getStderrString());
+			  if(exec.getExitValue() == 0){
+				  mpirun = new File(exec.getStdoutString().trim());
+			  }
 		}
 		System.out.println(visitExecutable.getAbsolutePath());
 		if(visitExecutable == null || !visitExecutable.exists() || !visitExecutable.isFile()){
 			throw new IOException("visit executable not found");
 		}
+		System.out.println(mpirun.getAbsolutePath());
+		if(mpirun == null || !mpirun.exists() || !mpirun.isFile()){
+			throw new IOException("mpirun executable not found");
+		}
+		File visMainCLI = getVisToolPythonScript();
+		if (!visMainCLI.exists() || !visMainCLI.isFile()){
+			throw new IOException("vcell/visit main python file not found, "+visMainCLI.getAbsolutePath());
+		}
+		
+		File scriptFile = File.createTempFile("VCellVisitLaunch", ".command");
+		System.out.println("Launch script location="+scriptFile.getAbsolutePath());
+		Executable exec = new Executable(new String[] {/*"/bin/sh","-c",*/scriptFile.getAbsolutePath() });
+		//
+		// get existing environment variables and add visit command and python script to it.
+		//
+		Map<String,String> envVariables = System.getenv();
+		ArrayList<String> envVarList = new ArrayList<String>();
+		for (String varname : envVariables.keySet()){
+			String value = envVariables.get(varname);
+			if(varname.equals("PATH")){
+				value = value+":"+visitExecutable.getParent();
+			}
+//			envVarList.add(varname+"="+value);
+			exec.addEnvironmentVariable(varname, value);
+			System.out.println(varname+"="+value);
+		}
+		
+		String visitCommandString = visitExecutable.getPath().replace("\"", "");
+		
+		System.out.println("Visit Command String = "+visitCommandString);
+		//envVarList.add(visitCommandString);
+		if (lg.isInfoEnabled()) {
+			lg.info("visitcmd="+visitExecutable.getPath().replace("\"", ""));
+		}
+		//envVarList.add("pythonscript="+visMainCLI.getPath());
+		String pythonScriptString = visMainCLI.getPath();
+		System.out.println("Python script = "+pythonScriptString);
+		scriptFile.setExecutable(true);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
+	
+//		export PATH="$HOME/opt/bin:$PATH"
+		System.out.println("export PATH=\"$PATH:"+mpirun.getParent()+"\"\n");
+		writer.append("export PATH=\"$PATH:"+mpirun.getParent()+"\"\n");
+		System.out.println(visitCommandString+" -cli -uifile "+pythonScriptString+"\n");
+		writer.append(visitCommandString+" -cli -uifile "+pythonScriptString+"\n");
+		writer.close();
+
+		//cli
+		//mdserver
+		//engine_ser
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try{
+					exec.start();
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
+//		exec.start();
+//		System.out.println(exec.getExitValue());
+//		System.out.println(exec.getStdoutString());
+//		System.out.println(exec.getStderrString());
+		
+//		Runtime.getRuntime().exec(
+//				new String[] {/*"/bin/sh","-c",*/scriptFile.getAbsolutePath() },
+//				envVarList.toArray(new String[0]));
+		if (lg.isInfoEnabled()) {
+			lg.info("Started VCellVisIt");
+		}
+
 	}
 	public static void launchVisTool(File visitExecutable) throws IOException, ExecutableException, URISyntaxException, BackingStoreException, InterruptedException
 	{
