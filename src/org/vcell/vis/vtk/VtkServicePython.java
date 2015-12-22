@@ -66,7 +66,10 @@ public class VtkServicePython extends VtkService {
 		String[] cmd = new String[] { PYTHON_EXE_PATH,VIS_TOOL+"/vtkService.py",visMeshType,domainName,visMeshFile.getAbsolutePath(),vtkFile.getAbsolutePath(),indexFile.getAbsolutePath() };
 		IExecutable exe = prepareExecutable(cmd);
 		try {
-			exe.start(new int[] { 0 });
+			exe.start( new int[] { 0 });
+			if (exe.getExitValue() != 0){
+				throw new RuntimeException("mesh generation script for domain "+domainName+" failed with return code "+exe.getExitValue()+": "+exe.getStderrString());
+			}
 		} catch (ExecutableException e) {
 			e.printStackTrace();
 			throw new RuntimeException("vtkService.py invocation failed: "+e.getMessage(),e);
@@ -77,6 +80,7 @@ public class VtkServicePython extends VtkService {
 		if (lg.isInfoEnabled()) {
 			lg.info("python command string:" + StringUtils.join(cmd," "));
 		}
+		System.out.println("python command string:" + StringUtils.join(cmd," "));
 		Executable2 exe = new Executable2(cmd);
 		if (PYTHON_MODULE_PATH != null) {
 			exe.addEnvironmentVariable("PYTHONPATH", PYTHON_MODULE_PATH);
