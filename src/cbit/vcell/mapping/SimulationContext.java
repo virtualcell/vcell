@@ -2592,13 +2592,7 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 
 public NetworkConstraints getNetworkConstraints() {
 	if(networkConstraints == null) {
-		// only for older models, try to get the network constraints from the biomodel
-		NetworkConstraints thatNetworkConstraints = getModel().getRbmModelContainer().getNetworkConstraints();
-		if (thatNetworkConstraints != null){
-			networkConstraints = new NetworkConstraints(thatNetworkConstraints);	// deep clone it
-		}else{
-			networkConstraints = new NetworkConstraints();		// we make the default
-		}
+		networkConstraints = new NetworkConstraints();		// we make the default
 	}
 	return networkConstraints;
 }

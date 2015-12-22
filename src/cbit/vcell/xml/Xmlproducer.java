@@ -3574,10 +3574,6 @@ public Element getXML(RbmModelContainer rbmModelContainer) {
 		}
 		rbmModelContainerElement.addContent(reactionListElement);
 	}
-	NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
-	if(constraints != null) {
-		rbmModelContainerElement.addContent(getXML(constraints));
-	}
 	return rbmModelContainerElement;
 }
 // public because it's being called in simcontexttable to populate the app components element
