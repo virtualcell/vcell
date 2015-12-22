@@ -962,10 +962,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		private List<MolecularType> molecularTypeList = new ArrayList<MolecularType>();
 		private List<ReactionRule> reactionRuleList = new ArrayList<ReactionRule>();
 		private List<RbmObservable> observableList = new ArrayList<RbmObservable>();
-		// NetworkConstraints is now located at the application level, we still use this for compatibility with 
-		// older models but it will stay null for all models created after dec 2015
-		// TODO: make it transient?
-		private NetworkConstraints networkConstraints = null;
 		public static final String PROPERTY_NAME_MOLECULAR_TYPE_LIST = "molecularTypeList";
 		public static final String PROPERTY_NAME_OBSERVABLE_LIST = "observableList";
 		public static final String PROPERTY_NAME_FUNCTION_LIST = "functionList";
@@ -1557,14 +1553,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 		public List<ReactionRule> getReactionRuleList() {
 			return reactionRuleList;
 		}
-		@Deprecated
-		public final NetworkConstraints getNetworkConstraints() {
-			return networkConstraints;
-		}
-		@Deprecated
-		public void setNetworkConstraints(NetworkConstraints networkConstraints) {
-			this.networkConstraints = networkConstraints;
-		}
 
 		public SymbolTable getSymbolTable() {
 			return Model.this;
@@ -1586,9 +1574,6 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				return false;
 			}
 			if (!Compare.isEqual(observableList, that.getObservableList())){
-				return false;
-			}
-			if(!Compare.isEqual(networkConstraints, that.getNetworkConstraints())) {
 				return false;
 			}
 			return true;
