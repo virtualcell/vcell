@@ -187,9 +187,37 @@ public class VisitSupport {
 			  exec.start();
 			  System.out.println(exec.getExitValue());
 			  System.out.println(exec.getStdoutString());
+			  System.err.println(exec.getStderrString());
 				//		  System.out.println(exec.getStderrString());
 			  if(exec.getExitValue() == 0){
-				  mpirun = new File(exec.getStdoutString().trim());
+				  String mpiStr = exec.getStdoutString();
+				  if(mpiStr != null){
+					  mpiStr = mpiStr.trim();
+				  }
+				  if(mpiStr != null && mpiStr.length() != 0){
+					  mpirun = new File(mpiStr);
+				  }else{
+					  mpirun = null;
+				  }
+			  }
+			  if(mpirun == null){
+				  //See if any mpi run installed
+				  exec = new Executable(new String[] {"/bin/sh","-c","which mpirun"});
+				  exec.start();
+				  System.out.println(exec.getExitValue());
+				  System.out.println(exec.getStdoutString());
+				  System.out.println(exec.getStderrString());
+				  if(exec.getExitValue() == 0){
+					  String mpiStr = exec.getStdoutString();
+					  if(mpiStr != null){
+						  mpiStr = mpiStr.trim();
+					  }
+					  if(mpiStr != null && mpiStr.length() != 0){
+						  mpirun = new File(mpiStr);
+					  }else{
+						  mpirun = null;
+					  }
+				  }
 			  }
 		}
 		System.out.println(visitExecutable.getAbsolutePath());
