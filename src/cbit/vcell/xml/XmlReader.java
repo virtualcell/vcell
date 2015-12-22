@@ -4541,10 +4541,27 @@ private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel
 		}
 	}
 }
+
+//
+// Legacy NetworkConstraints was the single NetworkConstraints object formerly stored
+// in the Model's RbmModelContainer.  The NetworkConstraints are now stored in each
+// SimulationContext instead (inheriting the "global" NetworkConstraint) upon first
+// load.
+//
+// We read the single BioModel network constraints from legacy Rule-based models
+// (pre-release VCell 6.0 models only).  
+//
+// Warning: We will NOT preserve this default NetworkConstraints object for saved BioModels
+// where the database cached XML document is lost and must be regenerated.  
+// This rare condition for few models would have added complexity and been of limited value.
+// 
+//
+private NetworkConstraints legacyNetworkConstraints = null;
+
 private void getRbmNetworkConstraints(Element e, Model newModel) {
 	RbmModelContainer mc = newModel.getRbmModelContainer();
 	NetworkConstraints nc = new NetworkConstraints();
-	mc.setNetworkConstraints(nc);
+	this.legacyNetworkConstraints = nc;
 	
 	String s = e.getAttributeValue(XMLTags.RbmMaxIterationTag);
 	if(s!=null && !s.isEmpty()) {
@@ -5311,6 +5328,10 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	Element ncElement = param.getChild(XMLTags.RbmNetworkConstraintsTag, vcNamespace);
 	if(ncElement != null) {
 		nc = getAppNetworkConstraints(ncElement, biomodel.getModel());	// one network constraint element
+	} else {
+		if(legacyNetworkConstraints != null) {
+			nc = legacyNetworkConstraints;
+		}
 	}
 
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true"))){
