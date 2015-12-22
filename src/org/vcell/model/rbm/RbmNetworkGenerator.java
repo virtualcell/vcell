@@ -314,9 +314,9 @@ public class RbmNetworkGenerator {
 	}
 	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_DETERMINISTIC)) {
-			generateNetwork(writer, rbmModelContainer, networkGenerationRequirements);
+			generateNetwork(writer, rbmModelContainer, sc, networkGenerationRequirements);
 		} else if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_STOCHASTIC)) {
-			generateNetwork(writer, rbmModelContainer, networkGenerationRequirements);
+			generateNetwork(writer, rbmModelContainer, sc, networkGenerationRequirements);
 		} else if(sc.getApplicationType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC)) {
 			runNFSim(writer, rbmModelContainer, sc, networkGenerationRequirements);
 		}
@@ -345,9 +345,9 @@ public class RbmNetworkGenerator {
 		}
 		writer.println("})");
 	}
-	public static void generateNetwork(PrintWriter writer, RbmModelContainer rbmModelContainer, NetworkGenerationRequirements networkGenerationRequirements) {
+	public static void generateNetwork(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
-		NetworkConstraints constraints = rbmModelContainer.getNetworkConstraints();
+		NetworkConstraints constraints = sc.getNetworkConstraints();
 		writer.print("generate_network({");
 		if(networkGenerationRequirements.requestType == RequestType.AllowTruncatedNetwork) {
 			// this is called when we create the first simulation in a new application

@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jdom.Element;
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -240,6 +241,12 @@ public static String getAppComponentsForDatabase(SimulationContext simContext) {
 	}
 		
 	Xmlproducer xmlProducer = new Xmlproducer(false);
+	
+	NetworkConstraints constraints = simContext.getNetworkConstraints();
+	if(constraints != null) {
+		appComponentsElement.addContent(xmlProducer.getXML(constraints));
+	}
+	
 	// first fill in bioevents from simContext
 	BioEvent[] bioEvents = simContext.getBioEvents();
 	if (bioEvents != null && bioEvents.length > 0) {
@@ -347,6 +354,14 @@ public void readAppComponents(Connection con, SimulationContext simContext) thro
 			}
 
 			XmlReader xmlReader = new XmlReader(false);
+			
+			NetworkConstraints nc = null;
+			Element ncElement = appComponentsElement.getChild(XMLTags.RbmNetworkConstraintsTag);
+			if(ncElement != null) {
+				nc = xmlReader.getAppNetworkConstraints(ncElement, simContext.getModel());	// one network constraint element
+			}
+			simContext.setNetworkConstraints(nc);
+			
 			// get bioEvents
 			Element bioEventsElement = appComponentsElement.getChild(XMLTags.BioEventsTag);
 			if (bioEventsElement != null) {

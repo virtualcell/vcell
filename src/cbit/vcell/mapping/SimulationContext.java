@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -310,7 +311,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	public static final String FLUOR_DATA_NAME = "fluor";
 
 	private transient TaskCallbackProcessor tcp = new TaskCallbackProcessor(this);
-	// not related with the cache below but used at the same time. NOT transient
+	// Network Constraints stuff, not related with the cache below but used at the same time. NOT transient
+	private NetworkConstraints networkConstraints = null;
 	private boolean bInsufficientIterations = false;
 	private boolean bInsufficientMaxMolecules = false;
 	// Cache of the BNGOutputSpec produced by running bng.exe
@@ -336,8 +338,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 		private Application(MathType mathType) {
 			this.mathType = mathType;
 		}
-		
-		
 	}
 
 	public MicroscopeMeasurement getMicroscopeMeasurement() {
@@ -379,7 +379,9 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 	this.fieldName = "copied_from_"+oldSimulationContext.getName();
 	this.fieldDescription = "(copied from "+oldSimulationContext.getName()+") "+oldSimulationContext.getDescription();
 	this.bioModel = oldSimulationContext.getBioModel();
-	applicationType = appType; 
+	this.networkConstraints = new NetworkConstraints(oldSimulationContext.networkConstraints);
+	applicationType = appType;
+	
 	//
 	// copy electrical stimuli and ground
 	//
@@ -783,6 +785,10 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 
+	if(!Compare.isEqualOrNull(getNetworkConstraints(), simContext.getNetworkConstraints())){
+		return false;
+	}
+
 	return true;
 }
 
@@ -1019,6 +1025,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	if (getMathDescription()!=null){
 		getMathDescription().gatherIssues(issueContext, issueVector);
 	}
+	
+	if(networkConstraints == null) {
+//		issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, "Network Constraints is null", Issue.Severity.ERROR));
+	} else {
+		networkConstraints.gatherIssues(issueContext, issueVector);
+	}
+
 }
 
 
@@ -2577,6 +2590,21 @@ public RateRule getRateRule(SymbolTableEntry rateRuleVar) {
 	return null;
 }
 
+public NetworkConstraints getNetworkConstraints() {
+	if(networkConstraints == null) {
+		// only for older models, try to get the network constraints from the biomodel
+		NetworkConstraints thatNetworkConstraints = getModel().getRbmModelContainer().getNetworkConstraints();
+		if (thatNetworkConstraints != null){
+			networkConstraints = new NetworkConstraints(thatNetworkConstraints);	// deep clone it
+		}else{
+			networkConstraints = new NetworkConstraints();		// we make the default
+		}
+	}
+	return networkConstraints;
+}
+public void setNetworkConstraints(NetworkConstraints networkConstraints) {
+	this.networkConstraints = networkConstraints;
+}
 public String getMd5hash() {
 	return md5hash;
 }
