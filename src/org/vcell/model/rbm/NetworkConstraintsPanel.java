@@ -74,7 +74,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 
 	private JTextField maxIterationTextField;
 	private JTextField maxMolTextField;
-	private NetworkConstraints networkConstraints;
+//	private NetworkConstraints networkConstraints;
 	private EventHandler eventHandler = new EventHandler();
 	private SimulationContext fieldSimulationContext;
 	private IssueManager fieldIssueManager;
@@ -155,7 +155,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if (text == null || text.trim().length() == 0) {
 			return;
 		}
-		networkConstraints.setMaxMoleculesPerSpecies(Integer.valueOf(text));
+		getSimulationContext().getNetworkConstraints().setMaxMoleculesPerSpecies(Integer.valueOf(text));
 	}
 
 	public void changeMaxIteration() {
@@ -163,7 +163,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		if (text == null || text.trim().length() == 0) {
 			return;
 		}
-		networkConstraints.setMaxIteration(Integer.valueOf(text));
+		getSimulationContext().getNetworkConstraints().setMaxIteration(Integer.valueOf(text));
 	}
 	
 	private JButton getViewGeneratedSpeciesButton() {
@@ -350,7 +350,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			m.removePropertyChangeListener(eventHandler);
 			m.addPropertyChangeListener(eventHandler);
 		}
-		networkConstraints = simulationContext.getModel().getRbmModelContainer().getNetworkConstraints();
 		networkConstraintsTableModel.setSimulationContext(simulationContext);
 		refreshInterface();
 	}
@@ -411,9 +410,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	private void refreshInterface() {
 		String text1 = null;
 		String text2 = null;
-		if (networkConstraints != null) {
-			text1 = networkConstraints.getMaxIteration() + "";
-			text2 = networkConstraints.getMaxMoleculesPerSpecies() + "";
+		if (getSimulationContext().getNetworkConstraints() != null) {
+			text1 = getSimulationContext().getNetworkConstraints().getMaxIteration() + "";
+			text2 = getSimulationContext().getNetworkConstraints().getMaxMoleculesPerSpecies() + "";
 		}
 		maxIterationTextField.setText(text1);
 		maxMolTextField.setText(text2);
