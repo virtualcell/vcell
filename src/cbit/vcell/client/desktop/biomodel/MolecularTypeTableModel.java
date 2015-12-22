@@ -315,7 +315,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		BioModel oldValue = (BioModel)evt.getOldValue();
 		if (oldValue != null) {
 			RbmModelContainer rbmModelContainer = (RbmModelContainer)(oldValue.getModel().getRbmModelContainer());
-			rbmModelContainer.getNetworkConstraints().removePropertyChangeListener(this);
+//			rbmModelContainer.getNetworkConstraints().removePropertyChangeListener(this);
 			// TODO: make sure to eventually listen
 //			rbmModelContainer.removePropertyChangeListener(this);
 			for (MolecularType molecularType : rbmModelContainer.getMolecularTypeList()) {
@@ -325,7 +325,7 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 		BioModel newValue = (BioModel)evt.getNewValue();
 		if (newValue != null) {
 			RbmModelContainer rbmModelContainer = newValue.getModel().getRbmModelContainer();
-			rbmModelContainer.getNetworkConstraints().addPropertyChangeListener(this);
+//			rbmModelContainer.getNetworkConstraints().addPropertyChangeListener(this);
 //			rbmModelContainer.addPropertyChangeListener(this);
 			for (MolecularType molecularType : rbmModelContainer.getMolecularTypeList()) {
 				RbmUtils.addPropertyChangeListener(molecularType, this);
@@ -352,11 +352,11 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 				}
 			}
 			refreshData();
-		} else if (evt.getSource() == getModel().getRbmModelContainer().getNetworkConstraints()) {
-			if (evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MAX_STOICHIOMETRY)) {
-				fireTableRowsUpdated(0, getRowCount() - 1);
-			}
-			refreshData();
+//		} else if (evt.getSource() == getModel().getRbmModelContainer().getNetworkConstraints()) {
+//			if (evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MAX_STOICHIOMETRY)) {
+//				fireTableRowsUpdated(0, getRowCount() - 1);
+//			}
+//			refreshData();
 
 		} else if (evt.getSource() instanceof MolecularType) {
 			MolecularType mt = (MolecularType) evt.getSource();

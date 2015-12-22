@@ -66,7 +66,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		}
 		String s1, s2;
 		NetworkConstraintsEntity nce;
-		NetworkConstraints networkConstraints = rbmModelContainer.getNetworkConstraints();
+		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if (networkConstraints != null) {
 			s1 = networkConstraints.getMaxIteration() + "";
 			s2 = networkConstraints.getMaxMoleculesPerSpecies() + "";
@@ -123,9 +123,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		String colName = nce.getName();
 		String colType = nce.getType();
 		String colValue = nce.getValue();
-		Model model = simContext.getModel();
-		RbmModelContainer mc = model.getRbmModelContainer();
-		NetworkConstraints networkConstraints = mc.getNetworkConstraints();
+		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if(row == 0) {
 			colValue = networkConstraints.getMaxIteration() + "";
 		} else if(row == 1) {
@@ -152,9 +150,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		if (text == null || text.trim().length() == 0) {
 			return;
 		}
-		Model model = simContext.getModel();
-		RbmModelContainer mc = model.getRbmModelContainer();
-		NetworkConstraints networkConstraints = mc.getNetworkConstraints();
+		NetworkConstraints networkConstraints = simContext.getNetworkConstraints();
 		if(row == 0) {
 			networkConstraints.setMaxIteration(Integer.valueOf(text));
 		} else if(row == 1) {

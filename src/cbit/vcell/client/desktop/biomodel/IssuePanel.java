@@ -277,7 +277,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				IssueCategory ic = issue.getCategory();
 				switch(ic) {
 				case RbmNetworkConstraintsBad:
-					NetworkConstraints networkConstraints = sc.getBioModel().getModel().getRbmModelContainer().getNetworkConstraints();
+					NetworkConstraints networkConstraints = sc.getNetworkConstraints();
 					NetworkConstraintsEntity nce = new NetworkConstraintsEntity("Max Iterations", "value", networkConstraints.getMaxIteration() + "");
 					followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
 					break;

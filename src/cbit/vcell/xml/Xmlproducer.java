@@ -1518,7 +1518,11 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	setBooleanAttribute(simulationcontext,XMLTags.RuleBasedAttrTag, ruleBased); 
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientIterationsTag,param.isInsufficientIterations());
 	setBooleanAttribute(simulationcontext,XMLTags.InsufficientMaxMoleculesTag,param.isInsufficientMaxMolecules());
-	
+	NetworkConstraints constraints = param.getNetworkConstraints();
+	if(constraints != null) {
+		simulationcontext.addContent(getXML(constraints));
+	}
+
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
@@ -3576,7 +3580,8 @@ public Element getXML(RbmModelContainer rbmModelContainer) {
 	}
 	return rbmModelContainerElement;
 }
-private Element getXML(NetworkConstraints param) {
+// public because it's being called in simcontexttable to populate the app components element
+public Element getXML(NetworkConstraints param) {
 	Element e = new Element(XMLTags.RbmNetworkConstraintsTag);
 	e.setAttribute(XMLTags.RbmMaxIterationTag, Integer.toString(param.getMaxIteration()));
 	e.setAttribute(XMLTags.RbmMaxMoleculesPerSpeciesTag, Integer.toString(param.getMaxMoleculesPerSpecies()));

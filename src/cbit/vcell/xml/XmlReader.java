@@ -4543,7 +4543,9 @@ private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel
 }
 private void getRbmNetworkConstraints(Element e, Model newModel) {
 	RbmModelContainer mc = newModel.getRbmModelContainer();
-	NetworkConstraints nc = mc.getNetworkConstraints();
+	NetworkConstraints nc = new NetworkConstraints();
+	mc.setNetworkConstraints(nc);
+	
 	String s = e.getAttributeValue(XMLTags.RbmMaxIterationTag);
 	if(s!=null && !s.isEmpty()) {
 		int maxIteration = Integer.parseInt(s);
@@ -5257,7 +5259,38 @@ Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlPars
 	return simulation;
 }
 
-
+//public because it's being called in simcontexttable to read from the app components element
+public NetworkConstraints getAppNetworkConstraints(Element e, Model newModel) {
+	RbmModelContainer mc = newModel.getRbmModelContainer();
+	NetworkConstraints nc = new NetworkConstraints();
+	String s = e.getAttributeValue(XMLTags.RbmMaxIterationTag);
+	if(s!=null && !s.isEmpty()) {
+		int maxIteration = Integer.parseInt(s);
+		nc.setMaxIteration(maxIteration);
+	}
+	s = e.getAttributeValue(XMLTags.RbmMaxMoleculesPerSpeciesTag);
+	if(s!=null && !s.isEmpty()) {
+		int maxMoleculesPerSpecies = Integer.parseInt(s);
+		nc.setMaxMoleculesPerSpecies(maxMoleculesPerSpecies);
+	}
+	List<Element> children = e.getChildren(XMLTags.RbmMaxStoichiometryTag, vcNamespace);
+	for (Element element : children) {
+		Integer i = 1;
+		MolecularType mt = null;
+		s = element.getAttributeValue(XMLTags.RbmIntegerAttrTag);
+		if(s!=null && !s.isEmpty()) {
+			i = Integer.getInteger(s);
+		}
+		s = element.getAttributeValue(XMLTags.RbmMolecularTypeTag);
+		if(s!=null && !s.isEmpty()) {
+			mt = mc.getMolecularType(s);
+		}
+		if(mt != null) {
+			nc.setMaxStoichiometry(mt, i);
+		}
+	}
+	return nc;
+}
 /**
  * This method returns a SimulationContext from a XML representation.
  * Creation date: (4/2/2001 3:19:01 PM)
@@ -5274,6 +5307,12 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 	boolean bInsufficientIterations = false;
 	boolean bInsufficientMaxMolecules = false;
 	
+	NetworkConstraints nc = null;
+	Element ncElement = param.getChild(XMLTags.RbmNetworkConstraintsTag, vcNamespace);
+	if(ncElement != null) {
+		nc = getAppNetworkConstraints(ncElement, biomodel.getModel());	// one network constraint element
+	}
+
 	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true"))){
 		bStoch = true;
 	}
@@ -5369,6 +5408,9 @@ private SimulationContext getSimulationContext(Element param, BioModel biomodel)
 		}
 		if(bInsufficientMaxMolecules) {
 			newsimcontext.setInsufficientMaxMolecules(bInsufficientMaxMolecules);
+		}
+		if(nc != null) {
+			newsimcontext.setNetworkConstraints(nc);
 		}
 		 
 	} catch(java.beans.PropertyVetoException e) {

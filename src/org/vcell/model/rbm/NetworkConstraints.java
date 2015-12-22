@@ -1,5 +1,6 @@
 package org.vcell.model.rbm;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
 @SuppressWarnings("serial")
-public class NetworkConstraints extends RbmElementAbstract implements Matchable {
+public class NetworkConstraints extends RbmElementAbstract implements Matchable, Serializable {
 	public static final String PROPERTY_NAME_MAX_STOICHIOMETRY = "maxStoichiometry";
 	public static final String PROPERTY_NAME_MAX_ITERATION = "maxIteration";
 	public static final String PROPERTY_NAME_MOLECULES_PER_SPECIES = "maxMoleculesPerSpecies";
@@ -20,6 +21,16 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable 
 	private Map<MolecularType, Integer> maxStoichiometryMap = new HashMap<MolecularType, Integer>();
 		
 	public NetworkConstraints() {		
+	}
+	public NetworkConstraints(NetworkConstraints that) {
+		this();
+		this.maxIteration = that.maxIteration;
+		this.maxMoleculesPerSpecies = that.maxMoleculesPerSpecies;
+		for (Map.Entry<MolecularType, Integer> entry : that.maxStoichiometryMap.entrySet()) {
+			MolecularType key = entry.getKey();		// use the same instances of the molecular type 
+			int value = entry.getValue();
+			this.maxStoichiometryMap.put(key, value);
+		}
 	}
 
 	public final int getMaxIteration() {
