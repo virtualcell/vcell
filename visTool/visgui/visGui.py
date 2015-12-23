@@ -437,6 +437,7 @@ class VCellPysideApp(QtGui.QMainWindow):
                 self.progress.setMinimumDuration(0)
             self.progress.setValue(1)
             self.progress.setLabelText(message)
+            self.progress.show()
             # Make timer to animate progress bar because progress is unknown
             self.timer = QtCore.QTimer()
             self.timer.timeout.connect(lambda : (self.progress.setValue(((self.progress.value()+1) if (self.progress.value()<(self.CONST_MODALPROGRESSMAX-1)) else (self.CONST_MODALPROGRESSMAX-1)))))
