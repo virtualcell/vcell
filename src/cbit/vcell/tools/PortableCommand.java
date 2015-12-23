@@ -9,19 +9,19 @@ import com.google.gson.Gson;
  * @author gweatherby
  */
 public interface PortableCommand {
-	
+
 	/**
 	 * execute command and return status. If non-zero returned,
 	 * {@link #exception()} should return non-null
 	 * @return 0 for success
 	 */
 	int execute( );
-	
+
 	/**
-	 * Exception explanining failure
+	 * Exception explaining failure
 	 * @return non-null if {@link #execute()} returns non-zero
 	 */
 	Exception exception( );
-	
-	
+
+
 }
