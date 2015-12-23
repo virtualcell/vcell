@@ -2007,7 +2007,7 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 				}
 
 				@Override
-				public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+				public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws DataAccessException {
 					// TODO Auto-generated method stub
 					return null;
 				}

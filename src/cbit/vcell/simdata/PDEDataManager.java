@@ -170,7 +170,7 @@ public ClientPDEDataContext getPDEDataContext() {
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 public VtuFileContainer getEmptyVtuMeshFiles() throws DataAccessException {
-	return getVCDataManager().getEmptyVtuMeshFiles(getOutputContext(),getVcDataIdentifier());
+	return getVCDataManager().getEmptyVtuMeshFiles(getVcDataIdentifier());
 }
 
 public double[] getVtuMeshData(VtuVarInfo var, double time) throws DataAccessException {

@@ -209,8 +209,8 @@ public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[
 
 
 @Override
-public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
-	return dataServerImpl.getEmptyVtuMeshFiles(user, outputContext, vcdataID);
+public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws DataAccessException {
+	return dataServerImpl.getEmptyVtuMeshFiles(user, vcdataID);
 }
 
 @Override

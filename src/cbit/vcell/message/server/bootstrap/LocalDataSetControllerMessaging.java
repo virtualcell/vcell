@@ -375,11 +375,11 @@ public void close() {
 
 
 @Override
-public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
+public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID)	throws DataAccessException, RemoteException {
 	sessionLog.print("LocalDataSetControllerMessaging.getEmptyVtuMeshFiles(vcdataID=" + vcdataID + ")");
 	checkClosed();
 	try {
-		return dataServerProxy.getEmptyVtuMeshFiles(outputContext, vcdataID);
+		return dataServerProxy.getEmptyVtuMeshFiles(vcdataID);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;

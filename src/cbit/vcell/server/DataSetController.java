@@ -74,7 +74,7 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdata
  * @throws  
  */
 
-public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
+public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException;
 
 
 public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws RemoteException, DataAccessException;

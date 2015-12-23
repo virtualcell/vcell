@@ -312,7 +312,7 @@ public class DisplayTimeSeriesOp {
 			}
 
 			@Override
-			public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
+			public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws RemoteException, DataAccessException {
 				throw new RuntimeException("not yet implemented");
 			}
 

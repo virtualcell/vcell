@@ -4412,7 +4412,7 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 	}
 
 
-	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(ChomboFiles chomboFiles, VCDataIdentifier vcdataID) throws DataAccessException {
 		try {
 			ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
 			File primaryDirectory = getPrimaryUserDir(vcdataID.getOwner(), false);
@@ -4424,7 +4424,7 @@ public VCellSimFiles getVCellSimFiles(VCDataIdentifier vcdataID) throws DataAcce
 		}
 	}
 	
-	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellSimFiles, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+	public VtuFileContainer getEmptyVtuMeshFiles(VCellSimFiles vcellSimFiles, VCDataIdentifier vcdataID) throws DataAccessException {
 		try {
 			CartesianMeshVtkFileWriter cartesianMeshVTKFileWriter = new CartesianMeshVtkFileWriter();
 			File primaryDirectory = PropertyLoader.getRequiredDirectory(PropertyLoader.primarySimDataDirProperty);
