@@ -32,7 +32,6 @@ import cbit.vcell.solvers.CartesianMesh;
  */
 public class DataServerImpl {
 	private SessionLog log = null;
-	private User user = null;
 	private DataSetControllerImpl dataSetControllerImpl = null;
 	private ExportServiceImpl exportServiceImpl = null;
 
@@ -327,7 +326,7 @@ public DataSetTimeSeries getDataSetTimeSeries(User user, VCDataIdentifier vcdata
 }
 
 
-public boolean isChombo(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+public boolean isChombo(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		return dataSetControllerImpl.getIsChombo(vcdataID);
@@ -338,7 +337,7 @@ public boolean isChombo(User user2, VCDataIdentifier vcdataID) throws DataAccess
 }
 
 
-public ChomboFiles getChomboFiles(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+public ChomboFiles getChomboFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		return dataSetControllerImpl.getChomboFiles(vcdataID);
@@ -349,7 +348,7 @@ public ChomboFiles getChomboFiles(User user2, VCDataIdentifier vcdataID) throws 
 }
 
 
-public VCellSimFiles getVCellSimFiles(User user2, VCDataIdentifier vcdataID) throws DataAccessException {
+public VCellSimFiles getVCellSimFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
 		return dataSetControllerImpl.getVCellSimFiles(vcdataID);
@@ -359,14 +358,14 @@ public VCellSimFiles getVCellSimFiles(User user2, VCDataIdentifier vcdataID) thr
 	}
 }
 
-public double[] getVtuMeshData(User user2, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
+public double[] getVtuMeshData(User user, OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user2, vcdataID)){
-			ChomboFiles chomboFiles = getChomboFiles(user2, vcdataID);
+		if (isChombo(user, vcdataID)){
+			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuMeshData(chomboFiles, outputContext, vcdataID, var, time);
 		}else{
-			VCellSimFiles vcellFiles = getVCellSimFiles(user2, vcdataID);
+			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuMeshData(vcellFiles, outputContext, vcdataID, var, time);
 		}
 	}catch (Throwable e){
@@ -375,15 +374,15 @@ public double[] getVtuMeshData(User user2, OutputContext outputContext, VCDataId
 	}
 }
 
-public VtuFileContainer getEmptyVtuMeshFiles(User user2, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+public VtuFileContainer getEmptyVtuMeshFiles(User user, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user2, vcdataID)){
-			ChomboFiles chomboFiles = getChomboFiles(user2, vcdataID);
-			return dataSetControllerImpl.getEmptyVtuMeshFiles(chomboFiles, outputContext, vcdataID);
+		if (isChombo(user, vcdataID)){
+			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(chomboFiles, vcdataID);
 		}else{
-			VCellSimFiles vcellFiles = getVCellSimFiles(user2, vcdataID);
-			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, outputContext, vcdataID);
+			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
+			return dataSetControllerImpl.getEmptyVtuMeshFiles(vcellFiles, vcdataID);
 		}
 	}catch (Throwable e){
 		log.exception(e);
@@ -392,14 +391,14 @@ public VtuFileContainer getEmptyVtuMeshFiles(User user2, OutputContext outputCon
 }
 
 
-public VtuVarInfo[] getVtuVarInfos(User user2, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
+public VtuVarInfo[] getVtuVarInfos(User user, OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 	checkReadAccess(user, vcdataID);
 	try {
-		if (isChombo(user2, vcdataID)){
-			ChomboFiles chomboFiles = getChomboFiles(user2, vcdataID);
+		if (isChombo(user, vcdataID)){
+			ChomboFiles chomboFiles = getChomboFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(chomboFiles, outputContext, vcdataID);
 		}else{
-			VCellSimFiles vcellFiles = getVCellSimFiles(user2, vcdataID);
+			VCellSimFiles vcellFiles = getVCellSimFiles(user, vcdataID);
 			return dataSetControllerImpl.getVtuVarInfos(vcellFiles, outputContext, vcdataID);
 		}
 	}catch (Throwable e){

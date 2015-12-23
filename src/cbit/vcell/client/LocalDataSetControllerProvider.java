@@ -121,8 +121,8 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public VtuFileContainer getEmptyVtuMeshFiles(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
-			return dataServerImpl.getEmptyVtuMeshFiles(user, outputContext, vcdataID);
+		public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID) throws DataAccessException {
+			return dataServerImpl.getEmptyVtuMeshFiles(user, vcdataID);
 		}
 		
 		@Override

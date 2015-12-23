@@ -36,6 +36,7 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
+import cbit.vcell.simdata.VtkMeshGenerator;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.tools.PortableCommand;
@@ -117,6 +118,22 @@ public class SolverPostprocessor  {
 			}
 			lg.trace(workerEventMessage);
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
+			
+			//
+			// generate VTK meshes now that simulation is complete.  
+			// If the simulation is nonspatial or otherwise not supported, then it will fail.
+			// This could be done within a "PortableCommand" but is called directly here to 
+			// make dependencies explicit in java code and contains fewer moving parts during prototyping stage 
+			// (this could be moved after we get everything working).
+			//
+			try {
+				VtkMeshGenerator.generateVtkMeshes(owner, simKey, jobIndex);
+			}catch (Exception e2){
+				e2.printStackTrace();
+				//
+				// for now we will eat this exception (should report success or failure to MongoDB)
+				//
+			}
 		} catch (Throwable e) {
 			log.exception(e);
 		} finally {
