@@ -28,19 +28,19 @@ import cbit.vcell.tools.PortableCommand;
 
 public abstract class HtcProxy {
 	protected static final Logger LG = Logger.getLogger(HtcProxy.class);
-	
+
 	/**
-	 * 
+	 *
 	 * in order for remote (non-interactive) shells to work with SGE, some environment variables have to be set
-	 * 
+	 *
 	 * we created a .bashrc file in the home directory of user vcell with the following single line content:
-	 * 
+	 *
 	 * if [ "${HOSTNAME}" = "sigcluster2.cam.uchc.edu" ]; then source /etc/profile.d/sge-binaries.sh; fi
-	 * 
+	 *
 	 * this will execute on sigcluster2 (with SGE) and not execute on sigcluster (with PBS).
 	 *
 	 */
-	
+
 	public static class HtcJobInfo{
 		private final HtcJobID htcJobID;
 		private final String jobName;
@@ -99,17 +99,17 @@ public abstract class HtcProxy {
 		public final KeyValue simId;
 		public final int jobIndex;
 		public final int taskId;
-	
+
 		public SimTaskInfo(KeyValue simId, int jobIndex, int taskId){
 			this.simId = simId;
 			this.jobIndex = jobIndex;
 			this.taskId = taskId;
 		}
 	}
-	
+
 	/**
-	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX} 
-	 * @return V_<i>server<i> or V_ 
+	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX}
+	 * @return V_<i>server<i> or V_
 	 */
 	private static String jobNamePrefix( ){
 		String stub = "V_";
@@ -119,15 +119,14 @@ public abstract class HtcProxy {
 		} catch (Error e) { //set regardless, just log error
 			LG.error(e);
 		}
-		return stub; 
+		return stub;
 	}
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = "V_ALPHA" ;
-	//public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
-	
 
-	
+
+
 	public HtcProxy(CommandService commandService, String htcUser){
 		this.commandService = commandService;
 		this.htcUser = htcUser;
@@ -137,37 +136,34 @@ public abstract class HtcProxy {
 
 	public abstract void killJob(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException;
 
-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] exitCommand, String exitCodeReplaceTag) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, null, exitCommand, exitCodeReplaceTag, null);
-	}
-
-	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand, 
-			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag, postProcessingCommands);
-	}
-	
-	/**
-	 * @param postProcessingCommands may be null if no commands desired
-	 * @throws ExecutableException
-	 */
-	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand, 
-			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
+//	public HtcJobID submitJob(String jobName, String sub_file, String[] command, String[] secondCommand, int ncpus, double memSizeMB, String[] exitCommand,
+//			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
+//		return submitJob(jobName, sub_file, command, ncpus, memSizeMB, secondCommand, exitCommand, exitCodeReplaceTag, postProcessingCommands);
+//	}
+//
+//	/**
+//	 * @param postProcessingCommands may be null if no commands desired
+//	 * @throws ExecutableException
+//	 */
+//	protected abstract HtcJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSizeMB, String[] secondCommand, String[] exitCommand,
+//			String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 	/**
 	 * @param postProcessingCommands may be null if no commands desired
 	 * @param ncpus must be > 1 if any {@link ExecutableCommand}s are marked parallel
+	 * @param postProcessingCommands non null
 	 * @throws ExecutableException
 	 */
 	public abstract HtcJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet,
 			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException;
 
 	public abstract HtcProxy cloneThreadsafe();
-	
+
 	public final List<HtcJobID> getRunningSimulationJobIDs() throws ExecutableException {
 		return getRunningJobIDs(HTC_SIMULATION_JOB_NAME_PREFIX);
 	}
 
 	public abstract List<HtcJobID> getRunningJobIDs(String jobNamePrefix) throws ExecutableException;
-	
+
 	public abstract Map<HtcJobID,HtcJobInfo> getJobInfos(List<HtcJobID> htcJobIDs) throws ExecutableException;
 
 	public final CommandService getCommandService() {
@@ -175,7 +171,7 @@ public abstract class HtcProxy {
 	}
 
 	public abstract String[] getEnvironmentModuleCommandPrefix();
-	
+
 	public final String getHtcUser() {
 		return htcUser;
 	}
@@ -227,7 +223,7 @@ public abstract class HtcProxy {
 			}
 			//do this to not write the zeros at the end of unixByteBuffer
 			ByteBuffer bb = ByteBuffer.wrap(unixByteBuffer.array(),0,count);
-			
+
 			FileChannel fc = fos.getChannel();
 			fc.write(bb);
 			fc.close();
@@ -248,16 +244,16 @@ public abstract class HtcProxy {
 			return ar.toArray(new String[0]);
 		}else if (commandService instanceof CommandServiceLocal){
 			StringBuffer sb = new StringBuffer();
-			
-			
+
+
 /*  		Code to invoke environment modules */
-			
+
 //			String[] envModulePrefix = getEnvironmentModuleCommandPrefix();
 //			for (int i = 0; i< envModulePrefix.length; i++){
 //				sb.append((i>0?" ":"")+envModulePrefix[i]);
 //			}
 			 //if code above is uncommented, line 2 lines down below becomes sb.append(" "+cmd[i]); instead of sb.append((i>0?" ":"")+cmd[i]);
-			
+
 			for (int i = 0; i < cmd.length; i++) {
 				sb.append((i>0?" ":"")+cmd[i]);
 			}

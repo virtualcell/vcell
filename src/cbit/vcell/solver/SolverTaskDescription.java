@@ -67,10 +67,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
 	private NFsimSimulationOptions nfsimSimulationOptions = null;
-	private SundialsSolverOptions sundialsSolverOptions = null; 
+	private SundialsSolverOptions sundialsSolverOptions = null;
 	private ChomboSolverSpec chomboSolverSpec = null;
 	/**
-	 * number of parallel processors to use for solution, if supported by 
+	 * number of parallel processors to use for solution, if supported by
 	 * select solver
 	 */
 	private int numProcessors = 1;
@@ -143,7 +143,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 			stopAtSpatiallyUniformErrorTolerance = new ErrorTolerance(solverTaskDescription.stopAtSpatiallyUniformErrorTolerance);
 		}
 		bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
-		if (simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null)) 
+		if (simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null))
 		{
 			setStochOpt(solverTaskDescription.getStochOpt());
 		}
@@ -305,7 +305,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				// for PDEs, keepAtMost is ignored.
 				//
 				if (getSolverDescription().supports(SolverDescription.OdeFeatureSet)) {
-					numTimepoints = Math.min(numTimepoints, keepAtMost); 
+					numTimepoints = Math.min(numTimepoints, keepAtMost);
 				}
 			}
 		} else if (fieldOutputTimeSpec.isExplicit()) {
@@ -479,7 +479,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//          SDETolerance 1e-4
 		//   	}
 		//		StopAtSpatiallyUniform {
-		//			AbsoluteErrorTolerance	1e-8 
+		//			AbsoluteErrorTolerance	1e-8
 		//			RelativeErrorTolerance 1e-4
 		//		}
 		//      RunParameterScanSerially false
@@ -488,10 +488,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//		SensitivityParameter {
 		//			Constant k1 39.0;
 		//		}
-		//		NumProcessors 1	
+		//		NumProcessors 1
 		//   }
 		//
-		//	
+		//
 		StringBuffer buffer = new StringBuffer();
 
 		buffer.append(VCML.SolverTaskDescription+" "+VCML.BeginBlock+"\n");
@@ -578,7 +578,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 
 	/**
 	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
+	 * @param evt A PropertyChangeEvent object describing the event source
 	 *   and the property that has changed.
 	 */
 	public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -607,7 +607,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				}
 				if (solverDescription.isNonSpatialStochasticSolver()) {
 					if (solverDescription.equals(SolverDescription.StochGibson)) {
-						if (fieldStochOpt == null) {					
+						if (fieldStochOpt == null) {
 							setStochOpt(new StochSimOptions());
 						} else {
 							setStochOpt(new StochSimOptions(fieldStochOpt));
@@ -642,7 +642,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 						setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 					}
 					if (chomboSolverSpec.getTimeIntervalList().size() == 0)
-					{	
+					{
 						chomboSolverSpec.addTimeInterval(TimeInterval.getDefaultTimeInterval());
 					}
 				} else {
@@ -701,7 +701,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//          SDETolerance 1e-4
 		//   	}
 		//		StopAtSpatiallyUniform {
-		//			AbsoluteErrorTolerance	1e-8 
+		//			AbsoluteErrorTolerance	1e-8
 		//			RelativeErrorTolerance 1e-4
 		//		}
 		//		KeepEvery 1
@@ -718,7 +718,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//		OR
 		//  	OutputOptions {
 		//			OutputTimes 0.1,0.3,0.4,... (comma separated list, no spaces or linefeeds between numbers in list)
-		//   	}	
+		//   	}
 		//
 		//		SensitivityParameter {
 		//			Constant k1 39.0;
@@ -726,17 +726,17 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//      RunParameterScanSerially false
 		//   }
 		//
-		//	
+		//
 		int keepEvery = -1;
 		int keepAtMost = -1;
-		SolverDescription sd = null; 
+		SolverDescription sd = null;
 		try {
 			String token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.SolverTaskDescription)) {
 				token = tokens.nextToken();
 				if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
 					throw new DataAccessException(
-							"unexpected token " + token + " expecting " + VCML.BeginBlock); 
+							"unexpected token " + token + " expecting " + VCML.BeginBlock);
 				}
 			}
 
@@ -767,7 +767,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 						sd = SolverDescription.fromDatabaseName(token);
 						setSolverDescription(sd);
 					}catch (java.beans.PropertyVetoException e){
-						e.printStackTrace(System.out);					
+						e.printStackTrace(System.out);
 					}
 					continue;
 				}
@@ -801,7 +801,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
-					// Amended July 22nd, 2007 
+					// Amended July 22nd, 2007
 					StochSimOptions temp = null;
 					if(sd != null && sd.equals(SolverDescription.StochGibson))
 						temp = new StochSimOptions();
@@ -810,7 +810,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
 					{
 						if(getSimulation().getMathDescription().isNonSpatialStoch()) setStochOpt(temp);
-						else setStochOpt(null);					
+						else setStochOpt(null);
 					}
 					continue;
 				}
@@ -832,11 +832,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				if (token.equalsIgnoreCase(VCML.SensitivityParameter)) {
 					token = tokens.nextToken();
 					if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
-						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock);
 					}
 					token = tokens.nextToken();
 					if (!token.equalsIgnoreCase(VCML.Constant)) {
-						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant); 
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant);
 					}
 					String name = tokens.nextToken();
 					Expression exp = MathFunctionDefinitions.fixFunctionSyntax(tokens);
@@ -844,7 +844,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					setSensitivityParameter(constant);
 					token = tokens.nextToken();
 					if (!token.equalsIgnoreCase(VCML.EndBlock)) {
-						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.EndBlock); 
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.EndBlock);
 					}
 					continue;
 				}
@@ -856,23 +856,23 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					token = tokens.nextToken();
 					setSerialParameterScan((new Boolean(token)).booleanValue());
 				} else if (token.equalsIgnoreCase(VCML.SmoldynSimulationOptions)) {
-					setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));				
+					setSmoldynSimulationOptions(new SmoldynSimulationOptions(tokens));
 				} else if (token.equalsIgnoreCase(VCML.SundialsSolverOptions)) {
 					setSundialsSolverOptions(new SundialsSolverOptions(tokens));
 				} else	if (token.equalsIgnoreCase(VCML.ChomboSolverSpec)) {
-					chomboSolverSpec = new ChomboSolverSpec(tokens);				
+					chomboSolverSpec = new ChomboSolverSpec(tokens);
 				}
 				else if (token.equalsIgnoreCase(VCML.NUM_PROCESSORS))
 				{
 					token = tokens.nextToken();
 					numProcessors = Integer.parseInt(token);
-				} else { 
+				} else {
 					throw new DataAccessException("unexpected identifier " + token);
 				}
 			}
 		} catch (Throwable e) {
 			e.printStackTrace(System.out);
-			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage()); 
+			throw new DataAccessException("line #" + (tokens.lineIndex()+1) + " Exception: " + e.getMessage());
 		}
 
 		if (keepEvery != -1) {
@@ -961,7 +961,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	/**
 	 * Gets the endingTime property (double) value.
 	 * @return The endingTime property value.
-	 * @throws PropertyVetoException 
+	 * @throws PropertyVetoException
 	 * @see #setEndingTime
 	 */
 	private void setSimulation(Simulation simulation) {
@@ -1064,7 +1064,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	}
 
 	/**
-	 * set a default time, adjusting if necessary because the current {@link #getOutputTimeSpec()} is smaller 
+	 * set a default time, adjusting if necessary because the current {@link #getOutputTimeSpec()} is smaller
 	 * @param timeStep
 	 * @throws java.beans.PropertyVetoException
 	 */
@@ -1093,7 +1093,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 
 	/**
 	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
+	 * @param evt A PropertyChangeEvent object describing the event source
 	 *   and the property that has changed.
 	 */
 	public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
@@ -1163,7 +1163,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
-	public final ChomboSolverSpec getChomboSolverSpec() 
+	public final ChomboSolverSpec getChomboSolverSpec()
 	{
 		return chomboSolverSpec;
 	}
@@ -1203,6 +1203,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 	}
 
+	/**
+	 * does this simulation require use of Vtk?
+	 * @return true if does (currently chombo solver)
+	 */
+	public boolean isVtkUser( ) {
+		return chomboSolverSpec != null;
+	}
+
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
 	//{
 	//	double minRadius = 1e8;
@@ -1215,7 +1223,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	//			newExp.bindExpression(simSymbolTable);
 	//			newExp = simSymbolTable.substituteFunctions(newExp).flatten();
 	//			kon = newExp.evaluateConstant();
-	//		}	
+	//		}
 	//		double sumD = 0;
 	//		double maxConc = 0;
 	//		//List<ParticleProperties> particleProperties = subDomain.getParticleProperties();
@@ -1230,7 +1238,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	//			diffExp.bindExpression(simSymbolTable);
 	//			diffExp = simSymbolTable.substituteFunctions(diffExp).flatten();
 	//			double diffConstant = diffExp.evaluateConstant();
-	//			
+	//
 	//			for (ParticleInitialCondition pic : particleProperties.getParticleInitialConditions()){
 	//				if (pic instanceof ParticleInitialCondition){
 	//					Expression concExp = new Expression(particleProperties.get());
@@ -1240,7 +1248,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	//					sumD += diffConstant;
 	//					maxConc = Math.max(maxConc,conc);
 	//				}else if (pic instanceof ParticleInitialConditionCount){
-	//					
+	//
 	//				}
 	//			}
 	//		}
@@ -1255,7 +1263,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	//			double calculatedRadius = Math.exp(2*Math.PI*sumD/kon - Math.log(b)) ;
 	//			minRadius = Math.min(minRadius, calculatedRadius);
 	//		}
-	//		
+	//
 	//	}
 	//	return 0;
 	//}

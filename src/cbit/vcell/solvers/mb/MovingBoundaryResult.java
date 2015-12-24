@@ -3,17 +3,21 @@ package cbit.vcell.solvers.mb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
+import ncsa.hdf.object.Datatype;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.h5.H5CompoundDS;
+import ncsa.hdf.object.h5.H5ScalarDS;
 
 public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private static final String ELEM = "elements";
@@ -25,6 +29,10 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 
 	private TimeInfo timeInfo;
 	private PlaneNodes pnodes;
+	private final PointIndexTreeAndList pointIndex;
+
+	private static final Logger lg = Logger.getLogger(MovingBoundaryResult.class);
+	private static final String HDF_SPLIT_CHARS = "{}, ";
 
 	public MeshInfo getMeshInfo( ) {
 		if (meshInfo == null) {
@@ -46,6 +54,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		this.filename = filename;
 		meshInfo = null;
 		timeInfo = null;
+		pointIndex = new PointIndexTreeAndList( );
 		try {
 			// retrieve an instance of H5File
 			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
@@ -70,6 +79,57 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		} catch (Exception e) {
 			throw new MovingBoundaryResultException("exception reading moving boundary result file " + filename,e);
 		}
+	}
+
+	public PointIndex getPointIndex() {
+		return pointIndex;
+	}
+
+	void testquery( ) {
+		try {
+//		VH5TypedPath<H5ScalarDS> path = new VH5TypedPath<>(root, H5ScalarDS.class,"boundaries");
+//		H5ScalarDS hsd = path.get();
+//		hsd.init( );
+//		int[] si = hsd.getSelectedIndex();
+//		long[] start = hsd.getStartDims();
+//		long[] stride = hsd.getStride( );
+////		long[] dims = hsd.getDims();
+//		long[] sdims = hsd.getSelectedDims();
+//		sdims[0] = 1;
+//		Object o2 = hsd.read();
+//		System.out.println(o2);
+//		VH5TypedPath<String[]> dpath = new VH5TypedPath<>(root, String[].class,"boundaries");
+//		String[] d = dpath.get();
+//		System.out.println(d);
+
+
+
+//		VH5Path path = new VH5Path(root,"generationTimes");
+//		Object o = path.getData();
+//		H5ScalarDS hsd = (H5ScalarDS) o;
+//		Object o2 = hsd.read();
+//		System.out.println(o2);
+//		VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
+//		H5CompoundDS cds = dpath.get();
+//		cds.init();
+//		selectPlane(cds,50,50,0);
+//		cds.setMemberSelection(false);
+//		cds.selectMember(2);
+//		Datatype[] dts = cds.getSelectedMemberTypes();
+//		int id = dts[0].open();
+//		o = cds.getData( );
+//
+//		//VH5Path path2 = new VH5Path(root,"elements","volumePointsX");
+//	//	o = path2.getData();
+//		System.out.println(o);
+//
+//		double[] da = getDoubleArray("generationTimes");
+//		da = getDoubleArray("elements","volumePointsX");
+//		System.out.println(da);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private double[] getDoubleArray(String ...names) {
@@ -126,8 +186,8 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		double delta = singleDouble(ELEM,"h" + lower);
 		String cstr = "num" + upper;
 		long c  = singleLong(ELEM,cstr);
-		String vstr = lower + "values";
-		double[] values = getDoubleArray(ELEM,vstr);
+		String vstr = "mesh" + upper + "values";
+		double[] values = getDoubleArray(vstr);
 		if (values.length != c) {
 			throw new MovingBoundaryResultException(cstr + " value " + c + " does not match " + vstr + " array length");
 		}
@@ -166,7 +226,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		}
 	}
 
-	private PlaneNodes planeNode( ) throws HDF5Exception {
+	private PlaneNodes planeNode( ) throws Exception {
 		if (pnodes == null) {
 			pnodes = new PlaneNodes( );
 		}
@@ -210,6 +270,8 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			final int numY = mi.yinfo.number();
 			Element elements[][] = new Element[numX][numY];
 			double[] vols;
+			String[] xpoints;
+			String[] ypoints;
 			byte[] poz;
 			{
 				H5CompoundDS en = planeNode( ).elements;
@@ -217,6 +279,8 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 				Vector<?> data= safeCast(Vector.class,en.getData(),"elements");
 				String[] dn = en.getMemberNames();
 				vols = select(double[].class,data,dn,"elements","volume");
+				xpoints = select(String[].class,data,dn,"elements","volumePointsX");
+				ypoints = select(String[].class,data,dn,"elements","volumePointsY");
 				poz = select(byte[].class,data,dn,"elements","boundaryPosition");
 			}
 			double mass[][];
@@ -237,7 +301,11 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			int i = 0;
 			for (int x = 0; x < numX; x++) {
 				for (int y = 0; y < numY; y++) {
-					Element e = new Element(vols[i],poz[i]);
+					String xstr = xpoints[i];
+					String ystr = ypoints[i];
+					int[] bnd = buildBoundary(xstr,ystr);
+					System.out.println(Arrays.toString(bnd));
+					Element e = new Element(vols[i],poz[i],bnd);
 					for (int sc = 0; sc < mass.length; sc++) {
 						Species sp = new Species(mass[sc][i], conc[sc][i]);
 						e.species.add(sp);
@@ -256,6 +324,29 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		} catch (Exception e) {
 			throw new RuntimeException("Can't read plane for time index " + timeIndex,e);
 		}
+	}
+
+	private int[] buildBoundary(String xvalues, String yvalues) {
+		String[] xs = StringUtils.split(xvalues,HDF_SPLIT_CHARS);
+		String[] ys = StringUtils.split(yvalues,HDF_SPLIT_CHARS);
+		final int length = xs.length;
+		VCAssert.assertTrue(length == ys.length,"x and y strings same length");
+		int [] rval = new int[length];
+		for (int i = 0; i < length; i++) {
+			double x = 0;
+			double y = 0;
+			double z = 0;
+			try {
+				x = Double.parseDouble(xs[i]);
+				y = Double.parseDouble(ys[i]);
+			} catch (NumberFormatException nfe) {
+				throw new RuntimeException("Invalid coordinates " + xs[i] + " or " + ys[i] + " reading MovingBoundary element boundary");
+			}
+			Vect3Didx idx = pointIndex.index(x, y, z);
+			rval[i] = idx.getIndex();
+		}
+
+		return rval;
 	}
 
 	/**
@@ -290,7 +381,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private class PlaneNodes {
 		final H5CompoundDS elements;
 		final H5CompoundDS species;
-		PlaneNodes() throws HDF5Exception {
+		PlaneNodes() throws Exception {
 			VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
 			elements = dpath.get();
 			elements.read();
@@ -330,6 +421,49 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private String mbrec(String message) {
 		return "Reading " + filename + ": " + message;
 	}
+
+	public int[] getBoundaryIndexes(int timeIndex) {
+		try {
+
+			VCAssert.assertTrue(timeIndex >= 0, "negative time index");
+			validateTimeIndex(timeIndex);
+			VH5TypedPath<H5ScalarDS> path = new VH5TypedPath<>(root, H5ScalarDS.class,"boundaries");
+			H5ScalarDS hsd = path.get();
+			hsd.init( );
+			long[] start = hsd.getStartDims();
+			long[] stride = hsd.getStride( );
+			long[] sdims = hsd.getSelectedDims();
+			stride[0] = 1;
+			start[0] = timeIndex;
+			sdims[0] = 1;
+			String[] data = (String[]) hsd.read();
+			String blob = data[0];
+			ArrayList<Integer> builder = new ArrayList<>();
+			int startOfSeq = 0;
+			int comma = 0;
+			int endOfSeq = 0;
+			for (;;) {
+				startOfSeq = blob.indexOf('{', endOfSeq);
+				if (startOfSeq < 0) {
+					break;
+				}
+				comma = blob.indexOf(',', startOfSeq);
+				endOfSeq = blob.indexOf('}', comma);
+				String xstr = blob.substring(startOfSeq + 1, comma);
+				String ystr = blob.substring(comma + 1 ,endOfSeq);
+				System.out.println(xstr + " " + ystr + " " + startOfSeq + " " + comma + " " + endOfSeq);
+				double x = Double.parseDouble(xstr);
+				double y = Double.parseDouble(ystr);
+				Vect3Didx idx = pointIndex.index(x, y, 0);
+				builder.add(idx.getIndex());
+			}
+			return builder.stream().mapToInt(i->i).toArray(); // i -> i is converting Integer to int
+
+		} catch (Exception e) {
+			throw new RuntimeException("Exception building outer boundary indexes",e);
+		}
+	}
+
 
 	@SuppressWarnings("serial")
 	private class MovingBoundaryResultException extends RuntimeException {
