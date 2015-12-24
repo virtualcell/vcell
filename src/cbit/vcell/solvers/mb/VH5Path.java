@@ -127,7 +127,7 @@ public class VH5Path {
 	 * @return next object path, if present
 	 * @throws HDF5Exception
 	 */
-	private static Object walk(Object hobj, String[] steps, int index) throws HDF5Exception {
+	private static Object walk(Object hobj, String[] steps, int index) throws Exception {
 		final boolean isLastIndex = lastIndex(index,steps);
 		final String finding = steps[index];
 		Group g = BeanUtils.downcast(Group.class, hobj);

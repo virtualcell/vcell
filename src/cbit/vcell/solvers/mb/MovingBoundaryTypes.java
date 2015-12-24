@@ -90,10 +90,12 @@ public interface MovingBoundaryTypes {
 		final List<Species> species;
 		final double volume;
 		final Position position;
+		private final int[] boundaryIndexes;
 
-		Element(double volume, byte poz) {
+		Element(double volume, byte poz, int[] boundaryIndexes) {
 			species = new ArrayList<>();
 			this.volume = volume;
+			this.boundaryIndexes = boundaryIndexes;
 			switch(poz) {
 			case 'B':
 				position = Position.BOUNDARY;
@@ -111,6 +113,15 @@ public interface MovingBoundaryTypes {
 		}
 		public Position getPosition() {
 			return position;
+		}
+
+		/**
+		 * integers are indexes into a corresponding {@link PointIndex}
+		 * @return index points of boundary
+		 */
+		public int[] boundary( ) {
+			return boundaryIndexes;
+
 		}
 		@Override
 		public String toString() {
