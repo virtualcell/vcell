@@ -270,8 +270,9 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			final int numY = mi.yinfo.number();
 			Element elements[][] = new Element[numX][numY];
 			double[] vols;
-			String[] xpoints;
-			String[] ypoints;
+//			String[] xpoints;
+//			String[] ypoints;
+			String[] combined;
 			byte[] poz;
 			{
 				H5CompoundDS en = planeNode( ).elements;
@@ -279,8 +280,9 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 				Vector<?> data= safeCast(Vector.class,en.getData(),"elements");
 				String[] dn = en.getMemberNames();
 				vols = select(double[].class,data,dn,"elements","volume");
-				xpoints = select(String[].class,data,dn,"elements","volumePointsX");
-				ypoints = select(String[].class,data,dn,"elements","volumePointsY");
+//				xpoints = select(String[].class,data,dn,"elements","volumePointsX");
+//				ypoints = select(String[].class,data,dn,"elements","volumePointsY");
+				combined =  select(String[].class,data,dn,"elements","volumePoints");
 				poz = select(byte[].class,data,dn,"elements","boundaryPosition");
 			}
 			double mass[][];
@@ -301,9 +303,10 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			int i = 0;
 			for (int x = 0; x < numX; x++) {
 				for (int y = 0; y < numY; y++) {
-					String xstr = xpoints[i];
-					String ystr = ypoints[i];
-					int[] bnd = buildBoundary(xstr,ystr);
+//					String xstr = xpoints[i];
+//					String ystr = ypoints[i];
+//					int[] bnd = buildBoundary(xstr,ystr);
+					int[] bnd = buildBoundary(combined[i]);
 					System.out.println(Arrays.toString(bnd));
 					Element e = new Element(vols[i],poz[i],bnd);
 					for (int sc = 0; sc < mass.length; sc++) {
@@ -349,6 +352,10 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		return rval;
 	}
 
+	private int[] buildBoundary(String combined) throws Exception {
+		//data starts with {{, so skip ahead to miss first {
+		return getPointIndexes(combined, 2);
+	}
 	/**
 	 * @param clzz return type
 	 * @param v input
@@ -438,32 +445,39 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			sdims[0] = 1;
 			String[] data = (String[]) hsd.read();
 			String blob = data[0];
-			ArrayList<Integer> builder = new ArrayList<>();
-			int startOfSeq = 0;
-			int comma = 0;
-			int endOfSeq = 0;
-			for (;;) {
-				startOfSeq = blob.indexOf('{', endOfSeq);
-				if (startOfSeq < 0) {
-					break;
-				}
-				comma = blob.indexOf(',', startOfSeq);
-				endOfSeq = blob.indexOf('}', comma);
-				String xstr = blob.substring(startOfSeq + 1, comma);
-				String ystr = blob.substring(comma + 1 ,endOfSeq);
-				System.out.println(xstr + " " + ystr + " " + startOfSeq + " " + comma + " " + endOfSeq);
-				double x = Double.parseDouble(xstr);
-				double y = Double.parseDouble(ystr);
-				Vect3Didx idx = pointIndex.index(x, y, 0);
-				builder.add(idx.getIndex());
-			}
-			return builder.stream().mapToInt(i->i).toArray(); // i -> i is converting Integer to int
-
+			return getPointIndexes(blob, 0);
 		} catch (Exception e) {
 			throw new RuntimeException("Exception building outer boundary indexes",e);
 		}
 	}
 
+	/**
+	 * get indexes for points in style of { x, y } { x, y } ...
+	 * @param blob non null
+	 * @param startfrom where to scan from
+	 * @return list of index from from {@link #getPointIndex()}
+	 * @throws Exception
+	 */
+	private int[] getPointIndexes(String blob, int startfrom) throws Exception {
+		ArrayList<Integer> builder = new ArrayList<>();
+		int endOfSeq = startfrom;
+		for (;;) {
+			int startOfSeq = blob.indexOf('{', endOfSeq);
+			if (startOfSeq < 0) {
+				break;
+			}
+			int comma = blob.indexOf(',', startOfSeq);
+			endOfSeq = blob.indexOf('}', comma);
+			String xstr = blob.substring(startOfSeq + 1, comma);
+			String ystr = blob.substring(comma + 1 ,endOfSeq);
+			//System.out.println(xstr + " " + ystr + " " + startOfSeq + " " + comma + " " + endOfSeq);
+			double x = Double.parseDouble(xstr);
+			double y = Double.parseDouble(ystr);
+			Vect3Didx idx = pointIndex.index(x, y, 0);
+			builder.add(idx.getIndex());
+		}
+		return builder.stream().mapToInt(i->i).toArray(); // i -> i is converting Integer to int
+	}
 
 	@SuppressWarnings("serial")
 	private class MovingBoundaryResultException extends RuntimeException {
