@@ -36,11 +36,13 @@ import cbit.vcell.message.server.jmx.VCellServiceMXBean;
 import cbit.vcell.message.server.jmx.VCellServiceMXBeanImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
-import cbit.vcell.simdata.VtkMeshGenerator;
+import cbit.vcell.resource.OperatingSystemInfo.OsType;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.tools.PortableCommand;
 import cbit.vcell.tools.PortableCommandWrapper;
+import cbit.vcell.util.NativeLoader;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -57,26 +59,29 @@ public class SolverPostprocessor  {
 		}
 
 		Logging.init();
-		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT); 
+		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT);
 		Log4jSessionLog log = new Log4jSessionLog(LOG_NAME);
 		Logger lg = log.getLogger( );
 		VCMessagingService vcMessagingService = null;
-		
+
 		try {
-			
-			PropertyLoader.loadProperties( );
-			
+
+			PropertyLoader.loadProperties(POST_PROCESSOR_PROPERTIES);
+			String libDir = PropertyLoader.getRequiredProperty(PropertyLoader.NATIVE_LIB_DIR);
+			ResourceUtil.setNativeLibraryDirectory(libDir);
+			NativeLoader.setOsType(OsType.LINUX);
+
 			KeyValue simKey = new KeyValue(args[0]);
 			String userName = args[1];
 			KeyValue userKey = new KeyValue(args[2]);
 			int jobIndex = Integer.parseInt(args[3]);
 			int taskID = Integer.parseInt(args[4]);
 			int solverExitCode = Integer.parseInt(args[5]);
-			
+
 			User owner = new User(userName,userKey);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			String hostName = ManageUtils.getHostName();
-						
+
 			VCMongoMessage.serviceStartup(ServiceName.solverPostprocessor, Integer.valueOf(simKey.toString()), args);
 
 			//
@@ -84,12 +89,12 @@ public class SolverPostprocessor  {
 			//
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 
+
 	        vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
 			VCMessageSession session = vcMessagingService.createProducerSession();
 			WorkerEventMessage workerEventMessage;
 			if (solverExitCode==0){
-				
+
 				Exception postProcessingException = null;
 				if (args.length > NUM_STD_ARGS) {
 					String fname = args[NUM_STD_ARGS];
@@ -101,39 +106,24 @@ public class SolverPostprocessor  {
 				if (lg.isTraceEnabled()) {
 					lg.trace("postProcessingException is " + postProcessingException);
 				}
-			 
+
 				if (postProcessingException == null) {
 					lg.trace("sendWorkerExitNormal");
 					workerEventMessage = WorkerEventMessage.sendWorkerExitNormal(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
 				}
 				else {
 					lg.trace("sendWorkerExitError postprocessing");
-					workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, postProcessingException, hostName, vcSimID, jobIndex, taskID, 
-							SimulationMessage.WorkerExited(postProcessingException)); 
+					workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, postProcessingException, hostName, vcSimID, jobIndex, taskID,
+							SimulationMessage.WorkerExited(postProcessingException));
 				}
-				
+
 			}else{ //solverExitCode != 0
 				lg.trace("sendWorkerExitError solverExitCode");
 				workerEventMessage = WorkerEventMessage.sendWorkerExitError(session, SolverPostprocessor.class.getName(), hostName, vcSimID, jobIndex, taskID, solverExitCode);
 			}
 			lg.trace(workerEventMessage);
 			VCMongoMessage.sendWorkerEvent(workerEventMessage);
-			
-			//
-			// generate VTK meshes now that simulation is complete.  
-			// If the simulation is nonspatial or otherwise not supported, then it will fail.
-			// This could be done within a "PortableCommand" but is called directly here to 
-			// make dependencies explicit in java code and contains fewer moving parts during prototyping stage 
-			// (this could be moved after we get everything working).
-			//
-			try {
-				VtkMeshGenerator.generateVtkMeshes(owner, simKey, jobIndex);
-			}catch (Exception e2){
-				e2.printStackTrace();
-				//
-				// for now we will eat this exception (should report success or failure to MongoDB)
-				//
-			}
+
 		} catch (Throwable e) {
 			log.exception(e);
 		} finally {
@@ -144,12 +134,12 @@ public class SolverPostprocessor  {
 					e.printStackTrace();
 				}
 			}
-			ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0); 
+			ApplicationTerminator.beginCountdown(TimeUnit.SECONDS, 10,0);
 			VCMongoMessage.shutdown( );
 			System.exit(0);
 		}
 	}
-	
+
 	/**
 	 * find any {@link PortableCommand}s in file, execute
 	 * @param filename
@@ -171,5 +161,10 @@ public class SolverPostprocessor  {
 		}
 		return null;
 	}
+	private static final String POST_PROCESSOR_PROPERTIES[] = {
+			PropertyLoader.primarySimDataDirProperty,
+			PropertyLoader.secondarySimDataDirProperty,
+			PropertyLoader.NATIVE_LIB_DIR
+		};
 
 }

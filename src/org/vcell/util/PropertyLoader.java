@@ -156,6 +156,10 @@ public class PropertyLoader {
 	public static final String VTK_PYTHON_EXE_PATH = record("vcell.vtkPythonExecutablePath", ValueType.EXE);
 	public static final String VTK_PYTHON_MODULE_PATH = record("vcell.vtkPythonModulePath", ValueType.GEN);
 	public static final String VIS_TOOL = record("vcell.visToolPath", ValueType.DIR);
+	/**
+	 * native library directory, server side
+	 */
+	public static final String NATIVE_LIB_DIR = record("vcell.lib", ValueType.DIR);
 
 	private static File systemTemporaryDirectory = null;
 	private static Logger lg = Logger.getLogger(PropertyLoader.class);

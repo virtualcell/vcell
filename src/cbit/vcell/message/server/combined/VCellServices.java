@@ -82,23 +82,21 @@ import cbit.vcell.solvers.AbstractSolver;
  * @author: Jim Schaff
  */
 public class VCellServices extends ServiceProvider implements ExportListener, DataJobListener {
-	public static final String NATIVE_LIB_PROPERTY = "vcell.lib";
-	
 	private SimulationDispatcher simulationDispatcher = null;
 	private DatabaseServer databaseServer = null;
 	private SimDataServer simDataServer = null;
 	private SimDataServer exportDataServer = null;
 	private HtcSimulationWorker htcSimulationWorker = null;
-	
+
 	private DataServerImpl dataServerImpl = null;
 	private DatabaseServerImpl databaseServerImpl = null;
 	private SimulationDatabase simulationDatabase = null;
 	private HtcProxy htcProxy = null;
-	
+
 	VCMessageSession dataSession = null;
 	VCMessageSession exportSession = null;
-	
-	
+
+
 	/**
 	 * Scheduler constructor comment.
 	 */
@@ -114,7 +112,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 
 	public void init() throws Exception{
 		initControlTopicListener();
-		
+
 		ServiceInstanceStatus dispatcherServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.DISPATCH,99,ManageUtils.getHostName(), new Date(), true);
 		simulationDispatcher = new SimulationDispatcher(htcProxy, vcMessagingService, dispatcherServiceInstanceStatus, simulationDatabase, new StdoutSessionLog("DISPATCH"), true);
 		simulationDispatcher.init();
@@ -134,7 +132,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		ServiceInstanceStatus htcServiceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),ServiceType.PBSCOMPUTE,99,ManageUtils.getHostName(), new Date(), true);
 		htcSimulationWorker = new HtcSimulationWorker(htcProxy, vcMessagingService, htcServiceInstanceStatus,new StdoutSessionLog("PBSCOMPUTE"), true);
 		htcSimulationWorker.init();
-		
+
 		dataSession = vcMessagingService.createProducerSession();
 		exportSession = vcMessagingService.createProducerSession();
 	}
@@ -142,7 +140,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	@Override
 	public void stopService(){
 		super.stopService();
-		
+
 		simulationDispatcher.stopService();
 		databaseServer.stopService();
 		simDataServer.stopService();
@@ -151,7 +149,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		dataSession.close();
 		exportSession.close();
 	}
-	
+
 
 	/**
 	 * Starts the application.
@@ -160,7 +158,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 	public static void main(java.lang.String[] args) {
 		WatchLogging.init(TimeUnit.MINUTES.toMillis(5), "vcell.watchLog4JInterval");
 		OperatingSystemInfo.getInstance();
-	
+
 		if (args.length != 3 && args.length != 6) {
 			System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal (logdir|-) (PBS|SGE) [pbshost userid pswd] ");
 			System.exit(1);
@@ -169,12 +167,8 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 		try {
 			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
 			CommandService.bQuiet = true;
-			String libDir = System.getProperty(NATIVE_LIB_PROPERTY);
-			if (libDir == null) {
-				System.err.println(NATIVE_LIB_PROPERTY + " not set");
-				System.exit(2);
-			}
-			ResourceUtil.loadNativeLibraries(libDir);
+			String libDir = PropertyLoader.getRequiredProperty(PropertyLoader.NATIVE_LIB_DIR);
+			ResourceUtil.setNativeLibraryDirectory(libDir);
 			new LibraryLoaderThread(false).start( );
 
 			int serviceOrdinal = Integer.parseInt(args[0]);
@@ -182,7 +176,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			if (args.length > 1) {
 				logdir = args[1];
 			}
-			
+
 			BatchSystemType batchSystemType = BatchSystemType.valueOf(args[2]);
 			CommandService commandService = null;
 			if (args.length==6){
@@ -208,7 +202,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 					throw new RuntimeException("unrecognized batch scheduling option :"+batchSystemType);
 				}
 			}
-			
+
 			VCMongoMessage.serviceStartup(ServiceName.dispatch, new Integer(serviceOrdinal), args);
 
 			//
@@ -216,10 +210,10 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			//
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
- 			
-			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(), 
-					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
-			
+
+			ServiceInstanceStatus serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID(),
+					ServiceType.MASTER, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
+
 			OutputStream os = initLog(serviceInstanceStatus, logdir);
 			SessionLog log  = null;
 			if (os != null) {
@@ -234,9 +228,9 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			else {
 				int lifeSignMessageInterval_MS = 3*60000; //3 minutes -- possibly make into a property later
 				log = new StdoutSessionLog(serviceInstanceStatus.getID());
-				new LifeSignThread(log,lifeSignMessageInterval_MS).start();   
+				new LifeSignThread(log,lifeSignMessageInterval_MS).start();
 			}
-     
+
 			KeyFactory keyFactory = new OracleKeyFactory();
 			DbDriver.setKeyFactory(keyFactory);
 			ConnectionFactory conFactory = new OraclePoolingConnectionFactory(log);
@@ -245,16 +239,16 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true, log);
 
 			Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE_IN_MS * 20);
-			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable, 
-					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
+			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(log, cacheTable,
+					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)),
 					new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
-			
+
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl(log);
-			
+
 			DataServerImpl dataServerImpl = new DataServerImpl(log, dataSetControllerImpl, exportServiceImpl);        //add dataJobListener
 
 			VCMessagingService vcMessagingService = VCMessagingService.createInstance(new ServerMessagingDelegate());
-			
+
 			VCellServices vcellServices = new VCellServices(htcProxy, vcMessagingService, serviceInstanceStatus, databaseServerImpl, dataServerImpl, simulationDatabase, log);
 
 			dataSetControllerImpl.addDataJobListener(vcellServices);
@@ -273,7 +267,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				VCMessage dataEventMessage = dataSession.createObjectMessage(event);
 				dataEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
 				dataEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-				
+
 				dataSession.sendTopicMessage(VCellTopic.ClientStatusTopic, dataEventMessage);
 				//dataSession.close();
 			} catch (VCMessagingException ex) {
@@ -289,7 +283,7 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 				VCMessage exportEventMessage = exportSession.createObjectMessage(event);
 				exportEventMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
 				exportEventMessage.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, event.getUser().getName());
-				
+
 				exportSession.sendTopicMessage(VCellTopic.ClientStatusTopic, exportEventMessage);
 				//dataSession.close();
 			} catch (VCMessagingException ex) {
@@ -297,11 +291,12 @@ public class VCellServices extends ServiceProvider implements ExportListener, Da
 			}
 		}
 	}
-	
+
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.primarySimDataDirProperty,
 		PropertyLoader.secondarySimDataDirProperty,
-		PropertyLoader.htcUser
+		PropertyLoader.htcUser,
+		PropertyLoader.NATIVE_LIB_DIR
 	};
 
 
