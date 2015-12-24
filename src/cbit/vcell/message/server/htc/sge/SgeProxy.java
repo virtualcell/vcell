@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -66,15 +67,15 @@ public class SgeProxy extends HtcProxy {
 
 	/**
 	 * qdel 6894
-	 * 
+	 *
 vcell has registered the job 6894 for deletion
 	 *
 	 * qdel 6894
-	 * 
+	 *
 job 6894 is already in deletion
 	 *
 	 * qdel 6894
-	 * 
+	 *
 denied: job "6894" does not exist
 
 	 */
@@ -135,7 +136,7 @@ denied: job "6894" does not exist
 	 */
 	private final String buildExeCommand(int ncpus,String command) {
 		if (ncpus == 1) {
-			return command; 
+			return command;
 		}
 		final char SPACE = ' ';
 		StringBuilder sb = new StringBuilder( );
@@ -145,125 +146,6 @@ denied: job "6894" does not exist
 		sb.append(SPACE);
 		sb.append(command);
 		return sb.toString().trim( );
-	}
-
-	@Override
-	protected SgeJobID submitJob(String jobName, String sub_file, String[] command, int ncpus, double memSize, String[] secondCommand, String[] exitCommand, String exitCodeReplaceTag, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
-		try {
-			final boolean isParallel = ncpus > 1;
-
-
-			StringBuilder sb = new StringBuilder(); 
-
-			sb.append("#!/bin/csh\n");
-			sb.append("#$ -N " + jobName + "\n");
-			sb.append("#$ -o " + htcLogDirString+jobName+".sge.log\n");
-			//			sw.append("#$ -l mem=" + (int)(memSize + SGE_MEM_OVERHEAD_MB) + "mb");
-
-			//int JOB_MEM_OVERHEAD_MB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jobMemoryOverheadMB));
-
-			//long jobMemoryMB = (JOB_MEM_OVERHEAD_MB+((long)memSize));
-			sb.append("#$ -j y\n");
-			//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
-			sb.append("#$ -cwd\n");
-			if (isParallel) {
-				final char NEWLINE = '\n';
-				sb.append("#$ -pe mpich ");
-				sb.append(ncpus);
-				sb.append(NEWLINE);
-				sb.append("#$ -v LD_LIBRARY_PATH=");
-				sb.append(MPI_HOME);
-				sb.append("/lib");
-				sb.append(NEWLINE);
-			}
-			sb.append("# the commands to be executed\n");
-			sb.append("echo\n");
-			sb.append("echo\n");
-			sb.append("echo \"command1 = '"+CommandOutput.concatCommandStrings(command)+"'\"\n");
-			sb.append("echo\n");
-			sb.append("echo\n");
-			sb.append(CommandOutput.concatCommandStrings(command)+"\n");
-			sb.append("set retcode1 = $status\n");
-			sb.append("echo\n");
-			sb.append("echo\n");
-			sb.append("echo command1 returned $retcode1\n");
-			if (secondCommand!=null){
-				final String exeString  = buildExeCommand(ncpus, secondCommand);
-				sb.append("if ( $retcode1 == 0 ) then\n");
-				sb.append("		echo\n");
-				sb.append("		echo\n");
-				sb.append("     echo \"command2 = '" + exeString +"'\"\n");
-				sb.append("		echo\n");
-				sb.append("		echo\n");
-				sb.append("     " + exeString + "\n");
-				sb.append("     set retcode2 = $status\n");
-				sb.append("		echo\n");
-				sb.append("		echo\n");
-				sb.append("     echo command2 returned $retcode2\n");
-				sb.append("     echo returning return code $retcode2 to PBS\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"'\"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode2")+"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-				}
-				sb.append("     exit $retcode2\n");
-				sb.append("else\n");
-				sb.append("		echo \"command1 failed, skipping command2\"\n");
-				sb.append("     echo returning return code $retcode1 to SGE\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-				}
-				sb.append("     exit $retcode1\n");
-				sb.append("endif\n");
-			}else{
-				sb.append("echo returning return code $retcode1 to SGE\n");
-				if (exitCommand!=null && exitCodeReplaceTag!=null){
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     echo \"exitCommand = '"+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"'\"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-					sb.append("     "+CommandOutput.concatCommandStrings(exitCommand).replace(exitCodeReplaceTag,"$retcode1")+"\n");
-					sb.append("		echo\n");
-					sb.append("		echo\n");
-				}
-				sb.append("exit $retcode1\n");
-			}
-			if (postProcessingCommands != null) {
-				PortableCommandWrapper.insertCommands(sb, postProcessingCommands); 
-			}
-
-			File tempFile = File.createTempFile("tempSubFile", ".sub");
-
-			writeUnixStyleTextFile(tempFile, sb.toString());
-
-			// move submission file to final location (either locally or remotely).
-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
-			commandService.pushFile(tempFile,sub_file);
-			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
-			tempFile.delete();
-		} catch (IOException ex) {
-			ex.printStackTrace(System.out);
-			return null;
-		}
-
-		String[] completeCommand = new String[] {SGE_HOME + JOB_CMD_SUBMIT, "-terse", sub_file};
-		CommandOutput commandOutput = commandService.command(completeCommand);
-		String jobid = commandOutput.getStandardOutput().trim();
-
-		return new SgeJobID(jobid);
 	}
 
 	@Override
@@ -308,7 +190,7 @@ denied: job "6894" does not exist
 	private static final String PSYM_JNAME = "JB_name";
 	private static final String PSYM_JNUMBER = "JB_job_number";
 	private static final String PSYM_STATE = "state";
-	
+
 	/**
 	 * @param xmlString string to parse (qstat output
 	 * @param prefix to look for
@@ -332,7 +214,7 @@ denied: job "6894" does not exist
 				String state = ji.getAttributeValue(PSYM_STATE);
 				Element stateCodeE = ji.getChild(PSYM_STATE);
 				String stateCode = stateCodeE.getValue();
-				
+
 				SgeJobID id = new SgeJobID(jn);
 				HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
 				SGEJobStatus stat = SGEJobStatus.parseStatus(state,stateCode);
@@ -342,11 +224,11 @@ denied: job "6894" does not exist
 				switch (stat) {
 				case RUNNING:
 				case PENDING:
-				case EXITED: 
+				case EXITED:
 					HtcJobStatus status = new HtcJobStatus(stat);
 					statusMap.put(id, new JobInfoAndStatus(hji, status));
 					jobList.add(id);
-				case DELETING: 
+				case DELETING:
 				}
 			}
 		}
@@ -389,7 +271,7 @@ denied: job "6894" does not exist
 		final boolean isParallel = ncpus > 1;
 
 
-		LineStringBuilder lsb = new LineStringBuilder(); 
+		LineStringBuilder lsb = new LineStringBuilder();
 
 		lsb.write("#!/bin/bash");
 		lsb.write("#$ -N " + jobName);
@@ -402,7 +284,7 @@ denied: job "6894" does not exist
 		lsb.write("#$ -j y");
 		//		    sw.append("#$ -l h_vmem="+jobMemoryMB+"m\n");
 		lsb.write("#$ -cwd");
-		
+
 		if (isParallel) {
 			lsb.append("#$ -pe mpich ");
 			lsb.append(ncpus);
@@ -424,12 +306,12 @@ denied: job "6894" does not exist
 			lsb.write("echo");
 		}
 
-		for (ExecutableCommand ec: commandSet.getExecCommands()) { 
+		for (ExecutableCommand ec: commandSet.getExecCommands()) {
 			lsb.write("echo");
-			String cmd= ec.getJoinedCommands(); 
+			String cmd= ec.getJoinedCommands();
 			if (ec.isParallel()) {
 				if (isParallel) {
-					cmd = buildExeCommand(ncpus, cmd); 
+					cmd = buildExeCommand(ncpus, cmd);
 				}
 				else {
 					throw new UnsupportedOperationException("parallel command " + ec.getJoinedCommands() + " called in non-parallel submit");
@@ -437,14 +319,14 @@ denied: job "6894" does not exist
 			}
 			lsb.append("echo command = ");
 			lsb.write(cmd);
-			
+
 			lsb.write(cmd);
 			lsb.write("stat=$?");
-			
+
 			lsb.append("echo ");
 			lsb.append(cmd);
 			lsb.write("returned $stat");
-			
+
 			lsb.write("if [ $stat -ne 0 ]; then");
 			if (hasExitProcessor) {
 				lsb.write("\tcallExitProcessor $stat");
@@ -454,9 +336,8 @@ denied: job "6894" does not exist
 			lsb.write("fi");
 		}
 
-		if (postProcessingCommands != null) {
-			PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands); 
-		}
+		Objects.requireNonNull(postProcessingCommands);
+		PortableCommandWrapper.insertCommands(lsb.sb, postProcessingCommands);
 		lsb.newline();
 		if (hasExitProcessor) {
 			lsb.write("callExitProcessor 0");
@@ -464,7 +345,7 @@ denied: job "6894" does not exist
 		lsb.newline();
 		return lsb.sb.toString();
 	}
-	
+
 	@Override
 	public SgeJobID submitJob(String jobName, String sub_file, ExecutableCommand.Container commandSet, int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands) throws ExecutableException {
 		try {
