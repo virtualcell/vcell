@@ -9,7 +9,7 @@ import cbit.vcell.message.server.htc.pbs.PbsJobID;
 import cbit.vcell.message.server.htc.sge.SgeJobID;
 
 public abstract class HtcJobID implements Serializable, Matchable {
-	
+
 	public enum BatchSystemType {
 		PBS,
 		SGE
@@ -23,7 +23,7 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	private BatchSystemType batchSystemType = null;
 	private long jobNumber;  // required (e.g. 1200725)
 	private String server;     // optional (e.g. "master.cm.cluster")
-	
+
 	protected HtcJobID(String jobID, BatchSystemType batchSystemType){
 		if (jobID.contains(".")){
 			int indexOfFirstPeriod = jobID.indexOf(".");
@@ -35,7 +35,7 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		}
 		this.batchSystemType = batchSystemType;
 	}
-	
+
 	public String toDatabase(){
 		if (server!=null){
 			return batchSystemType.name()+":"+this.jobNumber+"."+server;
@@ -43,11 +43,11 @@ public abstract class HtcJobID implements Serializable, Matchable {
 			return batchSystemType.name()+":"+this.jobNumber;
 		}
 	}
-	
+
 	private String toDatabaseShort(){
 		return batchSystemType.name()+":"+this.jobNumber;
 	}
-	
+
 	public static HtcJobID fromDatabase(String databaseString){
 		String PBS_Prefix = BatchSystemType.PBS.name()+":";
 		String SGE_Prefix = BatchSystemType.SGE.name()+":";
@@ -59,27 +59,30 @@ public abstract class HtcJobID implements Serializable, Matchable {
 			return new PbsJobID(databaseString);
 		}
 	}
-	
+
 	public String toString(){
 		return toDatabase();
 	}
-	
+
 	public long getJobNumber(){
 		return this.jobNumber;
 	}
-	
+
 	public String getServer(){
 		return this.server;
 	}
-	
+
 	public BatchSystemType getBatchSystemType(){
 		return this.batchSystemType;
 	}
-	
+
+	/**
+	 * broken
+	 */
 	public boolean compareEqual(Matchable obj) {
 		if (obj instanceof HtcJobID){
 			HtcJobID other = (HtcJobID)obj;
-			if (jobNumber != jobNumber){
+			if (jobNumber != jobNumber){ //error: comparing identical expressions
 				return false;
 			}
 			if (server!=null && other.server!=null){
@@ -94,7 +97,10 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * broken
+	 */
 	@Override
 	public boolean equals(Object obj){
 		if (obj instanceof HtcJobID){
@@ -103,10 +109,10 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode(){
 		return toDatabaseShort().hashCode();
 	}
-	
+
 }
