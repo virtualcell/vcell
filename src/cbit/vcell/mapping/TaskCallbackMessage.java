@@ -12,6 +12,10 @@ public class TaskCallbackMessage {
 		Detail,
 		Error,		// red, bold
 		Warning,	// red
+		// used when testing a different set of constraints in the NetworkConstraints panel
+		// upon receiving this message we move the test max iterations and max molecules per species 
+		// in the NetworkConstraints object belonging to the simulation context
+		ValidateConstraints,
 		Other;
 	}
 
