@@ -21,9 +21,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +33,7 @@ import javax.swing.RootPaneContainer;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.Version;
@@ -70,7 +69,7 @@ public class ClientMDIManager implements MDIManager {
 	private Map<String, TopLevelWindowManager> managersHash = new HashMap<String, TopLevelWindowManager>();
 	private Map<String,Creator> creators = new HashMap<>();
 	private int numCreatedDocumentWindows = 0;
-	
+
 	private WindowAdapter windowListener = new WindowAdapter() {
 		public void windowClosing(WindowEvent e) {
 			getRequestManager().closeWindow(((TopLevelWindow)e.getWindow()).getTopLevelWindowManager().getManagerID(), true);
@@ -96,7 +95,7 @@ public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
 		JFrame f = (JFrame)getWindowsHash().get(windowID);
 		return (JFrame)blockWindow(f);
-	} 
+	}
 	return null;
 }
 
@@ -155,13 +154,13 @@ private long numberOfWindowsShowing( ) {
  * @param version cbit.sql.Version
  */
 public static String createCanonicalTitle(VCDocument vcDocument) {
-	
+
 	Version version = vcDocument.getVersion();
 	VCDocumentType docType = vcDocument.getDocumentType();
 	String docName = (version != null?version.getName():(vcDocument.getName()==null?"NoName":vcDocument.getName()+" (NoVersion)"));
 	java.util.Date docDate = (version != null?version.getDate():null);
 	VersionFlag versionFlag = (version != null?version.getFlag():null);
-	String title = 
+	String title =
 		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Archived)? "("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.ARCHIVE]+") ":"")+
 		(versionFlag != null && versionFlag.compareEqual(VersionFlag.Published)?"("+CurateSpec.CURATE_TYPE_STATES[CurateSpec.PUBLISH]+") ":"")+
 		(docType == VCDocumentType.BIOMODEL_DOC?"BIOMODEL: ":"")+
@@ -178,7 +177,7 @@ public static String createCanonicalTitle(VCDocument vcDocument) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:07:12 PM)
  */
-private DocumentWindow createDocumentWindow() {	
+private DocumentWindow createDocumentWindow() {
 	DocumentWindow documentWindow = new DocumentWindow();
 	// stagger 90% screen size windows
 	documentWindow.setSize(JFRAME_SIZE);
@@ -194,7 +193,7 @@ private DocumentWindow createDocumentWindow() {
 	}
 //	if (getNewlyCreatedDesktops() == 0) {
 //		// first window
-//		// cbit.util.BeanUtils.attemptMaximize(documentWindow);	
+//		// cbit.util.BeanUtils.attemptMaximize(documentWindow);
 //	}
 	return documentWindow;
 }
@@ -211,11 +210,11 @@ public DocumentWindow createNewDocumentWindow(final DocumentWindowManager window
 
 	// keep track of things
 	String windowID = windowManager.getManagerID();
-	
+
 	// make the window
 	DocumentWindow documentWindow = createDocumentWindow();
 	documentWindow.setWorkArea(windowManager.getComponent());
-	
+
 	getWindowsHash().put(windowID, documentWindow);
 	getManagersHash().put(windowID, windowManager);
 	// wire manager to events
@@ -247,7 +246,7 @@ void createRecyclableWindows() {
 		// keep track of things
 		getManagersHash().put(DATABASE_WINDOW_ID, windowManager);
 	}
-	creators.put(TESTING_FRAMEWORK_WINDOW_ID, this::createTestingFramework); 
+	creators.put(TESTING_FRAMEWORK_WINDOW_ID, this::createTestingFramework);
 	creators.put(BIONETGEN_WINDOW_ID,this::createBioNetGen);
 	creators.put(FIELDDATA_WINDOW_ID,this::createFieldData);
 }
@@ -256,7 +255,7 @@ private void createTestingFramework( ) {
 
 	if (! getWindowsHash().containsKey(TESTING_FRAMEWORK_WINDOW_ID) /*&& currentUser!=null && currentUser.isTestAccount()*/) {
 		// make the window
-		TestingFrameworkWindow testingFrameworkWindow = new TestingFrameworkWindow(); 
+		TestingFrameworkWindow testingFrameworkWindow = new TestingFrameworkWindow();
 		TestingFrameworkWindowPanel testingFrameworkWindowPanel = new TestingFrameworkWindowPanel();
 		testingFrameworkWindow.setWorkArea(testingFrameworkWindowPanel);
 		testingFrameworkWindow.setSize(JFRAME_SIZE);
@@ -286,7 +285,7 @@ private void createBioNetGen( ) {
 
 	if (! getWindowsHash().containsKey(BIONETGEN_WINDOW_ID) ) {
 		// make the window
-		BNGWindow bngWindow = new BNGWindow(); 
+		BNGWindow bngWindow = new BNGWindow();
 		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = new cbit.vcell.client.bionetgen.BNGOutputPanel();
 		bngWindow.setWorkArea(bngOutputPanel);
 		bngWindow.setSize(JFRAME_SIZE);
@@ -403,12 +402,10 @@ private RequestManager getRequestManager() {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (5/24/2004 8:57:53 PM)
- * @return cbit.vcell.client.desktop.DatabaseWindowManager
+ * @return TestingFrameworkWindowManager if it's been created, null if it hasn't
  */
 public TestingFrameworkWindowManager getTestingFrameworkWindowManager() {
-	return (TestingFrameworkWindowManager)getWindowManager(TESTING_FRAMEWORK_WINDOW_ID);
+	return (TestingFrameworkWindowManager) managersHash.get(TESTING_FRAMEWORK_WINDOW_ID);
 }
 
 
@@ -434,7 +431,7 @@ public TopLevelWindowManager getWindowManager(java.lang.String windowID) {
  */
 public Collection<TopLevelWindowManager> getWindowManagers( ) {
 	return Collections.unmodifiableCollection(managersHash.values());
-	
+
 }
 
 /**
@@ -452,7 +449,7 @@ public TopLevelWindowManager getFocusedWindowManager() {
 	TopLevelWindowManager showingTopLevelWindowManager = null;
 	TopLevelWindowManager firstTopLevelWindowManager = null;
 	while (iter.hasNext()) {
-		Entry<String, TopLevelWindow> entry = iter.next();		
+		Entry<String, TopLevelWindow> entry = iter.next();
 		JFrame window = (JFrame)entry.getValue();
 		TopLevelWindowManager topLevelWindowManager = getManagersHash().get(entry.getKey());
 		if (window == KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow()) {
@@ -580,24 +577,36 @@ public static void unBlockWindow(Component component) {
 public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
 //		unBlockWindow(DATABASE_WINDOW_ID);
-		unBlockWindow(TESTING_FRAMEWORK_WINDOW_ID);
+		if (isTestAccount(connectionStatus)) {
+			unBlockWindow(TESTING_FRAMEWORK_WINDOW_ID);
+		}
 //		unBlockWindow(BIONETGEN_WINDOW_ID);
 		unBlockWindow(FIELDDATA_WINDOW_ID);
 	} else {
 //		blockWindow(DATABASE_WINDOW_ID);
-		blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
+		if (isTestAccount(connectionStatus)) {
+			blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
+		}
 //		blockWindow(BIONETGEN_WINDOW_ID);
 		blockWindow(FIELDDATA_WINDOW_ID);
 	}
 	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateConnectionStatus(connectionStatus);
 	}
-	
-	for (TopLevelWindowManager topLevelWindowManager : managersHash.values()) { 
+
+	for (TopLevelWindowManager topLevelWindowManager : managersHash.values()) {
 		if (topLevelWindowManager instanceof DocumentWindowManager) {
 			((DocumentWindowManager) topLevelWindowManager).updateConnectionStatus(connectionStatus);
 		}
 	}
+}
+
+private static boolean isTestAccount(ConnectionStatus connectionStatus) {
+	String uname = connectionStatus.getUserName();
+	if (uname != null) {
+		return User.isTestAccount(connectionStatus.getUserName());
+	}
+	return false;
 }
 
 
@@ -616,7 +625,7 @@ public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
 	managersHash.put(newID, manager);
 	setCanonicalTitle(newID);
 }
-	
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 3:15:04 PM)
@@ -624,7 +633,7 @@ public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
  * @param totalBytes long
  */
 public void updateMemoryStatus(long freeBytes, long totalBytes) {
-	for (TopLevelWindow window : windowsHash.values()) { 
+	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateMemoryStatus(freeBytes, totalBytes);
 	}
 }
@@ -636,7 +645,7 @@ public void updateMemoryStatus(long freeBytes, long totalBytes) {
  * @param progress int
  */
 public void updateWhileInitializing(int progress) {
-	for (TopLevelWindow window : windowsHash.values()) { 
+	for (TopLevelWindow window : windowsHash.values()) {
 		window.updateWhileInitializing(progress);
 	}
 }
