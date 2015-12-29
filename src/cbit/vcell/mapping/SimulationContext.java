@@ -315,6 +315,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 	private NetworkConstraints networkConstraints = null;
 	private boolean bInsufficientIterations = false;
 	private boolean bInsufficientMaxMolecules = false;
+	private transient boolean bValidTestConstraints = true;
 	// Cache of the BNGOutputSpec produced by running bng.exe
 	// This operation has no relationship whatsoever with caching of the MathMapping below
 	private transient String md5hash = null;
@@ -2623,6 +2624,12 @@ public boolean isInsufficientMaxMolecules() {
 }
 public void setInsufficientMaxMolecules(boolean bInsufficientMaxMolecules) {
 	this.bInsufficientMaxMolecules = bInsufficientMaxMolecules;
+}
+public boolean isValidTestConstraints() {
+	return bValidTestConstraints;
+}
+public void setValidTestConstraints(boolean bValidTestConstraints) {
+	this.bValidTestConstraints = bValidTestConstraints;
 }
 
 public MathMapping getMostRecentlyCreatedMathMapping(){

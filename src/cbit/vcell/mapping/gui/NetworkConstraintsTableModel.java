@@ -51,7 +51,11 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		if(this.simContext == simContext) {
 			return;
 		}
+		if(this.simContext != null && this.simContext.getNetworkConstraints() != null) {
+			simContext.getNetworkConstraints().removePropertyChangeListener(this); 
+		}
 		this.simContext = simContext;
+		simContext.getNetworkConstraints().addPropertyChangeListener(this);
 		
 		List<NetworkConstraintsEntity> newData = computeData();
 		setData(newData);
@@ -188,18 +192,27 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		super.propertyChange(evt);
-		super.propertyChange(evt);
-		
+//		super.propertyChange(evt);
 		Object source = evt.getSource();
-		if (source == getModel().getRbmModelContainer()) {
-//		if (source == getModel()) {
-			if(evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
-				// TODO: should refresh the list here
-				System.out.println("Not implemented yet. Do it!");
+		
+		if (source instanceof NetworkConstraints) {
+			if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MAX_ITERATION)) {
+				List<NetworkConstraintsEntity> newData = computeData();
+				setData(newData);
+			} else if(evt.getPropertyName().equals(NetworkConstraints.PROPERTY_NAME_MOLECULES_PER_SPECIES)) {
+				List<NetworkConstraintsEntity> newData = computeData();
+				setData(newData);
+			} else {
+				System.out.println("Property " + evt.getPropertyName() + " not yet implemented.");
 			}
 		}
 	}
 
+	@Override
+	protected Model getModel() {
+		return simContext == null ? null : simContext.getModel();
+	}
+	
 	@Override
 	protected Comparator<NetworkConstraintsEntity> getComparator(int col, boolean ascending) {
 		// TODO Auto-generated method stub

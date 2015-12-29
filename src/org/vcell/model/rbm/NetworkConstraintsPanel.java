@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.EventObject;
 import java.util.Hashtable;
 
@@ -28,6 +30,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
+import org.vcell.client.logicalwindow.LWHandle.LWModality;
+import org.vcell.model.rbm.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -36,6 +40,8 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.BioModelWindowManager;
+import cbit.vcell.client.ChildWindowManager;
+import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
@@ -72,9 +78,6 @@ import cbit.vcell.solvers.ApplicationMessage;
 @SuppressWarnings("serial")
 public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements BioNetGenUpdaterCallback, ApplicationSpecificationsPanel.Specifier {
 
-	private JTextField maxIterationTextField;
-	private JTextField maxMolTextField;
-//	private NetworkConstraints networkConstraints;
 	private EventHandler eventHandler = new EventHandler();
 	private SimulationContext fieldSimulationContext;
 	private IssueManager fieldIssueManager;
@@ -82,6 +85,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	
 	private JDialog viewSpeciesDialog = null;
 	private JDialog viewReactionsDialog = null;
+	private JDialog editConstraintsDialog = null;
 	
 	private JLabel seedSpeciesLabel;
 	private JLabel reactionRulesLabel;
@@ -98,11 +102,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	private class EventHandler implements FocusListener, ActionListener, PropertyChangeListener {
 
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == maxIterationTextField) {
-				changeMaxIteration();
-			} else if (e.getSource() == maxMolTextField) {
-				changeMaxMolPerSpecies();
-			} else if(e.getSource() == getViewGeneratedSpeciesButton()) {
+			if(e.getSource() == getViewGeneratedSpeciesButton()) {
 				viewGeneratedSpecies();
 			} else if(e.getSource() == getViewGeneratedReactionsButton()) {
 				viewGeneratedReactions();
@@ -112,17 +112,10 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 				createModel();
 			}
 		}
-
 		public void focusGained(FocusEvent e) {
 		}
 		public void focusLost(FocusEvent e) {
-			if (e.getSource() == maxIterationTextField) {
-				changeMaxIteration();
-			} else if (e.getSource() == maxMolTextField) {
-				changeMaxMolPerSpecies();
-			}
 		}
-		
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
 			if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				refreshInterface();
@@ -150,21 +143,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	public void setSearchText(String s) {
 		
 	}
-	public void changeMaxMolPerSpecies() {
-		String text = maxMolTextField.getText();
-		if (text == null || text.trim().length() == 0) {
-			return;
-		}
-		getSimulationContext().getNetworkConstraints().setMaxMoleculesPerSpecies(Integer.valueOf(text));
-	}
-
-	public void changeMaxIteration() {
-		String text = maxIterationTextField.getText();
-		if (text == null || text.trim().length() == 0) {
-			return;
-		}
-		getSimulationContext().getNetworkConstraints().setMaxIteration(Integer.valueOf(text));
-	}
 	
 	private JButton getViewGeneratedSpeciesButton() {
 		if (viewGeneratedSpeciesButton == null) {
@@ -182,7 +160,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 	private JButton getRefreshMathButton() {
 		if (refreshMathButton == null) {
-			refreshMathButton = new javax.swing.JButton(" Create Reaction Network ");
+			refreshMathButton = new javax.swing.JButton(" Edit / Test Constraints ");
 			refreshMathButton.setName("RefreshMathButton");
 		}
 		return refreshMathButton;
@@ -196,8 +174,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 
 	private void initialize() {
-		maxIterationTextField = new JTextField();
-		maxMolTextField = new JTextField();
 		seedSpeciesLabel = new JLabel();
 		reactionRulesLabel = new JLabel();
 		generatedSpeciesLabel = new JLabel();
@@ -207,20 +183,13 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		networkConstraintsTableModel = new NetworkConstraintsTableModel(networkConstraintsTable);
 		networkConstraintsTable.setModel(networkConstraintsTableModel);
 		
-		maxIterationTextField.addActionListener(eventHandler);
-		maxMolTextField.addActionListener(eventHandler);
-		
 		getViewGeneratedSpeciesButton().addActionListener(eventHandler);
 		getViewGeneratedReactionsButton().addActionListener(eventHandler);
 		getRefreshMathButton().addActionListener(eventHandler);
 		getCreateModelButton().addActionListener(eventHandler);
 		
-		maxIterationTextField.addFocusListener(eventHandler);
-		maxMolTextField.addFocusListener(eventHandler);
-		
 		// ------------------------------------------- The 2 group boxes --------------------------
 		JPanel leftPanel = new JPanel();
-//		JPanel rightPanel = new JPanel();
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -414,9 +383,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			text1 = getSimulationContext().getNetworkConstraints().getMaxIteration() + "";
 			text2 = getSimulationContext().getNetworkConstraints().getMaxMoleculesPerSpecies() + "";
 		}
-		maxIterationTextField.setText(text1);
-		maxMolTextField.setText(text2);
-		
 		String text3 = null;
 		String text4 = null;
 		String text5 = null;
@@ -442,8 +408,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 				text4 = "N/A (rule based model needed)";
 				text6 = "N/A (rule based model needed)";
 			} else {
-//				text4 = "unavailable (no network)";
-//				text6 = "unavailable (no network)";
 				text4 = "unavailable";
 				text6 = "unavailable";
 			}
@@ -477,6 +441,30 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 	
 	private void runBioNetGen() {
+		EditConstraintsPanel panel = new EditConstraintsPanel(this);
+		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
+		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
+		Dimension dim = new Dimension(250, 160);
+		childWindow.pack();
+		panel.setChildWindow(childWindow);
+		childWindow.setPreferredSize(dim);
+		childWindow.showModal();
+		int maxIterations;
+		int maxMolecules;
+		if (panel.getButtonPushed() == ActionButtons.Run) {
+			maxIterations = new Integer( panel.maxIterationTextField.getText());
+			maxMolecules = new Integer( panel.maxMolTextField.getText());
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
+		} else if(panel.getButtonPushed() == ActionButtons.Apply) {
+			maxIterations = new Integer( panel.maxIterationTextField.getText());
+			maxMolecules = new Integer( panel.maxMolTextField.getText());
+			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
+			fieldSimulationContext.getNetworkConstraints().updateConstraintsFromTest();
+			return;
+		} else {
+			return;
+		}
+		
 		// TODO: do not delete the commented code below
 		// uncomment the next 6 lines to keep the data in the dialogs synchronized with the most recent reaction network
 //		if(viewSpeciesDialog != null) {
@@ -509,7 +497,19 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			public void setMessage(String message) {}
 			public boolean isInterrupted() { return false; }
 		};
+		
+		// we alter the input string to use the test values for max iterations and max molecules per species
 		String input = transformer.convertToBngl(fieldSimulationContext, true, dummyCallback, NetworkGenerationRequirements.ComputeFullNoTimeout);
+		// get rid of the default generate network command...
+		input = input.substring(0, input.indexOf("generate_network({"));
+		// ... and replace it with the "fake" one
+		StringWriter bnglStringWriter = new StringWriter();
+		PrintWriter pw = new PrintWriter(bnglStringWriter);
+		RbmNetworkGenerator.generateNetworkEx(maxIterations, maxMolecules, pw, fieldSimulationContext.getModel().getRbmModelContainer(), fieldSimulationContext, NetworkGenerationRequirements.ComputeFullNoTimeout);
+		String genNetStr = bnglStringWriter.toString();
+		pw.close();
+		input += genNetStr;
+		
 		BNGInput bngInput = new BNGInput(input);
 		final BNGExecutorService bngService = new BNGExecutorService(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
 		bngService.registerBngUpdaterCallback(this);
@@ -518,17 +518,19 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
 		TaskCallbackMessage message = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 		fieldSimulationContext.appendToConsole(message);
+		fieldSimulationContext.setValidTestConstraints(true);	// we'll accept the test constraints unless operation is canceled by user
 		tasksArray[0] = new RunBioNetGen(bngService);
 		tasksArray[1] = new CreateBNGOutputSpec(bngService);
 		tasksArray[2] = new ReturnBNGOutput(bngService);
 		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
-			
+			@Override
 			public void cancelButton_actionPerformed(EventObject newEvent) {
 				try {
 					bngService.stopBNG();
 					String s = "...user cancelled.";
 					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, s);
 					setNewCallbackMessage(tcm);
+					fieldSimulationContext.setValidTestConstraints(false);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -634,8 +636,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		// TODO Auto-generated method stub
-		
 	}
-
 
 }

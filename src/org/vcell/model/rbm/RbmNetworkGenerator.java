@@ -348,6 +348,11 @@ public class RbmNetworkGenerator {
 	public static void generateNetwork(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		NetworkConstraints constraints = sc.getNetworkConstraints();
+		generateNetworkEx(constraints.getMaxIteration(), constraints.getMaxMoleculesPerSpecies(), writer, rbmModelContainer, sc, networkGenerationRequirements);
+	}
+	public static void generateNetworkEx(int maxIterations, int maxMoleculesPerSpecies, PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
+		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
+		NetworkConstraints constraints = sc.getNetworkConstraints();
 		writer.print("generate_network({");
 		if(networkGenerationRequirements.requestType == RequestType.AllowTruncatedNetwork) {
 			// this is called when we create the first simulation in a new application
@@ -355,12 +360,12 @@ public class RbmNetworkGenerator {
 			// hence we just do one single iteration
 			writer.print("max_iter=>1");
 		} else if (networkGenerationRequirements.requestType == RequestType.ComputeFullNetwork) {
-			writer.print("max_iter=>" + constraints.getMaxIteration());
+			writer.print("max_iter=>" + maxIterations);
 		} else {
 			throw new RuntimeException("internal error: invocation of BioNetGen called unexpectly");
 		}
 		writer.print(",");
-		writer.print("max_agg=>" + constraints.getMaxMoleculesPerSpecies());
+		writer.print("max_agg=>" + maxMoleculesPerSpecies);
 		StringBuilder max_stoich = new StringBuilder(); 
 		for (MolecularType mt : molList) {
 			Integer stoich = constraints.getMaxStoichiometry(mt);
