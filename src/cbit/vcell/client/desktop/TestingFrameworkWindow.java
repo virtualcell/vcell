@@ -20,6 +20,7 @@ import org.vcell.util.UserCancelException;
 
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.PopupGenerator;
+@SuppressWarnings("serial")
 public class TestingFrameworkWindow extends LWTopFrame implements TopLevelWindow {
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JPanel ivjJFrameContentPane = null;
@@ -34,9 +35,9 @@ public class TestingFrameworkWindow extends LWTopFrame implements TopLevelWindow
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == TestingFrameworkWindow.this.getAddTSMenuItem()) 
+			if (e.getSource() == TestingFrameworkWindow.this.getAddTSMenuItem())
 				connEtoC1(e);
-			if (e.getSource() == TestingFrameworkWindow.this.getExitMenuItem()) 
+			if (e.getSource() == TestingFrameworkWindow.this.getExitMenuItem())
 				connEtoC3(e);
 		};
 	};
@@ -53,7 +54,7 @@ public TestingFrameworkWindow() {
 
 @Override
 public String menuDescription() {
-	return menuDesc; 
+	return menuDesc;
 }
 
 
