@@ -9,6 +9,8 @@
  */
 
 package org.vcell.util.document;
+import java.util.Arrays;
+
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
@@ -22,7 +24,7 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	private static final String VCellTestAccountName = "vcelltestaccount";
 
 	public static final String[] publishers = {"frm","schaff","ion"};
-	
+
 	public static User tempUser = new User("user",new KeyValue("123"));
 	/**
  * User constructor comment.
@@ -34,51 +36,27 @@ public User(String userid, KeyValue key) {
 
 
 /**
- * This method was created in VisualAge.
- * @return boolean
- * @param obj java.lang.Object
+ * @return {@link #equals(Object)}
  */
 public boolean compareEqual(Matchable obj) {
+	return equals(obj);
+}
+
+/**
+ * @return true if {@link #key}s match
+ */
+public boolean equals(Object obj) {
 	if (obj == this){
 		return true;
 	}
-	
+
 	User user = null;
 	if (!(obj instanceof User)){
 		return false;
 	}
 	user = (User)obj;
 
-	//
-	// since this is immutable, just check key
-	//
-//	if (!user.getName().equals(getName())){
-//		return false;
-//	}
-
-	if (!org.vcell.util.Compare.isEqual(key,user.key)){
-		return false;
-	}
-	
-	return true;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/24/01 5:28:12 PM)
- * @return boolean
- * @param object java.lang.Object
- */
-public boolean equals(Object object) {
-	if (object instanceof User){
-		User user = (User)object;
-		if (!getName().equals(user.getName())){
-			return false;
-		}
-		return true;
-	}
-	return false;
+	return org.vcell.util.Compare.isEqual(key,user.key);
 }
 
 
@@ -109,48 +87,29 @@ public int hashCode() {
 	return getName().hashCode();
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public boolean isAlphaTester() {
-	final String[] alphaTesters = new String[] { "schaff","ion","les","frm", "boris", "dgross" };
-	for (int i = 0; i < alphaTesters.length; i++){
-		if (getName().equals(alphaTesters[i])){
-			return true;
-		}
-	}
-	return false;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/23/2006 8:33:53 AM)
  * @return boolean
  */
 public boolean isPublisher() {
-	for(int i=0;i<publishers.length;i+= 1){
-		if(userName.equals(publishers[i])){
-			return true;
-		}
-	}
-
-	return false;
+	return Arrays.asList(publishers).contains(userName);
 }
 
 
 /**
- * This method was created in VisualAge.
- * @return java.lang.String
+ * @return true if this is test account
  */
 public boolean isTestAccount() {
-	if (getName().equals(VCellTestAccountName)) {
-		return true;
-	} else {
-		return false;
-	}
+	return isTestAccount(getName( ));
+}
+
+/**
+ * @param accountName non null
+ * @return true if accountName is test account
+ */
+public static boolean isTestAccount(String accountName) {
+	return accountName.equals(VCellTestAccountName);
 }
 
 
