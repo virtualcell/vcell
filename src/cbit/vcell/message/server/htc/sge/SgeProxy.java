@@ -106,29 +106,6 @@ denied: job "6894" does not exist
 	}
 
 	/**
-	 * build numerics command, adding MPICH command if necessary
-	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
-	 * @param cmds command set
-	 * @return new String
-	 */
-	private final String buildExeCommand(int ncpus,String cmds[]) {
-		if (ncpus == 1) {
-			return CommandOutput.concatCommandStrings(cmds);
-		}
-		final char SPACE = ' ';
-		StringBuilder sb = new StringBuilder( );
-		sb.append(MPI_HOME);
-		sb.append("/bin/mpiexec -np ");
-		sb.append(ncpus);
-		sb.append(SPACE);
-		for (String s: cmds) {
-			sb.append(s);
-			sb.append(SPACE);
-		}
-		return sb.toString().trim( );
-	}
-
-	/**
 	 * adding MPICH command if necessary
 	 * @param ncpus if != 1, {@link #MPI_HOME} command prepended
 	 * @param cmds command set
@@ -190,6 +167,7 @@ denied: job "6894" does not exist
 	private static final String PSYM_JNAME = "JB_name";
 	private static final String PSYM_JNUMBER = "JB_job_number";
 	private static final String PSYM_STATE = "state";
+	private static final String PSYM_JINFO = "job_info";
 
 	/**
 	 * @param xmlString string to parse (qstat output
@@ -197,6 +175,9 @@ denied: job "6894" does not exist
 	 * @return list of jobs, except ones already marked for deletion
 	 */
 	private List<HtcJobID> parseXML(String xmlString, String prefix) {
+		if (LG.isTraceEnabled()) {
+			LG.trace(xmlString);
+		}
 		try {
 		statusMap.clear();
 		List<HtcJobID>  jobList = new ArrayList<>();
@@ -205,31 +186,18 @@ denied: job "6894" does not exist
 		Element qElement = rootElement.getChild(PSYM_QINFO);
 		for (Element qList : XmlUtil.getChildren(qElement,PSYM_QLIST,Element.class) ) {
 			//String name = qList.getChildText(PSYM_NAME);
-			for (Element ji : XmlUtil.getChildren(qList, PSYM_JLIST, Element.class)) {
-				String jname = ji.getChildText(PSYM_JNAME);
-				if (prefix != null  && !jname.startsWith(prefix)) {
-					continue;
-				}
-				String jn = ji.getChildText(PSYM_JNUMBER);
-				String state = ji.getAttributeValue(PSYM_STATE);
-				Element stateCodeE = ji.getChild(PSYM_STATE);
-				String stateCode = stateCodeE.getValue();
-
-				SgeJobID id = new SgeJobID(jn);
-				HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
-				SGEJobStatus stat = SGEJobStatus.parseStatus(state,stateCode);
-				if (LG.isDebugEnabled()) {
-					LG.debug("job " + jname + ' ' + state + ", " + stateCode + stat);
-				}
-				switch (stat) {
-				case RUNNING:
-				case PENDING:
-				case EXITED:
-					HtcJobStatus status = new HtcJobStatus(stat);
-					statusMap.put(id, new JobInfoAndStatus(hji, status));
+			for (Element jlist : XmlUtil.getChildren(qList, PSYM_JLIST, Element.class)) {
+				JobInfoAndStatus jias = parseJobInfo(jlist,prefix);
+				if (jias != null) {
+					HtcJobID id = jias.info.getHtcJobID();
+					statusMap.put(id, jias);
 					jobList.add(id);
-				case DELETING:
 				}
+			}
+		}
+		for (Element ji : XmlUtil.getChildren(rootElement,PSYM_JINFO,Element.class) ) {
+			for (Element jlist : XmlUtil.getChildren(ji, PSYM_JLIST, Element.class)) {
+				parseJobInfo(jlist,prefix); //logs job submit errors to server log
 			}
 		}
 		return jobList;
@@ -237,6 +205,35 @@ denied: job "6894" does not exist
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	private JobInfoAndStatus parseJobInfo(Element ji, String prefix) {
+		String jname = ji.getChildText(PSYM_JNAME);
+		if (prefix != null  && !jname.startsWith(prefix)) {
+			return null;
+		}
+		String jn = ji.getChildText(PSYM_JNUMBER);
+		String state = ji.getAttributeValue(PSYM_STATE);
+		Element stateCodeE = ji.getChild(PSYM_STATE);
+		String stateCode = stateCodeE.getValue();
+
+		SgeJobID id = new SgeJobID(jn);
+		HtcJobInfo hji = new HtcJobInfo(id,true,jname,null,null);
+		SGEJobStatus stat = SGEJobStatus.parseStatus(state,stateCode);
+		if (LG.isDebugEnabled()) {
+			LG.debug("job " + jname + ' ' + state + ", " + stateCode + stat);
+		}
+		switch (stat) {
+		case RUNNING:
+		case PENDING:
+		case EXITED:
+			HtcJobStatus status = new HtcJobStatus(stat);
+			return new JobInfoAndStatus(hji, status);
+		case ERROR:
+			LG.error("EXCEPTION-ERROR: Job "+ id.getJobNumber() + " Error " + XmlUtil.xmlToString(ji) );
+		case DELETING:
+		}
+		return null;
 	}
 
 	/**
@@ -356,9 +353,13 @@ denied: job "6894" does not exist
 			writeUnixStyleTextFile(tempFile, text);
 
 			// move submission file to final location (either locally or remotely).
-			System.out.println("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+			if (LG.isDebugEnabled()) {
+				LG.debug("<<<SUBMISSION FILE>>> ... moving local file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file+"'");
+			}
 			commandService.pushFile(tempFile,sub_file);
-			System.out.println("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+			if (LG.isDebugEnabled()) {
+				LG.debug("<<<SUBMISSION FILE START>>>\n"+FileUtils.readFileToString(tempFile)+"\n<<<SUBMISSION FILE END>>>\n");
+			}
 			tempFile.delete();
 		} catch (IOException ex) {
 			ex.printStackTrace(System.out);
@@ -372,12 +373,25 @@ denied: job "6894" does not exist
 		return new SgeJobID(jobid);
 	}
 
+	/**
+	 * package job info and status
+	 */
 	private static class JobInfoAndStatus {
 		final HtcJobInfo info;
 		final HtcJobStatus status;
+		/**
+		 * @param info not null
+		 * @param status not null
+		 */
 		JobInfoAndStatus(HtcJobInfo info, HtcJobStatus status) {
+			Objects.requireNonNull(info);
+			Objects.requireNonNull(status);
 			this.info = info;
 			this.status = status;
+		}
+		@Override
+		public String toString() {
+			return info.toString() + ": "  + status.toString();
 		}
 
 	}

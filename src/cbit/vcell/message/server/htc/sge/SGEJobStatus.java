@@ -6,11 +6,15 @@ public enum SGEJobStatus {
 	RUNNING("running", null),
 	EXITED("", null),
 	PENDING("pending", null),
-	DELETING("","dr");
-	
+	DELETING("","dr"),
+	/**
+	 * rare fatal error trying to start job; possible cluster configuration error
+	 */
+	ERROR("","Eqw");
+
 	private final static SGEJobStatus[] STATE_CODED;
 	static {
-		STATE_CODED = new SGEJobStatus[]{ DELETING };
+		STATE_CODED = new SGEJobStatus[]{ DELETING, ERROR };
 	}
 
 	public boolean isRunning() {
@@ -20,15 +24,15 @@ public enum SGEJobStatus {
 	public boolean isExiting() {
 		return this == EXITED;
 	}
-	
+
 	/**
 	 *  convert String to enum
 	 * @param status string to match
-	 * @param state state code to match 
+	 * @param state state code to match
 	 * @return matching enum value
 	 * @throws IllegalArgumentException if status doesn't match known states
 	 */
-	
+
 	public static SGEJobStatus parseStatus(String status, String state) {
 		//first check state codes, more informative for specific states
 		for (SGEJobStatus js : STATE_CODED) {
@@ -36,7 +40,7 @@ public enum SGEJobStatus {
 				return js;
 			}
 		}
-		
+
 		for (SGEJobStatus js : values( )) {
 			if (js.statusString.equals(status)) {
 				return js;
@@ -44,7 +48,7 @@ public enum SGEJobStatus {
 		}
 		throw new IllegalArgumentException("Unknown status string " + status);
 	}
-	
+
 	private SGEJobStatus(String statusString, String stateCode) {
 		Objects.requireNonNull(statusString);
 		this.statusString = statusString;
