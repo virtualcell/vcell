@@ -54,10 +54,13 @@ public class TaskCallbackProcessor {
 		try {
 		switch(status) {
 		case Clean:			// clean console, display task initialization message
+			System.out.println("Clean");
 			previousIterationSpecies = 0;
 			currentIterationSpecies = 0;
 			needAdjustIterations = false;
 			needAdjustMaxMolecules = false;
+			sc.setInsufficientIterations(false);
+			sc.setInsufficientMaxMolecules(false);
 			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
@@ -68,11 +71,23 @@ public class TaskCallbackProcessor {
 			}
 			break;
 		case TaskStart:			// display task initialization message
+			System.out.println("Task started");
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
 			break;
+		case ValidateConstraints:
+			if(sc.isValidTestConstraints()) {
+				string = "Updating the network constraints with the test values";
+				System.out.println(string);
+				sc.getNetworkConstraints().updateConstraintsFromTest();
+				tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
+				consoleNotificationList.add(tcm);
+				sc.firePropertyChange("appendToConsole", "", tcm);
+			}
+			break;
 		case TaskEnd:
+			System.out.println("Task ended");
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
@@ -82,6 +97,8 @@ public class TaskCallbackProcessor {
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
 				sc.setInsufficientIterations(true);
+			} else {
+				sc.setInsufficientIterations(false);
 			}
 			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
 				if(needAdjustMaxMolecules) {
@@ -90,10 +107,13 @@ public class TaskCallbackProcessor {
 					consoleNotificationList.add(tcm);
 					sc.firePropertyChange("appendToConsole", "", tcm);
 					sc.setInsufficientMaxMolecules(true);
+				} else {
+					sc.setInsufficientMaxMolecules(false);
 				}
 			}
 			break;
 		case TaskStopped:		// by user
+			System.out.println("Task stopped by user");
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);

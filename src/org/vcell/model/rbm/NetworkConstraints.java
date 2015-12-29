@@ -19,6 +19,9 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	private int maxIteration = 3;
 	private int maxMoleculesPerSpecies = 10;
 	private Map<MolecularType, Integer> maxStoichiometryMap = new HashMap<MolecularType, Integer>();
+	
+	private transient int testMaxIteration = maxIteration;
+	private transient int testMaxMoleculesPerSpecies = maxMoleculesPerSpecies;
 		
 	public NetworkConstraints() {		
 	}
@@ -26,17 +29,27 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		this();
 		this.maxIteration = that.maxIteration;
 		this.maxMoleculesPerSpecies = that.maxMoleculesPerSpecies;
+		this.testMaxIteration = that.testMaxIteration;
+		this.testMaxMoleculesPerSpecies = that.testMaxMoleculesPerSpecies;
 		for (Map.Entry<MolecularType, Integer> entry : that.maxStoichiometryMap.entrySet()) {
 			MolecularType key = entry.getKey();		// use the same instances of the molecular type 
 			int value = entry.getValue();
 			this.maxStoichiometryMap.put(key, value);
 		}
 	}
+	
+	public void setTestConstraints(int testMaxIteration, int testMaxMoleculesPerSpecies) {
+		this.testMaxIteration = testMaxIteration;
+		this.testMaxMoleculesPerSpecies = testMaxMoleculesPerSpecies;
+	}
+	public void updateConstraintsFromTest() {
+		setMaxIteration(testMaxIteration);
+		setMaxMoleculesPerSpecies(testMaxMoleculesPerSpecies);
+	}
 
 	public final int getMaxIteration() {
 		return maxIteration;
 	}
-
 	public final void setMaxIteration(int newValue) {
 		int oldValue = maxIteration;
 		this.maxIteration = newValue;
@@ -46,7 +59,6 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 	public final int getMaxMoleculesPerSpecies() {
 		return maxMoleculesPerSpecies;
 	}
-
 	public final void setMaxMoleculesPerSpecies(int newValue) {
 		int oldValue = maxMoleculesPerSpecies;
 		this.maxMoleculesPerSpecies = newValue;

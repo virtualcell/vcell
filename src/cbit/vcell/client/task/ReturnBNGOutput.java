@@ -46,6 +46,8 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		String s = "Total run time: " + t + " s.";
 		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEnd, s);
 		callback.setNewCallbackMessage(tcm);
+		tcm = new TaskCallbackMessage(TaskCallbackStatus.ValidateConstraints, s);
+		callback.setNewCallbackMessage(tcm);
 	}
 
 //	BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
