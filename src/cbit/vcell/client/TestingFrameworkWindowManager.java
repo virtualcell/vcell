@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
@@ -39,6 +40,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.apache.log4j.Logger;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -49,6 +51,8 @@ import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.VCellThreadChecker;
+import org.vcell.util.VCellThreadChecker.SuppressRemote;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -66,6 +70,7 @@ import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
+import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
@@ -328,13 +333,13 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 
 						if (newBioModel==null){
 							pp.setMessage("Saving BM "+testCase.getVersion().getName());
-							
+
 							//
-							// some older models have membrane voltage variable names which are not unique 
+							// some older models have membrane voltage variable names which are not unique
 							// (e.g. membranes 'pm' and 'nm' both have membrane voltage variables named 'Voltage_Membrane0')
 							//
 							// if this is the case, we will try to repair the conflict (for math testing purposes only) by renaming the voltage variables to their default values.
-							// 
+							//
 							// Ordinarily, the conflict will be identified as an "Error" issue and the user will be prompted to repair before saving or math generation.
 							//
 							bioModel.refreshDependencies();
@@ -748,7 +753,7 @@ public void compare(final TestCriteriaNew testCriteria,final SimulationInfo user
 			addExportListener(viewer);
 
 			VCDataIdentifier vcDataIdentifier = (MergedDataInfo)hashTable.get(KEY_MERGEDDATAINFO);
-			ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+			ChildWindowManager childWindowManager =TFWFinder.findChildWindowManager(getComponent());
 			ChildWindow childWindow = childWindowManager.addChildWindow(viewer, vcDataIdentifier, "Comparing ... "+vcDataIdentifier.getID());
 //			childWindow.setSize(450, 450);
 			childWindow.setIsCenteredOnParent();
@@ -2280,7 +2285,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						}
 						getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.regressionModelTSuiteID:null),(xrefData != null?xrefData.regressionModelTCaseID:null),(xrefData != null?xrefData.regressionModelTCritID:null));
 					}
-					ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+					ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
 					if (childWindow!=null){
 						childWindow.show();
 					}
@@ -2318,7 +2323,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				if(failureS.length() > 0 || openCount == 0){
 					PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed to open some models\n"+failureS+(openCount == 0?"Selection(s) had no model(s)":""));
 				}
-				ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+				ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
 				if (childWindow!=null){
 					childWindow.show();
 				}
@@ -2377,7 +2382,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								}
 								break;
 							}catch(UserCancelException e){
-								ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+								ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
 								if (childWindow!=null){
 									childWindow.show();
 								}
@@ -2405,7 +2410,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								rows,
 								null);
 						}catch(UserCancelException e){
-							ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+							ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
 							if (childWindow!=null){
 								childWindow.show();
 							}
@@ -2453,7 +2458,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "Failed Changing Error limits for selected "+xrefDataSourceFinal.simName+"\n"+e.getMessage());
 							return;
 						}
-						ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
+						ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).getChildWindowFromContentPane(scrollPaneContentPane);
 						if (childWindow!=null){
 							childWindow.close();
 						}
@@ -2536,7 +2541,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				" \""+(xrefDataSource.isBioModel?xrefDataSource.bmName:xrefDataSource.mmName)+
 				"\"  ::  "+(xrefDataSource.isBioModel?"app=\""+xrefDataSource.bmAppName+"\"  ::  sim=\""+xrefDataSource.simName+"\"":"sim=\""+xrefDataSource.simName+"\"");
 
-		ChildWindow childWindow = ChildWindowManager.findChildWindowManager(getComponent()).addChildWindow(scrollPaneContentPane,scrollPaneContentPane,title);
+		ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).addChildWindow(scrollPaneContentPane,scrollPaneContentPane,title);
 //		childWindow.setSize(600,400);
 		childWindow.setIsCenteredOnParent();
 		childWindow.setResizable(true);
@@ -3145,7 +3150,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 	VCDataIdentifier vcdID = new VCSimulationDataIdentifier(testCriteria.getSimInfo().getAuthoritativeVCSimulationIdentifier(), 0);
 
 	// get the data manager and wire it up
-	try {
+	try (SuppressRemote sr = new VCellThreadChecker.SuppressRemote()){ //okay to call remote from Swing for testing
 		Simulation sim = ((ClientDocumentManager)getRequestManager().getDocumentManager()).getSimulation(testCriteria.getSimInfo());
 
 		DataViewerController dataViewerCtr = getRequestManager().getDataViewerController(null,sim, 0);
@@ -3157,7 +3162,7 @@ public void viewResults(TestCriteriaNew testCriteria) {
 
 		// create the simCompareWindow - this is just a lightweight window to display the simResults.
 		// It was created originally to compare 2 sims, it can also be used here instead of creating the more heavy-weight SimWindow.
-		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(getComponent());
+		ChildWindowManager childWindowManager =TFWFinder.findChildWindowManager(getComponent());
 		ChildWindow childWindow = childWindowManager.addChildWindow(viewer, vcdID, "Comparing ... "+vcdID, true);
 		childWindow.setIsCenteredOnParent();
 		childWindow.pack();
@@ -3171,6 +3176,24 @@ public void viewResults(TestCriteriaNew testCriteria) {
 
 public User getUser() {
 	return getRequestManager().getDocumentManager().getUser();
+}
+
+/**
+ * helper class to find {@link ChildWindowManager} from {@link TestingFrameworkWindow} child
+ */
+private static class TFWFinder {
+
+	/**
+	 * @param component child of {@link TestingFrameworkWindow} e.g. {@link TestingFrameworkWindowPanel}
+	 * @return ChildWindowManager
+	 * @throws NullPointerException if null or not child of {@link TestingFrameworkWindow}
+	 */
+	public static ChildWindowManager findChildWindowManager(Component component) {
+		Objects.requireNonNull(component);
+		TestingFrameworkWindow tfw = LWNamespace.findOwnerOfType(TestingFrameworkWindow.class, component);
+		return tfw.getChildWindowManager();
+	}
+
 }
 
 
