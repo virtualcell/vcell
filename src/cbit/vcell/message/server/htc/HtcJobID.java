@@ -2,12 +2,12 @@ package cbit.vcell.message.server.htc;
 
 import java.io.Serializable;
 
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.message.server.htc.pbs.PbsJobID;
 import cbit.vcell.message.server.htc.sge.SgeJobID;
 
+@SuppressWarnings("serial")
 public abstract class HtcJobID implements Serializable, Matchable {
 
 	public enum BatchSystemType {
@@ -20,11 +20,10 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	//   or
 	// jobID = 1200725
 	//
-	private BatchSystemType batchSystemType = null;
 	private long jobNumber;  // required (e.g. 1200725)
 	private String server;     // optional (e.g. "master.cm.cluster")
 
-	protected HtcJobID(String jobID, BatchSystemType batchSystemType){
+	protected HtcJobID(String jobID){
 		if (jobID.contains(".")){
 			int indexOfFirstPeriod = jobID.indexOf(".");
 			this.jobNumber = Long.parseLong(jobID.substring(0,indexOfFirstPeriod));
@@ -33,10 +32,10 @@ public abstract class HtcJobID implements Serializable, Matchable {
 			this.jobNumber = Long.parseLong(jobID);
 			this.server = null;
 		}
-		this.batchSystemType = batchSystemType;
 	}
 
 	public String toDatabase(){
+		BatchSystemType batchSystemType = getBatchSystemType();
 		if (server!=null){
 			return batchSystemType.name()+":"+this.jobNumber+"."+server;
 		}else{
@@ -45,7 +44,7 @@ public abstract class HtcJobID implements Serializable, Matchable {
 	}
 
 	private String toDatabaseShort(){
-		return batchSystemType.name()+":"+this.jobNumber;
+		return getBatchSystemType( ).name()+":"+this.jobNumber;
 	}
 
 	public static HtcJobID fromDatabase(String databaseString){
@@ -72,42 +71,29 @@ public abstract class HtcJobID implements Serializable, Matchable {
 		return this.server;
 	}
 
-	public BatchSystemType getBatchSystemType(){
-		return this.batchSystemType;
-	}
+	public abstract BatchSystemType getBatchSystemType( );
 
 	/**
-	 * broken
-	 */
-	public boolean compareEqual(Matchable obj) {
-		if (obj instanceof HtcJobID){
-			HtcJobID other = (HtcJobID)obj;
-			if (jobNumber != jobNumber){ //error: comparing identical expressions
-				return false;
-			}
-			if (server!=null && other.server!=null){
-				if (!Compare.isEqual(server,other.server)){
-					return false;
-				}
-			}
-			if (batchSystemType != other.batchSystemType){
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * broken
+	 * compares {@link #jobNumber}, {@link #batchSystemType} and, if both not null, {@link #server}
+	 * @return true if equal values
 	 */
 	@Override
-	public boolean equals(Object obj){
-		if (obj instanceof HtcJobID){
-			HtcJobID other = (HtcJobID)obj;
-			return compareEqual(other);
+	public boolean compareEqual(Matchable obj) {
+		return equals(obj);
+	}
+
+	/**
+	 * compares {@link #jobNumber} and, if both not null, {@link #server}
+	 * @return true if equal values
+	 */
+	protected boolean sameNumberAndServer(HtcJobID other)  {
+		if (jobNumber != other.jobNumber) {
+			return false;
 		}
-		return false;
+		if (server==null || other.server==null){
+			return true;
+		}
+		return server.equals(other.server);
 	}
 
 	@Override

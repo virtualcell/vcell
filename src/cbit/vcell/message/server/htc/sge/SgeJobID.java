@@ -6,10 +6,18 @@ import cbit.vcell.message.server.htc.HtcJobID;
 public class SgeJobID extends HtcJobID {
 
 	public SgeJobID(String jobID){
-		super(jobID,BatchSystemType.SGE);
+		super(jobID);
 	}
 
-	public long getSgeJobNumber() {
-		return getJobNumber();
+	@Override
+	public BatchSystemType getBatchSystemType() {
+		return BatchSystemType.SGE;
+	}
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof SgeJobID) {
+			return sameNumberAndServer((HtcJobID) other);
+		}
+		return false;
 	}
 }
