@@ -13,39 +13,47 @@ package org.vcell.util;
 import javax.swing.SwingUtilities;
 
 public class VCellThreadChecker {
-	
+
 	private static final ThreadLocal<Integer> cpuSuppressed = new ThreadLocal<Integer>() {
 		@Override
 		protected Integer initialValue() {
-			return 0; 
+			return 0;
 		}
 	};
-	
+
+	private static final ThreadLocal<Integer> remoteSuppressed = new ThreadLocal<Integer>() {
+		@Override
+		protected Integer initialValue() {
+			return 0;
+		}
+	};
+
+
 	public interface GUIThreadChecker {
 		public boolean isEventDispatchThread();
 	}
-	
+
 	private static GUIThreadChecker guiThreadChecker = new GUIThreadChecker() {
-		
+
 		public boolean isEventDispatchThread() {
 			return SwingUtilities.isEventDispatchThread();
 		}
 	};
-	
+
 	public static void setGUIThreadChecker(GUIThreadChecker argGuiThreadChecker){
 		guiThreadChecker = argGuiThreadChecker;
 	}
-	
+
 	public static void checkRemoteInvocation() {
 		if (guiThreadChecker == null){
 			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
 			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread()) {
+		}else if (guiThreadChecker.isEventDispatchThread() && remoteSuppressed.get( ) == 0) {
 			System.out.println("!!!!!!!!!!!!!! --calling remote method from swing thread-----");
 			Thread.dumpStack();
 		}
 	}
-	
+
 	public static void checkSwingInvocation() {
 		if (guiThreadChecker == null){
 			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
@@ -55,7 +63,7 @@ public class VCellThreadChecker {
 			Thread.dumpStack();
 		}
 	}
-	
+
 	public static void checkCpuIntensiveInvocation() {
 		if (guiThreadChecker == null){
 			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
@@ -65,24 +73,37 @@ public class VCellThreadChecker {
 			Thread.dumpStack();
 		}
 	}
-	
+
 	/**
 	 * try-with-resources compatible object to increment / decrement suppression count
 	 * e.g. try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 	 *  ...
 	 *  }
 	 */
-	public static class SuppressIntensive implements AutoCloseable {
-		
+	public static class SuppressIntensive extends Suppressor {
 		public SuppressIntensive() {
-			int oneMore = cpuSuppressed.get( ) + 1;
-			cpuSuppressed.set(oneMore);
+			super(cpuSuppressed);
 		}
+	}
+	public static class SuppressRemote extends Suppressor {
+		public SuppressRemote() {
+			super(remoteSuppressed);
+		}
+	}
+	private static class Suppressor implements AutoCloseable {
+		private final ThreadLocal<Integer> counter;
+
+		protected Suppressor(ThreadLocal<Integer> counter) {
+			this.counter = counter;
+			int oneMore = counter.get( ) + 1;
+			counter.set(oneMore);
+		}
+
 
 		@Override
 		public void close() {
-			int oneLess = cpuSuppressed.get( ) - 1;
-			cpuSuppressed.set(oneLess);
+			int oneLess = counter.get( ) - 1;
+			counter.set(oneLess);
 		}
 	}
 }
