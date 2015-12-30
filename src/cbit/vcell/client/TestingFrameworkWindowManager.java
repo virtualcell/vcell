@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -42,6 +43,10 @@ import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.Severity;
+import org.vcell.util.IssueContext;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
@@ -94,7 +99,9 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;
@@ -321,6 +328,39 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 
 						if (newBioModel==null){
 							pp.setMessage("Saving BM "+testCase.getVersion().getName());
+							
+							//
+							// some older models have membrane voltage variable names which are not unique 
+							// (e.g. membranes 'pm' and 'nm' both have membrane voltage variables named 'Voltage_Membrane0')
+							//
+							// if this is the case, we will try to repair the conflict (for math testing purposes only) by renaming the voltage variables to their default values.
+							// 
+							// Ordinarily, the conflict will be identified as an "Error" issue and the user will be prompted to repair before saving or math generation.
+							//
+							bioModel.refreshDependencies();
+							boolean bFoundIdentifierConflictUponLoading = hasDuplicateIdentifiers(bioModel);
+							if (bFoundIdentifierConflictUponLoading){
+								//
+								// look for two MembraneVoltage instances with same variable name, rename all
+								//
+								HashSet<String> membraneVoltageVarNames = new HashSet<String>();
+								ArrayList<MembraneVoltage> membraneVoltageVars = new ArrayList<MembraneVoltage>();
+								for (Structure struct : bioModel.getModel().getStructures()){
+									if (struct instanceof Membrane){
+										MembraneVoltage membraneVoltage = ((Membrane)struct).getMembraneVoltage();
+										if (membraneVoltage != null){
+											membraneVoltageVars.add(membraneVoltage);
+											membraneVoltageVarNames.add(membraneVoltage.getName());
+										}
+									}
+								}
+								if (membraneVoltageVars.size() != membraneVoltageVarNames.size()){
+									// rename them all to the default names
+									for (MembraneVoltage memVoltage : membraneVoltageVars){
+										memVoltage.setName(Membrane.getDefaultMembraneVoltageName(memVoltage.getMembrane().getName()));
+									}
+								}
+							}
 							SimulationContext[] simContexts = bioModel.getSimulationContexts();
 							for (int j = 0; j < simContexts.length; j++){
 								simContexts[j].clearVersion();
@@ -540,6 +580,21 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 	}
 	return null;
 
+}
+
+
+private boolean hasDuplicateIdentifiers(BioModel bioModel) {
+	ArrayList<Issue> issueList = new ArrayList<Issue>();
+	IssueContext issueContext = new IssueContext();
+	bioModel.gatherIssues(issueContext, issueList);
+	boolean bFoundIdentifierConflictUponLoading = false;
+	for (Issue issue : issueList){
+		if (issue.getCategory() == IssueCategory.Identifiers && issue.getSource() == bioModel.getModel() && issue.getSeverity() == Severity.ERROR){
+			bFoundIdentifierConflictUponLoading = true;
+			break;
+		}
+	}
+	return bFoundIdentifierConflictUponLoading;
 }
 
 

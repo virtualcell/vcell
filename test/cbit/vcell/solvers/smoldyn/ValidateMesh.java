@@ -1,19 +1,16 @@
 package cbit.vcell.solvers.smoldyn;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.vcell.util.VCAssert;
 
-import cbit.vcell.solvers.mb.PointIndex;
+import cbit.vcell.solvers.mb.PointIndexTreeAndList;
 import cbit.vcell.solvers.mb.Vect3Didx;
 
 public class ValidateMesh {
@@ -28,7 +25,7 @@ public class ValidateMesh {
 		}
 	}
 
-	private PointIndex theIndex;
+	private PointIndexTreeAndList theIndex;
 	private Map<String,TrianglePanel> panels = new HashMap<>();
 	/**
 	 * super duper paranoia? Verify exact same strings used
@@ -49,7 +46,7 @@ public class ValidateMesh {
 	//private int tipJoin = 0;
 
 	public ValidateMesh() {
-		theIndex  = new PointIndex();
+		theIndex  = new PointIndexTreeAndList();
 	}
 
 	public void process(String name) throws IOException {
