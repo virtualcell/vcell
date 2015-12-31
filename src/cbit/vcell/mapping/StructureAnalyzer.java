@@ -450,8 +450,6 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		//
 		ArrayList<Expression> el = new ArrayList<Expression> ();
 		ArrayList<Expression> cel = new ArrayList<Expression> ();
-		Expression exp = null;
-		Expression constantExp = null;
 		String     constantName = null;
 		SpeciesContextMapping firstSCM = null;
 		boolean bFirst = true;
@@ -470,7 +468,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					//
 					SpeciesContext firstSC = firstSCM.getSpeciesContext();
 					constantName = DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_PREFIX+firstSC.getName()+DiffEquMathMapping.PARAMETER_MASS_CONSERVATION_SUFFIX;
-					exp = new Expression(constantName);
+					Expression exp = new Expression(constantName);
 					el.add(exp);
 					//
 					// first term of K expression
@@ -483,7 +481,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(new Expression(coeff),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
+					Expression constantExp = Expression.mult(new Expression(coeff),firstSM.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																new Expression(scSTE, argMathMapping.getNameScope()));
 					cel.add(constantExp);
 					bFirst = false;
@@ -497,7 +495,6 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContextSpec scs = argSimContext.getReactionContext().getSpeciesContextSpec(sc);
 					Expression negate = Expression.negate(Expression.mult(new Expression(coeff),
 							sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),new Expression(sc, argMathMapping.getNameScope())));
-					exp = Expression.add(exp, negate);
 					el.add(negate);
 					//
 					// add term to K expression
@@ -510,7 +507,6 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}
 					Expression mult = Expression.mult(new Expression(coeff),sm.getNormalizedConcentrationCorrection(argSimContext,argMathMapping),
 																			new Expression(scSTE, argMathMapping.getNameScope()));
-					constantExp = Expression.add(constantExp, mult);
 					cel.add(mult);
 				}
 			}

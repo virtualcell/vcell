@@ -655,15 +655,12 @@ public class NetworkTransformer implements SimContextTransformer {
 				System.out.println("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
-			Expression exp = null;
+			ArrayList<Expression> terms = new ArrayList<Expression>();
 			for (int j=0; j<o.getListofSpecies().length; j++){
 				Expression term = Expression.mult(new Expression(o.getSpeciesMultiplicity()[j]),new Expression(speciesMap.get(o.getListofSpecies()[j].getNetworkFileIndex())));
-				if (exp == null){
-					exp = term;
-				}else{
-					exp = Expression.add(exp,term);
-				}
+				terms.add(term);
 			}
+			Expression exp = Expression.add(terms.toArray(new Expression[terms.size()]));
 			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
 			RbmObservable originalObservable = model.getRbmModelContainer().getObservable(o.getObservableGroupName());
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
