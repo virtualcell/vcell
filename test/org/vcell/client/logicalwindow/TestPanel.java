@@ -50,11 +50,21 @@ public class TestPanel extends JPanel {
 		add(btnChoose);
 		btnChoose.addActionListener( a -> { chooseFile( ); } ); 
 		
+		JButton btnModelessWarning = new JButton("Warning");
+		add(btnModelessWarning);
+		btnModelessWarning.addActionListener( a -> { warning( ); } ); 
+		
 		JButton btnExit = new JButton("Exit App");
 		panel.add(btnExit);
 		btnExit.addActionListener( a ->  System.exit(0) );
 	}
 	
+
+	private void warning() {
+		LWModelessWarning lwm = new LWModelessWarning(hwindow,"Danger");
+		lwm.setVisible(true);
+	}
+
 
 	public void setHwindow(ProofOfConceptContainer hwindow) {
 		this.hwindow = hwindow;

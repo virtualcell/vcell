@@ -9,17 +9,18 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
- * Replacement for {@link JOptionPane#createDialog(java.awt.Component, String)}
+ * Modeless JOptionPane 
  */
 @SuppressWarnings("serial")
-public abstract class LWOptionPaneDialog extends LWDialog {
-
+public abstract class LWOptionPaneWindow extends LWChildFrame {
+	final JOptionPane optionPane;
+	
 	/**
 	 * @param parent preferably not null but works ...
 	 * @param title null is okay
 	 * @param optionPane not null
 	 */
-	public LWOptionPaneDialog(LWContainerHandle parent, String title, JOptionPane optionPane) {
+	public LWOptionPaneWindow(LWContainerHandle parent, String title, JOptionPane optionPane) {
 		super(parent, title);
 		Objects.requireNonNull(optionPane);
 		JPanel contentPane = new JPanel(new BorderLayout());
@@ -31,6 +32,21 @@ public abstract class LWOptionPaneDialog extends LWDialog {
 		setContentPane(contentPane);
 		pack();
 		new OptionPaneHandler(this,optionPane);
+		this.optionPane = optionPane;
 	}
+	
+	/**
+	 * update Message 
+	 * @param msg non null
+	 */
+	public void setMessage(String msg)  {
+		Objects.requireNonNull(msg);
+		optionPane.setMessage(msg);
+	}
+	
 
+	@Override
+	public String menuDescription() {
+		return getTitle( );
+	}
 }

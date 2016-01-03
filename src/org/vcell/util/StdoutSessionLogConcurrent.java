@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 
 import cbit.vcell.message.server.LifeSignThread;
+import cbit.vcell.resource.VCellExecutorService;
 
 /**
  * use Java concurrent capability to make {@link SessionLog} methods as
@@ -80,7 +81,8 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		psFacade = null;
 		writerThread.start();
 		Runtime.getRuntime().addShutdownHook(new EndOfLife());
-		new TimeFlushLifeSignThread(lifeSignInfo).start( );
+		VCellExecutorService.get( ).scheduleAtFixedRate(new TimeFlushLifeSign(lifeSignInfo),lifeSignInfo.timeInterval,lifeSignInfo.timeInterval,
+				lifeSignInfo.timeUnit);
 	}
 	
 	/**
@@ -177,14 +179,12 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	 * combine functionality of {@link cbit.vcell.message.server.LifeSignThread} with
 	 * flushing queue based on time
 	 */
-	private class TimeFlushLifeSignThread extends Thread {
+	private class TimeFlushLifeSign implements Runnable {
 		final LifeSignInfo lsi;
 
-		TimeFlushLifeSignThread(LifeSignInfo lsi) {
-			super("TimeFlushLifeSign");
+		TimeFlushLifeSign(LifeSignInfo lsi) {
 			Objects.requireNonNull(lsi);
 			this.lsi = lsi;
-			setDaemon(true);
 		}
 		
 		@Override

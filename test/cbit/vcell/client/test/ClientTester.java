@@ -38,8 +38,8 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	ClientServerManager clientServerManager = new ClientServerManager();
-	clientServerManager.connect(null, csInfo);
+	ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+	clientServerManager.connect(null);
 	
 	return clientServerManager;
 }
@@ -62,8 +62,8 @@ public static cbit.vcell.client.server.ClientServerManager mainInit(String args[
 		System.err.println("usage: " + programName +" host userid password");
 		throw new Exception("cannot connect");
 	}
-	ClientServerManager clientServerManager = new ClientServerManager();
-	clientServerManager.connect(null, csInfo);
+	ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+	clientServerManager.connect(null);
 	
 	return clientServerManager;
 }

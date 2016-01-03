@@ -71,15 +71,15 @@ public class ClientFactory {
 	public static ClientServerManager createLocalClientServerManager(String userid, String password) {
 		DigestedPassword digestedPassword = new DigestedPassword(password);
 		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(userid, digestedPassword);
-		ClientServerManager clientServerManager = new ClientServerManager();
-		clientServerManager.connect(null, csInfo);
+		ClientServerManager clientServerManager = new ClientServerManager(csInfo);
+		clientServerManager.connect(null);
 		return clientServerManager;
 	}
 	
 	public static ClientServerManager createRemoteClientServerManager(String hosts[], String username, String password) {
 		DigestedPassword digestedPassword = new DigestedPassword(password);
 		ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(hosts, username, digestedPassword);
-		ClientServerManager clientServerManager = new ClientServerManager();
+		ClientServerManager clientServerManager = new ClientServerManager(csInfo);
 		RequestManagerAdapter requestManager = new RequestManagerAdapter();
 		TopLevelWindowManager windowManager = new TopLevelWindowManager(requestManager){
 			@Override
@@ -95,7 +95,7 @@ public class ClientFactory {
 				return false;
 			}
 		};
-		clientServerManager.connect(windowManager, csInfo);
+		clientServerManager.connect(windowManager);
 		return clientServerManager;
 	}
 	
