@@ -85,6 +85,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 			}
 			setStatus(status);
 		}
+		
 
 		public java.lang.String getServerHost() {
 			return serverHost;
@@ -198,7 +199,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	private VCDataManager vcDataManager = null;
 	private UserPreferences userPreferences = new UserPreferences(this);
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private ConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
+	private ClientConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
 	private ReconnectStatus reconnectStat = ReconnectStatus.NOT;
 	private long nextReconnectSeconds = 0;
 	/**
@@ -308,15 +309,18 @@ public void connectNewServer(TopLevelWindowManager requester, ClientServerInfo c
  * Creation date: (5/17/2004 6:26:14 PM)
  */
 public void connect(TopLevelWindowManager requester) {
+	asynchMessageManager.stopPolling();
+	reconnectStat = ReconnectStatus.NOT;
 	checkClientServerSoftwareVersion(requester,clientServerInfo);
 
 	// get new server connection
 	VCellConnection newVCellConnection = connectToServer(requester);
 	// update managers, status, etc.
 	changeConnection(requester, newVCellConnection);
-
-	//start polling if haven't already
-	asynchMessageManager.startPolling();
+	if (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
+		//start polling if haven't already
+		asynchMessageManager.startPolling();
+	}
 }
 
 
@@ -712,7 +716,11 @@ public void reconnect(long pollTime) {
 	default:
 	}
 	TopLevelWindowManager am = TopLevelWindowManager.activeManager();
-	connect(am);
+	VCellConnection connection = connectToServer(am);
+	if (connection != null) {
+		changeConnection(am,connection);
+	}
+	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 }
 
 
@@ -747,7 +755,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param connectionStatus The new value for the property.
  * @see #getConnectionStatus
  */
-public void setConnectionStatus(ConnectionStatus connectionStatus) {
+private void setConnectionStatus(ClientConnectionStatus connectionStatus) {
 	ConnectionStatus oldValue = fieldConnectionStatus;
 	fieldConnectionStatus = connectionStatus;
 	firePropertyChange(PROPERTY_NAME_CONNECTION_STATUS, oldValue, connectionStatus);

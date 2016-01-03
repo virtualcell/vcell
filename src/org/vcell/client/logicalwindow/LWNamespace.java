@@ -119,8 +119,8 @@ public interface LWNamespace {
 		if (t != null) {
 			return t;
 		}
-		if (lg.isEnabledFor(Level.WARN)) {
-			lg.warn(ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
+		if (lg.isDebugEnabled( )) {
+			lg.debug(ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
 
 		}
 		Container up = swingParent.getParent();

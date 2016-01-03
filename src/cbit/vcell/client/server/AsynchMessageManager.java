@@ -11,7 +11,9 @@
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
@@ -32,7 +34,6 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.client.SimStatusListener;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -47,7 +48,6 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * to update the status.
  */
 public class AsynchMessageManager implements SimStatusListener {
-    private static final int CLIENT_POLLING_INTERVAL = 3 * MessageConstants.SECOND_IN_MS;
     private static final long BASE_POLL_SECONDS = 5; 
     private static final long ATTEMPT_POLL_SECONDS = 3; 
     private static final long MAX_POLL_SECONDS = TimeUnit.MINUTES.toSeconds(5);
@@ -56,12 +56,12 @@ public class AsynchMessageManager implements SimStatusListener {
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;
     private int failureCount = 0;
-    private Thread pollingThread = null;
     private ScheduledExecutorService executorService = null;
     private Runnable runnable; 
     private long counter = 0;
     private long pollTime = BASE_POLL_SECONDS; 
-    private long reconnectTries = 0; 
+    private long reconnectTries = 0;
+	private AtomicBoolean bPoll = new AtomicBoolean(false);
 
 /**
  * Insert the method's description here.
@@ -74,15 +74,28 @@ public AsynchMessageManager(ClientServerManager csm) {
  * start polling for connection. Should be called after connect
  * no-op if already called
  */
-public void startPolling() {
-	if (executorService == null) {
-		executorService = VCellExecutorService.get();
-		runnable = ( ) -> poll( );
+public synchronized void startPolling() {
+	if (!bPoll.get()) {
+		bPoll.set(true);
+		if (executorService == null) {
+			executorService = VCellExecutorService.get();
+			runnable = ( ) -> poll( );
+		}
 		executorService.schedule(runnable, pollTime,TimeUnit.SECONDS); 
 	}
 }
 
+public void stopPolling() {
+	lg.trace("stopping polling");
+	bPoll.set(false);
+}
+
 private void poll( )  {
+	if (!bPoll.get()) {
+		lg.trace("polling stopped");
+		return;
+	}
+	lg.trace("polling");
 	boolean report = counter%50 == 0; 
 	long begin = 0;
 	long end = 0;
@@ -142,55 +155,12 @@ private void poll( )  {
     	if (lg.isTraceEnabled( )) {
     		lg.trace(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
     	}
-    	
-		executorService.schedule(runnable, pollTime,TimeUnit.SECONDS); 
+    	if (bPoll.get()){
+			executorService.schedule(runnable, pollTime,TimeUnit.SECONDS); 
+    	}
     }
 }
 
-
-private void poll(boolean reportPerf) {
-    //
-    // ask remote message listener (really should be "message producer") for any queued events.
-    //
-    try {
-    	MessageEvent[] queuedEvents = null;
-    	// time the call
-	    long l1 = System.currentTimeMillis();
-	    synchronized (this) {
-	    	if (!clientServerManager.isStatusConnected()) {
-	    		clientServerManager.reconnect(pollTime);
-	    		return;
-	    	}
-	    	queuedEvents = clientServerManager.getMessageEvents();
-		}
-	    long l2 = System.currentTimeMillis();
-	    double duration = ((double)(l2 - l1)) / 1000;
-	    failureCount = 0;
-	    // deal with events, if any
-	    if (queuedEvents != null) {
-		    for (MessageEvent messageEvent : queuedEvents){
-		    	onMessageEvent(messageEvent);
-		    }
-	    }
-	    // report polling call performance
-	    if (reportPerf) {
-	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
-			    this, null, new PerformanceData(
-				    "AsynchMessageManager.poll()",
-				    MessageEvent.POLLING_STAT,
-				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
-			    )
-			);
-			reportPerformanceMonitorEvent(performanceMonitorEvent);
-	    }
-    } catch (Exception exc) {
-	    System.out.println(">> polling failure << " + exc.getMessage());
-	    failureCount ++;
-	    if (failureCount % 3 == 0) {
-	    	clientServerManager.setDisconnected();
-	    }
-    }
-}
 
 private void onMessageEvent(MessageEvent event) {
 	if (event instanceof SimulationJobStatusEvent) {
