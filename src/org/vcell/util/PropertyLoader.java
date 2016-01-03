@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -463,6 +464,12 @@ public class PropertyLoader {
 				}
 			}
 			lookForMagic(propertyFile);
+		}
+		else {
+			if (lg.isEnabledFor(Level.WARN)) {
+				lg.warn("Can't read propertyFile " + propertyFile.getAbsolutePath() + " specified by " + where);
+			}
+			
 		}
 		// display new properties
 		//System.getProperties().list(System.out);

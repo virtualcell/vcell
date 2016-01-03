@@ -30,11 +30,11 @@ import org.vcell.client.logicalwindow.LWTraits.InitialPosition;
 import org.vcell.util.gui.GuiUtils;
 
 /**
- * base class for logical top level frames 
- * 
+ * base class for logical top level frames
+ *
  * keeps track of all top level objects
  *
- * implements all {@link LWContainerHandle} methods except {@link LWHandle#menuDescription()}  
+ * implements all {@link LWContainerHandle} methods except {@link LWHandle#menuDescription()}
  */
 @SuppressWarnings("serial")
 public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
@@ -44,38 +44,38 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	 */
 	private final LWManager lwManager;
 	private TakeItBack takeItBack;
-	
+
 	/**
 	 * static method data structure
 	 */
 	private static LinkedList<WeakReference<LWTopFrame>> tops = new LinkedList<>();
-	
+
 	private static Map<String,MutableInt> titleSequenceNumbers = new HashMap<>();
-	
+
 	private static final LWTraits traits = new LWTraits(InitialPosition.NOT_LW_MANAGED);
 	private static final Logger LG = Logger.getLogger(LWTopFrame.class);
-	
-	private final static Set<Window> transientStatusDialogs; 
+
+	private final static Set<Window> transientStatusDialogs;
 	static {
 		//newSetFromMap requires Boolean value type
 		WeakHashMap<Window, Boolean> whm = new WeakHashMap<>( );
 		transientStatusDialogs = Collections.newSetFromMap(whm);
 	}
-	
+
 	protected LWTopFrame( ) {
 		lwManager = new LWManager(null,this);
 		takeItBack = null;
 		tops.addFirst(new WeakReference<LWTopFrame>(this));
 		addWindowFocusListener(new FocusWatch());
 	}
-	
+
 	@Override
 	public LWTraits getTraits() {
 		return traits;
 	}
 
 	/**
-	 * @param bTextMenu if true, make top menu item text; if false, use icon 
+	 * @param bTextMenu if true, make top menu item text; if false, use icon
 	 * @return Window menu for adding a JMenuBar
 	 */
 	public static JMenu createWindowMenu(boolean bTextMenu ) {
@@ -94,12 +94,12 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 
 	@Override
 	public Window getWindow() {
-		return this; 
+		return this;
 	}
 
 	@Override
 	public Iterator<LWHandle> iterator() {
-		return lwManager.visible(); 
+		return lwManager.visible();
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 	public void manage(LWHandle child) {
 		lwManager.manage(this,child);
 	}
-	
+
 	@Override
 	public LWContainerHandle getlwParent() {
 		return lwManager.getLwParent();
@@ -129,9 +129,9 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 
 	@Override
 	public LWModality getLWModality() {
-		return LWModality.MODELESS; 
+		return LWModality.MODELESS;
 	}
-	
+
 	/**
 	 * tell Top Frame about a transient (e.g. progress) dialog
 	 * @param w
@@ -142,11 +142,11 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			LG.trace(GuiUtils.describe(w) + " added to transient dialogs, current count is " + transientStatusDialogs.size());
 		}
 	}
-	
+
 	/**
 	 * return next sequential menu description
 	 * @param windowName not null
-	 * @return next sequential menu description, or just window name if first call with this name 
+	 * @return next sequential menu description, or just window name if first call with this name
 	 */
 	protected static String nextSequentialDescription(String windowName) {
 		Objects.requireNonNull(windowName);
@@ -168,18 +168,19 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 		Iterator<WeakReference<LWTopFrame>> iter = liveWindows().iterator();
 		while (iter.hasNext()) {
 			LWTopFrame ltf = iter.next().get();
-			buildMenuItemList(ltf,0,rval); 
+			buildMenuItemList(ltf,0,rval);
 		}
 		return rval;
 	}
 	/**
+	 * last focused window will be first in list
 	 * @return non-garbage collected windows which are visible
 	 */
 	public static Stream<WeakReference<LWTopFrame>> liveWindows() {
 		tops.removeIf( wr -> wr.get( ) == null);
 		return tops.stream().filter( wr -> wr.get( ) != null).filter( wr -> wr.get( ).isVisible() );
 	}
-	
+
 	/**
 	 * recursive method for building / indenting list of menu items
 	 * @param lwh current logical window
@@ -192,7 +193,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			buildMenuItemList(logicalChild, level + 1, destination);
 		}
 	}
-	
+
 	private void lostFocusHandler(WindowEvent e) {
 		if (LG.isTraceEnabled()) {
 			LG.trace(menuDescription() + " lost focus to " + GuiUtils.describe(e.getOppositeWindow()) );
@@ -205,7 +206,7 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			taker.addWindowListener(takeItBack);
 		}
 	}
-	
+
 	/**
 	 * class to ensure last focused top window is at beginning of collection
 	 */
@@ -216,11 +217,11 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 		@Override
 		public void windowGainedFocus(WindowEvent e) {
 			Predicate<WeakReference<LWTopFrame>> findOurself = wr -> wr.get( ) == LWTopFrame.this;
-			
+
 			WeakReference<LWTopFrame> ourWr = tops.stream().filter(findOurself).findFirst().get();
 			Objects.requireNonNull(ourWr);
-			
-			tops.removeIf( findOurself ); 
+
+			tops.removeIf( findOurself );
 			tops.addFirst(ourWr);
 			if (LG.isTraceEnabled()) {
 				LG.trace(LWTopFrame.this.menuDescription() + " gained focus");
@@ -228,11 +229,11 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 		}
 
 		@Override
-		public void windowLostFocus(WindowEvent e) { 
+		public void windowLostFocus(WindowEvent e) {
 			lostFocusHandler(e);
 		}
 	}
-	
+
 	/**
 	 * take focus / top placement back from transient dialog
 	 */
@@ -243,9 +244,9 @@ public abstract class LWTopFrame extends JFrame implements LWContainerHandle {
 			transientStatusDialogs.remove(e.getSource());
 			getWindow().toFront();
 		}
-		
+
 	}
-	
+
 	/**
 	 * listener for {@link LWTopFrame#createWindowMenu(boolean)}
 	 * rebuilds menu with actively visible windows

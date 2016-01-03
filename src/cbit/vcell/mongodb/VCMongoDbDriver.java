@@ -2,6 +2,9 @@ package cbit.vcell.mongodb;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
@@ -19,18 +22,20 @@ import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
-public class VCMongoDbDriver implements Runnable {
+import cbit.vcell.resource.VCellExecutorService;
+
+public class VCMongoDbDriver {
 	private static VCMongoDbDriver mongoDriverSingleton = null;
-	private static final Logger LG  = Logger.getLogger(VCMongoDbDriver.class);
+	private static final Logger lg  = Logger.getLogger(VCMongoDbDriver.class);
 	private final String mongoDbDatabaseName;
 	private final String mongoDbLoggingCollectionName;
 
 	private Mongo m = null;
 	private ConcurrentLinkedQueue<VCMongoMessage> messageOutbox = new ConcurrentLinkedQueue<VCMongoMessage>();
 	private boolean processing = false;
-	private Thread messageProcessingThread = null;
 
 	private SessionLog log = null;
+	private ScheduledFuture<?> command = null;
 
 	public static VCMongoDbDriver getInstance(){
 		if (mongoDriverSingleton == null){
@@ -50,7 +55,7 @@ public class VCMongoDbDriver implements Runnable {
 	
 	public SessionLog getSessionLog(){
 		if(log == null) {
-			log = new Log4jSessionLog(LG);
+			log = new Log4jSessionLog(lg);
 		}
 		return log;
 	}
@@ -81,10 +86,10 @@ public class VCMongoDbDriver implements Runnable {
 	        	// error handling?? ... if couldn't save, then log it locally
 	        	//
 	        	String errorString = writeResult.getError();////???????
-	        	if (StringUtils.isNotEmpty(errorString) && LG.isEnabledFor(Level.WARN)) {
-        			LG.warn("VCMongoMessage failedToSend : "+ errorString);
-	        	}else if (LG.isDebugEnabled()){
-	        		LG.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
+	        	if (StringUtils.isNotEmpty(errorString) && lg.isEnabledFor(Level.WARN)) {
+        			lg.warn("VCMongoMessage failedToSend : "+ errorString);
+	        	}else if (lg.isDebugEnabled()){
+	        		lg.debug("VCMongoMessage sent : "+ dbObjectsToSend.size() + " messages");
 	        	}
 //   			} catch (MongoException e){
 //   				e.printStackTrace(System.out);
@@ -105,28 +110,16 @@ public class VCMongoDbDriver implements Runnable {
     	}
      }
     
-    public void run()
-    {
-    	if (Thread.currentThread() == messageProcessingThread) {
-			LG.info("Starting MongoDB Thread");
-	        while(processing && VCMongoMessage.enabled) {
-	            try {
-	                sendMessages();
-	                try {
-	                	int sleepTimeMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.mongodbThreadSleepMS,"2000"));
-						Thread.sleep(sleepTimeMS);
-					} catch (InterruptedException e) {
-					}
-	            } catch (Exception e) {
-					e.printStackTrace(System.out);
-				}
-	        }
-	        LG.info("Ended MongoDB Thread");
-    	}
-    	else {
-    		throw new RuntimeException("invalid thread");
-    	}
-    }
+	public void run()
+	{
+		if(processing && VCMongoMessage.enabled) {
+			try {
+				sendMessages();
+			} catch (Exception e) {
+				lg.warn(e);
+			}
+		}
+	}
 
 
     /**
@@ -136,10 +129,9 @@ public class VCMongoDbDriver implements Runnable {
     {
         if(!processing )
         {
+        	ScheduledExecutorService es = VCellExecutorService.get( );
             processing = true;
-            messageProcessingThread = new Thread(this,"MongoDB Process Thread");
-            messageProcessingThread.setDaemon(true);
-            messageProcessingThread.start();
+            command = es.scheduleAtFixedRate(( ) -> run( ),2,2,TimeUnit.SECONDS);
         }
     }
     
@@ -149,8 +141,8 @@ public class VCMongoDbDriver implements Runnable {
     public void stopProcessing()
     {
         processing = false;
-        if (messageProcessingThread != null) {
-        	messageProcessingThread.interrupt();
+        if (command != null) {
+        	command.cancel(true);
         }
         
     }
@@ -173,8 +165,8 @@ public class VCMongoDbDriver implements Runnable {
 		if (!processing) {
 			return;
 		}
-		if (this.messageProcessingThread != null) {
-			this.messageProcessingThread.interrupt();
+		if (command != null) {
+			command.cancel(true);
 		}
 		Thread flushThread = new Thread(new Runnable() {
 			@Override

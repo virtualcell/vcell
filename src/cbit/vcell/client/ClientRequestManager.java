@@ -813,7 +813,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
-	getClientServerManager().connect(requester, clientServerInfo);
+	getClientServerManager().connectNewServer(requester,clientServerInfo);
 }
 
 
@@ -3491,7 +3491,7 @@ public void reconnect(final TopLevelWindowManager requester) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientServerManager().reconnect(requester);
+				getClientServerManager().connect(requester);
 				
 			}
 	};

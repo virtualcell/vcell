@@ -25,7 +25,6 @@ import java.util.Calendar;
 import java.util.EventObject;
 import java.util.Hashtable;
 
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -43,7 +42,6 @@ import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.PropertyLoader;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDocument;
@@ -150,6 +148,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow {
 	private JMenuItem menuItemImportPathwayWebLocation = null;
 	private JMenuItem menuItemImportPathwayFile = null;
 	private JMenuItem menuItemImportPathwayExample = null;
+	private javax.swing.Timer reconnectTimer = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -1944,6 +1943,7 @@ private javax.swing.JMenuItem getSpatialExistingMenuItem() {
 private static final String MATHMODEL_SPATIAL_CREATENEW = "Spatial from new geometry";
 private JMenuItem mntmLicenseInformation;
 private JSeparator separator;
+
 private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
 	if (ivjSpatialCreateNewMenuItem == null) {
 		try {
@@ -2451,6 +2451,11 @@ private void enableOpenMenuItems(boolean bEnableServerOps){
  * Creation date: (5/10/2004 4:32:17 PM)
  */
 public void updateConnectionStatus(ConnectionStatus connStatus) {
+	if (reconnectTimer != null) {
+		reconnectTimer.stop();
+		reconnectTimer = null;
+	}
+	
 	// other updates
 	String status = "";
 	User user = getWindowManager().getUser();
@@ -2477,6 +2482,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setEnabled(false);
 			getJMenuItemFieldData().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
+			checkForReconnecting(connStatus);
 			break;
 		}
 		case ConnectionStatus.CONNECTED: {
@@ -2559,12 +2565,35 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getJMenuItemFieldData().setEnabled(false);
 			getJMenuItemMIRIAM().setEnabled(false);
 			getPermissionsMenuItem().setEnabled(false);
+			checkForReconnecting(connStatus);
 			break;
 		}
 	}
 	getJProgressBarConnection().setToolTipText(status);
 }
 
+private void checkForReconnecting(ConnectionStatus connStatus) {
+	if (connStatus.attemptingReconnect()) {
+		ReconnectCounter reconnectCounter = new ReconnectCounter(connStatus.nextAttemptSeconds());
+		reconnectTimer = new javax.swing.Timer(1000, reconnectCounter); 
+		reconnectTimer.setInitialDelay(0);
+		reconnectTimer.start();
+	}
+}
+
+private class ReconnectCounter implements ActionListener {
+	long seconds;
+
+	ReconnectCounter(long seconds) {
+		this.seconds = seconds;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		getJProgressBarConnection().setString("RECONNECT in " + seconds-- + " s");
+		
+	}
+}
 
 /**
  * Insert the method's description here.
