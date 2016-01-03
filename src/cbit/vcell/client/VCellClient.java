@@ -225,8 +225,7 @@ public static VCellClient startClient(final VCDocument startupDoc, final ClientS
 	AsynchClientTask task1  = new AsynchClientTask("Starting Virtual Cell", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// start management layer
-			vcellClient.setClientServerManager(new ClientServerManager());
-			vcellClient.getClientServerManager().setClientServerInfo(clientServerInfo);
+			vcellClient.setClientServerManager(new ClientServerManager(clientServerInfo));
 			vcellClient.setRequestManager(new ClientRequestManager(vcellClient));
 			vcellClient.setMdiManager(new ClientMDIManager(vcellClient.getRequestManager()));
 			// start auxilliary stuff

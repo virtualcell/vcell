@@ -62,7 +62,7 @@ public class VCellErrorMessages {
 	private final static String VCellSupport = "VCell Support(vcell_support@uchc.edu)";
 	
 	// =============== connection problems start ========== //
-	public static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to connect to the Virtual Cell server" + PLACE_HOLDER 
+	public static final String BAD_CONNECTION_MESSAGE = "Your computer is unable to " + PLACE_HOLDER + " to the Virtual Cell server" + PLACE_HOLDER 
 			+ ". To save a copy of an open model to your computer, export to VCML format (File > Export > VCML).\n\nIf problem persists, it may be due to a firewall problem. " +
 			"Contact your network administrator and send the error message below to " + VCellSupport + ".";
 	public static final String FAIL_LOAD_MESSAGE = "Failed to load document. Possible reasons :\n" +

@@ -16,26 +16,19 @@ public interface ConnectionStatus {
 	public static final int DISCONNECTED = 2;
 	public static final int INITIALIZING = 3;
 
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return java.lang.String
-		 */
 		public java.lang.String getServerHost();
-
-
 		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return int
+		 * @return {@link #CONNECTED}, {@link #DISCONNECTED}, {@link #INITIALIZING} or {@link #NOT_CONNECTED} 
 		 */
 		public int getStatus();
-
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return java.lang.String
-		 */
 		public java.lang.String getUserName();
+		/**
+		 * is application trying to reconnect in background?
+		 * @return true if is
+		 */
+		public boolean attemptingReconnect( );
+		/**
+		 * @return time in seconds until next reconnect attempt
+		 */
+		public long nextAttemptSeconds( );
 }
