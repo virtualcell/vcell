@@ -14,11 +14,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.Logger;
+import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -47,21 +49,23 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify {@link TopLevelWindowManager}
  * to update the status.
  */
-public class AsynchMessageManager implements SimStatusListener {
-    private static final long BASE_POLL_SECONDS = 5; 
-    private static final long ATTEMPT_POLL_SECONDS = 3; 
-    private static final long MAX_POLL_SECONDS = TimeUnit.MINUTES.toSeconds(5);
+public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener {
+    private static final long BASE_POLL_SECONDS = 15;
+    private static final long ATTEMPT_POLL_SECONDS = 3;
 	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
-    
+
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;
     private int failureCount = 0;
     private ScheduledExecutorService executorService = null;
-    private Runnable runnable; 
     private long counter = 0;
-    private long pollTime = BASE_POLL_SECONDS; 
-    private long reconnectTries = 0;
+    private long pollTime = BASE_POLL_SECONDS;
 	private AtomicBoolean bPoll = new AtomicBoolean(false);
+	private ScheduledFuture<?> pollingHandle = null;
+	/**
+	 * for {@link #schedule(long)} method
+	 */
+	private final ReentrantLock scheduleLock = new ReentrantLock();
 
 /**
  * Insert the method's description here.
@@ -69,6 +73,7 @@ public class AsynchMessageManager implements SimStatusListener {
  */
 public AsynchMessageManager(ClientServerManager csm) {
 	this.clientServerManager = csm;
+	DataAccessException.addListener(this);
 }
 /**
  * start polling for connection. Should be called after connect
@@ -79,9 +84,8 @@ public synchronized void startPolling() {
 		bPoll.set(true);
 		if (executorService == null) {
 			executorService = VCellExecutorService.get();
-			runnable = ( ) -> poll( );
 		}
-		executorService.schedule(runnable, pollTime,TimeUnit.SECONDS); 
+		schedule(pollTime);
 	}
 }
 
@@ -90,13 +94,20 @@ public void stopPolling() {
 	bPoll.set(false);
 }
 
+@Override
+public void created(DataAccessException dae) {
+	if (lg.isTraceEnabled()) {
+		lg.trace("scheduling now due to " + dae.getMessage());
+	}
+	schedule(0);
+}
 private void poll( )  {
 	if (!bPoll.get()) {
 		lg.trace("polling stopped");
 		return;
 	}
 	lg.trace("polling");
-	boolean report = counter%50 == 0; 
+	boolean report = counter%50 == 0;
 	long begin = 0;
 	long end = 0;
 	 //
@@ -105,20 +116,15 @@ private void poll( )  {
     try {
     	MessageEvent[] queuedEvents = null;
     	if (report) {
+	    	// time the call
 		    begin = System.currentTimeMillis();
     	}
-    	// time the call
 	    synchronized (this) {
 	    	if (!clientServerManager.isStatusConnected()) {
-	    		reconnectTries++;
-	    		if (pollTime < MAX_POLL_SECONDS) {
-		    		pollTime = Math.min(MAX_POLL_SECONDS, reconnectTries * 10) ;
-	    		}
-	    		clientServerManager.reconnect(pollTime);
+	    		clientServerManager.attemptReconnect( );
 	    		return;
 	    	}
-    		reconnectTries = 0;
-		    pollTime = BASE_POLL_SECONDS; 
+		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
 		}
     	if (report) {
@@ -148,6 +154,7 @@ private void poll( )  {
 	    pollTime = ATTEMPT_POLL_SECONDS;
 	    failureCount ++;
 	    if (failureCount % 3 == 0) {
+	    	bPoll.set(false);
 	    	clientServerManager.setDisconnected();
 	    }
     }
@@ -156,9 +163,26 @@ private void poll( )  {
     		lg.trace(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
     	}
     	if (bPoll.get()){
-			executorService.schedule(runnable, pollTime,TimeUnit.SECONDS); 
+    		schedule(pollTime);
     	}
     }
+}
+
+/**
+ * schedule poll, replacing previously scheduled instance, if any
+ * @param delay
+ */
+private void schedule(long delay) {
+	scheduleLock.lock();
+	try {
+		if (pollingHandle != null && !pollingHandle.isDone()) {
+			pollingHandle.cancel(true);
+		}
+		pollingHandle =  executorService.schedule(this::poll, delay,TimeUnit.SECONDS);
+	}
+	finally {
+		scheduleLock.unlock();
+	}
 }
 
 

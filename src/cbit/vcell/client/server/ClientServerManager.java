@@ -85,7 +85,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 			}
 			setStatus(status);
 		}
-		
+
 
 		public java.lang.String getServerHost() {
 			return serverHost;
@@ -117,18 +117,11 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 			return "status " + getStatus() + " server " + getServerHost() + " user " + getUserName();
 		}
 
-		@Override
-		public boolean attemptingReconnect() {
-			return reconnectStat != ReconnectStatus.NOT; 
-		}
-		
+
 
 		@Override
-		public long nextAttemptSeconds() {
-			if (attemptingReconnect( )) {
-				return nextReconnectSeconds;
-			}
-			return 0;
+		public Reconnector getReconnector() {
+			return ClientServerManager.this.getReconnector();
 		}
 
 		@Override
@@ -164,13 +157,13 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 				return false;
 			return true;
 		}
-		
+
 	}
 	private enum ReconnectStatus {
 		NOT("Not reconnecting"),
 		FIRST("First reconnection attempt"),
 		SUBSEQUENT("Subsequent reconnect attempt");
-		
+
 		private String label;
 
 		private ReconnectStatus(String label) {
@@ -201,11 +194,11 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ClientConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
 	private ReconnectStatus reconnectStat = ReconnectStatus.NOT;
-	private long nextReconnectSeconds = 0;
 	/**
 	 * modeless window to warn about lost connection
 	 */
-	private LWModelessWarning cantConnectWarning = null; 
+	private LWModelessWarning cantConnectWarning = null;
+	private Reconnector reconnector = null;
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -323,6 +316,25 @@ public void connect(TopLevelWindowManager requester) {
 	}
 }
 
+/**
+ * same as {@link #connect(TopLevelWindowManager)} but pause {@link Reconnector}
+ * @param requester
+ */
+public void reconnect(TopLevelWindowManager requester) {
+	Reconnector rc = getReconnector();
+	try {
+		rc.start();
+		rc.notificationPause(true);
+		connect(requester);
+		if (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED) {
+			rc.stop( );
+			asynchMessageManager.startPolling();
+		}
+	}
+	finally {
+		rc.notificationPause(false);
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -417,7 +429,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 		exc.printStackTrace(System.out);
 		String msg = badConnectMessage(badConnStr) + "\nException:\n" + exc.getMessage();
 		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
-		PopupGenerator.showErrorDialog(requester, msg); 
+		PopupGenerator.showErrorDialog(requester, msg);
 	}
 
 	return newVCellConnection;
@@ -425,7 +437,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 
 private String badConnectMessage(String badConnStr) {
 	String ctype = reconnectStat == ReconnectStatus.NOT ? "connect" : "reconnect";
-	return VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, ctype, badConnStr); 
+	return VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, ctype, badConnStr);
 }
 
 
@@ -700,27 +712,51 @@ private VCellConnection getVcellConnection() {
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
+/**
+ * @return lazily created {@link Reconnector }
+ */
+private Reconnector getReconnector( ) {
+	if (reconnector == null) {
+		reconnector = new Reconnector(this);
+	}
+	return reconnector;
+}
 
 /**
- * @param pollTime time until next attempt (seconds)
+ * commence automatic reconnect attempts
  */
-public void reconnect(long pollTime) {
-	nextReconnectSeconds = pollTime;
-	switch (reconnectStat) {
-	case NOT:
-		reconnectStat = ReconnectStatus.FIRST;
-		break;
-	case FIRST:
-		reconnectStat = ReconnectStatus.SUBSEQUENT;
-		break;
-	default:
+void attemptReconnect( ) {
+	getReconnector( ).start();
+}
+
+/**
+ * attempt reconnect now
+ */
+void reconnect() {
+	Reconnector rc = getReconnector();
+	rc.notificationPause(true);
+	try {
+		switch (reconnectStat) {
+		case NOT:
+			reconnectStat = ReconnectStatus.FIRST;
+			break;
+		case FIRST:
+			reconnectStat = ReconnectStatus.SUBSEQUENT;
+			break;
+		default:
+		}
+		TopLevelWindowManager am = TopLevelWindowManager.activeManager();
+		VCellConnection connection = connectToServer(am);
+		if (connection != null) { //success
+			changeConnection(am,connection);
+			rc.stop();
+			asynchMessageManager.startPolling();
+			return;
+		}
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+	} finally {
+		rc.notificationPause(false);
 	}
-	TopLevelWindowManager am = TopLevelWindowManager.activeManager();
-	VCellConnection connection = connectToServer(am);
-	if (connection != null) {
-		changeConnection(am,connection);
-	}
-	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 }
 
 
@@ -806,10 +842,13 @@ public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext ex
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
-
 }
 
+/**
+ * start {@link Reconnector}, set status to {@link ConnectionStatus#DISCONNECTED}
+ */
 void setDisconnected() {
+	getReconnector().start();
 	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
 }
 }
