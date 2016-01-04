@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Vector;
 
@@ -46,7 +45,6 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
-import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -109,8 +107,7 @@ public static TopLevelWindowManager activeManager( ) {
 			fallback = tlwm; //return this if can't find the right window
 		}
 		Component cmpt = tlwm.getComponent();
-		Objects.requireNonNull(cmpt);
-		if (SwingUtilities.isDescendingFrom(cmpt,activetf)) {
+		if (cmpt != null && SwingUtilities.isDescendingFrom(cmpt,activetf)) {
 			return tlwm;
 		}
 	}
