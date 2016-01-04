@@ -12,7 +12,7 @@ import javax.swing.JPanel;
  * Modeless JOptionPane 
  */
 @SuppressWarnings("serial")
-public abstract class LWOptionPaneWindow extends LWChildFrame {
+public abstract class LWOptionPaneFrame extends LWChildFrame {
 	final JOptionPane optionPane;
 	
 	/**
@@ -20,7 +20,7 @@ public abstract class LWOptionPaneWindow extends LWChildFrame {
 	 * @param title null is okay
 	 * @param optionPane not null
 	 */
-	public LWOptionPaneWindow(LWContainerHandle parent, String title, JOptionPane optionPane) {
+	public LWOptionPaneFrame(LWContainerHandle parent, String title, JOptionPane optionPane) {
 		super(parent, title);
 		Objects.requireNonNull(optionPane);
 		JPanel contentPane = new JPanel(new BorderLayout());
