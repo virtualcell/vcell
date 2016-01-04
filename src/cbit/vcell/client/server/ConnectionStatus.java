@@ -18,17 +18,13 @@ public interface ConnectionStatus {
 
 		public java.lang.String getServerHost();
 		/**
-		 * @return {@link #CONNECTED}, {@link #DISCONNECTED}, {@link #INITIALIZING} or {@link #NOT_CONNECTED} 
+		 * @return {@link #CONNECTED}, {@link #DISCONNECTED}, {@link #INITIALIZING} or {@link #NOT_CONNECTED}
 		 */
 		public int getStatus();
 		public java.lang.String getUserName();
+
 		/**
-		 * is application trying to reconnect in background?
-		 * @return true if is
+		 * @return reconnector
 		 */
-		public boolean attemptingReconnect( );
-		/**
-		 * @return time in seconds until next reconnect attempt
-		 */
-		public long nextAttemptSeconds( );
+		public Reconnector getReconnector( );
 }
