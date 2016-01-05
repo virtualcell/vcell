@@ -76,21 +76,11 @@ public class TaskCallbackProcessor {
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
 			break;
-		case ValidateConstraints:
-			if(sc.isValidTestConstraints()) {
-				string = "Updating the network constraints with the test values";
-				System.out.println(string);
-				sc.getNetworkConstraints().updateConstraintsFromTest();
-				tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
-				consoleNotificationList.add(tcm);
-				sc.firePropertyChange("appendToConsole", "", tcm);
-			}
-			break;
 		case TaskEnd:
 			System.out.println("Task ended");
-			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
-			consoleNotificationList.add(tcm);
-			sc.firePropertyChange("appendToConsole", "", tcm);
+//			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
+//			consoleNotificationList.add(tcm);
+//			sc.firePropertyChange("appendToConsole", "", tcm);
 			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
 				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);

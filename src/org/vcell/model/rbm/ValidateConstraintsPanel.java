@@ -59,10 +59,9 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
-public class EditConstraintsPanel extends DocumentEditorSubPanel  {
+public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
 	
-	enum ActionButtons {
-		Run,
+	public enum ActionButtons {
 		Apply,
 		Cancel
 	}
@@ -70,40 +69,21 @@ public class EditConstraintsPanel extends DocumentEditorSubPanel  {
 	
 	private EventHandler eventHandler = new EventHandler();
 	
-	JTextField maxIterationTextField;
-	JTextField maxMolTextField;
+	JLabel maxIterationTextField;
+	JLabel maxMolTextField;
 	
-	private JButton runButton;
 	private JButton applyButton;
 	private JButton cancelButton;
 	
 	private final NetworkConstraintsPanel owner;
 	private ChildWindow parentChildWindow;
 
-	private class EventHandler implements FocusListener, ActionListener {
+	private class EventHandler implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == maxIterationTextField) {
-				changeMaxIteration();
-			} else if (e.getSource() == maxMolTextField) {
-				changeMaxMolPerSpecies();
-			}
-		}
-
-		@Override
-		public void focusGained(FocusEvent e) {
-		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			if (e.getSource() == maxIterationTextField) {
-				changeMaxIteration();
-			} else if (e.getSource() == maxMolTextField) {
-				changeMaxMolPerSpecies();
-			}
 		}
 	}
 	
-public EditConstraintsPanel(NetworkConstraintsPanel owner) {
+public ValidateConstraintsPanel(NetworkConstraintsPanel owner) {
 	super();
 	this.owner = owner;
 	initialize();
@@ -118,15 +98,11 @@ private void handleException(java.lang.Throwable exception) {
 
 private void initialize() {
 	try {
-		setName("EditConstraintsPanel");
+		setName("ValidateConstraintsPanel");
 		setLayout(new GridBagLayout());
 			
-		maxIterationTextField = new JTextField();
-		maxMolTextField = new JTextField();
-		maxIterationTextField.addActionListener(eventHandler);
-		maxMolTextField.addActionListener(eventHandler);
-		maxIterationTextField.addFocusListener(eventHandler);
-		maxMolTextField.addFocusListener(eventHandler);
+		maxIterationTextField = new JLabel();
+		maxMolTextField = new JLabel();
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();		
@@ -168,13 +144,13 @@ private void initialize() {
 		add(maxMolTextField, gbc);
 		
 		gridy ++;	
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(6, 8, 8, 2);
-		add(getRunButton(), gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = gridy;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(6, 8, 8, 2);
+//		add(getRunButton(), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -192,8 +168,8 @@ private void initialize() {
 		gbc.insets = new Insets(6, 2, 8, 10);
 		add(getCancelButton(), gbc);
 		
-		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxIteration() + "");
-		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxMoleculesPerSpecies() + "");
+		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxIteration() + "");
+		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxMoleculesPerSpecies() + "");
 				
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -204,27 +180,6 @@ public ActionButtons getButtonPushed() {
 	return buttonPushed;
 }
 
-private JButton getRunButton() {
-	if (runButton == null) {
-		runButton = new javax.swing.JButton("Test / Run");
-		runButton.setName("RunButton");
-		runButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				buttonPushed = ActionButtons.Run;
-				try {
-					int test = new Integer( maxIterationTextField.getText());
-					test = new Integer( maxMolTextField.getText());
-				} catch (NumberFormatException ex) {
-					DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
-					return;
-				}
-				parentChildWindow.close();
-			}
-		});
-	}
-	return runButton;
-}
 private JButton getApplyButton() {
 	if (applyButton == null) {
 		applyButton = new javax.swing.JButton("Apply");
@@ -233,13 +188,7 @@ private JButton getApplyButton() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				buttonPushed = ActionButtons.Apply;
-				try {
-					int test = new Integer( maxIterationTextField.getText());
-					test = new Integer( maxMolTextField.getText());
-				} catch (NumberFormatException ex) {
-					DialogUtils.showErrorDialog(parentChildWindow.getParent(), "Wrong number format: " + ex.getMessage());
-					return;
-				}
+
 				parentChildWindow.close();
 			}
 		});
@@ -264,20 +213,6 @@ private JButton getCancelButton() {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 
-}
-
-public void changeMaxMolPerSpecies() {
-	String text = maxMolTextField.getText();
-	if (text == null || text.trim().length() == 0) {
-		return;
-	}
-}
-
-public void changeMaxIteration() {
-	String text = maxIterationTextField.getText();
-	if (text == null || text.trim().length() == 0) {
-		return;
-	}
 }
 
 public void setChildWindow(ChildWindow childWindow) {
