@@ -136,6 +136,7 @@ public BNGOutput executeBNG() throws BNGException {
 		}	
 
 		PrintWriter inputFile = new PrintWriter(fos);
+		System.out.println("Input file is: " + bngInputFile.getPath());
 		inputFile.print(bngInput.getInputString());
 		inputFile.close();
 
@@ -234,6 +235,7 @@ private static synchronized void initialize() {
 			Runtime.getRuntime().addShutdownHook( new Thread(r)  );
 		} catch (IOException ioe) {
 			workingDir = null;
+			ioe.printStackTrace();
 			throw new BNGException("Can't setup BioNetGen ", ioe);
 		}
 	}
