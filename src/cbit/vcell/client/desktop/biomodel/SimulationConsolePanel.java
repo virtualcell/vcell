@@ -44,8 +44,8 @@ public class SimulationConsolePanel extends JPanel {
 	private SimulationContext fieldSimulationContext;
 	private JTextPane netGenConsoleText;
 	
-	public final static int speciesLimit = 1000;			// 1000
-	public final static int reactionsLimit = 3000;			// 3000
+	public final static int speciesLimit = 800;			// 1000
+	public final static int reactionsLimit = 2500;		// 3000
 	public final static String endMessage = "\nPlease go to the Specifications / Network panel and adjust the number of Iterations.";
 	public final static String endMessage2 = "\nPlease go to the Specifications / Network panel and adjust the Max number of Molecules / Species if necessary.";
 

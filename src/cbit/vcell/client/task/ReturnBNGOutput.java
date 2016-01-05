@@ -81,9 +81,14 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 		owner.setNewCallbackMessage(tcm);
 		if(sc.getNetworkConstraints().isTestConstraintsDifferent()) {
 			// only if they changed
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndNotificationOnly, "");
+			owner.setNewCallbackMessage(tcm);
+			owner.updateLimitExceededWarnings(outputSpec);
+			
 			validateConstraints(outputSpec);
 		} else {
-			owner.updateBioNetGenOutput(outputSpec);
+			owner.updateLimitExceededWarnings(outputSpec);
+			owner.updateOutputSpecToSimulationContext(outputSpec);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEnd, "");
 			owner.setNewCallbackMessage(tcm);
 			String string = "The Network constraints are unchanged.";
@@ -99,35 +104,32 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
-	Dimension dim = new Dimension(250, 160);
+	Dimension dim = new Dimension(280, 160);
 	childWindow.pack();
 	panel.setChildWindow(childWindow);
 	childWindow.setPreferredSize(dim);
 	childWindow.showModal();
 	if(panel.getButtonPushed() == ValidateConstraintsPanel.ActionButtons.Apply) {
 		System.out.println("pressed APPLY from task");
+		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndAdjustSimulationContextFlagsOnly, "");
+		owner.setNewCallbackMessage(tcm);
 		String string = "Updating the network constraints with the test values.";
 		System.out.println(string);
-		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEnd, "");
-		owner.setNewCallbackMessage(tcm);
-		
-		owner.updateBioNetGenOutput(outputSpec);
+		owner.updateOutputSpecToSimulationContext(outputSpec);
 		sc.getNetworkConstraints().updateConstraintsFromTest();
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 		sc.firePropertyChange("appendToConsole", "", tcm);
 		return;
 	} else {
 		System.out.println("pressed CANCEL from task");
-		owner.updateBioNetGenOutput(null);
+		owner.updateOutputSpecToSimulationContext(null);
 
 		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 		sc.appendToConsole(tcm);
-
 		String string = "The Network constraints were not updated with the test values.";
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 		sc.firePropertyChange("appendToConsole", "", tcm);
 //		owner.refreshInterface();
-		
 		return;
 	}
 }
