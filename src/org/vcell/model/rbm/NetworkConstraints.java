@@ -46,7 +46,12 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		setMaxIteration(testMaxIteration);
 		setMaxMoleculesPerSpecies(testMaxMoleculesPerSpecies);
 	}
-
+	public boolean isTestConstraintsDifferent() {
+		if(testMaxIteration != maxIteration || testMaxMoleculesPerSpecies != maxMoleculesPerSpecies) {
+			return true;
+		}
+		return false;
+	}
 	public final int getMaxIteration() {
 		return maxIteration;
 	}
@@ -75,6 +80,14 @@ public class NetworkConstraints extends RbmElementAbstract implements Matchable,
 		}
 		firePropertyChange(PROPERTY_NAME_MAX_STOICHIOMETRY, oldValue, newValue);
 	}
+	
+	public final int getTestMaxIteration() {
+		return testMaxIteration;
+	}
+	public final int getTestMaxMoleculesPerSpecies() {
+		return testMaxMoleculesPerSpecies;
+	}
+
 	
 	public Map<MolecularType, Integer> getMaxStoichiometry() {
 		return maxStoichiometryMap;

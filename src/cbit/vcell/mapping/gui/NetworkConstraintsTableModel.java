@@ -108,9 +108,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		return Object.class;
 	}
 	public boolean isCellEditable(int row, int column) {
-		if(column == iColValue && row < 2 ) {
-			return true;
-		}
+//		if(column == iColValue && row < 2 ) {
+//			return true;
+//		}
+		// the table isn't editable anymore, all is done in the Edit / Test constraints dialogs
 		return false;
 	}
 

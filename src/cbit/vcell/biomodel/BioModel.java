@@ -332,11 +332,14 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  */
 @Override
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+	long start_time = System.currentTimeMillis();
 	issueContext = issueContext.newChildContext(ContextType.BioModel, this);
 	getModel().gatherIssues(issueContext, issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		simulationContext.gatherIssues(issueContext, issueList);
 	}
+	long end_time = System.currentTimeMillis();
+	System.out.println("Time spent on Issue detection: " + (end_time - start_time));
 //	for (Simulation simulation : fieldSimulations) {
 //		simulation.gatherIssues(issueContext,issueList);
 //	}

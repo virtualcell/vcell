@@ -376,7 +376,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		fieldSimulationContext.appendToConsole(newCallbackMessage);
 	}
 	
-	private void refreshInterface() {
+	public void refreshInterface() {
 		String text1 = null;
 		String text2 = null;
 		if (getSimulationContext().getNetworkConstraints() != null) {
@@ -435,8 +435,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			} else {
 				viewGeneratedReactionsButton.setEnabled(false);
 			}
+			if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec()!= null) {
+				createModelButton.setEnabled(true);
+			} else {
+				createModelButton.setEnabled(false);
+			}
 			refreshMathButton.setEnabled(true);
-			createModelButton.setEnabled(true);
 		}
 	}
 	
@@ -456,10 +460,23 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
 			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
 		} else if(panel.getButtonPushed() == ActionButtons.Apply) {
+			activateConsole();
 			maxIterations = new Integer( panel.maxIterationTextField.getText());
 			maxMolecules = new Integer( panel.maxMolTextField.getText());
 			fieldSimulationContext.getNetworkConstraints().setTestConstraints(maxIterations, maxMolecules);
 			fieldSimulationContext.getNetworkConstraints().updateConstraintsFromTest();
+			// apply will invalidate everything: generated species, reactions, console, cache, etc
+			updateBioNetGenOutput(null);
+			refreshInterface();
+			TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
+			fieldSimulationContext.appendToConsole(tcm);
+			String message = "Warning: The current Constraints are not tested / validated.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, message);
+			fieldSimulationContext.appendToConsole(tcm);
+			message = "The Network generation may take a very long time or the generated network may be incomplete. "
+					+ "We recommend testing this set of constraints.";
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, message);
+			fieldSimulationContext.appendToConsole(tcm);
 			return;
 		} else {
 			return;
@@ -518,10 +535,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		AsynchClientTask[] tasksArray = new AsynchClientTask[3];
 		TaskCallbackMessage message = new TaskCallbackMessage(TaskCallbackStatus.Clean, "");
 		fieldSimulationContext.appendToConsole(message);
-		fieldSimulationContext.setValidTestConstraints(true);	// we'll accept the test constraints unless operation is canceled by user
 		tasksArray[0] = new RunBioNetGen(bngService);
 		tasksArray[1] = new CreateBNGOutputSpec(bngService);
-		tasksArray[2] = new ReturnBNGOutput(bngService);
+		tasksArray[2] = new ReturnBNGOutput(bngService, fieldSimulationContext, this);
 		ClientTaskDispatcher.dispatch(this, hash, tasksArray, false, true, new ProgressDialogListener() {
 			@Override
 			public void cancelButton_actionPerformed(EventObject newEvent) {
@@ -530,7 +546,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 					String s = "...user cancelled.";
 					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, s);
 					setNewCallbackMessage(tcm);
-					fieldSimulationContext.setValidTestConstraints(false);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -639,3 +654,17 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 
 }
+/*
+if (!SwingUtilities.isEventDispatchThread()){
+	SwingUtilities.invokeLater(new Runnable(){
+
+		@Override
+		public void run() {
+			appendToConsole(newCallbackMessage);
+		}
+		
+	});
+}else{
+	appendToConsole(newCallbackMessage);
+}
+*/
