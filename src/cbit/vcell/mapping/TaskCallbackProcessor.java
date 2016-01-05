@@ -78,9 +78,6 @@ public class TaskCallbackProcessor {
 			break;
 		case TaskEnd:
 			System.out.println("Task ended");
-//			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
-//			consoleNotificationList.add(tcm);
-//			sc.firePropertyChange("appendToConsole", "", tcm);
 			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
 				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
@@ -96,6 +93,38 @@ public class TaskCallbackProcessor {
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
 					sc.firePropertyChange("appendToConsole", "", tcm);
+					sc.setInsufficientMaxMolecules(true);
+				} else {
+					sc.setInsufficientMaxMolecules(false);
+				}
+			}
+			break;
+		case TaskEndNotificationOnly:
+			System.out.println("TaskEndNotificationOnly");
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
+				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
+				consoleNotificationList.add(tcm);
+				sc.firePropertyChange("appendToConsole", "", tcm);
+			}
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
+				if(needAdjustMaxMolecules) {
+					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
+					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
+					consoleNotificationList.add(tcm);
+					sc.firePropertyChange("appendToConsole", "", tcm);
+				}
+			}
+			break;
+		case TaskEndAdjustSimulationContextFlagsOnly:
+			System.out.println("TaskEndAdjustSimulationContextFlagsOnly");
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+				sc.setInsufficientIterations(true);
+			} else {
+				sc.setInsufficientIterations(false);
+			}
+			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
+				if(needAdjustMaxMolecules) {
 					sc.setInsufficientMaxMolecules(true);
 				} else {
 					sc.setInsufficientMaxMolecules(false);

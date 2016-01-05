@@ -127,6 +127,71 @@ private void initialize() {
 		maxMolTextField.addActionListener(eventHandler);
 		maxIterationTextField.addFocusListener(eventHandler);
 		maxMolTextField.addFocusListener(eventHandler);
+		
+		maxIterationTextField.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void removeUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void insertUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);
+				}
+			}
+			public boolean isChanged() {
+				NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+				String s1 = maxIterationTextField.getText();
+				String s2 = nc.getMaxIteration()  +"";
+				if(!s1.equals(s2)) {
+					return true;
+				}
+				return false;
+			}
+		});
+		maxMolTextField.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void removeUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);					
+				}
+			}
+			public void insertUpdate(DocumentEvent e) {
+				if(isChanged()) {
+					getApplyButton().setEnabled(true);
+				} else {
+					getApplyButton().setEnabled(false);
+				}
+			}
+			public boolean isChanged() {
+				NetworkConstraints nc = owner.getSimulationContext().getNetworkConstraints();
+				String s1 = maxMolTextField.getText();
+				String s2 = nc.getMaxMoleculesPerSpecies() + "";
+				if(!s1.equals(s2)) {
+					return true;
+				}
+				return false;
+			}
+		});
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();		
@@ -194,7 +259,9 @@ private void initialize() {
 		
 		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxIteration() + "");
 		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getMaxMoleculesPerSpecies() + "");
-				
+		
+		getApplyButton().setEnabled(false);	
+		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

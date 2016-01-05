@@ -5,7 +5,10 @@ public class TaskCallbackMessage {
 	public enum TaskCallbackStatus {
 		Clean,
 		TaskStart,
-		TaskEnd,
+		@Deprecated
+		TaskEnd,	// detects insufficient iterations / molecules, displays warning in console and adjusts simulation context flags
+		TaskEndNotificationOnly,					// same as above but doesn't adjust the simulation context flags
+		TaskEndAdjustSimulationContextFlagsOnly,	// // same as above but only adjust the simulation context flags
 		TaskStopped,
 		Notification,
 		DetailBatch,

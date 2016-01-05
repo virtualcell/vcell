@@ -333,6 +333,28 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		fieldIssueManager = issueManager;
 	}
 	
+	
+	public void updateOutputSpecToSimulationContext(BNGOutputSpec outputSpec) {
+		synchronized (this) {
+			fieldSimulationContext.setMd5hash(null);
+			fieldSimulationContext.setMostRecentlyCreatedOutputSpec(outputSpec);
+		}
+	}
+	public void updateLimitExceededWarnings(BNGOutputSpec outputSpec) {
+		if(outputSpec == null || outputSpec.getBNGSpecies() == null || outputSpec.getBNGReactions() == null) {
+			return;
+		}
+		if(outputSpec.getBNGSpecies().length > SimulationConsolePanel.speciesLimit) {
+			String message = SimulationConsolePanel.getSpeciesLimitExceededMessage(outputSpec);
+			appendToConsole(message);
+		}
+		if(outputSpec.getBNGReactions().length > SimulationConsolePanel.reactionsLimit) {
+			String message = SimulationConsolePanel.getReactionsLimitExceededMessage(outputSpec);
+			appendToConsole(message);
+		}
+	}
+
+	
 	@Override
 	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
 		synchronized (this) {
@@ -448,7 +470,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		EditConstraintsPanel panel = new EditConstraintsPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-		Dimension dim = new Dimension(250, 160);
+		Dimension dim = new Dimension(280, 160);
 		childWindow.pack();
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);
