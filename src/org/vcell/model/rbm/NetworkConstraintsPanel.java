@@ -336,6 +336,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	
 	public void updateOutputSpecToSimulationContext(BNGOutputSpec outputSpec) {
 		synchronized (this) {
+			// Warning: the results from "Edit / Test Constraints" are never cached because we want to repeatedly run it 
+			// even if nothing changed - hence we set the hash to null
 			fieldSimulationContext.setMd5hash(null);
 			fieldSimulationContext.setMostRecentlyCreatedOutputSpec(outputSpec);
 		}
@@ -358,6 +360,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	@Override
 	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
 		synchronized (this) {
+			// Warning: the results from "Edit / Test Constraints" are never cached because we want to repeatedly run it 
+			// even if nothing changed - hence we set the hash to null
 			fieldSimulationContext.setMd5hash(null);
 			fieldSimulationContext.setMostRecentlyCreatedOutputSpec(outputSpec);
 		}
