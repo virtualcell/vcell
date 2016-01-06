@@ -22,6 +22,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -669,7 +670,15 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
 	for (int i = 0; i < varsToTest.length; i++){
 		int refRSIndex = referenceResultSet.findColumn(varsToTest[i]);
 		if (refRSIndex==-1){
-			throw new RuntimeException("variable '"+varsToTest[i]+"' not found in reference dataset");
+			if (varsToTest[i].endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT)){
+				String varNameWithoutCount = varsToTest[i].replace(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT, "");
+				refRSIndex = referenceResultSet.findColumn(varNameWithoutCount);
+				if (refRSIndex==-1){
+					throw new RuntimeException("neither variable '"+varsToTest[i]+"' nor '"+varNameWithoutCount+"' found in reference dataset");
+				}
+			}else{
+				throw new RuntimeException("variable '"+varsToTest[i]+"' not found in reference dataset");
+			}
 		}
 		ColumnDescription refColDesc = referenceResultSet.getColumnDescriptions(refRSIndex);
 		double refData[] = referenceResultSet.extractColumn(refRSIndex);
