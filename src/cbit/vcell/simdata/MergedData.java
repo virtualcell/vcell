@@ -474,7 +474,11 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 	// Can use dataTimes field later (for genuine SimulationData), but for now, obtain it on the fly
 	double times[] = null;
 	try {
-		times = refSimData.extractColumn(refSimData.findColumn("t"));
+		int independentVarIndex = refSimData.findColumn("t");
+		if (independentVarIndex < 0){
+			independentVarIndex = refSimData.findColumn(HISTOGRAM_INDEX_NAME);
+		}
+		times = refSimData.extractColumn(independentVarIndex);
 	} catch (ExpressionException e) {
 		e.printStackTrace(System.out);
 	}	
@@ -1090,8 +1094,8 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 	// If simData and refSimdata times are equal, return simData without resampling.
 	// Else resampling is necessary.
 
-	double[] refTimeArray = refSimdata.extractColumn(refSimdata.findColumn("t"));
-	double[] timeArray    = simData.extractColumn(simData.findColumn("t"));
+	double[] refTimeArray = refSimdata.extractColumn(Math.max(refSimdata.findColumn(HISTOGRAM_INDEX_NAME),refSimdata.findColumn("t")));
+	double[] timeArray    = simData.extractColumn(Math.max(simData.findColumn(HISTOGRAM_INDEX_NAME),simData.findColumn("t")));
 
 	if (refTimeArray.length == timeArray.length) {
 		boolean bEqual = true;

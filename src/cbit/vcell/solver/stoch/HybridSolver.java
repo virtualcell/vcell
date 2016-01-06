@@ -392,6 +392,8 @@ protected String[] getMathExecutableCommand() {
 	    paraString = epsilon + lambda + MSR_Tolerance + SDE_Tolerance + SDE_dt;
 	    if(sho.isUseCustomSeed())
 	    	randomNumber = " -R "+String.valueOf(sho.getCustomSeed());
+	}else{
+		throw new RuntimeException("expecting StochHybridOptions for solver type "+solverTaskDescription.getSolverDescription().getDisplayLabel());
 	}
 	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
