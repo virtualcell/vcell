@@ -90,7 +90,10 @@ public class MovingBoundaryResultTest extends H5Client {
 	    		Element e = p.get(x, y);
 	    		if (e.position != Element.Position.OUTSIDE) {
 			    	System.out.format("%2d %2d %-55.55s Boundary indexes: ",x,y,e);
-			    	System.out.println(Arrays.toString(e.boundary()));
+			    	System.out.println("\t" + Arrays.toString(e.boundary()));
+			    	System.out.print("\t");
+			    	e.species.stream().forEach( (s) -> System.out.print(s + " "));
+			    	System.out.println( );
 	    		}
 
 	    	}
