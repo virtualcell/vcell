@@ -2361,7 +2361,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		// copy some transient info from the old model to the new one
 		for (SimulationContext newsc : scArr) {
 			SimulationContext oldsc = bioModel.getSimulationContext(newsc.getName());
-			newsc.setTaskCallbackProcessor(oldsc.getTaskCallbackProcessor());
+			newsc.getTaskCallbackProcessor().initialize((oldsc.getTaskCallbackProcessor()));
 			newsc.setMostRecentlyCreatedOutputSpec(oldsc.getMostRecentlyCreatedOutputSpec());
 			newsc.setMd5hash(oldsc.getMd5hash());
 		}

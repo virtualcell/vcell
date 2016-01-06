@@ -104,7 +104,7 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
-	Dimension dim = new Dimension(280, 160);
+	Dimension dim = new Dimension(320, 160);
 	childWindow.pack();
 	panel.setChildWindow(childWindow);
 	childWindow.setPreferredSize(dim);

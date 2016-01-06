@@ -474,7 +474,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		EditConstraintsPanel panel = new EditConstraintsPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-		Dimension dim = new Dimension(280, 160);
+		Dimension dim = new Dimension(320, 160);
 		childWindow.pack();
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);
@@ -596,6 +596,16 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	}
 	private void viewGeneratedReactions() {
 		System.out.println("viewGeneratedReactions button pressed");
+		
+// TODO: use this to verify instance consistency before and after a save (when the old sim context and other stuff gets replaced with the new one
+//			System.out.println("NetworkConstraintsPanel: " + "simContext: " + System.identityHashCode(fieldSimulationContext));
+//			System.out.println("NetworkConstraintsPanel: " + "simContext: " + "TaskCallbackProcessor: "+ System.identityHashCode(fieldSimulationContext.getTaskCallbackProcessor()));
+//			System.out.println("NetworkConstraintsPanel: " + "simContext: " + "TaskCallbackProcessor: "+ "simContext: " + System.identityHashCode(fieldSimulationContext.getTaskCallbackProcessor().getSimulationContext()));
+//			System.out.println("NetworkConstraintsPanel: " + "simContext: " + "NetworkConstraints: " + System.identityHashCode(fieldSimulationContext.getNetworkConstraints()));
+//			System.out.println("NetworkConstraintsPanel: " + "NC Table: " + System.identityHashCode(networkConstraintsTable));
+//			System.out.println("NetworkConstraintsPanel: " + "NCTableModel: " + System.identityHashCode(networkConstraintsTableModel));
+//			System.out.println("NetworkConstraintsPanel: " + "NCTableModel: " + "simContext: " + System.identityHashCode(networkConstraintsTableModel.getSimulationContext()));
+		
 		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel(this);
 		panel.setReactions(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions());
 		panel.setPreferredSize(new Dimension(800,550));
