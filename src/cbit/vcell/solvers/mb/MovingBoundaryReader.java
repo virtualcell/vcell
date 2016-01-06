@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Vector;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.ProgrammingException;
