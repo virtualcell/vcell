@@ -3,7 +3,6 @@ package cbit.vcell.solvers.mb;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -12,14 +11,19 @@ import org.vcell.util.BeanUtils.CastInfo;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
 
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.object.Datatype;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import ncsa.hdf.object.h5.H5CompoundDS;
 import ncsa.hdf.object.h5.H5ScalarDS;
 
-public class MovingBoundaryResult implements MovingBoundaryTypes {
+/**
+ * read results from MovingBoundary hdf5 file.
+ * In general, returned objects are not cached by this so
+ * most public calls read file and create new objects
+ * @author GWeatherby
+ *
+ */
+public class MovingBoundaryReader implements MovingBoundaryTypes {
 	private static final String ELEM = "elements";
 
 	private final String filename;
@@ -31,26 +35,11 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 	private PlaneNodes pnodes;
 	private final PointIndexTreeAndList pointIndex;
 
-	private static final Logger lg = Logger.getLogger(MovingBoundaryResult.class);
+//	private static final Logger lg = Logger.getLogger(MovingBoundaryReader.class);
 	private static final String HDF_SPLIT_CHARS = "{}, ";
 
-	public MeshInfo getMeshInfo( ) {
-		if (meshInfo == null) {
-			double p = singleDouble("precision");
-			double sf = singleDouble("scaleFactor");
-			DimensionInfo xdim = getDimInfo('x');
-			DimensionInfo ydim = getDimInfo('y');
-			int d = lastTimeIndex();
-			meshInfo = new MeshInfo(p,sf,xdim,ydim,d);
-		}
-		return meshInfo;
-	}
 
-	public int lastTimeIndex( ) {
-		return lastTimeIndex_;
-	}
-
-	public MovingBoundaryResult(String filename) {
+	public MovingBoundaryReader(String filename) {
 		this.filename = filename;
 		meshInfo = null;
 		timeInfo = null;
@@ -83,6 +72,22 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 
 	public PointIndex getPointIndex() {
 		return pointIndex;
+	}
+
+	public MeshInfo getMeshInfo( ) {
+		if (meshInfo == null) {
+			double p = singleDouble("precision");
+			double sf = singleDouble("scaleFactor");
+			DimensionInfo xdim = getDimInfo('x');
+			DimensionInfo ydim = getDimInfo('y');
+			int d = lastTimeIndex();
+			meshInfo = new MeshInfo(p,sf,xdim,ydim,d);
+		}
+		return meshInfo;
+	}
+
+	public int lastTimeIndex( ) {
+		return lastTimeIndex_;
 	}
 
 	void testquery( ) {
@@ -299,7 +304,6 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 				conc[0]= select(double[].class,data,dn,"species","uNumeric");
 			}
 
-
 			int i = 0;
 			for (int x = 0; x < numX; x++) {
 				for (int y = 0; y < numY; y++) {
@@ -307,7 +311,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 //					String ystr = ypoints[i];
 //					int[] bnd = buildBoundary(xstr,ystr);
 					int[] bnd = buildBoundary(combined[i]);
-					System.out.println(Arrays.toString(bnd));
+//					System.out.println(Arrays.toString(bnd));
 					Element e = new Element(vols[i],poz[i],bnd);
 					for (int sc = 0; sc < mass.length; sc++) {
 						Species sp = new Species(mass[sc][i], conc[sc][i]);
@@ -329,6 +333,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private int[] buildBoundary(String xvalues, String yvalues) {
 		String[] xs = StringUtils.split(xvalues,HDF_SPLIT_CHARS);
 		String[] ys = StringUtils.split(yvalues,HDF_SPLIT_CHARS);
@@ -422,12 +427,7 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			return elements[x][y];
 		}
 	}
-	/**
-	 * moving boundary result exception construct
-	 */
-	private String mbrec(String message) {
-		return "Reading " + filename + ": " + message;
-	}
+
 
 	public int[] getBoundaryIndexes(int timeIndex) {
 		try {
@@ -477,6 +477,13 @@ public class MovingBoundaryResult implements MovingBoundaryTypes {
 			builder.add(idx.getIndex());
 		}
 		return builder.stream().mapToInt(i->i).toArray(); // i -> i is converting Integer to int
+	}
+
+	/**
+	 * moving boundary result exception constructor helper
+	 */
+	private String mbrec(String message) {
+		return "Reading " + filename + ": " + message;
 	}
 
 	@SuppressWarnings("serial")
