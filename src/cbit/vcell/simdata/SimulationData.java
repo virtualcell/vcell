@@ -31,6 +31,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -542,7 +543,12 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 			if (odeSimData == null) {
 				return null;
 			}
-			dataTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
+			int timeIndex = odeSimData.findColumn("t");
+			if (timeIndex < 0){
+				timeIndex = 0; // ok, time probably doesn't exist like for a histogram dataset ... just use first index.
+				LG.warn("cannot find time ('t') column in ODESimData, assuming first column holds the independent variable (maybe not time)");
+			}
+			dataTimes = odeSimData.extractColumn(timeIndex);
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException("error getting dataset times: "+e.getMessage());

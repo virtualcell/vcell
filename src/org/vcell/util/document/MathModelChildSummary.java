@@ -177,8 +177,9 @@ public String toDatabaseSerialization() {
 	sb.append(geoDim+BioModelChildSummary.GEOMETRY_DIMENSION_SUFFIX+"\n");
 	
 	//Simulations
-	sb.append(simNames.length+"\n");//num simulations
-	for(int j=0;j<simNames.length;j+= 1){
+	int numSims = (simNames!=null)?(simNames.length):(0);
+	sb.append(numSims+"\n");//num simulations
+	for(int j=0;j<numSims;j+= 1){
 		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(simNames[j]))+"\n");
 		sb.append(emptyConvention(TokenMangler.getChildSummaryElementEscapedString(simAnnots[j]))+"\n");
 	}

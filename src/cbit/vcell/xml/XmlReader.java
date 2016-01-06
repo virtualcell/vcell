@@ -6340,18 +6340,26 @@ private StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
 	// Amended July 22nd,2007 to add StochHybridOptions
 	if(isHybrid)
 	{
-		if(param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) != null &&
-		   param.getAttributeValue(XMLTags.HybridLambdaAttrTag) != null &&
-		   param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) !=null &&
-		   param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) !=null )
-		{
-			double epsilon = Double.parseDouble( param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) );
-			double lambda = Double.parseDouble( param.getAttributeValue(XMLTags.HybridLambdaAttrTag) );
-			double MSRTolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) );
-			double sDETDolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) );
-			//**** create a new StochHybridOptions object and return ****
-			return new StochHybridOptions(isUseCustomSeed, customSeed, numOfTrials, epsilon, lambda, MSRTolerance, sDETDolerance);
+		// StochHybridOptions are immutable, so we grab the default values from the default constructor - and read the options which are stored in XML
+		StochHybridOptions defaultStochHybridOptions = new StochHybridOptions();
+		double epsilon = defaultStochHybridOptions.getEpsilon();
+		double lambda = defaultStochHybridOptions.getLambda();
+		double MSRTolerance = defaultStochHybridOptions.getMSRTolerance();
+		double SDETDolerance = defaultStochHybridOptions.getSDETolerance();
+		if (param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) != null){
+			epsilon = Double.parseDouble( param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) );
 		}
+		if (param.getAttributeValue(XMLTags.HybridLambdaAttrTag) != null){
+			lambda = Double.parseDouble( param.getAttributeValue(XMLTags.HybridLambdaAttrTag) );
+		}
+		if (param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) !=null){
+			MSRTolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) );
+		}
+		if (param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) !=null){
+			SDETDolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) );
+		}
+		//**** create a new StochHybridOptions object and return ****
+		return new StochHybridOptions(isUseCustomSeed, customSeed, numOfTrials, epsilon, lambda, MSRTolerance, SDETDolerance);
 	}
 	//**** create new StochSimOptions object and return ****
 	return new StochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
