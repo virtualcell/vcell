@@ -21,6 +21,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryClass;
@@ -98,7 +99,17 @@ public class ClientTaskManager {
 				newSimulationContext.getGeometry().precomputeAll(new GeometryThumbnailImageFactoryAWT());
 				if (newSimulationContext.isSameTypeAs(simulationContext)) { 
 					MathMappingCallback callback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
-					newSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+					String oldHash = simulationContext.getMd5hash();
+					BNGOutputSpec oldSpec = simulationContext.getMostRecentlyCreatedOutputSpec();
+					if(oldHash != null && oldSpec != null) {
+						// Warning: the results from "Edit / Test Constraints" are never cached because we want to repeatedly run it 
+						// even if nothing changed
+						newSimulationContext.setMd5hash(oldHash);
+						newSimulationContext.setMostRecentlyCreatedOutputSpec(oldSpec);
+						newSimulationContext.setInsufficientIterations(simulationContext.isInsufficientIterations());
+						newSimulationContext.setInsufficientMaxMolecules(simulationContext.isInsufficientMaxMolecules());
+					}
+					newSimulationContext.refreshMathDescription(callback,NetworkGenerationRequirements.ComputeFullStandardTimeout);
 				}
 				hashTable.put("newSimulationContext", newSimulationContext);
 			}
