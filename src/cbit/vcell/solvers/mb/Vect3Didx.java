@@ -20,7 +20,6 @@ public class Vect3Didx extends Vect3D implements Comparable<Vect3Didx> {
 		return index;
 	}
 
-
 	/**
 	 * normalize all NaN values
 	 * @param d

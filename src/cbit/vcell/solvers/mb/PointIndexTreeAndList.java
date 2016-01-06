@@ -3,6 +3,9 @@ package cbit.vcell.solvers.mb;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+/**
+ * index Vect3D by objects and by index
+ */
 public class PointIndexTreeAndList implements PointIndex {
 	private int nextIndex;
 	private TreeSet<Vect3Didx> existing;
@@ -34,6 +37,11 @@ public class PointIndexTreeAndList implements PointIndex {
 	@Override
 	public Vect3Didx lookup(int index) {
 		return byIndex.get(index);
+	}
+
+	@Override
+	public int size() {
+		return nextIndex;
 	}
 
 	/**
