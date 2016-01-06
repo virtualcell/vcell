@@ -31,6 +31,15 @@ public class TaskCallbackProcessor {
 	public TaskCallbackProcessor(SimulationContext simulationContext) {
 		this.sc = simulationContext;
 	}
+	
+	// almost like a copy constructor but we do not want to copy the simulation context, nor deep copy the list
+	public void initialize(TaskCallbackProcessor that) {
+		this.consoleNotificationList = that.getConsoleNotificationList();	// we reuse the list rather than copy it
+		this.currentIterationSpecies = that.currentIterationSpecies;
+		this.previousIterationSpecies = that.previousIterationSpecies;
+		this.needAdjustIterations = that.needAdjustIterations;
+		this.needAdjustMaxMolecules = that.needAdjustMaxMolecules;
+	}
 
 	public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
 		return consoleNotificationList;
