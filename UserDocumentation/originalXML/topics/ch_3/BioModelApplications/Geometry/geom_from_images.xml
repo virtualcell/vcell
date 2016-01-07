@@ -33,7 +33,6 @@
 	<item>Image based (import from file, zip or directory) - (Use external image file as pre-segmented or template for compartment definition).</item>
 	<item>From scratch - (Blank canvas for manual "painting" of compartment domains).</item>
 	<item>Mesh based - (import from .stl file).</item>
-	<item>Image based (legacy from database, not generally used) - (Re-use old images saved in earlier version of VCell).</item>
 	</list>
 	The image based geometry editor will appear; instructions for editing external images are provide below.
 	</para>
@@ -43,7 +42,6 @@
 	<list>
 	<item>BioModel names (select geometry from a previously saved BioModel).</item>
 	<item>MathModel names (select geometry from a previously saved MathModel).</item>
-	<item>Geometry names. (legacy from database, not generally used) - (Re-use old geometries saved in earlier version of VCell).</item>
 	</list>
 	The chosen geometry will immediately replace the current geometry in the application.
 	</para>
