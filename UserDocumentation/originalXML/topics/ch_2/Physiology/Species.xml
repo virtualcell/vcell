@@ -10,7 +10,7 @@
 	<appearance>
 	There are two types of species that can be used in BioModel:
 	<list>
-	<item><link target = "RegularSpecies">Regular species</link> are defined by a green round shape and 
+	<item>Regular <link target = "RegularSpecies">species</link> are defined by a green round shape and 
 	define variables.</item>
 	<item><link target = "CompositeSpecies">Composite species</link> are defined by a blue round shape and 
 	have an internal structure: they are composed of <link target = "Molecules">molecules</link>.
