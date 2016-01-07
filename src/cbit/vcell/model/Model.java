@@ -3198,6 +3198,34 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	
+	// if we rename a molecular type, we try to find rename the observable which was automatically created with the molecular type
+	// if we can't find any candidate or we find too many candidates we wisely (and silently) do nothing
+	if (evt.getSource() instanceof MolecularType && evt.getPropertyName().equals("name")){
+		List<RbmObservable> candidates = new ArrayList<RbmObservable>();
+		String oldName = (String)evt.getOldValue();
+		String newName = (String)evt.getNewValue();
+		for(RbmObservable candidate : getRbmModelContainer().getObservableList()) {
+			if(candidate.getName().contains(oldName) && candidate.getName().startsWith("O") && candidate.getName().endsWith("_tot")) {
+				candidates.add(candidate);
+			}
+		}
+		if(candidates.isEmpty()) {
+			System.out.println("no candidates to rename");
+		} else if(candidates.size() > 1) {
+			System.out.println("too many candidates to rename");
+		} else {
+			RbmObservable candidate = candidates.get(0);
+			System.out.println("renaming --- " + candidate.getName());
+			try {
+				String prefix = candidate.getName().substring(0, candidate.getName().indexOf("_"));
+				candidate.setName(prefix + "_" + newName + "_tot");
+			} catch (PropertyVetoException e) {
+				System.out.println("Cannot rename observable " + candidate.getName() + ", " + e.getMessage());
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	//
 	// if any symbolTableEntry within this model namescope changes (e.g. SpeciesContext, ModelParameter, etc...) then we have to update
 	// the expressions in the ModelParameters (they might be referenced).
