@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="RegularSpecies" target="Species">
+<page title="Species" target="Species">
 
 	<introduction>
 	In BioModels, species are used to create variables (molecular species) in <link target = "Reactions"> reactions and
