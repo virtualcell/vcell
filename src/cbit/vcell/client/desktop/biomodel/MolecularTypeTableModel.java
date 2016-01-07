@@ -2,6 +2,8 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,6 +24,7 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.model.ModelPropertyVetoException;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -66,23 +69,27 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 			case name:
 				return molecularType.getName();
 			case bngl_pattern:
-				String str = molecularType.getName() + "(";
-				List<MolecularComponent> mcl = molecularType.getComponentList();
-				for(int i=0; i < mcl.size(); i++) {
-					MolecularComponent mc = mcl.get(i);
-					str += mc.getName();
-					List<ComponentStateDefinition> csdl = mc.getComponentStateDefinitions();
-					for(int j=0; j < csdl.size(); j++) {
-						ComponentStateDefinition cs = csdl.get(j);
-						str += "~" + cs.getName();
-					}
-					if(i<mcl.size()-1) { str += ","; }
-				}
-				str += ")";
-				return str;
+				return pattern(molecularType);
 			}
 		}
 		return null;
+	}
+	
+	private String pattern(MolecularType molecularType) {
+		String str = molecularType.getName() + "(";
+		List<MolecularComponent> mcl = molecularType.getComponentList();
+		for(int i=0; i < mcl.size(); i++) {
+			MolecularComponent mc = mcl.get(i);
+			str += mc.getName();
+			List<ComponentStateDefinition> csdl = mc.getComponentStateDefinitions();
+			for(int j=0; j < csdl.size(); j++) {
+				ComponentStateDefinition cs = csdl.get(j);
+				str += "~" + cs.getName();
+			}
+			if(i<mcl.size()-1) { str += ","; }
+		}
+		str += ")";
+		return str;
 	}
 
 	@Override
@@ -304,11 +311,23 @@ class MolecularTypeTableModel extends BioModelEditorRightSideTableModel<Molecula
 	@Override
 	protected List<MolecularType> computeData() {
 		if (getModel() == null) {
-			return null;
+			return new ArrayList<MolecularType>();
 		}
-		return getModel().getRbmModelContainer().getMolecularTypeList();
+		List<MolecularType> mtList;
+		if (searchText == null || searchText.length() == 0) {
+			mtList = new ArrayList<MolecularType>(getModel().getRbmModelContainer().getMolecularTypeList());
+		} else {
+			mtList = new ArrayList<MolecularType>();
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for (MolecularType mt : getModel().getRbmModelContainer().getMolecularTypeList()){
+				String expression = pattern(mt);
+				if(expression != null && expression.toLowerCase().contains(lowerCaseSearchText)) {
+					mtList.add(mt);
+				}
+			}
+		}
+		return mtList;
 	}
-	
 	@Override
 	protected void bioModelChange(PropertyChangeEvent evt) {
 		super.bioModelChange(evt);
