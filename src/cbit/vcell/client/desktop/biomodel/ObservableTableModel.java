@@ -217,9 +217,36 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 	@Override
 	protected List<RbmObservable> computeData() {
 		if (getModel() == null) {
-			return null;
+			return new ArrayList<RbmObservable>();
 		}
-		return getModel().getRbmModelContainer().getObservableList();
+		List<RbmObservable> oList;
+		if (searchText == null || searchText.length() == 0) {
+			oList = new ArrayList<RbmObservable>(getModel().getRbmModelContainer().getObservableList());
+		} else {
+			oList = new ArrayList<RbmObservable>();
+			String lowerCaseSearchText = searchText.toLowerCase();
+			for (RbmObservable o : getModel().getRbmModelContainer().getObservableList()){
+				String name = o.getName();
+				String struct = o.getStructure().getName();
+				String type = o.getType().name();
+				if(name != null && name.toLowerCase().contains(lowerCaseSearchText)) {
+					oList.add(o);
+				} else if(struct != null && struct.toLowerCase().contains(lowerCaseSearchText)) {
+					oList.add(o);
+				} else if(type != null && type.toLowerCase().contains(lowerCaseSearchText)) {
+					oList.add(o);
+				} else {
+					String expression = "";
+					for(SpeciesPattern sp : o.getSpeciesPatternList()) {
+						expression += sp.toString() + " ";
+					}
+					if(expression.toLowerCase().contains(lowerCaseSearchText)) {
+						oList.add(o);
+					}
+				}
+			}
+		}
+		return oList;
 	}
 
 	@Override
