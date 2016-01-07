@@ -2914,7 +2914,7 @@ static public class BngUnitSystem {
 
 	public BngUnitSystem(BngUnitOrigin bngUnitOrigin) {
 		this.o = bngUnitOrigin;
-		this.volume = 5000.0;		// in the dialog it'll show as 5000 cubic micrometers, which is a good initial value
+		this.volume = 10.0;		// in the dialog it'll show as 10 cubic micrometers, which is a good initial value
 		this.isConcentration = true;
 		this.volumeUnit = null;
 		this.concUnit = ConcUnitSystem.ConcUnitSymbol_uM;
@@ -2937,8 +2937,8 @@ static public class BngUnitSystem {
 		this.timeUnit = timeUnitSymbol;
 	}
 
-	public static BngUnitSystem createAsConcentration(BngUnitOrigin o, ConcUnitSystem concUnitSymbol, TimeUnitSystem timeUnitSymbol){
-		return new BngUnitSystem(o, true, null, null, concUnitSymbol, timeUnitSymbol);
+	public static BngUnitSystem createAsConcentration(BngUnitOrigin o, double volume, ConcUnitSystem concUnitSymbol, TimeUnitSystem timeUnitSymbol){
+		return new BngUnitSystem(o, true, volume, null, concUnitSymbol, timeUnitSymbol);
 	}
 
 	public static BngUnitSystem createAsMolecules(BngUnitOrigin o, double volume, VolumeUnitSystem volumeUnitSymbol, TimeUnitSystem timeUnitSymbol){
@@ -3146,11 +3146,11 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					}
 
 					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
-					if(!bngUnitSystem.isConcentration()) {
+//					if(!bngUnitSystem.isConcentration()) {
 						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
 						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
 						odeSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
-					}
+//					}
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing. Extracting it from Species, Reactions, Obserbables.");

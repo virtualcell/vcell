@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -46,8 +47,10 @@ public class BNGLUnitsPanel extends JPanel {
 	private JPanel lowerMolPanel;
 
 	ButtonGroup buttonGroup = new ButtonGroup();
-	JTextField volumeSize = new JTextField();
+	JTextField cVolumeSize = new JTextField();
+	JTextField mVolumeSize = new JTextField();
 	JComboBox<String> concentrationUnitsCombo = new JComboBox<String>();
+	JComboBox<String> cVolumeUnitsCombo = new JComboBox<String>();		// most of the code is present but we don't use it
 	JComboBox<String> mVolumeUnitsCombo = new JComboBox<String>();
 	JComboBox<String> cTimeUnitsCombo = new JComboBox<String>();
 	JComboBox<String> mTimeUnitsCombo = new JComboBox<String>();
@@ -104,11 +107,13 @@ public class BNGLUnitsPanel extends JPanel {
 	public BNGLUnitsPanel(BngUnitSystem us) {
 		super();
 		this.unitSystem = new BngUnitSystem(us);
-		
-		volumeSize.setText(unitSystem.getVolume()+"");
+		cVolumeSize.setText(unitSystem.getVolume()+"");
+		mVolumeSize.setText(unitSystem.getVolume()+"");
+
 		for(ConcUnitSystem s : ConcUnitSystem.values()) {
 			concentrationUnitsCombo.addItem(s.description);
 		}
+		cVolumeUnitsCombo.addItem(VolumeUnitSystem.VolumeUnit_um3.description);		// TODO: hardcoded for now
 		for(VolumeUnitSystem s : VolumeUnitSystem.values()) {
 			mVolumeUnitsCombo.addItem(s.description);
 		}
@@ -180,24 +185,33 @@ public class BNGLUnitsPanel extends JPanel {
 		con.setSelected(true);		// select the "Concentration" button
 // --------------------------------------------------------------------- lower panels ------------------
 		lowerConPanel.setLayout(new GridBagLayout());
-//		lowerConPanel.setPreferredSize(new Dimension(195,100));
-		
+
 		gridy = 0;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 6, 0, 0);
-		lowerConPanel.add(new JLabel("Scale:   "), gbc);
+		lowerConPanel.add(new JLabel("Volume:"), gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 8, 0, 0);
+		lowerConPanel.add(cVolumeSize, gbc);
+		
+		JLabel unitLabel = new JLabel(VolumeUnitSystem.VolumeUnit_um3.description);
+		unitLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4, 8, 0, 10);
-		lowerConPanel.add(concentrationUnitsCombo, gbc);
+		lowerConPanel.add(unitLabel, gbc);
+//		lowerConPanel.add(cVolumeUnitsCombo, gbc);		// TODO: get rid of hardcoding
 
 		gridy++;
 		gbc = new GridBagConstraints();
@@ -216,8 +230,22 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.insets = new Insets(4, 8, 4, 10);
 		lowerConPanel.add(cTimeUnitsCombo, gbc);
 
+		gbc = new GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 6, 0, 0);
+		lowerConPanel.add(new JLabel("Scale: "), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 3;
+		gbc.gridy = gridy;
+		gbc.fill = GridBagConstraints.LINE_END;
+		gbc.insets = new Insets(4, 8, 0, 10);
+		lowerConPanel.add(concentrationUnitsCombo, gbc);
+
+		// --------------------------------------------------------------------------------
 		lowerMolPanel.setLayout(new GridBagLayout());
-//		lowerMolPanel.setPreferredSize(new Dimension(195,100));
 		
 		gridy = 0;
 		gbc = new GridBagConstraints();
@@ -233,7 +261,7 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 8, 0, 0);
-		lowerMolPanel.add(volumeSize, gbc);
+		lowerMolPanel.add(mVolumeSize, gbc);
 		
 		gbc = new GridBagConstraints();
 		gbc.gridx = 2;
@@ -292,7 +320,7 @@ public class BNGLUnitsPanel extends JPanel {
 		gbc.fill = GridBagConstraints.BOTH;
 		add(lowerMolPanel, gbc);
 		
-		Dimension size = new Dimension(300,150);
+		Dimension size = new Dimension(350,150);
 		setPreferredSize(size);
 		setMaximumSize(size);
 		
@@ -302,7 +330,8 @@ public class BNGLUnitsPanel extends JPanel {
 		
 		con.addActionListener(eventHandler);
 		mol.addActionListener(eventHandler);
-		volumeSize.addKeyListener(eventHandler); 
+		cVolumeSize.addKeyListener(eventHandler); 
+		mVolumeSize.addKeyListener(eventHandler); 
 	}
 
 
@@ -333,6 +362,7 @@ public String getSelectedButtonText(ButtonGroup bg) {
 		}
 		
 		if(getSelectedButtonText(buttonGroup).equals(concentrations)) {
+			double volume = Double.parseDouble(cVolumeSize.getText());
 			ConcUnitSystem cus = ConcUnitSystem.values()[0];
 			for(ConcUnitSystem s : ConcUnitSystem.values()) {
 				if(s.description.equals(concentrationUnitsCombo.getSelectedItem().toString())) {
@@ -347,10 +377,10 @@ public String getSelectedButtonText(ButtonGroup bg) {
 					break;
 				}
 			}
-			return BngUnitSystem.createAsConcentration(BngUnitOrigin.USER, cus, tus);
+			return BngUnitSystem.createAsConcentration(BngUnitOrigin.USER, volume, cus, tus);
 			
 		} else {		// molecules
-			double volume = Double.parseDouble(volumeSize.getText());	// we know for sure it's valid double
+			double volume = Double.parseDouble(mVolumeSize.getText());	// we know for sure it's valid double
 			VolumeUnitSystem vus = VolumeUnitSystem.values()[0];
 			for(VolumeUnitSystem s : VolumeUnitSystem.values()) {
 				if(s.description.equals(mVolumeUnitsCombo.getSelectedItem().toString())) {
