@@ -44,8 +44,8 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 	public enum Column {
 		name("Name"),
 		structure("Structure"),
-		depiction("Pattern Depiction"),
-		species_pattern("Pattern Definition"),
+		depiction("Depiction"),
+		species_pattern("BioNetGen Definition"),
 		type("Count");
 		
 		String columeName;
