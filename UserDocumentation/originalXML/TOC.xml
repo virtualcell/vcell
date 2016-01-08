@@ -71,9 +71,11 @@
     	   		<tocitem target="geom_Analytic" text="Analytic Geometry"/>
    	 	  		<tocitem target="geom_from_images" text="Image-based Geometry"/>
    	 	  		<tocitem target="geom_from_surface" text="Geometry from Surface"/>
-   		   		<tocitem target="geom_spatial_mapping" text="Geometry Structure Mapping"/>
-   		   		<tocitem target="geom_nonspatial_mapping" text="Geometry Non-Spatial Structure Mapping"/>
-   		   		<tocitem target="geom_nonspatial_old_mapping" text="Geometry Non-Spatial Legacy Structure Mapping"/>
+   	 	  		<tocitem target="geom_struct_mapping" text="Geometry Structure Mapping">
+   		   			<tocitem target="geom_spatial_mapping" text="Spatial"/>
+   		   			<tocitem target="geom_nonspatial_mapping" text="Non-Spatial"/>
+   		   			<tocitem target="geom_nonspatial_old_mapping" text="Non-Spatial (legacy)"/>
+   		   		</tocitem>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species Specifications">
