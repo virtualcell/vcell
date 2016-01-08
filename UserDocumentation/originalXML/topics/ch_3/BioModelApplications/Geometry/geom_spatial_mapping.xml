@@ -11,12 +11,11 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Structure Mapping">
+<page title="Structure Mapping for spatial geometries">
 
 	
 	<introduction>
-	Structure Mapping defines the relationship between the physiology (Compartments/Structures) and the geometry (Domains).
-	The mapping provides information to simulation solvers that identifies a physiology structure at every point in space.
+	Spatial BioModel structure mappings are defined within an "Application" after all physiology compartments and a spatial geometry have been added.
 	</introduction>
 	
 	<appearance>
@@ -27,15 +26,7 @@
 	</para>
 	</appearance>
 	
-	<operations>
-	<para>
-	<bold>Compartmental (non-spatial)</bold> BioModel structure mapping.  (See <link target="geom_nonspatial_mapping">Non-Spatial Mapping</link> for non-spatial geometry mapping)
-	</para>
-	
-	<para>
-	<bold>Spatial</bold> BioModel structure mapping</para>
-	<para>
-	Spatial BioModel structure mappings are defined by the user within an "Application" after all physiology compartments and a spatial geometry have been added.</para>
+	<operations>	
 	<para>
 	<bold>Choose</bold> one of the methods below to map each physiology structure to the appropriate geometry subdomain: 
 	<list>
