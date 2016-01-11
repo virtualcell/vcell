@@ -292,6 +292,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
+			// we update everything matter what property change event was fired by the speciesContext
 			if (evt.getSource() == fieldSpeciesContext) {
 				updateInterface();
 			}

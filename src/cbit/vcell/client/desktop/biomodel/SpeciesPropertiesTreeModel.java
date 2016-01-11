@@ -83,7 +83,9 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 		nodeStructureChanged(rootNode);
 		GuiUtils.treeExpandAllRows(ownerTree);
 
-		speciesContext.firePropertyChange("name", "aaa", "bbb");
+		// we fire a "dummy" event because the species properties panel and the bio model editor species table model
+		// will repaint the shape and respectively the table row for any speciesContext property change event
+		speciesContext.firePropertyChange("entityChange", null, "bbb");
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
@@ -122,6 +124,8 @@ class SpeciesPropertiesTreeModel extends RbmDefaultTreeModel implements Property
 			nodeChanged(rootNode);
 //		} else if (evt.getSource() == seedSpecies && evt.getPropertyName().equals(SeedSpecies.PROPERTY_NAME_TYPE)){
 //			nodeChanged(rootNode);
+		} else if(evt.getPropertyName().equals("entityChange")) {
+			nodeChanged(rootNode);
 		} else {
 			populateTree();
 			

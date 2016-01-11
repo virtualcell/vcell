@@ -136,6 +136,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					updateInterface();
 				} else if (evt.getPropertyName().equals(ReactionRule.PROPERTY_NAME_NAME)) {
 					updateInterface();
+				} else if (evt.getPropertyName().equals("entityChange")) {
+					updateInterface();
 				}
 			}
 		}
