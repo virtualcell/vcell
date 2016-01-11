@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Specifications Overview">
+<page title="Specifications Overview"  target="SpecificationsOverview">
 
 	
 	<introduction>
@@ -18,11 +18,14 @@
 	<operations>
 	<para>
 	<bold>Specifications</bold> can be accessed by clicking the <bold>Specifications</bold> item under any <bold>Application</bold> in the 'Navigation' panel tree structure. 
-	This selects the <bold>Specifications</bold> tab for the application in the 'View' panel on the right. This 'Specifications' tab has the following 2 sub-tabs.
+	This selects the <bold>Specifications</bold> tab for the application in the 'View' panel on the right. 
+	The 'Specifications' tab has the following 3 sub-tabs:
 	</para>  
 	<list>
 		<item> <link target="SpeciesSpecifications">Species Specifications</link> </item>
 		<item> <link target="ReactionsSpecifications">Reactions Specifications</link> </item>
+		<item> <link target="NetworkSpecifications">Network Specifications</link> (for deterministic and stochastic applications) 
+		or <link target="NetworkFreeSpecifications">Network-Free Specifications</link> (for network-free application) </item>
 	</list>
 	  
 	</operations>

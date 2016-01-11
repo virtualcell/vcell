@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Composite Species Properties Pane" target="PP_CompositeSpecies">
+
+	<introduction>
+	The species properties pane defines a composite species: it's name and annotation (can be typed in) and 
+		composition (can be edited using right mouse click only, no keyboard entering).
+			<imgReference target = "PP_CompositeSpecies_defined.PNG"/>		
+	</introduction>
+	
+	<appearance>
+	</appearance>
+	
+	<operations>
+	<bold>Species specification</bold>
+	Using right mouse click, a user is able to
+		<list>
+			<item>Add molecules that compose species
+			<imgReference target = "PP_CompositeSpecies_new.PNG"/></item>
+			<item>After molecules are added, possible issues are highlighted in red (see also 3 errors in problems tab - 
+				two errors because two binding sites have unspecified states, one error because molecules are not connected).
+			<imgReference target = "PP_CompositeSpecies_error.PNG"/></item>
+			<item>Specify how binding sites are connected
+			<imgReference target = "PP_CompositeSpecies_bond1.PNG"/></item>
+			<item>Specify states for binding sites. Note that only one error is detected - because molecules are already connected and
+				one only one site has unspecified states.
+			<imgReference target = "PP_CompositeSpecies_site.PNG"/></item>
+		</list>
+	</operations>	
+
+</page>
+
+</vcelldoc>

@@ -3,16 +3,14 @@
 <page title="Reactions Rules Editor Pane" target="PP_ReactionRulesEditor">
 
   <introduction>
-  The reaction properties panel is used to display and edit properties of a reaction
+  The reaction rules editor pane is currently the only way to specify and edit a reaction rule.
   </introduction>
 		
   <appearance>
-  <imgReference target = "PP_Reactions.png"/>
+  <imgReference target = "PP_BNG_ReactRules_Editor.png"/>
   <para>
-  The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
-  second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
-  (J)that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  Concentrations 
-  of all species referred to in the kinetic terms (e.g.reactants, catalysts, products)are required. Items in brown cannot be edited.
+  The top of the table shows the cartoon of the reaction rule. Cartoon is for illustration purpose only
+  and non-clickable. The bottom of the pane serves as o create a reaction rule, one has to specify 
   </para>
   </appearance>
 	
