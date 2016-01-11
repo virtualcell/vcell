@@ -75,6 +75,8 @@ class MolecularTypeTreeModel extends RbmDefaultTreeModel implements PropertyChan
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 			nodeChanged(rootNode);
+		} else if (evt.getPropertyName().equals("entityChange")) {
+			nodeChanged(rootNode);
 		} else {
 			populateTree();
 			

@@ -806,8 +806,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					MolecularComponent to = mcList.remove(toIndex);
 					mcList.add(fromIndex, to);
 					molecularTypeTreeModel.populateTree();
-					molecularType.firePropertyChange("name", "aaa", "bbb");
-//					swapComponentPatterns(molecularType, from, to);
+					molecularType.firePropertyChange("entityChange", null, "bbb");
 				}
 			});
 			popupFromShapeMenu.add(moveRightMenuItem);
@@ -829,8 +828,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					MolecularComponent to = mcList.remove(toIndex);
 					mcList.add(fromIndex, to);
 					molecularTypeTreeModel.populateTree();
-					molecularType.firePropertyChange("name", "aaa", "bbb");
-//					swapComponentPatterns(molecularType, from, to);
+					molecularType.firePropertyChange("entityChange", null, "bbb");
 				}
 			});
 			popupFromShapeMenu.add(moveLeftMenuItem);
