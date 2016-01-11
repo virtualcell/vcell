@@ -92,7 +92,9 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 //		GuiUtils.treeExpandAll(ownerTree, rootNode, true);
 		GuiUtils.treeExpandAllRows(ownerTree);
 
-		reactionRule.firePropertyChange("name", "aaa", "bbb");
+		// we fire a dummy event because the species properties panel and the bio model editor species table model
+		// will repaint the shape and respectively the table row for any speciesContext property change event
+		reactionRule.firePropertyChange("entityChange", null, "bbb");
 	}
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
@@ -134,6 +136,8 @@ public class ReactionRulePropertiesTreeModel extends RbmDefaultTreeModel impleme
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
+			nodeChanged(rootNode);
+		} else if(evt.getPropertyName().equals("entityChange")) {
 			nodeChanged(rootNode);
 		} else if (evt.getSource() == reactionRule || evt.getSource() instanceof SpeciesPattern || evt.getSource() instanceof MolecularTypePattern) {
 			populateTree();

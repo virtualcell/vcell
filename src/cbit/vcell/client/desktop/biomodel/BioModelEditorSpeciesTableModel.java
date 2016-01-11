@@ -218,6 +218,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 				refreshData();
 			}
 		} else if (evt.getSource() instanceof SpeciesContext) {
+			// we update the row no matter what property change event was fired by the speciesContext
 			SpeciesContext speciesContext = (SpeciesContext) evt.getSource();
 			int changeRow = getRowIndex(speciesContext);
 			if (changeRow >= 0) {
