@@ -80,6 +80,7 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.modelopt.AnalysisTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
@@ -1000,7 +1001,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 			}
 		}
 	}
-	
+	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC) && getModel().getNumStructures() > 1) {
+		// network free application requires one compartment only
+		String tooltip = "Please delete the Network Free application or the extra compartments.";
+		issueVector.add(new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
+				VCellErrorMessages.OneStructureOnly, tooltip, Issue.Severity.ERROR));
+	}
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {
