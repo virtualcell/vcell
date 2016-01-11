@@ -1,65 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Deterministic Rule-Based Application" target="BNGApp">
+<page title="Deterministic and Stochastic Rule-Based Application" target="BNGApp">
 
 	<introduction>
-	Applications allow users to define the quantitative conditions needed to define, 
-	run and visualize a Virtual Experiment, i.e. a numerical simulation of the BioModel 
-	with specific initial conditions, within a given geometry, and with a selected type 
-	of simulation method. In the Application,
-	<list> 
-	<item>the mapping between the model and the geometry 
-	is established in the <link target="GeometryOverview">Geometry</link> tab</item>
-	<item><link target="SpecificationsOverview"> Specifications</link> for species, reactions and network 
-	(for rule-based application) are defined,</item> 
-	<item>specific <link target="ProtocolsOverview"> Protocols</link> 
-	(events, electric stimulation) can be included,</item> 
-	<item>for each application, multiple <link target="simulations_overview">Simulations</link> 
-	can be created that can include different initial conditions.
-	</item>
-	<item><link target="PEOverview"> Parameter Estimation</link> can be performed</item> 
-	</list>  
+	<para>Rule-based models can be simulated using <def target="def_Deterministic">deterministic</def> or 
+	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications
+	using the <def target="def_BioNetGen">BioNetGen</def> network-generation
+	algorithm to generate the complete network of species and reactions.</para>
+	 
+	<para>This network is obtained by applying the set of reaction rules to the set of specified composite species. Initial amounts
+	of composite species used as seed species are defined in <link target = "NetworkSpecifications">Network</link> specification tab.
+	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
+	which otherwise can become infinite. The generated species and reactions can be seen in 
+	<link target = "NetworkSpecifications">Network</link> tab, but not added to the 
+	<link target = "ReactDiagView">Reaction Diagram</link> view. </para>
+	
+	<para>After the user is satified with the network that is generated using the set of species and reaction rules,
+		he/she can run regular determiministic or stochastic <link target = "simulations_overview">simulations</link>.</para>
 	
 	</introduction>
 
 	<appearance>  
-	 Applications can be 
-	 <list> 
-	<item><def target="def_Deterministic">Deterministic</def></item>
-	<item><def target="def_Stochastic">Stochastic</def></item> 
-	<item><def target="def_RuleBased">Rule-Based</def></item> 
-	</list>
-	<imgReference target = "ApplicationTypes.png"/>. 
-	Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic or stochastic 
-	applications can be made into 
-	<list> 
-	<item>Compartmental (1D, 2D or 3D), where topology and size of compartments are defined, but species are assumed 
-	to be well mixed within their compartments. Such application is simulated using either differential equations
-	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic simulation algorithms 
-	(for <def target="def_Stochastic">stochastic</def> application).  </item>
-	<item>Spatial (2D or 3D), where geometry of compartments is defined, 
-	and species are not well mixed but diffuse within compartments. Such application is 
-	simulated using either partial differential equations
-	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic agent-based
-	 simulation algorithms SmolDyn
-	(for <def target="def_Stochastic">stochastic</def> application).</item> 
-	</list>
-	The Application directory displays the Applications associated with the BioModel. The main window 
-	displays the selected application and provides buttons to create new applications or to 
-	delete or copy applications. Properties for a selected object (e.g. species, reaction, simulation) 
-	are displayed in the Properties Pane below the main window.
+	 
 	</appearance>
 
 	<operations>  
-	<para><bold>Create</bold> a new application by clicking on "Applications" in the left menu.  Right 
-	click brings a menu to create either a deterministic or stochastic application.  Or, use the 
-	<bold> Add New</bold> button in the main window.</para>
-	<para>Click on an application to view the application expand the tree and to display the different
-	components of the application.
 	
-	</para>
-		<imgReference target = "ApplicationOverview.png">
-		</imgReference>
+
 	</operations>
 	
 </page>
