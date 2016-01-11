@@ -38,15 +38,9 @@
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
-    	<tocitem target="RuleBasedOverview2" text="Rule-Based Features">
-       		<tocitem target="RBCreate" text="How to create a rule-based model"/> 
-       		<tocitem target="ImportBNGL" text="File->Import Menu (BNGL files)"/>		
-    		<tocitem target="Molecules2" text="Molecules"/>
-    		<tocitem target="Observables2" text="Observables"/>
-     		<tocitem target="ReactionRules2" text="Reaction Rules"/>	
-	    	<tocitem target="PP_ReactionRules2" text="Reaction Rules Properties Pane"/>
-    		<tocitem target="PP_ReactionRulesEditor2" text="Reaction Rules Editor Pane"/>
-    		<tocitem target="PP_ReactionRulesKinetics2" text="Reaction Rules Kinetics Pane"/>
+    	<tocitem target="RuleBasedOverview" text="New Rule-Based Features">
+    	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
+       		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
     		<tocitem target="NFSimApp" text="Network-Free Application"/>
     		<tocitem target="BNGApp" text="Determimistic Rule-Based Application"/>    		
@@ -63,7 +57,7 @@
     			<tocitem target="CompositeSpecies" text="Composite Species"/>    		
     		</tocitem>
     		<tocitem target="Molecules" text="Molecules"/>
-    		<tocitem target="Observables" text="Observables (VCell5.4)"/>
+    		<tocitem target="Observables" text="Observables"/>
     		<tocitem target="PathLink" text="Pathway Links"/>
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
@@ -80,7 +74,9 @@
     	   		<tocitem target="SpeciesSpecifications" text="Species Specifications">
     			     <tocitem target="fieldData" text="Field Data"/>
     			</tocitem>
-   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions Specifications"/>
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions and Reaction Rules Specifications"/>
+   	 	  		<tocitem target="NetworkSpecifications" text="Network Specifications"/>
+   	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free Specifications"/>  	 	  		
     		</tocitem>
     		<tocitem target="ProtocolsOverview" text="Protocols">
     	   		<tocitem target="Events" text="Events"/>
@@ -90,6 +86,7 @@
     		<tocitem target="simulations_overview" text="Simulations">
     	   		<tocitem target="simulations" text="Simulations"/>
     	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
+    	   		<tocitem target="NFSimSimulationEditor" text="NFSim Simulation Editor"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
    		   		<tocitem target="generated_math" text="Generated Math"/>
 	    		<tocitem target="numerical_solvers" text="Numerical Solvers"/>
@@ -143,6 +140,7 @@
 	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
 	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
 	    	<tocitem target="PP_Species" text="Species Properties Pane"/>
+	    	<tocitem target="PP_CompositeSpecies" text="Composite Species Properties Pane"/>	    	
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
 	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>

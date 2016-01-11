@@ -4,64 +4,47 @@
 
 	<introduction>
 	The <bold>observables</bold> are used to specify model outputs, which are functions of the
-	population levels of multiple chemical species that share a set of properties. For example, if one
-	could measure the tyrosine phosphorylation level of a particular protein, then one might be
-	interested in determining the total amount of all chemical species containing the phosphorylated
-	form of this protein. A function for calculating such a quantity is an <bold>Observable</bold>.
+	population levels of multiple chemical species that share a set of properties. For example, to
+	simulate the tyrosine phosphorylation level of a particular protein, one need to specify
+	<bold>Observable</bold> that is a function for the total amount of all chemical species containing 
+	the phosphorylated form of this protein. 
 	<bold>Observables</bold> are computed over a set of chemical species that share similar properties. 
-	There are two <bold>Observable Types</bold>. 
+	<bold>Observables</bold>  may count: 
 	<list>
-	<item>An observable of the <bold>Molecules
-	type</bold> is a weighted sum of the population levels of the chemical species matching the pattern(s)
+	<item> <bold>Molecules</bold> - a <bold>weighted</bold> sum of the population levels of the chemical 
+	species matching the pattern(s)
 	in the observable. Each population level is multiplied by the number of times that the species is
-	matched by the pattern(s). 
+	matched by the pattern(s). For example, a species that has two instances of a receptor is counted twice.
 	</item>
-	<item>An observable of the <bold>Species type</bold> is simply an unweighted sum of
-	the population levels of the matching chemical species. A Molecules type for a dimer will give 
-	the number of receptors in receptor dimers. A Species type for a dimer will give the number of 
-	receptor dimers.
+	<item><bold>Species</bold> - an unweighted sum of
+	the population levels of the matching chemical species. 
+	For example, a species that has two instances of a receptor is counted once.
 	</item> 
 	</list>	
 	</introduction>
 	
 	<appearance>
-	The Observables Tab displays a table of the Observable name, Cartoon depiction of each observable, the 
-	<def target = "def_BioNetGen"> BioNetGen </def> definition and Observable's type.   
-	Selecting Observable brings the <link target = "PP_Observables">Observable Properties</link> 
-	in the bottom right pane, where a user can specify and edit a selected <bold>Observable</bold>. 
-	The composition of Observable is the following:
-	<list>
-	<item>Each Observable consists of one or more <bold>Species Patters</bold> that 
-	define common features of species selected by Observable.</item>
-	<item>Each SpeciesPattern consists of one or more of Molecules (connected through explicit bonds) 
-	with some sites having specified state values. </item>
-	<item>Sites that have specified state value are shown in green.</item> 
-	<item>Sites that are explicitly bound to another site, 
-	declared unbound or bound are shown in green with bond (if exists) shown in solid color.</item>
-	<item>Sites than can be in any state and can be bound or unbound are shown in white.</item>
-	<item>Sites that have possible multiple states have yellow sign above site shape.</item>
-	</list>
+		The Observables Tab displays 
+		<list>
+			<item><bold>Name</bold> of Observable.</item>
+			<item><bold>Structure</bold> where species selected by Observable are located 
+			(currently, a single compartment only).</item>
+			<item><bold>Depiction</bold> of each Observable. Green circle within each molecular shape denote 
+			molecular sites, small yellow circles denote that this site has possible states. </item> 
+			<item><def target = "def_BioNetGen">BioNetGen</def> definition that is unediatble but searchable.</item> 
+		</list>
 	<imgReference target = "BNG_ObservablesTable.png"> </imgReference>
 	</appearance>
 	
 	<operations>
-	<para><bold>Edit</bold> An Observable can be specified in two ways:
-	<list>
-	<item>If a user is proficient in BNGL, initial specification can be done as BNGL string, with a user clicking on 
-	(Add new here) in the Name column, and then typing or copying BNGL is copied from external BNGL code. 
-	Once Enter is pressed, the <bold>Observable</bold> definition is no more editable in the table.
-	</item>
-	<item>Alternative way is to enter a name of a Observable here, and specify it in 
-	the <link target = "PP_Observables">Observable Properties</link> bottom pane. 
-	This is the only way to edit existing Observables, it guarantees that Observable is updated 
-	consistently with <link target = "Molecules">Molecules</link> definition.   
-	</item>
-	</list>
+	<para><bold>Edit</bold> An Observable name can be specified and edited in a table, but definition and properties 
+	must be specified in 
+	the <link target = "PP_Observables">Observables Properties</link> bottom pane. 
     </para>
-	<para> <bold>Filter</bold> the list of species using the Search Box to enter a species name or a structure name.</para>
-	<para><bold>Delete</bold> observable by highlighting and using the "Delete Selected" button below the table.</para>
+	<para> <bold>Filter</bold> the list of observables using the Search Box to enter a name or any part of observable composition.</para>
+	<para><bold>Delete</bold> observable by highlighting and using the "Delete" button below the table.</para>
 	<para><bold>Add annotation </bold> about the observable within the <link target = "PP_Observables"> 
-	Molecule Properties pane </link> in the bottom window.</para>
+	Observable Properties pane </link> in the bottom window.</para>
 	</operations>
 	
 	<properties>

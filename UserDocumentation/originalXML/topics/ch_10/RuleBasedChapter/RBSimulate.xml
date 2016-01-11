@@ -3,42 +3,41 @@
 <page title="How to simulate a rule-based model" target="RBCreate">
 
 	<introduction> 
-The Virtual Cell Software version 6.0 for the first time provides an integrated environment to 
-introduce <def target= "def_RuleBased">rule-based</def> features in the VCell interface alongside familiar species and reaction concepts. 
-The new parts of <link target = "PhysOverview">Physiology</link> specifications include 
-<link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
-as well as <link target = "ReactionRules">Reaction Rules</link> that are specified alongside 
-<link target = "Reactions">reactions</link> in a <link target = "ReactTabView">Reactions Editor</link>.
- 
-<para><bold>Rule-based features and compartments</bold></para>
-Defining <link target = "Molecules">Molecules</link> allow the user to create rule-based models. 
-However, <bold>rule-based models may exist in a single compartment only</bold> 
-(this is a temporary restrictions that will be lifted in the next release).  Once a molecule is created, 
-any new species by default will be placed in c0 compartment, and this can not be changed. Vice versa, if multiple compartments 
-are created, no molecules can be added.
-
-<para><bold>Mixing Rule-based features and reaction networks</bold></para>
-As with a regular BioModel, a rule-based BioModel consists of a model description (Physiology), 
-and one or more Applications. Except for a limitation of a single compartment, 
-any operations with ordinary species and reactions are supported in VCell alongside rules. Specifically, 
-species that are used as initial seed species for rule-based models can be used as species in reaction networks.
-
-
-	<para><bold>Rule-based Applications</bold></para>
-	Each <link target = "ApplicationOverview">BioModel Application</link> 
-	allows the user to define the  quantitative conditions needed to define, 
-	run and visualize numerical simulation.  A Rule-Based BioModel may have numerous 
-	Applications, including <def target="def_Deterministic">deterministic</def>, 
-	<def target="def_Stochastic">stochastic</def> and <def target="def_RuleBased">rule-based</def>.  
+	<para>Once rule-based features are specified in Physiology, a user has mulktiple choices of how to simulate. As standard with 
+		Virtual Cell, a Rule-Based BioModel may have numerous 
+	Applications, including <def target="def_Deterministic">deterministic</def> and 
+	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications 
+	and special <def target="def_NetworkFree">network-free</def> application.  
 	Each Application, in turn can have multiple Simulations, in which different numerical
-	methods or conditions are used.
-
+	methods or conditions are used.</para>
+	
+	<para><bold>Rule-based Deterministic and Stochastic Applications</bold></para>
+	<para>If a user chooses to start <def target="def_Deterministic">deterministic</def> or 
+	<def target="def_Stochastic">stochastic</def> applications, the <def target="def_BioNetGen">BioNetGen</def> network-generation
+	algorithm will be used to generate the complete network of species and reactions 
+	that is obtained by applying the set of reaction rules to the set of specified composite species. Initial amounts
+	of composite species used as seed species are defined in <link target = "NetworkSpecifications">Network</link> specification tab.
+	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
+	which otherwise can become infinite. The generated species and reactions can be seen in 
+	<link target = "NetworkSpecifications">Network</link> tab, but not added to the 
+	<link target = "ReactDiagView">Reaction Diagram</link> view. </para>
+	
+	<para>After the user is satified with the network that is generated using the set of species and reaction rules,
+		he/she can run regular determiministic or stochastic <link target = "simulations_overview">simulations</link>.</para>
+	
+	<para><bold>Network-Free Applications</bold></para>
+	<para>If a user chooses to start <def target="def_NetworkFree">network-free</def> applications, 
+	no network-generation attempt will be done and the amounts of model <link target = "Observables">Observables</link> 
+	and initially defined <link target = "CompositeSpecies">species</link> will be simulated using 
+	<def target="def_NFSim">NFSim</def> engine. Simulation parameters can be defined in
+	<link target = "NFSimSimulationEditor">NFSim Simulation Editor</link>.</para>
+	
+	
 	<para><bold>Rule-Based MathModel</bold></para>
 	MathModel for <def target="def_Deterministic">deterministic</def> or 
 	<def target="def_Stochastic">stochastic</def> applications generated for the rule-based model 
 	have a standard VCell structure with the full list of species and reactions, observables
 	given by functions. MathModel for <def target="def_RuleBased">rule-based</def> application has a new syntax.
-
 	</introduction>
 	
 </page>

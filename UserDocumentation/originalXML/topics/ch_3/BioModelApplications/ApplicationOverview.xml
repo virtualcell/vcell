@@ -19,19 +19,19 @@
 	</item>
 	<item><link target="PEOverview"> Parameter Estimation</link> can be performed</item> 
 	</list>  
-	
 	</introduction>
 
 	<appearance>  
 	 Applications can be 
 	 <list> 
-	<item><def target="def_Deterministic">Deterministic</def></item>
-	<item><def target="def_Stochastic">Stochastic</def></item> 
-	<item><def target="def_RuleBased">Rule-Based</def></item> 
+	<item><def target="def_Deterministic">Deterministic</def>, including single-compartment <link target="RBApplications">rule-based</link> </item>
+	<item><def target="def_Stochastic">Stochastic</def>, including single-compartment <link target="RBApplications">rule-based</link></item> 
+	<item><def target="def_RuleBased">Network-free</def>, 
+	a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
 	</list>
-	<imgReference target = "ApplicationTypes.png"/>. 
-	Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic or stochastic 
-	applications can be made into 
+	<imgReference target = "ApplicationTypes.png"/>.
+	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic or stochastic 
+	applications can be made into </para>
 	<list> 
 	<item>Compartmental (1D, 2D or 3D), where topology and size of compartments are defined, but species are assumed 
 	to be well mixed within their compartments. Such application is simulated using either differential equations
