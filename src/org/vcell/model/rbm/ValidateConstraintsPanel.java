@@ -51,7 +51,12 @@ import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.TaskCallbackMessage;
+import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
+import cbit.vcell.mapping.TaskCallbackProcessor;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
@@ -69,8 +74,9 @@ public class ValidateConstraintsPanel extends DocumentEditorSubPanel  {
 	
 	private EventHandler eventHandler = new EventHandler();
 	
-	JLabel maxIterationTextField;
-	JLabel maxMolTextField;
+	private JLabel maxIterationTextField;
+	private JLabel maxMolTextField;
+	private JLabel somethingInsufficientLabel;
 	
 	private JButton applyButton;
 	private JButton cancelButton;
@@ -103,6 +109,7 @@ private void initialize() {
 			
 		maxIterationTextField = new JLabel();
 		maxMolTextField = new JLabel();
+		somethingInsufficientLabel = new JLabel();
 
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();		
@@ -131,7 +138,7 @@ private void initialize() {
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
-		gbc.insets = new Insets(0, 8, 6, 0);
+		gbc.insets = new Insets(0, 8, 4, 0);
 		add(new JLabel("Max. Molecules / Species"), gbc);
 
 		gbc = new GridBagConstraints();
@@ -140,24 +147,26 @@ private void initialize() {
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.EAST;
-		gbc.insets = new Insets(0, 0, 6, 10);
+		gbc.insets = new Insets(0, 0, 4, 10);
 		add(maxMolTextField, gbc);
 		
-		gridy ++;	
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = gridy;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(6, 8, 8, 2);
-//		add(getRunButton(), gbc);
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.gridwidth = 4;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(2, 8, 4, 10);
+		add(somethingInsufficientLabel, gbc);
 
+		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(6, 2, 8, 2);
+		gbc.insets = new Insets(4, 2, 8, 2);
 		add(getApplyButton(), gbc);
 
 		gbc = new GridBagConstraints();
@@ -170,7 +179,18 @@ private void initialize() {
 		
 		maxIterationTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxIteration() + "");
 		maxMolTextField.setText(owner.getSimulationContext().getNetworkConstraints().getTestMaxMoleculesPerSpecies() + "");
-				
+
+		String s = "none";
+		TaskCallbackProcessor tcbp = owner.getSimulationContext().getTaskCallbackProcessor();
+		if(tcbp.getPreviousIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()!=tcbp.getPreviousIterationSpecies()) {
+			s = "<font color=#8C001A>" + SimulationContext.IssueInsufficientIterations + "</font>";
+		} else if(tcbp.getPreviousIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()>0 && tcbp.getCurrentIterationSpecies()==tcbp.getPreviousIterationSpecies()) {
+			if(tcbp.isNeedAdjustMaxMolecules()) {
+				s = "<font color=#8C001A>" + SimulationContext.IssueInsufficientMolecules + "</font>";
+			}
+		}
+		somethingInsufficientLabel.setText("<html>Warning:  " + s + "</html>");
+		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
