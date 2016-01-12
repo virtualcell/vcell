@@ -84,7 +84,6 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndNotificationOnly, "");
 			owner.setNewCallbackMessage(tcm);
 			owner.updateLimitExceededWarnings(outputSpec);
-			
 			validateConstraints(outputSpec);
 		} else {
 			owner.updateLimitExceededWarnings(outputSpec);
@@ -94,9 +93,9 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			String string = "The Network constraints are unchanged.";
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 			sc.firePropertyChange("appendToConsole", "", tcm);
+			owner.refreshInterface();
 		}
 	}
-
 //	BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 }
 
@@ -104,7 +103,7 @@ private void validateConstraints(BNGOutputSpec outputSpec) {
 	ValidateConstraintsPanel panel = new ValidateConstraintsPanel(owner);
 	ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(owner);
 	ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Apply the new constraints?");
-	Dimension dim = new Dimension(320, 160);
+	Dimension dim = new Dimension(376, 163);		// 320, 160 without the warning line
 	childWindow.pack();
 	panel.setChildWindow(childWindow);
 	childWindow.setPreferredSize(dim);
