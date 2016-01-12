@@ -33,7 +33,9 @@ import javax.swing.border.TitledBorder;
 import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.model.rbm.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
+import org.vcell.util.Issue;
 import org.vcell.util.ProgressDialogListener;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
@@ -93,7 +95,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	private JLabel generatedReactionsLabel;
 	private JButton viewGeneratedSpeciesButton;
 	private JButton viewGeneratedReactionsButton;
-	
+	private JLabel somethingInsufficientLabel;
+
 	private EditorScrollTable networkConstraintsTable = null;
 	private NetworkConstraintsTableModel networkConstraintsTableModel = null;
 	private JButton refreshMathButton;
@@ -178,6 +181,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		reactionRulesLabel = new JLabel();
 		generatedSpeciesLabel = new JLabel();
 		generatedReactionsLabel = new JLabel();
+		somethingInsufficientLabel = new JLabel();
 		
 		networkConstraintsTable = new EditorScrollTable();
 		networkConstraintsTableModel = new NetworkConstraintsTableModel(networkConstraintsTable);
@@ -300,7 +304,16 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(getCreateModelButton(), gbc);
-		
+
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		bottom.add(somethingInsufficientLabel, gbc);
+
 		networkConstraintsTable.setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 	}
 	
@@ -413,6 +426,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		String text4 = null;
 		String text5 = null;
 		String text6 = null;
+		String text7 = "none";
 		if(fieldSimulationContext.getMostRecentlyCreatedOutputSpec() != null) {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
 			int numReactions = fieldSimulationContext.getModel().getNumReactions();
@@ -425,6 +439,12 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 				text4 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGSpecies().length + "";
 				text6 = fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions().length + "";
 			}
+			if(fieldSimulationContext.isInsufficientIterations()) {
+				text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientIterations + "</font>";
+			} else if(fieldSimulationContext.isInsufficientMaxMolecules()) {
+				text7 = "<font color=#8C001A>" + SimulationContext.IssueInsufficientMolecules + "</font>";
+			}
+
 		} else {
 			text3 = fieldSimulationContext.getModel().getNumSpeciesContexts() + "";
 			int numReactions = fieldSimulationContext.getModel().getNumReactions();
@@ -442,6 +462,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		generatedSpeciesLabel.setText("Generated Species: " + text4);
 		reactionRulesLabel.setText("Reaction Rules: " + text5);
 		generatedReactionsLabel.setText("Generated Reactions: " + text6);
+		somethingInsufficientLabel.setText("<html>Warning:  " + text7 + "</html>");
 		
 		if(fieldSimulationContext.getModel().getRbmModelContainer().isEmpty()) {
 			viewGeneratedSpeciesButton.setEnabled(false);
@@ -474,7 +495,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		EditConstraintsPanel panel = new EditConstraintsPanel(this);
 		ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(this);
 		ChildWindow childWindow = childWindowManager.addChildWindow(panel, panel, "Edit / Test Constraints");
-		Dimension dim = new Dimension(320, 160);
+		Dimension dim = new Dimension(360, 160);
 		childWindow.pack();
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);
