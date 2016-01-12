@@ -67,6 +67,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static String GTK_ReactionRate_oldname = "reaction rate";
 	public static String GTK_CurrentDensity_oldname = "inward current density";
 
+	public static String forwardRateConstant_futurename = "observed forward rate";
+	public static String reverseRateConstant_futurename = "observed reverse rate";
+
 	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
 	public static final int ROLE_NotARole		= -1;
@@ -1514,7 +1517,16 @@ public KineticsParameter getKineticsParameters(int index) {
 		} 
 		if (paramDesc.equals(Kinetics.GTK_AssumedCompartmentSize_oldname)) {
 			paramRole = ROLE_UserDefined;
-		} 
+		}
+		
+		if (paramDesc.equals(Kinetics.forwardRateConstant_futurename)) {
+			paramRole = ROLE_KForward;
+		}
+		if (paramDesc.equals(Kinetics.reverseRateConstant_futurename)) {
+			paramRole = ROLE_KReverse;
+		}
+		
+		
 		if (paramRole == -1) {
 			throw new IllegalArgumentException("Parameter description: " + paramDesc + " is not valid.");
 		}
