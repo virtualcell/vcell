@@ -969,6 +969,8 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  * Creation date: (11/1/2005 9:30:09 AM)
  * @param issueVector java.util.Vector
  */
+public static final String IssueInsufficientIterations = "Max Iterations number may be insufficient.";
+public static final String IssueInsufficientMolecules = "Max Molecules / Species number may be insufficient.";
 public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 //	issueContext = issueContext.newChildContext(ContextType.SimContext, this);
 	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC)) {
@@ -1010,12 +1012,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {
-			String message = "Max Iterations number may be insufficient.";
-			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, message, Issue.Severity.WARNING));
+			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, IssueInsufficientIterations, Issue.Severity.WARNING));
 		}
 		if(isInsufficientMaxMolecules()) {
-			String message = "Max Molecules / Species number may be insufficient.";
-			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, message, Issue.Severity.WARNING));
+			issueVector.add(new Issue(this, issueContext, IssueCategory.RbmNetworkConstraintsBad, IssueInsufficientMolecules, Issue.Severity.WARNING));
 		}
 	}
 	

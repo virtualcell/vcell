@@ -35,10 +35,10 @@ public class TaskCallbackProcessor {
 	// almost like a copy constructor but we do not want to copy the simulation context, nor deep copy the list
 	public void initialize(TaskCallbackProcessor that) {
 		this.consoleNotificationList = that.getConsoleNotificationList();	// we reuse the list rather than copy it
-		this.currentIterationSpecies = that.currentIterationSpecies;
-		this.previousIterationSpecies = that.previousIterationSpecies;
-		this.needAdjustIterations = that.needAdjustIterations;
-		this.needAdjustMaxMolecules = that.needAdjustMaxMolecules;
+		this.currentIterationSpecies = that.getCurrentIterationSpecies();
+		this.previousIterationSpecies = that.getPreviousIterationSpecies();
+		this.needAdjustIterations = that.isNeedAdjustIterations();
+		this.needAdjustMaxMolecules = that.isNeedAdjustMaxMolecules();
 	}
 
 	public final ArrayList<TaskCallbackMessage> getConsoleNotificationList() {
@@ -87,7 +87,7 @@ public class TaskCallbackProcessor {
 			break;
 		case TaskEnd:
 			System.out.println("Task ended");
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()!=getPreviousIterationSpecies()) {
 				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
@@ -96,8 +96,8 @@ public class TaskCallbackProcessor {
 			} else {
 				sc.setInsufficientIterations(false);
 			}
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
-				if(needAdjustMaxMolecules) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
+				if(isNeedAdjustMaxMolecules()) {
 					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
@@ -110,14 +110,14 @@ public class TaskCallbackProcessor {
 			break;
 		case TaskEndNotificationOnly:
 			System.out.println("TaskEndNotificationOnly");
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()!=getPreviousIterationSpecies()) {
 				String s = SimulationConsolePanel.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
 				sc.firePropertyChange("appendToConsole", "", tcm);
 			}
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
-				if(needAdjustMaxMolecules) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
+				if(isNeedAdjustMaxMolecules()) {
 					String s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
@@ -127,13 +127,13 @@ public class TaskCallbackProcessor {
 			break;
 		case TaskEndAdjustSimulationContextFlagsOnly:
 			System.out.println("TaskEndAdjustSimulationContextFlagsOnly");
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies!=previousIterationSpecies) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()!=getPreviousIterationSpecies()) {
 				sc.setInsufficientIterations(true);
 			} else {
 				sc.setInsufficientIterations(false);
 			}
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
-				if(needAdjustMaxMolecules) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
+				if(isNeedAdjustMaxMolecules()) {
 					sc.setInsufficientMaxMolecules(true);
 				} else {
 					sc.setInsufficientMaxMolecules(false);
@@ -160,7 +160,7 @@ public class TaskCallbackProcessor {
 		case DetailBatch:		// like above, but all details arrive in just one single shot, we can do some post processing
 			processDetail(string);
 			String s = "";
-			if(previousIterationSpecies != currentIterationSpecies) {
+			if(getPreviousIterationSpecies() != getCurrentIterationSpecies()) {
 				s = SimulationConsolePanel.getInsufficientIterationsMessage();
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 				consoleNotificationList.add(tcm);
@@ -168,8 +168,8 @@ public class TaskCallbackProcessor {
 				sc.setInsufficientIterations(true);
 				needAdjustIterations = true;
 			}
-			if(previousIterationSpecies>0 && currentIterationSpecies>0 && currentIterationSpecies==previousIterationSpecies) {
-				if(needAdjustMaxMolecules) {
+			if(getPreviousIterationSpecies()>0 && getCurrentIterationSpecies()>0 && getCurrentIterationSpecies()==getPreviousIterationSpecies()) {
+				if(isNeedAdjustMaxMolecules()) {
 					s = SimulationConsolePanel.getInsufficientMaxMoleculesMessage();
 					tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, s);
 					consoleNotificationList.add(tcm);
@@ -226,7 +226,7 @@ public class TaskCallbackProcessor {
 		try {
 		for(int i=0; matcher.find(); i++) {
 			if(i==2) {
-				previousIterationSpecies = currentIterationSpecies;
+				previousIterationSpecies = getCurrentIterationSpecies();
 				currentIterationSpecies = Integer.parseInt(matcher.group());
 			}
 		}
@@ -234,5 +234,18 @@ public class TaskCallbackProcessor {
 			
 		}
 	}
-	
+
+	public int getPreviousIterationSpecies() {
+		return previousIterationSpecies;
+	}
+	public int getCurrentIterationSpecies() {
+		return currentIterationSpecies;
+	}
+	public boolean isNeedAdjustMaxMolecules() {
+		return needAdjustMaxMolecules;
+	}
+	public boolean isNeedAdjustIterations() {
+		return needAdjustIterations;
+	}
+
 }
