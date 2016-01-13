@@ -28,7 +28,7 @@
 	<para><bold>Network-Free Applications</bold></para>
 	<para>If a user chooses to start <def target="def_NetworkFree">network-free</def> applications, 
 	no network-generation attempt will be done and the amounts of model <link target = "Observables">Observables</link> 
-	and initially defined <link target = "CompositeSpecies">species</link> will be simulated using 
+	and initially defined <link target = "SpeciesTabView">species</link> will be simulated using 
 	<def target="def_NFSim">NFSim</def> engine. Simulation parameters can be defined in
 	<link target = "NFSimSimulationEditor">NFSim Simulation Editor</link>.</para>
 	

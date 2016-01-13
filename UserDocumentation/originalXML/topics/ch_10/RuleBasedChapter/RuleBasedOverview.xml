@@ -7,8 +7,8 @@ The Virtual Cell Software version 6.0 for the first time provides an integrated 
 introduce <def target= "def_RuleBased">rule-based</def> features in the VCell interface alongside familiar species and reaction concepts. 
 The new parts of <link target = "PhysOverview">Physiology</link> specifications include 
 <link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
-as well as <link target = "ReactionRules">Reaction Rules</link> that are specified alongside 
-<link target = "Reactions">reactions</link> in a <link target = "ReactTabView">Reactions Editor</link>.
+as well as <def target = "def_ReactionRules">reaction rules</def> that are specified alongside 
+<def target = "def_reactions">reactions</def> in a <link target = "ReactTabView">Reactions</link> Table.
  
 <para><bold>Rule-based features and compartments</bold></para>
 Defining <link target = "Molecules">Molecules</link> allow the user to create rule-based models. 
