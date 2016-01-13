@@ -462,9 +462,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 			}
 		}
 		seedSpeciesLabel.setText(SpeciesContext.typeName + ": " + text3);
-		generatedSpeciesLabel.setText("Generated Species: " + text4);
+		generatedSpeciesLabel.setText("Species: " + text4);
 		reactionRulesLabel.setText("Reaction Rules: " + text5);
-		generatedReactionsLabel.setText("Generated Reactions: " + text6);
+		generatedReactionsLabel.setText("Reactions: " + text6);
 		somethingInsufficientLabel.setText("<html>Warning:  " + text7 + "</html>");
 		
 		if(fieldSimulationContext.getModel().getRbmModelContainer().isEmpty()) {
