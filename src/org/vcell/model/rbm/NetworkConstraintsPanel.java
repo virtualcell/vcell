@@ -342,6 +342,9 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	public void setSelectionManager(SelectionManager selectionManager) {
 		fieldSelectionManager = selectionManager;
 	}
+	public IssueManager getIssueManager() {
+		return fieldIssueManager;
+	}
 	public void setIssueManager(IssueManager issueManager) {
 		fieldIssueManager = issueManager;
 	}

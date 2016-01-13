@@ -11,6 +11,8 @@
 package cbit.vcell.client.task;
 
 import java.awt.Dimension;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
@@ -93,6 +95,9 @@ public void run(Hashtable<String, Object> hashTable) throws Exception {
 			String string = "The Network constraints are unchanged.";
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
 			sc.firePropertyChange("appendToConsole", "", tcm);
+			if(owner.getIssueManager() != null) {
+				owner.getIssueManager().setDirty();
+			}
 			owner.refreshInterface();
 		}
 	}
