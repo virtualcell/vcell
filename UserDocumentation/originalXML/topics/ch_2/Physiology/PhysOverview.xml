@@ -7,12 +7,11 @@
 	<list>
 	<item><link target = "ReactDiagView">Graphical Reactions Editor</link>. Reactions and species can be added and edited here.</item>
 	<item><link target = "ReactTabView">Reactions and Rules Editor</link>. 
-	Both <link target = "Reactions"> reactions</link> and 
-	<link target = "ReactionRules">Reaction Rules</link> can be specified and edited here. </item> 
+	Both <def target = "def_reactions"> reactions</def> and 
+	<def target = "def_ReactionRules">reaction rules</def> can be specified and edited here. </item> 
 	<item><link target = "PhysStructTabView">Structures (Compartments)</link> are made up of 
-	<def target = "def_membranes"> membrane</def> 
-	and <def target = "def_volumes"> volume</def> structures.</item>
-	<item><link target = "Species">Species</link> are defined across multiple compartments 
+	<def target = "def_membranes"> membrane</def> and <def target = "def_volumes"> volume</def> structures.</item>
+	<item><link target = "SpeciesTabView">Species</link> are defined across multiple compartments 
 	(except for <link target = "RuleBasedOverview">Rule-Based</link> models, 
 	where a single compartment is enforced temporarily)</item>
 	<item><link target = "Molecules">Molecules</link> that define building blocks for rule-based models</item>

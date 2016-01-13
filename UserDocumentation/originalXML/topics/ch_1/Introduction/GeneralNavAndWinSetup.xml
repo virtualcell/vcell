@@ -24,8 +24,8 @@
 		<para>
 		The top left panel is the Navigation panel that allows the user to navigate the currently open model. 
 		The tree structure displays the Physiology (<link target="ReactDiagView">Reaction Diagram</link>, 
-		<link target="Reactions">Reactions</link> (tabular view), 
-		<link target="PhysStructTabView">Structures</link> (compartments), <link target="Species">Species</link>,
+		<link target="ReactTabView">Reactions</link> (tabular view), 
+		<link target="PhysStructTabView">Structures</link> (compartments), <link target="SpeciesTabView">Species</link>,
 		<link target="Molecules">Molecules</link> and <link target="Observables">Observables</link>), the list of <link target="ApplicationOverview">Applications</link>, 
 		<link target="ParametersAndFunctionsOverview">Parameters and Functions</link>, and <link target="PathwayOverview">Pathway</link> related information.
 		Clicking on any item in the tree will display the item in the <bold>View</bold> panel (panel B, top right panel). 

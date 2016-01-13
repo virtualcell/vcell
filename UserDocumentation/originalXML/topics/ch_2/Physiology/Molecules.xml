@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Molecules" target="Molecules">
+<page title="Molecules Table" target="Molecules">
 
 	<introduction>
 	<bold>Molecules</bold> are the principal component of rule-based model specification. 
-	They are used to create <link target = "Species">Species</link>, 
-	define <link target = "ReactionRules"> Reaction Rules</link> and 
+	They are used to create <link target = "SpeciesTabView">Species</link>, 
+	define <link target = "ReactTabView"> Reaction Rules</link> and 
 	<link target="Observables">Observables</link>. 
 	Molecules are structured objects comprised of components (called <bold>sites</bold>) that can
 	bind to each other, both within a molecule and between molecules. <bold>Sites</bold> typically
@@ -26,15 +26,15 @@
 	
 	<operations>
 	<para><bold>New Molecule</bold> Once a molecule is entered here, a new <link target="Observables">observable</link>
-	with a name Molecule_tot is defined. It counts amounts of all instances of this molecule in all species.
-	If the Molecule is conserved (not synthesized or degraded), then the observable Molecule_tot will be conserved - 
-	it is one possible verifi cation of model consistency.</para>
+	with a name <bold>Molecule_tot</bold> is defined. It counts amounts of all instances of this molecule in all species.
+	If the Molecule is conserved (not synthesized or degraded), then the observable <bold>Molecule_tot</bold> will be conserved - 
+	it is one possible verification of model consistency.</para>
 	<para><bold>Edit</bold> A molecule name can be specified and edited in a table, but molecular properties 
 	must be specified in 
 	the <link target = "PP_Molecules">Molecule Properties</link> bottom pane. 
 	Molecule edited here is updated 
-	everywhere in the model - in <link target = "Species">Species</link>, 
-	 <link target = "ReactionRules"> Reaction Rules</link> and <link target="Observables">Observables</link>.  
+	everywhere in the model - in <link target = "SpeciesTabView">Species</link>, 
+	 <link target = "ReactTabView"> Reactions and Reaction Rules</link> and <link target="Observables">Observables</link>.  
     </para>
 	<para> <bold>Search</bold> the list of molecules by entering a name 
 	or an element of molecular structure below the table.</para>

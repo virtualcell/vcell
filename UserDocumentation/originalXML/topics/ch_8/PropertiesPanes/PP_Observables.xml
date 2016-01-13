@@ -1,43 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Observables Properties Pane" target="PP_Observables">
+<page title="Observable Properties Pane" target="PP_Observables">
 
-	<introduction>
-	The observables properties tree on a left allows editing of the Observable name, 
-	adding/editing/deleting sites and site states. Right pane is uneditable and provides real-time updates 
-	of the observable composition.
+	<introduction>The <link target = "Observables">Observables</link> are specified and edited using mouse right click in the bottom 
+		<bold>Object Properites</bold> pane. Only annotation can be typed in.	
 	</introduction>
 	
 	<appearance>
 	<imgReference target = "PP_BNG_Observables_2.png"/>
-	<list>
-	<item>Each Observable consists of one or more <bold>Species Patters</bold> that 
-	define common features of species selected by Observable.</item>
-	<item>Each SpeciesPattern consists of one or more of Molecules (connected through explicit bonds). </item>
-	<item>Sites that have specified state are shown in green with state shown
-	underneath the site shape.</item> 
-	<item>Sites may have defined binding - they can be explicitly bound to another site, 
-	declared unbound or declared bound to unspecified site - then the site is shown in green with bond (if exists) 
-	shown in solid color.</item>
-	<item>Site than can be in any state and can be bound or unbound is shown in white, with possible bond shown 
-	in grey as a question mark.</item>
-	</list>
-	The Observables Tab displays a table of the Observable name, Cartoon depiction of each observable, the 
-	<def target = "def_BioNetGen"> BioNetGen </def> definition and what Observable counts.   
-	Selecting Observable brings the <link target = "PP_Observables">Observable Properties</link> 
-	in the bottom right pane, where a user can specify and edit a selected <bold>Observable</bold>. 
-	The composition of Observable is the following:
-	<list>
-	<item>Each Observable consists of one or more <bold>Species Patters</bold> that 
-	define common features of species selected by Observable.</item>
-	<item>Each SpeciesPattern consists of one or more of Molecules (connected through explicit bonds) 
-	with some sites having specified state values. </item>
-	<item>Sites that have specified state value are shown in green.</item> 
-	<item>Sites that are explicitly bound to another site, 
-	declared unbound or bound are shown in green with bond (if exists) shown in solid color.</item>
-	<item>Sites than can be in any state and can be bound or unbound are shown in white.</item>
-	<item>Sites that have possible multiple states have yellow sign above site shape.</item>
-	</list>
 	</appearance>
 	
 	<operations>

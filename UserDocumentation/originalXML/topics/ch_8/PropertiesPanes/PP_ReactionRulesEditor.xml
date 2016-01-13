@@ -7,43 +7,35 @@
   </introduction>
 		
   <appearance>
-  <imgReference target = "PP_BNG_ReactRules_Editor.png"/>
-  <para>
-  The top of the table shows the cartoon of the reaction rule. Cartoon is for illustration purpose only
-  and non-clickable. The bottom of the pane serves as o create a reaction rule, one has to specify 
-  </para>
+  	Each reaction rule is specified on two lines, with reactants on the firsl line and products underneath. This way a modeler
+  	can easily see the transformation of reactants to products. 
+  Sites in white are fully unspecified (they can be bound or unbound, denoted by grey question mark under the site). 
+  	Sites in green must have either binding status defined 
+  	(bound to specific site - denoted by color bond with index, bound to arbitrary site - denoted by vertical line , unbound), 
+  	or state defined. The first rule describes binding of egfr monomer (site r is unbound) to free egf (site r is unbound).
+  	The second rule describes phosphorylation of unbound Y1148 site (change of state from Y to P) on a receptor that is bound to
+  	another receptor (site r is bound) but may be bound to a ligand (question mark under l site) and 
+  	site Y1068 may be in any state and may be either bound or not.
+  	  <imgReference target = "RR_00.PNG"/>
   </appearance>
 	
-  <operations>
-    <para>
-    <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
-    </para>
-    <para>
-    <bold>Select a rate law</bold> using the combobox to select one of a few predefined rate laws 
-    (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or to enter a user-defined 
-    rate law, either in micromolar per second or in molecules per second. 
-    </para>
-    <para>
-    <bold>Convert the rate law</bold> from micromolar per second to molecules per second, or vice versa, using the 
-    <bold>Convert to</bold> button. Note that predefined laws are only in micromolar per second, so if they are converted 
-    to molecules per second, the user-defined kinetic law will automatically be selected, and remain so even if converted back.
-    </para>
-    <para>
-    <bold> Edit Expressions and their units</bold> in the Expression column.  
-    <list>
-    <item>Predefined rate laws, species concentrations and universal constants cannot be edited.</item> 
-    <item>Incompatible units will be silently rejected.</item> 
-    <item>If references to new terms are added, new rows will automatically be added for these terms.  An expression for each new
-    term must be added in the expression column</item> 
-    <item>Terms can be set to <def target = "def_Global">global</def> or <def target = "def_Local">local</def> using a 
-    checkbox, except for the reaction rate, which is always local.  Species concentrations and universal constants 
-    are always global.</item> 
-	</list>
-	
-    <bold> Add Annotations</bold> in the Annotation text field, which can be shown or hiddenby selecting the plus or minus 
-    sign next to the <bold>Add Annotation Here</bold>.text.  Annotations apply to the entire reaction.
-    </para>
-  </operations>
+<operations>
+	<bold>Reactin Rule specification</bold>
+	Using right mouse click, a user is able to
+		<list>
+			<item>Right click mouse on the first shape to select the first molecule for the first reactant.
+			<imgReference target = "RR_1.PNG"/></item>
+			<item>To add more reactants, right click on the empty space next to reaction arrow: 			
+			<imgReference target = "RR_2.PNG"/></item>
+			<item>To specify reactant or product consisting of multiple molecules, right click next to the existing molecule.
+			<imgReference target = "RR_3.PNG"/></item>
+			<item>Specify how molecules are connected by mouse right click on binding site shape. All changes on reactants are propagated 
+				to products:
+			<imgReference target = "RR_4.PNG"/></item>
+			<item>Specify explicit bonds by mouse right click on state shape. Changes in products do not propagate to reactions.
+			<imgReference target = "RR_5.PNG"/></item>
+		</list>
+	</operations>
 
 </page>
 
