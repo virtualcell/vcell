@@ -81,6 +81,7 @@ class ObservableTreeModel extends RbmDefaultTreeModel implements PropertyChangeL
 		
 		observable.firePropertyChange("entityChange", null, "bbb");
 	}
+	
 	private BioModelNode createMolecularTypePatternNode(MolecularTypePattern molecularTypePattern) {
 		MolecularType molecularType = molecularTypePattern.getMolecularType();
 		BioModelNode node = new BioModelNode(molecularTypePattern, true);
