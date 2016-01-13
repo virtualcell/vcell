@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="Reactions Diagram View" target="ReactDiagView">
+<page title="Reactions Diagram" target="ReactDiagView">
 
 	<introduction> 
-	The <link target="Reactions"> reactions</link> diagram shows a bipartite graph consisting of of <link target = "Species">species</link> 
-	(<bold>green</bold> balls for species that do not have <link target = "Molecules">Molecules</link> assigned, 
-	or <bold>blue</bold> balls for species with <link target = "Molecules">Molecules</link> assigned) and reactions (<bold>yellow</bold> squares) nodes, 
+	The reactions diagram shows a bipartite graph consisting of of 
+	<def target = "def_species">species</def>
+	(<bold>green</bold> balls for species that do not have <link target = "Molecules">molecular details</link>, 
+	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
+	and <def target = "def_reactions">reactions</def> (<bold>yellow</bold> squares) nodes, 
 	each within the appropriate
 	compartments, and connected by lines showing which species participates in which reaction.
 	</introduction>

@@ -47,18 +47,26 @@
     	</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
-    		<tocitem target="Reactions" text="Reactions">
-    			<tocitem target="ReactTabView" text="Regular Reactions"/>
-    			<tocitem target="ReactionRules" text="Reaction Rules"/>
+    		<tocitem target="ReactTabView" text="Reactions Table">
+    			<tocitem target="PP_Reactions" text="Edit Reaction"/>
+ 	    		<tocitem target="PP_MemFlux" text="Edit Membrane Flux"/>   			
+    			<tocitem target="PP_ReactionRulesEditor" text="Edit Reaction Rule"/>
+    			<tocitem target="PP_ReactionRulesKinetics" text="Edit Kinetics for Reaction Rule"/>
+    			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
     		</tocitem>
-    		<tocitem target="PhysStructTabView" text="Structures"/>
-    		<tocitem target="Species" text="Species">
-    			<tocitem target="RegularSpecies" text="Species"/> 
-    			<tocitem target="CompositeSpecies" text="Composite Species"/>    		
+    		<tocitem target="PhysStructTabView" text="Structures table">
+	    		<tocitem target="PP_Structures" text="Structures Properties Pane"/>
+   			</tocitem>	    		    		
+    		<tocitem target="SpeciesTabView" text="Species Table">
+    			<tocitem target="PP_Species" text="Edit Species"/>
+    			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
     		</tocitem>
-    		<tocitem target="Molecules" text="Molecules"/>
-    		<tocitem target="Observables" text="Observables"/>
-    		<tocitem target="PathLink" text="Pathway Links"/>
+    		<tocitem target="Molecules" text="Molecules Table">
+    			<tocitem target="PP_Molecules" text="Edit Molecule"/>
+      		</tocitem>	  			    	
+    		<tocitem target="Observables" text="Observables Table">
+    			   <tocitem target="PP_Observables" text="Edit Observable"/>
+    		</tocitem>	   
     	</tocitem>
     	<tocitem target="ApplicationOverview" text="BioModel Applications">
     		<tocitem target="GeometryOverview" text="Geometry">
@@ -139,15 +147,12 @@
 	    <tocitem target="PropertiesPaneOverview" text="Properties Panes">
 	    	<tocitem target="PP_Structures" text="Structures Properties Pane"/>
 	    	<tocitem target="PP_Molecules" text="Molecules Properties Pane"/>
-	    	<tocitem target="PP_Species" text="Species Properties Pane"/>
-	    	<tocitem target="PP_CompositeSpecies" text="Composite Species Properties Pane"/>	    	
+	    	<tocitem target="PP_Species" text="Species Properties Pane"/>	
 	    	<tocitem target="PP_Observables" text="Observables Properties Pane"/>	    	
 	    	<tocitem target="PP_Reactions" text="Reactions Properties Pane"/>
 	    	<tocitem target="PP_MemFlux" text="Membrane Flux Properties Pane"/>
-	    	<tocitem target="PP_ReactionRules" text="Reaction Rules Properties Pane">
-    			<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
-    			<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
-    		</tocitem>
+    		<tocitem target="PP_ReactionRulesEditor" text="Reaction Rules Editor Pane"/>
+    		<tocitem target="PP_ReactionRulesKinetics" text="Reaction Rules Kinetics Pane"/>
 	    	<tocitem target="PP_Stoichiometries" text="Stoichiometries Properties Pane"/>
 	    	<tocitem target="PP_Parameters" text="Parameter Properties Pane"/>
 	    	<tocitem target="PP_Pathways" text="Pathway Properties Pane"/>

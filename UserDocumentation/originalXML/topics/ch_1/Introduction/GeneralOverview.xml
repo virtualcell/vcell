@@ -26,7 +26,7 @@ The Virtual Cell has been developed using the latest supported Java technology.
 The Virtual Cell version 6.0 is the first VCell version that supports 
 <link target="RuleBasedOverview">rule-based modeling</link> that involves the representation 
 of species as structured objects consisting of <link target="Molecules">molecules</link> 
-and molecular interactions as <link target="ReactionRules">rules</link> for transforming the attributes of species. 
+and molecular interactions as <def target = "def_ReactionRules">reaction rules</def> for transforming the attributes of species. 
 The approach allows one to systematically incorporate site-specific details about 
 molecular interactions into a model.
 that 

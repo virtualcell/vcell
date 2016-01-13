@@ -3,9 +3,9 @@
 <page title="Introduction to Rule-Based Modeling" target="RuleBasedTheory">
 
 	<introduction>
-	<para>A rule-based model is specified as a set of <link target = "ReactionRules">reaction rules</link>, which are
-	associated with specific rate laws. Given a set of seed <link target = "CompositeSpecies">species</link>, 
-	a <link target = "ReactionRules">reaction rule</link> identifies
+	<para>A <def target = "def_RuleBased">rule-based</def> model is specified as a set of <def target = "def_ReactionRules">reaction rules</def>, which are
+	associated with specific rate laws. Given a set of seed <link target = "SpeciesTabView">species</link>, 
+	a <def target = "def_ReactionRules">reaction rules</def> identifies
 	those species that have the features required to undergo the transformation from
 	reactants to products specified in the reaction rule. Interactions represented in a
 	reaction rule do not depend on features not explicitly indicated. Thus, multiple

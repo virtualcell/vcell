@@ -3,20 +3,34 @@
 <page title="Species Properties Pane" target="PP_Species">
 
 	<introduction>
-	The species properties pane allows editing of the species name and free text annotations.
+	The user can edit Species name, Linked Pathway Object(s) (a list of items linked to selected species, 
+		see <link target="PathwayOverview">Pathway overview</link>) and annotations (user notes associated with selected species).
+
+	<para>The molecular details of <link target = "SpeciesTabView">Species</link> can be specified and edited using 
+	mouse right click in the bottom <bold>Object Properites</bold> pane. </para>
+			<imgReference target = "PP_CompositeSpecies_defined.PNG"/>		
 	</introduction>
 	
 	<appearance>
 	</appearance>
 	
 	<operations>
-	<bold>Species Properties</bold>
-	<imgReference target = "PP_Species.png"/>
-	<list>
-	<item>species name: Name of selected species in the model.</item>
-	<item>Linked Pathway Object(s): List of items linked to selected species. (See <link target="PathwayOverview">Pathway overview</link>)</item>
-	<item>annotation: User notes associated with selected species.</item>
-	</list>
+	<bold>Species specification</bold>
+	Using right mouse click, a user is able to
+		<list>
+			<item>Specify molecules that compose species
+			<imgReference target = "PP_CompositeSpecies_start.PNG"/>			
+			<imgReference target = "PP_CompositeSpecies_new.PNG"/></item>
+			<item>After molecules are added, possible issues are highlighted in red (see also 3 errors in problems tab - 
+				two errors because two binding sites have unspecified states, one error because molecules are not connected).
+			<imgReference target = "PP_CompositeSpecies_error.PNG"/></item>
+			<item>Specify how molecules are connected by mouse right click on binding site shape:
+			<imgReference target = "PP_CompositeSpecies_bond1.PNG"/></item>
+			<item>Specify states for binding sites by mouse right click on state shape. 
+				Note that the number of errors is down to one - because molecules are already connected and
+				one only one site has unspecified states.
+			<imgReference target = "PP_CompositeSpecies_site.PNG"/></item>
+		</list>
 	</operations>	
 
 </page>
