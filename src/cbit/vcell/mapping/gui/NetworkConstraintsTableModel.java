@@ -36,11 +36,7 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	public static final int iColType = 1;
 	public static final int iColValue = 2;
 	private static String[] columnNames = new String[] {"Name", "Type", "Value"};
-
 	private SimulationContext simContext = null;
-	
-
-
 	
 	public NetworkConstraintsTableModel(EditorScrollTable table) {
 		super(table);
@@ -85,10 +81,10 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 		// we read them here, all from rbmModelContainer.getMolecularTypeList()
 		// TODO: if the molecule is in the NetworkConstraints.maxStoichiometryMap set value from there
 		// otherwise put "default"
-		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
-			nce = new NetworkConstraintsEntity(mt.getDisplayName(), "max stoichiometry", "default");
-			nceList.add(nce);
-		}		
+//		for(MolecularType mt : rbmModelContainer.getMolecularTypeList()) {
+//			nce = new NetworkConstraintsEntity(mt.getDisplayName(), "max stoichiometry", "default");
+//			nceList.add(nce);
+//		}		
 		return nceList;
 	}
 	
@@ -213,31 +209,21 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 	protected Model getModel() {
 		return simContext == null ? null : simContext.getModel();
 	}
-	
 	@Override
 	protected Comparator<NetworkConstraintsEntity> getComparator(int col, boolean ascending) {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
 	public SymbolTable getSymbolTable(int row, int column) {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
-	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row,
-			int column) {
-		// TODO Auto-generated method stub
+	public AutoCompleteSymbolFilter getAutoCompleteSymbolFilter(int row, int column) {
 		return null;
 	}
-
 	@Override
 	public Set<String> getAutoCompletionWords(int row, int column) {
-		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 }
