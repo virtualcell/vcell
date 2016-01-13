@@ -105,6 +105,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == observable) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
 					updateInterface();
+				} else if (evt.getPropertyName().equals("entityChange")) {
+					updateInterface();
 				}
 			}
 		}
