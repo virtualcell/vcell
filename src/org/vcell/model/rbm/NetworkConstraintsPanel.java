@@ -87,7 +87,6 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 	
 	private JDialog viewSpeciesDialog = null;
 	private JDialog viewReactionsDialog = null;
-	private JDialog editConstraintsDialog = null;
 	
 	private JLabel seedSpeciesLabel;
 	private JLabel reactionRulesLabel;
@@ -310,6 +309,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 4;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 4, 4, 10);
 		bottom.add(somethingInsufficientLabel, gbc);
