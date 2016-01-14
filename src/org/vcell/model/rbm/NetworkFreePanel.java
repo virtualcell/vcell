@@ -1,10 +1,7 @@
 package org.vcell.model.rbm;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,72 +10,30 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.EventObject;
-import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 
-import org.vcell.model.rbm.common.NetworkConstraintsEntity;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.EditorScrollTable;
 
-import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.client.BioModelWindowManager;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.ApplicationSpecificationsPanel;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
-import cbit.vcell.client.desktop.biomodel.RbmTableRenderer;
 import cbit.vcell.client.desktop.biomodel.SelectionManager;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.CreateBNGOutputSpec;
-import cbit.vcell.client.task.ReturnBNGOutput;
-import cbit.vcell.client.task.RunBioNetGen;
-import cbit.vcell.mapping.BioNetGenUpdaterCallback;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.TaskCallbackMessage;
-import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
-import cbit.vcell.math.MathException;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.Species;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.bionetgen.BNGExecutorService;
-import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.solvers.ApplicationMessage;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
@@ -165,23 +120,23 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 
 	private JButton getCreateModelButton() {
 		if (createModelButton == null) {
-			createModelButton = new javax.swing.JButton(" Create Rule-Based VCell BioModel ");
+			createModelButton = new javax.swing.JButton(" Create new Rule-Based VCell BioModel ");
 			createModelButton.setName("CreateModelButton");
 		}
 		return createModelButton;
 	}
 
 	private void initialize() {
-		speciesLabel = new JLabel("3");
-		speciesMoleculesLabel = new JLabel("3");	
-		futureSpeciesLabel = new JLabel("3");
-		reactionsLabel = new JLabel("4");
-		rulesLabel = new JLabel("4");
-		futureRulesLabel = new JLabel("3");
-		molecularTypesLabel = new JLabel("2");
-		futureMolecularTypesLabel = new JLabel("2");
-		observablesLabel = new JLabel("6");
-		futureObservablesLabel = new JLabel("6");
+		speciesLabel = new JLabel("");
+		speciesMoleculesLabel = new JLabel("");	
+		futureSpeciesLabel = new JLabel("");
+		reactionsLabel = new JLabel("");
+		rulesLabel = new JLabel("");
+		futureRulesLabel = new JLabel("");
+		molecularTypesLabel = new JLabel("");
+		futureMolecularTypesLabel = new JLabel("");
+		observablesLabel = new JLabel("");
+		futureObservablesLabel = new JLabel("");
 
 		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
@@ -199,7 +154,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		add(mainPanel, gbc);
 		
 		JPanel left = new JPanel();
-		TitledBorder titleLeft = BorderFactory.createTitledBorder(loweredEtchedBorder, " VCell BioModel Physiology ");
+		TitledBorder titleLeft = BorderFactory.createTitledBorder(loweredEtchedBorder, " Original Physiology ");
 		titleLeft.setTitleJustification(TitledBorder.LEFT);
 		titleLeft.setTitlePosition(TitledBorder.TOP);
 		left.setBorder(titleLeft);
@@ -214,7 +169,7 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		mainPanel.add(left, gbc);
 
 		JPanel right = new JPanel();
-		TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Rule-Based BioModel Physiology");
+		TitledBorder titleRight = BorderFactory.createTitledBorder(loweredEtchedBorder, " Created Rule-Based Physiology");
 		titleRight.setTitleJustification(TitledBorder.LEFT);
 		titleRight.setTitlePosition(TitledBorder.TOP);
 		right.setBorder(titleRight);
