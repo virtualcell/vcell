@@ -593,6 +593,8 @@ private void initialize() {
 		leftBottomTabbedPane.addTab("Pathway Comm", bioModelEditorPathwayCommonsPanel);
 		bioModelEditorSabioPanel = new BioModelEditorSabioPanel();
 		leftBottomTabbedPane.addTab("Sabio", bioModelEditorSabioPanel);
+		int index = leftBottomTabbedPane.getTabCount() - 1;
+		leftBottomTabbedPane.setEnabledAt(index, false);
 		rightSplitPane.setTopComponent(bioModelEditorModelPanel);
 		
 		bioModelEditorTreeModel = new BioModelEditorTreeModel(documentEditorTree);
