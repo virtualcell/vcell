@@ -20,8 +20,7 @@
   </appearance>
 	
 <operations>
-	<bold>Reactin Rule specification</bold>
-	Using right mouse click, a user is able to
+	<bold>Reaction Rule edit/specification:</bold>
 		<list>
 			<item>Right click mouse on the first shape to select the first molecule for the first reactant.
 			<imgReference target = "RR_1.PNG"/></item>

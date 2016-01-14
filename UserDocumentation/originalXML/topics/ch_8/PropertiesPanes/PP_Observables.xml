@@ -7,18 +7,40 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "PP_BNG_Observables_2.png"/>
-	</appearance>
-	
-	<operations>
-	<list>
-	<item>Observable name: Right click to add Species Pattern (species with a given set of features).</item>
-	<item>Species Pattern: Right click to delete Pattern or Add Molecules that constitute pattern.</item>
-	<item>Molecule is added with all sites being in unspecified state (white). Right click on a 
-	site to choose a state and specify bond - a site can be connected to any other site in a species pattern, 
-	or be declared bound or unbound.</item>
+  	<list>
+  	<item>Each Observable consists of one or more <bold>Species Patters</bold>. Observable selects species that match at least one
+	of the species patterns (not both).</item> 
+	<item>Each species pattern defines common features of species. It consists of one 
+	or more of <link target = "Molecules">molecules</link> that compose
+	species. Molecules may or may not be explicitely connected, but must be present 
+	in every species selected by this species pattern.</item>
+	<item> Sites that have possible multiple states have yellow sign above site shape. 
+	Each molecule within species pattern may have some sites being undefined. If site  
+	does not have defined states (if states are possible) and its binding is not important, it is shown in white.
+	Sites may have defined binding - they can be declared to be explicitly bound to another site, 
+	declared unbound or declared bound to "some" (unspecified) site - then the site is shown in green with bond (if exists) 
+	shown in solid color. </item>
+	<item>Observable below describes the total phosphorylation of all EGFR molecules. The first species pattern selects all
+		species that have Y1068 being phosphorylated, the second - all species that have Y1148 phosphorylated.</item>
 	</list>
-	</operations>	
+  	  <imgReference target = "O0.PNG"/>
+  </appearance>
+	
+<operations>
+	<bold>Observable specification</bold>
+		<list>
+			<item>Right click mouse on the shape to select the first molecule for the first species pattern.
+			<imgReference target = "O1.PNG"/></item>
+			<item>Right click on molecular site or state will allow editing. Right click next to molecule will add another molecule. 			
+			<imgReference target = "O2.PNG"/></item>
+			<item>To add another species patter, right click below the first.
+			<imgReference target = "O3.PNG"/></item>
+			<item>Similarly to the first species pattern, clicking on shape will allow selection of molecule:
+			<imgReference target = "O4.PNG"/></item>
+			<item>The second species patter is edited through right click on site and state.
+			<imgReference target = "O5.PNG"/></item>
+		</list>
+	</operations>
 
 </page>
 

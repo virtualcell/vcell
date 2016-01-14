@@ -4,7 +4,9 @@
 
 	
 	<introduction>
-	For any application, the species initial conditions need to be set. In addition, other parameters like diffusion constant, boundary conditions and velocity terms for species need to be specified for spatial applications.
+	For any application, the species initial conditions need to be set. 
+	In addition, other parameters like diffusion constant, boundary conditions and velocity 
+	terms for species need to be specified for spatial applications.
 	This is done in the <bold>Specifications</bold> tab of an <bold>Application</bold>.	
 	</introduction>
 	

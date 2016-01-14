@@ -79,12 +79,12 @@
    		   		</tocitem>
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
-    	   		<tocitem target="SpeciesSpecifications" text="Species Specifications">
+    	   		<tocitem target="SpeciesSpecifications" text="Species">
     			     <tocitem target="fieldData" text="Field Data"/>
     			</tocitem>
-   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions and Reaction Rules Specifications"/>
-   	 	  		<tocitem target="NetworkSpecifications" text="Network Specifications"/>
-   	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free Specifications"/>  	 	  		
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions"/>
+   	 	  		<tocitem target="NetworkSpecifications" text="Network"/>
+   	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free"/>  	 	  		
     		</tocitem>
     		<tocitem target="ProtocolsOverview" text="Protocols">
     	   		<tocitem target="Events" text="Events"/>
