@@ -430,9 +430,26 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 	}
 
 	private JComboBox getKineticsTypeComboBox() {
-		final String[] cOptions = { "Mass Action" };
 		if (kineticsTypeComboBox == null) {
-				kineticsTypeComboBox = new JComboBox(cOptions);
+			kineticsTypeComboBox = new JComboBox();
+			kineticsTypeComboBox.setName("JComboBox1");
+			kineticsTypeComboBox.setRenderer(new DefaultListCellRenderer() {
+				private final static String PI = "\u03A0";
+				private final static String PIs = "<strong>\u03A0</strong>";
+				private final static String PIsb = "<strong><big>\u03A0</big></strong>";
+				private final static String pi = "\u03C0";
+				private final static String MULT = "\u22C5";
+
+				public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+					java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+					String str = "<html>Mass Action ( for each reaction:  ";
+					str += "Kf" + MULT + PIs + " <small>reactants</small> - Kr" + MULT + PIs + " <small>products</small> )</html>";
+					setText(str);
+					return component;
+				}
+			});
+			
+				
 		}
 		return kineticsTypeComboBox;
 	}
