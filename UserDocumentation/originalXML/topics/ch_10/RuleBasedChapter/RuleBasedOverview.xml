@@ -11,17 +11,18 @@ as well as <def target = "def_ReactionRules">reaction rules</def> that are speci
 <def target = "def_reactions">reactions</def> in a <link target = "ReactTabView">Reactions</link> Table.
  
 <para><bold>Rule-based features and compartments</bold></para>
-Defining <link target = "Molecules">Molecules</link> allow the user to create rule-based models. 
-However, <bold>rule-based models may exist in a single compartment only</bold> 
-(this is a temporary restrictions that will be lifted in the next release).  Once a molecule is created, 
+Defining <link target = "Molecules">Molecules</link> allow the user to create species that have 
+<link target = "PP_Species">molecular details</link>. 
+Currently, <bold>rules can operate in a single compartment only</bold> 
+(this is a temporary restrictions that will be lifted in the next release).  Once a reaction rule is created, 
 any new species by default will be placed in c0 compartment, and this can not be changed. Vice versa, if multiple compartments 
-are created, no molecules can be added.
+are created, no rules can be added.
 
 <para><bold>Mixing Rule-based features and reaction networks</bold></para>
 As with a regular BioModel, a rule-based BioModel consists of a model description (Physiology), 
 and one or more Applications. Except for a limitation of a single compartment, 
 any operations with ordinary species and reactions are supported in VCell alongside rules. Specifically, 
-species that are used as initial seed species for rule-based models can be used as species in reaction networks.
+species that are used as initial <def target= "def_SeedSpecies">seed species</def> for rule-based models can be used as species in reaction networks.
 
 
 	<para><bold>Rule-based Applications</bold></para>
@@ -31,7 +32,23 @@ species that are used as initial seed species for rule-based models can be used 
 	Applications, including <def target="def_Deterministic">deterministic</def>, 
 	<def target="def_Stochastic">stochastic</def> and <def target="def_NetworkFree">network-free</def>.  
 	Each Application, in turn can have multiple Simulations, in which different numerical
-	methods or conditions are used.
+	methods or conditions are used. 
+	<list>
+		<item>In order to run <def target="def_Deterministic">deterministic</def> or 
+	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications
+	the <def target="def_BioNetGen">BioNetGen</def> network-generation
+	algorithm needs to generate the complete network of species and reactions.</item> 
+	<item>This network is obtained by applying the set of reaction rules to the set of 
+	<def target = "def_SeedSpecies">seed species</def> with initial amounts
+	specified in <link target = "SpeciesSpecifications">Species</link> specification tab.
+	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
+	which otherwise can become infinite. The generated species and reactions can be seen in 
+	<link target = "NetworkSpecifications">Network</link> tab, but they are not added to the 
+	<link target = "ReactDiagView">Reaction Diagram</link> view. </item>
+	<item>After the user is satified with the network that is generated using the set of species and reaction rules,
+		he/she can run any determiministic or stochastic <link target = "simulations_overview">simulation</link>.
+		</item>
+	</list>
 
 	<para><bold>Rule-Based MathModel</bold></para>
 	MathModel for <def target="def_Deterministic">deterministic</def> or 

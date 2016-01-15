@@ -6,12 +6,14 @@
 There are several ways to create a <def target= "def_RuleBased">rule-based</def> model:
 <list>
 <item>Import existing rule-based model encoded in BNGL format, using <link target = "ImportBNGL">File->Import menu</link>.
-The rule-based model will be created with two applications: <link target = "NFSimApp">network-free application</link>
-called <bold>NFSim</bold>, and <link target = "BNGApp">deterministic network application</link> called <bold>BioNetGen</bold>. 
+The rule-based model will be created with two applications: <def target= "def_NetworkFree">network-free</def>
+called <bold>NFSim</bold>, and <def target= "def_Deterministic">deterministic</def> 
+network application called <bold>BioNetGen</bold>. 
 If some features in BNGL file are not supported by VCell, a pop-up window is launched 
 with a suggestion to correct unsupported features.
 In some cases, when some features in BNGL file (such as fixed value of concentration) are supported by 
-BioNetGen but not NFsim, only a single deterministic rule-based application will be created.</item>
+<def target= "def_BioNetGen">BioNetGen</def> but not <def target= "def_NFSim">NFSim</def>, 
+only a single deterministic rule-based application will be created.</item>
 <item>Create a new rule-based model or convert an existing single-compartment reaction network model into 
 	rule-based by adding rule-based features using <link target = "PhysOverview">Physiology</link> tabs.</item>
 </list>

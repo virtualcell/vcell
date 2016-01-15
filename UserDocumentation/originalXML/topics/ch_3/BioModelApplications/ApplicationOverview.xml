@@ -24,8 +24,8 @@
 	<appearance>  
 	 Applications can be 
 	 <list> 
-	<item><def target="def_Deterministic">Deterministic</def>, including single-compartment <link target="RBApplications">rule-based</link> </item>
-	<item><def target="def_Stochastic">Stochastic</def>, including single-compartment <link target="RBApplications">rule-based</link></item> 
+	<item><def target="def_Deterministic">Deterministic</def></item>
+	<item><def target="def_Stochastic">Stochastic</def></item> 
 	<item><def target="def_RuleBased">Network-free</def>, 
 	a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
 	</list>
