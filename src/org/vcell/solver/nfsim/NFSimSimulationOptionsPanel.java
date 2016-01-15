@@ -301,6 +301,8 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		aggregateBookkeepingHelpButton = new JButton(" ? ");
 		aggregateBookkeepingHelpButton.setFont(font);
 		aggregateBookkeepingHelpButton.setBorder(border);
+		aggregateBookkeepingCheckBox.setSelected(true);
+		aggregateBookkeepingCheckBox.setEnabled(false);
 		
 		maxMoleculesPerTypeCheckBox = new JCheckBox("Set the maximal number of molecules per Molecular Type.");
 		maxMoleculesPerTypeTextField = new JTextField(NFsimSimulationOptions.DefaultMaxMoleculesPerSpecies+"");
@@ -539,7 +541,7 @@ public class NFSimSimulationOptionsPanel extends CollapsiblePanel {
 		}
 		boolean cb = nfsimSimulationOptions.getAggregateBookkeeping();
 		if (cb == false) {
-			aggregateBookkeepingCheckBox.setSelected(false);
+			aggregateBookkeepingCheckBox.setSelected(true);		// put it back here to false
 		} else {			
 			aggregateBookkeepingCheckBox.setSelected(true);
 		}
