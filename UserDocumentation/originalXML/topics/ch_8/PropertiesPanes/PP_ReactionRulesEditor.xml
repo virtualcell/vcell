@@ -34,6 +34,12 @@
 			<item>Specify explicit bonds by mouse right click on state shape. Changes in products do not propagate to reactions.
 			<imgReference target = "RR_5.PNG"/></item>
 		</list>
+
+		<para><bold>Note:</bold> If reaction rule has multiple identical molecules, they are enumerated to provide 
+		one-to-one mapping from reactants to products. The match is established automatically, but can be reassigned
+		with a right click on a molecular shape.
+		<imgReference target = "RulesMatch.PNG"/></para>
+		
 	</operations>
 
 </page>
