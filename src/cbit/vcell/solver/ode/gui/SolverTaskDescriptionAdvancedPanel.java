@@ -53,7 +53,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjSolverPanel = null;
 	private javax.swing.JLabel ivjIntegratorLabel = null;
 	private javax.swing.JComboBox sensitivityAnalysisComboBox = null;
-	
+
 	private ErrorTolerancePanel ivjErrorTolerancePanel = null;
 	private TimeBoundsPanel ivjTimeBoundsPanel = null;
 	private TimeStepPanel ivjTimeStepPanel = null;
@@ -72,7 +72,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private SmoldynSimulationOptionsPanel smoldynSimulationOptionsPanel = null;
 	private NFSimSimulationOptionsPanel nfsimSimulationOptionsPanel = null;
 	private SundialsSolverOptionsPanel sundialsSolverOptionsPanel = null;
-	
+
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private CollapsiblePanel generalOptionsPanel;
 	private ChomboTimeBoundsPanel chomboTimeBoundsPanel;
@@ -84,7 +84,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private JCheckBox performSensitivityAnalysisCheckBox;
 	private JButton sensitivityAnalysisHelpButton;
 	private UnitInfo unitInfo;
-		
+
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if(e.getSource() == getQuestionButton())
@@ -98,33 +98,33 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 				showSensitivityAnalysisHelp();
 			}
 		}
-		
+
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == SolverTaskDescriptionAdvancedPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) { 
+			if (evt.getSource() == SolverTaskDescriptionAdvancedPanel.this && (evt.getPropertyName().equals("solverTaskDescription"))) {
 				connPtoP1SetTarget();
 				managePanels();
 			}
-			if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model"))) 
+			if (evt.getSource() == getSolverComboBox() && (evt.getPropertyName().equals("model")))
 				connPtoP7SetSource();
 			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_SOLVER_DESCRIPTION))) {
 				onPropertyChange_solverDescription();
 			}
-			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) { 
+			if (evt.getSource() == getTornOffSolverTaskDescription() && (evt.getPropertyName().equals(SolverTaskDescription.PROPERTY_TIME_BOUNDS))) {
 				connPtoP2SetTarget();
 			}
-			if (evt.getSource() == getTimeBoundsPanel() && (evt.getPropertyName().equals("timeBounds"))) 
+			if (evt.getSource() == getTimeBoundsPanel() && (evt.getPropertyName().equals("timeBounds")))
 				connPtoP2SetSource();
 		}
-		
+
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == getSolverComboBox()) 
+			if (e.getSource() == getSolverComboBox())
 				connEtoM6(e);
 			if (e.getSource() == serialParameterScanCheckBox) {
 				getSolverTaskDescription().setSerialParameterScan(serialParameterScanCheckBox.isSelected());
 			}
 		}
 	}
-	
+
 public SolverTaskDescriptionAdvancedPanel() {
 	super();
 	initialize();
@@ -301,7 +301,7 @@ private javax.swing.DefaultComboBoxModel<String> createSolverComboBoxModel(Solve
 		fieldSolverComboBoxModel = new DefaultComboBoxModel<String>();
 	}
 	// remember cuurent solver so we can put it back as the selected one after creating the list
-	// otherwise, iterating while adding elements will fire events that wil change it on the TornoffSolverTaskDescription...
+	// otherwise, iterating while adding elements will fire events that will change it on the TornoffSolverTaskDescription...
 	SolverDescription currentSolverDescription = null;
 	if (newSolverTaskDescription != null && newSolverTaskDescription.getSolverDescription() != null) {
 		currentSolverDescription = newSolverTaskDescription.getSolverDescription();
@@ -465,14 +465,14 @@ private javax.swing.JPanel getSolverPanel() {
 			constraintsSolverComboBox.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsSolverComboBox.insets = new java.awt.Insets(4, 4, 4, 4);
 			ivjSolverPanel.add(getSolverComboBox(), constraintsSolverComboBox);
-			
+
 			java.awt.GridBagConstraints constraintsQuestionButton = new java.awt.GridBagConstraints();
 			constraintsQuestionButton.gridx = 2; constraintsQuestionButton.gridy = 0;
 			constraintsQuestionButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsQuestionButton.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsQuestionButton.insets = new java.awt.Insets(6, 6, 6, 6);
 			ivjSolverPanel.add(getQuestionButton(), constraintsQuestionButton);
-			
+
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -615,19 +615,19 @@ private void initConnections() throws java.lang.Exception {
 
 private ChomboTimeBoundsPanel getChomboTimeBoundsPanel()
 {
-	if (chomboTimeBoundsPanel == null) {		
+	if (chomboTimeBoundsPanel == null) {
 		chomboTimeBoundsPanel = new ChomboTimeBoundsPanel();
 		chomboTimeBoundsPanel.setVisible(false);
 	}
-	
+
 	return chomboTimeBoundsPanel;
 }
 
 private CollapsiblePanel getGeneralOptionsPanel() {
-	if (generalOptionsPanel == null) {		
+	if (generalOptionsPanel == null) {
 		generalOptionsPanel = new CollapsiblePanel("General");
 		generalOptionsPanel.getContentPanel().setLayout(new GridBagLayout());
-		
+
 		java.awt.GridBagConstraints constraintsTimeBoundsPanel = new java.awt.GridBagConstraints();
 		constraintsTimeBoundsPanel.gridx = 0; constraintsTimeBoundsPanel.gridy = 0;
 		constraintsTimeBoundsPanel.fill = java.awt.GridBagConstraints.BOTH;
@@ -635,7 +635,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeBoundsPanel.weighty = 1.0;
 		constraintsTimeBoundsPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeBoundsPanel(), constraintsTimeBoundsPanel);
-	
+
 		java.awt.GridBagConstraints constraintsTimeStepPanel = new java.awt.GridBagConstraints();
 		constraintsTimeStepPanel.gridx = 1; constraintsTimeStepPanel.gridy = 0;
 		constraintsTimeStepPanel.fill = java.awt.GridBagConstraints.BOTH;
@@ -643,7 +643,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsTimeStepPanel.weighty = 1.0;
 		constraintsTimeStepPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
-			
+
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 1.0;
@@ -652,7 +652,7 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
 	}
-	
+
 	return generalOptionsPanel;
 }
 
@@ -665,32 +665,32 @@ private CollapsiblePanel getSensitivityAnalysisPanel() {
 		Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 		sensitivityAnalysisHelpButton.setBorder(border);
 		sensitivityAnalysisHelpButton.setFont(font);
-		
+
 		sensitivityAnalysisCollapsiblePanel = new CollapsiblePanel("Local Sensitivity Analysis", false);
-		sensitivityAnalysisCollapsiblePanel.getContentPanel().setLayout(new GridBagLayout());		
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(performSensitivityAnalysisCheckBox, gbc);
-		
+
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 1; 
+		gbc.gridx = 1;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(sensitivityAnalysisHelpButton, gbc);
-		
+
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.gridwidth = 2;
-		gbc.insets = new java.awt.Insets(4, 4, 4, 4);		
-		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(sensitivityAnalysisComboBox, gbc); 
+		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+		sensitivityAnalysisCollapsiblePanel.getContentPanel().add(sensitivityAnalysisComboBox, gbc);
 	}
 	return sensitivityAnalysisCollapsiblePanel;
 }
@@ -704,24 +704,24 @@ private void initialize() {
 
 		int gridy = 0;
 		java.awt.GridBagConstraints constraintsJLabelTitle = new java.awt.GridBagConstraints();
-		constraintsJLabelTitle.gridx = 0; 
+		constraintsJLabelTitle.gridx = 0;
 		constraintsJLabelTitle.gridy = gridy;
 		constraintsJLabelTitle.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJLabelTitle.insets = new java.awt.Insets(4, 4, 0, 4);
 		add(getJLabelTitle(), constraintsJLabelTitle);
-		
+
 		gridy ++;
 		java.awt.GridBagConstraints constraintsPanel2 = new java.awt.GridBagConstraints();
-		constraintsPanel2.gridx = 0; 
+		constraintsPanel2.gridx = 0;
 		constraintsPanel2.gridy = 1;
 		constraintsPanel2.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsPanel2.weightx = 1.0;
 		constraintsPanel2.insets = new java.awt.Insets(0, 4, 4, 4);
 		add(getSolverPanel(), constraintsPanel2);
-		
+
 		gridy ++;
 		java.awt.GridBagConstraints gbc1 = new java.awt.GridBagConstraints();
-		gbc1.gridx = 0; 
+		gbc1.gridx = 0;
 		gbc1.gridy = gridy;
 		gbc1.fill = java.awt.GridBagConstraints.BOTH;
 		gbc1.weightx = 1.0;
@@ -731,43 +731,43 @@ private void initialize() {
 
 		gridy ++;
 		gbc1 = new java.awt.GridBagConstraints();
-		gbc1.gridx = 0; 
+		gbc1.gridx = 0;
 		gbc1.gridy = gridy;
 		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getGeneralOptionsPanel(), gbc1);
-				
+
 		gridy ++;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSensitivityAnalysisPanel(), gbc);
-		
+
 		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanelStoch = new java.awt.GridBagConstraints();
-		constraintsJPanelStoch.gridx = 0; 
+		constraintsJPanelStoch.gridx = 0;
 		constraintsJPanelStoch.gridy = gridy;
 		constraintsJPanelStoch.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		constraintsJPanelStoch.weightx = 1.0;
 		constraintsJPanelStoch.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getStochSimOptionsPanel(), constraintsJPanelStoch);
-						
+
 		gridy ++;
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-		constraintsJPanel1.gridx = 0; 
+		constraintsJPanel1.gridx = 0;
 		constraintsJPanel1.gridy = gridy;
 		constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsJPanel1.weightx = 1.0;
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getOutputOptionsPanel(), constraintsJPanel1);
-		
+
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
@@ -776,31 +776,31 @@ private void initialize() {
 
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getNFSimSimulationOptionsPanel(), gbc);
-		
+
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getSmoldynSimulationOptionsPanel(), gbc);
-				
+
 		gridy ++;
 		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 0; 
+		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getMiscPanel(), gbc);
-		
+
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -815,7 +815,7 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		
+
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		SolverTaskDescriptionAdvancedPanel aSolverTaskDescriptionAdvancedPanel;
 		aSolverTaskDescriptionAdvancedPanel = new SolverTaskDescriptionAdvancedPanel();
@@ -940,7 +940,7 @@ private void refresh() {
 			}
 		}
 	}
-	Set<SolverFeature> supportedFeatures = ivjTornOffSolverTaskDescription.getSolverDescription().getSupportedFeatures();	
+	Set<SolverFeature> supportedFeatures = ivjTornOffSolverTaskDescription.getSolverDescription().getSupportedFeatures();
 	if (supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans)) {
 		serialParameterScanCheckBox.setVisible(true);
 		boolean bSerialParameterScan = ivjTornOffSolverTaskDescription.isSerialParameterScan();
@@ -951,8 +951,8 @@ private void refresh() {
 		serialParameterScanCheckBox.setVisible(false);
 	}
 	managePanels(); // sensitivity panel's visibility
-	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans) 
-			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform) 
+	getMiscPanel().setVisible(supportedFeatures.contains(SolverFeature.Feature_SerialParameterScans)
+			|| supportedFeatures.contains(SolverFeature.Feature_StopAtSpatiallyUniform)
 			|| supportedFeatures.contains(SolverFeature.Feature_DataProcessingInstructions));
 	if (getSolverTaskDescription().getSolverDescription().isChomboSolver())
 	{
@@ -975,7 +975,7 @@ private javax.swing.JButton getQuestionButton() {
 			ivjQuestionButton.setName("QuestionButton");
 			ivjQuestionButton.setText("?");
 			ivjQuestionButton.setFont(new Font("SansSerif", Font.BOLD, 12));
-			
+
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -988,12 +988,12 @@ private void displayHelpInfo()
 	DialogUtils.showInfoDialog(this, "Solver Help", getTornOffSolverTaskDescription().getSolverDescription().getFullDescription());
 }
 
-private void onPropertyChange_solverDescription() {	
+private void onPropertyChange_solverDescription() {
 	try {
 		refresh();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
-	}	
+	}
 }
 
 private CollapsiblePanel getMiscPanel() {
@@ -1001,41 +1001,41 @@ private CollapsiblePanel getMiscPanel() {
 		miscPanel = new CollapsiblePanel("Miscellaneous", false);
 		miscPanel.setName("MiscPanel");
 		miscPanel.getContentPanel().setLayout(new java.awt.GridBagLayout());
-	
+
 		int gridy = 0;
 		// 0
 		serialParameterScanCheckBox = new JCheckBox("Run Parameter Scan Serially");
 		GridBagConstraints gridbag1 = new java.awt.GridBagConstraints();
-		gridbag1.gridx = 0; 
+		gridbag1.gridx = 0;
 		gridbag1.gridy = gridy;
 		gridbag1.weightx = 1.0;
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
 		miscPanel.getContentPanel().add(serialParameterScanCheckBox, gridbag1);
-				
+
 		// 1
 		gridy ++;
-		stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();		
+		stopAtSpatiallyUniformPanel = new StopAtSpatiallyUniformPanel();
 		gridbag1 = new java.awt.GridBagConstraints();
-		gridbag1.gridx = 0; 
+		gridbag1.gridx = 0;
 		gridbag1.gridy = gridy;
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.weightx = 1.0;
 		gridbag1.insets = new java.awt.Insets(0, 0, 5, 0);
 		miscPanel.getContentPanel().add(stopAtSpatiallyUniformPanel, gridbag1);
-		
+
 		// 2
 		gridy ++;
 		dataProcessingInstructionPanel = new DataProcessingInstructionPanel();
 		gridbag1 = new java.awt.GridBagConstraints();
-		gridbag1.gridx = 0; 
+		gridbag1.gridx = 0;
 		gridbag1.gridy = gridy;
 		gridbag1.fill = GridBagConstraints.HORIZONTAL;
 		gridbag1.weightx = 1.0;
 		gridbag1.insets = new java.awt.Insets(0, 0, 0, 10);
-		miscPanel.getContentPanel().add(dataProcessingInstructionPanel, gridbag1);			
+		miscPanel.getContentPanel().add(dataProcessingInstructionPanel, gridbag1);
 	}
-	return miscPanel;	
+	return miscPanel;
 }
 
 private void updateSensitivityAnalysisComboBox() {
@@ -1053,7 +1053,7 @@ private void updateSensitivityAnalysisComboBox() {
 				if (enum1.hasMoreElements()){
 					((javax.swing.DefaultComboBoxModel)(sensitivityAnalysisComboBox.getModel())).addElement(SELECT_PARAMETER);
 				}
-				
+
 				//Sort Constants, ignore case
 				TreeSet<String> sortedConstants = new TreeSet<String>(
 					new Comparator<String>(){
@@ -1114,7 +1114,7 @@ private Constant getSelectedSensitivityParameter(String constantName) {
 	if (getSolverTaskDescription()!=null &&
 		getSolverTaskDescription().getSimulation()!=null &&
 		getSolverTaskDescription().getSimulation().getMathDescription()!=null){
-		
+
 		if (constantName != null){
 			Enumeration<Constant> enum1 = getSolverTaskDescription().getSimulation().getMathDescription().getConstants();
 			while (enum1.hasMoreElements()){
@@ -1126,7 +1126,7 @@ private Constant getSelectedSensitivityParameter(String constantName) {
 		}
 	}
 	return null;
-	
+
 }
 
 private void sensitivityAnalysisComboBox_actionPerformed() {
