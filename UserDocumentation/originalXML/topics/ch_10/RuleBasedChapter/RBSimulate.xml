@@ -15,15 +15,18 @@
 	<para>If a user chooses to start <def target="def_Deterministic">deterministic</def> or 
 	<def target="def_Stochastic">stochastic</def> applications, the <def target="def_BioNetGen">BioNetGen</def> network-generation
 	algorithm will be used to generate the complete network of species and reactions 
-	that is obtained by applying the set of reaction rules to the set of specified composite species. Initial amounts
-	of composite species used as seed species are defined in <link target = "NetworkSpecifications">Network</link> specification tab.
-	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
+	that is obtained by applying the set of reaction rules to the 
+	set of <def target="def_SeedSpecies">seed species</def>. Initial amounts
+	of seed species are defined in <link target = "NetworkSpecifications">Network</link> specification tab.
+	<link target = "NetworkSpecifications">Network</link> specification parameters 
+	(number of iterations to apply rules and maximal number of molecules per species in generated network) 
+	can be used to control the size of the network,
 	which otherwise can become infinite. The generated species and reactions can be seen in 
 	<link target = "NetworkSpecifications">Network</link> tab, but not added to the 
 	<link target = "ReactDiagView">Reaction Diagram</link> view. </para>
 	
-	<para>After the user is satified with the network that is generated using the set of species and reaction rules,
-		he/she can run regular determiministic or stochastic <link target = "simulations_overview">simulations</link>.</para>
+	<para>After the network is generated, regular determiministic or 
+		stochastic <link target = "simulations_overview">simulations</link> can be run.</para>
 	
 	<para><bold>Network-Free Applications</bold></para>
 	<para>If a user chooses to start <def target="def_NetworkFree">network-free</def> applications, 

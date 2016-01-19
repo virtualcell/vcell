@@ -7,8 +7,7 @@
 	population levels of multiple chemical species that share a set of properties. For example, to
 	simulate the tyrosine phosphorylation level of a particular protein, one need to specify
 	<bold>Observable</bold> that is a function for the total amount of all chemical species containing 
-	the phosphorylated form of this protein. 
-	<bold>Observables</bold> are computed over a set of chemical species that share similar properties. 
+	the phosphorylated form of this protein.  
 	<list>
 	<item>Each Observable consists of one or more <bold>Species Patters</bold>. Observable selects species that match at least one
 	of the species patterns (not both). </item>
