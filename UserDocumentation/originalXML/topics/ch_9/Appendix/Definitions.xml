@@ -55,8 +55,9 @@ within membranes and have reactants and products in the adjacent volume structur
 
 
 <def target = "def_NetworkFree" defLabel = "NetworkFree"> Network-free simulation of rule-based 
-models is performed without generation of the reaction network. Rather than generating and tracking all possible chemical species, 
-network-free approaches follows only the molecular configurations that exist at a given time. It is described in 
+models is performed without generation of the reaction network. Rather than generating 
+	and tracking all possible chemical species, 
+network-free approache follows only the molecular configurations that exist at a given time. It is described in 
 Sneddon MW, Faeder JR, and Emonet T. (2011). 
 Efficient modeling, simulation and coarse-graining of biological complexity with NFsim. 
 Nature methods, 8(2), 177-183.
