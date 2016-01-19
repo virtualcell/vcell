@@ -73,8 +73,8 @@ java.io.Serializable, IssueSource
 	public static String GTK_ReactionRate_oldname = "reaction rate";
 	public static String GTK_CurrentDensity_oldname = "inward current density";
 
-	public static String forwardRateConstant_oldname = "forward rate constant";
-	public static String reverseRateConstant_oldname = "reverse rate constant";
+	public static String observedForwardRate_oldname = "observed forward rate";
+	public static String observedReverseRate_oldname = "observed reverse rate";
 
 	public static final int ROLE_NotARole		= -1;
 //	public static final int ROLE_Kcat			= -2;
@@ -122,8 +122,8 @@ java.io.Serializable, IssueSource
 		"user defined",
 		"reaction rate",
 		"inward current density",
-		"observed forward rate",
-		"observed reverse rate",
+		"forward rate constant",
+		"reverse rate constant",
 		"Km (1/2 max)",
 		"max reaction rate",
 		"Km forward",
@@ -1531,10 +1531,10 @@ public KineticsParameter getKineticsParameters(int index) {
 		if (paramDesc.equals(Kinetics.GTK_AssumedCompartmentSize_oldname)) {
 			paramRole = ROLE_UserDefined;
 		}
-		if (paramDesc.equals(Kinetics.forwardRateConstant_oldname)) {
+		if (paramDesc.equals(Kinetics.observedForwardRate_oldname)) {
 			paramRole = ROLE_KForward;
 		}
-		if (paramDesc.equals(Kinetics.reverseRateConstant_oldname)) {
+		if (paramDesc.equals(Kinetics.observedReverseRate_oldname)) {
 			paramRole = ROLE_KReverse;
 		}
 
