@@ -75,7 +75,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 @SuppressWarnings("serial")
 public class SimulationListPanel extends DocumentEditorSubPanel {
 	private static final Date FINITEVOLUME_CUTTOFF = getFiniteVolumeMissingDataRegenerateDate();
-	
+
 	private static final String QUICK_RUN_TOOL_TIP = "Quick Run";
 	private OutputFunctionsPanel outputFunctionsPanel;
 	private JToolBar toolBar = null;
@@ -85,7 +85,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
 	private JButton ivjDeleteButton = null;
-	private JButton particleViewButton = null;
+//	private JButton particleViewButton = null;
 	private JButton quickRunButton = null;
 	private JSortTable ivjScrollPaneTable = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -94,8 +94,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 	private JButton moreActionsButton = null;
 	private JButton stopButton;
 	private JButton statusDetailsButton;
-	
-	private class IvjEventHandler implements java.awt.event.ActionListener, 
+
+	private class IvjEventHandler implements java.awt.event.ActionListener,
 		java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener, MouseListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getNewButton()) {
@@ -104,7 +104,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				editSimulation();
 			} else if (e.getSource() == copyButton) {
 				copySimulations();
-			} else if (e.getSource() == getDeleteButton()) { 
+			} else if (e.getSource() == getDeleteButton()) {
 				deleteSimulations();
 			} else if (e.getSource() == getRunButton()) {
 				runSimulations();
@@ -114,8 +114,8 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 				showSimulationResults();
 			} else if (e.getSource() == statusDetailsButton) {
 				showSimulationStatusDetails();
-			} else if (e.getSource() == particleViewButton) {
-				particleView();
+//			} else if (e.getSource() == particleViewButton) {
+//				particleView();
 			} else if (e.getSource() == quickRunButton) {
 				quickRun();
 			}
@@ -129,9 +129,9 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 			if (e.getValueIsAdjusting()) {
 				return;
 			}
-			if (e.getSource() == getScrollPaneTable().getSelectionModel()) 
+			if (e.getSource() == getScrollPaneTable().getSelectionModel())
 				tableSelectionChanged(e);
-			
+
 		}
 		public void mouseClicked(MouseEvent e) {
 		}
@@ -165,7 +165,7 @@ private static Date getFiniteVolumeMissingDataRegenerateDate(){
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
 private void tableSelectionChanged(javax.swing.event.ListSelectionEvent arg1) {
-	try {		
+	try {
 		refreshButtonsLax();
 		setSelectedObjectsFromTable(getScrollPaneTable(), getSimulationListTableModel1());
 	} catch (java.lang.Throwable ivjExc) {
@@ -201,7 +201,7 @@ private void copySimulations() {
  */
 private void deleteSimulations() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	StringBuilder simulationNames = new StringBuilder(); 
+	StringBuilder simulationNames = new StringBuilder();
 	ArrayList<Simulation> simList = new ArrayList<Simulation>();
 //	Simulation[] allSims = getSimulationWorkspace().getSimulations();
 	for (int i = 0; i < selections.length; i++){
@@ -215,7 +215,7 @@ private void deleteSimulations() {
 	if (simList.size() == 0) {
 		return;
 	}
-	
+
 	String confirm = DialogUtils.showOKCancelWarningDialog(this, "Deleting", "You are going to delete the following simulation(s):\n\n" + simulationNames + "\n Continue?");
 	if (confirm.equals(UserMessage.OPTION_CANCEL)) {
 		return;
@@ -258,10 +258,10 @@ private javax.swing.JToolBar getToolBar() {
 		try {
 			toolBar = new javax.swing.JToolBar();
 			toolBar.setFloatable(false);
-			
+
 			copyButton = new JButton("", VCellIcons.copySimIcon);
 			copyButton.setToolTipText("Copy Simulation");
-			copyButton.addActionListener(ivjEventHandler);			
+			copyButton.addActionListener(ivjEventHandler);
 			stopButton = new JButton("", VCellIcons.stopSimIcon);
 			stopButton.setToolTipText("Stop Simulation");
 			stopButton.setEnabled(false);
@@ -269,13 +269,15 @@ private javax.swing.JToolBar getToolBar() {
 			statusDetailsButton = new JButton("", VCellIcons.statusDetailscon);
 			statusDetailsButton.setToolTipText("Simulation Status Details...");
 			statusDetailsButton.addActionListener(ivjEventHandler);
+			/*
 			particleViewButton = new JButton("", VCellIcons.particleRunSimIcon);
 			particleViewButton.setToolTipText("Real-Time Particle View");
 			particleViewButton.addActionListener(ivjEventHandler);
+			*/
 			quickRunButton = new JButton("", VCellIcons.odeQuickRunIcon);
 			quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
 			quickRunButton.addActionListener(ivjEventHandler);
-						
+
 			toolBar.addSeparator();
 			toolBar.add(getNewButton());
 			toolBar.add(copyButton);
@@ -288,8 +290,8 @@ private javax.swing.JToolBar getToolBar() {
 			toolBar.add(statusDetailsButton);
 			toolBar.addSeparator();
 			toolBar.add(quickRunButton);
-			toolBar.add(particleViewButton);
-			
+//			toolBar.add(particleViewButton);
+
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getNewButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(copyButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getEditButton());
@@ -298,7 +300,7 @@ private javax.swing.JToolBar getToolBar() {
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(stopButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(getResultsButton());
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(statusDetailsButton);
-			ReactionCartoonEditorPanel.setToolBarButtonSizes(particleViewButton);
+//			ReactionCartoonEditorPanel.setToolBarButtonSizes(particleViewButton);
 			ReactionCartoonEditorPanel.setToolBarButtonSizes(quickRunButton);
 
 		} catch (java.lang.Throwable ivjExc) {
@@ -521,11 +523,11 @@ private Object getSimulationStatusDisplay(int row) {
 			progressBar.setString(NumberUtils.formatNumber(progress * 100, 4) + "%");
 		}
 		return progressBar;
-	} else if (simStatus.isFailed()) {		
+	} else if (simStatus.isFailed()) {
 		return simStatus.getFailedMessage();
 	} else {
 		return simStatus.getDetails();
-	}	
+	}
 }
 
 /**
@@ -543,7 +545,7 @@ private void initConnections() throws java.lang.Exception {
 	getResultsButton().addActionListener(ivjEventHandler);
 	getMoreActionsButton().addActionListener(ivjEventHandler);
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
-	
+
 	getOutputFunctionsPanel().addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
 	DefaultScrollTableCellRenderer renderer = new DefaultScrollTableCellRenderer(){
@@ -596,7 +598,7 @@ private void initConnections() throws java.lang.Exception {
 			}
 			return this;
 		}
-		
+
 	};
 	getScrollPaneTable().setDefaultRenderer(OutputTimeSpec.class, renderer);
 	getScrollPaneTable().setDefaultRenderer(Double.class, renderer);
@@ -633,11 +635,11 @@ private void initialize() {
 		// user code end
 		setName("SimulationListPanel");
 		setSize(750, 560);
-						
+
 		setLayout(new BorderLayout());
 		add(getToolBar(), BorderLayout.NORTH);
 		add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
-		
+
 		initConnections();
 		getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	} catch (java.lang.Throwable ivjExc) {
@@ -652,7 +654,7 @@ private void initialize() {
 public static void main(java.lang.String[] args) {
 	try {
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		
+
 		JFrame frame = new javax.swing.JFrame("SimulationListPanel");
 		SimulationListPanel aSimulationListPanel;
 		aSimulationListPanel = new SimulationListPanel();
@@ -678,7 +680,7 @@ public static void main(java.lang.String[] args) {
  */
 private void newSimulation(final NetworkGenerationRequirements networkGenerationRequirements) {
 	AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		
+
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
@@ -689,7 +691,7 @@ private void newSimulation(final NetworkGenerationRequirements networkGeneration
 		}
 	};
 	AsynchClientTask task2 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		
+
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			MathMappingCallback mathMappingCallback = new MathMappingCallbackTaskAdapter(getClientTaskStatusSupport());
@@ -718,7 +720,7 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 		quickRunButton.setToolTipText("Not supported for parameter scans");
 		return false;
 	}
-	
+
 	quickRunButton.setToolTipText(QUICK_RUN_TOOL_TIP);
 	return true;
 }
@@ -728,12 +730,12 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 private void refreshButtonsLax() {
 	MathDescription mathDescription = fieldSimulationWorkspace.getSimulationOwner().getMathDescription();
 	if (mathDescription != null) {
-		particleViewButton.setVisible(mathDescription.isSpatialStoch());
+//		particleViewButton.setVisible(mathDescription.isSpatialStoch());
 		quickRunButton.setVisible(true);
 	}
-	
+
 	int[] selections = getScrollPaneTable().getSelectedRows();
-	
+
 	boolean bCopy = false;
 	boolean bEditable = false;
 	boolean bDeletable = false;
@@ -741,9 +743,9 @@ private void refreshButtonsLax() {
 	boolean bStoppable = false;
 	boolean bHasData = false;
 	boolean bStatusDetails = false;
-	boolean bParticleView = false;
+//	boolean bParticleView = false;
 	boolean bQuickRun = false;
-	
+
 	if (selections != null && selections.length > 0) {
 		bCopy = true;
 		bStatusDetails = true;
@@ -753,11 +755,11 @@ private void refreshButtonsLax() {
 			if (!simStatus.isRunning()){
 				bEditable = true;
 			}
-			final boolean onlyOne = firstSelection.getScanCount() == 1;	
-			bParticleView = onlyOne; 
+			final boolean onlyOne = firstSelection.getScanCount() == 1;
+//			bParticleView = onlyOne;
 			bQuickRun = onlyOne && canQuickRun( firstSelection.getSolverTaskDescription() );
 		}
-		
+
 		// we make'em true if at least one sim satisfies criterion (lax policy)
 		for (int i = 0; i < selections.length; i++){
 			Simulation sim = ivjSimulationListTableModel1.getValueAt(selections[i]);
@@ -770,12 +772,12 @@ private void refreshButtonsLax() {
 	}
 	copyButton.setEnabled(bCopy);
 	getEditButton().setEnabled(bEditable);
-	getDeleteButton().setEnabled(bDeletable);	
+	getDeleteButton().setEnabled(bDeletable);
 	getRunButton().setEnabled(bRunnable);
 	stopButton.setEnabled(bStoppable);
 	getResultsButton().setEnabled(bHasData);
 	statusDetailsButton.setEnabled(bStatusDetails);
-	particleViewButton.setEnabled(bParticleView);
+//	particleViewButton.setEnabled(bParticleView);
 	quickRunButton.setEnabled(bQuickRun);
 }
 
@@ -787,7 +789,7 @@ private void runSimulations() {
 	final ArrayList<Simulation> simList = new ArrayList<Simulation>();
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	for (int i = 0; i < selections.length; i++){
-		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]));	
+		Simulation sim = (Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]));
 		if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 			if (getSimulationWorkspace().getSimulationOwner() instanceof SimulationContext) {
 				String option = DialogUtils.showOKCancelWarningDialog(SimulationListPanel.this, "Deprecated Solver", VCellErrorMessages.getSemiFVSolverCompiledSolverDeprecated(sim));
@@ -806,7 +808,7 @@ private void runSimulations() {
 	}
 	if (simList.size() > 0) {
 		activateConsole();
-		
+
 		Simulation[] toRun = simList.toArray(new Simulation[0]);
 		getSimulationWorkspace().runSimulations(toRun, this);
 	}
@@ -842,7 +844,7 @@ public void setSimulationWorkspace(SimulationWorkspace newValue) {
 	if (fieldSimulationWorkspace != null) {
 		fieldSimulationWorkspace.addPropertyChangeListener(ivjEventHandler);
 	}
-	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);	
+	getSimulationListTableModel1().setSimulationWorkspace(fieldSimulationWorkspace);
 	refreshButtonsLax();
 }
 
@@ -854,7 +856,7 @@ private void showSimulationResults() {
 	int[] selections = getScrollPaneTable().getSelectedRows();
 	Vector<Simulation> v = new Vector<Simulation>();
 	for (int i = 0; i < selections.length; i++){
-		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i]))); 
+		v.add((Simulation)(ivjSimulationListTableModel1.getValueAt(selections[i])));
 	}
 	Simulation[] toShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationResults(toShow);
@@ -887,7 +889,7 @@ private void stopSimulations() {
 	Simulation[] toStop = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
-	
+
 	private javax.swing.JButton getMoreActionsButton() {
 		if (moreActionsButton == null) {
 			try {
@@ -911,6 +913,7 @@ private void stopSimulations() {
 		ivjSimulationListTableModel1.setIssueManager(newValue);
 	}
 
+	/*
 	private void particleView() {
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row < 0) {
@@ -919,13 +922,14 @@ private void stopSimulations() {
 		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
 		getSimulationWorkspace().getClientSimManager().runSmoldynParticleView(selectedSim);
 	}
+	*/
 	private void quickRun() {
 		int row = getScrollPaneTable().getSelectedRow();
 		if (row < 0) {
 			return;
 		}
 		activateConsole();
-		
+
 		Simulation selectedSim = getSimulationListTableModel1().getValueAt(row);
 		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim);
 	}
@@ -953,5 +957,5 @@ private void stopSimulations() {
 			}
 		}
 	}
-	
+
 }  //  @jve:decl-index=0:visual-constraint="10,10"
