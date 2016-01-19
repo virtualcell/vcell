@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.vcell.model.rbm.NetworkConstraints;
+import org.vcell.model.rbm.NetworkFreePanel;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -1002,7 +1003,40 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 				issueVector.add(new Issue(rs, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 			}
 		}
+		// we give warning when we have plain reactions with participants with patterns; 
+		// making rules from these may result in inconsistent interpretation for the constant rates
+		boolean isParticipantWithPattern = false;
+		for(ReactionSpec rrs : getReactionContext().getReactionSpecs()) {
+			if(rrs.isExcluded()) {
+				continue;
+			}
+			ReactionStep rs = rrs.getReactionStep();
+			for(Reactant r : rs.getReactants()) {
+				if(r.getSpeciesContext().hasSpeciesPattern()) {
+					isParticipantWithPattern = true;
+					break;
+				}
+			}
+			if(isParticipantWithPattern) {
+				break;
+			}
+			for(Product p : rs.getProducts()) {
+				if(p.getSpeciesContext().hasSpeciesPattern()) {
+					isParticipantWithPattern = true;
+					break;
+				}
+			}
+			if(isParticipantWithPattern) {
+				break;
+			}
+		}
+		if(isParticipantWithPattern) {
+			String message = NetworkFreePanel.rateWarning2;
+			String tooltip = NetworkFreePanel.rateWarning;
+			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, tooltip, Issue.Severity.WARNING));
+		}
 	}
+	
 	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC) && getModel().getNumStructures() > 1) {
 		// network free application requires one compartment only
 		String tooltip = "Please delete the Network Free application or the extra compartments.";
