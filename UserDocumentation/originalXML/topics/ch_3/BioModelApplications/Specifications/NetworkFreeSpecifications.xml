@@ -20,6 +20,19 @@
 	<operations>
 	<bold>Create New Rule-Based VCell BioModel</bold> generates a new BioModel and opens it in a new window.
 	<imgReference target = "NetworkFreeTab.PNG"/>
+	<para>Note that the same reaction expression treated as a reaction and as a reaction 
+		rule will have different rates:
+</para>
+	
+	<list>
+		<item>
+			VCell will take care of reactions of the form A + A -> product(s), and the rate of generated 
+			reaction rules will be multiplied by 2 to account for symmetry factors. </item>
+		<item>VCell does not take care of reactions where reactants have symmetric sites and reaction 
+			rule will have a statistical factor. If this is not properly treated by a modeler, the resultant rule-based model may show different simulation results than its network precursor. 
+		</item>
+	</list>
+	
 	</operations>
 	
 </page>
