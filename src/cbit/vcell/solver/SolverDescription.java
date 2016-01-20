@@ -121,7 +121,7 @@ public enum SolverDescription {
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions,
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_Parallel},
 	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285",
-	      VCellCodeVersion.CURRENT.compare(5,4) < 0),
+	      true),
 
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
@@ -129,7 +129,7 @@ public enum SolverDescription {
 	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
-	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.MOVING_B,null,"KISAO",false)
+	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.MOVING_B,null,"KISAO",true)
       ;
 
 	public enum SolverFeature {
