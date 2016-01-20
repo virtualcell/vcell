@@ -29,7 +29,6 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.desktop.biomodel.SimulationConsolePanel;
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
@@ -39,11 +38,8 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
-import cbit.vcell.model.RbmKineticLaw;
-import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
@@ -65,7 +61,7 @@ import cbit.vcell.units.VCUnitDefinition;
 public class NetworkTransformer implements SimContextTransformer {
 
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
-	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
+	private Map<FakeReactionRuleRateParameter, Expression> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, Expression>();
 		
 	@Override
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
@@ -569,13 +565,15 @@ public class NetworkTransformer implements SimContextTransformer {
 						product.setStoichiometry(stoichiometry);
 					}
 				}
-				MassActionKinetics targetKinetics = new MassActionKinetics(sr);
-				sr.setKinetics(targetKinetics);
-				KineticsParameter kforward = targetKinetics.getForwardRateParameter();
-				applyKineticsExpressions(forwardBNGReaction, kforward, targetKinetics);
+				MassActionKinetics k = new MassActionKinetics(sr);
+				sr.setKinetics(k);
+				Expression substitutedForwardRateExp = substituteFakeParameters(forwardBNGReaction.getParamExpression());
+				KineticsParameter kforward = k.getForwardRateParameter();
+				sr.getKinetics().setParameterValue(kforward, substitutedForwardRateExp);
 				if (reverseBNGReaction!=null){
-					KineticsParameter kReverse = targetKinetics.getReverseRateParameter();
-					applyKineticsExpressions(reverseBNGReaction, kReverse, targetKinetics);
+					Expression substitutedReverseRateExp = substituteFakeParameters(reverseBNGReaction.getParamExpression());
+					KineticsParameter kReverse = k.getReverseRateParameter();
+					sr.getKinetics().setParameterValue(kReverse, substitutedReverseRateExp);
 				}
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();
@@ -616,8 +614,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				}
 				MassActionKinetics k = new MassActionKinetics(sr);
 				sr.setKinetics(k);
+				Expression substitutedReverseRateExp = substituteFakeParameters(reverseBNGReaction.getParamExpression());
 				KineticsParameter kforward = k.getForwardRateParameter();
-				applyKineticsExpressions(reverseBNGReaction, kforward, k);
+				sr.getKinetics().setParameterValue(kforward, substitutedReverseRateExp);
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();
 	//			kforward.setName(fieldParameterName);
@@ -708,24 +707,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
 	}
 
-//	private Expression substituteFakeParameters(Expression paramExpression) throws ExpressionException {
-//		Expression newExp = new Expression(paramExpression);
-//		String[] fakeSymbols = paramExpression.getSymbols();
-//		for (String fakeSymbol : fakeSymbols){
-//			FakeReactionRuleRateParameter fakeParameter = FakeReactionRuleRateParameter.fromString(fakeSymbol);
-//			if (fakeParameter == null){
-//				throw new RuntimeException("unexpected identifier "+fakeSymbol+" in kinetic law during network generation");
-//			}
-//			LocalParameter localParameter = this.kineticsParameterMap.get(fakeParameter);
-//			Expression ruleExpression = localParameter.getExpression();
-//			newExp.substituteInPlace(new Expression(fakeSymbol), new Expression(ruleExpression));
-//		}
-//		return newExp;
-//	}
-
-	private Expression applyKineticsExpressions(BNGReaction bngReaction, KineticsParameter rateParameter, MassActionKinetics targetKinetics) throws ExpressionException {
-		ReactionRule reactionRule = null;
-		Expression paramExpression = bngReaction.getParamExpression();
+	private Expression substituteFakeParameters(Expression paramExpression) throws ExpressionException {
 		Expression newExp = new Expression(paramExpression);
 		String[] fakeSymbols = paramExpression.getSymbols();
 		for (String fakeSymbol : fakeSymbols){
@@ -733,42 +715,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (fakeParameter == null){
 				throw new RuntimeException("unexpected identifier "+fakeSymbol+" in kinetic law during network generation");
 			}
-			LocalParameter localParameter = this.kineticsParameterMap.get(fakeParameter);
-			System.out.println(localParameter.getNameScope());
-			if (localParameter.getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
-				reactionRule = ((ReactionRule.ReactionRuleNameScope)localParameter.getNameScope()).getReactionRule();
-			}
-			
-			Expression ruleExpression = localParameter.getExpression();
+			Expression ruleExpression = this.kineticsParameterMap.get(fakeParameter);
 			newExp.substituteInPlace(new Expression(fakeSymbol), new Expression(ruleExpression));
-		}
-		//
-		// set substituted expression into new kinetics (should automatically create zero-valued user-defined parameters as needed)
-		//
-		try {
-			targetKinetics.setParameterValue(rateParameter, newExp);
-		} catch (PropertyVetoException e) {
-			e.printStackTrace();
-			throw new RuntimeException("failed to set kinetics expression for reaction "+targetKinetics.getReactionStep().getName()+": "+e.getMessage(),e);
-		}
-		//
-		// if there were any user-defined parameters in the ReactionRule, then set their values here on the new Kinetics.
-		//
-		if (reactionRule!=null){
-			// try to set values from user-defined parameters into the target kinetics
-			for (LocalParameter localParameter : reactionRule.getKineticLaw().getLocalParameters()){
-				if (localParameter.getRole() == RbmKineticLawParameterType.UserDefined){
-					KineticsParameter userDefinedParam = targetKinetics.getKineticsParameter(localParameter.getName());
-					if (userDefinedParam!=null){
-						try {
-							targetKinetics.setParameterValue(userDefinedParam, localParameter.getExpression());
-						} catch (PropertyVetoException e) {
-							e.printStackTrace();
-							throw new RuntimeException("failed to set kinetics expression for reaction "+targetKinetics.getReactionStep().getName()+": "+e.getMessage(),e);
-						}
-					}
-				}
-			}
 		}
 		return newExp;
 	}

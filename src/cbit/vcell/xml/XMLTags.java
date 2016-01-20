@@ -574,25 +574,12 @@ public class XMLTags {
 	public static final String RbmIndexAttrTag = "Index";
 	public static final String RbmReactionRuleLabelTag = "ReactionRuleLabel";
 	public static final String RbmReactionRuleReversibleTag = "ReactionRuleReversible";
-	
-	public static final String RbmKineticTypeAttrTag = "RbmKineticType";
-	public static final String RbmKineticTypeMassAction = "MassAction";
-	public static final String RbmKineticTypeMichaelisMenten = "MichaelisMenten";
-	public static final String RbmKineticTypeSaturable = "Saturable";
-	
-	public static final String RbmMassActionKfAttrTag_DEPRECATED = "MassActionKf";
-	public static final String RbmMassActionKrAttrTag_DEPRECATED = "MassActionKr";
-	public static final String RbmMichaelisMentenKcatAttrTag_DEPRECATED = "MichaelisMentenKcat";
-	public static final String RbmMichaelisMentenKmAttrTag_DEPRECATED = "MichaelisMentenKm";
-	public static final String RbmSaturableVmaxAttrTag_DEPRECATED = "SaturableVmax";
-	public static final String RbmSaturableKsAttrTag_DEPRECATED = "SaturableKs";	
-	public static final String RbmMassActionKfRole = "MassActionKf";
-	public static final String RbmMassActionKrRole = "MassActionKr";
-	public static final String RbmMichaelisMentenKcatRole = "MichaelisMentenKcat";
-	public static final String RbmMichaelisMentenKmRole = "MichaelisMentenKm";
-	public static final String RbmSaturableVmaxRole = "SaturableVmax";
-	public static final String RbmSaturableKsRole = "SaturableKs";
-	public static final String RbmRuleRateRole = "RuleRate";
+	public static final String RbmMassActionKfTag = "MassActionKf";
+	public static final String RbmMassActionKrTag = "MassActionKr";
+	public static final String RbmMichaelisMentenKcatTag = "MichaelisMentenKcat";
+	public static final String RbmMichaelisMentenKmTag = "MichaelisMentenKm";
+	public static final String RbmSaturableVmaxTag = "SaturableVmax";
+	public static final String RbmSaturableKsTag = "SaturableKs";
 	public static final String RbmReactantPatternsListTag = "ReactantPatternsList";
 	public static final String RbmProductPatternsListTag = "ProductPatternsList";
 	// reaction rule mapping in application components and application XML
