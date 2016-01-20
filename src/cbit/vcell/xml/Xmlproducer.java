@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -113,12 +112,10 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.MicroscopeMeasurement;
-import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
@@ -227,7 +224,6 @@ import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
@@ -1240,7 +1236,7 @@ private Element getXML(ElectricalStimulus param) {
 	Element electrode = getXML(param.getElectrode());
 	electricalStimulus.addContent(electrode);
 	
-	//Add attributes
+	//Add atributes
 	electricalStimulus.setAttribute(XMLTags.TypeAttrTag, electricalStimulusType);
 	
 	//Add Kinetics Parameters
@@ -3500,59 +3496,6 @@ private Element getXML(Kinetics param) throws XmlParseException {
 	return kinetics;
 }
 
-private Element getXML(RbmKineticLaw param) {
-
-
-	Element kinetics = new Element(XMLTags.KineticsTag);
-
-	switch (param.getRateLawType()){
-		case MassAction:{
-			kinetics.setAttribute(XMLTags.KineticsTypeAttrTag, XMLTags.RbmKineticTypeMassAction);
-			break;
-		}
-		case MichaelisMenten:{
-			kinetics.setAttribute(XMLTags.KineticsTypeAttrTag, XMLTags.RbmKineticTypeMichaelisMenten);
-			break;
-		}
-		case Saturable: {
-			kinetics.setAttribute(XMLTags.KineticsTypeAttrTag, XMLTags.RbmKineticTypeSaturable);
-			break;
-		}
-	}
-	
-	HashMap<ParameterRoleEnum, String> roleHash = new HashMap<ParameterRoleEnum, String>();
-	roleHash.put(RbmKineticLawParameterType.MassActionForwardRate, XMLTags.RbmMassActionKfRole);
-	roleHash.put(RbmKineticLawParameterType.MassActionReverseRate, XMLTags.RbmMassActionKrRole);
-	roleHash.put(RbmKineticLawParameterType.MichaelisMentenKcat, XMLTags.RbmMichaelisMentenKcatRole);
-	roleHash.put(RbmKineticLawParameterType.MichaelisMentenKm, XMLTags.RbmMichaelisMentenKmRole);
-	roleHash.put(RbmKineticLawParameterType.SaturableVmax, XMLTags.RbmSaturableVmaxRole);
-	roleHash.put(RbmKineticLawParameterType.SaturableKs, XMLTags.RbmSaturableKsRole);
-	roleHash.put(RbmKineticLawParameterType.RuleRate, XMLTags.RbmRuleRateRole);
-
-	//Add Kinetics Parameters
-	LocalParameter parameters[] = param.getLocalParameters();
-	for (int i=0;i<parameters.length;i++){
-		LocalParameter parm = parameters[i];
-		Element tempparameter = new Element(XMLTags.ParameterTag);
-		//Get parameter attributes
-		tempparameter.setAttribute(XMLTags.NameAttrTag, mangle(parm.getName()));
-		tempparameter.setAttribute(XMLTags.ParamRoleAttrTag, roleHash.get(parm.getRole()));
-		VCUnitDefinition unit = parm.getUnitDefinition();
-		if (unit != null) {
-			tempparameter.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
-		}
-		Expression expression = parm.getExpression();
-		if (expression != null){
-			tempparameter.addContent( mangleExpression(expression) );
-		}
-		//Add the parameter to the general kinetics object
-		kinetics.addContent(tempparameter);
-	}
-
-	return kinetics;
-}
-
-
 public Element getXML(ArrayList<AnnotatedFunction> outputFunctions) {
 	Element outputFunctionsElement = new Element(XMLTags.OutputFunctionsTag);
 	for (AnnotatedFunction outputfunction : outputFunctions) {
@@ -3652,29 +3595,27 @@ public Element getXML(NetworkConstraints param) {
 private Element getXML(ReactionRule param) {
 	Element e = new Element(XMLTags.RbmReactionRuleTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
-	e.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 	e.setAttribute(XMLTags.RbmReactionRuleLabelTag, mangle(param.getName()));
 	boolean reversible = param.isReversible();
 	e.setAttribute(XMLTags.RbmReactionRuleReversibleTag, String.valueOf(reversible));
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)!=null){
-//		e.setAttribute(XMLTags.RbmMassActionKfTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)));
-//	}
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)!=null){
-//		e.setAttribute(XMLTags.RbmMassActionKrTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)));
-//	}
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)!=null){
-//		e.setAttribute(XMLTags.RbmMichaelisMentenKcatTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)));
-//	}
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)!=null){
-//		e.setAttribute(XMLTags.RbmMichaelisMentenKmTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)));
-//	}
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)!=null){
-//		e.setAttribute(XMLTags.RbmSaturableKsTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)));
-//	}
-//	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)!=null){
-//		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)));
-//	}
-	
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKfTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate)));
+	}
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)!=null){
+		e.setAttribute(XMLTags.RbmMassActionKrTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate)));
+	}
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKcatTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat)));
+	}
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)!=null){
+		e.setAttribute(XMLTags.RbmMichaelisMentenKmTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm)));
+	}
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)!=null){
+		e.setAttribute(XMLTags.RbmSaturableKsTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableKs)));
+	}
+	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)!=null){
+		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)));
+	}
 	List<ReactantPattern> reactantPatterns = param.getReactantPatterns();
 	if(!reactantPatterns.isEmpty()) {
 		Element reactantPatternsListElement = new Element(XMLTags.RbmReactantPatternsListTag);
@@ -3692,10 +3633,6 @@ private Element getXML(ReactionRule param) {
 		e.addContent(productPatternsListElement);
 	}
 	// apparently the molecularTypeMapping list is not being used
-	
-	//Add kinetics		
-	e.addContent( getXML(param.getKineticLaw()) );
-	
 	return e;
 }
 //private Element getXMLShort(SpeciesPattern param) {
@@ -4366,21 +4303,19 @@ private Element getXML(OutputTimeSpec param) {
  * @return Element
  * @param param cbit.vcell.solver.StochSimOption
  */
-private Element getXML(StochSimOptions param) {
+private Element getXML(StochSimOptions param, boolean isHybrid) {
 	Element stochSimOptions = new Element(XMLTags.StochSimOptionsTag);
 	if(param != null)
 	{
 		stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
-		if(param.isUseCustomSeed()){
+		if(param.isUseCustomSeed())
 			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
-		}
 		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
-		if (param instanceof StochHybridOptions) {
-			StochHybridOptions stochHybridOptions = (StochHybridOptions)param;
-			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(stochHybridOptions.getEpsilon()));
-			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(stochHybridOptions.getLambda()));
-			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(stochHybridOptions.getMSRTolerance()));
-			stochSimOptions.setAttribute(XMLTags.HybridSDEToleranceAttrTag, String.valueOf(stochHybridOptions.getSDETolerance()));
+		if (isHybrid && param instanceof StochHybridOptions) {
+			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(((StochHybridOptions)param).getEpsilon()));
+			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(((StochHybridOptions)param).getLambda()));
+			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(((StochHybridOptions)param).getMSRTolerance()));
+			stochSimOptions.setAttribute(XMLTags.HybridSDEToleranceAttrTag, String.valueOf(((StochHybridOptions)param).getSDETolerance()));
 		}
 	}
 	return stochSimOptions;
@@ -4457,9 +4392,15 @@ private Element getXML(SolverTaskDescription param) {
 	solvertask.addContent( getXML(param.getErrorTolerance()) );
 	//Add Stochastic simulation Options, 5th Feb, 2007
 	//Amended 2oth July, 2007. We need to distinguish hybrid and SSA options
-	// Jan 8, 2016 (jim) let getXML(stochOpt) write out the correct stochastic options
-	if (param.getStochOpt() != null) {
-		solvertask.addContent( getXML(param.getStochOpt()));
+	if (param.getStochOpt() != null)
+	{
+		if (param.getSolverDescription().isNonSpatialStochasticSolver()){
+			solvertask.addContent( getXML(param.getStochOpt(),false));
+		} else if (param.getSolverDescription().isSpatialStochasticSolver()){
+			solvertask.addContent(getXML(param.getStochOpt(),true));
+		} else {
+			System.err.println("stochastic options not null for unexpected solver type "+param.getSolverDescription().getDisplayLabel());
+		}
 	}
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));
