@@ -14,7 +14,6 @@ import java.util.Map;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
@@ -28,7 +27,6 @@ import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
-import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.bionetgen.BNGOutputSpec;
@@ -46,10 +44,10 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.ProxyParameter;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactantPattern;
@@ -559,7 +557,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 	}
 	
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
-	private Map<FakeReactionRuleRateParameter, Expression> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, Expression>();
+	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
 	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
