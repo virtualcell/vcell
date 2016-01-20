@@ -1,6 +1,0 @@
-Notes:
-
-Reaction Rule GUI:
-   highlight pairs of molecular component type patterns from reactants and products.
-   
-Parse 

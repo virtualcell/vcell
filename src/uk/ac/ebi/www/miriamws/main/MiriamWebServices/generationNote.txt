@@ -1,4 +1,0 @@
-1. download Apache axis1.4 binary from http://www.apache.org/dyn/closer.cgi/ws/axis/1_4
-2. copy the MiriamWebService.wsdl to the axis-1_4\lib   (it's easiler to set classpath if we generate files right in this directory)
-3. copy activation.jar and mailapi_1_3_2.jar to lib (otherwies, attachment support is disabled. it still generates the files though)
-4. run the .bat file and the generated files are saved under lib\uk\....
