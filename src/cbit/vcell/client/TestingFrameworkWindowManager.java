@@ -755,6 +755,7 @@ public void compare(final TestCriteriaNew testCriteria,final SimulationInfo user
 			VCDataIdentifier vcDataIdentifier = (MergedDataInfo)hashTable.get(KEY_MERGEDDATAINFO);
 			ChildWindowManager childWindowManager =TFWFinder.findChildWindowManager(getComponent());
 			ChildWindow childWindow = childWindowManager.addChildWindow(viewer, vcDataIdentifier, "Comparing ... "+vcDataIdentifier.getID());
+			childWindow.pack();
 //			childWindow.setSize(450, 450);
 			childWindow.setIsCenteredOnParent();
 			childWindow.show();
@@ -2544,6 +2545,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		ChildWindow childWindow =TFWFinder.findChildWindowManager(getComponent()).addChildWindow(scrollPaneContentPane,scrollPaneContentPane,title);
 //		childWindow.setSize(600,400);
 		childWindow.setIsCenteredOnParent();
+		childWindow.pack();
 		childWindow.setResizable(true);
 		childWindow.show();
 
