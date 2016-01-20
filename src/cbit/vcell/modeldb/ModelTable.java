@@ -34,6 +34,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelInfo;
 import cbit.vcell.model.ModelUnitSystem;
+import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
 /**
@@ -92,7 +93,7 @@ public static void readRbmElement(Connection con,Model model) throws SQLExceptio
 				XmlReader reader = new XmlReader(false);
 				try{
 					reader.getRbmModelContainer(rbmElement, model);
-				}catch(ModelException | PropertyVetoException e) {
+				}catch(ModelException | PropertyVetoException | XmlParseException e) {
 					throw new DataAccessException(e.getMessage(),e);
 				}
 			}

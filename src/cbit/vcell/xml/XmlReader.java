@@ -13,16 +13,16 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.function.Consumer;
-
-import javax.management.modelmbean.XMLParseException;
 
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -135,11 +135,13 @@ import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
+import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
-import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
+import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -186,9 +188,9 @@ import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.ParticleComponentStateDefinition;
 import cbit.vcell.math.ParticleComponentStatePattern;
 import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponent;
 import cbit.vcell.math.ParticleMolecularComponentPattern;
-import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
 import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 import cbit.vcell.math.ParticleMolecularType;
 import cbit.vcell.math.ParticleMolecularTypePattern;
@@ -253,6 +255,8 @@ import cbit.vcell.model.NernstKinetics;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmKineticLaw;
+import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
@@ -1150,6 +1154,153 @@ private ElectricalStimulus getElectricalStimulus(Element param, SimulationContex
 }
 
 
+private void readParameters(List<Element> parameterElements, ParameterContext parameterContext, HashMap<String,ParameterRoleEnum> roleHash, ParameterRoleEnum userDefinedRole, HashSet<String> xmlRolesTagsToIgnore, Model model) throws XmlParseException {
+
+	String contextName = parameterContext.getNameScope().getName();
+	try {
+		//
+		// prepopulate varHash with reserved symbols
+		//
+		VariableHash varHash = new VariableHash();
+		addResevedSymbols(varHash, model);
+
+		//
+		// process each parameter:
+		//    1) put the parameter into the varHash
+		//    2) rename predefined parameters from the ParameterContext as necessary to avoid naming conflicts 
+		//       and use the stored names for pre-defined parameters.
+		//
+		for (Element xmlParam : parameterElements){
+			String parsedParamName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
+			String parsedRoleString = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
+			String parsedExpressionString = xmlParam.getText();
+			Expression paramExp = unMangleExpression(parsedExpressionString);
+			if (varHash.getVariable(parsedParamName) == null){
+				Domain domain = null;
+				varHash.addVariable(new Function(parsedParamName,paramExp,domain));
+			} else {
+				if (model.getReservedSymbolByName(parsedParamName) != null) {
+					varHash.removeVariable(parsedParamName);
+					Domain domain = null;
+					varHash.addVariable(new Function(parsedParamName, paramExp,domain));
+				}
+			}
+
+			//
+			// should we skip this xml role tag? not used anymore.
+			//
+			if (xmlRolesTagsToIgnore.contains(parsedRoleString)){
+				varHash.removeVariable(parsedParamName);
+				continue;
+			}
+
+			//
+			// get the parameter for this xml role string
+			//
+			ParameterRoleEnum paramRole = roleHash.get(parsedRoleString);
+			if (paramRole == null){
+				throw new XmlParseException("parameter '"+parsedParamName+"' has unexpected role '"+parsedRoleString+"' in '"+contextName+"'");
+			}
+			
+			//
+			// if parameter is not user-defined, then force the parameter with the same role to have the same name.
+			//
+			if (paramRole != userDefinedRole){
+				LocalParameter paramWithSameRole = parameterContext.getLocalParameterFromRole(paramRole);
+				if (paramWithSameRole == null){
+					throw new XmlParseException("can't find parameter with role '"+parsedRoleString+"' in '"+contextName+"'");
+				}
+				//
+				// "special" parameter with same role has a different name, rename 
+				// 
+				//
+				if (!paramWithSameRole.getName().equals(parsedParamName)) {
+					//
+					// first rename other parameters with same name
+					//
+					LocalParameter paramWithSameNameButDifferentRole = parameterContext.getLocalParameterFromName(parsedParamName);
+					if (paramWithSameNameButDifferentRole!=null){
+						//
+						// find available name
+						//
+						int n = 0;
+						String newName = parsedParamName + "_" + n++;
+						while (parameterContext.getEntry(newName) != null){
+							newName = parsedParamName + "_" + n++;
+						}
+						parameterContext.renameLocalParameter(parsedParamName, newName);
+					}
+					//
+					// then rename parameter with correct role
+					//
+					parameterContext.renameLocalParameter(paramWithSameRole.getName(),parsedParamName);
+				}
+			}
+		}
+
+		//
+		// create unresolved parameters for all unresolved symbols
+		//
+		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
+		while (unresolvedSymbol!=null){
+			try {
+				Domain domain = null;
+				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0),domain));  // will turn into an UnresolvedParameter.
+			}catch (MathException e){
+				e.printStackTrace(System.out);
+				throw new XmlParseException(e.getMessage());
+			}
+			parameterContext.addUnresolvedParameter(unresolvedSymbol);
+			unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
+		}
+		
+		
+		//
+		// in topological order, add parameters to model (getting units also).
+		// note that all pre-defined parameters already have the correct names
+		// here we set expressions on pre-defined parameters and add user-defined parameters
+		//
+		Variable sortedVariables[] = varHash.getTopologicallyReorderedVariables();
+		ModelUnitSystem modelUnitSystem = model.getUnitSystem();
+		for (int i = sortedVariables.length-1; i >= 0 ; i--){
+			if (sortedVariables[i] instanceof Function){
+				Function paramFunction = (Function)sortedVariables[i];
+				Element xmlParam = null;
+				for (int j = 0; j < parameterElements.size(); j++){
+					Element tempParam = (Element)parameterElements.get(j);
+					if (paramFunction.getName().equals(unMangle(tempParam.getAttributeValue(XMLTags.NameAttrTag)))){
+						xmlParam = tempParam;
+						break;
+					}
+				}
+				if (xmlParam==null){
+					continue; // must have been an unresolved parameter
+				}
+				String symbol = xmlParam.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
+				VCUnitDefinition unit = null;
+				if (symbol != null) {
+					unit = modelUnitSystem.getInstance(symbol);
+				}
+				LocalParameter tempParam = parameterContext.getLocalParameterFromName(paramFunction.getName());
+				if (tempParam == null) {
+					tempParam = parameterContext.addLocalParameter(paramFunction.getName(), new Expression(0.0), userDefinedRole, unit, userDefinedRole.getDescription());
+					parameterContext.setParameterValue(tempParam, paramFunction.getExpression(), true);
+				} else {
+					if (tempParam.getExpression()!=null){ // if the expression is null, it should remain null.
+						parameterContext.setParameterValue(tempParam, paramFunction.getExpression(), true);
+					}
+					tempParam.setUnitDefinition(unit);
+				}
+			}
+		}
+		
+	} catch (PropertyVetoException | ExpressionException | MathException e) {
+		e.printStackTrace(System.out);
+		throw new XmlParseException("Exception while setting parameters for '"+contextName+"': " + e.getMessage(), e);
+	}
+}
+
+
 /**
  * This method returns an Electrode object from a XML representation.
  * Creation date: (6/6/2002 4:22:55 PM)
@@ -1489,7 +1640,7 @@ private FilamentVariable getFilamentVariable(Element param) {
  * @throws ModelException 
  * @throws Exception 
  */
-private FluxReaction getFluxReaction( Element param, Model model, VariableHash varsHash) throws XmlParseException, PropertyVetoException {
+private FluxReaction getFluxReaction( Element param, Model model) throws XmlParseException, PropertyVetoException {
 	//retrieve the key if there is one
 	KeyValue key = null;
 	String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
@@ -1612,7 +1763,7 @@ private FluxReaction getFluxReaction( Element param, Model model, VariableHash v
 		fluxreaction.addReactionParticipant( getCatalyst(temp, fluxreaction, model) );
 	}
 	//Add Kinetics
-	fluxreaction.setKinetics(getKinetics(param.getChild(XMLTags.KineticsTag, vcNamespace), fluxreaction, varsHash));
+	fluxreaction.setKinetics(getKinetics(param.getChild(XMLTags.KineticsTag, vcNamespace), fluxreaction, model));
 	
 	//set the valence (for legacy support for "chargeCarrierValence" stored with reaction).
 	String valenceString = null;
@@ -2379,7 +2530,9 @@ private ParticleJumpProcess getParticleJumpProcess(Element param, MathDescriptio
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-private Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash varHash) throws XmlParseException{
+private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) throws XmlParseException{
+	VariableHash varHash = new VariableHash();
+	addResevedSymbols(varHash, model);
 
 	String type = param.getAttributeValue(XMLTags.KineticsTypeAttrTag);
 	Kinetics newKinetics = null;
@@ -4086,22 +4239,17 @@ private Model getModel(Element param) throws XmlParseException {
 		//(Simplereaction)
 		// Create a varHash with reserved symbols and global parameters, if any, to pass on to Kinetics
 		// must create new hash for each reaction and flux, since each kinetics uses new variables hash
-		VariableHash varHash;
 		iterator = param.getChildren(XMLTags.SimpleReactionTag, vcNamespace).iterator();
 		ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
 		while (iterator.hasNext()) {
-			varHash = new VariableHash();
-			addResevedSymbols(varHash, newmodel);
 			org.jdom.Element temp = iterator.next();
-			reactionStepList.add(getSimpleReaction(temp, newmodel, varHash));
+			reactionStepList.add(getSimpleReaction(temp, newmodel));
 		}
 		//(fluxStep)
 		iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
-			varHash = new VariableHash();
-			addResevedSymbols(varHash, newmodel);
 			org.jdom.Element temp = iterator.next();
-			reactionStepList.add(getFluxReaction(temp, newmodel, varHash));
+			reactionStepList.add(getFluxReaction(temp, newmodel));
 		}
 		newmodel.setReactionSteps(reactionStepList.toArray(new ReactionStep[reactionStepList.size()]));
 		//Add Diagrams
@@ -4148,7 +4296,7 @@ private Model getModel(Element param) throws XmlParseException {
 }
 
 @SuppressWarnings("unchecked")
-public void getRbmModelContainer(Element param, Model newModel) throws ModelException, PropertyVetoException {
+public void getRbmModelContainer(Element param, Model newModel) throws ModelException, PropertyVetoException, XmlParseException {
 	Element element = param.getChild(XMLTags.RbmMolecularTypeListTag, vcNamespace);
 	if(element != null) {
 		getRbmMolecularTypeList(element, newModel);
@@ -4193,7 +4341,7 @@ private void getRbmObservableList(Element param, Model newModel) throws ModelExc
 		if(o != null) { mc.addObservable(o); }
 	}
 }
-private void getRbmReactionRuleList(Element param, Model newModel) {
+private void getRbmReactionRuleList(Element param, Model newModel) throws XmlParseException {
 	RbmModelContainer mc = newModel.getRbmModelContainer();
 	List<ReactionRule> rrl = mc.getReactionRuleList();
 	List<Element> children = new ArrayList<Element>();
@@ -4414,110 +4562,153 @@ private RbmObservable getRbmObservables(Element e, Model newModel) {
 	}
 	return o;
 }
-private ReactionRule getRbmReactionRule(Element e, Model newModel) {
-	String n = e.getAttributeValue(XMLTags.NameAttrTag);
+private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newModel) throws XmlParseException {
+	String n = reactionRuleElement.getAttributeValue(XMLTags.NameAttrTag);
 	if(n == null || n.isEmpty()) {
 		System.out.println("XMLReader: getRbmReactionRule: name is missing.");
 		return null;
 	}
-	boolean reversible = Boolean.valueOf(e.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
-	Structure structure = newModel.getStructures()[0];
-	ReactionRule r = new ReactionRule(newModel, n, structure, reversible);
-	String l = e.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now
-
-	boolean bKineticLawFound = false;
-	String massActionForwardRate = e.getAttributeValue(XMLTags.RbmMassActionKfTag);
-	if(massActionForwardRate == null || massActionForwardRate.isEmpty()) {
-		System.out.println("XMLReader: getRbmReactionRule: mass action forward rate is missing.");
-	} else {
-		Expression massActionKfExp = unMangleExpression(massActionForwardRate);
-		try {
-			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, massActionKfExp);
-			bKineticLawFound = true;
-		} catch (ExpressionBindingException | PropertyVetoException e3) {
-			e3.printStackTrace();
+	try {
+		boolean reversible = Boolean.valueOf(reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
+		String structureName = reactionRuleElement.getAttributeValue(XMLTags.StructureAttrTag, newModel.getStructures()[0].getName());
+		Structure structure = newModel.getStructure(structureName);
+		ReactionRule reactionRule = new ReactionRule(newModel, n, structure, reversible);
+		String reactionRuleLabel = reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now
+	
+		//
+		// old style kinetics placed parameter values as attributes
+		// look for attributes named ("MassActionKf","MassActionKr","MichaelisMentenKcat","MichaelisMentenKm","SaturableKs","SaturableVmax")
+		String[] oldKineticsAttributes = new String[] {
+				XMLTags.RbmMassActionKfAttrTag_DEPRECATED,
+				XMLTags.RbmMassActionKrAttrTag_DEPRECATED,
+				XMLTags.RbmMichaelisMentenKcatAttrTag_DEPRECATED,
+				XMLTags.RbmMichaelisMentenKmAttrTag_DEPRECATED,
+				XMLTags.RbmSaturableKsAttrTag_DEPRECATED,
+				XMLTags.RbmSaturableVmaxAttrTag_DEPRECATED
+		};
+		boolean bOldKineticsFound = false;
+		for (String oldKineticsAttribute : oldKineticsAttributes){
+			if (reactionRuleElement.getAttribute(oldKineticsAttribute) != null){
+				bOldKineticsFound = true;
+			}
 		}
+	
+		if (bOldKineticsFound){
+			readOldRbmKineticsAttributes(reactionRuleElement,reactionRule);
+		} else {
+			Element kineticsElement = reactionRuleElement.getChild(XMLTags.KineticsTag, vcNamespace);
+			if (kineticsElement != null){
+				String kineticLawTypeString = kineticsElement.getAttributeValue(XMLTags.KineticsTypeAttrTag);
+				RbmKineticLaw.RateLawType rateLawType = null;
+				if (XMLTags.RbmKineticTypeMassAction.equals(kineticLawTypeString)){
+					rateLawType = RateLawType.MassAction;
+				}else if (XMLTags.RbmKineticTypeMichaelisMenten.equals(kineticLawTypeString)){
+					rateLawType = RateLawType.MichaelisMenten;
+				}else if (XMLTags.RbmKineticTypeSaturable.equals(kineticLawTypeString)){
+					rateLawType = RateLawType.Saturable;
+				}else{
+					throw new RuntimeException("unexpected rate law type "+kineticLawTypeString);
+				}
+				reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+				List<Element> parameterElements = reactionRuleElement.getChildren(XMLTags.ParameterTag, vcNamespace);
+				HashMap<String,ParameterRoleEnum> roleHash = new HashMap<String, ParameterContext.ParameterRoleEnum>();
+				roleHash.put(XMLTags.RbmMassActionKfRole,RbmKineticLawParameterType.MassActionForwardRate);
+				roleHash.put(XMLTags.RbmMassActionKrRole,RbmKineticLawParameterType.MassActionReverseRate);
+				roleHash.put(XMLTags.RbmMichaelisMentenKcatRole,RbmKineticLawParameterType.MichaelisMentenKcat);
+				roleHash.put(XMLTags.RbmMichaelisMentenKmRole,RbmKineticLawParameterType.MichaelisMentenKm);
+				roleHash.put(XMLTags.RbmSaturableVmaxRole,RbmKineticLawParameterType.SaturableVmax);
+				roleHash.put(XMLTags.RbmSaturableKsRole,RbmKineticLawParameterType.SaturableKs);
+				HashSet<String> xmlRolesToIgnore = new HashSet<String>();
+				ParameterContext parameterContext = reactionRule.getKineticLaw().getParameterContext();
+				readParameters(parameterElements, parameterContext, roleHash, RbmKineticLawParameterType.UserDefined, xmlRolesToIgnore, newModel);
+			}
+		}
+		Element e1 = reactionRuleElement.getChild(XMLTags.RbmReactantPatternsListTag, vcNamespace);
+		getRbmReactantPatternsList(e1, reactionRule, newModel);
+		Element e2 = reactionRuleElement.getChild(XMLTags.RbmProductPatternsListTag, vcNamespace);
+		getRbmProductPatternsList(e2, reactionRule, newModel);
+		reactionRule.checkMatchConsistency();
+		return reactionRule;	
+	}catch (PropertyVetoException | ExpressionException ex){
+		ex.printStackTrace(System.out);
+		throw new RuntimeException("failed to parse kinetics for reaction rule '"+n+"': "+ex.getMessage(),ex);
+	}
+}
+
+private void readOldRbmKineticsAttributes(Element reactionRuleElement, ReactionRule reactionRule) throws PropertyVetoException, ExpressionException{
+	boolean reversible = reactionRule.isReversible();
+	
+	//
+	// try Mass Action Kinetics attributes
+	//
+	{
+	String massActionForwardRate = reactionRuleElement.getAttributeValue(XMLTags.RbmMassActionKfAttrTag_DEPRECATED);
+	if(massActionForwardRate != null && !massActionForwardRate.isEmpty()) {
+		reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, RateLawType.MassAction));
+		Expression massActionKfExp = unMangleExpression(massActionForwardRate);
+		LocalParameter forwardRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
+		reactionRule.getKineticLaw().setParameterValue(forwardRateParameter, massActionKfExp, true);
 		if(reversible == true) {
-			String massActionReverseRate = e.getAttributeValue(XMLTags.RbmMassActionKrTag);
+			String massActionReverseRate = reactionRuleElement.getAttributeValue(XMLTags.RbmMassActionKrAttrTag_DEPRECATED);
 			if(massActionReverseRate == null || massActionReverseRate.isEmpty()) {
 				throw new RuntimeException("XMLReader: getRbmReactionRule: Mass Action: Reverse Rate is missing.");
 			} else {
 				Expression massActionKrExp = unMangleExpression(massActionReverseRate);
-				try {
-					r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, massActionKrExp);
-					bKineticLawFound = true;
-				} catch (ExpressionBindingException | PropertyVetoException e3) {
-					e3.printStackTrace();
-					throw new RuntimeException("XMLReader: getRbmReactionRule: Mass Action: Bad Reverse Rate: " + e3.getMessage());
-				}
+				LocalParameter reverseRateParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+				reactionRule.getKineticLaw().setParameterValue(reverseRateParameter, massActionKrExp, true);
 			}
 		}
+		return;
+	}
 	}
 
-	if(bKineticLawFound == false) {		// it's not mass action, let's try MM
-	String MM_Kcat = e.getAttributeValue(XMLTags.RbmMichaelisMentenKcatTag);
-	if(MM_Kcat == null || MM_Kcat.isEmpty()) {
-		;
-	} else {
+	//
+	// try Michaelis Menten Kinetics attributes
+	//
+	{
+	String MM_Kcat = reactionRuleElement.getAttributeValue(XMLTags.RbmMichaelisMentenKcatAttrTag_DEPRECATED);
+	if(MM_Kcat != null && !MM_Kcat.isEmpty()) {
+		reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, RateLawType.MichaelisMenten));
 		Expression MM_Kcat_exp = unMangleExpression(MM_Kcat);
-		try {
-			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKcat, MM_Kcat_exp);
-			bKineticLawFound = true;
-		} catch (ExpressionBindingException | PropertyVetoException e3) {
-			e3.printStackTrace();
-		}
-		String MM_Km = e.getAttributeValue(XMLTags.RbmMichaelisMentenKmTag);
+		LocalParameter kcatParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenKcat);
+		reactionRule.getKineticLaw().setParameterValue(kcatParameter, MM_Kcat_exp, true);
+		String MM_Km = reactionRuleElement.getAttributeValue(XMLTags.RbmMichaelisMentenKmAttrTag_DEPRECATED);
 		if(MM_Km == null || MM_Km.isEmpty()) {
 			System.out.println("XMLReader: getRbmReactionRule: MM_Km is missing.");
 		} else {
 			Expression MM_Km_exp = unMangleExpression(MM_Km);
-			try {
-				r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.MichaelisMentenKm, MM_Km_exp);
-				bKineticLawFound = true;
-			} catch (ExpressionBindingException | PropertyVetoException e3) {
-				e3.printStackTrace();
-			}
+			LocalParameter kmParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MichaelisMentenKm);
+			reactionRule.getKineticLaw().setParameterValue(kmParameter, MM_Km_exp, true);
 		}
-		}
+		return;
+	}
 	}
 
-	if(bKineticLawFound == false) {		// still not found, let's try this
-	String Sat_Ks = e.getAttributeValue(XMLTags.RbmSaturableKsTag);
-	if(Sat_Ks == null || Sat_Ks.isEmpty()) {
-		;
-	} else {
+	//
+	// try Saturable Kinetics attributes
+	//
+	{
+	String Sat_Ks = reactionRuleElement.getAttributeValue(XMLTags.RbmSaturableKsAttrTag_DEPRECATED);
+	if(Sat_Ks != null && !Sat_Ks.isEmpty()) {
+		reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, RateLawType.Saturable));
 		Expression Sat_Ks_exp = unMangleExpression(Sat_Ks);
-		try {
-			r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.SaturableKs, Sat_Ks_exp);
-			bKineticLawFound = true;
-		} catch (ExpressionBindingException | PropertyVetoException e3) {
-			e3.printStackTrace();
-		}
-		String Sat_Vmax = e.getAttributeValue(XMLTags.RbmSaturableVmaxTag);
+		LocalParameter ksParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.SaturableKs);
+		reactionRule.getKineticLaw().setParameterValue(ksParameter, Sat_Ks_exp, true);
+		String Sat_Vmax = reactionRuleElement.getAttributeValue(XMLTags.RbmSaturableVmaxAttrTag_DEPRECATED);
 		if(Sat_Vmax == null || Sat_Vmax.isEmpty()) {
 			System.out.println("XMLReader: getRbmReactionRule: Sat_Vmax is missing.");
 		} else {
 			Expression Sat_Vmax_exp = unMangleExpression(Sat_Vmax);
-			try {
-				r.getKineticLaw().setLocalParameterValue(RbmKineticLawParameterType.SaturableVmax, Sat_Vmax_exp);
-				bKineticLawFound = true;
-			} catch (ExpressionBindingException | PropertyVetoException e3) {
-				e3.printStackTrace();
-			}
+			LocalParameter vmaxParameter = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.SaturableVmax);
+			reactionRule.getKineticLaw().setParameterValue(vmaxParameter, Sat_Vmax_exp, true);
 		}
-		}
+		return;
 	}
-	if(bKineticLawFound == false) {
-		throw new RuntimeException("Kinetic law unsupported or missing. Must be Mass Action, Michaelis Menten or Saturable.");
 	}
 
-	Element e1 = e.getChild(XMLTags.RbmReactantPatternsListTag, vcNamespace);
-	getRbmReactantPatternsList(e1, r, newModel);
-	Element e2 = e.getChild(XMLTags.RbmProductPatternsListTag, vcNamespace);
-	getRbmProductPatternsList(e2, r, newModel);
-	r.checkMatchConsistency();
-	return r;	
+	throw new RuntimeException("Kinetic law unsupported or missing. Must be Mass Action, Michaelis Menten or Saturable.");
 }
+
 private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newModel) {
 	if (e != null ) {
 		List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
@@ -5069,7 +5260,7 @@ private ReactionSpec getReactionSpec(Element param, SimulationContext simulation
  * @return cbit.vcell.model.SimpleReaction
  * @param param org.jdom.Element
  */
-private SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
+private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlParseException {
     //resolve reference to the  structure that it belongs to.
     String structureName = unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
     Structure structureref = (Structure) model.getStructure(structureName);
@@ -5181,7 +5372,7 @@ private SimpleReaction getSimpleReaction(Element param, Model model, VariableHas
 	Element tempKinet = param.getChild(XMLTags.KineticsTag, vcNamespace);
 
 	if (tempKinet!= null) {
-		simplereaction.setKinetics(getKinetics(tempKinet, simplereaction, varsHash));
+		simplereaction.setKinetics(getKinetics(tempKinet, simplereaction, model));
 	}
 
 	//set the valence (for legacy support for "chargeCarrierValence" stored with reaction).

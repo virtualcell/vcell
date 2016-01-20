@@ -93,6 +93,9 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		public String getPathDescription(){
 			return "Model / ReactionRule("+getName()+")";
 		}
+		public ReactionRule getReactionRule(){
+			return ReactionRule.this;
+		}
 	}
 
 	private RbmEventHandler eventHandler = new RbmEventHandler(this);
