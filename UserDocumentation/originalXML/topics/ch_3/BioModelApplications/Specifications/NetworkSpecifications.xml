@@ -48,16 +48,37 @@ Running network may generate some warnings:
 		<bold>Max Molecules/Species number may be not sufficient</bold> means that the species with the set number of molecules are still
 		subject to rules application, so the network is truncated by this limitation.
 		<imgReference target = "MaxMolec.PNG"/>
-	</item>
-</list>	
-<bold>Note:</bold> When the warning is displayed, the network is trunkated, which means that NFSim simulation will
+
+			<bold>Note:</bold> When the warning is displayed, the network is trunkated, which means that NFSim simulation will
 		likely produce different results than deterministic or stochastic simulations that use this network.
-	</operations>
-	
+
 	<para>When <bold>Apply</bold> button is pressed, the constrains are applied to the application, and the user can
 	<bold>View</bold> all generated species and reactions, as well as <bold>Create a new VCell BioModel</bold> that consist 
 	of all generated species and reactions. This new model is not rule-based, but all species have molecular detail spe specified.</para>
-	
+					
+		
+	</item>
+
+	<item>
+		<bold>View Generated Species/View Generated Reactions</bold> After constraints are approved by the user, 
+		species and reactions are generated and can be viewed by pressing <bold>View</bold> button. 
+		The pop-up window shows species name, depiction and searchable BNGL code. Species names are the same as 
+		seen when checked "Generated Species" in "Simulation Results" window.
+		<imgReference target = "View_species.PNG"/> 
+	</item>
+	<item>
+		<bold>Create New VCell BioModel from Network</bold> launches a new BioModel in a new window.
+		This BioModel consists of all generated species and reactions, species have molecular details,
+		while reactions carry rule name under reaction name.  
+		
+		<para><bold>Note:</bold> reaction rates in reaction network are adjusted for 
+		<def target = "def_SymmetryFactor">symmetry factors</def> and 
+		<def target = "def_StatisticalFactor">statistical  factors</def>.</para>
+					
+	</item>
+</list>	
+		</operations>
+		
 </page>
 
 </vcelldoc>

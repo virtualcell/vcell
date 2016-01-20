@@ -10,19 +10,19 @@
 	</introduction>
 
 	<appearance> 
-	Using NFSim, please be aware of:
+	Using Network-Free Applications, please be aware of:
 		<list>
 			<item>While it can be used for every model obeying limitations below, it is designed to be used to simulate rule-based models.</item>
 			<item>This is stochastic simulation, so simulation results will vary by run.</item>
 			<item>It operates with particles, so copying deterministic application as NFSim may lead to very large number of particles.
 				This number can be adjusted by changing simulation volume in 
 				<link target="geom_nonspatial_mapping">structure size</link> setting.</item>
-			<item>The user may not be able to see what species are populated during simulation. To test if reaction rules produce expected
+			<item>The user is unable to see what species are populated during simulation. To test if reaction rules produce expected
 				species and reactions, the user is advised to generate deterministic rule-based application 
 				and test <link target="NetworkSpecifications">network properties</link>. </item>
 		</list>
 		 
-	 Using NFSim application has the following limitations: 
+	 Using Network-Free application has the following limitations: 
 	 <list> 
 	<item>The model must have a single compartment</item>
 	<item>All reactions and reaction rules must have mass-action kinetics only</item> 
