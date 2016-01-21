@@ -74,15 +74,17 @@
 	
 	<para>On the Right:</para>
 	<list>
-	<item><bold>Run</bold> <imgReference target = "sim_run.png" inline = "true"/> Starts the simulation. Note the BioModel will be saved automatically 
-			upon running a simulation.</item>
+	<item><bold>Run</bold> <imgReference target = "sim_run.png" inline = "true"/> Starts the simulation on the remote VCell server. 
+	The Model (and any simulation results) will be automatically saved on the remote VCell server.</item>
 	<item><bold>Stop</bold> <imgReference target = "sim_stop.png" inline = "true"/> Terminates the simulation.</item>																																																																				
 	<item><bold>Results</bold> <imgReference target = "sim_results.png" inline = "true"/> Once a simulation has started and/or is complete, press the 
 			Results button to view the simulation results.</item>
 	<item><bold>Status Details</bold> <imgReference target = "sim_status_details.png" inline = "true"/> This shows more detailed simulation status, 
 			including submit date, start date, end date, etc. It’s more useful when the simulation has parameter scans, where it will 
 			show the status of all the sub simulations.</item>
-	<item><bold>Quick Run</bold> <imgReference target = "ode_quick_run.png" inline = "true"/> Allows user to run completely on local.</item>
+	<item><bold>Quick Run</bold> <imgReference target = "ode_quick_run.png" inline = "true"/> Starts the simulation on the user's local computer.  
+	The Model is not automatically saved on the remote VCell server.  
+	Data results will be displayed when the simulation has finished running.  Results are not saved remotely and are only accessible while the results viewer remains open.</item>
 	</list>
 	
 	</operations>
