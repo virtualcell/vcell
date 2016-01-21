@@ -77,7 +77,7 @@ to compute. Coarse (lower number of points in x and Y) mesh sizes are suggested 
 	Press the <imgReference target="solverQuestionBtn.png"/>  button to show a description of the currently selected solver.  
 	Please reference the description of the Virtual Cell <link target = "numerical_solvers">numerical solvers</link>.</para>
 	<para></para>
-	<item>General</item>
+	<item>General (options will be displayed based on integrator (solver) type chosen)</item>
 	<para>In the General section, user can specify,</para>
 	<para>1. Time Bounds --- starting time and ending time.</para>
 	<para>2. Time Step --- minimum, maximum and default time step.</para>
