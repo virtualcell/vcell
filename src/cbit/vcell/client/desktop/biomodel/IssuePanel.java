@@ -56,6 +56,7 @@ import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingNameScope;
+import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.RbmObservable;
@@ -251,7 +252,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 			} else if (object instanceof SpeciesContextSpec) {
 				SpeciesContextSpec scs = (SpeciesContextSpec)object;
 				ActiveView av = new ActiveView(scs.getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.species_settings);
-				followHyperlink(av,new Object[] {object});
+				followHyperlink(av, new Object[] {object});
 			} else if (object instanceof ReactionCombo) {
 				ReactionCombo rc = (ReactionCombo)object;
 				followHyperlink(new ActiveView(rc.getReactionContext().getSimulationContext(), DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.reaction_setting),new Object[] {((ReactionCombo)object).getReactionSpec()});
@@ -277,9 +278,14 @@ public class IssuePanel extends DocumentEditorSubPanel {
 				IssueCategory ic = issue.getCategory();
 				switch(ic) {
 				case RbmNetworkConstraintsBad:
-					NetworkConstraints networkConstraints = sc.getNetworkConstraints();
-					NetworkConstraintsEntity nce = new NetworkConstraintsEntity("Max Iterations", "value", networkConstraints.getMaxIteration() + "");
-					followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
+					NetworkConstraints nc = sc.getNetworkConstraints();
+					if(issue.getMessage() == SimulationContext.IssueInsufficientMolecules) {
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxMoleculesName, NetworkConstraintsTableModel.sValueType, nc.getMaxMoleculesPerSpecies() + "");
+						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
+					} else {
+						NetworkConstraintsEntity nce = new NetworkConstraintsEntity(NetworkConstraintsTableModel.sMaxIterationName, NetworkConstraintsTableModel.sValueType, nc.getMaxIteration() + "");
+						followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {nce});
+					}
 					break;
 				default:
 					followHyperlink(new ActiveView(sc, DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE, ActiveViewID.network_setting), new Object[] {object});

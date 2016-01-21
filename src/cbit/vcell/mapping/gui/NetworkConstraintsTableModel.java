@@ -30,12 +30,16 @@ import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
 public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableModel<NetworkConstraintsEntity> implements java.beans.PropertyChangeListener {
-
+	public static final String sMaxIterationName = "Max Iterations";
+	public static final String sMaxMoleculesName = "Max Molecules / Species";
+	public static final String sValueType = "value";
+	
 	public static final int colCount = 3;
 	public static final int iColName = 0;
 	public static final int iColType = 1;
 	public static final int iColValue = 2;
 	private static String[] columnNames = new String[] {"Name", "Type", "Value"};
+	
 	private SimulationContext simContext = null;
 	
 	public NetworkConstraintsTableModel(EditorScrollTable table) {
@@ -74,9 +78,9 @@ public class NetworkConstraintsTableModel extends BioModelEditorRightSideTableMo
 			s1 = "?";
 			s2 = "?";
 		}
-		nce = new NetworkConstraintsEntity("Max Iterations", "value", s1);
+		nce = new NetworkConstraintsEntity(sMaxIterationName, sValueType, s1);
 		nceList.add(nce);
-		nce = new NetworkConstraintsEntity("Max Molecules / Species", "value", s2);
+		nce = new NetworkConstraintsEntity(sMaxMoleculesName, sValueType, s2);
 		nceList.add(nce);
 		// we read them here, all from rbmModelContainer.getMolecularTypeList()
 		// TODO: if the molecule is in the NetworkConstraints.maxStoichiometryMap set value from there
