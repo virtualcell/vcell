@@ -96,9 +96,25 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 			} else if(event.getSource() instanceof Model && event.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)) {
 				refreshInterface();
 			} else if(event.getSource() instanceof Model && event.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)) {
+				if(event.getOldValue() instanceof SpeciesContext[]) {
+					SpeciesContext[] oldValue = (SpeciesContext[])event.getOldValue();
+					for(SpeciesContext sc : oldValue) {
+						sc.removePropertyChangeListener(eventHandler);
+					}
+				}
+				if(event.getNewValue() instanceof SpeciesContext[]) {
+					SpeciesContext[] newValue = (SpeciesContext[])event.getNewValue();
+					for(SpeciesContext sc : newValue) {
+						sc.addPropertyChangeListener(eventHandler);
+					}
+				}
 				refreshInterface();
 			} else if(event.getSource() instanceof Model && event.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS)) {
 				refreshInterface();
+			} else if(event.getSource() instanceof SpeciesContext && event.getPropertyName().equals(SpeciesContext.PROPERTY_NAME_SPECIES_PATTERN)) {
+				refreshInterface();
+			} else {
+				System.out.println("NetworkFreePanel: " + event.getSource() + ", " + event.getPropertyName() + "");
 			}
 		}
 	}
@@ -438,6 +454,10 @@ public class NetworkFreePanel extends JPanel implements ApplicationSpecification
 		if(m != null) {
 			m.removePropertyChangeListener(eventHandler);
 			m.addPropertyChangeListener(eventHandler);
+			for(SpeciesContext sc : m.getSpeciesContexts()) {
+				sc.removePropertyChangeListener(eventHandler);
+				sc.addPropertyChangeListener(eventHandler);
+			}
 		}
 		refreshInterface();
 	}

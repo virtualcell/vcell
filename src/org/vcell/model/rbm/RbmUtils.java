@@ -1450,6 +1450,44 @@ public class RbmUtils {
 			return str;
 		}
 	}
+// TODO: jim's code to replace species names with their patterns
+//	private static String getSpeciesPatternSubstitutedExpression(Expression exp) {
+//		Expression exp2 = new Expression(exp);
+//		//
+//		// 0 gather speciesContexts in expression  and   replace speciesContexts with dummy names which are unique
+//		//
+//		ArrayList<SpeciesContext> speciesContexts = new ArrayList<SpeciesContext>();
+//		String[] symbols = exp2.getSymbols();
+//		final String PREFIX = "DUMMYVARIABLE";
+//		int count = 0;
+//		for (String symbol : symbols){
+//			SymbolTableEntry ste = exp.getSymbolBinding(symbol);
+//			if (ste instanceof SpeciesContext){
+//				SpeciesContext sc = (SpeciesContext)ste;
+//				if (!sc.hasSpeciesPattern()){
+//					throw new RuntimeException("Exception generating BNGL format: SpeciesContext "+sc.getName()+" does not have a species pattern");
+//				}
+//				speciesContexts.add(sc);
+//				try {
+//					exp2.substituteInPlace(new Expression(symbol), new Expression(PREFIX+"_"+count));
+//				} catch (ExpressionException e) {
+//					e.printStackTrace();
+//					throw new RuntimeException("Exception generating BNGL format: "+e.getMessage(),e);
+//				}
+//				count++;
+//			}
+//		}
+//		//
+//		// create infix string and replace dummy names with species pattern
+//		//
+//		String infixString = exp2.infix();
+//		count = 0;
+//		for (SpeciesContext sc : speciesContexts){
+//			infixString = infixString.replace(PREFIX+"_"+count, toBnglString(sc.getSpeciesPattern()));
+//			count++;
+//		}
+//		return infixString;
+//	}
 	public static String toBnglStringIgnoreExpression(Parameter function) {
 		String str = function.getName() + "\t\t";
 		str += "1";			// we totally ignore the expression and replace it with a '1'
