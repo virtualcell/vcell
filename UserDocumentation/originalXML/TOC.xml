@@ -117,7 +117,7 @@
 				
    			</tocitem>
     	    </tocitem>
-    	    <tocitem target="PEOverview" text="Fitting">
+    	    <tocitem target="PEOverview" text="Parameter Estimation">
     	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
    	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
         	</tocitem>
