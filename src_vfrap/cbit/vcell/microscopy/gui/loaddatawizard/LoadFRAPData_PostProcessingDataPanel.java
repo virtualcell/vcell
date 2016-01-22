@@ -107,9 +107,11 @@ public class LoadFRAPData_PostProcessingDataPanel extends JPanel {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
 							ArrayList<String> imageDataNames = new ArrayList<String>();
-							for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
-								if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
-									imageDataNames.add(dataProcessingOutputInfo.getVariableNames()[i]);
+							if(dataProcessingOutputInfo != null && dataProcessingOutputInfo.getVariableNames() != null){
+								for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+									if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
+										imageDataNames.add(dataProcessingOutputInfo.getVariableNames()[i]);
+									}
 								}
 							}
 							if(imageDataNames.size() == 0){
