@@ -95,7 +95,8 @@ class VisContextVisitImpl(visContextAbstract):
         #
         # Start ComputeEngine explicitly to avoid setup dialog later when opening first database
         #
-        visit.OpenComputeEngine("localhost",("-np","1","-nn","1"))
+        #visit.OpenComputeEngine("localhost",("-np","1","-nn","1"))
+        visit.OpenComputeEngine("localhost",("-serial"))
 
 
 
