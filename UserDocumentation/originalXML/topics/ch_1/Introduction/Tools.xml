@@ -19,6 +19,9 @@
  	  <item>
 	     <link target = "LaunchVirtualFRAP">Launch Virtual FRAP</link> - launches the Virtual FRAP software.  
 	  </item>
+<item>
+	     <link target = "LaunchVisITvisualization">Launch Visit-based Visualization Tool</link> - launches a tool for visualizing VCell geometries and data based on the VisIT software.  
+	  </item>
  	  <item>
 	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, if possible.  
 	  </item>
