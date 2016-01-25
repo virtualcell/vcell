@@ -593,6 +593,7 @@ public class XMLTags {
 	public static final String RbmSaturableVmaxRole = "SaturableVmax";
 	public static final String RbmSaturableKsRole = "SaturableKs";
 	public static final String RbmRuleRateRole = "RuleRate";
+	public static final String RbmUserDefinedRole = "UserDefined";
 	public static final String RbmReactantPatternsListTag = "ReactantPatternsList";
 	public static final String RbmProductPatternsListTag = "ProductPatternsList";
 	// reaction rule mapping in application components and application XML
