@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="LaunchVisITvisualization">
+
+	<introduction>
+	The <bold>Launch VisIT-based Visualization Tool</bold> launches a separate tool for visualizing geometries and data for spatial simulations using VisIT visualization software.  
+	</introduction>
+	
+	<appearance>	
+		Need image
+	</appearance>
+	
+	<operations> 
+	To use this visualization tool, you must have visIT installed on your local computer.  VisIT is freely available from Lawrence Livermore National Laboratories at https://wci.llnl.gov/codes/visit/.  
+	</operations>
+	
+</page>
+
+</vcelldoc>
