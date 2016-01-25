@@ -61,8 +61,9 @@
 	    to another existing species.
 	   
 	  
-	    <imgReference target = "icon_rxcatalyst.png"/> <bold>creates a catalyst</bold>, by dragging from a species to a reaction or vice versa. Connecting a species with
-	    empty space creates a new reaction and connecting a reaction to empty space creates a new species.
+	    <imgReference target = "icon_rxcatalyst.png"/> <bold>creates a catalyst annotation</bold>, by dragging from a species to a reaction or vice versa.  
+	    The 'catalyst' tool creates a visual cue (dotted line) between a reaction and a species but does not change the model physiology.  
+	    (Note: for convenience, connecting a species with empty space creates a new reaction and connecting a reaction to empty space creates a new species.)
 	    
 	 
 	    <imgReference target = "icon_addcompartment.gif"/> <bold>inserts a new compartment</bold> by clicking between existing structures or appends new compartments to the ends.  
