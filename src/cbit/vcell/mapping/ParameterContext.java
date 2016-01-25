@@ -870,13 +870,13 @@ final void cleanupParameters() throws ExpressionException, PropertyVetoException
  */
 public void setLocalParameters(LocalParameter[] parameters) throws java.beans.PropertyVetoException, ExpressionBindingException {
 	LocalParameter[] oldValue = fieldParameters;
+	fireVetoableChange("localParameters", oldValue, parameters);
+	fieldParameters = parameters;
 	for (LocalParameter p : parameters){
 		if (p.getExpression()!=null){
 			p.getExpression().bindExpression(this);
 		}
 	}
-	fireVetoableChange("localParameters", oldValue, parameters);
-	fieldParameters = parameters;
 	firePropertyChange("localParameters", oldValue, parameters);
 }
 
@@ -994,7 +994,7 @@ public void convertParameterType(Parameter param, boolean bConvertToGlobal, Glob
 			// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
 			// since it is present in the reaction rate equn.
 			removeParameter((LocalParameter)param);
-			addProxyParameter(globalParameter);
+			// addProxyParameter(globalParameter);  not needed because it is added lazily during expression binding (don't add twice)
 		}
 	}
 }
