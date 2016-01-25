@@ -40,7 +40,6 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	public NFSimSolver(SimulationTask simTask, java.io.File directory,
 			SessionLog sessionLog, boolean bMsging) throws SolverException {
 		super(simTask, directory, sessionLog, bMsging);
-		bMessaging = false;
 	}
 
 	/**
