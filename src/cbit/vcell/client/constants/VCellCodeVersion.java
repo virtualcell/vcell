@@ -8,7 +8,7 @@ package cbit.vcell.client.constants;
  */
 public class VCellCodeVersion implements Comparable<VCellCodeVersion>{
 	public static final int CURRENT_MAJOR = 6;
-	public static final int CURRENT_MINOR = 0;
+	public static final int CURRENT_MINOR = 1;
 	
 	public static final VCellCodeVersion CURRENT = new VCellCodeVersion(CURRENT_MAJOR,CURRENT_MINOR);
 	
