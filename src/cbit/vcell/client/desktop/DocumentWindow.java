@@ -901,7 +901,7 @@ private JMenu getToolMenu() {
 			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
-		    if (VCellCodeVersion.CURRENT.compare(5,4) >= 0) {
+		    if (VCellCodeVersion.CURRENT.compare(6,1) >= 0) {
 				toolMenu.add(new JSeparator());
 				toolMenu.add(getRunVCellVisItItem());
 		    }
