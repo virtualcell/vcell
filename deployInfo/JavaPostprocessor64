@@ -16,6 +16,7 @@ fi
 DIR=${0%/*}
 if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 . $DIR/vcell.include
+. $DIR/server.include
 
 #
 # make sure no variables are left unset
@@ -25,6 +26,8 @@ shopt -s -o nounset
 jvmprop="-Xmx${postprocessor_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
 jvmprop="${jvmprop} -Dlog4jConfigurationFile=${common_siteCfgDir}/log4jJavaPostProcessor.properties"
 jvmprop="${jvmprop} -Dvcell.lib=${common_siteLibDir}"
+
+setupJavaPrefs
 
 arguments=$*
 
