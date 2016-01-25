@@ -17,3 +17,16 @@ function makelogname {
 	ts=$(date +%Y%m%d_%H%M%S)
 	export STARTUPLOG="${common_logdir}/startup_${common_site}_${ident}_$ts.log"
 }
+
+#
+#set java preferences directory
+#
+function setupJavaPrefs {
+    #ensure prefs directory exists
+	sp=${common_javaPrefsDir}/.systemPrefs 
+	mkdir -p $sp || { echo "Can't create $sp, exiting"; exit 1; }
+
+	jvmprop="${jvmprop} -Djava.util.prefs.systemRoot=${common_javaPrefsDir}"
+	jvmprop="${jvmprop} -Djava.util.prefs.userRoot=${common_javaPrefsDir}"
+
+}

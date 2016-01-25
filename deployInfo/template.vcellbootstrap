@@ -48,6 +48,8 @@ jmxargs="${jmxargs} -Djava.rmi.server.hostname=${bootstrap_jmxhost}"
 
 jvmprop="-Xmx${bootstrap_memoryGB}G -Djava.security.policy=${bootstrap_policyfile} -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
 
+setupJavaPrefs
+
 arguments="${bootstrap_rmihost} ${rmiport} messaging ${common_logdir}"
 
 #
