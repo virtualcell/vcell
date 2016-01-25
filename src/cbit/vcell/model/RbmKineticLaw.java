@@ -79,6 +79,9 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 		}
 
 		public boolean isNameEditable(LocalParameter localParameter) {
+			if (localParameter.getRole() == RbmKineticLawParameterType.RuleRate){
+				return false;
+			}
 			return true;
 		}
 
