@@ -34,6 +34,7 @@
     				<tocitem target="BioNetGenHelp" text="BioNetGen Help"/>
     			</tocitem>
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+    			<tocitem target="LaunchVisITvisualization" text="Launch Visit Visualization Tool Menu"/>
     			<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
@@ -117,7 +118,7 @@
 				
    			</tocitem>
     	    </tocitem>
-    	    <tocitem target="PEOverview" text="Parameter Estimation">
+    	    <tocitem target="PEOverview" text="Fitting">
     	   		<tocitem target="parameterEstimationMethods" text="Parameter Estimation Methods"/>
    	 	  		<tocitem target="parameterEstimationUsage" text="How to use Parameter Estimation"/>
         	</tocitem>
