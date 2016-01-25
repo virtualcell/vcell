@@ -3528,6 +3528,7 @@ private Element getXML(RbmKineticLaw param) {
 	roleHash.put(RbmKineticLawParameterType.SaturableVmax, XMLTags.RbmSaturableVmaxRole);
 	roleHash.put(RbmKineticLawParameterType.SaturableKs, XMLTags.RbmSaturableKsRole);
 	roleHash.put(RbmKineticLawParameterType.RuleRate, XMLTags.RbmRuleRateRole);
+	roleHash.put(RbmKineticLawParameterType.UserDefined, XMLTags.RbmUserDefinedRole);
 
 	//Add Kinetics Parameters
 	LocalParameter parameters[] = param.getLocalParameters();

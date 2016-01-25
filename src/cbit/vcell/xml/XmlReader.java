@@ -1174,7 +1174,20 @@ private void readParameters(List<Element> parameterElements, ParameterContext pa
 			String parsedParamName = unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String parsedRoleString = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String parsedExpressionString = xmlParam.getText();
-			Expression paramExp = unMangleExpression(parsedExpressionString);
+
+			//
+			// should we skip this xml role tag? not used anymore.
+			//
+			if (xmlRolesTagsToIgnore.contains(parsedRoleString)){
+				varHash.removeVariable(parsedParamName);
+				continue;
+			}			
+			
+			Expression paramExp = null;
+			if (parsedExpressionString.trim().length()>0){
+				paramExp = unMangleExpression(parsedExpressionString);
+			}
+			
 			if (varHash.getVariable(parsedParamName) == null){
 				Domain domain = null;
 				varHash.addVariable(new Function(parsedParamName,paramExp,domain));
@@ -1184,14 +1197,6 @@ private void readParameters(List<Element> parameterElements, ParameterContext pa
 					Domain domain = null;
 					varHash.addVariable(new Function(parsedParamName, paramExp,domain));
 				}
-			}
-
-			//
-			// should we skip this xml role tag? not used anymore.
-			//
-			if (xmlRolesTagsToIgnore.contains(parsedRoleString)){
-				varHash.removeVariable(parsedParamName);
-				continue;
 			}
 
 			//
@@ -4610,7 +4615,7 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 					throw new RuntimeException("unexpected rate law type "+kineticLawTypeString);
 				}
 				reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
-				List<Element> parameterElements = reactionRuleElement.getChildren(XMLTags.ParameterTag, vcNamespace);
+				List<Element> parameterElements = kineticsElement.getChildren(XMLTags.ParameterTag, vcNamespace);
 				HashMap<String,ParameterRoleEnum> roleHash = new HashMap<String, ParameterContext.ParameterRoleEnum>();
 				roleHash.put(XMLTags.RbmMassActionKfRole,RbmKineticLawParameterType.MassActionForwardRate);
 				roleHash.put(XMLTags.RbmMassActionKrRole,RbmKineticLawParameterType.MassActionReverseRate);
@@ -4618,7 +4623,9 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 				roleHash.put(XMLTags.RbmMichaelisMentenKmRole,RbmKineticLawParameterType.MichaelisMentenKm);
 				roleHash.put(XMLTags.RbmSaturableVmaxRole,RbmKineticLawParameterType.SaturableVmax);
 				roleHash.put(XMLTags.RbmSaturableKsRole,RbmKineticLawParameterType.SaturableKs);
+				roleHash.put(XMLTags.RbmUserDefinedRole,RbmKineticLawParameterType.UserDefined);
 				HashSet<String> xmlRolesToIgnore = new HashSet<String>();
+				xmlRolesToIgnore.add(XMLTags.RbmRuleRateRole);
 				ParameterContext parameterContext = reactionRule.getKineticLaw().getParameterContext();
 				readParameters(parameterElements, parameterContext, roleHash, RbmKineticLawParameterType.UserDefined, xmlRolesToIgnore, newModel);
 			}
