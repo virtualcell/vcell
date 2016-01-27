@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import jscl.text.ParseException;
 
@@ -802,21 +803,15 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		ModelUnitSystem modelUnitSystem = getSimulationContext().getModel().getUnitSystem();
 		VCUnitDefinition stochasticSubstanceUnit = modelUnitSystem.getStochasticSubstanceUnit();
 		VCUnitDefinition reactionRuleSubstanceUnit = modelUnitSystem.getSubstanceUnit(reactionRule.getStructure());
-
 		int forwardRuleIndex = 0;
-
-		{
 		//
 		// get forward rate parameter and make sure it is constant valued.
 		//
 		Parameter forward_rateParameter = kinetics.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
-		{
 		Expression substitutedForwardRate = MathUtilities.substituteModelParameters(forward_rateParameter.getExpression(), reactionRule.getNameScope().getScopedSymbolTable());
 		if (!substitutedForwardRate.flatten().isNumeric()){
 			throw new MappingException("forward rate constant for reaction rule "+reactionRule.getName()+" is not constant");
 		}
-		}
-		
 		// 
 		// create forward sizeExp and forward unitFactor
 		//
@@ -843,7 +838,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		VCUnitDefinition forward_rateUnit = forward_rateParameter.getUnitDefinition().multiplyBy(forward_sizeFactorUnit).multiplyBy(forward_substanceConversionUnit);
 		
 		ProbabilityParameter forward_probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, forward_rateExp, PARAMETER_ROLE_P, forward_rateUnit,reactionRule);
-		
 		//add probability to function or constant
 		varHash.addVariable(newFunctionOrConstant(getMathSymbol(forward_probParm,geometryClass),getIdentifierSubstitutions(forward_rateExp, forward_rateUnit, geometryClass),geometryClass));
 		
@@ -853,7 +847,6 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		JumpProcessRateDefinition forward_rateDefinition = new MacroscopicRateConstant(forward_rate);
 
 		ReactionRuleAnalysisReport rrarBiomodelForward = ruleBasedTransformation.getRulesForwardMap().get(reactionRule);
-		
 		ProcessSymmetryFactor forwardSymmetryFactor = new ProcessSymmetryFactor(rrarBiomodelForward.getSymmetryFactor());
 		ParticleJumpProcess forward_particleJumpProcess = new ParticleJumpProcess(forward_name,reactantParticles,forward_rateDefinition,forwardActions,forwardSymmetryFactor);
 		subDomain.addParticleJumpProcess(forward_particleJumpProcess);
@@ -874,52 +867,18 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
         ReactionRuleDirection forward = ReactionRuleDirection.forward;
 		System.out.println(RbmUtils.toBnglStringShort(reactionRule)+", direction="+forward);
 
-//        ModelRuleFactory modelRuleFactory = new ModelRuleFactory();
-//        ModelRuleEntry modelRule = modelRuleFactory.createRuleEntry(reactionRule, ruleIndex, forward);
-//        RuleAnalysisReport modelReport = RuleAnalysis.analyze(modelRule);
-//        String ruleAnalysisSummary = modelReport.getSummary();
- 
         MathRuleFactory mathRuleFactory = new MathRuleFactory();
         MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
-        ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);
-        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
-        String ruleAnalysisSummary = mathReport.getSummary();
+        ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);	// compare the xml from BioNetGen with the one we build
         
-        StringBuffer bngBuffer = new StringBuffer();
-        for (Pair<String, String> mapping : rrarBiomodelForward.getIdMappingList()){
-        	String str1 = mapping.one;
-        	String str2 = mapping.two;
-        	if(str1 == null) {
-        		bngBuffer.append("map "+str2+"\n");
-        	} else {
-        		bngBuffer.append("map "+str2+" to "+str1+"\n");
-        	}
-        }
-        for (Operation op : rrarBiomodelForward.getOperationsList()) {
-        	bngBuffer.append("operation " + op.toString() + "\n");
-        }
-        String bngSummary = bngBuffer.toString();
-
-        System.out.println("RuleAnalysis summary:\n" + ruleAnalysisSummary);
-        System.out.println("BioNetGen-made summary:\n" + bngSummary);
-        if (ruleAnalysisSummary.equals(bngSummary)){
+        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
+        Set<String> ours = mathReport.getSummaryAsSet();
+        Set<String> theirs = getSummaryAsSet(rrarBiomodelForward);
+        if (compareSets(ours, theirs) == true){
              System.out.println("Rule Analysis SAME\n");
         }else{
              System.out.println("Rule Analysis DIFFERENT\n");
         }
-
-//        String modelXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(modelRule, modelReport),false);
-//        String mathXML = XmlUtil.xmlToString(RuleAnalysis.getNFSimXML(mathRule, mathReport),false);
-//
-//        System.out.println("MATH NFSIM\n"+mathXML);
-//        if (modelXML.equals(mathXML)){
-//             System.out.println("NFSim XML is SAME");
-//        }else{
-//             System.out.println("NFSim XML is DIFFERENT");
-//             System.out.println("MODEL NFSIM\n"+modelXML);
-//        }		
-		
-		}
 		
 		//
 		// get reverse rate parameter and make sure it is missing or constant valued.
@@ -988,6 +947,36 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 
 			
 		}
+	}
+
+	private static boolean compareSets(Set<String> ours, Set<String> theirs) {
+		for(String our : ours) {
+			if(!theirs.contains(our)) {
+				return false;
+			}
+		}
+		for(String their : theirs) {
+			if(!ours.contains(their)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	private static Set<String> getSummaryAsSet(ReactionRuleAnalysisReport rrar) {
+		Set<String> summary = new HashSet<String>();
+        for (Pair<String, String> mapping : rrar.getIdMappingList()){
+        	String str1 = mapping.one;
+        	String str2 = mapping.two;
+        	if(str1 == null) {
+        		summary.add("map "+str2+"\n");
+        	} else {
+        		summary.add("map "+str2+" to "+str1+"\n");
+        	}
+        }
+        for (Operation op : rrar.getOperationsList()) {
+        	summary.add("operation " + op.toString() + "\n");
+        }
+		return summary;
 	}
 
 	private List<ParticleObservable> addObservables(

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jdom.Element;
@@ -16,6 +17,7 @@ import org.vcell.model.rbm.RuleAnalysisReport.DeleteBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.Operation;
+import org.vcell.util.Pair;
 
 public class RuleAnalysis {
 		
@@ -660,41 +662,25 @@ public class RuleAnalysis {
 				changeState.setAttribute("finalState",changeStateOp.newState);
 			}
 		}
-		
-		idMap = new LinkedHashMap<String, String>();	// ------------- DeleteBond
 		for (Operation op : report.getOperations()){
 			if (op instanceof DeleteBondOperation){
-				DeleteBondOperation opp = (DeleteBondOperation)op;
-				idMap.put(getID(opp.removedBondEntry.reactantComponent1), getID(opp.removedBondEntry.reactantComponent2));
+				DeleteBondOperation deleteBondOp = (DeleteBondOperation)op;
+				Element deleteBond = new Element("DeleteBond");
+				listOfOperations.addContent(deleteBond);
+				deleteBond.setAttribute("site1",getID(deleteBondOp.removedBondEntry.reactantComponent1));
+				deleteBond.setAttribute("site2",getID(deleteBondOp.removedBondEntry.reactantComponent2));
 			}
 		}
-		keys = new TreeSet<String>(idMap.keySet());
-		for (String site1 : keys) {
-			String site2 = idMap.get(site1);
-			Element e = new Element("DeleteBond");
-			listOfOperations.addContent(e);
-			e.setAttribute("site1",site1);
-			e.setAttribute("site2",site2);
-		}		
-
-		idMap = new LinkedHashMap<String, String>();	// ------------- AddBond
 		for (Operation op : report.getOperations()){
 			if (op instanceof AddBondOperation){
-				AddBondOperation opp = (AddBondOperation)op;
-				idMap.put(getID(opp.addedProductBondEntry.reactantComponent1), getID(opp.addedProductBondEntry.reactantComponent2));
+				AddBondOperation addBondOp = (AddBondOperation)op;
+				Element addBond = new Element("AddBond");
+				listOfOperations.addContent(addBond);
+				addBond.setAttribute("site1",getID(addBondOp.addedProductBondEntry.reactantComponent1));
+				addBond.setAttribute("site2",getID(addBondOp.addedProductBondEntry.reactantComponent2));
 			}
 		}
-		keys = new TreeSet<String>(idMap.keySet());
-		for (String site1 : keys) {
-			String site2 = idMap.get(site1);
-			Element e = new Element("AddBond");
-			listOfOperations.addContent(e);
-			e.setAttribute("site1",site1);
-			e.setAttribute("site2",site2);
-			System.out.println(site1);
-		}		
-
-		for (Operation op : report.getOperations()){		// ---------------------------------- Add (molecule)
+		for (Operation op : report.getOperations()){
 			if (op instanceof AddMolecularTypeOperation){
 				AddMolecularTypeOperation addMoleculeOp = (AddMolecularTypeOperation)op;
 				Element addMolecule = new Element("Add");
