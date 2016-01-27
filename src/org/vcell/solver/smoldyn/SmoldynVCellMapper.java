@@ -1,6 +1,6 @@
 package org.vcell.solver.smoldyn;
 
-import org.vcell.util.VCAssert;
+import java.util.Objects;
 
 public class SmoldynVCellMapper {
 
@@ -12,7 +12,7 @@ public class SmoldynVCellMapper {
 			species,
 			difc,
 			drift,
-			
+
 			graphics,
 			opengl,
 			opengl_good,
@@ -26,11 +26,11 @@ public class SmoldynVCellMapper {
 			text_display,
 			text_color,
 			time,
-			
+
 			time_start,
 			time_stop,
 			time_step,
-			
+
 			dim,
 			max_compartment,
 			max_surface,
@@ -40,7 +40,7 @@ public class SmoldynVCellMapper {
 			r,
 			a,
 			p,
-			
+
 			start_surface,
 			end_surface,
 			action,
@@ -55,7 +55,7 @@ public class SmoldynVCellMapper {
 			rect,
 			tri,
 			neighbors,
-			
+
 			start_compartment,
 			end_compartment,
 			surface,
@@ -63,7 +63,7 @@ public class SmoldynVCellMapper {
 			polygon,
 			edge,
 			face,
-			
+
 			reaction,
 			reaction_cmpt,
 			reaction_surface,
@@ -72,12 +72,12 @@ public class SmoldynVCellMapper {
 			rate,
 			//The binding radius is used for bimolecular membrane reaction(two reactants all on membrane)
 			binding_radius,
-			
+
 			max_mol,
 			compartment_mol,
 			surface_mol,
 			mol,
-		
+
 	//		the possible molecular states
 			up,
 			down,
@@ -87,20 +87,20 @@ public class SmoldynVCellMapper {
 			fsoln,
 			bsoln,
 	//		all,
-					
+
 			output_files,
-			
+
 			cmd,
 			B,
 			E,
 			N,
-	//		one line of display is printed to the listed file, giving the time and the number 
-	//		of molecules for each molecular species. Molecule states are ignored. 
+	//		one line of display is printed to the listed file, giving the time and the number
+	//		of molecules for each molecular species. Molecule states are ignored.
 	//		The ordering used is the same as was given in the species command.
 			molcount,
 	//		This prints out the identity, state, and location of every molecule in the
 	//		system to the listed file name, using a separate line of text for each
-	//		molecule.		
+	//		molecule.
 			listmols,
 	//		This is very similar to listmols but has a slightly different output format.
 	//		Each line of text is preceded by the "time counter", which is an integer
@@ -110,16 +110,16 @@ public class SmoldynVCellMapper {
 			listmols2,
 			killmoloutsidesystem,
 			warnescapee,
-			output_file_number,		
+			output_file_number,
 			incrementfile,
-			killmolincmpt, 
+			killmolincmpt,
 			killmol,
-			
+
 			accuracy,
 			boxsize,
 			gauss_table_size,
 			rand_seed,
-			
+
 			end_file,
 		}
 
@@ -128,7 +128,7 @@ public class SmoldynVCellMapper {
 	 * and {@link SmoldynKeyword#back} based on how C code handles these cases
 	 */
 	public static final SmoldynKeyword MAP_PARTICLE_TO_MEMBRANE = SmoldynKeyword.front;
-	
+
 	/**
 	 * symbol used to prefix keyword, based on Smoldyn C program conventions
 	 */
@@ -137,7 +137,7 @@ public class SmoldynVCellMapper {
 	 * symbol used to suffix keyword, based on Smoldyn C program conventions
 	 */
 	private static final char TRAIL = ')';
-	
+
 	/**
 	 * convert vcell name to smoldyn in standard manner
 	 * @param name not null
@@ -145,11 +145,11 @@ public class SmoldynVCellMapper {
 	 * @return new String
 	 */
 	public static String vcellToSmoldyn(String name, SmoldynKeyword keyword) {
-		VCAssert.assertValid(name);
-		VCAssert.assertValid(keyword);
-		return name + LEAD + keyword + TRAIL; 
+		Objects.requireNonNull(name);
+		Objects.requireNonNull(keyword);
+		return name + LEAD + keyword + TRAIL;
 	}
-	
+
 	/**
 	 * convert smoldyn name to vcell in standard manner
 	 * @param name not null
@@ -157,8 +157,8 @@ public class SmoldynVCellMapper {
 	 * @return new String if matches or null if not
 	 */
 	public static String smoldynToVCell(String name, SmoldynKeyword keyword) {
-		VCAssert.assertValid(name);
-		VCAssert.assertValid(keyword);
+		Objects.requireNonNull(name);
+		Objects.requireNonNull(keyword);
 		String smolString = keyword.toString();
 		int kplace = name.lastIndexOf(smolString);
 		if (kplace >0 ) {
