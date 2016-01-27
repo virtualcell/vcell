@@ -2,6 +2,7 @@ package org.vcell.model.rbm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,36 +155,39 @@ public class RuleAnalysisReport {
 	public MolecularComponentEntry getMappedProductComponent(MolecularComponentEntry reactantComponentEntry) {
 		return forwardComponentMapping.get(reactantComponentEntry);
 	}
-
+	@Deprecated
 	public String getSummary() {
-		ArrayList<String> lines = new ArrayList<String>();
+		Set<String> set = getSummaryAsSet();
+		String summary = "";
+		for (String line : set){
+			summary += line;
+		}
+		return summary;
+	}
+	public Set<String> getSummaryAsSet() {
+		Set<String> set = new HashSet<String>();
 		// molecule mapping
 		for (MolecularTypeEntry reactantMolecule : forwardMolecularMapping.keySet()){
 			MolecularTypeEntry productMolecules = forwardMolecularMapping.get(reactantMolecule).get(0);
 			if(productMolecules == null) {
-				lines.add("map "+RuleAnalysis.getID(reactantMolecule)+"\n");
+				set.add("map "+RuleAnalysis.getID(reactantMolecule)+"\n");
 			} else {
-				lines.add("map "+RuleAnalysis.getID(reactantMolecule)+" to "+RuleAnalysis.getID(productMolecules)+"\n");
+				set.add("map "+RuleAnalysis.getID(reactantMolecule)+" to "+RuleAnalysis.getID(productMolecules)+"\n");
 			}
 		}
 		// component mapping
 		for (MolecularComponentEntry reactantComponent : forwardComponentMapping.keySet()){
 			MolecularComponentEntry productComponent = forwardComponentMapping.get(reactantComponent);
 			if(productComponent == null) {
-				lines.add("map "+RuleAnalysis.getID(reactantComponent)+"\n");
+				set.add("map "+RuleAnalysis.getID(reactantComponent)+"\n");
 			} else {
-				lines.add("map "+RuleAnalysis.getID(reactantComponent)+" to "+RuleAnalysis.getID(productComponent)+"\n");
+				set.add("map "+RuleAnalysis.getID(reactantComponent)+" to "+RuleAnalysis.getID(productComponent)+"\n");
 			}
 		}
 		for (Operation op : operations){
-			lines.add("operation "+op+"\n");
+			set.add("operation "+op+"\n");
 		}
-		lines.sort(null);
-		String summary = "";
-		for (String line : lines){
-			summary += line;
-		}
-		return summary;
+		return set;
 	}
 
 	public MolecularComponentEntry getReactantComponentEntry(MolecularComponentEntry productComponent1) {
