@@ -447,7 +447,7 @@ public String infixBng() {
 	if (rootNode == null) {
 		return null;
 	} else {	// clean useless leading and ending parenthesis if they are paired
-		String s = rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT);
+		String s = rootNode.infixString(SimpleNode.LANGUAGE_BNGL);
 		if(RbmUtils.isParenthesisMatchBothEnds(s)) {
 			s = s.substring(1, s.length() - 1); 
 		}

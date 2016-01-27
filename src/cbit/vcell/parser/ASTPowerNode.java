@@ -241,19 +241,19 @@ public String infixString(int lang){
 	
 	StringBuffer buffer = new StringBuffer();
 
-	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL || lang == LANGUAGE_UNITS){
-		buffer.append("(");
-		buffer.append(jjtGetChild(0).infixString(lang));
-		buffer.append(" ^ ");
-		buffer.append(jjtGetChild(1).infixString(lang));
-		buffer.append(")");
-	}else if (lang == LANGUAGE_C){
+	if (lang == LANGUAGE_C){
 		buffer.append("pow(");
 		buffer.append("((double)(" + jjtGetChild(0).infixString(lang) + "))");
 		buffer.append(",");
 		buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 		buffer.append(")");
-	}
+	}else{
+		buffer.append("(");
+		buffer.append(jjtGetChild(0).infixString(lang));
+		buffer.append(" ^ ");
+		buffer.append(jjtGetChild(1).infixString(lang));
+		buffer.append(")");
+	} 
 
 	return buffer.toString();
 }
