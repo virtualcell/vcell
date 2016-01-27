@@ -72,7 +72,6 @@ import org.vcell.model.bngl.BNGLDebuggerPanel;
 import org.vcell.model.bngl.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -140,8 +139,8 @@ import cbit.vcell.client.server.DataViewerController;
 import cbit.vcell.client.server.MergedDatasetViewerController;
 import cbit.vcell.client.server.SimResultsViewerController;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.CheckBeforeDelete;
 import cbit.vcell.client.task.CheckUnchanged;
 import cbit.vcell.client.task.ChooseFile;
@@ -911,7 +910,6 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 
 	switch (simContext.getApplicationType()) {
 	case NETWORK_STOCHASTIC:
-		SmoldynSurfaceDiffusionWarning.acknowledgeWarning(requester.getComponent());
 		break;
 	case RULE_BASED_STOCHASTIC:
 	case NETWORK_DETERMINISTIC:
@@ -1975,9 +1973,6 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								}
 							}
 							Objects.requireNonNull(chosenSimContext);
-							if (SmoldynSurfaceDiffusionWarning.isSmoldynOrHybrid(chosenSimContext)) {
-								SmoldynSurfaceDiffusionWarning.acknowledgeWarning(component);
-							}
 
 							BioModelInfo bioModelInfo = (BioModelInfo)hashTable.get("bioModelInfo");
 							//Get corresponding mathDesc to create new mathModel and return.
