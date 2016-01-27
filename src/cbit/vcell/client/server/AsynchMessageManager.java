@@ -140,6 +140,7 @@ private void poll( )  {
 	    // report polling call performance
 	    if (report) {
 		    double duration = ((double)(end - begin)) / 1000;
+		    if(duration > 0.01) {
 	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
 			    this, null, new PerformanceData(
 				    "AsynchMessageManager.poll()",
@@ -148,6 +149,7 @@ private void poll( )  {
 			    )
 			);
 			reportPerformanceMonitorEvent(performanceMonitorEvent);
+		    }
 	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
