@@ -1435,7 +1435,7 @@ public class RbmUtils {
 		if (!bFunction){
 			String str = parameter.getName() + "\t\t";
 			if(parameter.getExpression() != null) {
-				str += parameter.getExpression().infix();
+				str += parameter.getExpression().infixBng();
 			} else {
 				str += "(undefined)";
 			}
@@ -1443,7 +1443,7 @@ public class RbmUtils {
 		}else{
 			String str = parameter.getName() + "()\t=\t";
 			if(parameter.getExpression() != null) {
-				str += parameter.getExpression().infix();
+				str += parameter.getExpression().infixBng();
 			} else {
 				str += "(undefined)";
 			}

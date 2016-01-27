@@ -105,18 +105,14 @@ public Node flatten() throws ExpressionException {
 
 public String infixString(int lang) {
 	String idName = name;
-	if (lang == LANGUAGE_DEFAULT) {
-		return idName;
-	} else if (lang == LANGUAGE_C){
-		return idName;
-	} else if (lang == LANGUAGE_MATLAB){	
+	if (lang == LANGUAGE_MATLAB){	
 		return TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
 		return TokenMangler.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
 		return TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else{
-		throw new RuntimeException("Lanaguage '"+lang+" not supported");
+		return idName;
 	}
 }
 

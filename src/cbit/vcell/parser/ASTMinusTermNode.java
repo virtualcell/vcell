@@ -97,7 +97,11 @@ public String infixString(int lang){
 
 	StringBuffer buffer = new StringBuffer();
 	 
-	buffer.append(" - ");
+	if (lang == LANGUAGE_BNGL){
+		buffer.append(" -");
+	} else {
+		buffer.append(" - ");
+	}
 
 	buffer.append(jjtGetChild(0).infixString(lang));
 
