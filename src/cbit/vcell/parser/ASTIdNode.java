@@ -272,9 +272,7 @@ public String infixString(int lang) {
 	String idName = name;
 	if (lang == LANGUAGE_DEFAULT) {
 		return idName;
-	} else if (lang == LANGUAGE_C){
-		return idName;
-	} else if (lang == LANGUAGE_MATLAB){	
+	}else if (lang == LANGUAGE_MATLAB){	
 		return TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
 		return TokenMangler.getEscapedTokenJSCL(idName);
@@ -291,10 +289,8 @@ public String infixString(int lang) {
 			return VISIT_RESERVED_T;
 		}
 		return idName;
-	}else if (lang == LANGUAGE_UNITS){
+	} else {
 		return idName;
-	} else{
-		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}
 }
 /**

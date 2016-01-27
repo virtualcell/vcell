@@ -30,6 +30,7 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   final static int LANGUAGE_ECLiPSe = 4;
   final static int LANGUAGE_VISIT = 5;
   final static int LANGUAGE_UNITS = 6;
+  final static int LANGUAGE_BNGL = 7;
 
   public SimpleNode(int i) {
     id = i;
