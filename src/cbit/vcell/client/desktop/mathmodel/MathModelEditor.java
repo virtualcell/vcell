@@ -11,13 +11,11 @@
 package cbit.vcell.client.desktop.mathmodel;
 
 import java.awt.Component;
-import java.util.Hashtable;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -31,8 +29,6 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorTreeModel.DocumentEditor
 import cbit.vcell.client.desktop.biomodel.TabCloseIcon;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.GeometryInfo;
@@ -302,7 +298,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 				switch (folderClass) {
 				case MATH_SIMULATIONS_NODE:
-					SmoldynSurfaceDiffusionWarning.setGUIContext(this);
 					Object newsim = mathModel.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 					selectionManager.setSelectedObjects(new Object[]{newsim});
 					break;

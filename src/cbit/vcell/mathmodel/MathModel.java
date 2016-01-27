@@ -14,7 +14,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.List;
 
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -97,9 +96,6 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 	MathDescription math = getMathDescription();
 	if (math==null){
 		throw new RuntimeException("Can't create Simulation, math not created");
-	}
-	if (SmoldynSurfaceDiffusionWarning.isUnacknowledgedSmoldynOrHybrid(new TempSmoldynWarningAPI(), math) ) {
-		SmoldynSurfaceDiffusionWarning.acknowledgeWarning();
 	}
 	//
 	// get free name for new Simulation.
