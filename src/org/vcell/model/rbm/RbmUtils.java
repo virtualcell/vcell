@@ -1432,24 +1432,48 @@ public class RbmUtils {
 	}
 	
 	public static String toBnglString(Parameter parameter, boolean bFunction) {
-		if (!bFunction){
+		if (!bFunction){		// parameter
 			String str = parameter.getName() + "\t\t";
 			if(parameter.getExpression() != null) {
 				str += parameter.getExpression().infixBng();
 			} else {
-				str += "(undefined)";
+				str = "# " + str + "(expression undefined)";
 			}
 			return str;
-		}else{
+		}else{					// function
 			String str = parameter.getName() + "()\t=\t";
 			if(parameter.getExpression() != null) {
+				String symbols[] = parameter.getExpression().getSymbols();
+				for(String s : symbols) {
+					SymbolTableEntry ste = parameter.getExpression().getSymbolBinding(s);
+					if(ste instanceof SpeciesContext) {
+						System.out.println("SpeciesContext '" + s + "' found in expression of function, not exporting");
+						str = "# " + str;
+						break;
+					}
+				}
 				str += parameter.getExpression().infixBng();
 			} else {
-				str += "(undefined)";
+				str = "# " + str + "(expression undefined)";
 			}
 			return str;
 		}
 	}
+	public static boolean haveUnsupportedFunctions(List<Parameter> functionList) {
+		for (Parameter parameter : functionList) {
+			if(parameter.getExpression() != null) {
+				String symbols[] = parameter.getExpression().getSymbols();
+				for(String s : symbols) {
+					SymbolTableEntry ste = parameter.getExpression().getSymbolBinding(s);
+					if(ste instanceof SpeciesContext) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 // TODO: jim's code to replace species names with their patterns
 //	private static String getSpeciesPatternSubstitutedExpression(Expression exp) {
 //		Expression exp2 = new Expression(exp);
@@ -1610,7 +1634,5 @@ public class RbmUtils {
 		}
 		return s;
 	}
-	
-	
-	
+
 }
