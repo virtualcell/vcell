@@ -14,6 +14,7 @@ import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.NetworkTransformer;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.mapping.SimulationContext;
@@ -86,7 +87,7 @@ public class RbmNetworkGenerator {
 	}
 	// modified bngl writer for special use restricted to network transform functionality
 	public static void writeBngl_internal(SimulationContext simulationContext, PrintWriter writer,
-			Map<FakeReactionRuleRateParameter, Expression> kineticsParameterMap, 
+			Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap, 
 			Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
 			NetworkGenerationRequirements networkGenerationRequirements) {
 		
@@ -135,12 +136,12 @@ public class RbmNetworkGenerator {
 				switch (kineticLaw.getRateLawType()){
 				case MassAction:{
 					FakeReactionRuleRateParameter fakeRateParameterForward = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MassActionForwardRate);
-					Expression forwardRateExp = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getExpression();
-					kineticsParameterMap.put(fakeRateParameterForward, forwardRateExp);
+					LocalParameter origForwardRateParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
+					kineticsParameterMap.put(fakeRateParameterForward, origForwardRateParameter);
 					if (reactionRule.isReversible()){
 						FakeReactionRuleRateParameter fakeRateParameterReverse = new FakeReactionRuleRateParameter(reactionRule,RbmKineticLawParameterType.MassActionReverseRate);
-						Expression reverseRateExp = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getExpression();
-						kineticsParameterMap.put(fakeRateParameterReverse, reverseRateExp);
+						LocalParameter origReverseRateParameter = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+						kineticsParameterMap.put(fakeRateParameterReverse, origReverseRateParameter);
 					}
 					break;
 				}
