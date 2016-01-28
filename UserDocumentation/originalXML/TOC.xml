@@ -34,6 +34,7 @@
     				<tocitem target="BioNetGenHelp" text="BioNetGen Help"/>
     			</tocitem>
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+    			<tocitem target="LaunchVisITvisualization" text="Launch Visit Visualization Tool Menu"/>
     			<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
