@@ -79,6 +79,9 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 		}
 
 		public boolean isNameEditable(LocalParameter localParameter) {
+			if (localParameter.getRole() == RbmKineticLawParameterType.RuleRate){
+				return false;
+			}
 			return true;
 		}
 
@@ -367,7 +370,7 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 			if (p.getExpression() == null && p.getRole() == RbmKineticLawParameterType.RuleRate){
 				continue;
 			}
-			p.getExpression().bindExpression(reactionRule.getModel().getRbmModelContainer().getSymbolTable());
+			p.getExpression().bindExpression(this.parameterContext);
 		}
 		
 	}
@@ -456,6 +459,8 @@ public class RbmKineticLaw implements Serializable, ModelProcessDynamics, Matcha
 //			p.addPropertyChangeListener(this);
 //		}
 	}
-
+	public ParameterContext getParameterContext() {
+		return parameterContext;
+	}
 
 }
