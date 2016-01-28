@@ -59,11 +59,6 @@ public class RbmNetworkGenerator {
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
 
-@Deprecated
-	public static void writeBngl(BioModel bioModel, PrintWriter writer) {
-		SimulationContext sc = bioModel.getSimulationContexts()[0];	// we assume one single simulation context which may not be the case
-		writeBngl(sc, writer, false, false);	// don't apply the app filters
-	}
 	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, 
 			boolean applyApplicationFilters) {
 		Model model = simulationContext.getModel();
@@ -154,7 +149,6 @@ public class RbmNetworkGenerator {
 		
 		writer.println(BEGIN_PARAMETERS);
 		// the fake parameters used for reaction rule kinetics
-		
 		for (FakeReactionRuleRateParameter p : kineticsParameterMap.keySet()) {
 			writer.println(p.fakeParameterName+"\t\t1");
 		}
@@ -190,48 +184,8 @@ public class RbmNetworkGenerator {
 		}
 		writer.println();
 	}
-	// modified bngl writer for special use restricted to network transform functionality
-	public static void writeBngl_internal(RuleAnalysis.RuleEntry ruleEntry, PrintWriter writer) {
-		
-		writer.println(BEGIN_MODEL);
-		writer.println();
-		
-		writer.println(BEGIN_MOLECULE_TYPES);
-		ArrayList<String> uniqueMolecularTypeBNGLs = new ArrayList<String>();
-		ArrayList<MolecularTypeEntry> allMolecularTypePatterns = new ArrayList<MolecularTypeEntry>();
-		allMolecularTypePatterns.addAll(ruleEntry.getReactantMolecularTypeEntries());
-		allMolecularTypePatterns.addAll(ruleEntry.getProductMolecularTypeEntries());
-		for (MolecularTypeEntry mte : allMolecularTypePatterns){
-			String bngl = mte.getMolecularTypeBNGL();
-			if (!uniqueMolecularTypeBNGLs.contains(bngl)){
-				uniqueMolecularTypeBNGLs.add(bngl);
-			}
-		}
-		for (String bngl : uniqueMolecularTypeBNGLs) {
-			writer.println(bngl);
-		}
-		writer.println(END_MOLECULE_TYPES);
-		writer.println();
+// ======================================================================================================
 
-//		// write modified version of seed species while maintaining the connection between the species context and the real seed species
-//		writer.println(BEGIN_SPECIES);
-//		for (String s : seedSpeciesList) {
-//			writer.println(s);
-//		}
-//		writer.println(END_SPECIES);
-//		writer.println();
-		
-		writer.println(BEGIN_REACTIONS);
-		writer.println(ruleEntry.getRuleName()+":"+"      "+ruleEntry.getReactionBNGLShort()+"    1.0");
-		writer.println(END_REACTIONS);	
-		writer.println();
-		
-		writer.println(END_MODEL);	
-		writer.println();
-		
-		writer.println("writeXML()");
-		writer.println();
-	}
 	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
 		writer.println(BEGIN_PARAMETERS);
 		List<Parameter> paramList = rbmModelContainer.getParameterList();
@@ -279,6 +233,9 @@ public class RbmNetworkGenerator {
 		if(!ignoreFunctions) {
 			writer.println(BEGIN_FUNCTIONS);
 			List<Parameter> functionList = rbmModelContainer.getFunctionList();
+			if(RbmUtils.haveUnsupportedFunctions(functionList)) {
+				writer.println("# Commented out functions correspond to observables that cannot be exported into BNGL yet");
+			}
 			for (Parameter function : functionList) {
 				writer.println(RbmUtils.toBnglString(function,true));
 			}
