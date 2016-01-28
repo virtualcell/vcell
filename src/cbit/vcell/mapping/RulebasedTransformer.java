@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -208,7 +210,16 @@ public class RulebasedTransformer implements SimContextTransformer {
 				
 			String identifier = RuleAnalysis.getID(mathRuleEntry);
 			Element rreTheirs = ruleElementMap.get(identifier);
+			
+			RuleAnalysisReport report = RuleAnalysis.analyze(mathRuleEntry);
+			Element rreOurs = RuleAnalysis.getNFSimXML(mathRuleEntry, report);
+
+			compareOperations(rreTheirs, rreOurs);
+			
 			rreTheirs.removeChild("RateLaw", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			rreTheirs.removeChild("ListOfOperations", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+			rreOurs.removeChild("ListOfOperations");
+						
 			String rule_id_str = rreTheirs.getAttributeValue("id");
 			rule_id_str = rule_id_str.substring(2);
 			int rrIndex = Integer.parseInt(rule_id_str);
@@ -226,12 +237,10 @@ public class RulebasedTransformer implements SimContextTransformer {
 //				RulebasedTransformer.saveAsText("c:\\TEMP\\ddd\\theirRules.txt", sTheirsEx);
 //			}
 
-			RuleAnalysisReport report = RuleAnalysis.analyze(mathRuleEntry);
-			Element rreOurs = RuleAnalysis.getNFSimXML(mathRuleEntry, report);
 			String sOurs = outp.outputString(rreOurs);
 			sOurs = sOurs.replace(".0", "");
 			sOurs = sOurs.replaceAll("\\s+","");
-
+			
 //			if (debugUser.equals("danv") || debugUser.equals("mblinov"))
 //			{
 //				System.out.println("Saving our rules");
@@ -778,6 +787,69 @@ public class RulebasedTransformer implements SimContextTransformer {
 		
 //		sTheirs = sTheirs.replaceAll("\\s+","");
 	}
+	
+	
+	private static void compareOperations(Element eTheirs, Element eOurs) {
+		XMLOutputter outp = new XMLOutputter();
+		
+		Set<String> theirOperations = new HashSet<String>();
+		Set<String> ourOperations = new HashSet<String>();
+		Element le = eTheirs.getChild("ListOfOperations", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
+		List<Element> children = new ArrayList<Element>();
+		children = le.getChildren();
+		for(Element e : children) {
+			String s = outp.outputString(e);
+			s = s.replace("xmlns=\"http://www.sbml.org/sbml/level3\"", "");
+			s = s.replaceAll("\\s+","");
+			if(theirOperations.add(s) == false) {
+				System.out.println("Duplicate their operation: " + s);
+			}
+			System.out.println(s);
+		}
+		le = eOurs.getChild("ListOfOperations");
+		children = le.getChildren();
+		for(Element e : children) {
+			String s = outp.outputString(e);
+			s = s.replace(".0", "");
+			s = s.replaceAll("\\s+","");
+			if(ourOperations.add(s) == false) {
+				System.out.println("Duplicate our operation: " + s);
+			}
+			System.out.println(s);
+		}
+		
+		List<String> theirUnmatched = new ArrayList<String>();
+		for(String their : theirOperations) {
+			if(!ourOperations.contains(their)) {
+				theirUnmatched.add(their);
+			}
+		}
+		List<String> ourUnmatched = new ArrayList<String>();
+		for(String our : ourOperations) {
+			if(!theirOperations.contains(our)) {
+				ourUnmatched.add(our);
+			}
+		}
+		
+		if(!theirUnmatched.isEmpty() || !ourUnmatched.isEmpty()) {
+			String s1 = "theirs: ";
+			String s2 = "ours  : ";
+			for(String their : theirUnmatched) {
+				s1 += their + "' ";
+			}
+			for(String our : ourUnmatched) {
+				s2 += our + "' ";
+			}
+			throw new RuntimeException("Operations not matching for rule\n" + s1 + "\n" + s2 + "\n");
+		} else {
+			System.out.println("Operations matching for rule");
+		}
+
+
+
+		
+	}
+
 	
 	private void parseBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
 		Model model = simContext.getModel();
