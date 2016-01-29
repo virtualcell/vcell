@@ -3,6 +3,7 @@ package cbit.vcell.graph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -31,8 +32,11 @@ import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
@@ -41,7 +45,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	public static final int defaultHeight = 80;		// we actually always use this height, we never compute it as initially planned
 		
 	private int xPos = 0;
-	private int yPos = 0;		// y position where we draw the sape
+	private int yPos = 0;		// y position where we draw the shape
 	private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
 	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
@@ -289,6 +293,49 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
 	}
+	public void paintCompartment(Graphics g) {
+
+		Structure structure = null;
+		if(owner instanceof ReactionRule && !speciesShapes.isEmpty()) {
+			structure = ((ReactionRule)owner).getStructure();
+		} else if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
+				structure = ((SpeciesContext)owner).getStructure();			
+		} else if(owner instanceof RbmObservable && !speciesShapes.isEmpty()) {
+				structure = ((RbmObservable)owner).getStructure();			
+		} else {
+			return;		// other things don't have structure
+		}
+		if(structure == null) {
+			return;
+		}
+		
+		Graphics2D g2 = (Graphics2D)g;
+		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+		Font fontOld = g2.getFont();
+			
+		Color darker = Color.gray;	// a bit darker for border
+		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, 44, 60);
+		g2.setColor(darker);
+		g2.draw(border);
+		Color lighter = new Color(224, 224, 224);
+		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, 44, 59);
+		g2.setPaint(lighter);
+		g2.fill(filling);
+		
+		String name = structure.getName();
+		if(name.length() > 3) {
+			name = name.substring(0, 3) + "..";
+		}
+		Font font = fontOld.deriveFont(Font.BOLD);
+		g.setFont(font);
+		g.setColor(Color.black);
+		g2.drawString(name, xPos-4, yPos+48);
+		
+		g2.setFont(fontOld);
+	    g2.setPaint(paintOld);
+		g2.setColor(colorOld);
+	}
 	
 	public void paintSelf(Graphics g) {
 		paintSelf(g, true);
@@ -307,7 +354,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		if(bPaintContour && (owner instanceof RbmObservable || owner instanceof ReactionRule)) {
 			paintContour(g);
 		}
-
+		paintCompartment(g);	// TODO: bring this back once we add compartments to species patterns
+		
 //		// type the expression of the species pattern right above the shape
 //		if(owner instanceof RbmObservable) {
 //			Color colorOld = g2.getColor();
