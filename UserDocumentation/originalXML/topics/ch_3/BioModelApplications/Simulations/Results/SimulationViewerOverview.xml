@@ -5,26 +5,22 @@
 
 	
 	<introduction> 
-	Results from simulations are automatically stored on the remote database server. The Results button becomes 
-	active once results are available for a newly run simulation or when a previously run simulation is selected. 
-	The results may be reviewed immediately by pressing the Results button on the Simulation panel of the Application 
-	dialog. This activates the Simulation Results Viewer. The viewer for results differ for non-spatial and spatial 
-	models.
+	The <bold>results viewer</bold> button is enabled when a selected simulation has data stored on the remote VCell server.  
+	Simulation data are generated when the user presses either the <bold>remote run</bold> or the <bold>quick run</bold> button (see simulation tab figure below).  
+	For 'remote run' simulations, data are saved remotely and the 'results viewer' button will become enabled as soon as data becomes available on the VCell server.  
+	Pressing the results viewer button displays data that is continuously updated as the simulation run proceeds on the VCell server.  
+	For 'quick run' simulations, data are not saved persistently and the results viewer is displayed automatically once the simulation run has completed on the users local computer.  
+	<imgReference target = "AccessingSimResults.png"/>
 	</introduction>
 
-	<appearance>  
-	<imgReference target = "AccessingSimResults.png"/>
-	</appearance>
+	<appearance></appearance>
 
 	<operations>
-	<para><imgReference target = "SimResultsButton.png"/> <bold>Simulation Results Button.</bold></para>
-	A list of simulations, both run, failed, in progress and never ran are visible and 
-	labeled accordingly.  If a simulation with results is selected, the simulation results button becomes enabled.
-	
-	<para><bold>View</bold> simulation results by selecting a simulation and pressing the simulation results button. 
-	A different results viewer appears for <link target = "SimResSpatialSliceView">Spatial</link> and 
-	<link target = "SimCompartmentResults">Non-spatial</link>(compartmental) results.
-	</para>
+	<imgReference target = "SimResultsButton.png"/> Follow the links below for more information on the 2 kinds of <bold>Results Viewer</bold>:
+	<list>
+	<item><link target = "SimResSpatialSliceView">Spatial.</link></item>
+	<item><link target = "SimCompartmentResults">Non-spatial</link>(compartmental) and non-spatial stochastic</item>
+	</list>
 	</operations>
 	
 </page>
