@@ -315,6 +315,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 		Model newModel = transformedSimulationContext.getModel();
 		Model originalModel = originalSimContext.getModel();
 		ModelEntityMapping em = null;
+		// list of rules created from the reactions; we apply the symmetry factor computed by bionetgen only to these
+		Set<ReactionRule> fromReactions = new HashSet<>();
 		
 //		for(ReactionRule newrr : newModel.getRbmModelContainer().getReactionRuleList()) {			// map new and old kinetic parameters of reaction rules
 //			ReactionRule oldrr = originalModel.getRbmModelContainer().getReactionRule(newrr.getName());
@@ -373,6 +375,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			
 			boolean bReversible = rs.isReversible();
 			ReactionRule rr = new ReactionRule(newModel, mangled, rs.getStructure(), bReversible);
+			fromReactions.add(rr);
 			MassActionKinetics massActionKinetics = (MassActionKinetics)k;
 			
 			List<Reactant> rList = rs.getReactants();
@@ -399,50 +402,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 			try {
 				String forwardRateName = massActionKinetics.getForwardRateParameter().getName();
 				Expression forwardRateExp = massActionKinetics.getForwardRateParameter().getExpression();
-				if(rList.size() == 1 && numReactants == 2) {			// one reactant with stoichiometry == 2
-					if(numProducts == 1 && rList.get(0).getName().equals(pList.get(0).getName())) {
-						;				// 2a -> a    do nothing, symmetry factor is 1
-					} else if(numProducts == 2 && pList.size() == 2) {
-						String candidate = rList.get(0).getName();
-						int count = 0;
-						for(Product p : pList) {
-							if(candidate.equals(p.getName())) {
-								count++;
-							}
-						}
-						if(count == 1) {
-							;			// 2a -> a + b   do nothing, symmetry factor is 1
-						} else {
-							forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
-						}
-					} else {
-						forwardRateExp = Expression.mult(new Expression("2"), forwardRateExp);
-					}
-				}
-						
 				String reverseRateName = massActionKinetics.getReverseRateParameter().getName();
 				Expression reverseRateExp = massActionKinetics.getReverseRateParameter().getExpression();
-				if(pList.size() == 1 && numProducts == 2) {				// one product with stoichiometry == 2
-					if(numReactants == 1 && pList.get(0).getName().equals(rList.get(0).getName())) {
-						;				// a <- 2a    do nothing, symmetry factor is 1
-					} else if(numReactants == 2 && rList.size() == 2) {
-						String candidate = pList.get(0).getName();
-						int count = 0;
-						for(Reactant r : rList) {
-							if(candidate.equals(r.getName())) {
-								count++;
-							}
-						}
-						if(count == 1) {
-							;			// a + b <- 2a   do nothing, symmetry factor is 1
-						} else {
-							reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
-						}
-					} else {
-						reverseRateExp = Expression.mult(new Expression("2"), reverseRateExp);
-					}
-				}
-				
 				LocalParameter fR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
 				fR.setName(forwardRateName);
 				LocalParameter rR = kineticLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
@@ -500,8 +461,6 @@ public class RulebasedTransformer implements SimContextTransformer {
 			for(ReactionParticipant p : rpList) {
 				if(p instanceof Reactant) {
 					int stoichiometry = p.getStoichiometry();
-					// TODO: must not reuse the SP of the species, must make new deep constructor
-					// because the molecular type patterns are going to be different (each its own match for example)
 					for(int i=0; i<stoichiometry; i++) {
 						SpeciesPattern speciesPattern = new SpeciesPattern(p.getSpeciesContext().getSpeciesPattern());
 						ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, rr.getStructure());
@@ -557,7 +516,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		
 		try {
 			// we invoke bngl just for the purpose of generating the xml file, which we'll then use to extract the symmetry factor
-			generateNetwork(transformedSimulationContext, mathMappingCallback);
+			generateNetwork(transformedSimulationContext, fromReactions, mathMappingCallback);
 		} catch (ClassNotFoundException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -575,7 +534,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		pw.close();
 		return bngl;
 	}
-	private void generateNetwork(SimulationContext simContext, MathMappingCallback mathMappingCallback) 
+	private void generateNetwork(SimulationContext simContext, Set<ReactionRule> fromReactions, MathMappingCallback mathMappingCallback) 
 			throws ClassNotFoundException, IOException {
 		TaskCallbackMessage tcm;
 		BNGOutputSpec outputSpec;
@@ -640,7 +599,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 //		}
 		
 		// TODO: uncomment here to parse the xml file!!!
-		parseBngOutput(simContext, bngOutput);
+		parseBngOutput(simContext, fromReactions, bngOutput);
 		
 		//
 		// Saving the observables, as produced by bionetgen
@@ -844,14 +803,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 		} else {
 			System.out.println("Operations matching for rule");
 		}
-
-
-
-		
 	}
-
 	
-	private void parseBngOutput(SimulationContext simContext, BNGOutput bngOutput) {
+	private void parseBngOutput(SimulationContext simContext, Set<ReactionRule> fromReactions, BNGOutput bngOutput) {
 		Model model = simContext.getModel();
 		Document bngNFSimXMLDocument = bngOutput.getNFSimXMLDocument();
 		bngRootElement = bngNFSimXMLDocument.getRootElement();
@@ -872,9 +826,31 @@ public class RulebasedTransformer implements SimContextTransformer {
 				bForward = false;
 				rule_name_str = rule_name_str.substring("_reverse_".length());
 				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
+				RbmKineticLaw rkl = rr.getKineticLaw();
+				try {
+					if(symmetry_factor_double != 1.0 && fromReactions.contains(rr)) {
+						Expression expression = rkl.getLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate);
+						expression = Expression.div(expression, new Expression(symmetry_factor_double));
+						rkl.setLocalParameterValue(RbmKineticLawParameterType.MassActionReverseRate, expression);
+					}
+				} catch (ExpressionException | PropertyVetoException exc) {
+					exc.printStackTrace();
+					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage());
+				}
 				rulesReverseMap.put(rr, rar);
 			} else {
 				rr = model.getRbmModelContainer().getReactionRule(rule_name_str);
+				RbmKineticLaw rkl = rr.getKineticLaw();
+				try {
+					if(symmetry_factor_double != 1.0 && fromReactions.contains(rr)) {
+						Expression expression = rkl.getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate);
+						expression = Expression.div(expression, new Expression(symmetry_factor_double));
+						rkl.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, expression);
+					}
+				} catch (ExpressionException | PropertyVetoException exc) {
+					exc.printStackTrace();
+					throw new RuntimeException("Unexpected transform exception: "+exc.getMessage());
+				}
 				rulesForwardMap.put(rr, rar);
 			}
 			rar.symmetryFactor = symmetry_factor_double;
