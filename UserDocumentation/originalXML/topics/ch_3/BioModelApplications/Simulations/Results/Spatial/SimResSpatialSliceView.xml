@@ -4,65 +4,39 @@
 <page title="Spatial Simulation Results Slice View">
 
 	
-	<introduction> 	 
-The image data from spatial simulations are displayed in the results dialog.  
-You can also generate a Spatial Plot using defined regions (see <link target = "SpatialSimResultsDrawingTools">Region of Interest Selection Tools</link>), 
-a Time Plot using points, 
-or a Kymograph which displays a line scan over time.
+	<introduction>
+	The main interactive viewer for simulation results.  
+	<bold>Slice viewer</bold> controls for <bold>volume variables</bold> allow the user to select a <bold>variable</bold>, a specific simulation <bold>time-point</bold>, a <bold>slice</bold> plane if 3D, 
+	a <bold>data range</bold> for display color scaling, a <bold>color</bold> colormap for basic display settings.  
+	Other controls include zoom, pan, region-of-interest(roi) (point, line, simple open and closed polygons), roi plots and statistical summary plots.  
+	<bold>Surface viewer</bold> controls allow for the manipulation in 3D of surface rendered <bold>membrane variables</bold> and the definition of regions-of-interest.
  	</introduction>
 	
 	<appearance>
-	<imgReference target = "ResultsTimeAndVariables.png"/>
+	<imgReference target = "SimResSpatialSliceView.png"/>
 	</appearance>
 	
-	<operations>	
+	<operations>
+	<bold>Slice View</bold> tab.  display volume and membrane data as orthogonal slice (z,y,z):
 	<list>
-	<para>Time: The data time point that is displayed. Enter a value in the text field or click once on the selection arrow. Use the up and down arrow keys on your keyboard to select a time point. The image will update when the time point is changed.
-</para>
-<para>
-All Variables: 
-All Variables from the model simulation are displayed in the variable list to the left of the results viewer. A drop down menu allows you to list a single class of variables: Volume, Membrane or User Functions, Region sizes.
-</para>
-
-<para>
-Data Value Range: 
-<imgReference target = "SimResultsDataRange.png"/>
-</para>
-<para>
-Auto Range:
-Select to have the software automatically adjust the image display pixel intensities based on the minimum 
-and maximum data values for the selected time point. The intensities are automatically converted to and 
-displayed as concentrations.
-</para>
-
-<para>Min/Max:
-Deselect Auto Range and type in the value(s) for the
-minimum and/or maximum; press enter to accept the values and to update the image display.
-</para>
-
-<para>Color:
-View the image data either in Grayscale or in a Blue-Red color map where colors are mapped according 
-to concentration. At times some values will be displayed in colors other than the selected color map 
-because they do not fall within the specified range.
-</para>
-<para>
-Color Value:
-</para>
-<para>BM:
-Below minimum color</para>
-<para>
-AM:
-Above minimum color</para>
-<para>
-NN:
-Not a number color</para>
-<para>
-IL:
-Illegal value color</para>
-<para>
-NR:
-No range color </para>
-</list>
+	<item><bold>Time -</bold></item> Sets a simulation time-point to display in the viewer.  Update the currently displayed data by editing the text field, sliding the time pointer or using the up-down arrows on a keyboard.
+	<item>
+	<bold>Variables -</bold> Drop-down variable category selector and variable list.  
+	Category selection changes the variable names displayed in the variable list.  
+	Selection from the variable list sets a variable to display in the viewer.
+	</item>
+	<item><bold>Slice -</bold> Use radio-buttons to select orthogonal plane orientation.  Move slider to set depth of visible slice plane within the data.</item>
+	<item><bold>Data Range/Color Scale -</bold> see <link target = "SimResultsDataRange">Data Range/Color Scale</link></item>
+	<item><bold>Tools -</bold> see <link target = "SpatialSimResultsDrawingTools">Slice View tools</link></item>
+	<item><bold>ROI -</bold> see <link target = "SimResultsSpatialROIandStatistics">Region-of-Interest</link></item>
+	<item><bold>Plot -</bold> see <link target = "SimResultsKymograph">Plot</link></item>
+	</list>
+	<para>
+	<bold>Surface View</bold> tab.  Display membrane data as 3D rendered surface.
+	<list>
+	<item><bold>Surface View -</bold> see <link target = "SimResultsSpatialSurfaceView">Surface View</link></item>
+	</list>
+	</para>
 	</operations>
 	
 </page>
