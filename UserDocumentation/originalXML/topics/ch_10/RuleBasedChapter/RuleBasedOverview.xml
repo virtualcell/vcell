@@ -3,58 +3,57 @@
 <page title="Overview of Rule-Based Features" target="RuleBasedOverview">
 
 	<introduction> 
-The Virtual Cell Software version 6.0 for the first time provides an integrated environment to 
-introduce <def target= "def_RuleBased">rule-based</def> features in the VCell interface alongside familiar species and reaction concepts. 
-The new parts of <link target = "PhysOverview">Physiology</link> specifications include 
+The Virtual Cell Software now provides an integrated environment to 
+introduce <def target= "def_RuleBased">rule-based</def> features among species and reactions in a VCell Biomodel. 
+Additions to the Biomodel <link target = "PhysOverview">Physiology</link>  include 
 <link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
-as well as <def target = "def_ReactionRules">reaction rules</def> that are specified alongside 
-<def target = "def_reactions">reactions</def> in a <link target = "ReactTabView">Reactions</link> Table.
+as well as <def target = "def_ReactionRules">reaction rules</def> that can be specified alongside 
+<def target = "def_reactions">reactions</def> in the <link target = "ReactTabView">Reactions</link> Table.
  
 <para><bold>Rule-based features and compartments</bold></para>
-Defining <link target = "Molecules">Molecules</link> allow the user to create species that have 
+Defining <link target = "Molecules">Molecules</link> allows the user to create species that have 
 <link target = "PP_Species">molecular details</link>. 
-Currently, <bold>rules can operate in a single compartment only</bold> 
-(this is a temporary restrictions that will be lifted in the next release).  Once a reaction rule is created, 
-any new species by default will be placed in c0 compartment, and this can not be changed. Vice versa, if multiple compartments 
-are created, no rules can be added.
+Currently, <bold>rules can operate only in Biomodels containing a single compartment</bold> 
+(a temporary restriction that will be lifted in the next release).  Once a reaction rule is created, 
+any new species by default will be placed in the c0 (initial default) compartment, and this can not be changed. Similarly, if multiple compartments have been created in the Biomodel, no rules can be added.
 
 <para><bold>Mixing Rule-based features and reaction networks</bold></para>
-As with a regular BioModel, a rule-based BioModel consists of a model description (Physiology), 
-and one or more Applications. Except for a limitation of a single compartment, 
-any operations with ordinary species and reactions are supported in VCell alongside rules. Specifically, 
+Similar to the traditional BioModel, a rule-based BioModel consists of a model description (Physiology) 
+and one or more Applications. Except for the temporary restriction to Biomodels containing a single compartment, 
+any operations on species and reactions that are supported in VCell can be used alongside rules. Specifically, 
 species that are used as initial <def target= "def_SeedSpecies">seed species</def> for rule-based models can be used as species in reaction networks.
 
 
 	<para><bold>Rule-based Applications</bold></para>
 	Each <link target = "ApplicationOverview">BioModel Application</link> 
 	allows the user to define the  quantitative conditions needed to define, 
-	run and visualize numerical simulation.  A Rule-Based BioModel may have numerous 
-	Applications, including <def target="def_Deterministic">deterministic</def>, 
-	<def target="def_Stochastic">stochastic</def> and <def target="def_NetworkFree">network-free</def>.  
-	Each Application, in turn can have multiple Simulations, in which different numerical
+	run and visualize a numerical simulation.  A Rule-Based BioModel may have mutliple
+	Applications, solved using <def target="def_Deterministic">deterministic</def>, 
+	<def target="def_Stochastic">stochastic</def> or <def target="def_NetworkFree">network-free</def> approaches.  
+	Each Application, in turn, can have multiple Simulations, in which different numerical
 	methods or conditions are used. 
 	<list>
 		<item>In order to run <def target="def_Deterministic">deterministic</def> or 
 	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications
 	the <def target="def_BioNetGen">BioNetGen</def> network-generation
-	algorithm needs to generate the complete network of species and reactions.</item> 
-	<item>This network is obtained by applying the set of reaction rules to the set of 
+	algorithm first generates the complete network of species and reactions.</item> 
+	<item>The network is created by applying the set of reaction rules to the set of 
 	<def target = "def_SeedSpecies">seed species</def> with initial amounts
-	specified in <link target = "SpeciesSpecifications">Species</link> specification tab.
+	specified in the <link target = "SpeciesSpecifications">Species</link> specification tab.
 	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
-	which otherwise can become infinite. The generated species and reactions can be seen in 
+	which otherwise can become infinitely large. The generated species and reactions can be seen in the 
 	<link target = "NetworkSpecifications">Network</link> tab, but they are not added to the 
 	<link target = "ReactDiagView">Reaction Diagram</link> view. </item>
 	<item>After the user is satified with the network that is generated using the set of species and reaction rules,
-		he/she can run any determiministic or stochastic <link target = "simulations_overview">simulation</link>.
+		any determiministic or stochastic <link target = "simulations_overview">simulation</link> can be run.
 		</item>
 	</list>
 
 	<para><bold>Rule-Based MathModel</bold></para>
-	MathModel for <def target="def_Deterministic">deterministic</def> or 
-	<def target="def_Stochastic">stochastic</def> applications generated for the rule-based model 
-	have a standard VCell structure with the full list of species and reactions, observables
-	given by functions. MathModel for <def target="def_NetworkFree">network-free</def> application has a new syntax.
+	MathModels for <def target="def_Deterministic">deterministic</def> or 
+	<def target="def_Stochastic">stochastic</def> applications generated by a rule-based model 
+	have a standard VCell structure with a full list of species and reactions, as well as observables
+	defined by functions. MathModels for <def target="def_NetworkFree">network-free</def> application have a new syntax.
 
 	</introduction>
 	
