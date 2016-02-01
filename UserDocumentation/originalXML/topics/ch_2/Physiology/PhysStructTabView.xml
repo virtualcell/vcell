@@ -7,16 +7,17 @@
 	</introduction>
 	
 	<appearance>
-The table view lists structures and their properties (Type of Structure, Inside Structure and Outside Parent).  Items in black can be edited; items that cannot be edited are in brown.
+The structure table lists structures and their properties (Name, Type of structure, Electrical properties).  Items in black can be edited; items that cannot be edited are in brown.
 	<imgReference target = "StructureTable.png"> </imgReference>	
 	</appearance>
 	
 	<operations>
-<para> <bold> Add </bold> a new compartment by double clicking "add new here" and typing a new name to the list, or by using the "Add new" button below the table. A new volume and membrane structure will automatically be generated.</para>
-<para> <bold> Edit </bold> the structure name by double clicking in the table, or within the <link target = "PP_Structures"> Properties pane  </link></para>
-<para> <bold> Delete </bold> compartments by selecting one or more compartments and using the "delete selected" button.  Compartments that contain species cannot be deleted.</para>
+<para> <bold> Add a new volume structure  </bold> using the "Add New Compartment" button below the table.</para>
+<para> <bold> Add a new membrane structure </bold> using the "Add New Membrane" button below the table.</para>
+<para> <bold> Edit </bold> the structure name by double clicking in the table, or within the <link target = "PP_Structures"> Properties pane</link>.</para>
+<para> <bold> Delete </bold> structures by selecting one or more structures and using the "Delete" button.  Structures that contain species cannot be deleted.</para>
 
-The bottom pane of the window displays the <link target = "PP_Structures">Structure Properties </link> depending on on the current selection.
+<para>The bottom pane of the window displays the <link target = "PP_Structures">Structure Properties </link> depending on on the current selection.</para>
 	</operations>
 
 

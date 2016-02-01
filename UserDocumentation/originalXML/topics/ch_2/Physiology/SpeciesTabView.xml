@@ -3,13 +3,10 @@
 <page title="Species Table" target="SpeciesTabView">
 
 	<introduction>
-	<bold>Species</bold> are used to create variables (molecular species) in <def target = "def_reactions">reactions</def> and
- 	fluxes. Species can exist in both <def target = "def_membranes">  membranes </def> and 
- 	<def target = "def_compartments"> compartments </def> (volumes) of the cellular structures. 
- 	Species are unique pools of molecules within a single compartment. 
- 	If the same species is copied to different 
- 	compartment, the compartment name is appended to the species name to retain a unique identifier, e.g. species_compartment. Species is 
- 	shown in <link target = "ReactDiagView">Reaction Diagram</link> as a green shape.
+	<bold>Species</bold> are used to create variables (molecular species) in <def target = "def_reactions">reactions</def> and fluxes and can exist in both <def target = "def_membranes">  membranes </def> and 
+ 	<def target = "def_compartments"> volume compartments </def> (volumes). 
+ 	Species are unique pools of molecules within a single structure; if the same species is copied to a different 
+ 	structure, the structure name is appended to the species name to retain a unique identifier, e.g. species_structure. A species is depicted in the <link target = "ReactDiagView">Reaction Diagram</link> as a green shape.
  	
  	<para>For use in <def target = "def_RuleBased">rule-based modeling</def> species must
 	have molecular details specified: they are composed of <link target = "Molecules">molecules</link> with bonds connecting
@@ -39,9 +36,7 @@
 			<item><bold>Depiction</bold> shows the structure of the species. For species without molecular details it will be green shape.
 				For species with moledcular details it will shows connected shapes for every molecule that 
 				comprise a species, with sites having states marked by yellow dot. States of sites are omitted for clarity.</item>
-			<item><bold>BioNetGen Definition</bold> provides BNGL string for species with molecular detail. Ends of the same bonds are show
-			with the same color. This field is uneditable but searchable.</item>
-	</list> 
+			<item><bold>BioNetGen Definition</bold> provides BNGL string for species with molecular detail. Ends of the same bonds are show with the same color. This field is uneditable but searchable.</item></list> 
 	</appearance>
 	
 	<operations>
