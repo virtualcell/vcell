@@ -3711,6 +3711,7 @@ private Element getXML(RbmObservable param) {
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	RbmObservable.ObservableType ot = param.getType();
 	e.setAttribute(XMLTags.RbmObservableTypeTag, mangle(ot.name()));
+	e.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 //	SpeciesPattern sp = param.getSpeciesPattern(0);
 //	Element e1 = new Element(XMLTags.RbmSpeciesPatternTag);
 //	e1.setAttribute(XMLTags.NameAttrTag, mangle(sp.getId()));

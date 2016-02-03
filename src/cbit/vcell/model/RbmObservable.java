@@ -72,7 +72,12 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		this.name = name;
 		this.type = t;
 		this.model = model;
-		this.structure = structure;
+		if(structure == null) {
+			System.out.println("Error: attempt to set null structure to Observable " + name);
+			this.structure = model.getStructure(0);
+		} else {
+			this.structure = structure;
+		}
 		speciesPatternList = new ArrayList<SpeciesPattern>();
 //		speciesPatternList.addPropertyChangeListener(this);
 	}
@@ -84,6 +89,10 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		return structure;
 	}
 	public void setStructure(Structure structure) {
+		if(structure == null) {
+			System.out.println("Error: attempt to set null structure to Observable " + name);
+			return;
+		}
 		this.structure = structure;
 	}
 
