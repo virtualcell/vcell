@@ -8,7 +8,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class ReactionRuleParticipant implements ModelProcessParticipant {
 	private final SpeciesPattern speciesPattern;
-	private final Structure structure;
+	private Structure structure;
 	
 	public ReactionRuleParticipant(SpeciesPattern speciesPattern, Structure structure){
 		this.speciesPattern = speciesPattern;
@@ -24,6 +24,9 @@ public abstract class ReactionRuleParticipant implements ModelProcessParticipant
 	
 	public Structure getStructure(){
 		return this.structure;
+	}
+	public void setStructure(Structure structure){
+		this.structure = structure;
 	}
 	
 	public VCUnitDefinition getUnitDefinition(){
