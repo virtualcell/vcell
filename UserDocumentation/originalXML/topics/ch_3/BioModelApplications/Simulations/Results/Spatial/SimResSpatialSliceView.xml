@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <vcelldoc>
-<page title="Spatial Simulation Results Slice View">
+<page title="Spatial Simulation Results Slice/Surface View">
 
 	
 	<introduction>
@@ -13,30 +13,33 @@
  	</introduction>
 	
 	<appearance>
-	<imgReference target = "SimResSpatialSliceView.png"/>
 	</appearance>
 	
 	<operations>
-	<bold>Slice View</bold> tab.  display volume and membrane data as orthogonal slice (z,y,z):
+	
+	<para><bold>Slice View tab</bold> tab.  Displays volume and membrane data as an orthogonal slice (z,y,z) image.</para>
+	<imgReference target = "SimResSpatialSliceView.png"/>
 	<list>
-	<item><bold>Time -</bold></item> Sets a simulation time-point to display in the viewer.  Update the currently displayed data by editing the text field, sliding the time pointer or using the up-down arrows on a keyboard.
+	<item><bold>Time panel-</bold></item> Sets a simulation time-point to display in the viewer.  Update the currently displayed data by editing the text field, sliding the time pointer or using the up-down arrows on a keyboard.
 	<item>
-	<bold>Variables -</bold> Drop-down variable category selector and variable list.  
+	<bold>Variables button menu-</bold> Drop-down variable category selector and variable list.  
 	Category selection changes the variable names displayed in the variable list.  
 	Selection from the variable list sets a variable to display in the viewer.
 	</item>
-	<item><bold>Slice -</bold> Use radio-buttons to select orthogonal plane orientation.  Move slider to set depth of visible slice plane within the data.</item>
-	<item><bold>Data Range/Color Scale -</bold> see <link target = "SimResultsDataRange">Data Range/Color Scale</link></item>
-	<item><bold>Tools -</bold> see <link target = "SpatialSimResultsDrawingTools">Slice View tools</link></item>
-	<item><bold>ROI -</bold> see <link target = "SimResultsSpatialROIandStatistics">Region-of-Interest</link></item>
-	<item><bold>Plot -</bold> see <link target = "SimResultsKymograph">Plot</link></item>
+	<item><bold>Slice panel-</bold> Use radio-buttons to select orthogonal plane orientation.  Move slider to set depth of visible slice plane within the data.</item>
+	<item><bold>Data Range/Color Scale panel-</bold> see <link target = "SimResultsDataRange">Data Range/Color Scale</link></item>
+	<item><bold>Tools panel-</bold> see <link target = "SpatialSimResultsDrawingTools">Slice View tools</link></item>
+	<item><bold>ROI button menu-</bold> Selecting <bold>Snapshot ROI</bold> will create an ROI from the currently displayed variable that includes all points that equal one (1.0).  
+	Selecting <link target = "SimResultsSpatialROIandStatistics">Statistics</link> will show a dialog listing a set of predefined ROIs (including any snapshot ROI) and controls 
+	to generate some simple statistics.</item>
+	<item><bold>Plot button menu-</bold> see <link target = "SimResultsKymograph">Plot</link></item>
 	</list>
-	<para>
-	<bold>Surface View</bold> tab.  Display membrane data as 3D rendered surface.
-	<list>
-	<item><bold>Surface View -</bold> see <link target = "SimResultsSpatialSurfaceView">Surface View</link></item>
-	</list>
+	
+	<para><bold>Surface View</bold> tab.  	
 	</para>
+	<list>
+	<item><bold>Surface View tab-</bold> see <link target = "SimResultsSpatialSurfaceView">Surface View</link></item>
+	</list>
 	</operations>
 	
 </page>
