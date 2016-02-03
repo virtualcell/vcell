@@ -11,10 +11,11 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Region of Interest Tools, Data Plots and Statistics">
+<page title="Region of Interest Tools">
 
 <introduction>
-Drawing and selection tools are available for spatial simulation results to create regions of interest>
+Tools are available to adjust the viewer display and define regions of interest (ROI).
+Tools include a selector for individual data point values, zooming and panning, adding single point markers, adding or editing line and curved ROIs.
 </introduction>
 
 <operations>
@@ -55,49 +56,7 @@ Use the pan tool, while the image is zoomed up, to move across the image. With t
 </para>
 <para>Slice
 View 3-D data sets by using the Plus (+1/10) and Minus (-1/10) buttons to step through the series.</para>
-<para>
-Axis
-The Axis is provided as an additional means of viewing your 3-D image data.</para>
-<para>
-<imgReference target = "SimResultsAxisTools.png"/>
-</para>
 </list>
-
-<para>
-<bold>Statistics</bold>
-</para>
-
-<para>
-<bold>Spatial Plot:</bold> The Plot->Spatial menu item is enabled once you use the line or spline tools to define a region.  
-Select the created line or spline, select Plot->Spatial to display a plot of the data along the line or spline.  
-The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
-    </para>
-<para>
-Toggle Plot/Values Display: Once plots are generated the results can be displayed as graphs or a table of data values (see <link target = "SimCompartmentResults">compartment results viewer</link>).
-</para>
-<para>
-<bold>Time Plot:</bold> The Plot->Time menu item is enabled once you use the point tool to define a point or series of points.  
-Select Plot->Time to view a line graph of currently selected simulation data variable at each timepoint over time.  
-Point coordinates are listed in the top left corner of the Time Plot frame.  
-Use the 'Y Axis' list to select 1 or more variables to plot.
-</para>
-<para>
-Toggle Plot/Values Display:Once plots are generated the results can be displayed as graphs or a table of data values (see <link target = "SimCompartmentResults">compartment results viewer</link>).
-</para>
-<para>
-Kymograph: The <link target = "SimResultsKymograph"> kymograph tab </link>, which displays line scans over time,
-will become active on the results panel once a line is
-drawn over the image data. 
-</para>
-<para>
-Export Data: Export feature for data. See <link target = "ExportingSpatialSimResults"> Export</link> for more information.
-</para>
-<para>
-
-
-<link target = "SimResultsSpatialSurfaceView"> 3D Membrane Surface Viewer: </link> The 3D Membrane Surface Viewer allows users to view, manipulate and pick values interactively from the membrane data of 3D spatial simulation results. The 3D Membrane Surface Viewer allows views of the data from any viewpoint around an X,Y,Z coordinate system. The view can be changed easily using the mouse (See Changing views below).
-</para>
-
     </operations>
 	
 	<comments>To be broken up into more pages 
