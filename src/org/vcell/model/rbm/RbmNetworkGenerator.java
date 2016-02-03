@@ -21,7 +21,9 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
@@ -36,6 +38,8 @@ import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -58,6 +62,8 @@ public class RbmNetworkGenerator {
 	private static final String END_SPECIES = "end seed species";
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
+	private static final String BEGIN_COMPARTMENTS = "begin compartments";
+	private static final String END_COMPARTMENTS = "end compartments";
 
 	/*
 	 * Used for exporting to file with extension .bngl
@@ -71,10 +77,11 @@ public class RbmNetworkGenerator {
 		writer.println(BEGIN_MODEL);
 		writer.println();
 		
+		RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
 		RbmNetworkGenerator.writeParameters(writer, rbmModelContainer, ignoreFunctions);
 		RbmNetworkGenerator.writeMolecularTypes(writer, rbmModelContainer);
 		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, true);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
 		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, applyApplicationFilters);
 		
@@ -175,7 +182,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 		
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, false);
 		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext);
 		
 		writer.println(END_MODEL);	
@@ -191,6 +198,23 @@ public class RbmNetworkGenerator {
 	}
 // ======================================================================================================
 
+	private static void writeCompartments(PrintWriter writer, Model model, SimulationContext sc) {
+		writer.println(BEGIN_COMPARTMENTS);
+		for(int i=0; i< model.getStructures().length; i++) {
+			Structure s = model.getStructure(i);
+			String name = s.getName();
+			int dim;
+			if(s instanceof Membrane) {
+				dim = 2;
+			} else {
+				dim = 3;
+			}
+			int volume = 12+i;	// TODO: some invented number to help us track it within the .net file
+			writer.println(name + "\t" + dim + "\t" + volume);
+		}
+		writer.println(END_COMPARTMENTS);
+		writer.println();
+	}
 	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
 		writer.println(BEGIN_PARAMETERS);
 		List<Parameter> paramList = rbmModelContainer.getParameterList();
@@ -225,11 +249,11 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 	}
-	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer) {
+	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean showCompartment ) {
 		writer.println(BEGIN_OBSERVABLES);
 		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
 		for (RbmObservable oo : observablesList) {
-			writer.println(RbmUtils.toBnglString(oo, true));
+			writer.println(RbmUtils.toBnglString(oo, showCompartment));
 		}
 		writer.println(END_OBSERVABLES);
 		writer.println();
