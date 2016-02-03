@@ -28,11 +28,11 @@
 		  
 -->
 <vcelldoc>
-<page title="Simulation Results Spatial Region of Interest (ROI)">
+<page title="Statistics">
 
 	
 	<introduction> 	
-	The user is able use the drawing tools to define spatial regions of interest and obtain tabular and graphed results (statistics) from such specified regions.
+	Drawing tools are used to define spatial regions of interest and obtain tabular and graphed results (statistics) from such specified regions.
 	
 	</introduction>
 	

@@ -11,12 +11,37 @@
           Before you commit, please try it out in browser first.
 -->
 <vcelldoc>
-<page title="Kymographs">
+<page title="Simulation Results Viewer Plots">
 
 
-<introduction>The kymograph tab, which displays line scans over time,
-will become active on the results panel once a line is
-drawn over the image data. The kymograph dialog displays the data in a visual image format where the distance of the line is plotted against time as well as in a multiple graph format. Two graphs dis- play the concentration of the selected variable plotted over distance and over time. These plots will update according to the position of the crosshair, which is created with the mouse, in the image data panel. In addition, each graph has a mouse menu feature for additional plot settings, see above.
+<introduction>
+<para>
+The <bold>Plot->Spatial</bold> menu-button item is enabled once you use the line or spline tools to define a region.  
+Select the created line or spline, select Plot->Spatial to display a plot of the data along the line or spline.  
+The graph is interactive; as you move the mouse over the graph, the coordinates are displayed in the bottom left corner.
+<imgReference target = "SimResLinePlot.png"/>
+</para>
+    
+<para>
+Select from plot or table of values display by selecting icons located in the lower right area of the dialog.
+</para>
+<para>
+The <bold>Plot->Time</bold> menu-button item is enabled once you use the point tool to define a point or series of points.  
+Select Plot->Time to view a line graph of currently selected simulation data variable at each timepoint over time.  
+Point coordinates are listed in the top left corner of the Time Plot frame.  
+Use the 'Y Axis' list to select 1 or more variables to plot.
+<imgReference target = "SimResTimePlot.png"/>
+</para>
+<para>
+Select from plot or table of values display by selecting icons located in the lower right area of the dialog.
+</para>
+<para>
+The <bold>Plot->Kymograph</bold> menu-button item is enabled once you use the line or spline tools to define a region.  
+The kymograph displays line scans over time as 2D image with the X axis representing distance along the ROI line and the Y axis representing time.
+Two graphs display the simulation data values of the kymograph with the top graph displaying the horizontal crosshair values (values along the ROI at 1 time point)
+and the bottom graph displaying the vertical crosshair data values (values along time at 1 ROI point).  
+These plots will update according to the position of the crosshair in the image data panel which can be moved by clicking the mouse or using the arrow keys.
+</para>
 </introduction>
 <appearance>
 <imgReference target = "SimResultsKymograph.png"/>
