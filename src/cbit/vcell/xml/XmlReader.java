@@ -4548,13 +4548,16 @@ private RbmObservable getRbmObservables(Element e, Model newModel) {
 	if(!t.equals(ot.name())) {
 		ot = RbmObservable.ObservableType.Species;
 	}
-	
 	Structure structure = null;
-	int size = newModel.getNumStructures();
-	if(size == 1) {
-		structure = newModel.getStructure(0);
-	} else if(size > 1) {
-		System.out.println("XMLReader: getRbmObservables: expected no more than one Structure.");
+	String structureName = e.getAttributeValue(XMLTags.StructureAttrTag);
+	if(structureName == null || structureName.isEmpty()) {	// the tag is missing
+		if(newModel.getStructures().length == 1) {
+			structure = newModel.getStructure(0);	// possible old single compartment model where we were not saving the structure for observable
+		} else {
+			throw new RuntimeException("XMLReader: structure missing for observable " + n);
+		}
+	} else {
+		structure = newModel.getStructure(structureName);
 	}
 	RbmObservable o = new RbmObservable(newModel, n, structure, ot);
 	
@@ -4575,7 +4578,7 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 	}
 	try {
 		boolean reversible = Boolean.valueOf(reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
-		String structureName = reactionRuleElement.getAttributeValue(XMLTags.StructureAttrTag, newModel.getStructures()[0].getName());
+		String structureName = reactionRuleElement.getAttributeValue(XMLTags.StructureAttrTag, newModel.getStructures()[0].getName());	// TODO: probably incorrect?
 		Structure structure = newModel.getStructure(structureName);
 		ReactionRule reactionRule = new ReactionRule(newModel, n, structure, reversible);
 		String reactionRuleLabel = reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now
