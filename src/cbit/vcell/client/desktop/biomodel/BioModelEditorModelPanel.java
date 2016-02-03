@@ -774,6 +774,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							String text = "<html>";
 							for(int i=0; i< rr.getReactantPatterns().size(); i++) {
 								ReactantPattern rp = rr.getReactantPattern(i);
+								if(rp.getStructure() != null && !rp.getSpeciesPattern().getMolecularTypePatterns().isEmpty()) {
+									text += "@" + rp.getStructure().getName() + ":";
+								}
 								text += RbmTableRenderer.toHtml(rp.getSpeciesPattern(), isSelected);
 								if(i<rr.getReactantPatterns().size()-1) {
 									text += "+";
@@ -786,6 +789,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							}
 							for(int i=0; i< rr.getProductPatterns().size(); i++) {
 								ProductPattern pp = rr.getProductPattern(i);
+								if(pp.getStructure() != null && !pp.getSpeciesPattern().getMolecularTypePatterns().isEmpty()) {
+									text += "@" + pp.getStructure().getName() + ":";
+								}
 								text += RbmTableRenderer.toHtml(pp.getSpeciesPattern(), isSelected);
 								if(i<rr.getProductPatterns().size()-1) {
 									text += "+";
@@ -1200,18 +1206,48 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 					return;
 				}
-				RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
-				bioModel.getModel().getRbmModelContainer().addObservable(o);
-				SpeciesPattern sp = new SpeciesPattern();
-				o.addSpeciesPattern(sp);
-				newObject = o;
+				if( bioModel.getModel().getNumStructures() == 1) {
+					RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules);
+					bioModel.getModel().getRbmModelContainer().addObservable(o);
+					SpeciesPattern sp = new SpeciesPattern();
+					o.addSpeciesPattern(sp);
+					newObject = o;
+				} else if( bioModel.getModel().getNumStructures() > 1) {
+					final JPopupMenu menu = new JPopupMenu("Choose compartment");
+					for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+						Structure s = bioModel.getModel().getStructure(i);
+						String sName = s.getName();
+						JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+						menu.add(menuItem);
+						menuItem.addActionListener(new ActionListener() {
+							public void actionPerformed(ActionEvent e) {
+								RbmObservable o = bioModel.getModel().getRbmModelContainer().createObservable(RbmObservable.ObservableType.Molecules, null, s);
+								o.setStructure(s);
+								try {
+									bioModel.getModel().getRbmModelContainer().addObservable(o);
+								} catch (ModelException | PropertyVetoException e1) {
+									e1.printStackTrace();
+									throw new RuntimeException(e1.getMessage(), e1);
+								}
+								SpeciesPattern sp = new SpeciesPattern();
+								o.addSpeciesPattern(sp);
+								newObject = o;
+								if (newObject != null) {
+									for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+										if (currentSelectedTableModel.getValueAt(i) == newObject) {
+											currentSelectedTable.setRowSelectionInterval(i, i);
+											break;
+										}
+									}
+								}
+							}
+						});
+					}
+					menu.show(newButton, 0, newButton.getHeight());
+				}
 			}
 		} else if (currentSelectedTable == structuresTable) {
 			try {
-				if(bioModel.getModel().getRbmModelContainer().hasRules()) {
-					PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
-					return;
-				}
 				Feature feature = bioModel.getModel().createFeature();
 				newObject = feature;
 			} catch (Exception e) {
@@ -1237,54 +1273,74 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 	}
 	private void newButton2Pressed() throws ModelException, PropertyVetoException {
 		computeCurrentSelectedTable();
-		Object newObject = null;
 		if (currentSelectedTable == reactionsTable) {
 			if(bioModel.getModel().getRbmModelContainer().getMolecularTypeList().isEmpty()) {
 				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustBeRuleBased);
 				return;
 			}
-			if(bioModel.getModel().getStructures().length != 1) {
-				PopupGenerator.showInfoDialog(this, VCellErrorMessages.OneStructureOnly);
-				return;
-			}
-			ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule(bioModel.getModel().getStructure(0));
-			if(rr != null) {
-				try {
-				rr.setReversible(false);
-				bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
-				SpeciesPattern sp = new SpeciesPattern();
-				ReactantPattern rp = new ReactantPattern(sp, rr.getStructure());
-				rr.addReactant(rp);
-				sp = new SpeciesPattern();
-				ProductPattern pp = new ProductPattern(sp, rr.getStructure());
-				rr.addProduct(pp);
-				newObject = rr;
-				} catch (Exception e){
-					e.printStackTrace();
-					DialogUtils.showErrorDialog(this, e.getMessage(), e);
+			if( bioModel.getModel().getNumStructures() == 1) {
+				Structure s  = bioModel.getModel().getStructure(0);
+				newObject = makeReactionRule(s);
+				if (newObject != null) {
+					for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+						if (currentSelectedTableModel.getValueAt(i) == newObject) {
+							currentSelectedTable.setRowSelectionInterval(i, i);
+							break;
+						}
+					}
 				}
-			} else {
-				throw new RuntimeException("Reaction Rule is null");
+			} else if( bioModel.getModel().getNumStructures() > 1) {
+				final JPopupMenu menu = new JPopupMenu("Choose compartment");
+				for(int i=0; i<bioModel.getModel().getNumStructures(); i++) {
+					Structure s = bioModel.getModel().getStructure(i);
+					String sName = s.getName();
+					JMenuItem menuItem = new JMenuItem("In " + s.getTypeName() + " " + sName);
+					menu.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							newObject = makeReactionRule(s);
+							if (newObject != null) {
+								for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
+									if (currentSelectedTableModel.getValueAt(i) == newObject) {
+										currentSelectedTable.setRowSelectionInterval(i, i);
+										break;
+									}
+								}
+							}
+						}
+					});
+				}
+				menu.show(newButton2, 0, newButton2.getHeight());
 			}
 		}
-		if (newObject != null) {
-			for (int i = 0; i < currentSelectedTableModel.getRowCount(); i ++) {
-				if (currentSelectedTableModel.getValueAt(i) == newObject) {
-					currentSelectedTable.setRowSelectionInterval(i, i);
-					break;
-				}
+	}
+	private Object makeReactionRule(Structure structure) {
+		ReactionRule rr = bioModel.getModel().getRbmModelContainer().createReactionRule(structure);
+		if(rr != null) {
+			try {
+			rr.setReversible(false);
+			bioModel.getModel().getRbmModelContainer().addReactionRule(rr);
+			SpeciesPattern sp = new SpeciesPattern();
+			ReactantPattern rp = new ReactantPattern(sp, rr.getStructure());
+			rr.addReactant(rp);
+			sp = new SpeciesPattern();
+			ProductPattern pp = new ProductPattern(sp, rr.getStructure());
+			rr.addProduct(pp);
+			return rr;
+			} catch (Exception e){
+				e.printStackTrace();
+				DialogUtils.showErrorDialog(this, e.getMessage(), e);
 			}
+		} else {
+			throw new RuntimeException("Reaction Rule is null");
 		}
+		return null;
 	}
 
 	private void newMemButtonPressed() {
 		computeCurrentSelectedTable();
 		Object newObject = null;
 		if (currentSelectedTable == structuresTable) {
-			if(bioModel.getModel().getRbmModelContainer().hasRules()) {
-				PopupGenerator.showInfoDialog(this, VCellErrorMessages.MustNotBeRuleBased);
-				return;
-			}
 			try {
 				Membrane membrane = bioModel.getModel().createMembrane();
 				newObject = membrane;

@@ -117,6 +117,7 @@ import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 /**
  * Insert the type's description here.
@@ -998,7 +999,20 @@ private void updateShape() {
 					}
 				});
 			}
-			
+//			JMenu compartmentMenuItem = new JMenu("Specify structure");
+//			popupFromShapeMenu.add(compartmentMenuItem);
+//			compartmentMenuItem.removeAll();
+//			for (final Structure struct : bioModel.getModel().getStructures()) {
+//				JMenuItem menuItem = new JMenuItem(struct.getName());
+//				compartmentMenuItem.add(menuItem);
+//				menuItem.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						String nameStruct = e.getActionCommand();
+//						Structure struct = bioModel.getModel().getStructure(nameStruct);
+//						fieldSpeciesContext.setStructure(struct);
+//					}
+//				});
+//			}
 		} else if(selectedObject instanceof MolecularTypePattern) {
 			MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 			

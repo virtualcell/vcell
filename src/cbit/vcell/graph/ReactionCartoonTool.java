@@ -1519,10 +1519,6 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(getModel().getRbmModelContainer().hasRules()) {
-								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
-								return;
-							}
 							addStructure(false,selectedContainerDropTargetInfo);
 						}
 					});
@@ -1531,10 +1527,6 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 				    menuItem.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if(getModel().getRbmModelContainer().hasRules()) {
-								PopupGenerator.showInfoDialog(getGraphPane(), VCellErrorMessages.MustNotBeRuleBased);
-								return;
-							}
 							addStructure(true,selectedContainerDropTargetInfo);
 						}
 					});
