@@ -80,7 +80,7 @@ public class ModelRuleFactory {
 
 		@Override
 		public String getReactionBNGLShort() {
-			return RbmUtils.toBnglStringShort(reactionRule);
+			return RbmUtils.toBnglStringShort(reactionRule, false);
 		}
 
 		@Override

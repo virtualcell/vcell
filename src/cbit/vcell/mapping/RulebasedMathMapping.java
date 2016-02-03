@@ -865,7 +865,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}
         System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(forwardRuleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
         ReactionRuleDirection forward = ReactionRuleDirection.forward;
-		System.out.println(RbmUtils.toBnglStringShort(reactionRule)+", direction="+forward);
+		System.out.println(RbmUtils.toBnglStringShort(reactionRule, true)+", direction="+forward);
 
         MathRuleFactory mathRuleFactory = new MathRuleFactory();
         MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);

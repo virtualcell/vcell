@@ -59,8 +59,12 @@ public class RbmNetworkGenerator {
 	private static final String END_PARAMETERS = "end parameters";
 	private static final String BEGIN_PARAMETERS = "begin parameters";
 
-	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, boolean ignoreFunctions, 
-			boolean applyApplicationFilters) {
+	/*
+	 * Used for exporting to file with extension .bngl
+	 */
+	public static void writeBngl(SimulationContext simulationContext, PrintWriter writer, 
+			boolean ignoreFunctions, 					// if true, we cheat and transform all functions into constant parameters (always false)
+			boolean applyApplicationFilters) {			// if true, we only export those functions enabled in the Application / Specifications / Reaction tab
 		Model model = simulationContext.getModel();
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		
@@ -80,10 +84,13 @@ public class RbmNetworkGenerator {
 		RbmNetworkGenerator.writeNetworkConstraints(writer, rbmModelContainer, simulationContext, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		writer.println();
 	}
-	// modified bngl writer for special use restricted to network transform functionality
+	/*
+	 * modified bngl writer for special use restricted to network / rulebased transformer functionality
+	 */
 	public static void writeBngl_internal(SimulationContext simulationContext, PrintWriter writer,
 			Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap, 
-			Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
+			Map<FakeSeedSpeciesInitialConditionsParameter, 
+			Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
 			NetworkGenerationRequirements networkGenerationRequirements) {
 		
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
@@ -99,13 +106,11 @@ public class RbmNetworkGenerator {
 		List<FakeSeedSpeciesInitialConditionsParameter> fakeParameterList = new ArrayList<FakeSeedSpeciesInitialConditionsParameter>();
 		List<String> seedSpeciesList = new ArrayList<String>();
 		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
-//		Long uuid = UUID.randomUUID().getMostSignificantBits();
-//		if(uuid<0) uuid = -uuid;
-//		String nameRoot = "p" + uuid;
 		for(int i=0; i<speciesContexts.length; i++) {
 			SpeciesContext sc = speciesContexts[i];
-			if(!sc.hasSpeciesPattern()) { continue; }
-			
+			if(!sc.hasSpeciesPattern()) { 
+				continue;
+			}
 			SpeciesContextSpec scs = simulationContext.getReactionContext().getSpeciesContextSpec(sc);
 			Expression initialConcentration = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
 			
@@ -215,7 +220,7 @@ public class RbmNetworkGenerator {
 		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
 		for(SpeciesContext sc : speciesContexts) {
 			if(!sc.hasSpeciesPattern()) { continue; }
-			writer.println(RbmUtils.toBnglString(simulationContext, sc));
+			writer.println("@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(simulationContext, sc));
 		}
 		writer.println(END_SPECIES);
 		writer.println();
@@ -224,7 +229,7 @@ public class RbmNetworkGenerator {
 		writer.println(BEGIN_OBSERVABLES);
 		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
 		for (RbmObservable oo : observablesList) {
-			writer.println(RbmUtils.toBnglString(oo));
+			writer.println(RbmUtils.toBnglString(oo, true));
 		}
 		writer.println(END_OBSERVABLES);
 		writer.println();
@@ -253,7 +258,7 @@ public class RbmNetworkGenerator {
 				continue;		// we skip those rules which are disabled (excluded)
 				}
 			}
-			writer.println(RbmUtils.toBnglStringLong(rr));
+			writer.println(RbmUtils.toBnglStringLong(rr, true));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
@@ -265,7 +270,7 @@ public class RbmNetworkGenerator {
 			if (rrSpec.isExcluded()){
 				continue;		// we skip those rules which are disabled (excluded)
 			}
-			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule()));
+			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), false));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();

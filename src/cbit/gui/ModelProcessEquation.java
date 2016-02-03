@@ -132,7 +132,7 @@ private void computeEquationString() {
 		equationString = equationleftHand + " " + REACTION_GOESTO + " " + equationRightHand;
 	}else if (modelProcess instanceof ReactionRule){
 		ReactionRule reactionRuleEmbedded = (ReactionRule)modelProcess;
-		equationString = RbmUtils.toBnglStringShort(reactionRuleEmbedded);
+		equationString = RbmUtils.toBnglStringShort(reactionRuleEmbedded, false);
 	}
 }
 

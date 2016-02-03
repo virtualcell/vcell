@@ -388,11 +388,27 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;
 	}
+	public final ReactantPattern getReactantPattern(SpeciesPattern sp) {
+		for(ReactantPattern p : reactantPatterns) {
+			if(sp == p.getSpeciesPattern()) {
+				return p;
+			}
+		}
+		return null;
+	}
 	public final ReactantPattern getReactantPattern(int i) {
 		return reactantPatterns.get(i);
 	}
 	public final List<ProductPattern> getProductPatterns() {
 		return productPatterns;
+	}
+	public final ProductPattern getProductPattern(SpeciesPattern sp) {
+		for(ProductPattern p : productPatterns) {
+			if(sp == p.getSpeciesPattern()) {
+				return p;
+			}
+		}
+		return null;
 	}
 	public final ProductPattern getProductPattern(int i) {
 		return productPatterns.get(i);
@@ -1143,7 +1159,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if(getKineticLaw().getRateLawType().name().toLowerCase().contains(lowerCaseSearchText)){
 			return true;
 		}
-		if (RbmUtils.toBnglStringLong(this).toLowerCase().contains(lowerCaseSearchText)){
+		if (RbmUtils.toBnglStringLong(this, false).toLowerCase().contains(lowerCaseSearchText)){
 			return true;
 		}
 		return false;

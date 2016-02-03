@@ -1339,14 +1339,18 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
-	public static String toBnglStringShort(ReactionRule reactionRule) {
+	public static String toBnglStringShort(ReactionRule reactionRule, boolean showCompartment) {
 		StringBuilder buffer = new StringBuilder();
 		List<ReactantPattern> reactants = reactionRule.getReactantPatterns();
 		for (int i = 0;  i < reactants.size(); ++i) {
 			if (i > 0) {
 				buffer.append(" + ");
 			}
-			buffer.append(toBnglString(reactants.get(i).getSpeciesPattern()));
+			ReactantPattern rp = reactants.get(i);
+			if(showCompartment) {
+				buffer.append("@" + rp.getStructure().getName() + ":");
+			}
+			buffer.append(toBnglString(rp.getSpeciesPattern()));
 		}
 		buffer.append(reactionRule.isReversible() ? " <-> " : " -> ");
 		List<ProductPattern> products = reactionRule.getProductPatterns();
@@ -1354,7 +1358,11 @@ public class RbmUtils {
 			if (i > 0) {
 				buffer.append(" + ");
 			}
-			buffer.append(toBnglString(products.get(i).getSpeciesPattern()));
+			ProductPattern pp = products.get(i);
+			if(showCompartment) {
+				buffer.append("@" + pp.getStructure().getName() + ":");
+			}
+			buffer.append(toBnglString(pp.getSpeciesPattern()));
 		}
 		return buffer.toString();
 	}
@@ -1383,9 +1391,9 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
-	public static String toBnglStringLong(ReactionRule reactionRule) {
+	public static String toBnglStringLong(ReactionRule reactionRule, boolean showCompartment) {
 		String str = reactionRule.getName() + ":\t";
-		str += toBnglStringShort(reactionRule);
+		str += toBnglStringShort(reactionRule, showCompartment);
 		str += "\t\t";
 		if(reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate) != null) {
 			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate).infixBng();
@@ -1405,12 +1413,12 @@ public class RbmUtils {
 		return str;
 	}
 	
-	public static String toBnglStringLong_internal(ReactionRule reactionRule) {
+	public static String toBnglStringLong_internal(ReactionRule reactionRule, boolean showCompartment) {
 		String str = reactionRule.getName() + ":\t";
 		if(reactionRule.getReactantPatterns().isEmpty()) {
 			str += "0";
 		}
-		str += toBnglStringShort(reactionRule);
+		str += toBnglStringShort(reactionRule, showCompartment);
 		if(reactionRule.getProductPatterns().isEmpty()) {
 			str += " 0";	// this is the new syntax for Trash!!! 
 		}
@@ -1431,6 +1439,24 @@ public class RbmUtils {
 		}
 	}
 	
+	public static String toBnglString(SimulationContext sc, SpeciesContext speciesContext) {
+		SpeciesContextSpec scs = sc.getReactionContext().getSpeciesContextSpec(speciesContext);
+		Expression expression = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
+		String ret = toBnglString(speciesContext.getSpeciesPattern());
+		return ret  + "\t\t" + expression.infix();
+	}
+	
+	public static String toBnglString(RbmObservable observable, boolean showCompartment) {
+		String s = observable.getType() + "\t\t" + observable.getName() + "\t\t";
+		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
+			if(showCompartment) {
+				s += "@" + observable.getStructure().getName() + ":";
+			}
+			s += toBnglString(sp) + "\t";
+		}
+		return s;
+	}
+
 	public static String toBnglString(Parameter parameter, boolean bFunction) {
 		if (!bFunction){		// parameter
 			String str = parameter.getName() + "\t\t";
@@ -1619,20 +1645,4 @@ public class RbmUtils {
 			componentState.addPropertyChangeListener(propertyChangeListener);
 		}
 	}
-
-	public static String toBnglString(SimulationContext sc, SpeciesContext speciesContext) {
-		SpeciesContextSpec scs = sc.getReactionContext().getSpeciesContextSpec(speciesContext);
-		Expression expression = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
-		String ret = toBnglString(speciesContext.getSpeciesPattern());
-		return ret  + "\t\t" + expression.infix();
-	}
-	
-	public static String toBnglString(RbmObservable observable) {
-		String s = observable.getType() + "\t\t" + observable.getName() + "\t\t";
-		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
-			s += toBnglString(sp) + "\t";
-		}
-		return s;
-	}
-
 }

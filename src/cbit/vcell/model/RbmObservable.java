@@ -83,6 +83,9 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 	public Structure getStructure() {
 		return structure;
 	}
+	public void setStructure(Structure structure) {
+		this.structure = structure;
+	}
 
 	public final String getName() {
 		return name;

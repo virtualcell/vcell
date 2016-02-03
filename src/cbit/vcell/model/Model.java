@@ -1410,6 +1410,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return createObservable(type, null);
 		}
 		public RbmObservable createObservable(RbmObservable.ObservableType type, MolecularType mt) {
+			return createObservable(type, mt, null);
+		}
+		public RbmObservable createObservable(RbmObservable.ObservableType type, MolecularType mt, Structure structure) {
 			String name;
 			String nameRoot;
 			String namePostfix;
@@ -1429,10 +1432,9 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 				}	
 				count++;
 			}
-			// use structure (if only one ... else complain)
-			Structure structure = null;
+
 			int size = fieldStructures.length;
-			if(size > 0) {
+			if(size > 0 && structure == null) {
 				structure = getStructure(0);
 			}
 			RbmObservable observable = new RbmObservable(Model.this, name, structure, type);
@@ -3410,24 +3412,45 @@ public void removeStructure(Structure removedStructure) throws PropertyVetoExcep
 	}
 	
 	//Check that the feature is empty
+	String prefix = "Remove model compartment Error\n\nStructure to be removed : '"+removedStructure.getName()+"' : ";
 	String errorMessage = null;
 	for (int i=0;i<fieldReactionSteps.length;i++){
 	if (fieldReactionSteps[i].getStructure() == removedStructure){
 			errorMessage = "cannot contain Reactions";
-			break;
+			throw new RuntimeException(prefix + errorMessage+".");
 		}
 	}
 	for (int i=0;i<fieldSpeciesContexts.length;i++){
 	if (fieldSpeciesContexts[i].getStructure() == removedStructure){
 			errorMessage = "cannot contain Species";
-			break;
+			throw new RuntimeException(prefix + errorMessage+".");
 		}
 	}
-
-	if(errorMessage != null){
-		throw new RuntimeException("Remove model compartment Error\n\nStructure to be removed : '"+removedStructure.getName()+"' : "+errorMessage+".");
+	for (ReactionRule rr : getRbmModelContainer().getReactionRuleList()) {
+		if(rr.getStructure() == removedStructure) {
+			errorMessage = "cannot contain Reaction Rules";
+			throw new RuntimeException(prefix + errorMessage+".");
+		}
+		boolean found = false;
+		for(ReactantPattern rp : rr.getReactantPatterns()) {
+			if(rp.getStructure() == removedStructure) {
+				errorMessage = "cannot contain Reactant Patterns";
+				throw new RuntimeException(prefix + errorMessage+".");
+			}
+		}
+		for(ProductPattern pp : rr.getProductPatterns()) {
+			if(pp.getStructure() == removedStructure) {
+				errorMessage = "cannot contain Product Patterns";
+				throw new RuntimeException(prefix + errorMessage+".");
+			}
+		}
 	}
-
+	for (RbmObservable o : getRbmModelContainer().getObservableList()) {
+		if(o.getStructure() == removedStructure) {
+			errorMessage = "cannot contain Observables";
+			throw new RuntimeException(prefix + errorMessage+".");
+		}
+	}	
 	//
 	// remove this structure
 	//

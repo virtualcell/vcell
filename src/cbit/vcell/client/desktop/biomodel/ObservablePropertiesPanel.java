@@ -72,6 +72,7 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 import org.vcell.util.Compare;
@@ -759,6 +760,25 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 					}
 				});
 			}
+			JMenu compartmentMenuItem = new JMenu("Specify structure (for all)");
+			compartmentMenuItem.removeAll();
+			for (final Structure struct : bioModel.getModel().getStructures()) {
+				JMenuItem menuItem = new JMenuItem(struct.getName());
+				compartmentMenuItem.add(menuItem);
+				menuItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						String nameStruct = e.getActionCommand();
+						Structure struct = bioModel.getModel().getStructure(nameStruct);
+						observable.setStructure(struct);
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								observableTreeModel.populateTree();			// repaint tree
+								//observableTree.scrollPathToVisible(path);	// scroll back up to show the observable
+							}
+						});
+					}
+				});
+			}
 			JMenuItem deleteMenuItem = new JMenuItem("Delete Species Pattern");
 			deleteMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -777,6 +797,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			popupFromShapeMenu.add(deleteMenuItem);
 			popupFromShapeMenu.add(new JSeparator());
 			popupFromShapeMenu.add(getAddFromShapeMenu());
+			popupFromShapeMenu.add(compartmentMenuItem);
 			
 		} else if (selectedObject instanceof MolecularTypePattern) {
 			MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;

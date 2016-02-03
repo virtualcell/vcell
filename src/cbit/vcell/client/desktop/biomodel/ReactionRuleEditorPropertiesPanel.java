@@ -765,6 +765,26 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						}
 					});
 				}
+				JMenu compartmentMenuItem = new JMenu("Specify structure");
+				popupFromShapeMenu.add(compartmentMenuItem);
+				if(sp.getMolecularTypePatterns().isEmpty()) {
+					compartmentMenuItem.setEnabled(false);
+				}
+				compartmentMenuItem.removeAll();
+				for (final Structure struct : bioModel.getModel().getStructures()) {
+					JMenuItem menuItem = new JMenuItem(struct.getName());
+					compartmentMenuItem.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							String nameStruct = e.getActionCommand();
+							Structure struct = bioModel.getModel().getStructure(nameStruct);
+							ReactantPattern rp = reactionRule.getReactantPattern(sp);
+							rp.setStructure(struct);
+							productTreeModel.populateTree();
+							shapePanel.repaint();
+						}
+					});
+				}
 			} else if(selectedObject instanceof MolecularTypePattern) {		// move left / right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 				
@@ -906,6 +926,26 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 								mcp.setBondType(BondType.Possible);
 							}
 							sp.addMolecularTypePattern(molecularTypePattern);
+						}
+					});
+				}
+				JMenu compartmentMenuItem = new JMenu("Specify structure");
+				popupFromShapeMenu.add(compartmentMenuItem);
+				compartmentMenuItem.removeAll();
+				if(sp.getMolecularTypePatterns().isEmpty()) {
+					compartmentMenuItem.setEnabled(false);
+				}
+				for (final Structure struct : bioModel.getModel().getStructures()) {
+					JMenuItem menuItem = new JMenuItem(struct.getName());
+					compartmentMenuItem.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							String nameStruct = e.getActionCommand();
+							Structure struct = bioModel.getModel().getStructure(nameStruct);
+							ProductPattern pp = reactionRule.getProductPattern(sp);
+							pp.setStructure(struct);
+							productTreeModel.populateTree();
+							shapePanel.repaint();
 						}
 					});
 				}
