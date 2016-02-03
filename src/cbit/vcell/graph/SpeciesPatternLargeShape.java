@@ -31,6 +31,7 @@ import org.vcell.util.Issue;
 import cbit.vcell.client.desktop.biomodel.ObservablePropertiesPanel;
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.client.desktop.biomodel.ReactionRuleEditorPropertiesPanel;
+import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -295,11 +296,22 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	public void paintCompartment(Graphics g) {
 
+		Color structureColor = Color.black;
 		Structure structure = null;
 		if(owner instanceof ReactionRule && !speciesShapes.isEmpty()) {
-			structure = ((ReactionRule)owner).getStructure();
+			ReactionRule rr = (ReactionRule)owner;
+			ReactantPattern rp = rr.getReactantPattern(sp);
+			ProductPattern pp = rr.getProductPattern(sp);
+			if(rp != null) {
+				structure = rp.getStructure();
+			} else if(pp != null) {
+				structure = pp.getStructure();
+			} else {
+				structure = ((ReactionRule)owner).getStructure();
+			}
 		} else if(owner instanceof SpeciesContext && ((SpeciesContext)owner).hasSpeciesPattern()) {
-				structure = ((SpeciesContext)owner).getStructure();			
+				structure = ((SpeciesContext)owner).getStructure();
+				structureColor = Color.gray;
 		} else if(owner instanceof RbmObservable && !speciesShapes.isEmpty()) {
 				structure = ((RbmObservable)owner).getStructure();			
 		} else {
@@ -329,7 +341,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		}
 		Font font = fontOld.deriveFont(Font.BOLD);
 		g.setFont(font);
-		g.setColor(Color.black);
+		g.setColor(structureColor);
 		g2.drawString(name, xPos-4, yPos+48);
 		
 		g2.setFont(fontOld);
