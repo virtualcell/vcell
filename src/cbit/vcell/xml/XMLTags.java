@@ -566,6 +566,8 @@ public class XMLTags {
 	public static final String RbmObservableTag = "Observable";
 	public static final String RbmObservableTypeTag = "ObservableType";
 	public static final String RbmReactionRuleTag = "ReactionRule";
+	public static final String RbmReactantPatternTag = "ReactantPattern";
+	public static final String RbmProductPatternTag = "ProductPattern";
 	public static final String RbmNetworkConstraintsTag = "NetworkConstraints";
 	public static final String RbmMaxIterationTag = "RbmMaxIteration";
 	public static final String RbmMaxMoleculesPerSpeciesTag = "RbmMaxMoleculesPerSpecies";
