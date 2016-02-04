@@ -36,7 +36,7 @@ import cbit.vcell.model.SpeciesContext;
 
 public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
 	
-	private static final int baseWidth = 25;
+	private static final int baseWidth = 38;
 	private static final int baseHeight = 30;
 	private static final int cornerArc = 30;
 
@@ -289,7 +289,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		
 		if(mt == null && mtp == null) {		// plain species context
 			Color exterior;
-			if(owner == null) {
+			if(owner == null) {						// for plain species, we just draw a circle based on height!!! we ignore width!!!
 				exterior = Color.red.darker();		// error
 			} else {
 				exterior = Color.green.darker().darker();		// plain species

@@ -327,11 +327,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Font fontOld = g2.getFont();
 			
 		Color darker = Color.gray;	// a bit darker for border
-		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, 44, 60);
+		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, 44, 58);
 		g2.setColor(darker);
 		g2.draw(border);
 		Color lighter = new Color(224, 224, 224);
-		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, 44, 59);
+		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, 44, 57);
 		g2.setPaint(lighter);
 		g2.fill(filling);
 		
