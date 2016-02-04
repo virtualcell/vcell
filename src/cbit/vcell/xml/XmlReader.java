@@ -4718,25 +4718,47 @@ private void readOldRbmKineticsAttributes(Element reactionRuleElement, ReactionR
 
 	throw new RuntimeException("Kinetic law unsupported or missing. Must be Mass Action, Michaelis Menten or Saturable.");
 }
-
 private void getRbmReactantPatternsList(Element e, ReactionRule r, Model newModel) {
 	if (e != null ) {
-		List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
-		for (Element element : children) {
+		List<Element> rpChildren = e.getChildren(XMLTags.RbmReactantPatternTag, vcNamespace);
+		for (Element rpElement : rpChildren) {
+			Structure structure = null;
+			String structureName = rpElement.getAttributeValue(XMLTags.StructureAttrTag);
+			if(structureName == null || structureName.isEmpty()) {	// the tag is missing
+				throw new RuntimeException("XMLReader: structure missing for reaction rule pattern.");
+			} else {
+				structure = newModel.getStructure(structureName);
+			}
+			Element spe = rpElement.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+			SpeciesPattern s = getSpeciesPattern(spe, newModel);
+			if(s != null) { r.addReactant(new ReactantPattern(s, structure), false); }
+		}
+		// older models have the species pattern saved directly and using the structure or the rule
+		List<Element> spChildren = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+		for (Element element : spChildren) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
 			if(s != null) { r.addReactant(new ReactantPattern(s, r.getStructure()), false); }
-	}
+		}
 	}
 }
-/**
- * @param e may be null
- * @param r
- * @param newModel
- */
 private void getRbmProductPatternsList(Element e, ReactionRule r, Model newModel) {
 	if (e != null) {
-		List<Element> children = GenericUtils.convert(e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace), Element.class);
-		for (Element element : children) {
+		List<Element> ppChildren = e.getChildren(XMLTags.RbmProductPatternTag, vcNamespace);
+		for (Element ppElement : ppChildren) {
+			Structure structure = null;
+			String structureName = ppElement.getAttributeValue(XMLTags.StructureAttrTag);
+			if(structureName == null || structureName.isEmpty()) {	// the tag is missing
+				throw new RuntimeException("XMLReader: structure missing for reaction rule pattern.");
+			} else {
+				structure = newModel.getStructure(structureName);
+			}
+			Element spe = ppElement.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
+			SpeciesPattern s = getSpeciesPattern(spe, newModel);
+			if(s != null) { r.addProduct(new ProductPattern(s, structure), false); }
+		}
+		// older models have the species pattern saved directly and using the structure or the rule
+		List<Element> spChildren = GenericUtils.convert(e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace), Element.class);
+		for (Element element : spChildren) {
 			SpeciesPattern s = getSpeciesPattern(element, newModel);
 			if(s != null) { r.addProduct(new ProductPattern(s, r.getStructure()), false); }
 		}
