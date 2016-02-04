@@ -14,7 +14,7 @@ public abstract class ReactionRuleParticipant implements ModelProcessParticipant
 		this.speciesPattern = speciesPattern;
 		this.structure = structure;
 		if (structure == null){
-			System.out.println("null structure in ReactionRulePattern");
+			throw new RuntimeException("Null structure for ReactionRule Participant");
 		}
 	}
 	
@@ -26,6 +26,9 @@ public abstract class ReactionRuleParticipant implements ModelProcessParticipant
 		return this.structure;
 	}
 	public void setStructure(Structure structure){
+		if (structure == null){
+			throw new RuntimeException("Null structure for ReactionRule Participant");
+		}
 		this.structure = structure;
 	}
 	

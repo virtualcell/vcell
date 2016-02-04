@@ -3675,20 +3675,19 @@ private Element getXML(ReactionRule param) {
 //	if (param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)!=null){
 //		e.setAttribute(XMLTags.RbmSaturableVmaxTag, mangleExpression(param.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.SaturableVmax)));
 //	}
-	
 	List<ReactantPattern> reactantPatterns = param.getReactantPatterns();
 	if(!reactantPatterns.isEmpty()) {
 		Element reactantPatternsListElement = new Element(XMLTags.RbmReactantPatternsListTag);
-		for (ReactantPattern sp : reactantPatterns) {
-			reactantPatternsListElement.addContent(getXML(sp.getSpeciesPattern()));
+		for (ReactantPattern rp : reactantPatterns) {
+			reactantPatternsListElement.addContent(getXML(rp));
 		}
 		e.addContent(reactantPatternsListElement);
 	}
 	List<ProductPattern> productPatterns = param.getProductPatterns();
 	if(!productPatterns.isEmpty()) {
 		Element productPatternsListElement = new Element(XMLTags.RbmProductPatternsListTag);
-		for (ProductPattern sp : productPatterns) {
-			productPatternsListElement.addContent(getXML(sp.getSpeciesPattern()));
+		for (ProductPattern pp : productPatterns) {
+			productPatternsListElement.addContent(getXML(pp));
 		}
 		e.addContent(productPatternsListElement);
 	}
@@ -3696,9 +3695,21 @@ private Element getXML(ReactionRule param) {
 	
 	//Add kinetics		
 	e.addContent( getXML(param.getKineticLaw()) );
-	
 	return e;
 }
+private Element getXML(ReactantPattern param) {
+	Element e = new Element(XMLTags.RbmReactantPatternTag);
+	e.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
+	e.addContent(getXML(param.getSpeciesPattern()));
+	return e;
+}
+private Element getXML(ProductPattern param) {
+	Element e = new Element(XMLTags.RbmProductPatternTag);
+	e.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
+	e.addContent(getXML(param.getSpeciesPattern()));
+	return e;
+}
+
 //private Element getXMLShort(SpeciesPattern param) {
 //	Element e = new Element(XMLTags.RbmSpeciesPatternTag);
 //	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getId()));
