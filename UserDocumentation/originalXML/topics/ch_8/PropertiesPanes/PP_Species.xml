@@ -3,34 +3,34 @@
 <page title="Species Properties Pane" target="PP_Species">
 
 	<introduction>
-	The user can edit Species name, Linked Pathway Object(s) (a list of items linked to selected species, 
-		see <link target="PathwayOverview">Pathway overview</link>) and annotations (user notes associated with selected species).
+	The species properties pane allows editing of the Species name, shows Linked Pathway Object(s) (a list of items linked to selected species, see <link target="PathwayOverview">Pathway overview</link>) and provides an annotations box.  	
+<para> For rule-based models, a graphical editor enables the user to specify and edit the molecular details of <link target = "SpeciesTabView">Species</link> using drop-down menus in the <bold>Object Properites</bold> pane. </para>
 
-	<para>The molecular details of <link target = "SpeciesTabView">Species</link> can be specified and edited using 
-	mouse right click in the bottom <bold>Object Properites</bold> pane. </para>
-			<imgReference target = "PP_CompositeSpecies_defined.PNG"/>		
 	</introduction>
 	
 	<appearance>
+			<imgReference target = "PP_CompositeSpecies_defined.PNG"/>		
 	</appearance>
 	
 	<operations>
-	<bold>Species specification</bold>
-	Using right mouse click, a user is able to
-		<list>
-			<item>Specify molecules that compose species
-			<imgReference target = "PP_CompositeSpecies_start.PNG"/>			
-			<imgReference target = "PP_CompositeSpecies_new.PNG"/></item>
-			<item>After molecules are added, possible issues are highlighted in red (see also 3 errors in problems tab - 
-				two errors because two binding sites have unspecified states, one error because molecules are not connected).
-			<imgReference target = "PP_CompositeSpecies_error.PNG"/></item>
-			<item>Specify how molecules are connected by mouse right click on binding site shape:
-			<imgReference target = "PP_CompositeSpecies_bond1.PNG"/></item>
-			<item>Specify states for binding sites by mouse right click on state shape. 
-				Note that the number of errors is down to one - because molecules are already connected and
-				one only one site has unspecified states.
-			<imgReference target = "PP_CompositeSpecies_site.PNG"/></item>
-		</list>
+	
+	<para><bold>Specify a molecule</bold> created in the <link target = "Molecules">Molecules table</link> that compose species in rule-based models.</para>
+			<imgReference target = "PP_CompositeSpecies_start.PNG"/>
+			<imgReference target = "PP_CompositeSpecies_new.PNG"/>
+
+	<para>Upon adding a molecule, if additional information is required the species are highlighted in red and additionally errors may appear in the <link target = "PP_Problems">Problems tab</link>. In the figure shown, three errors were identified. Two errors arise from the fact that two binding sites have unspecified states; one error arises because molecules within the species are not connected with a bond.</para>
+			<imgReference target = "PP_CompositeSpecies_error.PNG"/>
+	<para>
+	</para>
+	<para><bold>Specify connections</bold> between molecules in the species by right click on binding site shape and selecting from the drop-down menu</para>
+			<imgReference target = "PP_CompositeSpecies_bond1.PNG"/>
+	<para>
+	</para>
+			
+	<para><bold>Specify states</bold> for binding sites by mouse right click on state shape and selecting the cognate binding site.  In the figure shown, the number of errors is now one; bounds between molecules are specified connected and 
+				only one site has unspecified states.</para>
+			<imgReference target = "PP_CompositeSpecies_site.PNG"/>
+
 	</operations>	
 
 </page>

@@ -2,44 +2,45 @@
 <vcelldoc>
 <page title="Observable Properties Pane" target="PP_Observables">
 
-	<introduction>The <link target = "Observables">Observables</link> are specified and edited using mouse right click in the bottom 
-		<bold>Object Properites</bold> pane. Only annotation can be typed in.	
-	</introduction>
+	<introduction><bold>The Observables Properties</bold> pane provides a graphical editor with drop-down menus to specify and edit <link target = "Observables">Observables</link> used in <def target = "def_RuleBased" label = "Rule-Based">Rule-Based</def> models.</introduction>
 	
 	<appearance>
-  	<list>
-  	<item>Each Observable consists of one or more <bold>Species Patters</bold>. Observable selects species that match at least one
-	of the species patterns (not both).</item> 
-	<item>Each species pattern defines common features of species. It consists of one 
-	or more of <link target = "Molecules">molecules</link> that compose
-	species. Molecules may or may not be explicitely connected, but must be present 
-	in every species selected by this species pattern.</item>
-	<item> Sites that have possible multiple states have yellow sign above site shape. 
-	Each molecule within species pattern may have some sites being undefined. If site  
-	does not have defined states (if states are possible) and its binding is not important, it is shown in white.
-	Sites may have defined binding - they can be declared to be explicitly bound to another site, 
-	declared unbound or declared bound to "some" (unspecified) site - then the site is shown in green with bond (if exists) 
-	shown in solid color. </item>
-	<item>Observable below describes the total phosphorylation of all EGFR molecules. The first species pattern selects all
-		species that have Y1068 being phosphorylated, the second - all species that have Y1148 phosphorylated.</item>
-	</list>
-  	  <imgReference target = "O0.PNG"/>
-  </appearance>
+	<list><item>Each Observable consists of one or more <bold>Species Patterns</bold>. Each observable selects species that match at least one of the species patterns (not both). </item>
+	<item>A species pattern defines common features of multiple species, and consists of one 
+	or more of the <link target = "Molecules">molecules</link> that compose a species. Molecules may or may not be explicitely connected, but must be present in every species selected by the species pattern. Sites that have multiple possible states are depicted with a small yellow ball above the site. </item>
+	<item>Each molecule within a species pattern may have sites left undefined. If a site does not have defined states (where states are possible) and the site can be in the bound or unbound state, the site is colored white.</item>
+	<item>An observable may identify sites with a defined binding state - i.e. the funciton can explicitly identify a site bound to another site, a site unbound, or a site bound to an unspecified (i.e. any other) site; in this case the site is colored green with a bond drawn as a colored line if one exists.</item>
+	<item> A site that has a defined state is always shown in green.</item>
+	<item>In the figure below, the Observable describes the total extent of phosphorylation of all EGFR molecules. The first species pattern selects all species that have the tyrosine at position 1068 (Y1068) phosphorylated, the second species pattern selects all species that have the tyrosine at position 1148 (Y1148) phosphorylated.</item>
+	</list>	  <imgReference target = "O0.PNG"/>
+  	<para></para>
+	</appearance>
 	
-<operations>
-	<bold>Observable specification</bold>
-		<list>
-			<item>Right click mouse on the shape to select the first molecule for the first species pattern.
+	<operations>
+	Once an observable has been added in the <link target = "Observables">Observable Table</link>, <bold>specify an Observable</bold> using the following steps.
+		<list>	
+			<item><bold>Add a molecule</bold> to the pattern by right click on the dotted shape and selecting the first molecule for the species pattern from the drop-down menu.
 			<imgReference target = "O1.PNG"/></item>
-			<item>Right click on molecular site or state will allow editing. Right click next to molecule will add another molecule. 			
-			<imgReference target = "O2.PNG"/></item>
-			<item>To add another species patter, right click below the first.
-			<imgReference target = "O3.PNG"/></item>
-			<item>Similarly to the first species pattern, clicking on shape will allow selection of molecule:
-			<imgReference target = "O4.PNG"/></item>
-			<item>The second species patter is edited through right click on site and state.
+			<item>
+			<bold>Edit</bold> the molecule site or state by right click on the molecular site or state to bring up a drop-down menu.
+			</item>
+			<item>
+			<bold>Add another molecule</bold> by right click next to molecule.
+			<imgReference target = "O2.PNG"/>
+			</item>
+			<item>
+			<bold>Add another species pattern</bold>by right click below the first species pattern.
+			<imgReference target = "O3.PNG"/>
+			</item>
+			<item>
+			<bold>Specify the second species pattern</bold> as for the first species pattern; a right click on the dotted shape will bring up a drop-down menu from which a molecule can be selected:
+			<imgReference target = "O4.PNG"/>
+			</item>
+			<item>
+			<bold>Edit the second species pattern</bold> by right click on site to bring up the drop-down menu to edit the state.
 			<imgReference target = "O5.PNG"/></item>
 		</list>
+		
 	</operations>
 
 </page>
