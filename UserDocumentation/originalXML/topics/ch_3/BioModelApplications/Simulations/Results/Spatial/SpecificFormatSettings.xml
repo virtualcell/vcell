@@ -4,9 +4,9 @@
 <page title="Specific Format Settings">
 
 <introduction>
-Image based (gif, jpeg, quicktime mov) and text based (spreadsheet csv) export formats will display an additional dialog when the 'start export' button is pressed.  
+<bold>Image</bold> based (gif, jpeg, quicktime mov) and <bold>text</bold> based (spreadsheet csv) export formats will display an additional dialog when the 'start export' button is pressed.  
 The dialog displays additional controls that alter the appearance or structure of the final export file.  
-Mesh based(vtk, ucd) have no additional dialogue.
+<bold>Point/Polygon</bold> based (vtk, ucd) formats have no additional dialogue.
 </introduction>
 
 <appearance>
@@ -68,6 +68,34 @@ will display a summary of the settings you have chosen and give information abou
 
 <bold>Text Based (spreadsheet csv) </bold> settings dialogue
 <imgReference target = "SimResultAsciiSettings.png"/>
+<list>
+<item><bold>Variable values </bold> 
+Saves file as comma separated text of simulation data values.  
+For 'slice' exports, the values will be arranged in a row/column grid corresponding to the x,y values of the slice.  
+For 'User ROI' exports, the values are saved as a row of values sampled by the ROI.
+</item>
+<item><bold>Particle data </bold> 
+Enabled for 'Spatial Stochastic (smoldyn solver)' simulation data.  
+Saves file as comma separated text of the x,y,z location of each 'particle' for each simulation timepoint.  
+GUI reference (Simulations tab->Edit Simulation button->Solver tab->integrator menu-button->smoldyn, then under 'advanced solver options' check box 'save particle files').  
+See 'Settings for Spatial Stochastic Solver' in <link target = "simulationEditor">Simulation Editor</link>.
+</item>
+<item><bold>switch rows/columns </bold> 
+Transpose the ordering of data values in the output file.
+</item>
+<item><bold>Export multiple simulations together </bold> 
+Enabled if the 'MathModel' or 'BioModel application' parent of the simulation contains other simulations.  
+Select check-box, click 'Select simulations', choose additional simulations.  
+Data will be exported from the additional simulations and saved in the export file using the same settings for the current export.  
+Check-box <bold>CSV Time-Sim-Var</bold> is used to change the ordering of simulation data in the export file.  
+Time-Sim-Var ordering may be preferable depending on the users needs.
+</item>
+<item><bold>Export parameter scans together </bold> </item>
+Enabled if the simulation has any parameter scans defined.  
+Select check-box, click 'Select Param Scans...', choose scans. 
+Exports all selected parameter scan data together in the same file using the current export settings.  
+See 'Parameters' in <link target = "simulationEditor">Simulation Editor</link> for a description of parameter scans. 
+</list>
 </appearance>
 
 <operations>
