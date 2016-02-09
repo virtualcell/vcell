@@ -6,7 +6,7 @@
 	
 	<introduction>
 	Results from simulation runs are automatically stored on the remote database server.  
-	Simulation results may be exported in different formats including movie, image, spreadsheet, mesh and raw file types.  
+	Simulation results may be exported in different formats including movie, image, spreadsheet, polygon and raw file types.  
 	Both volume and membrane data can be exported depending on the file format chosen.  
 	Exporting image or movie based formats will use the color scaling set in the 
 	<link target = "SimResSpatialSliceView">View Data</link> panel to convert 'data values' to 'pixel colors'.
@@ -18,15 +18,15 @@
 	
 	
 	<operations>
-	<bold>Export Data panel major areas</bold>
+	<bold>Export Data Panel</bold>
 	<list>
-	<item><bold>Export File Format </bold>
-	Choose from spreadsheet comma delimited ascii (*.csv), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), mesh vtk or ucd (*.vtk,*.ucd)</item>
-	<item><bold>Volume/Membrane Variables - </bold>
+	<item><bold>Export Format </bold>
+	Choose from spreadsheet comma delimited ascii (*.csv), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), polygon vtk or ucd (*.vtk,*.ucd)</item>
+	<item><bold>Define Export Data Variables </bold> 
 	Select one or more volume and/or membrane variables from the list to export depending on the file format chosen.</item>
-	<item><bold>Data Range </bold>
-	Select ROI on mesh (user defined lines and points from 'View Data'), 2D slice of mesh (current from 'View Data'), full (all mesh points).</item>
-	<item><bold>Time Interval </bold>
+	<item><bold>Define Export Data Range </bold> 
+	Select 'User ROI from...' (user defined lines and points from 'View Data'), 'Current slice from...' (from 'View Data' slice), full (all simulation data points).</item>
+	<item><bold>Define Export Time Interval </bold> 
 	Select simulation timepoints, begin time (top slider) and end time (bottom slider)</item>
 	<item><bold>Start Export </bold> 
 	Display any additional format setting dialogs depending on export file type (see <link target = "SpecificFormatSettings">Specific Format Settings</link>).  
@@ -35,7 +35,7 @@
 	Display a 'save' dialog to the user once the export file has been created.
 	</item>
 	<item><bold>Export Jobs </bold> 
-	Displays status of the current export request.
+	Displays status of export file creation.
 	</item>
 	</list>
 	
@@ -57,8 +57,8 @@
 	<item><bold>Nearly raw raster data (*.nrrd) </bold> 
 	Used for 'Full' to export data values in a multi-dimension format that can be read by programs such as 'ImageJ' (http://imagej.nih.gov/) for additional numerical analysis and display.
 	</item>
-	<item><bold>VTK(Visualization Toolkit) and UCD files (*.vtk,*.ucd) </bold> 
-	Used for 'Full' to export data values in a multi-dimension format that also contains the location in space of each value based the simulation spatial geometry(mesh).  
+	<item><bold>VTK (http://www.vtk.org) and UCD (Unstructured Cell Data) files (*.vtk,*.ucd) </bold> 
+	Used for 'Full' to export data values in a polygon format (volume or surface) for each value based the simulation spatial geometry (mesh).  
 	Programs such as 'VisIt' (http://visit.llnl.gov/) and 'ParaView' (http://www.paraview.org/) offer additional visualization and analysis outside of VCell.
 	</item>
 	</list>
