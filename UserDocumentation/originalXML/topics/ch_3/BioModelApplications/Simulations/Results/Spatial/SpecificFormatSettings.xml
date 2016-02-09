@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<vcelldoc>
+<page title="Specific Format Settings">
+
+<introduction>
+Image based (gif, jpeg, quicktime mov) and text based (spreadsheet csv) export formats will display an additional dialog when the 'start export' button is pressed.  
+The dialog displays additional controls that alter the appearance or structure of the final export file.  
+Mesh based(vtk, ucd) have no additional dialogue.
+</introduction>
+
+<appearance>
+<bold>Image Based (gif, jpeg, quicktime mov) </bold> settings dialog
+<imgReference target = "SimResultMovieSettings.png"/>
+
+<list>
+<item><bold>Encoding Format </bold> 
+setting will be 'JPEG' for jpeg image and QuickTime movies.  The setting will be 'GIF' for gif images.
+</item>
+<item><bold>File Compression</bold> 
+slider is enabled for jpeg and QuickTime formats.  
+Moving the slider to any position other than 'lossless' will create smaller export files at the expense of image quality.  
+The slider is disabled for GIF image export as that format always uses 'lossless' compression.
+</item>
+<item><bold>Variables Display Composition </bold> 
+is enabled if more than 1 variable has been chosen for export.  
+The 'Separate' button tells the exporter to create a separate export file for each variable chosen to export.  
+The 'Combined' button tells the exporter to create a 'montage' of all the variable images in one export file.
+</item>
+<item><bold>QuickTime Format </bold> 
+is enabled for QuickTime format type.  
+The 'Regular' button creates a normal QuickTime movie, 1 image for each frame of the movie.  
+The 'QTVR' button will tell the exporter to create a specially format export file readable by QuickTime players.  
+This format allows the player to display multiple images at each movie time point controllable by the user (see Apple QuickTime QTVR) for more information).
+</item>
+<item><bold>Volume Var Membrane Outline Thickness </bold> 
+is always enabled.    
+Setting the slider to 'Hide' will disable the rendering of a membrane outline to the slice plane being exported.
+Numerical slider values will cause the rendering of membrane outlines the same way as they are viewed in the Slice Data Viewer.
+</item>
+<item><bold>Variables Mirroring </bold> 
+is always enabled.  
+For settings other than 'No mirroring', tells the exported to copy and 'flip' each image along the selected axis.  
+This setting is a convenience to create 'whole' images from partial simulation geometries that were defined by the user to take advantage of spatial symmetries.
+</item>
+<item><bold>Image Size Scaling </bold> 
+is always enabled.  
+If 'from View Data zoom' is chosen the exported images will be the same as the View Data display.  
+Otherwise exported images horizontal and vertical axes will be stretched by the scaling value chosen.
+</item>
+<item><bold>Membrane Variable Thickness </bold> 
+is enabled when membrane variables are being exported.  
+The slider sets the size in pixels of the rendered membrane in a slice.
+</item>
+<item><bold>Movie Duration (seconds) </bold> 
+is enables when QuickTime mov format is chosen.  
+Sets the amount of time the movie will take to do one complete play-through.
+</item>
+<item><bold>Particle Mode </bold> 
+is enabled when a 'particle' variable is chosen to export.  
+Selecting 'Particles' will cause an image of 'spheres' rendered at their location in space for the exported slice and times.  
+'Histogram' exports an image where each slice pixel is colored according to how many particles where at the corresponding point in the mesh for each time
+</item>
+<item><bold>Continue...</bold> 
+will display a summary of the settings you have chosen and give information about the resulting export file size.
+</item>
+</list>
+
+<bold>Text Based (spreadsheet csv) </bold> settings dialogue
+<imgReference target = "SimResultAsciiSettings.png"/>
+</appearance>
+
+<operations>
+
+</operations>
+</page>
+</vcelldoc>
