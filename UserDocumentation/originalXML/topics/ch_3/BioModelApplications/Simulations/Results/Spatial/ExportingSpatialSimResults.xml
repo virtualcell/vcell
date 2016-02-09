@@ -5,9 +5,11 @@
 
 	
 	<introduction>
-	Results from simulations runs are automatically stored on the remote database server.  
+	Results from simulation runs are automatically stored on the remote database server.  
 	Simulation results may be exported in different formats including movie, image, spreadsheet, mesh and raw file types.  
-	Both volume and membrane data can be exported depending on the file format chosen.
+	Both volume and membrane data can be exported depending on the file format chosen.  
+	Exporting image or movie based formats will use the color scaling set in the 
+	<link target = "SimResSpatialSliceView">View Data</link> panel to convert 'data values' to 'pixel colors'.
 	</introduction>
 		
 	<appearance>
@@ -18,123 +20,49 @@
 	<operations>
 	<bold>Export Data panel major areas</bold>
 	<list>
-	<item><bold>Export File Format - </bold>
+	<item><bold>Export File Format </bold>
 	Choose from spreadsheet comma delimited ascii (*.csv), QuickTime(QT,QTVR) movie (*.mov), image gif or jpeg (*.gif,*.jpg), raw data format (*.nrrd), mesh vtk or ucd (*.vtk,*.ucd)</item>
 	<item><bold>Volume/Membrane Variables - </bold>
 	Select one or more volume and/or membrane variables from the list to export depending on the file format chosen.</item>
-	<item><bold>Data Range - </bold>
+	<item><bold>Data Range </bold>
 	Select ROI on mesh (user defined lines and points from 'View Data'), 2D slice of mesh (current from 'View Data'), full (all mesh points).</item>
-	<item><bold>Time Interval - </bold>
+	<item><bold>Time Interval </bold>
 	Select simulation timepoints, begin time (top slider) and end time (bottom slider)</item>
-	<item><bold>Start Export - </bold>
-	Display any additional format setting dialogs depending on export file type.  
+	<item><bold>Start Export </bold> 
+	Display any additional format setting dialogs depending on export file type (see <link target = "SpecificFormatSettings">Specific Format Settings</link>).  
 	Signal VCell server to create the specified file format and return it to the users local computer.  
 	Export progress is displayed at the bottom of the panel under 'Export Jobs'.  
 	Display a 'save' dialog to the user once the export file has been created.
+	</item>
+	<item><bold>Export Jobs </bold> 
+	Displays status of the current export request.
 	</item>
 	</list>
 	
 	<para>
 	<bold>Export Format Info</bold>
 	<list>
-	<item><bold>Comma delimited ASCII files (*.csv) - </bold>
+	<item><bold>Comma delimited ASCII files (*.csv) </bold> 
 	Used for 'User ROI...' and 'Current Slice..."' to export values (along ROI or slice XY grid) as text formatted numbers.  
 	Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  
 	Can be imported into common spreadsheet programs.
 	</item>
-	<item><bold>QuickTime(QT,QTVR) files (*.mov)- </bold>
+	<item><bold>QuickTime(QT,QTVR) files (*.mov) </bold> 
 	Used for 'Current Slice from "View Data"' or 'Full' to export values in Apple's ubiquitous movie file format.  
 	QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (http://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time).
 	</item>
 	<item><bold>Gif89a, Animated Gif and JPEG image files (*.gif,*.jpg)</bold>
 	Used for 'Current Slice from "View Data"' to export multiple 2D images in these standard formats.
 	</item>
-	<item><bold>Nearly raw raster data (*.nrrd)</bold>
+	<item><bold>Nearly raw raster data (*.nrrd) </bold> 
 	Used for 'Full' to export data values in a multi-dimension format that can be read by programs such as 'ImageJ' (http://imagej.nih.gov/) for additional numerical analysis and display.
 	</item>
-	<item><bold>VTK(Visualization Toolkit) and UCD files (*.vtk,*.ucd)</bold>
+	<item><bold>VTK(Visualization Toolkit) and UCD files (*.vtk,*.ucd) </bold> 
 	Used for 'Full' to export data values in a multi-dimension format that also contains the location in space of each value based the simulation spatial geometry(mesh).  
 	Programs such as 'VisIt' (http://visit.llnl.gov/) and 'ParaView' (http://www.paraview.org/) offer additional visualization and analysis outside of VCell.
 	</item>
 	</list>
 	</para>
-	
-
-
-<para>
-Additional Formatting: 
-You can switch the orientation of the rows and columns. Some spreadsheet pro- grams limit the number of columns to 256 columns. If your data should exceed this, you may opt to switch the rows and columns so the program will still read the data.
-</para>
-<para>
-<link target = "ExportingQuicktimeMovies"> Quick Time Movies</link>
-</para>
-<para>
-GIF Image Files: 
-GIF image files can be generated from either a single time point or from a range of time points and from one or more variables. One image file will be exported for each data point, for each variable. (TIFF and JPEG file options will be offered in the future.) These images are useful for creating images but are not a source for subsequent analysis.
-</para>
-<para>
-Compression mode: 
-Forced Compression (indexed 256 colors).
-</para>
-<para>
-Hide Membrane Outlines Display option for membrane.
-</para>
-<para>
-Extend images by mirroring: 
-Select the Mirroring option to extend the image size of symmetric data sets.
-</para>
-<para>
-Image Scale: 
-This allows for you to increase the size of the overall image set within the movie.
-</para>
-<para>
-Membrane Thickness: 
-This value sets the pixel thickness for membranes in the movie where 1 is the smallest visible pixel
-size (Hide Membrane Outline makes them invisible) and the pixel size increases with larger numbers.
-</para>
-<para>
-Animated GIF Files: 
-Animated GIF files can be generated from a selected range of time points.
-</para>
-<para>
-Loop infinitely: 
-Select loop option. Data may be exported as Comma Delimited ASCII files, Quick Time movie files,
-GIF89a image files, or animated GIF files.
-</para>
-<para>
-Compression mode: 
-Forced compression (indexed 256 colors).
-</para>
-<para>
-Hide Membranes Outlines Display option for membrane.
-</para>
-<para>
-Extend images by mirroring: 
-Select the Mirroring option to extend the image size of symmetric data sets.
-</para>
-
-<para>
-Image Scale: 
-This allows for you to increase the size of the overall image set within the
-movie.
-</para>
-<para>
-Membrane Thickness:
-This value sets the pixel thickness for membranes in the movie where 1 is the smallest visible pixel size (Hide Membrane Outline makes them invisi- ble) and the pixel size increases with larger numbers.
-</para>
-<para>
-Nearly Raw Raster Data: 
-Nearly Raw Raster Data (.nrrd) files support the export of multidimensional
-data. You can select to export a Single NRRD file, Fileset by Time or Fileset by Variable. These files can be viewed in ImageJ (See below)
-</para>
-<para>
-Making Use of NRRD: 
-ImageJ can import .nrrd files using the Bio-Formats library created by LOCI in conjunction with the Open Microscopy Environment. The plugin containing the LOCI ImageJ tools, which includes a BioFormats importer and exporter, is required to import the files into ImageJ. For data that contains more than 3 dimensions (e.g. x,y,z and time, or x,y,time , variable 1, variable2), you will also need the Image5D plugin, which allows you to easily scroll through multidimensional data.
-(Note: The first time a VCell user makes use of the BioFormats library, a dialog will appear prompting the user to give a one time approval for downloading and installation of this software due to licensing issues.)
-</para>
-<para>
-VTK Unstructured Grid export produces *.vtu files that can be opened with VisIt or ParaView or other VTK based image processing applications
-</para>
 	 </operations>
 	
 </page>
