@@ -80,8 +80,30 @@ public Expression getConcentration() {
  * Creation date: (1/13/2006 5:30:41 PM)
  * @return java.lang.String
  */
-public java.lang.String getName() {
-	return name;
+public String getName() {
+	return name;			// may contain compartment information
+}
+public String extractName() {
+	if(!name.contains("::")) {
+		return name;
+	} else {
+		String shortName = name.substring(name.indexOf("::")+2);
+		return shortName;
+	}
+}
+public boolean hasCompartment() {
+	if(!name.contains("::")) {		// we don't check for "@"
+		return false;
+	}
+	return true;
+}
+public java.lang.String extractCompartment() {
+	if(!name.contains("::")) {
+		return null;
+	} else {
+		String compartmentName = name.substring(1, name.indexOf("::"));
+		return compartmentName;
+	}
 }
 
 

@@ -43,16 +43,19 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.vcell.model.bngl.ASTSpeciesPattern;
 import org.vcell.model.bngl.BNGLParser;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.util.Matchable;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
@@ -129,14 +132,22 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				
 				String regex = "[^!]\\+";
 				String[] patterns = left.split(regex);
-				for (String sp : patterns) {
+				for (String spString : patterns) {
 					try {
-					BNGLParser parser = new BNGLParser(new StringReader(sp));
-					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
-					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
-					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
-					System.out.println(speciesPattern.toString());
-					reactionRule.addReactant(new ReactantPattern(speciesPattern, reactionRule.getStructure()));
+						// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
+						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+						speciesPattern.resolveBonds();
+						Feature structure = new Feature(null) {
+							public boolean compareEqual(Matchable obj) { return false; }
+							public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
+								setName0(name);
+							}
+							public String getTypeName() { return null; }
+							public int getDimension() { return 0; }
+						};
+						structure.setName(strStructure, false);
+					reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						Graphics panelContext = shapePanel.getGraphics();
@@ -150,17 +161,29 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				}
 				
 				patterns = right.split(regex);
-				for (String sp : patterns) {
+				for (String spString : patterns) {
 					try {
-					BNGLParser parser = new BNGLParser(new StringReader(sp));
-					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
-					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
-					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
-					for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
-						mtp.setParticipantMatchLabel("*");
-					}
-					System.out.println(speciesPattern.toString());
-					reactionRule.addProduct(new ProductPattern(speciesPattern, reactionRule.getStructure()));
+						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+						speciesPattern.resolveBonds();
+						Feature structure = new Feature(null) {
+							public boolean compareEqual(Matchable obj) { return false; }
+							public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
+								setName0(name);
+							}
+							public String getTypeName() { return null; }
+							public int getDimension() { return 0; }
+						};
+						structure.setName(strStructure, false);
+//					BNGLParser parser = new BNGLParser(new StringReader(sp));
+//					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
+//					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
+//					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+//					for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+//						mtp.setParticipantMatchLabel("*");
+//					}
+//					System.out.println(speciesPattern.toString());
+					reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						Graphics panelContext = shapePanel.getGraphics();

@@ -45,6 +45,7 @@ import org.vcell.util.gui.EditorScrollTable;
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
@@ -97,18 +98,24 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 				}
 				try {
 				SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, model);
+				String strStructure = RbmUtils.parseCompartment(inputString, model);
 				sp.resolveBonds();
 //				System.out.println(sp.toString());
-				SpeciesContext sc = new SpeciesContext(new Species("a",""), new Structure(null) {
+				Feature structure = new Feature(null) {
 					public boolean compareEqual(Matchable obj) { return false; }
-					public void setName(String name, boolean bFromGUI) throws PropertyVetoException { }
+					public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
+						setName0(name);
+					}
 					public String getTypeName() { return null; }
 					public int getDimension() { return 0; }
-				}, sp);
+				};
+				structure.setName(strStructure, false);
+
+				SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
 				Graphics panelContext = shapePanel.getGraphics();
 				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, panelContext, sc);
 				shapePanel.repaint();
-				} catch (ParseException e1) {
+				} catch (ParseException | PropertyVetoException e1) {
 					e1.printStackTrace();
 					Graphics panelContext = shapePanel.getGraphics();
 					spls = new SpeciesPatternLargeShape(20, 20, -1, panelContext, true);	// error (red circle)

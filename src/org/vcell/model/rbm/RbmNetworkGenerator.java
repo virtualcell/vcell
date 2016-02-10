@@ -126,7 +126,7 @@ public class RbmNetworkGenerator {
 			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
 			speciesEquivalenceMap.put(fakeSeedSpeciesParam, p);
 			
-			String modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
+			String modified = "@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(sc.getSpeciesPattern());
 			modified += "\t\t" + fakeSeedSpeciesParam.fakeParameterName;
 			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
 			fakeParameterList.add(fakeSeedSpeciesParam);
@@ -158,6 +158,7 @@ public class RbmNetworkGenerator {
 				}
 			}
 		}
+		RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
 		
 		writer.println(BEGIN_PARAMETERS);
 		// the fake parameters used for reaction rule kinetics
@@ -182,7 +183,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 		
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, false);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, true);
 		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext);
 		
 		writer.println(END_MODEL);	
@@ -294,7 +295,7 @@ public class RbmNetworkGenerator {
 			if (rrSpec.isExcluded()){
 				continue;		// we skip those rules which are disabled (excluded)
 			}
-			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), false));
+			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), true));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
