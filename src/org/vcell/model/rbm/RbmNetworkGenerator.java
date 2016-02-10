@@ -21,6 +21,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
@@ -41,6 +42,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -98,7 +100,8 @@ public class RbmNetworkGenerator {
 			Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap, 
 			Map<FakeSeedSpeciesInitialConditionsParameter, 
 			Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
-			NetworkGenerationRequirements networkGenerationRequirements) {
+			NetworkGenerationRequirements networkGenerationRequirements,
+			boolean showCompartment) {
 		
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
@@ -126,7 +129,11 @@ public class RbmNetworkGenerator {
 			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
 			speciesEquivalenceMap.put(fakeSeedSpeciesParam, p);
 			
-			String modified = "@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(sc.getSpeciesPattern());
+			String modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
+			if(showCompartment) {
+				modified = "@" + sc.getStructure().getName() + ":" + modified;
+			}
+
 			modified += "\t\t" + fakeSeedSpeciesParam.fakeParameterName;
 			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
 			fakeParameterList.add(fakeSeedSpeciesParam);
@@ -158,7 +165,9 @@ public class RbmNetworkGenerator {
 				}
 			}
 		}
-		RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
+		if(showCompartment) {
+			RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
+		}
 		
 		writer.println(BEGIN_PARAMETERS);
 		// the fake parameters used for reaction rule kinetics
@@ -183,8 +192,8 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 		
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, true);
-		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, showCompartment);
+		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext, showCompartment);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -210,8 +219,19 @@ public class RbmNetworkGenerator {
 			} else {
 				dim = 3;
 			}
-			int volume = 12+i;	// TODO: some invented number to help us track it within the .net file
-			writer.println(name + "\t" + dim + "\t" + volume);
+//			double volume = 0.0;
+//			StructureMapping sm = sc.getGeometryContext().getStructureMapping(s);
+//			try{
+//				Expression sizeExpr = sm.getSizeParameter().getExpression();
+//				volume = sizeExpr.evaluateConstant();
+//			} catch(ExpressionException e){
+//				e.printStackTrace(System.out);
+//			}
+			//
+			// compartment size is always 1 when we export internally to bngl
+			// because we adjust within vCell the kinetic parameters and whatnot so that everything is scaled by size
+			//
+			writer.println(name + "\t" + dim + "\t" + 1);
 		}
 		writer.println(END_COMPARTMENTS);
 		writer.println();
@@ -289,13 +309,13 @@ public class RbmNetworkGenerator {
 		writer.println();
 	}
 	
-	private static void writeReactions_internal(PrintWriter writer, SimulationContext sc) {
+	private static void writeReactions_internal(PrintWriter writer, SimulationContext sc, boolean showCompartment) {
 		writer.println(BEGIN_REACTIONS);
 		for (ReactionRuleSpec rrSpec : sc.getReactionContext().getReactionRuleSpecs()) {
 			if (rrSpec.isExcluded()){
 				continue;		// we skip those rules which are disabled (excluded)
 			}
-			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), true));
+			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), showCompartment));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
