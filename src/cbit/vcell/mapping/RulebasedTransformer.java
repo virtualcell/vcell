@@ -529,7 +529,10 @@ public class RulebasedTransformer implements SimContextTransformer {
 	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements);
+		//
+		// we ignore compartment info and ask bionetgen to behave as if there's only one compartment (old way of doing things with no  "@compartment:"  prefix
+		//
+		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, false);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		return bngl;
@@ -543,7 +546,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		NetworkGenerationRequirements networkGenerationRequirements = NetworkGenerationRequirements.ComputeFullStandardTimeout;
 
 		String input = convertToBngl(simContext, true, mathMappingCallback, networkGenerationRequirements);
-		System.out.println(input);		// TODO: uncomment to see the xml string
+//		System.out.println(input);		// TODO: uncomment to see the xml string
 		for (Map.Entry<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 			FakeSeedSpeciesInitialConditionsParameter key = entry.getKey();
 			Pair<SpeciesContext, Expression> value = entry.getValue();
