@@ -747,7 +747,7 @@ public class RbmUtils {
 	}
 	
 	public enum BnglLocation {
-		Parameter, Species, MoleculeType, Observable, Function, ReactionRule, OutsideBlock
+		Compartment, Parameter, Species, MoleculeType, Observable, Function, ReactionRule, OutsideBlock
 	}
 	private static class BnglComment {
 		String entityName;
@@ -1009,7 +1009,10 @@ public class RbmUtils {
 		return label;
 	}
 	public static BnglLocation markBlock(BnglLocation currentLocation, String line) {
-		if(line.startsWith("begin parameters")) {
+		if(line.startsWith("begin compartments")) {
+			return BnglLocation.Compartment;
+		}
+		else if(line.startsWith("begin parameters")) {
 			return BnglLocation.Parameter;
 		}
 		else if(line.startsWith("begin species")) {
@@ -1026,6 +1029,9 @@ public class RbmUtils {
 		}
 		else if(line.startsWith("begin reaction rules")) {
 			return BnglLocation.ReactionRule;
+		}
+		else if(line.startsWith("end compartments")) {
+			return BnglLocation.OutsideBlock;
 		}
 		else if(line.startsWith("end parameters")) {
 			return BnglLocation.OutsideBlock;
@@ -1076,8 +1082,26 @@ public class RbmUtils {
 		}
 	}
 	
-	public static SpeciesPattern parseSpeciesPattern(String inputString, Model model) throws ParseException {
+	public static String parseCompartment(String originalInputString, Model model) throws ParseException {
+		String inputString = new String(originalInputString);
+		if(inputString.startsWith("@") && inputString.contains("::")) {
+			inputString = inputString.substring(1, inputString.lastIndexOf("::"));
+//			Structure struct = model.getStructure(inputString);
+//			if(struct == null) {
+//				throw new RuntimeException("RbmUtils: Unable to find structure of " + originalInputString);
+//			}
+			return inputString;
+		}
+		return null;
+	}
+	public static SpeciesPattern parseSpeciesPattern(String originalInputString, Model model) throws ParseException {
+		String inputString = new String(originalInputString);
 		try {
+			if(inputString.startsWith("@") && inputString.contains("::")) {
+//				throw new ParseException("RbmUtils: Unable to parse SpeciesPattern with compartment information.");
+				// clean up the compartment information and parse the pure sp expression
+				inputString = inputString.substring(inputString.lastIndexOf("::")+2);
+			}
 			BNGLParser parser = new BNGLParser(new StringReader(inputString));
 			ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
 			BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(model, null, true);

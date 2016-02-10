@@ -48,6 +48,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
@@ -127,7 +128,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
-//		System.out.println(bngl);
+		System.out.println(bngl);
 //		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 //	    String key = entry.getKey();
 //	    Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -221,7 +222,7 @@ public class NetworkTransformer implements SimContextTransformer {
 
 		String bngNetString = bngOutput.getNetFileContent();
 		outputSpec = BNGOutputFileParser.createBngOutputSpec(bngNetString);
-//		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
+		BNGOutputFileParser.printBNGNetOutput(outputSpec);			// prints all output to console
 
 		if (mathMappingCallback.isInterrupted()){
 			String msg = "Canceled by user.";
@@ -358,8 +359,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			int count = 0;				// generate unique name for the species
 			String speciesName = null;
 			String nameRoot = "s";
-			String speciesPatternString = s.getName();
-			
+			String speciesPatternNameString = s.extractName();
+			String speciesPatternCompartmentString = s.extractCompartment();
 			while (true) {
 				speciesName = nameRoot + count;	
 				if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
@@ -368,11 +369,17 @@ public class NetworkTransformer implements SimContextTransformer {
 				count++;
 			}
 			speciesMap.put(s.getNetworkFileIndex(), speciesName);				// newly created name
-			SpeciesContext speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
+			SpeciesContext speciesContext;
+			
+			if(s.hasCompartment()) {
+				speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(speciesPatternCompartmentString), null);
+			} else {
+				speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
+			}
 			speciesContext.setName(speciesName);
 			try {
-				if(speciesPatternString != null) {
-					SpeciesPattern sp = RbmUtils.parseSpeciesPattern(speciesPatternString, model);
+				if(speciesPatternNameString != null) {
+					SpeciesPattern sp = RbmUtils.parseSpeciesPattern(speciesPatternNameString, model);
 					speciesContext.setSpeciesPattern(sp);
 				}
 			} catch (ParseException e) {
@@ -539,8 +546,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (directBNGReactionsMap.containsValue(bngReaction)){
 				BNGReaction forwardBNGReaction = bngReaction;
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
+				Structure structure = findStructure(model, speciesMap, forwardBNGReaction);
 				boolean bReversible = reverseBNGReaction != null;
-				SimpleReaction sr = new SimpleReaction(model, model.getStructure(0), reactionName, bReversible);
+				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);	// TODO: aici
 				for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
 					BNGSpecies s = forwardBNGReaction.getReactants()[j];
 					String scName = speciesMap.get(s.getNetworkFileIndex());
@@ -584,8 +592,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())){
 				// reverse only (must be irreversible)
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
+				Structure structure = findStructure(model, speciesMap, reverseBNGReaction);
 				boolean bReversible = false;
-				SimpleReaction sr = new SimpleReaction(model, model.getStructure(0), reactionName, bReversible);
+				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);
 				for (int j = 0; j < reverseBNGReaction.getReactants().length; j++){
 					BNGSpecies s = reverseBNGReaction.getReactants()[j];
 					String scName = speciesMap.get(s.getNetworkFileIndex());
@@ -706,6 +715,36 @@ public class NetworkTransformer implements SimContextTransformer {
 		System.out.println(msg);
 		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
+	}
+
+	public Structure findStructure(Model model, HashMap<Integer, String> speciesMap, BNGReaction forwardBNGReaction) {
+		Structure ours = null;
+		for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
+			BNGSpecies s = forwardBNGReaction.getReactants()[j];
+			String scName = speciesMap.get(s.getNetworkFileIndex());
+			SpeciesContext sc = model.getSpeciesContext(scName);
+			Structure theirs = sc.getStructure();
+			if(ours == null) {
+				ours = theirs;
+			} else if(ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		for (int j = 0; j < forwardBNGReaction.getProducts().length; j++){
+			BNGSpecies s = forwardBNGReaction.getProducts()[j];
+			String scName = speciesMap.get(s.getNetworkFileIndex());
+			SpeciesContext sc = model.getSpeciesContext(scName);
+			Structure theirs = sc.getStructure();
+			if(ours == null) {
+				ours = theirs;
+			} else if(ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		if(ours == null) {
+			ours = model.getStructure(0);
+		}
+		return ours;
 	}
 
 //	private Expression substituteFakeParameters(Expression paramExpression) throws ExpressionException {
