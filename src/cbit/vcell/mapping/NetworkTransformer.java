@@ -125,10 +125,16 @@ public class NetworkTransformer implements SimContextTransformer {
 	public String convertToBngl(SimulationContext simulationContext, boolean ignoreFunctions, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
-		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements);
+		if(simulationContext.getModel().getNumStructures() > 1) {
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, true);
+		} else {
+			// if we have just one structure use the "old" way of doing things with no structure prefix
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, false);
+
+		}
 		String bngl = bnglStringWriter.toString();
 		pw.close();
-		System.out.println(bngl);
+//		System.out.println(bngl);
 //		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 //	    String key = entry.getKey();
 //	    Pair<SpeciesContext, Expression> value = entry.getValue();
@@ -360,7 +366,6 @@ public class NetworkTransformer implements SimContextTransformer {
 			String speciesName = null;
 			String nameRoot = "s";
 			String speciesPatternNameString = s.extractName();
-			String speciesPatternCompartmentString = s.extractCompartment();
 			while (true) {
 				speciesName = nameRoot + count;	
 				if (Model.isNameUnused(speciesName, model) && !sMap.containsKey(speciesName) && !scMap.containsKey(speciesName)) {
@@ -372,6 +377,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			SpeciesContext speciesContext;
 			
 			if(s.hasCompartment()) {
+				String speciesPatternCompartmentString = s.extractCompartment();
 				speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(speciesPatternCompartmentString), null);
 			} else {
 				speciesContext = new SpeciesContext(new Species(speciesName, s.getName()), model.getStructure(0), null);
