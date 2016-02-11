@@ -37,14 +37,16 @@
 	<appearance><imgReference target = "sabiork_tab.png"/></appearance>
 	
 	<operations>
-	<para>
-	Search <link target="http://sabio.h-its.org/">Sabio-RK</link> web site for reactions by typing an associated term in the 'role' text box and 
-	pressing the 'Search' button to download a list of Sabio entities that match.  Searches can be refined using the 'advanced' category drop-down selector.
-	</para>
-	<para>
-	Click on a row from the search list to load a list of the entity components that can be used in VCell.  
+	<list>
+	<item><bold>Search->Role textfield </bold> Enter search text</item>
+	<item><bold>Search button </bold> Press to search <link target="http://sabio.h-its.org/">Sabio-RK</link> repository.</item>
+	<item><bold>Advanced Search->Category menu-button </bold> Select a criteria to refine currently displayed search list.</item>
+	<item><bold>Advanced Search->Entity textfield </bold> Enter text to refine current search results using the selected criteria.</item>
+	<item><bold>Search Results tree</bold> Displays search results from the Sabio repository.  
+	Select 1 item from the list to download a table of subcomponents that can be imported into VCell.  
 	See <link target= "PathwayImportTable">Pathway Import</link> for information on how to import selected components into VCell.
-	</para>
+	</item>
+	</list>
 	</operations>
 	
 </page>
