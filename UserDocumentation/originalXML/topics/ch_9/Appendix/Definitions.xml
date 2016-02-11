@@ -134,6 +134,11 @@ numbers of molecules in a defined region of space using probabilistic methods, w
 treated individually.  Stochastic simulations are required where concentrations of molecules are very low.
 </def>  
 
+<def target = "def_HybridDeterministicStochastic" defLabel = "Hybrid Deterministic Stochastic"> 
+A type of stochastic simulation that is defined within a BioModel application having a 
+spatial geometry and at least 1 species specification that has been set to 'Force Continuous'.
+</def>  
+
 
 <def target = "def_structure" defLabel = "Structure"> A structure in VCell is a spatial element that can have 1,2, or 3 
 dimensions.  Structures contain species and reactions,  a three-dimensional structure is a volume and its species have 

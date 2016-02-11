@@ -25,9 +25,11 @@
 	 Applications can be 
 	 <list> 
 	<item><def target="def_Deterministic">Deterministic</def></item>
-	<item><def target="def_Stochastic">Stochastic</def></item> 
-	<item><def target="def_RuleBased">Network-free</def>, 
-	a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
+	<item><def target="def_Stochastic">Stochastic</def></item>
+	<item><def target="def_HybridDeterministicStochastic">Hybrid Deterministic Stochastic</def>, 
+	a stochastic model with spatial geometry and at least 1 species specification set to 'Force Continuous' 
+	(See <bold>Spatial Stochastic </bold> under <link target="SpeciesSpecifications">Species Specifications</link>).</item>
+	<item><def target="def_RuleBased">Network-free</def>, a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
 	</list>
 	<imgReference target = "ApplicationTypes.png"/>.
 	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic, stochastic or network-free 
