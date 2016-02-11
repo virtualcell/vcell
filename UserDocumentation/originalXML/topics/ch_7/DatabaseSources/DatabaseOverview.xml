@@ -2,26 +2,30 @@
 <vcelldoc>
 <page title="Database Sources">
 
-	<introduction> The Virtual Cell provides access to a few database repositories, internal and external. The internal Virtual Cell database repository stores the models created in the Virtual Cell in its native format.
-	In addition, access to external databases such as 
-	<link target="http://www.ebi.ac.uk/biomodels-main/">BioModels Database</link>, 
-	<link target="http://www.pathwaycommons.org/pc/">Pathway Commons</link> and 
-	<link target="http://sabio.h-its.org/">Sabio-RK</link> is provided.
+	<introduction> The Virtual Cell provides access to repositories of compatible biological models, internal and external.  
+	The internal VCell database repository stores the models created in the Virtual Cell in its native format.  
+	The external repositories are accessed through specific interfaces and allow users to search for models of interest and import selected models into a VCell MathModel or BioModel.
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "DatabaseSources.png"/>  
+		<imgReference target = "DatabaseSourcesTab.png"/>  
 	</appearance>
 	
 	<operations>
 	<para>
-	The database sources in the Virtual Cell are accessed from the 'Database' panel on the lower left corner of any VCell document window. This panel has 3 tabs:
+	Model repositories accessible through VCell are located under the <bold>Database tabs</bold> in the lower left panel of any VCell document window:
 	</para>
 	<list>
-		<item> <link target="VCellDatabase">VCell Database</link> </item>
-		<item> <link target="BioModelsNet">BioModels.net Database</link> </item>
-		<item> <link target="PathwayCommonsPanel">Pathway Commons Database</link> </item>
-		<item> <link target="SabioRK">Sabio-RK Database</link> </item>
+		<item> <link target="VCellDatabase">VCell database (internal)</link> </item>
+		<item> <link target="BioModelsNet">BioModels.net repository (external)</link> </item>
+		<item> <link target="PathwayCommonsPanel">Pathway Commons repository (external)</link> </item>
+		<item> <link target="SabioRK">Sabio-RK repository (external)</link> </item>
+	</list>
+	For more information about the external model repositories visit their respective web sites:
+	<list>
+	<item><link target="http://www.ebi.ac.uk/biomodels-main/">Biomodels.net (http://www.ebi.ac.uk/biomodels-main/)</link></item>
+	<item><link target="http://www.pathwaycommons.org/pc/">Pathway Commons (http://www.pathwaycommons.org/pc/)</link></item>
+	<item><link target="http://sabio.h-its.org/">SabioRK (http://sabio.h-its.org/)</link></item>
 	</list>
 	</operations>
 </page>

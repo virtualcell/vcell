@@ -13,27 +13,24 @@
 	
 	<appearance>
 	<imgReference target = "PathwayCommonsPanel.png"/>
-	<para>
-	The <bold>Search</bold> at the top of the Pathway Commons Panel works as OR for several search terms, 
-	and search term is searched inside pathways from Pathways Commons. For every pathway the database and organism are displayed after.
-	The <bold>Filter</bold> below search results filters just names of the pathways, it does not check
-	the content of pathways. The list of pathways can be filtered by database name or organism, or sorted in alphanumeric order.
-	</para>
 	</appearance>
 	
 	<operations>
-	To begin, enter a search text in the search text field and press the <bold>Search</bold> 
-	button (or just press Enter on your keyboard) to send a request to Pathway Commons.
-	The result of this query is a list of pathways in which the search term participates.
-	<para>
-	Each pathway listed in the search results can be selected and then 
-	<link target = "PathwayImportTable"> previewed</link> in the VCell
-	by pressing the <bold>Preview</bold> button, which will obtain 
-	the pathway in BioPAX Level 2 from Pathway Commons. 
-	</para>
-	<para>
-	The <bold>Open Weblink</bold> button will cause the web browser to open the page of Pathway Commons dedicated to that pathway.
-	</para>
+	<list>
+	<item><bold>Search textfield </bold> 
+	Enter 1 or more space separated text fragments that will be used to match model names and meta-data information in the Pathway Commons repository.</item>
+	<item><bold>Search button </bold> Search the Pathway Commons repository using the search text.</item>
+	<item><bold>Search list </bold> Displays downloadable pathway names (with source and organism name) matching search criteria. 
+	select 1 entry from the list to be downloaded from the remote repository. 
+	</item>
+	<item><bold>Filter textfield </bold> Enter text to match name, database or organism in the current 'Search list' to refine search results.</item>
+	<item><bold>Filter Sort button </bold> Press to toggle sort of the current 'Search list' by pathway names in ascending or descending order.</item>
+	<item><bold>Preview button </bold> Press to download the pathway information selected in the 'Search list'.  
+	Once the download is complete a table of pathway subcomponents is displayed under the <bold>Pathway Preview tab</bold> in the lower right panel of the VCell document window.  
+	See <link target = "PathwayImportTable">Pathway Preview</link> for information about importing pathway subcomponents into VCell.
+	</item>
+	<item><bold>Open Web Link button </bold> Press to launch a web browser that displays the Pathway Commons web page of the pathway currently selected in the 'Search list'.</item>
+	</list>
 	</operations>	
 	
 </page>
