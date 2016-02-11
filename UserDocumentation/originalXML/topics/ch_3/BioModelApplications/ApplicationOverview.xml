@@ -30,19 +30,23 @@
 	a special single-compartment stochastic <link target="NFSimApp">network-free application</link> </item> 
 	</list>
 	<imgReference target = "ApplicationTypes.png"/>.
-	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic or stochastic 
+	<para> Additionally, by defining <link target="GeometryOverview">Geometry</link> deterministic, stochastic or network-free 
 	applications can be made into </para>
 	<list> 
-	<item>Compartmental (1D, 2D or 3D), where topology and size of compartments are defined, but species are assumed 
+	<item><bold>Compartmental</bold> (1D, 2D or 3D), where topology and size of compartments are defined, but species are assumed 
 	to be well mixed within their compartments. Such application is simulated using either differential equations
 	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic simulation algorithms 
-	(for <def target="def_Stochastic">stochastic</def> application).  </item>
-	<item>Spatial (2D or 3D), where geometry of compartments is defined, 
+	(for <def target="def_Stochastic">stochastic</def> application).  
+	For <def target="def_RuleBased">Network-free</def> applications, only compartmental geometry with 1 compartment is allowed.
+	</item>
+	<item><bold>Spatial</bold> (1D, 2D or 3D), where geometry of compartments is defined, 
 	and species are not well mixed but diffuse within compartments. Such application is 
 	simulated using either partial differential equations
 	(for <def target="def_Deterministic">deterministic</def> application), or using stochastic agent-based
 	 simulation algorithms SmolDyn
-	(for <def target="def_Stochastic">stochastic</def> application).</item> 
+	(for <def target="def_Stochastic">stochastic</def> application).  
+	Presently <def target="def_RuleBased">Network-free</def> applications do not allow spatial geometry (compartmental only).
+	</item> 
 	</list>
 	The Application directory displays the Applications associated with the BioModel. The main window 
 	displays the selected application and provides buttons to create new applications or to 
