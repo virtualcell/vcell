@@ -68,9 +68,8 @@
 	</list>
 	<para>
 	Selecting a model of any document type in the VCell Database displays the database information for the model in the <bold>Database File Info</bold> tab in the 'Properties' panel on the lower right hand corner of any VCell document. 
-	The figure below shows the 'Database File Info' for a BioModel selected in the VCell Database->BioModels tab. 
+	See <link target="PP_VCellDatabaseInfo">Database Info</link> for more information.
 	</para>
-	<imgReference target = "VCDatabaseInfo.GIF"/>
 	</operations>
 	
 </page>

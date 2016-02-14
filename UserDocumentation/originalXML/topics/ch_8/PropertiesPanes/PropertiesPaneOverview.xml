@@ -12,6 +12,8 @@
 	<operations>
 	Properties are specific to the item selected. The different properties displayed include:
 	<list>
+	<item><link target=	"PP_ApplicationProps">Application Properties</link></item>
+	<item><link target=	"PP_VCellDatabaseInfo">Model Properties</link></item>
 	<item><link target=	"PP_Structures">Structures</link></item>
 	<item><link target=	"PP_Molecules">Molecules</link></item>
 	<item><link target=	"PP_Species">Species Properties</link></item>
