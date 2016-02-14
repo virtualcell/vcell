@@ -128,18 +128,18 @@ import cbit.vcell.solvers.MembraneElement;
  * Creation date: (6/22/2006 4:22:59 PM)
  * @author: Tracy LI
  */
-public class SmoldynFileWriter extends SolverFileWriter 
+public class SmoldynFileWriter extends SolverFileWriter
 {
 	/**
-	 * allow easy on / off of disabling 
+	 * allow easy on / off of disabling
 	 */
 	private static final String PANEL_TRIANGLE_NAME_PREFIX = "tri";
 	private static final Color bg = new Color(0x0);
 	private Color[] colors = null;
-	
+
 	private static class TrianglePanel {
 		String name;
-		Triangle triangle;		
+		Triangle triangle;
 		private TrianglePanel(int triLocalIndex, int triGlobalIndex, int membraneIndex,  Triangle triangle) {
 			super();
 			this.name = PANEL_TRIANGLE_NAME_PREFIX + "_" + triLocalIndex + "_" + triGlobalIndex + (membraneIndex >= 0 ? "_" + membraneIndex : "");
@@ -155,9 +155,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private RandomDataGenerator dist = new RandomDataGenerator();
 
 	@SuppressWarnings("serial")
-	private class NotAConstantException extends Exception {		
+	class NotAConstantException extends Exception {
 	}
-	
+
 	private File outputFile = null;
 	private Simulation simulation = null;
 	private MathDescription mathDesc = null;
@@ -178,19 +178,19 @@ public class SmoldynFileWriter extends SolverFileWriter
 		bounding_wall_surface_Y,
 		bounding_wall_surface_Z,
 		bounding_wall_compartment,
-		
+
 		vcellPrintProgress,
 		vcellWriteOutput,
-		vcellDataProcess,		
+		vcellDataProcess,
 //		vcellReact1KillMolecules,
-		
+
 		dimension,
 		sampleSize,
 		numMembraneElements,
 		variable,
 		membrane,
 		volume,
-		
+
 		// high resolution volume samples
 		Origin,
 		Size,
@@ -199,18 +199,18 @@ public class SmoldynFileWriter extends SolverFileWriter
 		end_highResVolumeSamples,
 		CompartmentHighResPixelMap,
 	}
-	
+
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
 	private CartesianMesh cartesianMesh = null;
 	private String baseFileName = null;
-	
-public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging) 
+
+public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging)
 {
 	super(pw, simTask, bMessaging);
 	this.bGraphicOpenGL = bGraphic;
 	baseFileName = baseName;
-	this.outputFile = new File(baseFileName + SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION); 
-	
+	this.outputFile = new File(baseFileName + SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION);
+
 	//get user defined random seed. If it doesn't exist, we assign system time (in millisecond) to it.
 	SmoldynSimulationOptions smoldynSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getSmoldynSimulationOptions();
 	if (smoldynSimulationOptions.getRandomSeed() != null) {
@@ -225,9 +225,9 @@ public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, Simu
 
 private void writeMeshFile() throws SolverException {
 	FileOutputStream fos = null;
-	try {		 
+	try {
 		polygonMembaneElementMap = new HashMap<Polygon, MembraneElement>();
-		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);		
+		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(resampledGeometry, polygonMembaneElementMap);
 		//Write Mesh file
 		File meshFile = new File(baseFileName + SimDataConstants.MESHFILE_EXTENSION);
 		fos = new FileOutputStream(meshFile);
@@ -244,7 +244,7 @@ private void writeMeshFile() throws SolverException {
 			e.printStackTrace();
 		}
 	}
-	
+
 }
 
 private void init() throws SolverException {
@@ -261,10 +261,10 @@ private void init() throws SolverException {
 			}
 			particleVariableList.add((ParticleVariable)variable);
 		}
-	}	
-	
-	// write geometry	
-	Geometry geometry = mathDesc.getGeometry();	
+	}
+
+	// write geometry
+	Geometry geometry = mathDesc.getGeometry();
 	dimension = geometry.getDimension();
 	try {
 		// clone and resample geometry
@@ -272,7 +272,7 @@ private void init() throws SolverException {
 		GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
 		ISize newSize = simulation.getMeshSpecification().getSamplingSize();
 		geoSurfaceDesc.setVolumeSampleSize(newSize);
-		geoSurfaceDesc.updateAll();	
+		geoSurfaceDesc.updateAll();
 		bHasNoSurface = geoSurfaceDesc.getSurfaceClasses() == null || geoSurfaceDesc.getSurfaceClasses().length == 0;
 	} catch (Exception e) {
 		e.printStackTrace();
@@ -286,15 +286,15 @@ private void init() throws SolverException {
 
 
 @Override
-public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException, ImageException, PropertyVetoException, GeometryException {	
+public void write(String[] parameterNames) throws ExpressionException, MathException, SolverException, DataAccessException, IOException, ImageException, PropertyVetoException, GeometryException {
 	init();
 	setupMolecules();
-	
+
 	if (bUseMessaging) {
 		writeJms(simulation);
 	}
 	writeRandomSeed();
-	writeSpecies();	
+	writeSpecies();
 	writeDiffusions();
 	writeGraphicsOpenGL();
 	if(simulation.getSolverTaskDescription().getSmoldynSimulationOptions().isUseHighResolutionSample())
@@ -304,16 +304,16 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 		}catch(Exception ex)
 		{
 			ex.printStackTrace(System.out);
-			throw new SolverException(ex.getMessage() + "\n" + 
+			throw new SolverException(ex.getMessage() + "\n" +
 		                              "Problem may be solved by disable \'fast mesh sampling\'. It may take much longer time to complete the simulation." + "\n" +
 					                  "Select \'Edit Simulation\' -> \'Solver\' -> \'Advanced Solver Options\' -> uncheck \'fast mesh sampling\'.");
 		}
 	}
 	writeSurfaces();
-	writeCompartments();	
+	writeCompartments();
 	writeDrifts(); // needs to be after dim=3 in input file (after geometry is written).
 	writeReactions();
-	writeMolecules();	
+	writeMolecules();
 	writeSimulationTimes();
 	writeRuntimeCommands();
 	writeSimulationSettings();
@@ -322,12 +322,12 @@ public void write(String[] parameterNames) throws ExpressionException, MathExcep
 }
 
 /**
- * lazy create {@link #closestTriangles} 
+ * lazy create {@link #closestTriangles}
  * @return new or existing
  */
 private ArrayList<ClosestTriangle> getClosestTriangle( ) {
 	if (closestTriangles  == null) {
-		closestTriangles = new ArrayList<>(); 
+		closestTriangles = new ArrayList<>();
 	}
 	return closestTriangles;
 }
@@ -360,21 +360,21 @@ private void setupMolecules() throws ExpressionException, MathException{
 					}
 				}
 			}
-		}		
+		}
 	}
 }
 
-private void writeHighResVolumeSamples() throws SolverException {	
+private void writeHighResVolumeSamples() throws SolverException {
 	try {
 		printWriter.println("# HighResVolumeSamples");
 		printWriter.println(VCellSmoldynKeyword.start_highResVolumeSamples);
-		
+
 		Origin origin = resampledGeometry.getOrigin();
 		Extent extent = resampledGeometry.getExtent();
 		int numSamples = 10000000;
-		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);		
+		ISize sampleSize = GeometrySpec.calulateResetSamplingSize(3, extent, numSamples);
 		VCImage vcImage = RayCaster.sampleGeometry(resampledGeometry, sampleSize, true);
-			
+
 		printWriter.println(VCellSmoldynKeyword.Origin + " " + origin.getX() + " " + origin.getY() + " " + origin.getZ());
 		printWriter.println(VCellSmoldynKeyword.Size + " " + extent.getX() + " " + extent.getY() + " " + extent.getZ());
 		printWriter.println(VCellSmoldynKeyword.CompartmentHighResPixelMap + " " + resampledGeometry.getGeometrySpec().getNumSubVolumes());
@@ -394,9 +394,9 @@ private void writeHighResVolumeSamples() throws SolverException {
 				}
 			}
 		}
-		
+
 		printWriter.println(VCellSmoldynKeyword.VolumeSamples + " " + sampleSize.getX() + " " + sampleSize.getY() + " " + sampleSize.getZ());
-		
+
 		if (vcImage != null) {
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			DeflaterOutputStream dos = new DeflaterOutputStream(bos);
@@ -410,13 +410,13 @@ private void writeHighResVolumeSamples() throws SolverException {
 			for (int i = 0; i < Math.ceil(length * 1.0 / strchar); ++ i) {
 				printWriter.println(compressedStr.substring(i * strchar, Math.min(length, (i+1) * strchar)));
 			}
-		}		
+		}
 		printWriter.println(VCellSmoldynKeyword.end_highResVolumeSamples);
 		printWriter.println();
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new RuntimeException("Error writing High Resolution Volume Samples: " + ex.getMessage());
-	} 
+	}
 }
 
 private void writeRandomSeed() {
@@ -431,7 +431,7 @@ private void writeSimulationSettings() {
 	SmoldynSimulationOptions smoldynSimulationOptions = simulation.getSolverTaskDescription().getSmoldynSimulationOptions();
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.accuracy + " " + smoldynSimulationOptions.getAccuracy());
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.gauss_table_size + " " + smoldynSimulationOptions.getGaussianTableSize());
-	
+
 	printWriter.println();
 }
 
@@ -441,9 +441,9 @@ private void writeGraphicsOpenGL() throws MathException {
 	}
 	printWriter.println("# graphics command");
 	//uncomment for debug
-	//writeGraphicsLegend(); 
+	//writeGraphicsLegend();
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.graphics + " " + SmoldynVCellMapper.SmoldynKeyword.opengl);
-	
+
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.frame_thickness + " 3");
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.frame_color + " 0.8 0.9 0.0");
 //	printWriter.println(SmoldynKeyword.grid_thickness + " 1");
@@ -475,7 +475,7 @@ private void writeGraphicsOpenGL() throws MathException {
 		}
 		g.dispose();
 		File tmpFile = File.createTempFile("legend", ".jpg");
-		
+
 		FileOutputStream fios = null;
 		try {
 			printWriter.println("# legend file: " + tmpFile.getAbsolutePath());
@@ -492,7 +492,7 @@ private void writeGraphicsOpenGL() throws MathException {
 
 private void writeRuntimeCommands() throws SolverException, DivideByZeroException, DataAccessException, IOException, MathException, ExpressionException {
 	printWriter.println("# " + SmoldynVCellMapper.SmoldynKeyword.killmolincmpt + " runtime command to kill molecules misplaced during initial condtions");
-	
+
 	for (ParticleVariable pv : particleVariableList) {
 		CompartmentSubDomain varDomain = mathDesc.getCompartmentSubDomain(pv.getDomain().getName());
 		if (varDomain == null) {
@@ -524,9 +524,9 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 				}
 			}
 		}
-	}	
+	}
 	printWriter.println();
-	
+
 	//write command to kill molecules on membrane for adsortption to nothing
 	printWriter.println("# kill membrane molecues that are absorbed (to nothing)");
 	for(String killMolCmd : killMolCommands)
@@ -534,12 +534,12 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 		printWriter.println(killMolCmd);
 	}
 	printWriter.println();
-	
+
 	printWriter.println("# runtime command");
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.E + " " + VCellSmoldynKeyword.vcellPrintProgress);
 	if (outputFile != null && cartesianMesh != null) {
 		OutputTimeSpec ots = simulation.getSolverTaskDescription().getOutputTimeSpec();
-		if (ots.isUniform()) {			
+		if (ots.isUniform()) {
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.output_files + " " + outputFile.getName());
 			ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 			TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
@@ -548,7 +548,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.incrementfile + " " + outputFile.getName());
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + SmoldynVCellMapper.SmoldynKeyword.listmols + " " + outputFile.getName());
 			}
-	
+
 			// DON'T CHANGE THE ORDER HERE.
 			// DataProcess must be before vcellWriteOutput
 			writeDataProcessor();
@@ -556,10 +556,10 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " begin");
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.dimension + " " + dimension);
 			printWriter.print(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.N + " " + n + " " + VCellSmoldynKeyword.vcellWriteOutput + " " + VCellSmoldynKeyword.sampleSize + " " + sampleSize.getX());
-			if (dimension > 1) {				
+			if (dimension > 1) {
 				printWriter.print(" " + sampleSize.getY());
 				if (dimension > 2) {
-					printWriter.print(" " + sampleSize.getZ());			
+					printWriter.print(" " + sampleSize.getZ());
 				}
 			}
 			printWriter.println();
@@ -573,7 +573,7 @@ private void writeRuntimeCommands() throws SolverException, DivideByZeroExceptio
 			throw new SolverException(SolverDescription.Smoldyn.getDisplayLabel() + " only supports uniform output.");
 		}
 	}
-	printWriter.println();		
+	printWriter.println();
 }
 
 private void writeDataProcessor() throws DataAccessException, IOException, MathException, DivideByZeroException, ExpressionException {
@@ -583,13 +583,13 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " begin " + DataProcessingInstructions.ROI_TIME_SERIES);
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.cmd + " " + SmoldynVCellMapper.SmoldynKeyword.B + " " + VCellSmoldynKeyword.vcellDataProcess + " end");
 	} else {
-		FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());	
+		FieldDataIdentifierSpec fdis = dpi.getSampleImageFieldData(simulation.getVersion().getOwner());
 		if (fdis == null) {
 			throw new DataAccessException("Can't find sample image in data processing instructions");
 		}
 		File userDirectory = outputFile.getParentFile();
-		
-		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);	
+
+		String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirProperty, null);
 		DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),secondarySimDataDir == null ? null : new File(secondarySimDataDir));
 		CartesianMesh origMesh = dsci.getMesh(fdis.getExternalDataIdentifier());
 		SimDataBlock simDataBlock = dsci.getSimDataBlock(null,fdis.getExternalDataIdentifier(), fdis.getFieldFuncArgs().getVariableName(), fdis.getFieldFuncArgs().getTime().evaluateConstant());
@@ -598,12 +598,12 @@ private void writeDataProcessor() throws DataAccessException, IOException, MathE
 		if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
 			throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
 		}
-		double[] origData = simDataBlock.getData();	
+		double[] origData = simDataBlock.getData();
 		String filename = SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulation.getKey()), simTask.getSimulationJob().getJobIndex()) + SimulationData.getDefaultFieldDataFileNameForSimulation(fdis.getFieldFuncArgs());
-		
+
 		File fdatFile = new File(userDirectory, filename);
-		
-		
+
+
 		DataSet.writeNew(fdatFile,
 				new String[] {fdis.getFieldFuncArgs().getVariableName()},
 				new VariableType[]{simDataBlock.getVariableType()},
@@ -647,14 +647,14 @@ private void writeReactions() throws ExpressionException, MathException {
 			} else {
 				new RuntimeException("The jump process rate definition is not supported");
 			}
-			
-			
+
+
 			if (rateDefinition.isZero()) {
 				continue;
 			}
 			if (mathDesc.isSpatialHybrid()) {
 				String symbols[] = rateDefinition.getSymbols();
-				if(symbols != null)	
+				if(symbols != null)
 				{
 					if(subdomain instanceof MembraneSubDomain)
 					{
@@ -678,9 +678,9 @@ private void writeReactions() throws ExpressionException, MathException {
 			{
 				throw new MathException("VCell spatial stochastic models support up to 2nd order reactions. \n" + "The reaction:" + pjp.getName() + " has more than 2 products.");
 			}
-			
+
 			String rateDefinitionStr = simulation.getMathDescription().isSpatialHybrid() ? rateDefinition.infix() + ";" : rateDefinition.evaluateConstant() + "";
-			if(subdomain instanceof CompartmentSubDomain) 
+			if(subdomain instanceof CompartmentSubDomain)
 			{
 				//0th order reaction, product limited to one and we'll let the reaction know where it happens
 				if(reactants.size() == 0 && products.size() == 1)
@@ -718,7 +718,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 				//
 				// Use rate command for any membrane reactions with 1 reactant and 1 product
-				else if ((reactants.size() == 1) && (products.size() == 1)) 
+				else if ((reactants.size() == 1) && (products.size() == 1))
 				{
 					//Membrane reaction (1 react to 1 product).
 					if(getMembraneVariableCount(products) == 1 && getMembraneVariableCount(reactants) == 1)
@@ -759,7 +759,7 @@ private void writeReactions() throws ExpressionException, MathException {
 				}
 			}
 		}
-	}	
+	}
 	printWriter.println();
 
 }
@@ -785,7 +785,7 @@ private void writeReactionCommand(List<Variable> reacts, List<Variable> prods, S
 			printWriter.print(" + " + getVariableName(prods.get(i),subdomain));
 		}
 	}
-				
+
 	printWriter.println(" " + rateConstantStr); //rateConstantStr don't need a ";" behind, since it is the last parameter
 }
 
@@ -811,23 +811,23 @@ private void writeReactionByInteractionRadius(List<Variable> reacts, List<Variab
 			printWriter.print(" + " + getVariableName(prods.get(i),subdomain));
 		}
 	}
-	//not rate constant is printed. go to next line.			
+	//not rate constant is printed. go to next line.
 	printWriter.println();
 	//print binding radius to override smoldyn auto-calculated radius.
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.binding_radius + " " + reactionName + " " + interactionRadius);
 }
 
-//used to write molecule transition rate command when it interacts with surface, the possible states can be 
-//reflection, transmission, adsorption, desorption  
+//used to write molecule transition rate command when it interacts with surface, the possible states can be
+//reflection, transmission, adsorption, desorption
 private void writeRateTransitionCommand(List<Variable> reacts, List<Variable> prods, SubDomain subdomain, String rateConstantStr) throws MathException
 {
 	printWriter.print(SmoldynVCellMapper.SmoldynKeyword.surface + " " + subdomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.rate + " ");
-	
+
 	//Transmission. Membrane reaction/flux with species in inside and outside membrane solutions
 	//e.g. "surface c_n_membrane rate s7_c fsoln bsoln 0.830564784 s8_n", "surface c_n_membrane rate s8_n bsoln fsoln 0.415282392 s7_c",
 	if((getVolumeVariableCount(prods) == 1) && (getVolumeVariableCount(reacts) == 1))
-	{	
-		
+	{
+
 		printWriter.print(reacts.get(0).getName() + " ");
 		if(getVariableName(reacts.get(0),subdomain).indexOf(SmoldynVCellMapper.SmoldynKeyword.fsoln.name()) > -1)
 		{
@@ -921,31 +921,31 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 			throw new MathException("variable "+var.getQualifiedName()+" cannot be in a reaction on non-adjacent membrane "+subdomain.getName());
 		}
 	}else{
-		return name; 
-	} 
+		return name;
+	}
 }
 
-private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, Variable variable, String variableName, StringBuilder sb) throws ExpressionException, MathException {	
+private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, Variable variable, String variableName, StringBuilder sb) throws ExpressionException, MathException {
 	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[]{ReservedVariable.X.getName(), ReservedVariable.Y.getName(), ReservedVariable.Z.getName()});
 	Expression disExpression = new Expression(initialConcentration.getDistribution());
 	disExpression.bindExpression(simulationSymbolTable);
-	disExpression = simulationSymbolTable.substituteFunctions(disExpression).flatten();	
+	disExpression = simulationSymbolTable.substituteFunctions(disExpression).flatten();
 	disExpression.bindExpression(simpleSymbolTable);
 	double values[] = new double[3];
 	if (dimension == 1) {
-		if (disExpression.getSymbolBinding(ReservedVariable.Y.getName()) != null 
+		if (disExpression.getSymbolBinding(ReservedVariable.Y.getName()) != null
 				|| disExpression.getSymbolBinding(ReservedVariable.Z.getName()) != null) {
 			throw new MathException(VCellErrorMessages.getSmoldynWrongCoordinates("'y' or 'z'", dimension, variable, disExpression));
 		}
 	} else if (dimension == 2) {
 		if (disExpression.getSymbolBinding(ReservedVariable.Z.getName()) != null) {
 			throw new MathException(VCellErrorMessages.getSmoldynWrongCoordinates("'z'", dimension, variable, disExpression));
-		}		
+		}
 	}
-		
+
 	double totalCount = 0;
 	StringBuilder localsb = new StringBuilder();
-	if (subDomain instanceof CompartmentSubDomain) {		
+	if (subDomain instanceof CompartmentSubDomain) {
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
 		ISize sampleSize = meshSpecification.getSamplingSize();
 		int numX = sampleSize.getX();
@@ -963,7 +963,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		double ex = extent.getX();
 		double ey = extent.getY();
 		double ez = extent.getZ();
-				
+
 		int offset = 0;
 		for (int k = 0; k < numZ; k ++) {
 			double centerz = oz + k * dz;
@@ -977,7 +977,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 				double hiy = Math.min(oy + ey, centery + dy/2);
 				values[1] = centery;
 				double ly = hiy - loy;
-				for (int i = 0; i < numX; i ++) {					
+				for (int i = 0; i < numX; i ++) {
 					int regionIndex = resampledGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfoFromOffset(offset).getRegionIndex();
 					offset ++;
 					GeometricRegion region = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions(regionIndex);
@@ -991,7 +991,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 					double hix = Math.min(ox + ex, centerx + dx/2);
 					double lx = hix - lox;
 					values[0] = centerx;
-					
+
 					double volume = lx;
 					if (dimension > 1) {
 						volume *= ly;
@@ -1011,16 +1011,16 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 					localsb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
 					if (dimension > 1) {
 						localsb.append(" " + loy + "-" + hiy);
-					
+
 						if (dimension > 2) {
 							localsb.append(" " + loz + "-" + hiz);
 						}
 					}
-					localsb.append("\n");				
+					localsb.append("\n");
 				}
 			}
 		}
-		
+
 		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
 		//otherwise we append the distributed molecules in different small boxes
 		try{
@@ -1032,7 +1032,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		{
 			sb.append(localsb);
 		}
-		
+
 	} else if (subDomain instanceof MembraneSubDomain) {
 		ArrayList<TrianglePanel> trianglePanelList = membraneSubdomainTriangleMap.get(subDomain);
 		for (TrianglePanel trianglePanel : trianglePanelList) {
@@ -1075,22 +1075,22 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 				continue;
 			}
 			totalCount += count;
-			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " " 
+			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " "
 					+ SmoldynVCellMapper.SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
 		}
-		
+
 		//decide what to append to the string buffer, if concentration can be evaluated to a constant, we append the uniform molecule count.
 		//otherwise we append the distributed molecules in different small boxes
 		try{
 			subsituteFlattenToConstant(disExpression);
-			sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
+			sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol);
 			sb.append(" " + totalCount + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
 		}
 		catch(Exception e)//can not be evaluated to a constant
 		{
 			sb.append(localsb);
 		}
-		
+
 	}
 
 	return totalCount;
@@ -1116,7 +1116,7 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.compartment_mol);
 				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + "\n");
 			} else if (subDomain instanceof MembraneSubDomain) {
-				sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
+				sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol);
 				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
 			}
 		} else {
@@ -1124,21 +1124,21 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + intcount + " " + variableName);
 				try {
 					if (initialCount.isXUniform()) {
-						sb.append(" " + initialCount.getLocationX().infix());					
+						sb.append(" " + initialCount.getLocationX().infix());
 					} else {
 						double locX = subsituteFlattenToConstant(initialCount.getLocationX());
 						sb.append(" " + locX);
 					}
 					if (dimension > 1) {
 						if (initialCount.isYUniform()) {
-							sb.append(" " + initialCount.getLocationY().infix());					
+							sb.append(" " + initialCount.getLocationY().infix());
 						} else {
 							double locY = subsituteFlattenToConstant(initialCount.getLocationY());
 							sb.append(" " + locY);
 						}
 						if (dimension > 2) {
 							if (initialCount.isZUniform()) {
-								sb.append(" " + initialCount.getLocationZ().infix());					
+								sb.append(" " + initialCount.getLocationZ().infix());
 							} else {
 								double locZ = subsituteFlattenToConstant(initialCount.getLocationZ());
 								sb.append(" " + locZ);
@@ -1153,11 +1153,11 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 			}
 			else if (subDomain instanceof MembraneSubDomain) {
 				//closestTriangles should have been allocated in setupMolecules if this condition exists
-				for (ClosestTriangle ct : closestTriangles) { 
+				for (ClosestTriangle ct : closestTriangles) {
 					if (ct.picc == initialCount) {
 						VCAssert.assertTrue(ct.membrane == subDomain, "wrong subdomain");
 						final char space = ' ';
-						sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol); 
+						sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol);
 						sb.append(space);
 						sb.append(intcount);
 						sb.append(space);
@@ -1194,7 +1194,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 	Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 	while (subDomainEnumeration.hasMoreElements()) {
 		SubDomain subDomain = subDomainEnumeration.nextElement();
-				
+
 		for (ParticleProperties particleProperties : subDomain.getParticleProperties()) {
 			ArrayList<ParticleInitialCondition> particleInitialConditions = particleProperties.getParticleInitialConditions();
 			String variableName = getVariableName(particleProperties.getVariable(),subDomain);
@@ -1205,13 +1205,13 @@ private void writeMolecules() throws ExpressionException, MathException {
 					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, particleProperties.getVariable(), variableName, sb);
 				}
 			}
-		}		
+		}
 	}
-	
+
 	if (max_mol > MAX_MOL_LIMIT) {
 		throw new MathException(VCellErrorMessages.getSmoldynMaxMolReachedErrorMessage((long)max_mol, MAX_MOL_LIMIT));
-	} 
-	
+	}
+
 	printWriter.println("# molecules");
 	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(50000, max_mol * 10));
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
@@ -1222,7 +1222,7 @@ private void writeSimulationTimes() {
 	// write simulation times
 	TimeBounds timeBounds = simulation.getSolverTaskDescription().getTimeBounds();
 	TimeStep timeStep = simulation.getSolverTaskDescription().getTimeStep();
-	printWriter.println("# simulation times");	
+	printWriter.println("# simulation times");
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_start + " " + timeBounds.getStartingTime());
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_stop + " " + timeBounds.getEndingTime());
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.time_step + " " + timeStep.getDefaultTimeStep());
@@ -1232,7 +1232,7 @@ private void writeSimulationTimes() {
 private class SelectPoint {
 	int j, k;
 	int starti, endi;
-	
+
 	public SelectPoint(int starti, int endi, int j, int k) {
 		super();
 		this.starti = starti;
@@ -1241,18 +1241,18 @@ private class SelectPoint {
 		this.k = k;
 	}
 	@Override
-	public String toString() {	
+	public String toString() {
 		return "([" + starti + ", " + endi + "], " + j + ", " + k + ")";
 	}
-	
+
 	public int length() {
 		return endi - starti + 1;
 	}
-	
+
 	public boolean contains(SelectPoint point) {
 		return point.starti > starti && point.endi <= endi || point.starti >= starti && point.endi < endi;
 	}
-	
+
 	public boolean same(SelectPoint point) {
 		return point.starti == starti && point.endi == endi || point.starti == starti && point.endi == endi;
 	}
@@ -1260,12 +1260,12 @@ private class SelectPoint {
 
 private void writeSurfaces() throws SolverException, ImageException, PropertyVetoException, GeometryException, ExpressionException {
 
-	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
-		
+	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();
+
 	SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
 	GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
 	SubVolume[] surfaceGeometrySubVolumes = geometrySpec.getSubVolumes();
-	
+
 	GeometricRegion[] AllGeometricRegions = resampledGeometry.getGeometrySurfaceDescription().getGeometricRegions();
 	ArrayList<SurfaceGeometricRegion> surfaceRegionList = new ArrayList<SurfaceGeometricRegion>();
 	ArrayList<VolumeGeometricRegion> volumeRegionList = new ArrayList<VolumeGeometricRegion>();
@@ -1288,13 +1288,13 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 	}
 	printWriter.println();
 
-	// write boundaries and wall surfaces	
+	// write boundaries and wall surfaces
 	writeWallSurfaces();
-	
+
 	// membrane subdomain inside and outside determine the surface normals for Smoldyn
 	// VCell surfaces normals already point to exterior geometric region (right hand rule with quads).
-	// If the vcell surface normals point to inside compartment subdomain, we flip the vcell surface normals when writing to smoldyn panels. 
-	// bsoln maps to inside compartment subdomain. 
+	// If the vcell surface normals point to inside compartment subdomain, we flip the vcell surface normals when writing to smoldyn panels.
+	// bsoln maps to inside compartment subdomain.
 	// fsoln maps to outside compartment subdomain.
 	//
 	// for 2D ... smoldyn normal convension is (V1-V0).cross.([0 0 1]) points to the outside compartment subdomain.
@@ -1306,19 +1306,19 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 		int triangleGlobalCount = 0;
 		int membraneIndex = -1;
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
-		
+
 		//pre-allocate collections used repeatedly in following loops; clear before reusing
 		HashMap<Node, Set<String>> nodeTriMap = new HashMap<>();
 		ArrayList<TrianglePanel> triList = new ArrayList<TrianglePanel>();
 		//use a sorted set to ensure neighbors written out is same order for reproducibility
 		SortedSet<String> neighborsForCurrentNode = new TreeSet<String>();
-		
+
 		for (int sci = 0; sci < surfaceClasses.length; sci ++) {
 			nodeTriMap.clear();
 			triList.clear();
-			
+
 			int triLocalCount = 0;
-			SurfaceClass surfaceClass = surfaceClasses[sci];			
+			SurfaceClass surfaceClass = surfaceClasses[sci];
 			GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(surfaceClass);
 			for (GeometricRegion gr : geometricRegions) {
 				SurfaceGeometricRegion sgr = (SurfaceGeometricRegion)gr;
@@ -1336,18 +1336,18 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 				int interiorRegionID = volRegion1.getRegionID();
 				if (membraneSubDomain.getInsideCompartment() == compart0) {
 					exteriorRegionID = volRegion1.getRegionID();
-					interiorRegionID = volRegion0.getRegionID();					
+					interiorRegionID = volRegion0.getRegionID();
 				}
 				for(int j = 0; j < surfaceCollection.getSurfaceCount(); j++) {
 					Surface surface = surfaceCollection.getSurfaces(j);
-					if ((surface.getInteriorRegionIndex() == exteriorRegionID && surface.getExteriorRegionIndex() == interiorRegionID) || 
+					if ((surface.getInteriorRegionIndex() == exteriorRegionID && surface.getExteriorRegionIndex() == interiorRegionID) ||
 						(surface.getInteriorRegionIndex() == interiorRegionID && surface.getExteriorRegionIndex() == exteriorRegionID)) { // my triangles
 //						for(int k = 0; k < surface.getPolygonCount(); k++) {
 //							Polygon polygon = surface.getPolygons(k);
 						for (Polygon polygon: surface) {
 							if (polygonMembaneElementMap != null) {
 								membraneIndex = polygonMembaneElementMap.get(polygon).getMembraneIndex();
-							} 
+							}
 							Node[] nodes = polygon.getNodes();
 							if (dimension == 2){
 								// ignore z
@@ -1363,11 +1363,11 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 										v1 = new Vect3d(nodes[point1].getX(),nodes[point1].getY(),0);
 										break;
 									}
-								}								
+								}
 								if (v1 == null) {
 									throw new RuntimeException("failed to generate surface");
 								}
-								Vect3d v01 = Vect3d.sub(v1, v0);								
+								Vect3d v01 = Vect3d.sub(v1, v0);
 								Vect3d unit01n = v01.cross(unitNormal);
 								unit01n.unit();
 								if (Math.abs(unit01n.getZ()-1.0) < 1e-6){
@@ -1395,7 +1395,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 							} else if (dimension == 3) {
 								Triangle triangle1;
 								Triangle triangle2;
-								if (surface.getInteriorRegionIndex() == interiorRegionID) { // interior	
+								if (surface.getInteriorRegionIndex() == interiorRegionID) { // interior
 									triangle1 = new Triangle(nodes[0], nodes[1], nodes[2]);
 									triangle2 = new Triangle(nodes[0], nodes[2], nodes[3]);
 								}else{
@@ -1427,19 +1427,19 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					triNameSet.add(triPanel.name);
 				}
 			}
-			
-			
+
+
 			SubVolume[] adjacentSubvolums = surfaceClass.getAdjacentSubvolumes().toArray(new SubVolume[0]);
 			CompartmentSubDomain csd0 = simulation.getMathDescription().getCompartmentSubDomain(adjacentSubvolums[0].getName());
 			CompartmentSubDomain csd1 = simulation.getMathDescription().getCompartmentSubDomain(adjacentSubvolums[1].getName());
 			MembraneSubDomain membraneSubDomain = simulation.getMathDescription().getMembraneSubDomain(csd0, csd1);
 			membraneSubdomainTriangleMap.put(membraneSubDomain, triList);
-			final boolean initialMoleculesOnMembrane = (closestTriangles != null ); 
+			final boolean initialMoleculesOnMembrane = (closestTriangles != null );
 			if (initialMoleculesOnMembrane) {
 				findClosestTriangles(membraneSubDomain, triList);
-				
+
 			}
-			
+
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + surfaceClass.getName());
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.action + " " + SmoldynVCellMapper.SmoldynKeyword.all + "(" + SmoldynVCellMapper.SmoldynKeyword.all + ") " + SmoldynVCellMapper.SmoldynKeyword.both + " " + SmoldynVCellMapper.SmoldynKeyword.reflect);
 //			printWriter.println(SmoldynKeyword.action + " " + SmoldynKeyword.all + "(" + SmoldynKeyword.up + ") " + SmoldynKeyword.both + " " + SmoldynKeyword.reflect);
@@ -1447,8 +1447,8 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.color + " " +  SmoldynVCellMapper.SmoldynKeyword.both + " " + c.getRed()/255.0 + " " + c.getGreen()/255.0 + " " + c.getBlue()/255.0 + " 0.1");
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.front + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.polygon + " " + SmoldynVCellMapper.SmoldynKeyword.back + " " + SmoldynVCellMapper.SmoldynKeyword.edge);
-			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.tri + " " + triList.size());			
-			
+			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.tri + " " + triList.size());
+
 			for (TrianglePanel trianglePanel : triList) {
 				Triangle triangle = trianglePanel.triangle;
 				printWriter.print(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.tri);
@@ -1458,7 +1458,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					break;
 				case 2:
 					printWriter.print(" " + triangle.getNodes(0).getX() + " " + triangle.getNodes(0).getY());
-	
+
 					printWriter.print(" " + triangle.getNodes(1).getX() + " " + triangle.getNodes(1).getY());
 					break;
 				case 3:
@@ -1467,7 +1467,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					}
 					break;
 				}
-			
+
 				printWriter.println(" " + trianglePanel.name);
 			}
 
@@ -1497,13 +1497,13 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 					printWriter.print(" "+ neigh);
 					count++;
 				}
-				
+
 			}
 			printWriter.println();
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 			printWriter.println();
 		}
-		
+
 		// write compartment
 //		printWriter.println("# bounding wall compartment");
 //		printWriter.println(SmoldynKeyword.start_compartment + " " + VCellSmoldynKeyword.bounding_wall_compartment);
@@ -1517,7 +1517,7 @@ private void writeSurfaces() throws SolverException, ImageException, PropertyVet
 //		printWriter.println(SmoldynKeyword.end_compartment);
 //		printWriter.println();
 	}
-	
+
 }
 
 
@@ -1536,8 +1536,8 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 
 	printWriter.println("# compartments");
 	resampledGeometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
-	for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {		
-		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_compartment + " " + subVolume.getName());		
+	for (SubVolume subVolume : resampledGeometry.getGeometrySpec().getSubVolumes()) {
+		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_compartment + " " + subVolume.getName());
 		for (SurfaceClass sc : resampledGeometry.getGeometrySurfaceDescription().getSurfaceClasses()) {
 			if (sc.getAdjacentSubvolumes().contains(subVolume)) {
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + sc.getName());
@@ -1547,29 +1547,29 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
 		}
 		if (dimension > 1) {
-			if (boundaryYSubVolumes.contains(subVolume)) {			
+			if (boundaryYSubVolumes.contains(subVolume)) {
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
 			}
 			if (dimension > 2) {
 				if (boundaryZSubVolumes.contains(subVolume)) {
 					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
-				}				
+				}
 			}
 		}
-		
+
 //		if (DEBUG) {
 //			tmppw.println("points" + pointsCount + "=[");
 //			pointsCount ++;
 //		}
-		
+
 		// gather all the points in all the regions
 		Geometry interiorPointGeometry = RayCaster.resampleGeometry(new GeometryThumbnailImageFactoryAWT(), resampledGeometry, resampledGeometry.getGeometrySurfaceDescription().getVolumeSampleSize());
 		SubVolume interiorPointSubVolume = interiorPointGeometry.getGeometrySpec().getSubVolume(subVolume.getName());
 		GeometricRegion[] geometricRegions = interiorPointGeometry.getGeometrySurfaceDescription().getGeometricRegions(interiorPointSubVolume);
 		RegionInfo[] regionInfos = interiorPointGeometry.getGeometrySurfaceDescription().getRegionImage().getRegionInfos();
-		for (GeometricRegion geometricRegion : geometricRegions) {			
+		for (GeometricRegion geometricRegion : geometricRegions) {
 			VolumeGeometricRegion volumeGeometricRegion = (VolumeGeometricRegion)geometricRegion;
-			
+
 			ArrayList<SelectPoint> selectPointList = new ArrayList<SelectPoint>();
 			for (RegionInfo regionInfo : regionInfos) {
 				if (regionInfo.getRegionIndex() != volumeGeometricRegion.getRegionID()) {
@@ -1590,9 +1590,9 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 								} else {
 									endi ++;
 								}
-							} 
-							
-							if ((!bInRegion || i == numX - 1) && starti != -1) {								
+							}
+
+							if ((!bInRegion || i == numX - 1) && starti != -1) {
 								int midi = (endi + starti) / 2;
 								int midVolIndex = k * numXY + j * numX + midi;
 								boolean bOnBoundary = false;
@@ -1600,25 +1600,25 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 										j == 0 ? -1 : midVolIndex - numX,
 										j == numY - 1 ? -1 : midVolIndex + numX,
 										k == 0 ? -1 : midVolIndex - numXY,
-										k == numZ - 1 ? -1 : midVolIndex + numXY,											
+										k == numZ - 1 ? -1 : midVolIndex + numXY,
 								};
-								for (int n = 0; n < 2 * (dimension - 1); n ++) {									
+								for (int n = 0; n < 2 * (dimension - 1); n ++) {
 									if (neighbors[n] == -1 || !regionInfo.isIndexInRegion(neighbors[n])) {
 										bOnBoundary = true;
 										break;
 									}
-								}								
-								
+								}
+
 								if (!bOnBoundary) {
 									selectPointList.add(new SelectPoint(starti, endi, j, k));
 								}
 								starti = -1;
-							}							
+							}
 						} // end i
 					} // end j
 				} // end k
 			} // end for (RegionInfo
-			
+
 			for (int m = 0; m < selectPointList.size(); m ++) {
 				SelectPoint thisPoint = selectPointList.get(m);
 				boolean bPrint = true;
@@ -1627,7 +1627,7 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 						continue;
 					}
 					SelectPoint point = selectPointList.get(n);
-					if (thisPoint.k == point.k && Math.abs(thisPoint.j - point.j) == 1 
+					if (thisPoint.k == point.k && Math.abs(thisPoint.j - point.j) == 1
 							|| thisPoint.j == point.j && Math.abs(thisPoint.k - point.k) == 1) {
 						if (point.same(thisPoint) && m < n) { // found same one later, print the later one
 							bPrint = false;
@@ -1655,14 +1655,14 @@ private void writeCompartments() throws ImageException, PropertyVetoException, G
 				}
 			}
 		} // end for (GeometricRegion
-		
+
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_compartment);
 		printWriter.println();
 	} // end for (SubVolume
 }
 
 private void writeWallSurfaces() throws SolverException {
-	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();	
+	GeometrySurfaceDescription geometrySurfaceDescription = resampledGeometry.getGeometrySurfaceDescription();
 	GeometrySpec geometrySpec = resampledGeometry.getGeometrySpec();
 	SubVolume[] subVolumes = geometrySpec.getSubVolumes();
 
@@ -1670,7 +1670,7 @@ private void writeWallSurfaces() throws SolverException {
 	Origin origin = geometrySpec.getOrigin();
 	Extent extent = geometrySpec.getExtent();
 	Coordinate lowWall = new Coordinate(origin.getX(), origin.getY(), origin.getZ());
-	Coordinate highWall = new Coordinate(origin.getX() + extent.getX(), origin.getY() + extent.getY(), origin.getZ() + extent.getZ());	
+	Coordinate highWall = new Coordinate(origin.getX() + extent.getX(), origin.getY() + extent.getY(), origin.getZ() + extent.getZ());
 //	These boundaries of the entire system are different from surfaces, which are
 //	described below. However, they have enough in common that Smoldyn does not work
 //	well with both at once. Thus, if any surfaces are used, the system boundaries will always
@@ -1685,7 +1685,7 @@ private void writeWallSurfaces() throws SolverException {
 //	the far sides. The reason for specifying that the boundaries are periodic is that they will
 //	then allow bimolecular reactions that occur with one molecule on each side of the system.
 //	This will probably yield a negligible improvement in results, but nevertheless removes a
-//	potential artifact.	
+//	potential artifact.
 	if (bHasNoSurface) {
 		SubDomain subDomain0 = mathDesc.getSubDomains().nextElement();
 		CompartmentSubDomain compartSubDomain0 = null;
@@ -1705,7 +1705,7 @@ private void writeWallSurfaces() throws SolverException {
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 1 " + lowWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 1 " + highWall.getY() + " " + (compartSubDomain0.getBoundaryConditionYp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 			}
-			
+
 			if (dimension > 2) {
 				// z
 				if (compartSubDomain0.getBoundaryConditionZm().isPERIODIC()) {
@@ -1713,15 +1713,15 @@ private void writeWallSurfaces() throws SolverException {
 				} else {
 					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.low_wall + " 2 " + lowWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZm().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
 					printWriter.println(SmoldynVCellMapper.SmoldynKeyword.high_wall + " 2 " + highWall.getZ() + " " + (compartSubDomain0.getBoundaryConditionZp().isNEUMANN() ? SmoldynVCellMapper.SmoldynKeyword.r : SmoldynVCellMapper.SmoldynKeyword.a));
-				}				
+				}
 			}
 		}
 		printWriter.println();
-	} else {	
-		// x 
+	} else {
+		// x
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 0 " + lowWall.getX() + " " + highWall.getX());
 		if (dimension > 1) {
-			// y	
+			// y
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.boundaries + " 1 " + lowWall.getY() + " " + highWall.getY());
 			if (dimension > 2) {
 				// z
@@ -1729,26 +1729,26 @@ private void writeWallSurfaces() throws SolverException {
 			}
 		}
 		printWriter.println();
-		
+
 		// bounding walls as surfaces
-		
+
 		// have to find boundary condition type
 		ISize sampleSize = simulation.getMeshSpecification().getSamplingSize();
 		int numX = sampleSize.getX();
 		int numY = dimension < 2 ? 1 : sampleSize.getY();
-		int numZ = dimension < 3 ? 1 : sampleSize.getZ();	
-		
+		int numZ = dimension < 3 ? 1 : sampleSize.getZ();
+
 		if (dimension > 2) {
 			int[] k_wall = new int[] {0, numZ - 1};
 			for (int k = 0; k < k_wall.length; k ++) {
 				for (int j = 0; j < numY; j ++) {
 					for (int i = 0; i < numX; i ++) {
 						int volIndex = k_wall[k] * numX * numY + j * numX + i;
-						
+
 						for (SubVolume sv : subVolumes) {
 							// gather all the points in all the regions
 							GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();
 							for (GeometricRegion gr : geometricRegions) {
 								VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
 								for (RegionInfo ri : regionInfos) {
@@ -1762,18 +1762,18 @@ private void writeWallSurfaces() throws SolverException {
 				}
 			}
 		}
-		
+
 		if (dimension > 1) {
 			int[] j_wall = new int[] {0, numY - 1};
 			for (int k = 0; k < numZ; k ++) {
 				for (int j = 0; j < j_wall.length; j ++) {
 					for (int i = 0; i < numX; i ++) {
 						int volIndex = k * numX * numY + j_wall[j] * numX + i;
-						
+
 						for (SubVolume sv : subVolumes) {
 							// gather all the points in all the regions
 							GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+							RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();
 							for (GeometricRegion gr : geometricRegions) {
 								VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
 								for (RegionInfo ri : regionInfos) {
@@ -1787,17 +1787,17 @@ private void writeWallSurfaces() throws SolverException {
 				}
 			}
 		}
-		
+
 		int[] i_wall = new int[] {0, numX - 1};
 		for (int k = 0; k < numZ; k ++) {
 			for (int j = 0; j < numY; j ++) {
 				for (int i = 0; i < i_wall.length; i ++) {
 					int volIndex = k * numX * numY + j * numX + i_wall[i];
-					
+
 					for (SubVolume sv : subVolumes) {
 						// gather all the points in all the regions
 						GeometricRegion[] geometricRegions = geometrySurfaceDescription.getGeometricRegions(sv);
-						RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();		
+						RegionInfo[] regionInfos = geometrySurfaceDescription.getRegionImage().getRegionInfos();
 						for (GeometricRegion gr : geometricRegions) {
 							VolumeGeometricRegion vgr = (VolumeGeometricRegion)gr;
 							for (RegionInfo ri : regionInfos) {
@@ -1810,7 +1810,7 @@ private void writeWallSurfaces() throws SolverException {
 				}
 			}
 		}
-		
+
 		Set<SubVolume> boundarySubVolumes = new HashSet<SubVolume>();
 		boundarySubVolumes.addAll(boundaryXSubVolumes);
 		boundarySubVolumes.addAll(boundaryYSubVolumes);
@@ -1829,7 +1829,7 @@ private void writeWallSurfaces() throws SolverException {
 					csd.getBoundaryConditionZm(),
 					csd.getBoundaryConditionZp(),
 				};
-				
+
 				if (computedBct[0] == null) {
 					System.arraycopy(bct, 0, computedBct, 0, dimension * 2);
 					for (int i = 0; i < dimension * 2; i ++) {
@@ -1847,7 +1847,7 @@ private void writeWallSurfaces() throws SolverException {
 				}
 			}
 		}
-		
+
 		printWriter.println("# bounding wall surface");
 		// X walls
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_X);
@@ -1874,7 +1874,7 @@ private void writeWallSurfaces() throws SolverException {
 		}
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 		printWriter.println();
-		
+
 		if (dimension > 1) {
 			// Y walls
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Y);
@@ -1888,16 +1888,16 @@ private void writeWallSurfaces() throws SolverException {
 			switch (dimension) {
 			case 2:
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + extent.getX());
-				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());		
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + extent.getX());
 				break;
 			case 3:
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +1 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
-				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());		
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -1 " + lowWall.getX() + " " + highWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getZ());
 				break;
 			}
 			printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 			printWriter.println();
-			
+
 			if (dimension > 2) {
 				// Z walls
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.start_surface + " " + VCellSmoldynKeyword.bounding_wall_surface_Z);
@@ -1909,7 +1909,7 @@ private void writeWallSurfaces() throws SolverException {
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_panels + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " 2");
 				// xy walls
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " +2 " + lowWall.getX() + " " + lowWall.getY() + " " + lowWall.getZ() + " " + extent.getX() + " " + extent.getY());
-				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());			
+				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.panel + " " + SmoldynVCellMapper.SmoldynKeyword.rect + " -2 " + lowWall.getX() + " " + lowWall.getY() + " " + highWall.getZ() + " " + extent.getX() + " " + extent.getY());
 				printWriter.println(SmoldynVCellMapper.SmoldynKeyword.end_surface);
 				printWriter.println();
 			}
@@ -1917,7 +1917,7 @@ private void writeWallSurfaces() throws SolverException {
 	}
 }
 
-private double subsituteFlattenToConstant(Expression exp) throws MathException, NotAConstantException, ExpressionException {
+double subsituteFlattenToConstant(Expression exp) throws MathException, NotAConstantException, ExpressionException {
 	Expression newExp = subsituteFlatten(exp);
 	try {
 		return newExp.evaluateConstant();
@@ -1945,7 +1945,7 @@ private void writeDiffusions() throws ExpressionBindingException,
 			String variableName = null;
 			if(subDomain instanceof MembraneSubDomain)
 			{
-				variableName = getVariableName(pp.getVariable(), subDomain); 
+				variableName = getVariableName(pp.getVariable(), subDomain);
 			}
 			else
 			{
@@ -1974,7 +1974,7 @@ for (ParticleProperties pp : particlePropertiesList) {
 	String variableName = null;
 	if(subDomain instanceof MembraneSubDomain)
 	{
-		variableName = getVariableName(pp.getVariable(), subDomain); 
+		variableName = getVariableName(pp.getVariable(), subDomain);
 	}
 	else
 	{
@@ -1985,17 +1985,17 @@ for (ParticleProperties pp : particlePropertiesList) {
 		if (pp.getDriftX()!=null){
 			driftX = subsituteFlattenToConstant(pp.getDriftX());
 		}
-		
+
 		double driftY = 0.0;
 		if (pp.getDriftY()!=null){
 			driftY = subsituteFlattenToConstant(pp.getDriftY());
 		}
-		
+
 		double driftZ = 0.0;
 		if (pp.getDriftZ()!=null){
 			driftZ = subsituteFlattenToConstant(pp.getDriftZ());
 		}
-		
+
 		printWriter.println(SmoldynVCellMapper.SmoldynKeyword.drift + " " + variableName + " " + driftX + " " + driftY + " " + driftZ);
 	} catch (NotAConstantException ex) {
 		throw new ExpressionException("diffusion coefficient for variable " + variableName + " is not a constant. Constants are required for all diffusion coefficients");
@@ -2020,10 +2020,10 @@ private void writeSpecies() throws MathException {
 private void writeJms(Simulation simulation) {
 	if (simTask != null) {
 		printWriter.println("# JMS_Paramters");
-		printWriter.println("start_jms"); 
+		printWriter.println("start_jms");
 		printWriter.println(PropertyLoader.getRequiredProperty(PropertyLoader.jmsProvider) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL)
 			+ " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser) + " " + PropertyLoader.getRequiredProperty(PropertyLoader.jmsPassword)
-			+ " " + VCellQueue.WorkerEventQueue.getName()  
+			+ " " + VCellQueue.WorkerEventQueue.getName()
 			+ " " + VCellTopic.ServiceControlTopic.getName()
 			+ " " + simulation.getVersion().getOwner().getName()
 			+ " " + simulation.getVersion().getVersionKey()
@@ -2034,7 +2034,7 @@ private void writeJms(Simulation simulation) {
 }
 
 /**
- * find closest triangles for membrane initial condition 
+ * find closest triangles for membrane initial condition
  * @param membraneSubDomain not null
  * @param triList panels to evaluated not null
  */
@@ -2049,17 +2049,17 @@ private void findClosestTriangles(MembraneSubDomain membraneSubDomain, ArrayList
 	}
 }
 /**
- * find and stores information about which {@link TrianglePanel} is closest to a 
+ * find and stores information about which {@link TrianglePanel} is closest to a
  * {@link ParticleInitialConditionCount}
  */
 private static class ClosestTriangle {
 	final ParticleInitialConditionCount picc;
-	final MembraneSubDomain membrane; 
+	final MembraneSubDomain membrane;
 	final Node node;
 	double currentNodeDistanceSquared;
 	double currentTriangleDistanceSquared;
 	TrianglePanel triPanel;
-	
+
 	/**
 	 * @param picc not null
 	 * @param msb not null
@@ -2070,7 +2070,7 @@ private static class ClosestTriangle {
 	 */
 	ClosestTriangle(ParticleInitialConditionCount picc, MembraneSubDomain msb, SmoldynFileWriter sfw) throws MathException, NotAConstantException, ExpressionException {
 		if (picc.isXUniform() || picc.isYUniform() || picc.isZUniform()) {
-			throw new ExpressionException("Uniform specifier " + ParticleInitialConditionCount.UNIFORM + " for membrane initial condition not supported"); 
+			throw new ExpressionException("Uniform specifier " + ParticleInitialConditionCount.UNIFORM + " for membrane initial condition not supported");
 		}
 		this.picc = picc;
 		this.membrane = msb;
@@ -2079,9 +2079,9 @@ private static class ClosestTriangle {
 		double z = sfw.subsituteFlattenToConstant(picc.getLocationZ());
 		node = new Node(x,y,z);
 		triPanel = null;
-		currentNodeDistanceSquared = Double.MAX_VALUE; 
+		currentNodeDistanceSquared = Double.MAX_VALUE;
 	}
-	
+
 	/**
 	 * see if this panel is closer than ones previously evaluated
 	 * @param tp no null
@@ -2104,7 +2104,7 @@ private static class ClosestTriangle {
 		}
 	}
 }
-	
+
 
 
 }

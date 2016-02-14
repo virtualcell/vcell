@@ -36,11 +36,15 @@ public class IssueManager {
 	private int numErrors, numWarnings;
 	private long dirtyTimestamp = System.currentTimeMillis();
 	private Timer timer = null;
-	
+	/**
+	 * someone has asked for more time
+	 */
+	private boolean bMoreTime = false;
+
 	public IssueManager(){
-		
+
 		int delay = 1000; //  check each second ... wait LAST_DIRTY_MILLISECONDS after the last dirty
-		
+
 		timer = new javax.swing.Timer(delay,new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -70,7 +74,7 @@ public class IssueManager {
 		public final List<Issue> getNewValue() {
 			return newValue;
 		}
-		
+
 	}
 	public void addIssueEventListener(IssueEventListener listener){
 		if (issueEventListeners.contains(listener)){
@@ -86,9 +90,9 @@ public class IssueManager {
 			listener.issueChange(issueEvent);
 		}
 	}
-	
+
 	private List<IssueEventListener> issueEventListeners = new ArrayList<IssueEventListener>();
-	
+
 	/**
 	 * @param immediate update now, skip check of {@link #LAST_DIRTY_MILLISECONDS}
 	 */
@@ -111,10 +115,10 @@ public class IssueManager {
 			numWarnings = 0;
 			ArrayList<Issue> oldIssueList = new ArrayList<Issue>(issueList);
 			ArrayList<Issue> tempIssueList = new ArrayList<Issue>();
-			IssueContext issueContext = new IssueContext();
+			IssueContext issueContext = new ManagerContext();
 			decorator.gatherIssues(issueContext, tempIssueList);
 			//vcDocument.gatherIssues(issueContext,tempIssueList);
-			
+
 			issueList = new ArrayList<Issue>();
 			for (Issue issue: tempIssueList) {
 				if (issue instanceof SimpleBoundsIssue) {
@@ -132,6 +136,10 @@ public class IssueManager {
 //			System.out.println("\n................... update performed .................." + System.currentTimeMillis());
 		} finally {
 			dirtyTimestamp = 0;
+			if (bMoreTime) {
+				setDirty( );
+				bMoreTime = false;
+			}
 		}
 	}
 	public void updateIssues() {
@@ -153,16 +161,27 @@ public class IssueManager {
 	public final int getNumWarnings() {
 		return numWarnings;
 	}
-	
+
 	public void setDirty() {
 		dirtyTimestamp = System.currentTimeMillis();
 	}
-	
+
 	@Deprecated
 	public static String getHtmlIssueMessage(List<Issue> issueList) {
 		return Issue.getHtmlIssueMessage(issueList);
 	}
 	public VCDocument getVCDocument() {
 		return vcDocument;
+	}
+
+	/**
+	 * allow components to say they need more time
+	 */
+	private class ManagerContext extends IssueContext {
+		@Override
+		public void needMoreTime() {
+			setDirty( );
+			bMoreTime = true;
+		}
 	}
 }
