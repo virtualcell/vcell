@@ -32,7 +32,7 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 
 /**
  * Gibson solver Creation date: (7/13/2006 9:00:41 AM)
- * 
+ *
  * @author: Tracy LI
  */
 public class NFSimSolver extends SimpleCompiledSolver {
@@ -51,7 +51,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 
 	/**
 	 * show progress. Creation date: (7/13/2006 9:00:41 AM)
-	 * 
+	 *
 	 * @return cbit.vcell.solvers.ApplicationMessage
 	 * @param message
 	 *            java.lang.String
@@ -92,7 +92,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		writeFunctionsFile();
 
 		String inputFilename = getInputFilename();
-		sessionLog.print("NFSimSolver.initialize() inputFilename = " + getInputFilename()); 
+		sessionLog.print("NFSimSolver.initialize() inputFilename = " + getInputFilename());
 
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
@@ -106,7 +106,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 					SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 			e.printStackTrace(System.out);
 			throw new SolverException(e.getMessage());
-		} 
+		}
 
 		PrintWriter lg = null;
 		String logFilename = getLogFilename();
@@ -154,7 +154,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 				.getRequiredProperty(PropertyLoader.nfsimExecutableProperty);
 		String inputFilename = getInputFilename();
 		String outputFilename = getOutputFilename();
-		
+
 		NFsimSimulationOptions nfsso = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
 		ArrayList<String> adv = new ArrayList<String>();
 		boolean observableComputationOff = nfsso.getObservableComputationOff();
@@ -184,10 +184,10 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		if(preventIntraBonds == true) {
 			adv.add("-bscb");			// false is by default, no need to specify
 		}
-		
+
 		TimeBounds tb = getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds();
 		double dtime = tb.getEndingTime() - tb.getStartingTime();
-		
+
 		String timeSpecOption1 = "-oSteps";
 		String timeSpecOption2 = "10";
 		OutputTimeSpec outputTimeSpec = getSimulationJob().getSimulation().getSolverTaskDescription().getOutputTimeSpec();
@@ -205,9 +205,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		} else {
 			throw new RuntimeException("Unsupported output time spec class");
 		}
-		
+
 		Integer seed = nfsso.getRandomSeed();
-		
+
 		String baseCommands[] = { "-xml", inputFilename, "-o", outputFilename, "-sim", Double.toString(dtime) };
 		ArrayList<String> cmds = new ArrayList<String>();
 		cmds.add(executableName);
@@ -218,7 +218,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		cmds.addAll(new ArrayList<String>(Arrays.asList(baseCommands)));
 		cmds.add(timeSpecOption1);
 		cmds.add(timeSpecOption2);
-		
+
 		cmds.addAll(adv);
 		if (bMessaging) {
 			cmds.add("-v");
