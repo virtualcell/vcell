@@ -48,12 +48,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -218,7 +221,7 @@ public final class BeanUtils {
 		if (window != null) {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             final Rectangle maxBounds = ge.getMaximumWindowBounds();
-           
+
 //			GraphicsEnvironment ge = GraphicsEnvironment.
 //					getLocalGraphicsEnvironment();
 //			GraphicsDevice[] gs = ge.getScreenDevices();
@@ -1401,5 +1404,21 @@ public final class BeanUtils {
 			return obj;
 		}
 	}
+
+	/**
+	 * filter subtype out of a collection
+	 * @param clzz non null
+	 * @param coll non null
+	 * @return list containing elements from coll of type clzz
+	 */
+	public static <T>  List<T> filterCollection(Class<T> clzz,Collection<?> coll) {
+		Objects.requireNonNull(clzz);
+		Objects.requireNonNull(coll);
+		return coll.stream( )
+		.filter(clzz::isInstance)
+		.map(clzz::cast)
+		.collect(Collectors.toList());
+	}
+
 
 }

@@ -12,6 +12,7 @@ package cbit.vcell.mathmodel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.util.Arrays;
 import java.util.List;
 
 import org.vcell.util.BeanUtils;
@@ -41,13 +42,13 @@ import cbit.vcell.solver.SimulationOwner;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
- * @author: 
+ * @author:
  */
 @SuppressWarnings("serial")
 public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource {
 	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
 	private static final String TIME_UNIT_STRING = "time units";
-	
+
 	private Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -57,7 +58,7 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 	private static UnitInfo mathUnitInfo = null;
-	
+
 	private transient boolean tempSmoldynWarningAcknowledged;
 
 /**
@@ -122,8 +123,8 @@ public Simulation addNewSimulation(String simNamePrefix) throws java.beans.Prope
 	// create new Simulation and add to MathModel.
 	//
 	Simulation newSimulation = new Simulation(math);
-	newSimulation.setName(newSimName);	
-	
+	newSimulation.setName(newSimName);
+
 	addSimulation(newSimulation);
 
 	return newSimulation;
@@ -153,7 +154,7 @@ public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoE
 	}else{
 		setSimulations((Simulation[])BeanUtils.addElement(fieldSimulations,simulation));
 	}
-	
+
 }
 
 
@@ -266,7 +267,7 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 	//
 	Simulation newSimulation = new Simulation(simulation);
 	newSimulation.setName(newSimName);
-	
+
 	addSimulation(newSimulation);
 
 	return newSimulation;
@@ -277,7 +278,7 @@ public MathModelChildSummary createMathModelChildSummary() {
 	MathType modelType = getMathDescription().getMathType();
 	String geoName = getMathDescription().getGeometry().getName();
 	int geoDim = getMathDescription().getGeometry().getDimension();
-	
+
 	Simulation[] sims = getSimulations();
 	String[] simNames = new String[sims.length];
 	String[] simAnnots = new String[sims.length];
@@ -285,9 +286,9 @@ public MathModelChildSummary createMathModelChildSummary() {
 		simNames[i] = sims[i].getName();
 		simAnnots[i] = sims[i].getDescription();
 	}
-	 	
+
 	return new MathModelChildSummary(modelType, geoName, geoDim, simNames, simAnnots);
-	
+
 }
 
 /**
@@ -393,6 +394,12 @@ public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
+/**
+ * @return {@link #getSimulations()} as Collection
+ */
+public List<Simulation> getSimulationCollection( ) {
+	return Arrays.asList(fieldSimulations);
+}
 
 /**
  * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
@@ -427,9 +434,9 @@ public java.lang.String getVCML() throws Exception {
 			buffer.append(fieldSimulations[i].getVCML()+"\n");
 		}
 	}
-	
+
 	buffer.append("}\n");
-	return buffer.toString();		
+	return buffer.toString();
 }
 
 
@@ -472,7 +479,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 
 	/**
 	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
+	 * @param evt A PropertyChangeEvent object describing the event source
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -556,7 +563,7 @@ public void refreshDependencies() {
 		getMathDescription().addPropertyChangeListener(this);
 	}
 
-	
+
 	fieldMathDescription.refreshDependencies();
 	fieldMathDescription.removeVetoableChangeListener(this);
 	fieldMathDescription.removePropertyChangeListener(this);
@@ -730,7 +737,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
-	
+
 	TokenMangler.checkNameProperty(this, "MathModel", evt);
 }
 
@@ -779,27 +786,27 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public VersionedLibrary getRequiredLibrary() {
 		return null;
 	}
-	
+
 	/**
-	 * temporary class pending resolution of Smoldyn surface membrane inaccuracy 
+	 * temporary class pending resolution of Smoldyn surface membrane inaccuracy
 	 */
 	public class TempSmoldynWarningAPI {
 		private TempSmoldynWarningAPI( ) {}
-		
+
 		/**
 		 * @return true if acknowledged already
 		 */
 		public boolean isWarningAcknowledged( ) {
 			return tempSmoldynWarningAcknowledged;
 		}
-		
+
 		/**
 		 * set acknowledge to true
 		 */
 		public void acknowledge( ) {
 			tempSmoldynWarningAcknowledged = true;
 		}
-		
+
 		/**
 		 * @return parent model
 		 */

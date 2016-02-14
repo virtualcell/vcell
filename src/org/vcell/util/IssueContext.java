@@ -6,7 +6,7 @@ import org.vcell.util.Issue.IssueSource;
 
 /**
  * A hierarchical view of path to issue source object
- * 1) enables issue instantiation to be unaware of complete path to object within data model.   
+ * 1) enables issue instantiation to be unaware of complete path to object within data model.
  * 2) enables issue consumer required context to react to issue (e.g. hyperlinks, display object name & path)
  */
 public class IssueContext implements Serializable {
@@ -61,11 +61,11 @@ public class IssueContext implements Serializable {
 	public IssueSource getContextObject() {
 		return contextObject;
 	}
-	
+
 	public IssueContext getParentContext() {
 		return parentContext;
 	}
-	
+
 	//
 	// convenience method to search through context hierarchy using contextType
 	//
@@ -81,7 +81,7 @@ public class IssueContext implements Serializable {
 			return null;
 		}
 	}
-	
+
 	//
 	// convenience method to search through context hierarchy using contextType
 	//
@@ -97,4 +97,16 @@ public class IssueContext implements Serializable {
 			return false;
 		}
 	}
+
+	/**
+	 * model component needs more time before reporting
+	 * forward to parent, if any
+	 */
+	public void needMoreTime() {
+		if (parentContext != null) {
+			parentContext.needMoreTime();
+		}
+
+	}
+
 }
