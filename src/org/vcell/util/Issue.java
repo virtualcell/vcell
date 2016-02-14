@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @SuppressWarnings("serial")
 public class Issue implements java.io.Serializable, Matchable {
-	
+
 	private java.util.Date date = new java.util.Date();
 	private String message = null;
 	private String tooltip = null;
@@ -33,15 +33,15 @@ public class Issue implements java.io.Serializable, Matchable {
 	private IssueSource source2 = null;
 	private IssueContext issueContext = null;
 	private Severity severity = Severity.INFO;
-	private String hyperlink; 
+	private String hyperlink;
 	public enum Severity {
 		INFO("info"),
 		TIP("tip"),
 		BUILTIN_CONSTRAINT("constraint"),
 		WARNING("warning"),
 		ERROR("error");
-		
-		
+
+
 		/**
 		 * display name / toString return
 		 */
@@ -50,7 +50,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		private Severity(String name) {
 			this.name = name;
 		}
-		
+
 		/**
 		 * @return {@link #name()}
 		 */
@@ -58,41 +58,41 @@ public class Issue implements java.io.Serializable, Matchable {
 			return name;
 		}
 	}
-	
-	
+
+
 
 	/**
 	 * use {@link Severity#INFO}
 	 */
 	@Deprecated
-	public static final Severity SEVERITY_INFO = Severity.INFO; 
+	public static final Severity SEVERITY_INFO = Severity.INFO;
 	/**
 	 * use {@link Severity#TIP}
 	 */
 	@Deprecated
-	public static final Severity   SEVERITY_TIP = Severity.TIP; 
+	public static final Severity   SEVERITY_TIP = Severity.TIP;
 	/**
 	 * use {@link Severity#BUILTIN_CONSTRAINT}
 	 */
 	@Deprecated
-	public static final Severity  SEVERITY_BUILTIN_CONSTRAINT = Severity.BUILTIN_CONSTRAINT; 
+	public static final Severity  SEVERITY_BUILTIN_CONSTRAINT = Severity.BUILTIN_CONSTRAINT;
 	/**
 	 * use {@link Severity#WARNING}
 	 */
 	@Deprecated
-	public static final Severity  SEVERITY_WARNING = Severity.WARNING; 
+	public static final Severity  SEVERITY_WARNING = Severity.WARNING;
 	/**
 	 * @deprecated
 	 * use {@link Severity#ERROR}
 	 */
 	@Deprecated
-	public static final  Severity SEVERITY_ERROR = Severity.ERROR;  
-	
+	public static final  Severity SEVERITY_ERROR = Severity.ERROR;
+
 
 	public interface IssueSource {
-		
+
 	}
-	
+
 	public interface IssueOrigin extends IssueSource {
 		/**
 		 * end user description of source
@@ -100,7 +100,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		 */
 		public String getDescription( );
 	}
-	
+
 	public enum IssueCategory {
 		Units,
 		Identifiers,
@@ -119,9 +119,9 @@ public class Issue implements java.io.Serializable, Matchable {
 		StructureNotMapped,
 		GeometryClassNotMapped,
 		SubVolumeVerificationError,
-		
+
 		ModelParameterExpressionError,
-		
+
 		InternalError,
 		ParameterEstimationGeneralWarning,
 		ParameterBoundsDefinition,
@@ -131,7 +131,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		ParameterEstimationRefereceDataNoTime,
 		ParameterEstimationRefereceDataNotMapped,
 		ParameterEstimationRefereceDataMappedImproperly,
-		
+
 		MathDescription_NoGeometry,
 		MathDescription_Constant_NotANumber,
 		MathDescription_ExpressionBindingException,
@@ -146,28 +146,29 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_SpatialModel_Event,
 		MathDescription_SpatialModel_PostProcessingBlock,
 		MathDescription_StochasticModel,
-		
+
 		Simulation_Override_NotFound,
 		Simulation_Override_NotSupported,
 		Simulation_SensAnal_And_FastSystem,
-		
+
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 		Smoldyn_Geometry_3DWarning,
-		
+
 		Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning,
-		
+
 		MembraneElectricalPolarityError,
-		
-		SBMLImport_UnsupportedAttributeOrElement, 
-		SBMLImport_Reaction, 
+
+		SBMLImport_UnsupportedAttributeOrElement,
+		SBMLImport_Reaction,
 		SBMLImport_MissingSpeciesInitCondition,
-		
+
 		Workflow_missingInput,
-		
+
 		RbmMolecularTypesTableBad,
 		RbmReactionRulesTableBad,
 		RbmObservablesTableBad,
 		RbmNetworkConstraintsBad,
+		SMOLYDN_DIFFUSION,
 	}
 
 	/**
@@ -182,7 +183,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	public Issue(IssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, Severity argSeverity) {
 		this(argSource, null, issueContext, argCategory, argMessage, argTooltip, argSeverity);
 	}
-	
+
 	/**
 	 * @param argTooltip may be null; HTML formatted
 	 */
@@ -308,7 +309,7 @@ public java.lang.String getTooltip() {
 	return tooltip;
 }
 /**
- * 
+ *
  * @return {@link #getTooltip()} wrapped in html tags if not blank; otherwise return {@link #getTooltip()}
  */
 public String getHtmlTooltip() {

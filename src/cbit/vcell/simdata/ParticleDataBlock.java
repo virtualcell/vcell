@@ -77,7 +77,7 @@ public ParticleDataInfo getParticleDataInfo() {
  * @return long
  */
 public long getSizeInBytes() {
-	return 1; 
+	return 1;
 }
 /**
  * This method was created in VisualAge.
@@ -114,7 +114,7 @@ private List<Coordinate> fetch(String speciesName) {
 private long read(File file, File zipFile) throws DataAccessException, IOException {
 	VCAssert.assertValid(file);
 
-	List<String> lines; 
+	List<String> lines;
 	long timeStamp;
 	if (file.exists( )) {
 		lines = FileUtils.readLines(file);
@@ -125,7 +125,7 @@ private long read(File file, File zipFile) throws DataAccessException, IOExcepti
 		try (ZipFile zf = new ZipFile(zipFile)) {
 			ZipEntry entry = zf.getEntry(file.getName( ));
 			if (entry != null) {
-				InputStream is = zf.getInputStream(entry); 
+				InputStream is = zf.getInputStream(entry);
 				lines = IOUtils.readLines(is);
 				timeStamp= entry.getTime();
 			}
@@ -137,12 +137,12 @@ private long read(File file, File zipFile) throws DataAccessException, IOExcepti
 	}
 	readParticleData(lines);
 	return timeStamp;
-}   
+}
 
 private void readParticleData(List<String> lines) throws DataAccessException {
 	String lastSpecies = null;
 	List<Coordinate> working = null;
-	
+
 	for (String line: lines) {
 		try {
 			CommentStringTokenizer st = new CommentStringTokenizer(line);
@@ -151,9 +151,9 @@ private void readParticleData(List<String> lines) throws DataAccessException {
 				lastSpecies = sp;
 				working = fetch(sp);
 			}
-			double x = Double.valueOf(st.nextToken()).doubleValue();
-			double y = Double.valueOf(st.nextToken()).doubleValue();
-			double z = Double.valueOf(st.nextToken()).doubleValue();
+			double x = Double.parseDouble(st.nextToken());
+			double y = Double.parseDouble(st.nextToken());
+			double z = Double.parseDouble(st.nextToken());
 			Coordinate c = new Coordinate(x,y,z);
 			working.add(c);
 		} catch (Exception exc) {

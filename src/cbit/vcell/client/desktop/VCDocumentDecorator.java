@@ -25,6 +25,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
@@ -32,14 +33,14 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
 import cbit.vcell.solver.SolverTaskDescription;
 
 public abstract class VCDocumentDecorator {
-	
+
 	/**
 	 * @param issueContext not null
 	 * @param issueList destination for Issues
 	 */
-	public abstract void gatherIssues(IssueContext issueContext, List<Issue> issueList);	
-	
-	
+	public abstract void gatherIssues(IssueContext issueContext, List<Issue> issueList);
+
+
 	/**
 	 * get most appropriate decorator for client
 	 * @param client not null
@@ -49,6 +50,9 @@ public abstract class VCDocumentDecorator {
 		if (client instanceof BioModel) {
 			return new BioModelDecorator((BioModel) client);
 		}
+		if (client instanceof MathModel) {
+			return new MathModelDecorator((MathModel) client);
+		}
 		return new GenericDecorator(client);
 	}
 
@@ -57,25 +61,25 @@ public abstract class VCDocumentDecorator {
 	 */
 	private static class GenericDecorator extends VCDocumentDecorator {
 		private final VCDocument document;
-		
+
 		GenericDecorator(VCDocument document) {
 			super();
 			this.document = document;
 		}
-		
+
 		@Override
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			document.gatherIssues(issueContext, issueList);
 		}
 	}
-	
+
 	private static class BioModelDecorator extends VCDocumentDecorator {
 		private final BioModel bioModel;
 		/**
 		 * see {@link #fetchSimSource(Simulation)}
 		 */
 		private ArrayList<SimulationSource> simSources;
-		
+
 		BioModelDecorator(BioModel bioModel) {
 			super();
 			this.bioModel = bioModel;
@@ -89,18 +93,19 @@ public abstract class VCDocumentDecorator {
 				List<SolverFeature> requiredFeatures = buildRequiredFeatures(sc);
 				for (Simulation sim : sc.getSimulations()) {
 					checkRequired(issueContext, issueList, sim, requiredFeatures);
+					sim.gatherIssues(issueContext, issueList);
 				}
 			}
 		}
-		
+
 		/**
-		 * model, as best as possible required features based on 
-		 * current state of BioModel; actual solver features determined by MathDescription 
+		 * model, as best as possible required features based on
+		 * current state of BioModel; actual solver features determined by MathDescription
 		 * @param sc not null
 		 * @return approximation of list of required features
 		 */
 		private List<SolverFeature> buildRequiredFeatures(SimulationContext sc) {
-			ArrayList<SolverFeature> sfList = new ArrayList<>(); 
+			ArrayList<SolverFeature> sfList = new ArrayList<>();
 			if (sc.getGeometry().getDimension() > 0) {
 				sfList.add(SolverFeature.Feature_Spatial);
 			}
@@ -111,13 +116,13 @@ public abstract class VCDocumentDecorator {
 			case NETWORK_DETERMINISTIC:
 				sfList.add(SolverFeature.Feature_Deterministic);
 				return sfList;
-			case RULE_BASED_STOCHASTIC: 
+			case RULE_BASED_STOCHASTIC:
 				sfList.add(SolverFeature.Feature_Rulebased);
 				return sfList;
-			case NETWORK_STOCHASTIC: 
+			case NETWORK_STOCHASTIC:
 				//more analysis to determine whether hybrid or (pure) stochastic
 			}
-			//stochastic could also be hybrid 
+			//stochastic could also be hybrid
 			boolean continuous = false;
 			ReactionContext rc = sc.getReactionContext();
 			for (SpeciesContextSpec scs : rc.getSpeciesContextSpecs()) {
@@ -125,7 +130,7 @@ public abstract class VCDocumentDecorator {
 					continue;
 				}
 				boolean fc = scs.isForceContinuous();
-				continuous = continuous || fc; 
+				continuous = continuous || fc;
 				if (continuous) {
 					break;
 				}
@@ -133,15 +138,15 @@ public abstract class VCDocumentDecorator {
 			if (continuous) {
 				sfList.add(SolverFeature.Feature_Hybrid);
 			}
-			else { 
+			else {
 				sfList.add(SolverFeature.Feature_Stochastic);
 			}
 			return sfList;
 		}
-		
+
 		/**
-		 * checked required features against Solver simulation currently set for, 
-		 * issue errors if there is mismatch 
+		 * checked required features against Solver simulation currently set for,
+		 * issue errors if there is mismatch
 		 * @param issueContext
 		 * @param issueList
 		 * @param sim
@@ -150,7 +155,7 @@ public abstract class VCDocumentDecorator {
 		private void checkRequired(IssueContext issueContext, List<Issue> issueList,Simulation sim, List<SolverFeature> requiredFeatures) {
 			SolverDescription solvDesc = sim.getSolverTaskDescription().getSolverDescription();
 			Set<SolverFeature> supportedFeatures = solvDesc.getSupportedFeatures();
-			Set<SolverFeature> missingFeatures = new HashSet<>(requiredFeatures); 
+			Set<SolverFeature> missingFeatures = new HashSet<>(requiredFeatures);
 			missingFeatures.removeAll(supportedFeatures);
 
 			String text = "Solver " + solvDesc.getDatabaseName() + " does not support the following required features: \n";
@@ -159,7 +164,7 @@ public abstract class VCDocumentDecorator {
 			}
 
 			if (!missingFeatures.isEmpty()) {
-				String tooltip = "The selected Solver " + solvDesc.getDisplayLabel() + 
+				String tooltip = "The selected Solver " + solvDesc.getDisplayLabel() +
 						" does not support the following required features: <br>";
 				for (SolverFeature sf : missingFeatures) {
 					tooltip += "&nbsp;&nbsp;&nbsp;" + sf.getName() + "<br>";
@@ -172,14 +177,14 @@ public abstract class VCDocumentDecorator {
 						tooltip += "&nbsp;&nbsp;&nbsp;" + sd.getDisplayLabel() + "<br>";
 					}
 				}
-				
+
 				SimulationSource source = fetchSimSource(sim);
 				source.setGoodSolvers(goodSolvers); //remember for if / when activateView is called
 				Issue issue = new Issue(source,issueContext, IssueCategory.MathDescription_MathException, text, tooltip, Issue.Severity.ERROR);
 				issueList.add(issue);
 			}
 		}
-		
+
 		/**
 		 * @param sim not null
 		 * @return new or existing {@link SimulationSource} for sim
@@ -197,12 +202,28 @@ public abstract class VCDocumentDecorator {
 			return s;
 		}
 	}
-	
+
+	private static class MathModelDecorator extends VCDocumentDecorator {
+		private final MathModel mathModel;
+
+		MathModelDecorator(MathModel mathModel) {
+			this.mathModel = mathModel;
+		}
+
+		@Override
+		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
+			mathModel.getSimulationCollection().stream().forEach( (s) -> s.gatherIssues(issueContext, issueList));
+		}
+	}
+
+	/**
+	 * simulation sources, for BioModels only
+	 */
 	private static class SimulationSource implements DecoratedIssueSource {
 		final Simulation simulation;
 		/**
 		 * cache relationship between {@link SimulationOwner} and {@link Simulation} because
-		 * Simulation object may be disconnected from SimuationContext (e.g. if it's deleted) 
+		 * Simulation object may be disconnected from SimuationContext (e.g. if it's deleted)
 		 */
 		final String pathDesc;
 		Collection<SolverDescription> goodSolvers = null;
@@ -224,7 +245,7 @@ public abstract class VCDocumentDecorator {
 		void setGoodSolvers( Collection<SolverDescription> solverDescriptions) {
 			this.goodSolvers = solverDescriptions;
 		}
-		
+
 		/**
 		 * exception safe setSolverDescription
 		 * @param sd
@@ -241,7 +262,7 @@ public abstract class VCDocumentDecorator {
 
 		@Override
 		public void activateView(SelectionManager selectionManager) {
-			SimulationContext sc = BeanUtils.downcast(SimulationContext.class, simulation.getSimulationOwner()); 
+			SimulationContext sc = BeanUtils.downcast(SimulationContext.class, simulation.getSimulationOwner());
 			Window activated = null;
 			if (sc != null ) {
 				ActiveView av = new ActiveView(sc, DocumentEditorTreeFolderClass.SIMULATIONS_NODE, ActiveViewID.simulations);
@@ -251,7 +272,7 @@ public abstract class VCDocumentDecorator {
 			if (goodSolvers.size() > 0) {
 				final boolean useFixAll = siblings.size() > 1;
 				QuickFixSimulation qfs = new QuickFixSimulation(activated,useFixAll,
-						currentSolver + " does not support current model. Please select one of the following solvers:", 
+						currentSolver + " does not support current model. Please select one of the following solvers:",
 						goodSolvers);
 				qfs.setVisible(true);
 				CloseAction ca = qfs.getCloseAction();
@@ -274,7 +295,7 @@ public abstract class VCDocumentDecorator {
 							source.setSolverDescription(source.goodSolvers.iterator( ).next());
 						}
 					}
-					
+
 					break;
 				}
 				case CANCEL:
@@ -292,6 +313,6 @@ public abstract class VCDocumentDecorator {
 			return pathDesc;
 		}
 	}
-	
-	
+
+
 }
