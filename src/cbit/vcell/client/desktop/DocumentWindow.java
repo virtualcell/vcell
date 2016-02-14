@@ -12,7 +12,6 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -2324,8 +2323,6 @@ public void setWorkArea(Component c) {
 
 
 public static void showAboutBox(Component parent) {
-	/* Create the AboutBox dialog */
-	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox();
 	String version = "";
 	String build = "";
 	try {
@@ -2335,9 +2332,8 @@ public static void showAboutBox(Component parent) {
 		System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
 		exc.printStackTrace(System.out);
 	}
-	aDocumentWindowAboutBox.getVersion().setText(version);
-	aDocumentWindowAboutBox.getBuildNumber().setText(build);
-	aDocumentWindowAboutBox.setPreferredSize(new Dimension(390,275));
+	/* Create the AboutBox dialog */
+	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox(version,build);
 	DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About the Virtual Cell");
 }
 
