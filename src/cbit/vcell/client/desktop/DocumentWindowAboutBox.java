@@ -28,6 +28,8 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.KeySequenceListener;
 
+import cbit.vcell.resource.ResourceUtil;
+
 @SuppressWarnings("serial")
 public class DocumentWindowAboutBox extends JPanel {
 
@@ -45,6 +47,7 @@ public class DocumentWindowAboutBox extends JPanel {
 	private static String BUILD_NO = "";
 	private static String EDITION = "";
 	private JLabel buildNumber = null;
+	private JLabel jarch;
 
 	public static void parseVCellVersion() {
 		try {
@@ -57,7 +60,7 @@ public class DocumentWindowAboutBox extends JPanel {
 			exc.printStackTrace(System.out);
 		}
 	}
-	
+
 	public static String getVERSION_NO() {
 		return VERSION_NO;
 	}
@@ -69,34 +72,53 @@ public class DocumentWindowAboutBox extends JPanel {
 	public static String getEDITION() {
 		return EDITION;
 	}
-	
-	public static class HierarchyPrinter extends KeySequenceListener {
-		
-		public String getSequence() { return "hierarchy"; }
-		
-		public void sequenceTyped() {
-			for(Frame frame : Frame.getFrames()) {
-				printHierarchy(frame, "");
-			}
-		}
-		
-		public void printHierarchy(Component component, String indentation) {
-			System.out.println(indentation + component);
-			if(component instanceof Container) {
-				for(Component child : ((Container) component).getComponents()) {
-					printHierarchy(child, indentation + "  ");
-				}
-				
-			}
-		}
-		
-	}
-	
-	public DocumentWindowAboutBox() {
-		super();
-		initialize();
+
+	public DocumentWindowAboutBox(String vers, String build) {
+		setLayout(new GridBagLayout());
+
+		int gridy = 0;
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.gridheight = GridBagConstraints.REMAINDER;
+		gbc.insets = new Insets(0,0,4,4);
+		gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+		add(getIconLabel(), gbc);
+
+		gbc = attributionConstraints(2,gridy);
+		add(getAppName(), gbc);
+
+		gbc = attributionConstraints(0,++gridy);
+		add(getVersion(vers), gbc);
+
+		gbc = attributionConstraints(0,++gridy);
+		add(getJavaArch(),gbc);
+
+		gbc = attributionConstraints(0,++gridy);
+		add(getBuildNumber(build), gbc);
+
+		gbc = attributionConstraints(0,++gridy);
+		add(getCopyright(), gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(getCOPASIAttribution(), gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(getSmoldynAttribution(), gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(getBioNetGenAttribution(), gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(getNFsimAttribution(),gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(getAcknowledgePubAttribution(), gbc);
+
+		gbc = attributionConstraints(10,++gridy);
+		add(new JLabel("<html>Virtual Cell is Supported by NIH Grant P41 GM103313 from the<br/> National Institute for General Medical Sciences.</html>"), gbc);
+
 		setFocusable(true);
-		addKeyListener(new HierarchyPrinter());
 	}
 
 	private JLabel getAppName() {
@@ -118,12 +140,11 @@ public class DocumentWindowAboutBox extends JPanel {
 		return appName;
 	}
 
-	public JLabel getBuildNumber() {
+	private JLabel getBuildNumber(String build) {
 		if (buildNumber == null) {
 			try {
-				buildNumber = new JLabel();
+				buildNumber = new JLabel(build);
 				buildNumber.setName("BuildNumber");
-				buildNumber.setText("");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -131,12 +152,21 @@ public class DocumentWindowAboutBox extends JPanel {
 		return buildNumber;
 	}
 
+
+	private JLabel getJavaArch() {
+		if (jarch == null) {
+			String desc = System.getProperty("java.version") + " " + System.getProperty("os.name")+ " " + System.getProperty("os.arch");
+			jarch = new JLabel(desc);
+		}
+		return jarch;
+	}
+
 	private JLabel getCopyright() {
 		if (copyright == null) {
 			try {
 				copyright = new JLabel();
 				copyright.setName("Copyright");
-				copyright.setText("(c) Copyright 1998-2015 UCHC");
+				copyright.setText("(c) Copyright 1998-2016 UConn Health");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -158,11 +188,11 @@ public class DocumentWindowAboutBox extends JPanel {
 		}
 		return iconLabel;
 	}
-	
+
 	private JLabel getCOPASIAttribution() {
 		JLabel copasiText = new JLabel();
 			try {
-				
+
 				copasiText.setName("COPASI");
 				copasiText.setText("<html>Featuring <font color=blue><u>COPASI</u></font> parameter estimation technology&nbsp;&nbsp;</html>");
 				copasiText.addMouseListener(new MouseAdapter() {
@@ -173,14 +203,14 @@ public class DocumentWindowAboutBox extends JPanel {
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
-		
+
 		return copasiText;
 	}
-	
+
 	private JLabel getSmoldynAttribution() {
 		JLabel smoldynText = new JLabel();
 			try {
-				
+
 				smoldynText.setName("SMOLDYN");
 				smoldynText.setText("<html>Featuring spatial stochastic simulation powered by <font color=blue><u>SMOLDYN</u></font></html>");
 				smoldynText.addMouseListener(new MouseAdapter() {
@@ -191,15 +221,15 @@ public class DocumentWindowAboutBox extends JPanel {
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
-		
+
 		return smoldynText;
 	}
-	
-	
+
+
 	private JLabel getBioNetGenAttribution() {
 		JLabel bioNetGenText = new JLabel();
 			try {
-				
+
 				bioNetGenText.setName("BioNetGen");
 				bioNetGenText.setText("<html>Featuring rule-based simulation powered by <font color=blue><u>BioNetGen</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
@@ -210,14 +240,14 @@ public class DocumentWindowAboutBox extends JPanel {
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
-		
+
 		return bioNetGenText;
 	}
-	
+
 	private JLabel getNFsimAttribution() {
 		JLabel bioNetGenText = new JLabel();
 			try {
-				
+
 				bioNetGenText.setName("NFsim");
 				bioNetGenText.setText("<html>Featuring network free stochastic simulation powered by <font color=blue><u>NFsim</u></font></html>");
 				bioNetGenText.addMouseListener(new MouseAdapter() {
@@ -228,15 +258,15 @@ public class DocumentWindowAboutBox extends JPanel {
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
-		
+
 		return bioNetGenText;
-	}	
+	}
 	private JLabel getAcknowledgePubAttribution() {
 		JLabel ackPubJlabel = new JLabel();
 			try {
-				
+
 				ackPubJlabel.setName("AcknowledgePub");
-				ackPubJlabel.setText("<html>Use <font color=blue><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication and how to share your published research through the VCell database. </html>");
+				ackPubJlabel.setText("<html>Use <font color=blue><u>this link</u></font> for details on how to acknowledge Virtual Cell in your publication<br>and how to share your published research through the VCell database. </html>");
 				ackPubJlabel.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent e) {
 						DialogUtils.browserLauncher(DocumentWindowAboutBox.this, ACKNOWLEGE_PUB__WEB_URL, "Failed to open BioNetGen webpage ("+ACKNOWLEGE_PUB__WEB_URL+")");
@@ -245,16 +275,15 @@ public class DocumentWindowAboutBox extends JPanel {
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
-		
+
 		return ackPubJlabel;
 	}
 
-	public JLabel getVersion() {
+	private JLabel getVersion(String vers) {
 		if (version == null) {
 			try {
-				version = new JLabel();
+				version = new JLabel(vers);
 				version.setName("Version");
-				version.setText("Version 4.0");
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -282,53 +311,5 @@ public class DocumentWindowAboutBox extends JPanel {
 			gbc.insets = new Insets(topOffset,4,0,4);
 			gbc.anchor = GridBagConstraints.LINE_START;
 			return gbc;
-	}
-	
-	private void initialize() {
-		try {
-			setLayout(new GridBagLayout());
-			
-			int gridy = 0;
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 2;
-			gbc.gridheight = GridBagConstraints.REMAINDER;
-			gbc.insets = new Insets(0,0,4,4);
-			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-			add(getIconLabel(), gbc);
-			
-			gbc = attributionConstraints(2,gridy);
-			add(getAppName(), gbc);
-	
-			gbc = attributionConstraints(0,++gridy);
-			add(getVersion(), gbc);
-
-			gbc = attributionConstraints(0,++gridy);
-			add(getBuildNumber(), gbc);
-			
-			gbc = attributionConstraints(0,++gridy);
-			add(getCopyright(), gbc);
-
-			gbc = attributionConstraints(10,++gridy);
-			add(getCOPASIAttribution(), gbc);
-			
-			gbc = attributionConstraints(10,++gridy);
-			add(getSmoldynAttribution(), gbc);
-			
-			gbc = attributionConstraints(10,++gridy);
-			add(getBioNetGenAttribution(), gbc);
-			
-			gbc = attributionConstraints(10,++gridy);
-			add(getNFsimAttribution(),gbc);
-			
-			gbc = attributionConstraints(10,++gridy);
-			add(getAcknowledgePubAttribution(), gbc);
-
-			gbc = attributionConstraints(10,++gridy);
-			add(new JLabel("<html>Virtual Cell is Supported by NIH Grant P41 GM103313 from the National Institute for General Medical Sciences.</html>"), gbc);
-
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
 	}
 }
