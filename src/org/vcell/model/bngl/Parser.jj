@@ -105,7 +105,6 @@ TOKEN : /* IDENTIFIERS */
       ["0"-"9"]
   > 
 |
-  
    < INTEGER: ["0"-"9"] (["0"-"9"])* > 
 |
    <LABEL: <ID> ":">
@@ -171,7 +170,7 @@ TOKEN : /* LITERALS */
   >
 */
   < FLOATING_POINT_LITERAL:
-        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+        (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?
       | "." (["0"-"9"])+ (<EXPONENT>)?
       | (["0"-"9"])+ <EXPONENT>
       | "0"
@@ -830,17 +829,23 @@ ASTMolecularTypePattern MolecularTypePattern() :
   ASTMolecularTypePattern jjtn000 = new ASTMolecularTypePattern(JJTMOLECULARTYPEPATTERN);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t; }
+/*@egen*/ Token t; Token label=null; }
 {/*@bgen(jjtree) MolecularTypePattern */
   try {
 /*@egen*/
-  t = <IDENTIFIER>  Components()/*@bgen(jjtree)*/
+  (t = <IDENTIFIER>)  Components()  [<VARIABLE_ATTRIBUTE> ( label = <INTEGER> ) ]/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
   }
-/*@egen*/ 
-  { jjtn000.setName(t.image); return jjtn000; }/*@bgen(jjtree)*/
+/*@egen*/
+  { 
+  	jjtn000.setName(t.image); 
+  	if (label != null){
+  		jjtn000.setMatchLabel(label.image);
+  	}
+  	return jjtn000;
+  }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -863,20 +868,6 @@ ASTMolecularTypePattern MolecularTypePattern() :
 /*@egen*/
 }
 
-/*
-ASTMolecularTypePattern MolecularTypePattern() :
-{ Token t; Token label=null; }
-{
-  t = <IDENTIFIER> [ Components() ] [<VARIABLE_ATTRIBUTE>  ( (label=<INTEGER> ) | (label=<IDENTIFIER>) ) ]
-  { 
-  	jjtThis.setName(t.image); 
-  	if (label != null){
-  		jjtThis.setMatchLabel(label.image);
-  	}
-  	return jjtThis;
-  }
-}
-*/
 
 void Components()       :
 {}
@@ -1506,7 +1497,7 @@ void Float()           :
 /*@egen*/
   { jjtn000.value = new Double(t.image); }
   |
-    t = <INTEGER>/*@bgen(jjtree)*/
+    t = <INTEGER> [ <DOT> ]/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
