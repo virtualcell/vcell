@@ -103,7 +103,6 @@ TOKEN : /* IDENTIFIERS */
       ["0"-"9"]
   > 
 |
-  
    < INTEGER: ["0"-"9"] (["0"-"9"])* > 
 |
    <LABEL: <ID> ":">
@@ -169,7 +168,7 @@ TOKEN : /* LITERALS */
   >
 */
   < FLOATING_POINT_LITERAL:
-        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+        (["0"-"9"])+ "." (["0"-"9"])+ (<EXPONENT>)?
       | "." (["0"-"9"])+ (<EXPONENT>)?
       | (["0"-"9"])+ <EXPONENT>
       | "0"
@@ -351,17 +350,9 @@ ASTSpeciesPattern SpeciesPattern() :
 }
 
 ASTMolecularTypePattern MolecularTypePattern() :
-{ Token t; }
-{
-  t = <IDENTIFIER>  Components() 
-  { jjtThis.setName(t.image); return jjtThis; }
-}
-
-/*
-ASTMolecularTypePattern MolecularTypePattern() :
 { Token t; Token label=null; }
 {
-  t = <IDENTIFIER> [ Components() ] [<VARIABLE_ATTRIBUTE>  ( (label=<INTEGER> ) | (label=<IDENTIFIER>) ) ]
+  (t = <IDENTIFIER>)  Components()  [<VARIABLE_ATTRIBUTE> ( label = <INTEGER> ) ]
   { 
   	jjtThis.setName(t.image); 
   	if (label != null){
@@ -370,7 +361,7 @@ ASTMolecularTypePattern MolecularTypePattern() :
   	return jjtThis;
   }
 }
-*/
+
 
 void Components() #void :
 {}
@@ -568,7 +559,7 @@ void Float() #FloatNode:
   t = <FLOATING_POINT_LITERAL>
   { jjtThis.value = new Double(t.image); }
   |
-    t = <INTEGER>
+    t = <INTEGER> [ <DOT> ]
   { jjtThis.value = new Double(t.image); }
   
 }
