@@ -193,7 +193,6 @@ TOKEN : /* pattern escape tokens */
   < BOND: "!" > | 
   < DOT: "." > |
   < REACTION_ARROW_RIGHT: (<SUB><GT>) > |
-  < REACTION_ARROW_LEFT: (<LT><SUB>) > |
   < REACTION_ARROW_BOTH: (<LT><SUB><GT>) >
 
 }
@@ -319,7 +318,7 @@ void ReactionRule() #ReactionRule :
 {
 	( tLabel = <LABEL> )
 	Reactant() (<ADD> Reactant())* 
-	( ( t = <REACTION_ARROW_RIGHT>) | ( t = <REACTION_ARROW_LEFT> ) | ( t = <REACTION_ARROW_BOTH> ) )
+	( ( t = <REACTION_ARROW_RIGHT>) | ( t = <REACTION_ARROW_BOTH> ) )
 	Product() (<ADD> Product())*
 	KineticsParameter() [ <COMMA> KineticsParameter() ]
 	{ jjtThis.setArrowString(t.image); jjtThis.setLabel(tLabel.image);}
@@ -354,7 +353,7 @@ ASTSpeciesPattern SpeciesPattern() :
 ASTMolecularTypePattern MolecularTypePattern() :
 { Token t; }
 {
-  t = <IDENTIFIER> [ Components() ]
+  t = <IDENTIFIER>  Components() 
   { jjtThis.setName(t.image); return jjtThis; }
 }
 
@@ -517,8 +516,6 @@ void PowerTerm() #void :
 void UnaryExpression() #void :
 {}
 {
-  <ADD> UnaryExpression()
-|
   (
   <SUB> UnaryExpression()
   ) #MinusTermNode

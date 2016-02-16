@@ -195,7 +195,6 @@ TOKEN : /* pattern escape tokens */
   < BOND: "!" > | 
   < DOT: "." > |
   < REACTION_ARROW_RIGHT: (<SUB><GT>) > |
-  < REACTION_ARROW_LEFT: (<LT><SUB>) > |
   < REACTION_ARROW_BOTH: (<LT><SUB><GT>) >
 
 }
@@ -655,7 +654,7 @@ void ReactionRule()               :
 /*@egen*/
 	( tLabel = <LABEL> )
 	Reactant() (<ADD> Reactant())* 
-	( ( t = <REACTION_ARROW_RIGHT>) | ( t = <REACTION_ARROW_LEFT> ) | ( t = <REACTION_ARROW_BOTH> ) )
+	( ( t = <REACTION_ARROW_RIGHT>) | ( t = <REACTION_ARROW_BOTH> ) )
 	Product() (<ADD> Product())*
 	KineticsParameter() [ <COMMA> KineticsParameter() ]/*@bgen(jjtree)*/
         {
@@ -835,12 +834,12 @@ ASTMolecularTypePattern MolecularTypePattern() :
 {/*@bgen(jjtree) MolecularTypePattern */
   try {
 /*@egen*/
-  t = <IDENTIFIER> [ Components() ]/*@bgen(jjtree)*/
+  t = <IDENTIFIER>  Components()/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
   }
-/*@egen*/
+/*@egen*/ 
   { jjtn000.setName(t.image); return jjtn000; }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
@@ -1358,9 +1357,7 @@ void PowerTerm()       :
 
 void UnaryExpression()       :
 {}
-{
-  <ADD> UnaryExpression()
-|/*@bgen(jjtree) MinusTermNode */
+{/*@bgen(jjtree) MinusTermNode */
   {
     ASTMinusTermNode jjtn001 = new ASTMinusTermNode(JJTMINUSTERMNODE);
     boolean jjtc001 = true;
