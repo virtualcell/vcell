@@ -51,8 +51,7 @@ public interface BNGLParserConstants {
   int BOND = 49;
   int DOT = 50;
   int REACTION_ARROW_RIGHT = 51;
-  int REACTION_ARROW_LEFT = 52;
-  int REACTION_ARROW_BOTH = 53;
+  int REACTION_ARROW_BOTH = 52;
 
   int DEFAULT = 0;
 
@@ -109,7 +108,6 @@ public interface BNGLParserConstants {
     "\"!\"",
     "\".\"",
     "<REACTION_ARROW_RIGHT>",
-    "<REACTION_ARROW_LEFT>",
     "<REACTION_ARROW_BOTH>",
     "\"(\"",
     "\")\"",

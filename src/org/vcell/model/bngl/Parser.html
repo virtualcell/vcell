@@ -70,7 +70,7 @@
 <TR>
 <TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod15">ReactionRule</A></TD>
 <TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
-<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;LABEL&gt; ) <A HREF="#prod17">Reactant</A> ( &lt;ADD&gt; <A HREF="#prod17">Reactant</A> )* ( ( &lt;REACTION_ARROW_RIGHT&gt; ) | ( &lt;REACTION_ARROW_LEFT&gt; ) | ( &lt;REACTION_ARROW_BOTH&gt; ) ) <A HREF="#prod18">Product</A> ( &lt;ADD&gt; <A HREF="#prod18">Product</A> )* <A HREF="#prod19">KineticsParameter</A> ( &lt;COMMA&gt; <A HREF="#prod19">KineticsParameter</A> )?</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>( &lt;LABEL&gt; ) <A HREF="#prod17">Reactant</A> ( &lt;ADD&gt; <A HREF="#prod17">Reactant</A> )* ( ( &lt;REACTION_ARROW_RIGHT&gt; ) | ( &lt;REACTION_ARROW_BOTH&gt; ) ) <A HREF="#prod18">Product</A> ( &lt;ADD&gt; <A HREF="#prod18">Product</A> )* <A HREF="#prod19">KineticsParameter</A> ( &lt;COMMA&gt; <A HREF="#prod19">KineticsParameter</A> )?</TD>
 </TR>
 <TR>
 <TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod17">Reactant</A></TD>
@@ -95,7 +95,7 @@
 <TR>
 <TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod12">MolecularTypePattern</A></TD>
 <TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
-<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IDENTIFIER&gt; ( <A HREF="#prod20">Components</A> )?</TD>
+<TD ALIGN=LEFT VALIGN=BASELINE>&lt;IDENTIFIER&gt; <A HREF="#prod20">Components</A></TD>
 </TR>
 <TR>
 <TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod20">Components</A></TD>
@@ -185,11 +185,6 @@
 <TR>
 <TD ALIGN=RIGHT VALIGN=BASELINE><A NAME="prod34">UnaryExpression</A></TD>
 <TD ALIGN=CENTER VALIGN=BASELINE>::=</TD>
-<TD ALIGN=LEFT VALIGN=BASELINE>&lt;ADD&gt; <A HREF="#prod34">UnaryExpression</A></TD>
-</TR>
-<TR>
-<TD ALIGN=RIGHT VALIGN=BASELINE></TD>
-<TD ALIGN=CENTER VALIGN=BASELINE>|</TD>
 <TD ALIGN=LEFT VALIGN=BASELINE>( &lt;SUB&gt; <A HREF="#prod34">UnaryExpression</A> )</TD>
 </TR>
 <TR>
