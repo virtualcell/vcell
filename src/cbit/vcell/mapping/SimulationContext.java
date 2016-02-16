@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import org.vcell.model.rbm.NetworkConstraints;
@@ -69,6 +70,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
@@ -78,6 +80,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -1038,10 +1041,31 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 	}
 	
 	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC) && getModel().getNumStructures() > 1) {
-		// network free application requires one compartment only
-		String tooltip = "Please delete the Network Free application or the extra compartments.";
-		issueVector.add(new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
-				VCellErrorMessages.OneStructureOnly, tooltip, Issue.Severity.ERROR));
+		
+		Set<Structure> structures = new HashSet<> ();
+		RbmModelContainer rbmmc = getModel().getRbmModelContainer();
+		for(ReactionRule rr : rbmmc.getReactionRuleList()) {
+			structures.add(rr.getStructure());
+			for(ReactionRuleParticipant p : rr.getReactantPatterns()) {
+				structures.add(p.getStructure());
+			}
+			for(ReactionRuleParticipant p : rr.getProductPatterns()) {
+				structures.add(p.getStructure());
+			}
+		}
+		for(ReactionStep rs : getModel().getReactionSteps()) {
+			structures.add(rs.getStructure());
+			for(ReactionParticipant rp : rs.getReactionParticipants()) {
+				structures.add(rp.getStructure());
+			}
+		}
+		// TODO: add more checks to verify if we have cross structure transport
+		if(structures.size() > 1) {
+			// network free application requires one compartment only
+			String tooltip = "Please delete the Network Free application or the extra compartments.";
+			issueVector.add(new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
+				VCellErrorMessages.OneStructureOnly, tooltip, Issue.Severity.WARNING));
+		}
 	}
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
