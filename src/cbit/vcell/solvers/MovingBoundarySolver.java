@@ -16,13 +16,11 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.SimResampleInfoProvider;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 
@@ -31,13 +29,14 @@ import cbit.vcell.solver.server.SolverStatus;
  *
  */
 public class MovingBoundarySolver extends SimpleCompiledSolver {
-	private SimResampleInfoProvider simResampleInfoProvider;
+//	private SimResampleInfoProvider simResampleInfoProvider;
 	private Geometry resampledGeometry = null;
 	private final String inputFilename;
+	public final static String MOVING_BOUNDARY_FILE_END = "mb.h5";
 
-	public static final int HESM_KEEP_AND_CONTINUE = 0;
-	public static final int HESM_THROW_EXCEPTION = 1;
-	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
+//	public static final int HESM_KEEP_AND_CONTINUE = 0;
+//	public static final int HESM_THROW_EXCEPTION = 1;
+//	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
 
 
 /**
@@ -53,7 +52,7 @@ public MovingBoundarySolver (SimulationTask simTask, File dir, SessionLog sessio
 	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use MovingBoundary on non-spatial simulation");
 	}
-	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
+//	this.simResampleInfoProvider = (VCSimulationDataIdentifier)simTask.getSimulationJob().getVCDataIdentifier();
 	inputFilename = getBaseName() + "mb.xml";
 }
 
@@ -155,7 +154,7 @@ protected void initialize() throws SolverException {
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
-	String outputName = getBaseName() + ".h5";
+	String outputName = getBaseName() + MOVING_BOUNDARY_FILE_END;
 
 	try (PrintWriter pw = new PrintWriter(inputFilename)) {
 		MovingBoundaryFileWriter mbfw = new MovingBoundaryFileWriter(pw, simTask, resampledGeometry, bMessaging,outputName) ;

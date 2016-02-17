@@ -31,7 +31,6 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
@@ -40,7 +39,6 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.VCAssert;
-import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 import org.vcell.util.document.User;
@@ -74,6 +72,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
+import cbit.vcell.simdata.FileResolver.LocInfo;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -100,7 +99,8 @@ public class SimulationData extends VCData {
 		private int jobIndex = 0;
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
-		
+		private static final FileResolver fileResolve = FileResolver.get();
+
 		SimDataAmplistorInfo simDataAmplistorInfo;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
 			this.simDataAmplistorInfo = simDataAmplistorInfo;
@@ -110,60 +110,17 @@ public class SimulationData extends VCData {
 			if(secondaryUserDir != null && (!secondaryUserDir.exists() || !secondaryUserDir.isDirectory())){
 				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
 			}
-//			this.amplistorVCellUsersRootPath = amplistorVCellUserRootPath;
-			String logFileName = null;
-			String logFileNameOldStyle = null;
-			if(argVCDataID instanceof VCSimulationDataIdentifier){
-				simulationKey = ((VCSimulationDataIdentifier)argVCDataID).getSimulationKey();
-				jobIndex = ((VCSimulationDataIdentifier)argVCDataID).getJobIndex();
-				logFileName = createCanonicalSimLogFileName(simulationKey, jobIndex, false);
-				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
-			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
-				simulationKey = ((VCSimulationDataIdentifierOldStyle)argVCDataID).getSimulationKey();
-				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
-				logFileNameOldStyle = createCanonicalSimLogFileName(simulationKey, 0, true);
-			}else if(argVCDataID instanceof ExternalDataIdentifier){
-				simulationKey = ((ExternalDataIdentifier)argVCDataID).getKey();
-				logFileName = createCanonicalSimLogFileName(simulationKey, 0, false);
-				logFileNameOldStyle = createCanonicalSimLogFileName(((ExternalDataIdentifier)argVCDataID).getKey(), 0, true);
-			}else{
-				throw new IllegalArgumentException("AmplistorHelper unexpected VCDataIdentifier type "+argVCDataID.getClass().getName());
+			fileResolve.registerDirectory(primaryUserDir);
+			fileResolve.registerDirectory(secondaryUserDir);
+			LocInfo locInfo = fileResolve.getLocation(argVCDataID);
+			simulationKey = locInfo.simulationKey;
+			userDirectory = locInfo.directory;
+			ahvcDataId = locInfo.dataIdent;
+			jobIndex = locInfo.jobIndex;
+			if (locInfo.isSpatial != null) {
+				bNonSpatial = ! locInfo.isSpatial;
 			}
-			boolean bNotFound = false;
-			if(new File(primaryUserDir,logFileName).exists()){
-				this.userDirectory = primaryUserDir;
-				this.ahvcDataId = argVCDataID;
-			}else if(new File(primaryUserDir,logFileNameOldStyle).exists()){
-				this.userDirectory = primaryUserDir;
-				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileName).exists()){
-				this.userDirectory = secondaryUserDir;
-				this.ahvcDataId = argVCDataID;
-			}else if(secondaryUserDir != null && new File(secondaryUserDir,logFileNameOldStyle).exists()){
-				this.userDirectory = secondaryUserDir;
-				this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-			}else if(simDataAmplistorInfo != null && simDataAmplistorInfo.getAmplistorVCellUsersRootPath() != null){
-				try{
-					if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileName)){
-						this.userDirectory = primaryUserDir;//use primary by default for amplistor
-						this.ahvcDataId = argVCDataID;
-					}else if(amplistorFileExists(simDataAmplistorInfo,argVCDataID.getOwner().getName(), logFileNameOldStyle)){
-						this.userDirectory = primaryUserDir;//use primary by default for amplistor
-						this.ahvcDataId = convertVCDataIDToOldStyle(argVCDataID);
-					}else{
-						bNotFound = true;
-					}
-				}catch(Exception e){
-					bNotFound = true;
-					e.printStackTrace();
-				}
-			}else{
-				bNotFound = true;
-			}
-			if(bNotFound){
-				throw new FileNotFoundException(
-					"simulation data for [" + argVCDataID + "] newStyle="+logFileName+" oldStyle="+logFileNameOldStyle+" not exist in primary " + primaryUserDir + " dir or secondary " + secondaryUserDir+" dir or Archive server.");
-			}else{
+			else {
 				FileInputStream fis = null;
 				try{
 					File logfile = getLogFile();
@@ -197,7 +154,8 @@ public class SimulationData extends VCData {
 		public boolean isNonSpatial(){
 			return bNonSpatial;
 		}
-		private static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
+
+		static VCDataIdentifier convertVCDataIDToOldStyle(VCDataIdentifier argVCDataID){
 			if(argVCDataID instanceof VCSimulationDataIdentifier){
 				return VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle((VCSimulationDataIdentifier)argVCDataID);
 			}else if(argVCDataID instanceof VCSimulationDataIdentifierOldStyle){
@@ -263,7 +221,7 @@ public class SimulationData extends VCData {
 			return file;
 		}
 		public File getLocalFilePath(String fileName){
-			return new File(userDirectory,fileName);	
+			return new File(userDirectory,fileName);
 		}
 		private void xferAmplistor(File file){
 			if(simDataAmplistorInfo != null && !amplistorNotfoundSet.contains(file.getName()) && !file.exists()){//we may have already xferred it
@@ -282,18 +240,18 @@ public class SimulationData extends VCData {
 						e.printStackTrace();
 					}
 				}
-			}			
+			}
 		}
 		private boolean isOldStyle(){
 			return getVCDataiDataIdentifier() instanceof VCSimulationDataIdentifierOldStyle;
 		}
 	}
-	
+
 	private final static long SizeInBytes = 2000;  // a guess
 
 	AmplistorHelper amplistorHelper;
 	private VCDataIdentifier vcDataId = null;
-	
+
 	private int chomboFileIterationIndices[] = null;
 	private double dataTimes[] = null;
 	private String dataFilenames[] = null;
@@ -306,28 +264,28 @@ public class SimulationData extends VCData {
 	 * Smoldyn particle file names
 	 */
 	private String particleFilenames[] = null;
-	
+
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
-	
+
 	private long logFileLastModified = 0;
 	private long logFileLength = 0;
 	// we check first job functions file for user defined functions in the parameter scan,
-	// then append user defined functions  
+	// then append user defined functions
 	// this is the file that will be changed when users add functions
 	private long meshFileLastModified = 0;
-	
+
 	private CartesianMesh mesh = null;
 
 	private boolean particleDataExists = false;
 	private boolean isODEData = false;
 	private boolean isRulesData = false;
-	
+
 	private boolean bZipFormat2 = false;
 	private boolean bZipFormat1 = false;
 	private int odeKeepMost = 0;
 	private String odeIdentifier = null;
-	
+
 
 	private static Logger lg = Logger.getLogger(SimulationData.class);
 	public static class SimDataAmplistorInfo {
@@ -361,7 +319,7 @@ private void checkSelfReference(AnnotatedFunction function) throws ExpressionExc
 	for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
 		if (existingUserDefFunctionSymbols[j].equals(function.getName())){
 			throw new ExpressionException("Error adding function '"+function.getName() + "', cannot refer to self");
-		}				
+		}
 	}
 }
 
@@ -392,20 +350,20 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
 			throw new RuntimeException("Error adding function '"+function.getName() + "', identifier exists with same name");
 		}
-		
+
 	}
-	
+
 	checkSelfReference(function);
 	if (!function.isPostProcessFunction()){
 		function.getExpression().bindExpression(this);
 	}
 	addFunctionToListInternal(function);
-	
+
 }
 
 private void addFunctionToListInternal(AnnotatedFunction function){
-	
-	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), function.getDomain(), true);	
+
+	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), function.getDomain(), true);
 	// add the new function to dataSetIndentifierList so that other functions can bind this function
 	dataSetIdentifierList.addElement(dsi);
 	//Add new func
@@ -431,7 +389,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 					if (!(ste instanceof DataSetIdentifier)) {
 						continue;
 					}
-								
+
 					DataSetIdentifier dsi = (DataSetIdentifier)ste;
 					if (!dsi.isFunction()) {
 						continue;
@@ -443,9 +401,9 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 							break;
 						}
 					}
-				} 
+				}
 				if (ste == null || newExp == null) {
-					throw new RuntimeException("dependencies for function '" + function + "' not found"); 
+					throw new RuntimeException("dependencies for function '" + function + "' not found");
 				}
 				exp.substituteInPlace(oldExp, newExp);
 			}
@@ -552,7 +510,7 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException("error getting dataset times: "+e.getMessage());
-		} catch (FileNotFoundException e) {			
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new DataAccessException("error getting dataset times: "+e.getMessage());
 		}
@@ -569,19 +527,19 @@ public synchronized double[] getDataTimes() throws DataAccessException {
  */
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
-	
+
 	entry = ReservedMathSymbolEntries.getEntry(identifier,false);
 	if (entry != null){
 		return entry;
 	}
-		
+
 	entry = getDataSetIdentifier(identifier);
 	if (entry != null){
 		return entry;
 	}
 
 	if (identifier.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX) || identifier.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX)){
-		int index = identifier.lastIndexOf("_");		
+		int index = identifier.lastIndexOf("_");
 		String realvar = identifier.substring(0, index);
 		DataSetIdentifier dsi = getDataSetIdentifier(realvar);
 		if (dsi != null) {
@@ -606,7 +564,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
-		
+
 	// Get the function from each annotatedFunction in annotatedFunctionList, check if name is same as 'identifier' argument
 	for (int i=0;i<annotatedFunctionList.size();i++){
 		AnnotatedFunction function = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
@@ -615,7 +573,7 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 		}
 	}
 	return null;
-	
+
 }
 
 
@@ -628,7 +586,7 @@ private void getFunctionDataIdentifiers(OutputContext outputContext) throws Data
 	// add function names to VarName list that is returned
 	//
 	if (dataSetIdentifierList.size() != 0 && !getIsODEData()){
-		
+
 		// remove functions from dataIdentifiers since we are reading functions again
 		Iterator<DataSetIdentifier> iter = dataSetIdentifierList.iterator();
 		while (iter.hasNext()) {
@@ -637,7 +595,7 @@ private void getFunctionDataIdentifiers(OutputContext outputContext) throws Data
 				iter.remove();
 			}
 		}
-	
+
 		readFunctions(outputContext);
 	}
 }
@@ -656,7 +614,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
-	
+
 	AnnotatedFunction functions[] = new AnnotatedFunction[annotatedFunctionList.size()];
 	// Get the functions in annotatedFunctionsList
 	for (int i = 0; i < annotatedFunctionList.size(); i++){
@@ -664,7 +622,7 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 		//functions[i] = new Function(annotatedFunc.getName(), annotatedFunc.getExpression());
 		functions[i] = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
 	}
-	
+
 	return functions;
 }
 
@@ -679,7 +637,7 @@ private synchronized File getFirstJobFunctionsFile() throws FileNotFoundExceptio
 	if (!(vcDataId instanceof VCSimulationDataIdentifier)) {
 		return getJobFunctionsFile();
 	}
-	// always use the functions file from the first simulation in the scan 
+	// always use the functions file from the first simulation in the scan
 	File functionsFile = amplistorHelper.getFunctionsFile(true);
 	if (functionsFile.exists()){
 		return functionsFile;
@@ -859,7 +817,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	long lastModified = file.lastModified();
 	ODESimData odeSimData = null;
 	try {
-		
+
 		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
 			odeSimData = ODESimData.readODEDataFile(getODEDataFile());
 		} else if(odeIdentifier.equals(IDA_DATA_IDENTIFIER))
@@ -884,12 +842,12 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		int colIndex = odeSimData.findColumn(ReservedVariable.TIME.getName()); //look for 't' first
 		//if not time serie data, it should be multiple trial data. get the trial no as fake time data. let it run since we will not need it when displaying histogram
 		if(colIndex == -1)
-			colIndex = odeSimData.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME); 
+			colIndex = odeSimData.findColumn(SimDataConstants.HISTOGRAM_INDEX_NAME);
 		dataTimes = odeSimData.extractColumn(colIndex);
 	} catch (ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("error getting data times: "+e.getMessage());
-	} catch (FileNotFoundException e) {			
+	} catch (FileNotFoundException e) {
 		e.printStackTrace();
 		throw new DataAccessException("error getting dataset times: "+e.getMessage());
 	}
@@ -933,7 +891,7 @@ public synchronized ParticleDataBlock getParticleDataBlock(double time) throws D
 	} catch (DataAccessException ex) {
 		zipFile = null;
 	}
-	
+
 	ParticleDataBlock particleDataBlock = new ParticleDataBlock(vcDataId.getOwner(), vcDataId.getID(), time, particleFile, zipFile);
 		return particleDataBlock;
 	}
@@ -994,7 +952,7 @@ private synchronized void indexPDEdataTimes( ) throws DataAccessException {
 	File f = amplistorHelper.getFile(firstParticleFile);
 	if (f != null) {
 		particleFilenames = new String[dataLength];
-		for (int i = 0; i < dataLength; i++) { 
+		for (int i = 0; i < dataLength; i++) {
 			final int smoldynIndex = i + 1; //smoldyn one-indexed
 			particleFilenames[i] = createCanonicalSmoldynOutputFileName(kv, jobIndex, smoldynIndex);
 		}
@@ -1024,16 +982,16 @@ private synchronized File getPDEDataFile(double time) throws DataAccessException
  * @return java.lang.String
  * @param time double
  */
-private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws DataAccessException {	
+private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws DataAccessException {
 	DataSet dataSet = new DataSet();
 	File zipFile = null;
-	
+
 	try  {
 		zipFile = getPDEDataZipFile(time);
 	} catch (DataAccessException ex) {
 		zipFile = null;
 	}
-	
+
 	try {
 		dataSet.read(pdeFile, zipFile);
 	} catch (IOException ex) {
@@ -1061,20 +1019,20 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 		} else {
 			return null;
 		}
-	} 
+	}
 
 	if (!bZipFormat2) {
 		return null;
 	}
-	
+
 	double times[] = getDataTimes();
-	
+
 	if (times == null){
 		return null;
 	}
 	if (zipFilenames == null || times.length != zipFilenames.length){
 		return null;
-	}	
+	}
 	Integer index = pdeDataMap.get(time);
 	if (index != null) {
 		String zipFileName = FilenameUtils.getName(zipFilenames[index]);
@@ -1116,7 +1074,7 @@ private double extractClosestPostProcessTime(double vcellTimePoint){
  * @param simID java.lang.String
  */
 public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, String varName, double time) throws DataAccessException, IOException {
-	refreshLogFile();	
+	refreshLogFile();
 	try {
 		getFunctionDataIdentifiers(outputContext);
 	} catch (Exception ex) {
@@ -1135,7 +1093,7 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 		//ignore
 		e.printStackTrace();
 	}
-		
+
 	File pdeFile = getPDEDataFile(time);
 	if (pdeFile==null){
 		return null;
@@ -1143,13 +1101,13 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	DataSet dataSet = getPDEDataSet(pdeFile, time);
 
 	File zipFile = null;
-	
+
 	try  {
 		zipFile = getPDEDataZipFile(time);
 	} catch (DataAccessException ex) {
 		zipFile = null;
 	}
-		
+
 	long lastModified = getLastModified(pdeFile, zipFile);
 	DataSetIdentifier dsi = getDataSetIdentifier(varName);
 	if (dsi == null) {
@@ -1193,7 +1151,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
 		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
 
-	
+
 	refreshLogFile();
 	try {
 		getFunctionDataIdentifiers(outputContext);
@@ -1255,7 +1213,7 @@ synchronized double[][][] getSimDataTimeSeries0(
 	}
 	// Setup parameters for SimDataReader
 	double[] tempDataTimes = dataTimes.clone();
-	
+
 	String[] tempZipFileNames = null;
 	if (bZipFormat2) {
 		tempZipFileNames = new String[tempDataTimes.length];
@@ -1275,12 +1233,12 @@ synchronized double[][][] getSimDataTimeSeries0(
 	SimDataReader sdr = null;
 
 
-	
+
 	double[][] singleTimePointResultsBuffer = new double[varNamesInDataSet.length][];
 	for(int i=0;i<singleTimePointResultsBuffer.length;i+= 1){
 		singleTimePointResultsBuffer[i] = new double[indexes[i].length];
 	}
-	
+
 	//In case sim files have been updated since "wantsThisTime" was calculated
 	if(wantsThisTime.length < tempDataTimes.length){
 		double[] tempTempDataTimes = new double[wantsThisTime.length];
@@ -1371,7 +1329,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 	} else if (zipFile2.exists()){
 		bZipFormat2 = true;
 	}
-	
+
 	refreshLogFile();
 	try {
 		refreshMeshFile();
@@ -1379,20 +1337,20 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
-	
+
 	if (!isRulesData && !getIsODEData() && dataFilenames != null) {
 		// read variables only when I have never read the file since variables don't change
 		if (dataSetIdentifierList.size() == 0) {
 			File file = getPDEDataFile(0.0);
 			DataSet dataSet = getPDEDataSet(file, 0.0);
-				
+
 			String[] varNames = dataSet.getDataNames();
 			int varTypeInts[] = dataSet.getVariableTypeIntegers();
 
 			if (varNames == null){
 				return null;
 			}
-			
+
 			dataSetIdentifierList.clear();
 			for (int i = 0; i < varNames.length; i++){
 				VariableType varType = null;
@@ -1416,7 +1374,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 					}
 				}
 			}
-		} 
+		}
 
 		// always read functions file since functions might change
 		getFunctionDataIdentifiers(outputContext);
@@ -1436,9 +1394,9 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 			String varName = odeSimData.getColumnDescriptions(i+DATA_OFFSET).getDisplayName();
 			Domain domain = null; //TODO domain
 			dataSetIdentifierList.addElement(new DataSetIdentifier(varName,VariableType.NONSPATIAL,domain));
-		}		
-	}	
-	
+		}
+	}
+
 	DataIdentifier[] dis = new DataIdentifier[dataSetIdentifierList.size()];
 	for (int i = 0; i < dataSetIdentifierList.size(); i ++){
 		DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
@@ -1457,7 +1415,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 			}
 		}
 		dis[i] = new DataIdentifier(dsi.getName(), dsi.getVariableType(), dsi.getDomain(), dsi.isFunction(), displayName);
-	}		
+	}
 	return dis;
 }
 
@@ -1476,16 +1434,16 @@ synchronized int[] getVolumeSize() throws IOException, DataAccessException {
 	}
 	dataSet.read(file);
 	*/
-	
+
 	File file = getPDEDataFile(0.0);
 	DataSet dataSet = getPDEDataSet(file, 0.0);
-	
+
 	int size[] = new int[3];
-	
+
 	size[0] = dataSet.getSizeX();
 	size[1] = dataSet.getSizeY();
 	size[2] = dataSet.getSizeZ();
-	
+
 	return size;
 }
 
@@ -1556,7 +1514,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			chomboFileIterationIndices = null;
 			logFileLastModified = lastModified;
 			logFileLength = length;
-		}	
+		}
 	}else{
 		dataFilenames = null;
 		zipFilenames = null;
@@ -1570,7 +1528,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	// read log file and check whether ODE or PDE data
 	//
 	StringBuffer stringBuffer = new StringBuffer();
-	try ( FileInputStream is = new FileInputStream(logFile); 
+	try ( FileInputStream is = new FileInputStream(logFile);
 		InputStreamReader reader = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(reader)) {
 		char charArray[] = new char[10000];
@@ -1596,7 +1554,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 		isRulesData = false;
 		//memorize format
 		odeIdentifier = lineTokenizer.nextToken(); // br.readLine();
-		
+
 		@SuppressWarnings("unused")
 		String odeDataFormat = lineTokenizer.nextToken(); // br.readLine();
 		dataFilenames = new String[] { lineTokenizer.nextToken() }; // {br.readLine()};
@@ -1607,7 +1565,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			if (token.equals(KEEP_MOST)) {
 				odeKeepMost = Integer.parseInt(st.nextToken());
 			}
-		}		
+		}
 	} else 	if ((logfileContent.startsWith(NFSIM_DATA_IDENTIFIER))) {
 //		String newLineDelimiters = "\n\r";
 //		StringTokenizer lineTokenizer = new StringTokenizer(logfileContent,newLineDelimiters);
@@ -1644,7 +1602,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			throw new DataAccessException("SimResults.readLog(), zipped = " + bZipFormat2 + ", should have multiple of " + tokensPerFile + " tokens, bad parse");
 		}
 
-		int numFiles = numTokens / tokensPerFile; 
+		int numFiles = numTokens / tokensPerFile;
 		if (bZipFormat2) {
 			zipFilenames = new String[numFiles];
 		}
@@ -1675,7 +1633,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<BEGIN>>");
 			File firstFile = getParticleDataFile(dataTimes[0]);
 			VCMongoMessage.sendTrace("SimulationData.readLog() getting particle data file <<END>>");
-			particleDataExists = ( firstFile != null ); 
+			particleDataExists = ( firstFile != null );
 		} catch (Exception exc) {
 			lg.warn("checking particle data", exc);
 		}
@@ -1696,7 +1654,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 		}else{
 			mesh = null;
 			meshFileLastModified = lastModified;
-		}	
+		}
 	}else{
 		throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
 	}
@@ -1782,7 +1740,7 @@ public synchronized void removeAllResults() throws DataAccessException {
 		meshFile = getMeshFile();
 	}catch (FileNotFoundException e){
 	}
-		
+
 	removeAllResults(logFile,meshFile);
 }
 
@@ -1828,7 +1786,7 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
 				}
 				if (zipFile != null && zipFile.exists()) {
 					zipFile.delete();
-				}				
+				}
 				File dataFile = null;
 				try {
 					dataFile = getPDEDataFile(times[i]);
@@ -1901,7 +1859,7 @@ public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
 	SimDataConstants.LOGFILE_EXTENSION;
 }
 
-public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){	
+public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){
 	VariableType vt = VariableType.getVariableTypeFromVariableTypeName(extDataIdVariableTypeName);
 	return FieldFunctionDefinition.FUNCTION_name + "('"+
 		externalDataIdentifierName+"','"+varName+"',"+beginTime+",'"+vt.getTypeName()+"')";
@@ -1920,12 +1878,12 @@ public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int job
 }
 public static String createCanonicalSmoldynOutputFileName(KeyValue fieldDataKey,int jobIndex,int timeIndex){
 	if (timeIndex > 0) {
-		String rval = createSimIDWithJobIndex(fieldDataKey,jobIndex,false) + String.format("_%03d",timeIndex) 
+		String rval = createSimIDWithJobIndex(fieldDataKey,jobIndex,false) + String.format("_%03d",timeIndex)
 			+ SimDataConstants.SMOLDYN_OUTPUT_FILE_EXTENSION;
 		return rval;
 	}
-	throw new IllegalArgumentException("smoldyn output index must be > 0"); 
-	
+	throw new IllegalArgumentException("smoldyn output index must be > 0");
+
 }
 
 public static String createCanonicalPostProcessFileName(VCDataIdentifier vcdID){
@@ -2019,7 +1977,7 @@ public boolean isPostProcessing(OutputContext outputContext,String varName) thro
 			}
 		}
 	}
-	return false;	
+	return false;
 }
 
 public File getDataProcessingOutputSourceFileHDF5(){
@@ -2054,7 +2012,7 @@ private void findChomboFeatureVolFile(ChomboFiles chomboFiles, VCSimulationDataI
 	if (file.exists()){
 		chomboFiles.addDataFile(subDomain, ivol, timeIndex, file);
 	}else{
-		// I changed the file name 
+		// I changed the file name
 		expectedFile = vcDataID.getID()+String.format("%06d", timeIndex)+"_"+subDomain+"_vol" + ivol + ".hdf5";
 	  file = amplistorHelper.getFile(expectedFile);
 	  if (file.exists()){
@@ -2079,7 +2037,7 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 
 	String expectedMeshfile = vcDataID.getID()+".mesh.hdf5";
 	File meshFile = amplistorHelper.getFile(expectedMeshfile);
-	
+
 	ChomboFiles chomboFiles = new ChomboFiles(vcDataID.getSimulationKey(), vcDataID.getJobIndex(), meshFile);
 
 	String simtaskFilePath = vcDataID.getID()+"_0.simtask.xml";
@@ -2144,7 +2102,7 @@ public VCellSimFiles getVCellSimFiles() throws FileNotFoundException, DataAccess
 		File zipFile = getPDEDataZipFile(times[i]);
 		vcellSimFiles.addDataFileEntry(zipFile, pdeDataFile, times[i]);
 	}
-	
+
 	return vcellSimFiles;
 }
 
@@ -2152,30 +2110,30 @@ public VCDataIdentifier getVcDataId() {
 	return vcDataId;
 }
 
-	public synchronized SimDataBlock getChomboExtrapolatedValues(String varName, double time) throws DataAccessException, IOException 
+	public synchronized SimDataBlock getChomboExtrapolatedValues(String varName, double time) throws DataAccessException, IOException
 	{
-		refreshLogFile();	
-				
+		refreshLogFile();
+
 		File pdeFile = getPDEDataFile(time);
 		if (pdeFile==null){
 			return null;
 		}
 		DataSet dataSet = new DataSet();
 		File zipFile = null;
-		
+
 		try  {
 			zipFile = getPDEDataZipFile(time);
 		} catch (DataAccessException ex) {
 			zipFile = null;
 		}
-		
+
 		try {
 			dataSet.read(pdeFile, zipFile);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			throw new DataAccessException("data at time="+time+" read error",ex);
 		}
-			
+
 		long lastModified = getLastModified(pdeFile, zipFile);
 		DataSetIdentifier dsi = getDataSetIdentifier(varName);
 		if (dsi == null) {
