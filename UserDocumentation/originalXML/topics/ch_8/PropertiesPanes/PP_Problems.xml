@@ -14,10 +14,9 @@ The Problems Tab within the Properties pane provides errors and warnings identif
 	table or an Application-specific problem in the Species / Specifications panel).
     </para>
 	<imgReference target = "ProblemPanel.png"/>
-	<para>
-	The problems marked as Errors are serious enough to render your BioModel inconsistent. It is not possible to save a BioModel in an inconsistent 
-	state, for this reason fixing the Errors should be a priority.
-    </para>
+	<imgReference target = "PP_ProblemsIcon.png"/> 
+	This icon indicates errors that are serious enough to render your BioModel inconsistent.  
+	All <bold>errors</bold> must be <bold>corrected</bold> before a BioModel can be <bold>saved.</bold>
  	</appearance>
 
 	<operations>
