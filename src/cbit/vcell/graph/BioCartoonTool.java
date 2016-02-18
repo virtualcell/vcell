@@ -137,6 +137,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
+				clonedModel.refreshDependencies();
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				pasteHelper[0] =
 					pasteReactionSteps0(null,guiRequestComponent, issueContext, reactionStepsArrOrig,
