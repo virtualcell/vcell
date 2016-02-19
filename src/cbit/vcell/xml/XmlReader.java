@@ -7504,6 +7504,10 @@ private	Convert<Boolean> convertBoolean = new Convert<Boolean>() {
 		try 
 		{
 			ChomboSolverSpec css = new ChomboSolverSpec(maxBoxSize, fillRatio, viewLevel, bSaveVCellOutput, bSaveChomboOutput, refineRatioList);
+			Double smallVolfracThreshold = parseDoubleWithDefault(element, XMLTags.SmallVolfracThreshold, 0);
+			boolean bActivateFeatureUnderDevelopment = parseBooleanWithDefault(element, XMLTags.ActivateFeatureUnderDevelopment, false); 
+			css.setSmallVolfracThreshold(smallVolfracThreshold);
+			css.setActivateFeatureUnderDevelopment(bActivateFeatureUnderDevelopment);
 						
 			Element timeBoundsElement = element.getChild(XMLTags.TimeBoundTag, vcNamespace);
 			List<Element> timeIntervalElementList = null;

@@ -710,6 +710,8 @@ public class XMLTags {
   public final static String TagsGrowAttrTag = "TagsGrow";
   public final static String RefinementBoxTag = "RefinementBox";
   public final static String TimeIntervalTag = "TimeInterval";
+	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
+	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
   
   //Parallel processing
   public final static String NUM_PROCESSORS = "NumberProcessors";
