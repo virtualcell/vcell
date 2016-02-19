@@ -257,4 +257,6 @@ public class VCML {
 	public final static String TagsGrow = "TagsGrow";		
 	public final static String NUM_PROCESSORS = "NumProcessors";
 	public final static String TimeInterval = "TimeInterval";
+	public final static String ActivateFeatureUnderDevelopment = "ActivateFeatureUnderDevelopment";
+	public final static String SmallVolfracThreshold = "SmallVolfracThreshold";
 }

@@ -22,9 +22,11 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
+import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.NFSimSimulationOptionsPanel;
 import org.vcell.solver.smoldyn.SmoldynSimulationOptionsPanel;
@@ -84,6 +86,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private JCheckBox performSensitivityAnalysisCheckBox;
 	private JButton sensitivityAnalysisHelpButton;
 	private UnitInfo unitInfo;
+	private ChomboDeveloperToolsPanel chomboDeveloperToolsPanel;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -623,6 +626,31 @@ private ChomboTimeBoundsPanel getChomboTimeBoundsPanel()
 	return chomboTimeBoundsPanel;
 }
 
+private JPanel getGeneralAndDeverloperToolsPanel()
+{
+	JPanel panel = new JPanel(new GridBagLayout());
+	
+	GridBagConstraints gbc = new java.awt.GridBagConstraints();
+	gbc.gridx = 0; 
+	gbc.gridy = 0;
+	gbc.fill = java.awt.GridBagConstraints.BOTH;
+	gbc.weightx = 1.0;
+	gbc.weighty = 1.0;
+	gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+	panel.add(getGeneralOptionsPanel(), gbc);
+	
+	gbc = new java.awt.GridBagConstraints();
+	gbc.gridx = 1; 
+	gbc.gridy = 0;
+	gbc.fill = java.awt.GridBagConstraints.BOTH;
+	gbc.weightx = 1.0;
+	gbc.weighty = 1.0;
+	gbc.insets = new java.awt.Insets(4, 4, 4, 4);
+	panel.add(getChomboDeveloperToolsPanel(), gbc);
+	
+	return panel;
+}
+
 private CollapsiblePanel getGeneralOptionsPanel() {
 	if (generalOptionsPanel == null) {
 		generalOptionsPanel = new CollapsiblePanel("General");
@@ -645,12 +673,14 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 		generalOptionsPanel.getContentPanel().add(getTimeStepPanel(), constraintsTimeStepPanel);
 
 		java.awt.GridBagConstraints constraintsErrorTolerancePanel = new java.awt.GridBagConstraints();
+		constraintsErrorTolerancePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsErrorTolerancePanel.gridx = 2; constraintsErrorTolerancePanel.gridy = 0;
 		constraintsErrorTolerancePanel.weightx = 1.0;
 		constraintsErrorTolerancePanel.weighty = 1.0;
 		constraintsErrorTolerancePanel.insets = new java.awt.Insets(4, 4, 4, 4);
 		constraintsErrorTolerancePanel.anchor = GridBagConstraints.FIRST_LINE_START;
 		generalOptionsPanel.getContentPanel().add(getErrorTolerancePanel(), constraintsErrorTolerancePanel);
+		
 	}
 
 	return generalOptionsPanel;
@@ -736,8 +766,8 @@ private void initialize() {
 		gbc1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getGeneralOptionsPanel(), gbc1);
-
+		add(getGeneralAndDeverloperToolsPanel(), gbc1);
+		
 		gridy ++;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
 		gbc.gridx = 0;
@@ -905,6 +935,7 @@ private void setTornOffSolverTaskDescription(SolverTaskDescription newValue) {
 			dataProcessingInstructionPanel.setSolverTaskDescription(ivjTornOffSolverTaskDescription);
 			getTimeBoundsPanel().setTimeBounds(getTornOffSolverTaskDescription().getTimeBounds());
 			getChomboTimeBoundsPanel().setSolverTaskDescription(getTornOffSolverTaskDescription());
+			getChomboDeveloperToolsPanel().setSolverTaskDescription(getTornOffSolverTaskDescription());
 			updateSensitivityAnalysisComboBox();
 			firePropertyChange("solverTaskDescription", oldValue, newValue);
 			// user code begin {1}
@@ -959,12 +990,14 @@ private void refresh() {
 		getTimeBoundsPanel().setVisible(false);
 		getTimeStepPanel().setVisible(false);
 		getChomboTimeBoundsPanel().setVisible(true);
+		getChomboDeveloperToolsPanel().setVisible(true);
 	}
 	else
 	{
 		getTimeBoundsPanel().setVisible(true);
 		getTimeStepPanel().setVisible(true);
 		getChomboTimeBoundsPanel().setVisible(false);
+		getChomboDeveloperToolsPanel().setVisible(false);
 	}
 }
 
@@ -1157,6 +1190,18 @@ public void showSensitivityAnalysisHelp(){
 
 public void setUnitInfo(UnitInfo unitInfo) {
 	this.unitInfo = unitInfo;
+}
+
+private ChomboDeveloperToolsPanel getChomboDeveloperToolsPanel() {
+	if (chomboDeveloperToolsPanel == null) {
+		try {
+			chomboDeveloperToolsPanel = new ChomboDeveloperToolsPanel();
+			chomboDeveloperToolsPanel.setName("TimeBoundsPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return chomboDeveloperToolsPanel;
 }
 
 }
