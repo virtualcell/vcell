@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
@@ -44,6 +45,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	private Integer viewLevel = null;  // if null, viewLeve is finest
 	private boolean bSaveVCellOutput = true;
 	private boolean bSaveChomboOutput = false;
+	private boolean bActivateFeatureUnderDevelopment = false;
+	private double smallVolfracThreshold = 0;
 	private List<Integer> refineRatioList = null;
 	private List<TimeInterval> timeIntervalList = new ArrayList<TimeInterval>();
 
@@ -57,6 +60,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		this.viewLevel = css.viewLevel;
 		this.bSaveVCellOutput = css.bSaveVCellOutput;
 		this.bSaveChomboOutput = css.bSaveChomboOutput;
+		this.bActivateFeatureUnderDevelopment = css.bActivateFeatureUnderDevelopment;
+		this.smallVolfracThreshold = css.smallVolfracThreshold;
 		for (TimeInterval ti : css.timeIntervalList)
 		{
 			timeIntervalList.add(new TimeInterval(ti));
@@ -208,6 +213,15 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		{
 			return false;
 		}
+		
+		EqualsBuilder equalsBuilder = new EqualsBuilder();
+		equalsBuilder.append(bActivateFeatureUnderDevelopment, chomboSolverSpec.bActivateFeatureUnderDevelopment)
+			.append(smallVolfracThreshold, chomboSolverSpec.smallVolfracThreshold);
+		if (!equalsBuilder.isEquals())
+		{
+			return false;
+		}
+		
 		if (timeIntervalList.size() != chomboSolverSpec.timeIntervalList.size())
 		{
 			return false;
@@ -242,6 +256,8 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 		}
 		buffer.append("\t" + VCML.SaveVCellOutput + " " + bSaveVCellOutput + "\n");
 		buffer.append("\t" + VCML.SaveChomboOutput + " " + bSaveChomboOutput + "\n");
+		buffer.append("\t" + VCML.ActivateFeatureUnderDevelopment + " " + bActivateFeatureUnderDevelopment + "\n");
+		buffer.append("\t" + VCML.SmallVolfracThreshold + " " + smallVolfracThreshold + "\n");
 		
 		buffer.append("\t" + VCML.TimeBounds + " " + VCML.BeginBlock + "\n");
 		for (TimeInterval ti : timeIntervalList)
@@ -298,6 +314,16 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 			{
 				token = tokens.nextToken();
 				bSaveChomboOutput = Boolean.parseBoolean(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.ActivateFeatureUnderDevelopment))
+			{
+				token = tokens.nextToken();
+				bActivateFeatureUnderDevelopment = Boolean.parseBoolean(token);
+			}
+			else if (token.equalsIgnoreCase(VCML.SmallVolfracThreshold))
+			{
+				token = tokens.nextToken();
+				smallVolfracThreshold = Double.parseDouble(token);
 			}
 			else if (token.equalsIgnoreCase(VCML.MeshRefinement))
 			{
@@ -548,5 +574,21 @@ public class ChomboSolverSpec implements Matchable, Serializable, VetoableChange
 	public double getEndingTime() 
 	{
 		return getLastTimeInterval().getEndingTime();
+	}
+
+	public boolean isActivateFeatureUnderDevelopment() {
+		return bActivateFeatureUnderDevelopment;
+	}
+
+	public void setActivateFeatureUnderDevelopment(boolean bActivateFeatureUnderDevelopment) {
+		this.bActivateFeatureUnderDevelopment = bActivateFeatureUnderDevelopment;
+	}
+
+	public double getSmallVolfracThreshold() {
+		return smallVolfracThreshold;
+	}
+
+	public void setSmallVolfracThreshold(double smallVolfracThreshold) {
+		this.smallVolfracThreshold = smallVolfracThreshold;
 	}
 }
