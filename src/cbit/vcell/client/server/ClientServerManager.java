@@ -408,6 +408,7 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 			cantConnectWarning.dispose();
 			cantConnectWarning = null;
 		}
+		reconnectStat = ReconnectStatus.NOT;
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
