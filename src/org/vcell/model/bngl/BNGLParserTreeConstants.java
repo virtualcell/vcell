@@ -6,63 +6,69 @@ public interface BNGLParserTreeConstants
 {
   public int JJTMODEL = 0;
   public int JJTFUNCTIONSBLOCK = 1;
-  public int JJTFUNCTIONDECL = 2;
+  public int JJTCOMPARTMENTSBLOCK = 2;
   public int JJTPARAMETERBLOCK = 3;
-  public int JJTPARAMETER = 4;
-  public int JJTMOLECULARDEFINITIONBLOCK = 5;
-  public int JJTSEEDSPECIESBLOCK = 6;
-  public int JJTSEEDSPECIES = 7;
-  public int JJTREACTIONRULESBLOCK = 8;
-  public int JJTOBSERVABLESBLOCK = 9;
-  public int JJTOBSERVABLE = 10;
-  public int JJTACTION = 11;
-  public int JJTREACTIONRULE = 12;
-  public int JJTREACTANT = 13;
-  public int JJTPRODUCT = 14;
-  public int JJTKINETICSPARAMETER = 15;
-  public int JJTSPECIESPATTERN = 16;
-  public int JJTMOLECULARTYPEPATTERN = 17;
-  public int JJTVOID = 18;
-  public int JJTMOLECULARCOMPONENTPATTERN = 19;
-  public int JJTATTRIBUTEPATTERN = 20;
-  public int JJTBONDSTATE = 21;
-  public int JJTBONDEXIST = 22;
-  public int JJTBONDPOSSIBLE = 23;
-  public int JJTEXPRESSION = 24;
-  public int JJTORNODE = 25;
-  public int JJTANDNODE = 26;
-  public int JJTRELATIONALNODE = 27;
-  public int JJTADDNODE = 28;
-  public int JJTMINUSTERMNODE = 29;
-  public int JJTMULTNODE = 30;
-  public int JJTINVERTTERMNODE = 31;
-  public int JJTPOWERNODE = 32;
-  public int JJTNOTNODE = 33;
-  public int JJTFUNCNODE = 34;
-  public int JJTFLOATNODE = 35;
-  public int JJTIDNODE = 36;
-  public int JJTLITERALNODE = 37;
+  public int JJTMOLECULARDEFINITIONBLOCK = 4;
+  public int JJTSEEDSPECIESBLOCK = 5;
+  public int JJTREACTIONRULESBLOCK = 6;
+  public int JJTOBSERVABLESBLOCK = 7;
+  public int JJTCOMPARTMENT = 8;
+  public int JJTPARAMETER = 9;
+  public int JJTSEEDSPECIES = 10;
+  public int JJTOBSERVABLE = 11;
+  public int JJTOBSERVABLEPATTERN = 12;
+  public int JJTFUNCTIONDECL = 13;
+  public int JJTREACTIONRULE = 14;
+  public int JJTREACTANT = 15;
+  public int JJTPRODUCT = 16;
+  public int JJTKINETICSPARAMETER = 17;
+  public int JJTSPECIESPATTERN = 18;
+  public int JJTMOLECULARTYPEPATTERN = 19;
+  public int JJTACTION = 20;
+  public int JJTVOID = 21;
+  public int JJTMOLECULARCOMPONENTPATTERN = 22;
+  public int JJTATTRIBUTEPATTERN = 23;
+  public int JJTBONDSTATE = 24;
+  public int JJTBONDEXIST = 25;
+  public int JJTBONDPOSSIBLE = 26;
+  public int JJTEXPRESSION = 27;
+  public int JJTORNODE = 28;
+  public int JJTANDNODE = 29;
+  public int JJTRELATIONALNODE = 30;
+  public int JJTADDNODE = 31;
+  public int JJTMINUSTERMNODE = 32;
+  public int JJTMULTNODE = 33;
+  public int JJTINVERTTERMNODE = 34;
+  public int JJTPOWERNODE = 35;
+  public int JJTNOTNODE = 36;
+  public int JJTFUNCNODE = 37;
+  public int JJTFLOATNODE = 38;
+  public int JJTIDNODE = 39;
+  public int JJTLITERALNODE = 40;
 
 
   public String[] jjtNodeName = {
     "Model",
     "FunctionsBlock",
-    "FunctionDecl",
+    "CompartmentsBlock",
     "ParameterBlock",
-    "Parameter",
     "MolecularDefinitionBlock",
     "SeedSpeciesBlock",
-    "SeedSpecies",
     "ReactionRulesBlock",
     "ObservablesBlock",
+    "Compartment",
+    "Parameter",
+    "SeedSpecies",
     "Observable",
-    "Action",
+    "ObservablePattern",
+    "FunctionDecl",
     "ReactionRule",
     "Reactant",
     "Product",
     "KineticsParameter",
     "SpeciesPattern",
     "MolecularTypePattern",
+    "Action",
     "void",
     "MolecularComponentPattern",
     "AttributePattern",

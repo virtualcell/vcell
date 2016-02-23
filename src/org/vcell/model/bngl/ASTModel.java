@@ -34,6 +34,15 @@ public class ASTModel extends SimpleNode {
 		buffer.append("\nbegin model\n");
 
 		//
+		// compartments block
+		//
+		for (int i = 0; i < jjtGetNumChildren(); i++) {
+			if (jjtGetChild(i) instanceof ASTCompartmentsBlock) {
+				buffer.append(jjtGetChild(i).toBNGL());
+			}
+		}
+
+		//
 		// parameter block
 		//
 		for (int i = 0; i < jjtGetNumChildren(); i++) {
@@ -96,6 +105,14 @@ public class ASTModel extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 
+	public boolean hasCompartments() {
+		for (int i = 0; i < jjtGetNumChildren(); i++) {
+			if (jjtGetChild(i) instanceof ASTCompartmentsBlock) {
+				return true;
+			}
+		}
+		return false;
+	}
 	public boolean hasUnitSystem() {
 		return false;
 	}

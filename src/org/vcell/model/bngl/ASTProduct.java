@@ -3,6 +3,9 @@
 package org.vcell.model.bngl;
 
 public class ASTProduct extends SimpleNode {
+	
+	private String compartment = null;
+	
 	public ASTProduct(int id) {
 		super(id);
 	}
@@ -12,12 +15,24 @@ public class ASTProduct extends SimpleNode {
 	}
 
 	@Override
-	public String toBNGL() {
-		return jjtGetChild(0).toBNGL();
+	public String toBNGL(){
+		if (compartment!=null){
+			return "@"+compartment+":"+jjtGetChild(0).toBNGL();
+		}else{
+			return jjtGetChild(0).toBNGL();
+		}
 	}
 
 	/** Accept the visitor. **/
 	public Object jjtAccept(BNGLParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
+	}
+
+	public void setCompartment(String compartment) {
+		this.compartment = compartment;
+	}
+	
+	public String getCompartment(){
+		return this.compartment;
 	}
 }

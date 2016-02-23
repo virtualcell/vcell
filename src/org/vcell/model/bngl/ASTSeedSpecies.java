@@ -5,6 +5,7 @@ package org.vcell.model.bngl;
 public class ASTSeedSpecies extends SimpleNode {
 
 	private String initial;
+	private String compartment;
 	private boolean clamped = false;
 
 	public ASTSeedSpecies(int id) {
@@ -38,8 +39,14 @@ public class ASTSeedSpecies extends SimpleNode {
 	public final String getInitial() {
 		return initial;
 	}
-
 	public boolean isClamped() {
 		return clamped;
+	}
+
+	public void setCompartment(String image) {
+		this.compartment = image;
+	}
+	public String getCompartment() {
+		return compartment;
 	}
 }
