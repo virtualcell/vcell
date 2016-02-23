@@ -195,6 +195,7 @@ import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.ModelGeometryOP;
 import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
@@ -3029,7 +3030,12 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					if(astModel.hasUnitSystem()) {
 						bngUnitSystem = astModel.getUnitSystem();
 					}
-
+					if(astModel.hasCompartments()) {
+						Structure struct = bioModel.getModel().getStructure(0);
+						if(struct != null) {
+							bioModel.getModel().removeStructure(struct);
+						}
+					}
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing.");
@@ -3139,13 +3145,13 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 						VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
 						vcMetaData.setFreeTextAnnotation(bioModel, astModel.getProlog());
 					}
+					if(astModel.hasCompartments()) {
+						Structure struct = bioModel.getModel().getStructure(0);
+						if(struct != null) {
+							bioModel.getModel().removeStructure(struct);
+						}
+					}
 
-					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
-//					if(!bngUnitSystem.isConcentration()) {
-						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
-						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
-						odeSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
-//					}
 					BnglObjectConstructionVisitor constructionVisitor = null;
 					if(!astModel.hasMolecularDefinitions()) {
 						System.out.println("Molecular Definition Block missing. Extracting it from Species, Reactions, Obserbables.");
@@ -3155,6 +3161,14 @@ private void openAfterChecking(VCDocumentInfo documentInfo, final TopLevelWindow
 					}
 					// we'll convert the kinetic parameters to BngUnitSystem inside the visit(ASTKineticsParameter...)
 					astModel.jjtAccept(constructionVisitor, rbmModelContainer);
+
+					// set the volume in the newly created application to BngUnitSystem.bnglModelVolume
+					// TODO: set the right values if we import compartments from the bngl file!
+//					if(!bngUnitSystem.isConcentration()) {
+						Expression sizeExpression = new Expression(bngUnitSystem.getVolume());
+						ruleBasedSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
+						odeSimContext.getGeometryContext().getStructureMapping(0).getSizeParameter().setExpression(sizeExpression);
+//					}
 
 					// we remove the NFSim application if any seed species is clamped because NFSim doesn't know what to do with it
 					boolean bClamped = false;

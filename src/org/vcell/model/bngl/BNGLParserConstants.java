@@ -13,45 +13,47 @@ public interface BNGLParserConstants {
   int SEED = 7;
   int FUNCTIONS = 8;
   int ACTION = 9;
-  int PARAMETERS = 10;
-  int REACTION = 11;
-  int RULES = 12;
-  int TYPES = 13;
-  int OBSERVABLES = 14;
-  int IDENTIFIER = 15;
-  int ID = 16;
-  int LETTER = 17;
-  int DIGIT = 18;
-  int INTEGER = 19;
-  int LABEL = 20;
-  int QUOTE = 25;
-  int RELATIONAL_OPERATOR_WITHOUT_LT_GT = 26;
-  int LT = 27;
-  int GT = 28;
-  int LE = 29;
-  int GE = 30;
-  int EQ = 31;
-  int NE = 32;
-  int AND = 33;
-  int OR = 34;
-  int NOT = 35;
-  int POWER = 36;
-  int ADD = 37;
-  int SUB = 38;
-  int MULT = 39;
-  int DIV = 40;
-  int FLOATING_POINT_LITERAL = 41;
-  int EXPONENT = 42;
-  int CLAMP = 43;
-  int QUESTION_MARK = 44;
-  int COMMA = 45;
-  int NAMED_ATTRIBUTE = 46;
-  int VARIABLE_ATTRIBUTE = 47;
-  int MINUS = 48;
-  int BOND = 49;
-  int DOT = 50;
-  int REACTION_ARROW_RIGHT = 51;
-  int REACTION_ARROW_BOTH = 52;
+  int COMPARTMENTS = 10;
+  int PARAMETERS = 11;
+  int REACTION = 12;
+  int RULES = 13;
+  int TYPES = 14;
+  int OBSERVABLES = 15;
+  int IDENTIFIER = 16;
+  int ID = 17;
+  int LETTER = 18;
+  int DIGIT = 19;
+  int INTEGER = 20;
+  int LABEL = 21;
+  int ATSIGN = 22;
+  int QUOTE = 27;
+  int RELATIONAL_OPERATOR_WITHOUT_LT_GT = 28;
+  int LT = 29;
+  int GT = 30;
+  int LE = 31;
+  int GE = 32;
+  int EQ = 33;
+  int NE = 34;
+  int AND = 35;
+  int OR = 36;
+  int NOT = 37;
+  int POWER = 38;
+  int ADD = 39;
+  int SUB = 40;
+  int MULT = 41;
+  int DIV = 42;
+  int FLOATING_POINT_LITERAL = 43;
+  int EXPONENT = 44;
+  int CLAMP = 45;
+  int QUESTION_MARK = 46;
+  int COMMA = 47;
+  int NAMED_ATTRIBUTE = 48;
+  int VARIABLE_ATTRIBUTE = 49;
+  int MINUS = 50;
+  int BOND = 51;
+  int DOT = 52;
+  int REACTION_ARROW_RIGHT = 53;
+  int REACTION_ARROW_BOTH = 54;
 
   int DEFAULT = 0;
 
@@ -66,6 +68,7 @@ public interface BNGLParserConstants {
     "\"seed\"",
     "\"functions\"",
     "\"action\"",
+    "\"compartments\"",
     "\"parameters\"",
     "\"reaction\"",
     "\"rules\"",
@@ -77,6 +80,7 @@ public interface BNGLParserConstants {
     "<DIGIT>",
     "<INTEGER>",
     "<LABEL>",
+    "\"@\"",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",
@@ -109,11 +113,11 @@ public interface BNGLParserConstants {
     "\".\"",
     "<REACTION_ARROW_RIGHT>",
     "<REACTION_ARROW_BOTH>",
+    "\"{\"",
+    "\"}\"",
     "\"(\"",
     "\")\"",
     "\"=\"",
-    "\"{\"",
-    "\"}\"",
     "\";\"",
   };
 

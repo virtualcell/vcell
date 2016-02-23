@@ -6,9 +6,12 @@ import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -19,6 +22,8 @@ import org.vcell.model.bngl.ASTAttributePattern;
 import org.vcell.model.bngl.ASTBondExist;
 import org.vcell.model.bngl.ASTBondPossible;
 import org.vcell.model.bngl.ASTBondState;
+import org.vcell.model.bngl.ASTCompartment;
+import org.vcell.model.bngl.ASTCompartmentsBlock;
 import org.vcell.model.bngl.ASTExpression;
 import org.vcell.model.bngl.ASTFloatNode;
 import org.vcell.model.bngl.ASTFuncNode;
@@ -36,6 +41,7 @@ import org.vcell.model.bngl.ASTMolecularTypePattern;
 import org.vcell.model.bngl.ASTMultNode;
 import org.vcell.model.bngl.ASTNotNode;
 import org.vcell.model.bngl.ASTObservable;
+import org.vcell.model.bngl.ASTObservablePattern;
 import org.vcell.model.bngl.ASTObservablesBlock;
 import org.vcell.model.bngl.ASTOrNode;
 import org.vcell.model.bngl.ASTParameter;
@@ -57,6 +63,8 @@ import org.vcell.model.bngl.SimpleNode;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.bionetgen.BNGReaction;
+import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -170,7 +178,13 @@ public class RbmUtils {
 				seedSpecies.setInitialCondition(exp);
 			if (data instanceof RbmModelContainer) {
 				try {
-					Structure structure = model.getStructure(0);
+					Structure structure;
+					String strStruct = node.getCompartment();
+					if(strStruct != null && !strStruct.isEmpty()) {
+						structure = model.getStructure(strStruct);
+					} else {
+						structure = model.getStructure(0);
+					}
 					SpeciesContext speciesContext = model.createSpeciesContext(structure, seedSpecies.getSpeciesPattern());
 					for(SimulationContext application : appList) {
 						SpeciesContextSpec scs = application.getReactionContext().getSpeciesContextSpec(speciesContext);
@@ -211,13 +225,14 @@ public class RbmUtils {
 		public Object visit(ASTAction node, Object data) {
 			return null;
 		}
-
+		
 		public Object visit(ASTReactionRule node, Object data) {
 			if (data instanceof RbmModelContainer) {
 				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule(node.getLabel(), model.getStructures()[0], node.getArrowString().equals("<->"));
 				node.childrenAccept(this, reactionRule);
 				if(model.getStructures().length > 0) {
-					reactionRule.setStructure(model.getStructure(0));
+					Structure structure = RbmUtils.findStructure(model, reactionRule);
+					reactionRule.setStructure(structure);
 				}
 				try {
 					model.getRbmModelContainer().addReactionRule(reactionRule);
@@ -235,7 +250,14 @@ public class RbmUtils {
 	    	  Node child = node.jjtGetChild(i);
 	    	  Object object = child.jjtAccept(this, data);
 	    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
-	    		  ((ReactionRule) data).addReactant(new ReactantPattern((SpeciesPattern) object, ((ReactionRule)data).getStructure()));
+	    		  String structureName = node.getCompartment();
+	    		  Structure structure;
+	    		  if(structureName != null && !structureName.isEmpty()) {
+	    			  structure = model.getStructure(structureName);
+	    		  } else {
+	    			  structure = ((ReactionRule)data).getStructure();
+	    		  }
+	    		  ((ReactionRule) data).addReactant(new ReactantPattern((SpeciesPattern) object, structure));
 	    	  }
 	      }
 	      return null;
@@ -246,7 +268,14 @@ public class RbmUtils {
 		    	  Node child = node.jjtGetChild(i);
 		    	  Object object = child.jjtAccept(this, data);
 		    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
-		    		  ((ReactionRule) data).addProduct(new ProductPattern((SpeciesPattern) object, ((ReactionRule)data).getStructure()));
+		    		  String structureName = node.getCompartment();
+		    		  Structure structure;
+		    		  if(structureName != null && !structureName.isEmpty()) {
+		    			  structure = model.getStructure(structureName);
+		    		  } else {
+		    			  structure = ((ReactionRule)data).getStructure();
+		    		  }
+		    		  ((ReactionRule) data).addProduct(new ProductPattern((SpeciesPattern) object, structure));
 		    	  }
 		     }
 		     return null;
@@ -523,6 +552,16 @@ public class RbmUtils {
 				return null;
 			}
 		}
+		
+		@Override
+		public Object visit(ASTObservablePattern node, Object data) {
+			if (data instanceof RbmObservable){
+				RbmObservable observable = (RbmObservable)data;
+				observable.setStructure(model.getStructure(node.getCompartment()));
+				node.childrenAccept(this, observable);
+			}
+			return null;
+		}
 
 		@Override
 		public Object visit(ASTFunctionsBlock node, Object data) {
@@ -643,6 +682,31 @@ public class RbmUtils {
 				}
 			} catch (Exception ex) {
 				throw new RuntimeException("Function '" + node.getName() + " can not be added, " + ex.getMessage(),ex);
+			}
+			return null;
+		}
+		@Override
+		public Object visit(ASTCompartmentsBlock node, Object data) {
+			node.childrenAccept(this, data);
+			return null;
+		}
+		@Override
+		public Object visit(ASTCompartment node, Object data) {
+			String name = node.getName();
+			if(name == null) {
+				return null;
+			}
+			int dimension = node.getDimension();
+			String volume  = node.getVolume();		// TODO: now what
+			try {
+				if(dimension == 2) {
+					model.addMembrane(name);
+				} else {
+					model.addFeature(name);
+				}
+			} catch (ModelException | PropertyVetoException e) {
+				e.printStackTrace();
+				throw new RuntimeException("BngVisitor: Unable to create Structure, " + e.getMessage());
 			}
 			return null;
 		}
@@ -778,6 +842,7 @@ public class RbmUtils {
 			boolean bEscapingExpressionBegin = false;
 			boolean inProlog = true;
 			BnglLocation location = BnglLocation.OutsideBlock;
+			Set<String> compartments = new HashSet<> ();
 			while (true) {
 				String line = br.readLine();
 				if (line == null) {
@@ -785,7 +850,7 @@ public class RbmUtils {
 				}
 				line = line.trim();
 				line = applySyntaxCorrections(line);
-				
+
 				// we capture all the prologue and insert in in the BioModel notes
 				if(line.startsWith("begin model") || line.startsWith("begin parameters")) {
 					inProlog = false;
@@ -826,7 +891,7 @@ public class RbmUtils {
 					}
 					line2 = line2.trim();
 					// we don't try to get too fancy here, we'll just assume there are 2 lines of code somewhere
-					// within a block and we simply concatenate them
+					// within a block and we simply concatenate them; if it's more than 2 we're out of luck
 					int concatenationTokenIndex = line.lastIndexOf("\\");
 					line = line.substring(0, concatenationTokenIndex);
 					if(line.endsWith(" ")) {
@@ -851,42 +916,47 @@ public class RbmUtils {
 				}
 					
 				int labelEndIndex = line.indexOf(":");
-				if(labelEndIndex == -1) {
-					// there may still be a label present, just without the ":"
-					StringTokenizer st = new StringTokenizer(line);
-					String nextToken = st.nextToken();
-					String prefix = "";
-					if (nextToken.matches("[0-9]+") ) {	// labels missing the ":" must be purely numeric
-						//  we transform them in proper labels by adding a letter prefix and the ":" suffix
+				if(labelEndIndex > 0 && line.substring(0, labelEndIndex).contains("@")) {
+					;		// this is not a label, is a compartment
+				} else {
+					if(labelEndIndex == -1) {
+						// there may still be a label present, just without the ":"
+						StringTokenizer st = new StringTokenizer(line);
+						String nextToken = st.nextToken();
+						String prefix = "";
+						if (nextToken.matches("[0-9]+") ) {	// labels missing the ":" must be purely numeric
+							//  we transform them in proper labels by adding a letter prefix and the ":" suffix
+							if(location == BnglLocation.ReactionRule) {
+								prefix = "r";	// labels can't start with a number, so we add "r" as a prefix
+							} else {
+								prefix = "l";	// this just for consistency, below we'll actually remove all labels except the reaction rule ones
+							}
+							line = line.replaceFirst(nextToken, prefix + nextToken + ":");
+							labelEndIndex = line.indexOf(":");
+						}
+					}
+					// remove labels except for reaction rule labels
+					if (labelEndIndex >= 0 && line.length() > labelEndIndex) {
+						// we're certain they cannot be inside a comment since comments were removed already (above)
 						if(location == BnglLocation.ReactionRule) {
-							prefix = "r";	// labels can't start with a number, so we add "r" as a prefix
+							String reactionRuleName = line.substring(0, labelEndIndex);
+							if(reactionRuleNames.indexOf(reactionRuleName) != -1) {		// already in use 
+								line = line.substring(labelEndIndex);
+								reactionRuleName = reactionRuleName + "_" + lineNumber;
+								line = reactionRuleName + line;
+							}
+							reactionRuleNames.add(reactionRuleName);
 						} else {
-							prefix = "l";	// this just for consistency, below we'll actually remove all labels except the reaction rule ones
+							line = line.substring(labelEndIndex + 1);
 						}
-						line = line.replaceFirst(nextToken, prefix + nextToken + ":");
-						labelEndIndex = line.indexOf(":");
 					}
 				}
-				// remove labels except for reaction rule labels
-				if (labelEndIndex >= 0 && line.length() > labelEndIndex) {
-					// we're certain they cannot be inside a comment since comments were removed already (above)
-					if(location == BnglLocation.ReactionRule) {
-						String reactionRuleName = line.substring(0, labelEndIndex);
-						if(reactionRuleNames.indexOf(reactionRuleName) != -1) {		// already in use 
-							line = line.substring(labelEndIndex);
-							reactionRuleName = reactionRuleName + "_" + lineNumber;
-							line = reactionRuleName + line;
-						}
-						reactionRuleNames.add(reactionRuleName);
-					} else {
-						line = line.substring(labelEndIndex + 1);
-					}
-				}
+				line = line.trim();				// there may be some blanks hanging around
 				if (line.length() == 0) {		// line may be empty now
 					sb.append("\n");
 					lineNumber++;
 					continue;
-				}				
+				}
 				if (bEscapingExpressionBegin) {
 					StringTokenizer st = new StringTokenizer(line);
 					String nextToken = st.nextToken();
@@ -903,6 +973,15 @@ public class RbmUtils {
 					sb.append("\n");
 				} else {
 					sb.append(line + "\n");
+					if(location == BnglLocation.Compartment) {
+						// make a list with all the compartment names, we'll need them during phase 2 to remove the "containing
+						// compartment" (which we can't deal with) and to build the escape expression for the volume using the  { }
+						StringTokenizer st = new StringTokenizer(line);
+						String firstToken = st.nextToken();		// first token is compartment name
+						if(!compartments.add(firstToken)) {
+							System.out.println("BnglPreprocessor: Duplicate compartment name!" + firstToken);
+						}
+					}
 				}
 				if (line.startsWith("begin parameters") || line.startsWith("begin seed species")) {
 					// TODO: position sensitive, do not move this 'if' up
@@ -921,6 +1000,7 @@ public class RbmUtils {
 
 			// pass 2, deal with comments and labels
 			String cleanedBngl = sb.toString();
+//			System.out.println(cleanedBngl);
 			br = new BufferedReader(new StringReader(cleanedBngl));
 			sb = new StringBuilder();
 			lineNumber = 0;
@@ -945,15 +1025,45 @@ public class RbmUtils {
 						}
 						reactionRuleNames.add(reactionRuleName);
 						line = reactionRuleName + ":" + line;
+					} else {
+						sb.append(line + "\n");		// rule has label, we keep it as it is
 					}
+				} else if((newLocation == BnglLocation.Compartment) && (location == BnglLocation.Compartment)) {
+					// remove the optional "containing compartment" if specified
+					System.out.println(line);
+					
+					StringTokenizer st = new StringTokenizer(line);
+					String lastToken = "";
+					while (st.hasMoreTokens()) {
+						lastToken = st.nextToken();
+					}
+					if(compartments.contains(lastToken)) {
+						line = line.substring(0, line.lastIndexOf(lastToken));
+					}
+					line = line.trim();
+					// start again and add the { } around the expression of volume
+					st = new StringTokenizer(line);
+					String nextToken = st.nextToken();		// name
+					sb.append(nextToken + " ");
+					nextToken = st.nextToken();				// dimension
+					sb.append(nextToken + " ");
+					sb.append("{");
+					while (st.hasMoreTokens()) {
+						sb.append(st.nextToken());
+					}
+					sb.append("}");
+					sb.append("\n");
+
+					
+				} else {		// all other cases nothing special to do
+					sb.append(line + "\n");
 				}
-				sb.append(line + "\n");
 				location = newLocation;
 				lineNumber++;
 			}
 			br.close();
 			cleanedBngl = sb.toString();
-			System.out.println(cleanedBngl);
+//			System.out.println(cleanedBngl);
 			
 //			BufferedWriter writer = null;
 //			try	{
@@ -1523,6 +1633,55 @@ public class RbmUtils {
 		}
 		return false;
 	}
+	
+	// returns the structure with the lowest dimension of all reaction participants
+	// if different structures of the same dimension are encountered we return the first one found
+	// TODO: keep the 2 versions of findStructure synced!!!
+	public static Structure findStructure(Model model, ReactionRule rr) {
+		Structure ours = null;
+		for (ReactantPattern rp : rr.getReactantPatterns()) {
+			Structure theirs = rp.getStructure();
+			if(ours == null || ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		for (ProductPattern pp : rr.getProductPatterns()) {
+			Structure theirs = pp.getStructure();
+			if(ours == null || ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		if(ours == null) {
+			ours = model.getStructure(0);
+		}
+		return ours;
+	}
+	public static Structure findStructure(Model model, HashMap<Integer, String> speciesMap, BNGReaction forwardBNGReaction) {
+		Structure ours = null;
+		for (int j = 0; j < forwardBNGReaction.getReactants().length; j++) {
+			BNGSpecies s = forwardBNGReaction.getReactants()[j];
+			String scName = speciesMap.get(s.getNetworkFileIndex());
+			SpeciesContext sc = model.getSpeciesContext(scName);
+			Structure theirs = sc.getStructure();
+			if(ours == null || ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		for (int j = 0; j < forwardBNGReaction.getProducts().length; j++) {
+			BNGSpecies s = forwardBNGReaction.getProducts()[j];
+			String scName = speciesMap.get(s.getNetworkFileIndex());
+			SpeciesContext sc = model.getSpeciesContext(scName);
+			Structure theirs = sc.getStructure();
+			if(ours == null || ours.getDimension() > theirs.getDimension()) {
+				ours = theirs;
+			}
+		}
+		if(ours == null) {
+			ours = model.getStructure(0);
+		}
+		return ours;
+	}
+
 
 // TODO: jim's code to replace species names with their patterns
 //	private static String getSpeciesPatternSubstitutedExpression(Expression exp) {
