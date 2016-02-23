@@ -86,6 +86,7 @@ TOKEN : /* IDENTIFIERS */
    < SEED: "seed" > | 
    < FUNCTIONS: "functions" > | 
    < ACTION: "action" > |
+   < COMPARTMENTS: "compartments" > |
    < PARAMETERS: "parameters" > |
    < REACTION: "reaction" > |
    < RULES: "rules" > |
@@ -108,6 +109,8 @@ TOKEN : /* IDENTIFIERS */
    < INTEGER: ["0"-"9"] (["0"-"9"])* > 
 |
    <LABEL: <ID> ":">
+|
+   <ATSIGN: "@">
   
 }
 
@@ -218,7 +221,7 @@ ASTModel Model() :
 	LOOKAHEAD(2)
 	(
 	<BEGIN> <MODEL>
-	( <BEGIN> ( ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	<END> <MODEL>
 	( Action() )* 
 	)/*@bgen(jjtree)*/
@@ -231,7 +234,7 @@ ASTModel Model() :
 |
 	LOOKAHEAD(2)
 	(
-	( <BEGIN> ( ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	( Action() )* 
 	)/*@bgen(jjtree)*/
         {
@@ -296,22 +299,19 @@ void FunctionsBlock()                 :
 /*@egen*/
 }
 
-void FunctionDecl()               :
-{/*@bgen(jjtree) FunctionDecl */
-  ASTFunctionDecl jjtn000 = new ASTFunctionDecl(JJTFUNCTIONDECL);
+
+void CompartmentsBlock()                    :
+{/*@bgen(jjtree) CompartmentsBlock */
+  ASTCompartmentsBlock jjtn000 = new ASTCompartmentsBlock(JJTCOMPARTMENTSBLOCK);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t1; ASTExpression t2; }
-{/*@bgen(jjtree) FunctionDecl */
+/*@egen*/}
+{/*@bgen(jjtree) CompartmentsBlock */
         try {
 /*@egen*/
-	( t1 = <IDENTIFIER> ) "(" ")" "=" ( t2 = Expression() )/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.setName(t1.image);  jjtn000.setExpressionString(t2.toBNGL()); }/*@bgen(jjtree)*/
+	<COMPARTMENTS>
+	( Compartment() )*
+	<END> <COMPARTMENTS>/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -346,44 +346,6 @@ void ParameterBlock()                 :
 	<PARAMETERS>
 	( Parameter() )*
 	<END> <PARAMETERS>/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
-}
-
-void Parameter()            :
-{/*@bgen(jjtree) Parameter */
-  ASTParameter jjtn000 = new ASTParameter(JJTPARAMETER);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t1; ASTExpression t2; }
-{/*@bgen(jjtree) Parameter */
-        try {
-/*@egen*/
-	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( "{" t2 = Expression() "}")/*@bgen(jjtree)*/
-    {
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-    }
-/*@egen*/ 
-    { jjtn000.setName(t1.image);  jjtn000.setExpressionString(t2.toBNGL()); }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -474,45 +436,6 @@ void SeedSpeciesBlock()                   :
 /*@egen*/
 }
 
-void SeedSpecies()              :
-{/*@bgen(jjtree) SeedSpecies */
-  ASTSeedSpecies jjtn000 = new ASTSeedSpecies(JJTSEEDSPECIES);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/ ASTExpression t; Token tClamped = null;}
-{/*@bgen(jjtree) SeedSpecies */
-        try {
-/*@egen*/
-	[ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t = Expression() "}")/*@bgen(jjtree)*/
-        {
-          jjtree.closeNodeScope(jjtn000, true);
-          jjtc000 = false;
-        }
-/*@egen*/
-	{ jjtn000.setInitial(t.toBNGL());
-	if(tClamped != null) {jjtn000.setClamped();} }/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-          }
-        }
-/*@egen*/
-}
-
 void ReactionRulesBlock()                     :
 {/*@bgen(jjtree) ReactionRulesBlock */
   ASTReactionRulesBlock jjtn000 = new ASTReactionRulesBlock(JJTREACTIONRULESBLOCK);
@@ -546,8 +469,6 @@ void ReactionRulesBlock()                     :
         }
 /*@egen*/
 }
-
-
 
 void ObservablesBlock()                   :
 {/*@bgen(jjtree) ObservablesBlock */
@@ -583,25 +504,23 @@ void ObservablesBlock()                   :
 /*@egen*/
 }
 
-void Observable()             :
-{/*@bgen(jjtree) Observable */
-  ASTObservable jjtn000 = new ASTObservable(JJTOBSERVABLE);
+void Compartment()              :					// ------------ Compartment ---------------------------------
+{/*@bgen(jjtree) Compartment */
+  ASTCompartment jjtn000 = new ASTCompartment(JJTCOMPARTMENT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t1=null; Token t2=null; Token t=null;}
-{/*@bgen(jjtree) Observable */
+/*@egen*/ Token t1=null; Token t2=null; ASTExpression t3=null;}
+{/*@bgen(jjtree) Compartment */
         try {
+/*@egen*/	
+	// Format: [index] name dimension volume
+	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( t2 = <INTEGER> ) ( "{" t3 = Expression() "}")/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
 /*@egen*/
-/*	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )		*/
-	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern() ( [ <COMMA> ] SpeciesPattern())*) )/*@bgen(jjtree)*/
-         {
-           jjtree.closeNodeScope(jjtn000, true);
-           jjtc000 = false;
-         }
-/*@egen*/
- 	 { jjtn000.setName(t.image);
- 	 if (t1 != null) {jjtn000.setType(t1.image);}
- 	 if (t2 != null) {jjtn000.setType(t2.image);} }/*@bgen(jjtree)*/
+	{ jjtn000.setName(t1.image); jjtn000.setDimension(t2.image); jjtn000.setVolume(t3.toBNGL()); }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -624,16 +543,36 @@ void Observable()             :
 /*@egen*/
 }
 
-void Action()         :
-{/*@bgen(jjtree) Action */
-  ASTAction jjtn000 = new ASTAction(JJTACTION);
+void Parameter()            :						// ----------- Parameter -------------------------------------
+{/*@bgen(jjtree) Parameter */
+  ASTParameter jjtn000 = new ASTParameter(JJTPARAMETER);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Action */
+/*@egen*/ Token t1; ASTExpression t2; }
+{/*@bgen(jjtree) Parameter */
         try {
 /*@egen*/
-	<ACTION>/*@bgen(jjtree)*/
+	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( "{" t2 = Expression() "}")/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/ 
+    { jjtn000.setName(t1.image);  jjtn000.setExpressionString(t2.toBNGL()); }/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
         } finally {
           if (jjtc000) {
             jjtree.closeNodeScope(jjtn000, true);
@@ -642,7 +581,165 @@ void Action()         :
 /*@egen*/
 }
 
-void ReactionRule()               :
+void SeedSpecies()              :					// ---------- SeedSpecies ------------------------------------
+{/*@bgen(jjtree) SeedSpecies */
+  ASTSeedSpecies jjtn000 = new ASTSeedSpecies(JJTSEEDSPECIES);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t1=null; ASTExpression t2; Token tClamped = null;}
+{/*@bgen(jjtree) SeedSpecies */
+        try {
+/*@egen*/
+	[  <ATSIGN> (t1 = <LABEL>) ] [ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t2 = Expression() "}")/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{
+	if (t1!=null) { jjtn000.setCompartment(t1.image.replace(":","")); }
+	jjtn000.setInitial(t2.toBNGL());
+	if(tClamped != null) {jjtn000.setClamped();} 
+	}/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void Observable()             :						// --------- Observable ---------------------------------------
+{/*@bgen(jjtree) Observable */
+  ASTObservable jjtn000 = new ASTObservable(JJTOBSERVABLE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t1=null; Token t2=null; Token t=null;}
+{/*@bgen(jjtree) Observable */
+        try {
+/*@egen*/
+	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (ObservablePattern() ( [ <COMMA> ] ObservablePattern())*) )/*@bgen(jjtree)*/
+         {
+           jjtree.closeNodeScope(jjtn000, true);
+           jjtc000 = false;
+         }
+/*@egen*/
+ 	 { jjtn000.setName(t.image);
+ 	 if (t1 != null) {jjtn000.setType(t1.image);}
+ 	 if (t2 != null) {jjtn000.setType(t2.image);} 
+ 	 }/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+void ObservablePattern()                   :
+{/*@bgen(jjtree) ObservablePattern */
+  ASTObservablePattern jjtn000 = new ASTObservablePattern(JJTOBSERVABLEPATTERN);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t=null; }
+{/*@bgen(jjtree) ObservablePattern */
+        try {
+/*@egen*/
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ if (t!=null) { jjtn000.setCompartment(t.image.replace(":","")); } }/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void FunctionDecl()               :					// ----------- Function -------------------------------------
+{/*@bgen(jjtree) FunctionDecl */
+  ASTFunctionDecl jjtn000 = new ASTFunctionDecl(JJTFUNCTIONDECL);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t1; ASTExpression t2; }
+{/*@bgen(jjtree) FunctionDecl */
+        try {
+/*@egen*/
+	( t1 = <IDENTIFIER> ) "(" ")" "=" ( t2 = Expression() )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ jjtn000.setName(t1.image);  jjtn000.setExpressionString(t2.toBNGL()); }/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void ReactionRule()               :					// ---------- ReactionRule ------------------------------------
 {/*@bgen(jjtree) ReactionRule */
   ASTReactionRule jjtn000 = new ASTReactionRule(JJTREACTIONRULE);
   boolean jjtc000 = true;
@@ -683,17 +780,22 @@ void ReactionRule()               :
         }
 /*@egen*/
 }
-
 void Reactant()           :
 {/*@bgen(jjtree) Reactant */
   ASTReactant jjtn000 = new ASTReactant(JJTREACTANT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token t=null; }
 {/*@bgen(jjtree) Reactant */
         try {
 /*@egen*/
-	SpeciesPattern()/*@bgen(jjtree)*/
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ if (t!=null) { jjtn000.setCompartment(t.image.replace(":","")); } }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -715,17 +817,22 @@ void Reactant()           :
         }
 /*@egen*/
 }
-
 void Product()          :
 {/*@bgen(jjtree) Product */
   ASTProduct jjtn000 = new ASTProduct(JJTPRODUCT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+/*@egen*/ Token t=null; }
 {/*@bgen(jjtree) Product */
         try {
 /*@egen*/
-	SpeciesPattern()/*@bgen(jjtree)*/
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+	{ if (t!=null) { jjtn000.setCompartment(t.image.replace(":","")); } }/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -747,7 +854,6 @@ void Product()          :
         }
 /*@egen*/
 }
-
 void KineticsParameter()                    :
 {/*@bgen(jjtree) KineticsParameter */
   ASTKineticsParameter jjtn000 = new ASTKineticsParameter(JJTKINETICSPARAMETER);
@@ -786,7 +892,7 @@ void KineticsParameter()                    :
 /*@egen*/
 }
  
-ASTSpeciesPattern SpeciesPattern() :
+ASTSpeciesPattern SpeciesPattern() :				// ------------ SpeciesPattern ---------------------------------
 {/*@bgen(jjtree) SpeciesPattern */
   ASTSpeciesPattern jjtn000 = new ASTSpeciesPattern(JJTSPECIESPATTERN);
   boolean jjtc000 = true;
@@ -824,7 +930,7 @@ ASTSpeciesPattern SpeciesPattern() :
 /*@egen*/
 }
 
-ASTMolecularTypePattern MolecularTypePattern() :
+ASTMolecularTypePattern MolecularTypePattern() :	// ------------- MolecularTypePattern --------------------------
 {/*@bgen(jjtree) MolecularTypePattern */
   ASTMolecularTypePattern jjtn000 = new ASTMolecularTypePattern(JJTMOLECULARTYPEPATTERN);
   boolean jjtc000 = true;
@@ -868,6 +974,23 @@ ASTMolecularTypePattern MolecularTypePattern() :
 /*@egen*/
 }
 
+void Action()         :
+{/*@bgen(jjtree) Action */
+  ASTAction jjtn000 = new ASTAction(JJTACTION);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) Action */
+        try {
+/*@egen*/
+	<ACTION>/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
 
 void Components()       :
 {}
@@ -881,7 +1004,7 @@ void ComponentList()      :
   (MolecularComponentPattern()) ( "," MolecularComponentPattern() )*
 }
 
-void MolecularComponentPattern()                            : 
+void MolecularComponentPattern()                            : 	// ---- MolecularComponentPattern ---------------------
 {/*@bgen(jjtree) MolecularComponentPattern */
   ASTMolecularComponentPattern jjtn000 = new ASTMolecularComponentPattern(JJTMOLECULARCOMPONENTPATTERN);
   boolean jjtc000 = true;
@@ -919,7 +1042,7 @@ void MolecularComponentPattern()                            :
 /*@egen*/
 }
 
-void AttributePattern()                   : 
+void AttributePattern()                   : 					// ----- State -----------------------------------------
 {/*@bgen(jjtree) AttributePattern */
   ASTAttributePattern jjtn000 = new ASTAttributePattern(JJTATTRIBUTEPATTERN);
   boolean jjtc000 = true;
@@ -957,7 +1080,7 @@ void AttributePattern()                   :
 /*@egen*/
 }
 
-void BondPattern()       :
+void BondPattern()       :										// ---- Bond -----------------------------------------
 { Token t; }
 {
 	LOOKAHEAD(<BOND> <INTEGER>)

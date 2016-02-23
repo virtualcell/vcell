@@ -552,7 +552,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (directBNGReactionsMap.containsValue(bngReaction)){
 				BNGReaction forwardBNGReaction = bngReaction;
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
-				Structure structure = findStructure(model, speciesMap, forwardBNGReaction);
+				Structure structure = RbmUtils.findStructure(model, speciesMap, forwardBNGReaction);
 				boolean bReversible = reverseBNGReaction != null;
 				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);	// TODO: aici
 				for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
@@ -598,7 +598,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())){
 				// reverse only (must be irreversible)
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
-				Structure structure = findStructure(model, speciesMap, reverseBNGReaction);
+				Structure structure = RbmUtils.findStructure(model, speciesMap, reverseBNGReaction);
 				boolean bReversible = false;
 				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);
 				for (int j = 0; j < reverseBNGReaction.getReactants().length; j++){
@@ -721,36 +721,6 @@ public class NetworkTransformer implements SimContextTransformer {
 		System.out.println(msg);
 		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
-	}
-
-	public Structure findStructure(Model model, HashMap<Integer, String> speciesMap, BNGReaction forwardBNGReaction) {
-		Structure ours = null;
-		for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
-			BNGSpecies s = forwardBNGReaction.getReactants()[j];
-			String scName = speciesMap.get(s.getNetworkFileIndex());
-			SpeciesContext sc = model.getSpeciesContext(scName);
-			Structure theirs = sc.getStructure();
-			if(ours == null) {
-				ours = theirs;
-			} else if(ours.getDimension() > theirs.getDimension()) {
-				ours = theirs;
-			}
-		}
-		for (int j = 0; j < forwardBNGReaction.getProducts().length; j++){
-			BNGSpecies s = forwardBNGReaction.getProducts()[j];
-			String scName = speciesMap.get(s.getNetworkFileIndex());
-			SpeciesContext sc = model.getSpeciesContext(scName);
-			Structure theirs = sc.getStructure();
-			if(ours == null) {
-				ours = theirs;
-			} else if(ours.getDimension() > theirs.getDimension()) {
-				ours = theirs;
-			}
-		}
-		if(ours == null) {
-			ours = model.getStructure(0);
-		}
-		return ours;
 	}
 
 //	private Expression substituteFakeParameters(Expression paramExpression) throws ExpressionException {

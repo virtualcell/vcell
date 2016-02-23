@@ -84,6 +84,7 @@ TOKEN : /* IDENTIFIERS */
    < SEED: "seed" > | 
    < FUNCTIONS: "functions" > | 
    < ACTION: "action" > |
+   < COMPARTMENTS: "compartments" > |
    < PARAMETERS: "parameters" > |
    < REACTION: "reaction" > |
    < RULES: "rules" > |
@@ -106,6 +107,8 @@ TOKEN : /* IDENTIFIERS */
    < INTEGER: ["0"-"9"] (["0"-"9"])* > 
 |
    <LABEL: <ID> ":">
+|
+   <ATSIGN: "@">
   
 }
 
@@ -210,7 +213,7 @@ ASTModel Model() :
 	LOOKAHEAD(2)
 	(
 	<BEGIN> <MODEL>
-	( <BEGIN> ( ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	<END> <MODEL>
 	( Action() )* 
 	)
@@ -218,7 +221,7 @@ ASTModel Model() :
 |
 	LOOKAHEAD(2)
 	(
-	( <BEGIN> ( ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	( Action() )* 
 	)
 	{ return jjtThis; }
@@ -232,11 +235,13 @@ void FunctionsBlock() #FunctionsBlock :
 	<END> <FUNCTIONS>
 }
 
-void FunctionDecl() #FunctionDecl :
-{ Token t1; ASTExpression t2; }
+
+void CompartmentsBlock() #CompartmentsBlock :
+{}
 {
-	( t1 = <IDENTIFIER> ) "(" ")" "=" ( t2 = Expression() )
-	{ jjtThis.setName(t1.image);  jjtThis.setExpressionString(t2.toBNGL()); }
+	<COMPARTMENTS>
+	( Compartment() )*
+	<END> <COMPARTMENTS>
 }
 
 void ParameterBlock() #ParameterBlock :
@@ -245,13 +250,6 @@ void ParameterBlock() #ParameterBlock :
 	<PARAMETERS>
 	( Parameter() )*
 	<END> <PARAMETERS>
-}
-
-void Parameter() #Parameter :
-{ Token t1; ASTExpression t2; }
-{
-	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( "{" t2 = Expression() "}") 
-    { jjtThis.setName(t1.image);  jjtThis.setExpressionString(t2.toBNGL()); }
 }
 
 void MolecularDefinitionBlock() #MolecularDefinitionBlock :
@@ -270,14 +268,6 @@ void SeedSpeciesBlock() #SeedSpeciesBlock :
 	<END> <SEED> <SPECIES>
 }
 
-void SeedSpecies() #SeedSpecies :
-{ ASTExpression t; Token tClamped = null;}
-{
-	[ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t = Expression() "}")
-	{ jjtThis.setInitial(t.toBNGL());
-	if(tClamped != null) {jjtThis.setClamped();} }
-}
-
 void ReactionRulesBlock() #ReactionRulesBlock :
 {}
 {
@@ -285,8 +275,6 @@ void ReactionRulesBlock() #ReactionRulesBlock :
 	( [ <INTEGER> ] ReactionRule() )*
 	<END> <REACTION> <RULES>
 }
-
-
 
 void ObservablesBlock() #ObservablesBlock :
 {}
@@ -296,23 +284,56 @@ void ObservablesBlock() #ObservablesBlock :
 	<END> <OBSERVABLES>
 }
 
-void Observable() #Observable :
+void Compartment() #Compartment :					// ------------ Compartment ---------------------------------
+{ Token t1=null; Token t2=null; ASTExpression t3=null;}
+{	
+	// Format: [index] name dimension volume
+	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( t2 = <INTEGER> ) ( "{" t3 = Expression() "}")
+	{ jjtThis.setName(t1.image); jjtThis.setDimension(t2.image); jjtThis.setVolume(t3.toBNGL()); }
+}
+
+void Parameter() #Parameter :						// ----------- Parameter -------------------------------------
+{ Token t1; ASTExpression t2; }
+{
+	[ <INTEGER> ] ( t1 = <IDENTIFIER> ) ( "{" t2 = Expression() "}") 
+    { jjtThis.setName(t1.image);  jjtThis.setExpressionString(t2.toBNGL()); }
+}
+
+void SeedSpecies() #SeedSpecies :					// ---------- SeedSpecies ------------------------------------
+{ Token t1=null; ASTExpression t2; Token tClamped = null;}
+{
+	[  <ATSIGN> (t1 = <LABEL>) ] [ tClamped = <CLAMP> ] SpeciesPattern() ( "{" t2 = Expression() "}")
+	{
+	if (t1!=null) { jjtThis.setCompartment(t1.image.replace(":","")); }
+	jjtThis.setInitial(t2.toBNGL());
+	if(tClamped != null) {jjtThis.setClamped();} 
+	}
+}
+
+void Observable() #Observable :						// --------- Observable ---------------------------------------
 { Token t1=null; Token t2=null; Token t=null;}
 {
-/*	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern())+ )		*/
-	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (SpeciesPattern() ( [ <COMMA> ] SpeciesPattern())*) )
+	([<INTEGER>] ((t1=<MOLECULES>) | (t2=<SPECIES>)) (t = <IDENTIFIER>) (ObservablePattern() ( [ <COMMA> ] ObservablePattern())*) )
  	 { jjtThis.setName(t.image);
  	 if (t1 != null) {jjtThis.setType(t1.image);}
- 	 if (t2 != null) {jjtThis.setType(t2.image);} }
+ 	 if (t2 != null) {jjtThis.setType(t2.image);} 
+ 	 }
 }
-
-void Action() #Action :
-{}
+void ObservablePattern() #ObservablePattern:
+{ Token t=null; }
 {
-	<ACTION>
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()
+	{ if (t!=null) { jjtThis.setCompartment(t.image.replace(":","")); } }
 }
 
-void ReactionRule() #ReactionRule :
+void FunctionDecl() #FunctionDecl :					// ----------- Function -------------------------------------
+{ Token t1; ASTExpression t2; }
+{
+	( t1 = <IDENTIFIER> ) "(" ")" "=" ( t2 = Expression() )
+	{ jjtThis.setName(t1.image);  jjtThis.setExpressionString(t2.toBNGL()); }
+}
+
+void ReactionRule() #ReactionRule :					// ---------- ReactionRule ------------------------------------
 { Token t; Token t1; Token t2=null; Token tLabel;}
 {
 	( tLabel = <LABEL> )
@@ -322,19 +343,18 @@ void ReactionRule() #ReactionRule :
 	KineticsParameter() [ <COMMA> KineticsParameter() ]
 	{ jjtThis.setArrowString(t.image); jjtThis.setLabel(tLabel.image);}
 }
-
 void Reactant() #Reactant :
-{}
+{ Token t=null; }
 {
-	SpeciesPattern()
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()
+	{ if (t!=null) { jjtThis.setCompartment(t.image.replace(":","")); } }
 }
-
 void Product() #Product :
-{}
+{ Token t=null; }
 {
-	SpeciesPattern()
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()
+	{ if (t!=null) { jjtThis.setCompartment(t.image.replace(":","")); } }
 }
-
 void KineticsParameter() #KineticsParameter :
 { ASTExpression t; }
 {
@@ -342,14 +362,14 @@ void KineticsParameter() #KineticsParameter :
 	{ jjtThis.setValue(t.toBNGL()); }
 }
  
-ASTSpeciesPattern SpeciesPattern() :
+ASTSpeciesPattern SpeciesPattern() :				// ------------ SpeciesPattern ---------------------------------
 {}
 {
    MolecularTypePattern() ( <DOT> MolecularTypePattern() )*
    { return jjtThis; }
 }
 
-ASTMolecularTypePattern MolecularTypePattern() :
+ASTMolecularTypePattern MolecularTypePattern() :	// ------------- MolecularTypePattern --------------------------
 { Token t; Token label=null; }
 {
   (t = <IDENTIFIER>)  Components()  [<VARIABLE_ATTRIBUTE> ( label = <INTEGER> ) ]
@@ -362,6 +382,11 @@ ASTMolecularTypePattern MolecularTypePattern() :
   }
 }
 
+void Action() #Action :
+{}
+{
+	<ACTION>
+}
 
 void Components() #void :
 {}
@@ -375,14 +400,14 @@ void ComponentList() #void:
   (MolecularComponentPattern()) ( "," MolecularComponentPattern() )*
 }
 
-void MolecularComponentPattern() #MolecularComponentPattern : 
+void MolecularComponentPattern() #MolecularComponentPattern : 	// ---- MolecularComponentPattern ---------------------
 { Token t; }
 {
    ( t = <IDENTIFIER> ( AttributePattern() )* [ BondPattern() ] )
    { jjtThis.setName(t.image); }
 }
 
-void AttributePattern() #AttributePattern : 
+void AttributePattern() #AttributePattern : 					// ----- State -----------------------------------------
 {
   Token t;
 }
@@ -398,7 +423,7 @@ void AttributePattern() #AttributePattern :
 	}
 }
 
-void BondPattern() #void :
+void BondPattern() #void :										// ---- Bond -----------------------------------------
 { Token t; }
 {
 	LOOKAHEAD(<BOND> <INTEGER>)
