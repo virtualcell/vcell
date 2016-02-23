@@ -56,6 +56,13 @@ public String getKey() {
 public String getRuleName() {
 	return ruleName;
 }
+public String extractRuleName() {
+	if(ruleName.contains("_reverse_")) {
+		return ruleName.substring("_reverse_".length());
+	} else {
+		return ruleName;
+	}
+}
 
 
 public boolean isRuleReversed() {

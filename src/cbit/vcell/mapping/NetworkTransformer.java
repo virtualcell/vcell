@@ -552,9 +552,10 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (directBNGReactionsMap.containsValue(bngReaction)){
 				BNGReaction forwardBNGReaction = bngReaction;
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
-				Structure structure = RbmUtils.findStructure(model, speciesMap, forwardBNGReaction);
+				ReactionRule rr = model.getRbmModelContainer().getReactionRule(bngReaction.extractRuleName());
+				Structure structure = rr.getStructure();
 				boolean bReversible = reverseBNGReaction != null;
-				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);	// TODO: aici
+				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);
 				for (int j = 0; j < forwardBNGReaction.getReactants().length; j++){
 					BNGSpecies s = forwardBNGReaction.getReactants()[j];
 					String scName = speciesMap.get(s.getNetworkFileIndex());
@@ -598,7 +599,8 @@ public class NetworkTransformer implements SimContextTransformer {
 			} else if (reverseBNGReactionsMap.containsValue(bngReaction) && !directBNGReactionsMap.containsKey(bngReaction.getKey())){
 				// reverse only (must be irreversible)
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
-				Structure structure = RbmUtils.findStructure(model, speciesMap, reverseBNGReaction);
+				ReactionRule rr = model.getRbmModelContainer().getReactionRule(reverseBNGReaction.extractRuleName());
+				Structure structure = rr.getStructure();		
 				boolean bReversible = false;
 				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);
 				for (int j = 0; j < reverseBNGReaction.getReactants().length; j++){
