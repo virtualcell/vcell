@@ -230,10 +230,10 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 		newApplication(Application.NETWORK_STOCHASTIC);
 		break;
 	case add_new_app_rulebased: {
-		if(model.getStructures().length > 1) {
-			DialogUtils.showErrorDialog(this, VCellErrorMessages.NFSimAppNotAllowedForMultipleStructures);
-			return;
-		}
+//		if(model.getStructures().length > 1) {
+//			DialogUtils.showErrorDialog(this, VCellErrorMessages.NFSimAppNotAllowedForMultipleStructures);
+//			return;
+//		}
 		newApplication(Application.RULE_BASED_STOCHASTIC);
 		break;
 	}
@@ -245,10 +245,10 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 			break;
 		case COPY_CHANGE:
 			boolean bothSpatial = acc.isSourceSpatial() && acc.isDestSpatial();
-			if(acc.getAppType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC) && model.getStructures().length > 1) {
-				DialogUtils.showErrorDialog(this, VCellErrorMessages.NFSimAppNotAllowedForMultipleStructures);
-				return;
-			}
+//			if(acc.getAppType().equals(SimulationContext.Application.RULE_BASED_STOCHASTIC) && model.getStructures().length > 1) {
+//				DialogUtils.showErrorDialog(this, VCellErrorMessages.NFSimAppNotAllowedForMultipleStructures);
+//				return;
+//			}
 			copyApplication(bothSpatial,acc.getAppType());
 			break;
 		case CREATE:
