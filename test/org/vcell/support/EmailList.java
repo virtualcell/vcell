@@ -8,26 +8,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import oracle.jdbc.pool.OracleDataSource;
 
 /**
- * read database to get user emails (with notify="on"), dump to file 
+ * read database to get user emails (with notify="on"), dump to file
  * @author GWeatherby
  */
 public class EmailList {
-	private static final String QUERY = "Select email from vcell.vc_userinfo where notify='on' "
+	private static final String NOTIFY_QUERY = "Select email from vcell.vc_userinfo where notify='on' "
 			+ "and regexp_like(email,'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}$')";
+	private static final String BOUNCE_QUERY = "Select email from vcell.mailbounce";
 	private static final String DEFAULT_FILE = "emails.csv";
-	
-	static String jdbcUrl = "jdbc:oracle:thin:@dbs6.cam.uchc.edu:1521:orcl";
+
+	static String jdbcUrl = "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
 	static String userId = "vcell";
 	private final String password;
 	private final String filename;
 
 	public static void main(String[] args) {
-		EmailList eml; 
+		try {
+		EmailList eml;
 		switch (args.length) {
 		case 0:
 			System.err.println("Usage: [database password] <output filename>");
@@ -36,15 +40,18 @@ public class EmailList {
 			eml = new EmailList(args[0], DEFAULT_FILE);
 			break;
 		default:
-			eml = new EmailList(args[0], args[1]); 
+			eml = new EmailList(args[0], args[1]);
 			break;
 		}
-		
+
 		eml.exportList( );
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param password database (for {@link #userId}
 	 * @param filename to write to
 	 */
@@ -59,44 +66,60 @@ public class EmailList {
 	 */
 	private void exportList( ) {
 		try {
-			List<String> addrs; 
+			List<Address> addrs;
 			try (Connection conn = getConnection()) {
-				addrs = getAddresses(conn);
+				Set<String> bounces = getBounces(conn);
+
+				addrs = getAddresses(conn, bounces);
 			} //closes connection
-			//dump(addrs);
+//			dump(addrs);
 			writeToFile(addrs);
-		} catch (SQLException | FileNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * dump to standard out
 	 * @param addrs
 	 */
 	@SuppressWarnings("unused")
-	private void dump(List<String> addrs) {
+	private void dump(List<Address> addrs) {
 		addrs.forEach( address -> System.out.println(address) );
 	}
-	
-	private void writeToFile(List<String> addrs) throws FileNotFoundException {
+
+	private void writeToFile(List<Address> addrs) throws FileNotFoundException {
 		try (PrintWriter pw = new PrintWriter(new File(filename))) {
 			addrs.forEach( address -> pw.println(address) );
 		}
 	}
 
+	private Set<String> getBounces(Connection conn ) throws SQLException {
+		Set<String> bounces = new HashSet<>();
+		try (Statement stmt = conn.createStatement()) {
+			ResultSet rs = stmt.executeQuery(BOUNCE_QUERY);
+			while (rs.next( )) {
+				String b= rs.getString(1);
+				bounces.add(b);
+			}
+		}
+		return bounces;
+
+	}
 	/**
 	 * @param conn database connection
+	 * @param bounces
 	 * @return emails from database
 	 * @throws SQLException
 	 */
-	private List<String> getAddresses(Connection conn ) throws SQLException {
-		ArrayList<String> addresses = new ArrayList<>();
+	private List<Address> getAddresses(Connection conn, Set<String> bounces ) throws SQLException {
+		ArrayList<Address> addresses = new ArrayList<>();
 		try (Statement stmt = conn.createStatement()) {
-			ResultSet rs = stmt.executeQuery(QUERY);
+			ResultSet rs = stmt.executeQuery(NOTIFY_QUERY);
 			while (rs.next( )) {
 				String email = rs.getString(1);
-				addresses.add(email);
+				boolean b = bounces.contains(email);
+				addresses.add(new Address(email,b));
 			}
 			return addresses;
 		}
@@ -113,8 +136,20 @@ public class EmailList {
 		Connection conn = ds.getConnection(userId,password);
 		return conn;
 	}
-	
-	
 
-	
+	private static class Address {
+		final String email;
+		final boolean bounce;
+		Address(String email, boolean bounce) {
+			super();
+			this.email = email;
+			this.bounce = bounce;
+		}
+
+		@Override
+		public String toString( ) {
+			return email + ',' + bounce;
+		}
+
+	}
 }
