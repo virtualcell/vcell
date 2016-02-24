@@ -258,6 +258,16 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		return null;
 	}
 
+	public boolean hasExplicitParticipantMatch() {
+		// returns true if at least one molecular type pattern has an explicit match
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			if(mtp.hasExplicitParticipantMatch()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// call this every time when the order or number of elements in the molecularTypePatterns list might have changed
 	// TODO: stop directly modifying the molecularTypePatterns list outside this class !!!
 	public void recalculateIndexes() {
