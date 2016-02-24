@@ -64,39 +64,39 @@ public class IssuePanel extends DocumentEditorSubPanel {
 	private IssueTableModel issueTableModel = null;
 	private JButton refreshButton = null;
 	private JCheckBox showWarningCheckBox;
-	
+
 	public IssuePanel() {
 		super();
 		initialize();
 	}
-	
+
 	@Override
 	public void setIssueManager(IssueManager issueManager) {
 		super.setIssueManager(issueManager);
 		issueTableModel.setIssueManager(issueManager);
 	}
-	
+
 	@Override
-	protected void onSelectedObjectsChange(Object[] selectedObjects) {	
-	}	
-	
+	protected void onSelectedObjectsChange(Object[] selectedObjects) {
+	}
+
 	private void initialize() {
 		refreshButton = new JButton("Refresh");
 		refreshButton.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
 				if (issueManager != null) {
 					issueManager.updateIssues();
-				}			
+				}
 			}
 		});
 		showWarningCheckBox = new JCheckBox("Show Warnings");
 		showWarningCheckBox.setSelected(true);
 		showWarningCheckBox.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
 				issueTableModel.setShowWarning(showWarningCheckBox.isSelected());
-				
+
 			}
 		});
 		issueTable = new JSortTable();
@@ -185,7 +185,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 							}
 							if (bInMathModelEditor) {
 								if (object instanceof Geometry) {
-									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry));								
+									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_GEOMETRY_NODE, ActiveViewID.math_geometry));
 								} else if (object instanceof OutputFunctionIssueSource) {
 									setActiveView(new ActiveView(null, DocumentEditorTreeFolderClass.MATH_OUTPUT_FUNCTIONS_NODE, ActiveViewID.math_output_functions));
 								} else {
@@ -196,18 +196,18 @@ public class IssuePanel extends DocumentEditorSubPanel {
 						break;
 					}
 				}
-			}			
+			}
 		});
-		
+
 		setLayout(new GridBagLayout());
 		int gridy = 0;
-		
+
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(0,10,0,0);
 		add(showWarningCheckBox, gbc);
-		
+
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
@@ -215,7 +215,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.insets = new Insets(0,0,0,10);
 		add(refreshButton, gbc);
-		
+
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -225,7 +225,7 @@ public class IssuePanel extends DocumentEditorSubPanel {
 		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.BOTH;
 		add(issueTable.getEnclosingScrollPane(), gbc);
-		
+
 		DefaultTableCellRenderer tableRenderer = new DefaultScrollTableCellRenderer() {
 
 			@Override
@@ -244,18 +244,20 @@ public class IssuePanel extends DocumentEditorSubPanel {
 						break;
 					case Issue.SEVERITY_WARNING:
 						icon = VCellIcons.getWarningIcon();
-						break;					
+						break;
 					case Issue.SEVERITY_ERROR:
 						icon = VCellIcons.getErrorIcon();
 						break;
 					}
 					setIcon(icon);
-					setText(issue.getMessage());
+					String m = issue.getMessage();
+					setText(m);
+					setToolTipText(m);
 					break;
-				}								
+				}
 				}
 				return this;
-			}			
+			}
 		};
 		issueTable.getColumnModel().getColumn(IssueTableModel.COLUMN_DESCRIPTION).setCellRenderer(tableRenderer);
 	}

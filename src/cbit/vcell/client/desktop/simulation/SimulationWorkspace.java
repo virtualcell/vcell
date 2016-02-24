@@ -13,14 +13,12 @@ package cbit.vcell.client.desktop.simulation;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.JScrollPane;
 
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.ISize;
 import org.vcell.util.PropertyChangeListenerProxyVCell;
 import org.vcell.util.document.PropertyConstants;
@@ -672,7 +670,6 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Comment
  */
 int newSimulation(Component requester) throws java.beans.PropertyVetoException {
-	SmoldynSurfaceDiffusionWarning.setGUIContext(requester);
 	Simulation newSim = getSimulationOwner().addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX);
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
 		if (getSimulationOwner().getSimulations()[i].getName().equals(newSim.getName())) {

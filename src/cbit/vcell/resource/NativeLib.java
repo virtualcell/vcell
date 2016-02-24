@@ -5,6 +5,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.vcell.vis.vtk.VtkGridUtils;
 
 import cbit.vcell.util.NativeLoader;
 
@@ -13,19 +14,41 @@ import cbit.vcell.util.NativeLoader;
  * @author gweatherby
  */
 public enum NativeLib {
-	VTK("vtk"),
 	NATIVE_SOLVERS("NativeSolvers"),
 	SBML("sbmlj"),
 	COPASI("vcellCopasiOptDriver"),
-	COPASI_JAVA("CopasiJava");
-	
+	HDF5("jhdf5",false),
+	/**
+	 * satisfy dependency in {@link VtkGridUtils} -- out of date?
+	 */
+	VTK("vtk"),
+	/**
+	 * SBML testing, not supported all platforms
+	 */
+	COPASI_JAVA("CopasiJava", false);
+
 	private final String libName;
+	/**
+	 * indicate whether these libraries should be loaded automatically at startup
+	 */
+	public final boolean autoload;
 	private boolean loaded = false;
 	private static final Logger lg = Logger.getLogger(NativeLib.class);
 
 	private NativeLib(String libName) {
 		this.libName = libName;
+		this.autoload = true;
 	}
+
+
+	private NativeLib(String libName, boolean autoload) {
+		this.libName = libName;
+		this.autoload = autoload;
+	}
+
+
+
+
 
 	/**
 	 *  commence load process but don't wait for results
@@ -34,7 +57,7 @@ public enum NativeLib {
 		NativeLoader.load(libName);
 	}
 
-	public void load( ) { 
+	public void load( ) {
 		if (loaded) {
 			return;
 		}
@@ -49,7 +72,7 @@ public enum NativeLib {
 		}
 		loaded = true;
 	}
-	
+
 	/**
 	 * find whether underlying thread is complete
 	 * @return

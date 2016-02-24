@@ -13,12 +13,17 @@ package cbit.vcell.client;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Optional;
 import java.util.Vector;
 
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -35,6 +40,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
+import cbit.vcell.client.desktop.TopFrame;
 import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -57,9 +63,9 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 public abstract class TopLevelWindowManager {
 	private RequestManager requestManager = null;
 	protected transient Vector<DataListener> aDataListener = null;
-	protected transient Vector<ExportListener> aExportListener = null;	
+	protected transient Vector<ExportListener> aExportListener = null;
 	protected transient Vector<DataJobListener> aDataJobListener = null;
-
+	private static final LinkedList<WeakReference<TopLevelWindowManager>> allManagers = new LinkedList<>();
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 2:57:35 AM)
@@ -67,6 +73,7 @@ public abstract class TopLevelWindowManager {
  */
 public TopLevelWindowManager(RequestManager requestManager) {
 	this.requestManager = requestManager;
+	allManagers.add(new WeakReference<>(this));
 }
 
 
@@ -310,7 +317,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	final int MESH_FILE = 4;
 	final int FROM_SCRATCH = 5;
 	final int CSGEOMETRY_3D = 6;
-	
+
 	int[] geomType = null;
 
 	String[][] choices = new String[][] {
@@ -322,9 +329,9 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 			{"New Blank Image Canvas"},
 			{"Constructed Solid Geometry (3D)"}};
 	geomType = DialogUtils.showComponentOKCancelTableList(
-			getComponent(), 
+			getComponent(),
 			dialogText,
-			new String[] {"Geometry Type"}, 
+			new String[] {"Geometry Type"},
 			choices, ListSelectionModel.SINGLE_SELECTION);
 
 	VCDocument.DocumentCreationInfo documentCreationInfo = null;
@@ -347,7 +354,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 	if(documentCreationInfo != null){
 		geometrySelectionInfo = new DocumentWindowManager.GeometrySelectionInfo(documentCreationInfo);
 	}
-	
+
 	return geometrySelectionInfo;
 }
 
@@ -355,7 +362,7 @@ public static final String B_SHOW_OLD_GEOM_EDITOR = "B_SHOW_OLD_GEOM_EDITOR";
 public static final String DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE = "Choose new geometry type to create";
 public static final String APPLY_GEOMETRY_BUTTON_TEXT = "Finish";
 void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afterTasks,String selectDialogTitle,final String applyGeometryButtonText,DocumentWindowManager.GeometrySelectionInfo preSelect){
-	
+
 	try{
 		final Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		Vector<AsynchClientTask> createGeomTaskV = new Vector<AsynchClientTask>();
@@ -405,11 +412,11 @@ void createGeometry(final Geometry currentGeometry,final AsynchClientTask[] afte
 							}
 						}
 					).start();
-				}			
+				}
 			});
 		}
 		ClientTaskDispatcher.dispatch(getComponent(), hash, createGeomTaskV.toArray(new AsynchClientTask[0]), false,false,null,true);
-		
+
 	} catch (UserCancelException e1) {
 		return;
 	} catch (Exception e1) {
@@ -453,7 +460,7 @@ public static abstract class OpenModelInfoHolder{
 	public boolean isCompartmental() {
 		return isCompartmental;
 	}
-	
+
 }
 public static class FDSimMathModelInfo extends OpenModelInfoHolder{
 	private Version version;
@@ -538,7 +545,7 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 				rows[colIndex++] = "";
 				rows[colIndex++] = (simInfoHolders[i].simInfo==null?"never saved":simInfoHolders[i].simInfo.getOwner().getName());
 				rows[colIndex++] = (mmInfo==null?"never saved":mmInfo.getVersion().getDate().toString());
-				
+
 			}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
 				BioModelInfo bmInfo = null;
 				if(((FDSimBioModelInfo)simInfoHolders[i]).getBioModelVersion() != null){
@@ -574,6 +581,36 @@ public static OpenModelInfoHolder selectOpenModelsFromDesktop(Container requeste
 	} finally {
 		BeanUtils.setCursorThroughout(requester, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
+}
+
+public static TopLevelWindowManager activeManager() {
+	TopFrame activetf = null;
+	Optional<WeakReference<TopFrame>> first = TopFrame.liveWindows().findFirst();
+	if (first.isPresent()) {
+		activetf = first.get( ).get( );
+	}
+	TopLevelWindowManager fallback = null;
+	Iterator<WeakReference<TopLevelWindowManager>> iter = allManagers.iterator();
+	while (iter.hasNext()) {
+		WeakReference<TopLevelWindowManager> wr = iter.next();
+		TopLevelWindowManager tlwm = wr.get();
+		if (tlwm == null) {
+			iter.remove();
+			continue;
+		}
+		if (activetf == null) {
+			return tlwm; //guess
+		}
+		if (fallback == null) {
+			fallback = tlwm; //return this if can't find the right window
+		}
+		Component cmpt = tlwm.getComponent();
+		if (cmpt != null && SwingUtilities.isDescendingFrom(cmpt,activetf)) {
+			return tlwm;
+		}
+	}
+
+	return fallback;
 }
 
 }

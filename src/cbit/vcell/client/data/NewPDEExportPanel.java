@@ -20,11 +20,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -68,6 +72,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.export.server.ASCIISpecs;
 import cbit.vcell.export.server.ExportConstants;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
@@ -88,6 +93,8 @@ import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.ParticleDataBlock;
+import cbit.vcell.simdata.ParticleDataInfo;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
@@ -146,7 +153,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private SpatialSelection[] spatialSelectionsVolume = null;
 	private SpatialSelection[] spatialSelectionsMembrane = null;
 	private int viewZoom;
-	
+
 	private static final String EXPORT_QT_MOVIE = "QuickTime movie files (*.mov)";
 	private static final String EXPORT_GIF_IMAGES = "GIF89a image files (*.gif)";
 	private static final String EXPORT_JPEG_IMAGES = "JPEG image files (*.jpg)";
@@ -160,17 +167,17 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField1()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJTextField1())
 				connEtoC5(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField2()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJTextField2())
 				connEtoC6(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport())
 				connEtoM1(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJButtonExport())
 				connEtoC9(e);
-//			if (e.getSource() == NewPDEExportPanel.this.getJButtonAdd()) 
+//			if (e.getSource() == NewPDEExportPanel.this.getJButtonAdd())
 //				connEtoM4(e);
-//			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove()) 
+//			if (e.getSource() == NewPDEExportPanel.this.getJButtonRemove())
 //				connEtoM5(e);
 			if (e.getSource() == NewPDEExportPanel.this.getVolVarRadioButton()){
 				vol_memb_both_change();
@@ -184,22 +191,22 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections())
 				connEtoC17();
 		};
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField1()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJTextField1())
 				connEtoC7(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJTextField2()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJTextField2())
 				connEtoC8(e);
 		};
 		public void intervalAdded(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections())
 				connEtoC17();
 		};
 		public void intervalRemoved(javax.swing.event.ListDataEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections()) 
+			if (e.getSource() == NewPDEExportPanel.this.getDefaultListModelCivilizedSelections())
 				connEtoC17();
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -211,35 +218,35 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 			}
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-//			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
+//			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION)))
 //				connEtoC10(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("slice"))) 
+			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("slice")))
 				connEtoC11(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("normalAxis"))) 
+			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("normalAxis")))
 				connEtoC12(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat"))) 
+			if (evt.getSource() == NewPDEExportPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat")))
 				connEtoC13(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
+			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("pdeDataContext")))
 				connPtoP3SetTarget();
-			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints"))) 
+			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints")))
 				connEtoC14(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection"))) 
+			if (evt.getSource() == NewPDEExportPanel.this.getButtonGroupCivilized1() && (evt.getPropertyName().equals("selection")))
 				connEtoC16(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION))) 
+			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PROP_SELECTEDREGION)))
 				connEtoC18(evt);
-			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers")))
 				connEtoC20(evt);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJSlider1()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJSlider1())
 				connEtoC3(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJSlider2()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJSlider2())
 				connEtoC4(e);
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == NewPDEExportPanel.this.getJListVariables()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJListVariables())
 				connEtoC15(e);
-			if (e.getSource() == NewPDEExportPanel.this.getJListSelections()) 
+			if (e.getSource() == NewPDEExportPanel.this.getJListSelections())
 				connEtoC19(e);
 		};
 	};
@@ -743,7 +750,7 @@ private void updateChoiceROI() {
 				getDefaultListModelCivilizedSelections().addElement(getSpatialSelectionsMembrane()[i]);
 			}
 		}
-		
+
 //		if(getJRadioButtonSelection().isSelected() && getDefaultListModelCivilizedSelections().getSize() == 0){
 //			if(getJRadioButtonSlice().isEnabled()){
 //				getJRadioButtonSlice().setSelected(true);
@@ -1068,7 +1075,7 @@ private ExportSpecs getExportSpecs() {
 }
 
 private ExportSpecs.SimulationSelector createSimulationSelector(){
-	
+
 	ExportSpecs.SimulationSelector simulationSelector =
 		new ExportSpecs.SimulationSelector(){
 			private ExportSpecs.SimNameSimDataID[] multiSimNameSimDataIDs;
@@ -1106,7 +1113,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 					rowData[i][3] = simulations[i].getSolverTaskDescription().getTimeBounds().getEndingTime()+"";
 					rowData[i][4] = simulations[i].getSolverTaskDescription().getOutputTimeSpec().getShortDescription();
 				}
-		
+
 				try{
 					int[] choices = DialogUtils.showComponentOKCancelTableList(
 							NewPDEExportPanel.this, "Choose Sims to export together",
@@ -1188,7 +1195,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 				}
 				return simulations.length;
 			}
-		
+
 	};
 	return simulationSelector;
 }
@@ -2055,7 +2062,7 @@ private void initConnections() throws java.lang.Exception {
 	getVolVarRadioButton().addActionListener(ivjEventHandler);
 	getMembVarRadioButton().addActionListener(ivjEventHandler);
 	getBothVarRadioButton().addActionListener(ivjEventHandler);
-	
+
 	getJComboBox1().addItemListener(ivjEventHandler);
 	getJSlider1().addChangeListener(ivjEventHandler);
 	getJSlider2().addChangeListener(ivjEventHandler);
@@ -2087,9 +2094,9 @@ private void initFormatChoices_0(/*boolean bMembrane*/){
 	getJComboBox1().addItem(EXPORT_GIF_ANIM);
 	getJComboBox1().addItem(EXPORT_JPEG_IMAGES);
 	getJComboBox1().addItem(EXPORT_NRRD);
-	
+
 	getJComboBox1().addItem(EXPORT_UCD);
-	
+
 	getJComboBox1().addItem(EXPORT_VTK_UNSTRUCT);
 
 	if(getVolVarRadioButton().isSelected()){
@@ -2332,7 +2339,7 @@ private void setTimeFromSlider(JSlider jSlider, JTextField textField) {
 		getJSlider1().setValue(getJSlider2().getValue());
 	}
 }
-	
+
 /**
  * Comment
  */
@@ -2392,9 +2399,9 @@ private void startExport() {
 		case ExportConstants.FORMAT_GIF:
 		case ExportConstants.FORMAT_JPEG:
 		case ExportConstants.FORMAT_ANIMATED_GIF: {
-			
+
 			displayPreferences = new DisplayPreferences[variableSelections.length];
-			
+
 			StringBuffer noScaleInfoNames = new StringBuffer();
 			for (int i = 0; i < displayPreferences.length; i++) {
 				BitSet domainValid = null;
@@ -2439,8 +2446,8 @@ private void startExport() {
 			}
 			break;
 		}
-		
-		
+
+
 		case ExportConstants.FORMAT_CSV: {
 			// check for membrane variables... warn for 3D geometry...
 			// one gets the whole nine yards by index, not generally useful... except for a few people like Boris :)
@@ -2476,16 +2483,28 @@ private void startExport() {
 	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());
 	getExportSettings1().setIsSmoldyn(isSmoldyn);
 	boolean okToExport = getExportSettings1().showFormatSpecificDialog(JOptionPane.getFrameForComponent(this),selectionHasVolumeVariables,selectionHasMembraneVariables);
-			
+
 	if (!okToExport) {
 		return;
 	}
-	
+
 	// determine of sim result is from local (quick) run or on server.
 	final OutputContext outputContext = ((ClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext();
 	final ExportSpecs exportSpecs = getExportSpecs();
+	FormatSpecificSpecs fss = exportSpecs.getFormatSpecificSpecs();
+	ASCIISpecs as = BeanUtils.downcast(ASCIISpecs.class, fss);
+	if (as != null && as.getDataType() == ExportConstants.PDE_PARTICLE_DATA) {
+		ParticleDataBlock pdb = getPdeDataContext().getParticleDataBlock();
+		List<String> missing = BeanUtils.filterCollection(String.class, Arrays.asList(variableSelections) );
+		List<String> avail = pdb.getSpecies().stream( ).map(NewPDEExportPanel::stripPositionFromSpeciesName).collect(Collectors.toList());
+		missing.removeAll(avail);
+		if (!missing.isEmpty()) {
+			DialogUtils.showErrorDialog(this, "Selected variable(s) "  + missing.toString() + " are not particle variables");
+			return;
+		}
+	}
 	boolean isLocalSimResult = false;
-	VCDataIdentifier vcId = exportSpecs.getVCDataIdentifier();  
+	VCDataIdentifier vcId = exportSpecs.getVCDataIdentifier();
 	if (vcId instanceof LocalVCDataIdentifier) {
 		isLocalSimResult = true;
 	}
@@ -2496,13 +2515,13 @@ private void startExport() {
 		isParticle = ((ImageSpecs)getExportSettings1().getFormatSpecificSpecs()).getParticleMode() == FormatSpecificSpecs.PARTICLE_SELECT;
 	} else if (getExportSettings1().getFormatSpecificSpecs() instanceof MovieSpecs) {
 		isParticle = ((MovieSpecs)getExportSettings1().getFormatSpecificSpecs()).getParticleMode() == FormatSpecificSpecs.PARTICLE_SELECT;
-	} 
-		
+	}
+
 	if (isLocalSimResult && isParticle) {
 		DialogUtils.showErrorDialog(this, "Particle export for Smoldyn particles unavailable in local data at this time.");
 		return;
 	}
-	
+
 	// pass the export request down the line; non-blocking call
 	if (!isLocalSimResult) {
 		// for sims that ran on server, do as before.
@@ -2531,7 +2550,7 @@ private void startExport() {
 				}
 			}
 		};
-		
+
 		AsynchClientTask localSaveTask = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2552,7 +2571,7 @@ private void startExport() {
 				}
 			}
 		};
-		
+
 		AsynchClientTask localDeleteTempTask = new AsynchClientTask("Start Local Export", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2573,6 +2592,21 @@ private void startExport() {
 	}
 }
 
+/**
+ * convert smoldyn annotated species names to VCell convention
+ * , e.g. s0(solution) to s0
+ * @param in
+ * @return in or substring if ( present
+ */
+private static String stripPositionFromSpeciesName(String in) {
+	int pos = in.indexOf('(');
+	if (pos >0) {
+		String stripped =  in.substring(0,pos);
+		return stripped;
+	}
+	return in;
+}
+
 private static void copyFile(File sourceFile, File destFile) throws IOException {
     if(!destFile.exists()) {
         destFile.createNewFile();
@@ -2584,7 +2618,7 @@ private static void copyFile(File sourceFile, File destFile) throws IOException 
         destination = new FileOutputStream(destFile).getChannel();
         // to avoid infinite loops, should be:
         long count = 0;
-        long size = source.size();              
+        long size = source.size();
         while((count += destination.transferFrom(source, count, size-count))<size);
     }finally {
         if(source != null) {try{source.close();}catch(Exception e){}}
@@ -2627,7 +2661,7 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 			}
 		}
 		if(dataIdentifierTreeSet.size() != 0){
-			getDefaultListModelCivilizedVariables().setContents(dataIdentifierTreeSet.toArray(new String[0])/*pdeDataContext.getVariableNames()*/);			
+			getDefaultListModelCivilizedVariables().setContents(dataIdentifierTreeSet.toArray(new String[0])/*pdeDataContext.getVariableNames()*/);
 		}else{
 			getDefaultListModelCivilizedVariables().setContents(null);
 		}
@@ -2672,7 +2706,7 @@ private void updateExportFormat(int exportFormat) {
 		case ExportConstants.FORMAT_NRRD: {
 			BeanUtils.enableComponents(getJPanelSelections(), false);
 			getJRadioButtonFull().setSelected(true);
-			getJRadioButtonFull().setEnabled(true);			
+			getJRadioButtonFull().setEnabled(true);
 			break;
 		}
 		case ExportConstants.FORMAT_UCD:
@@ -2682,7 +2716,7 @@ private void updateExportFormat(int exportFormat) {
 			getJRadioButtonSlice().setSelected(false);
 			getJRadioButtonSlice().setEnabled(false);
 			getJRadioButtonFull().setSelected(true);
-			getJRadioButtonFull().setEnabled(true);			
+			getJRadioButtonFull().setEnabled(true);
 			break;
 		}
 
@@ -2718,9 +2752,9 @@ private void updateInterface() {
 //	if(getSpatialSelections() != null && getSpatialSelections().length > 0){
 //		getJButtonAdd().setEnabled(true);
 //	}
-	
-	
-	
+
+
+
 //	boolean selectionAddEnabled = true;
 //	for(int i=0;i < getJListSelections().getModel().getSize();i+= 1){
 //		SpatialSelection sl = (SpatialSelection)getJListSelections().getModel().getElementAt(i);
@@ -2733,7 +2767,7 @@ private void updateInterface() {
 //		getJRadioButtonSelection().isSelected()
 //		&&
 //		(getSelectedRegion() != null);
-//		
+//
 //	getJButtonAdd().setEnabled(selectionAddEnabled);
 //	//
 //	boolean selectionRemoveEnabled =
@@ -2741,10 +2775,10 @@ private void updateInterface() {
 //		&&
 //		(getJListSelections().getSelectedIndex() != -1);
 //	//
-	
+
 	getJListSelections().setEnabled(getJRadioButtonSelection().isSelected());
 
-	
+
 	getBothVarRadioButton().setEnabled(true);
 	getVolVarRadioButton().setEnabled(true);
 	getMembVarRadioButton().setEnabled(true);
@@ -2752,7 +2786,7 @@ private void updateInterface() {
 			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_IMAGES) ||
 			getJComboBox1().getSelectedItem().equals(EXPORT_GIF_ANIM) ||
 			getJComboBox1().getSelectedItem().equals(EXPORT_JPEG_IMAGES)){
-		
+
 		if(!getBothVarRadioButton().isSelected()){
 			getBothVarRadioButton().doClick();
 		}
@@ -2771,7 +2805,7 @@ private void updateInterface() {
 		getBothVarRadioButton().setEnabled(false);
 		getMembVarRadioButton().setEnabled(false);
 	}
-	
+
 
 }
 
@@ -2803,9 +2837,9 @@ private void updateSlice(int slice, int normalAxis) {
  * Comment
  */
 private void updateTimes(double[] times) {
-	
+
 	if (times == null) times = new double[1];
-	
+
 	// finally, update widgets
 	getJSlider1().setMaximum(times.length - 1);
 	getJSlider2().setMaximum(times.length - 1);

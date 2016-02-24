@@ -17,7 +17,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
@@ -302,7 +301,6 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 				DocumentEditorTreeFolderClass folderClass = ((DocumentEditorTreeFolderNode) userObject).getFolderClass();
 				switch (folderClass) {
 				case MATH_SIMULATIONS_NODE:
-					SmoldynSurfaceDiffusionWarning.setGUIContext(this);
 					AsynchClientTask task1 = new AsynchClientTask("new simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						
 						@Override

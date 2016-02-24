@@ -10,11 +10,17 @@
 
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
-
+import org.apache.log4j.Logger;
+import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
@@ -30,7 +36,7 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.client.SimStatusListener;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.message.messages.MessageConstants;
+import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 
 /**
@@ -42,11 +48,23 @@ import cbit.vcell.server.VCellConnection;
  * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify {@link TopLevelWindowManager}
  * to update the status.
  */
-public class AsynchMessageManager implements SimStatusListener {
-    private static final int CLIENT_POLLING_INTERVAL = 3 * MessageConstants.SECOND_IN_MS;
+public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener {
+    private static final long BASE_POLL_SECONDS = 15;
+    private static final long ATTEMPT_POLL_SECONDS = 3;
+	private static Logger lg = Logger.getLogger(AsynchMessageManager.class);
+
 	private EventListenerList listenerList = new EventListenerList();
     private ClientServerManager clientServerManager = null;
     private int failureCount = 0;
+    private ScheduledExecutorService executorService = null;
+    private long counter = 0;
+    private long pollTime = BASE_POLL_SECONDS;
+	private AtomicBoolean bPoll = new AtomicBoolean(false);
+	private ScheduledFuture<?> pollingHandle = null;
+	/**
+	 * for {@link #schedule(long)} method
+	 */
+	private final ReentrantLock scheduleLock = new ReentrantLock();
 
 /**
  * Insert the method's description here.
@@ -54,47 +72,64 @@ public class AsynchMessageManager implements SimStatusListener {
  */
 public AsynchMessageManager(ClientServerManager csm) {
 	this.clientServerManager = csm;
-	startPolling();
+	DataAccessException.addListener(this);
 }
-
-private void startPolling() {
-	Thread pollingThread = new Thread(
-		new Runnable() {
-			public void run() {
-				long counter = 0;
-				while (true) {
-					try { 
-						Thread.sleep(CLIENT_POLLING_INTERVAL); 
-					} catch (InterruptedException exc) {
-						
-					}
-					counter += 1;
-					poll(counter%50 == 0); // send performance report every now and then...
-				}
-			}
+/**
+ * start polling for connection. Should be called after connect
+ * no-op if already called
+ */
+public synchronized void startPolling() {
+	if (!bPoll.get()) {
+		bPoll.set(true);
+		if (executorService == null) {
+			executorService = VCellExecutorService.get();
 		}
-	);
-	pollingThread.setDaemon(true);
-	pollingThread.start();	
+		schedule(pollTime);
+	}
 }
 
-private void poll(boolean reportPerf) {
-    //
+public void stopPolling() {
+	lg.trace("stopping polling");
+	bPoll.set(false);
+}
+
+@Override
+public void created(DataAccessException dae) {
+	if (lg.isTraceEnabled()) {
+		lg.trace("scheduling now due to " + dae.getMessage());
+	}
+	schedule(0);
+}
+private void poll( )  {
+	if (!bPoll.get()) {
+		lg.trace("polling stopped");
+		return;
+	}
+	lg.trace("polling");
+	boolean report = counter%50 == 0;
+	long begin = 0;
+	long end = 0;
+	 //
     // ask remote message listener (really should be "message producer") for any queued events.
     //
     try {
     	MessageEvent[] queuedEvents = null;
-    	// time the call
-	    long l1 = System.currentTimeMillis();
+    	if (report) {
+	    	// time the call
+		    begin = System.currentTimeMillis();
+    	}
 	    synchronized (this) {
 	    	if (!clientServerManager.isStatusConnected()) {
+	    		clientServerManager.attemptReconnect( );
 	    		return;
 	    	}
+		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
 		}
-	    long l2 = System.currentTimeMillis();
-	    double duration = ((double)(l2 - l1)) / 1000;
-	    failureCount = 0;
+    	if (report) {
+		    end = System.currentTimeMillis();
+    	}
+	    failureCount = 0; //this is skipped if the connection has failed:w
 	    // deal with events, if any
 	    if (queuedEvents != null) {
 		    for (MessageEvent messageEvent : queuedEvents){
@@ -102,7 +137,8 @@ private void poll(boolean reportPerf) {
 		    }
 	    }
 	    // report polling call performance
-	    if (reportPerf) {
+	    if (report) {
+		    double duration = ((double)(end - begin)) / 1000;
 	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
 			    this, null, new PerformanceData(
 				    "AsynchMessageManager.poll()",
@@ -114,12 +150,40 @@ private void poll(boolean reportPerf) {
 	    }
     } catch (Exception exc) {
 	    System.out.println(">> polling failure << " + exc.getMessage());
+	    pollTime = ATTEMPT_POLL_SECONDS;
 	    failureCount ++;
 	    if (failureCount % 3 == 0) {
+	    	bPoll.set(false);
 	    	clientServerManager.setDisconnected();
 	    }
-    }	
+    }
+    finally {
+    	if (lg.isTraceEnabled( )) {
+    		lg.trace(getClass( ).getName() + " poll time " + pollTime + " seconds");
+    	}
+    	if (bPoll.get()){
+    		schedule(pollTime);
+    	}
+    }
 }
+
+/**
+ * schedule poll, replacing previously scheduled instance, if any
+ * @param delay
+ */
+private void schedule(long delay) {
+	scheduleLock.lock();
+	try {
+		if (pollingHandle != null && !pollingHandle.isDone()) {
+			pollingHandle.cancel(true);
+		}
+		pollingHandle =  executorService.schedule(this::poll, delay,TimeUnit.SECONDS);
+	}
+	finally {
+		scheduleLock.unlock();
+	}
+}
+
 
 private void onMessageEvent(MessageEvent event) {
 	if (event instanceof SimulationJobStatusEvent) {
@@ -195,7 +259,7 @@ protected void fireDataJobEvent(DataJobEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==DataJobListener.class) {
 		    fireDataJobEvent(event, (DataJobListener)listeners[i+1]);
-	    }	       
+	    }
 	}
 }
 
@@ -228,7 +292,7 @@ protected void fireExportEvent(ExportEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==ExportListener.class) {
 		    fireExportEvent(event, (ExportListener)listeners[i+1]);
-	    }	       
+	    }
 	}
 }
 
@@ -259,7 +323,7 @@ protected void fireSimStatusEvent(SimStatusEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==SimStatusListener.class) {
 		    fireSimStatusEvent(event, (SimStatusListener)listeners[i+1]);
-	    }	       
+	    }
 	}
 }
 
@@ -288,7 +352,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==SimulationJobStatusListener.class) {
 		    fireSimulationJobStatusEvent(event, (SimulationJobStatusListener)listeners[i+1]);
-	    }	       
+	    }
 	}
 }
 
@@ -317,7 +381,7 @@ protected void fireVCellMessageEvent(VCellMessageEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==VCellMessageEventListener.class) {
 		    fireVCellMessageEvent(event, (VCellMessageEventListener)listeners[i+1]);
-	    }	       
+	    }
 	}
 }
 

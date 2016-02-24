@@ -47,10 +47,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -88,7 +91,7 @@ import cbit.vcell.util.AmplistorUtils;
 /**
  * Insert the type's description here.
  * Creation date: (8/18/2000 2:29:31 AM)
- * @author: 
+ * @author:
  */
 public final class BeanUtils {
 	private static boolean bDebugMode = false;
@@ -96,7 +99,7 @@ public final class BeanUtils {
 	public static void setDebug(boolean isDebug) {
 		bDebugMode = isDebug;
 	}
-	
+
 	public static void setLoginInfo(UserLoginInfo loginInfo) {
 		BeanUtils.loginInfo = loginInfo;
 	}
@@ -118,8 +121,8 @@ public final class BeanUtils {
 
 	public static <T> T[] addElement(T[] array, T element) {
 		@SuppressWarnings("unchecked")
-		T[] arrayNew = 
-			(T[]) Array.newInstance(array.getClass().getComponentType(), array.length + 1);	
+		T[] arrayNew =
+			(T[]) Array.newInstance(array.getClass().getComponentType(), array.length + 1);
 		System.arraycopy(array, 0, arrayNew, 0, array.length);
 		arrayNew[array.length] = element;
 		return arrayNew;
@@ -127,7 +130,7 @@ public final class BeanUtils {
 
 	public static <T> T[] addElements(T[] array1, T[] array2) {
 		@SuppressWarnings("unchecked")
-		T[] array = 
+		T[] array =
 			(T[]) Array.newInstance(array1.getClass().getComponentType(), array1.length + array2.length);
 		System.arraycopy(array1, 0, array, 0, array1.length);
 		System.arraycopy(array2, 0, array, array1.length, array2.length);
@@ -222,21 +225,21 @@ public final class BeanUtils {
 			borders[1] = new Line2D.Double(rect.getMaxX(), rect.getMinY(), rect.getMaxX(), rect.getMaxY());
 			borders[2] = new Line2D.Double(rect.getMaxX(), rect.getMaxY(), rect.getMinX(), rect.getMaxY());
 			borders[3] = new Line2D.Double(rect.getMinX(), rect.getMaxY(), rect.getMinX(), rect.getMinY());
-			if (p1.getX() >= rect.getX() && 
-					p1.getY() >= rect.getY() && 
-					p1.getX() <= rect.getX() + rect.getWidth() && 
+			if (p1.getX() >= rect.getX() &&
+					p1.getY() >= rect.getY() &&
+					p1.getX() <= rect.getX() + rect.getWidth() &&
 					p1.getY() <= rect.getY() + rect.getHeight() &&
-					p2.getX() >= rect.getX() && 
-					p2.getY() >= rect.getY() && 
-					p2.getX() <= rect.getX() + rect.getWidth() && 
+					p2.getX() >= rect.getX() &&
+					p2.getY() >= rect.getY() &&
+					p2.getX() <= rect.getX() + rect.getWidth() &&
 					p2.getY() <= rect.getY() + rect.getHeight()) {
 				return line;
 			} else {
 				if (p1.getX() != p2.getX() && p1.getY() != p2.getY()) {
 					// lines parallel to the rectangle will get separate treatment
-					if (p1.getX() >= rect.getX() && 
-							p1.getY() >= rect.getY() && 
-							p1.getX() <= rect.getX() + rect.getWidth() && 
+					if (p1.getX() >= rect.getX() &&
+							p1.getY() >= rect.getY() &&
+							p1.getX() <= rect.getX() + rect.getWidth() &&
 							p1.getY() <= rect.getY() + rect.getHeight()) {
 						// clip from p1 to intersection with one border
 						for (int i=0;i<4;i++) {
@@ -245,9 +248,9 @@ public final class BeanUtils {
 							}
 						}
 						return line;
-					} else if (p2.getX() >= rect.getX() && 
-							p2.getY() >= rect.getY() && 
-							p2.getX() <= rect.getX() + rect.getWidth() && 
+					} else if (p2.getX() >= rect.getX() &&
+							p2.getY() >= rect.getY() &&
+							p2.getX() <= rect.getX() + rect.getWidth() &&
 							p2.getY() <= rect.getY() + rect.getHeight()) {
 						// do it again in reverse
 						line.setLine(p2, p1);
@@ -275,9 +278,9 @@ public final class BeanUtils {
 					return line;
 				} else if (p1.getX() == p2.getX()) {
 					// vertical line with one point within rectangle
-					if (p1.getX() >= rect.getX() && 
-							p1.getY() >= rect.getY() && 
-							p1.getX() <= rect.getX() + rect.getWidth() && 
+					if (p1.getX() >= rect.getX() &&
+							p1.getY() >= rect.getY() &&
+							p1.getX() <= rect.getX() + rect.getWidth() &&
 							p1.getY() <= rect.getY() + rect.getHeight()) {
 						if (p2.getY() < rect.getMinY()) {
 							// p2 is above rectangle
@@ -296,9 +299,9 @@ public final class BeanUtils {
 					}
 				} else {
 					// horizontal line with one point within rectangle
-					if (p1.getX() >= rect.getX() && 
-							p1.getY() >= rect.getY() && 
-							p1.getX() <= rect.getX() + rect.getWidth() && 
+					if (p1.getX() >= rect.getX() &&
+							p1.getY() >= rect.getY() &&
+							p1.getX() <= rect.getX() + rect.getWidth() &&
 							p1.getY() <= rect.getY() + rect.getHeight()) {
 						if (p2.getX() < rect.getMinX()) {
 							// p2 is to the left of rectangle
@@ -330,7 +333,7 @@ public final class BeanUtils {
 		return clone;
 	}
 
-	public static byte[] compress(byte[] bytes) throws java.io.IOException {	
+	public static byte[] compress(byte[] bytes) throws java.io.IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
 		dos.write(bytes,0,bytes.length);
@@ -386,7 +389,7 @@ public final class BeanUtils {
 	}
 
 	public static Container findTypeParentOfComponent(Component component,Class<?> parentType) {
-		Container p = component == null || component instanceof Container ? (Container) component : component.getParent(); 
+		Container p = component == null || component instanceof Container ? (Container) component : component.getParent();
 		for (; p != null; p = p.getParent()) {
 			if(parentType.isAssignableFrom(p.getClass())) {
 				return p;
@@ -466,13 +469,13 @@ public final class BeanUtils {
 		while (enumeration.hasMoreElements()){
 			list.add(enumeration.nextElement());
 		}
-		@SuppressWarnings("unchecked") 
+		@SuppressWarnings("unchecked")
 		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
 		return array;
 	}
 
 	public static <T> T[] getArray(List<?> list, Class<T> elementType) {
-		@SuppressWarnings("unchecked") 
+		@SuppressWarnings("unchecked")
 		T[] array = list.toArray((T[])Array.newInstance(elementType, list.size()));
 		return array;
 	}
@@ -504,7 +507,7 @@ public final class BeanUtils {
 				if (i < r2) {
 					for (int j=0;j<a+1;j++) {
 						if (j == a + 1) {
-							rectangles[i * (a + 1) + j] = new Rectangle(j * x, i * y, w - x * a, y); 
+							rectangles[i * (a + 1) + j] = new Rectangle(j * x, i * y, w - x * a, y);
 						} else {
 							rectangles[i * (a + 1) + j] = new Rectangle(j * x1, i * y, x1, y);
 						}
@@ -512,7 +515,7 @@ public final class BeanUtils {
 				} else {
 					for (int j = 0;j<a;j++) {
 						if (j == a) {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(j * x, i * y, w - x * (a - 1), y); 
+							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(j * x, i * y, w - x * (a - 1), y);
 						} else {
 							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(j * x, i * y, x, y);
 						}
@@ -537,7 +540,7 @@ public final class BeanUtils {
 				if (i < r2) {
 					for (int j=0;j<a+1;j++) {
 						if (j == a + 1) {
-							rectangles[i * (a + 1) + j] = new Rectangle(i * x, j * y, x, h - y * a); 
+							rectangles[i * (a + 1) + j] = new Rectangle(i * x, j * y, x, h - y * a);
 						} else {
 							rectangles[i * (a + 1) + j] = new Rectangle(i * x, j * y1, x, y1);
 						}
@@ -545,7 +548,7 @@ public final class BeanUtils {
 				} else {
 					for (int j = 0;j<a;j++) {
 						if (j == a) {
-							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(i * x, j * y, x, h - y * (a - 1)); 
+							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(i * x, j * y, x, h - y * (a - 1));
 						} else {
 							rectangles[r2 * (a + 1) + (i - r2) * a + j] = new Rectangle(i * x, j * y, x, y);
 						}
@@ -682,7 +685,7 @@ public final class BeanUtils {
 				}
 				if(index < array.length - 1) {
 					System.arraycopy(array, index + 1, arrayNew, index, lengthNew - index);
-				}			
+				}
 			}
 			return arrayNew;
 		}
@@ -738,17 +741,17 @@ public final class BeanUtils {
 			for (int j=0;j<array1.length;j++){
 				if (array1[j].equals(array2[i])){
 					found = true;
-				}	
+				}
 			}
 			if (!found){
 				newVector.addElement(array2[i]);
 			}
-		}			
+		}
 		String newArray[] = new String[newVector.size()];
 		for (int i=0;i<newVector.size();i++){
 			newArray[i] = newVector.elementAt(i);
 		}
-		return newArray;		
+		return newArray;
 	}
 
 	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
@@ -796,7 +799,7 @@ public final class BeanUtils {
 		return (a == null || b == null || !a.equals(b));
 	}
 
-	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {	
+	public static byte[] uncompress(byte[] compressedBytes) throws java.io.IOException {
 		ByteArrayInputStream bis = new ByteArrayInputStream(compressedBytes);
 		InflaterInputStream iis = new InflaterInputStream(bis);
 		int temp;
@@ -813,7 +816,7 @@ public final class BeanUtils {
 	public static String getStackTrace(Throwable throwable) {
 		StringWriter out = new StringWriter();
 		PrintWriter pw = new PrintWriter(out);
-		Throwable t = throwable; 
+		Throwable t = throwable;
 		while (t != null) {
 			t.printStackTrace(pw);
 			t = t.getCause( );
@@ -877,8 +880,8 @@ public final class BeanUtils {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
-	public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;  
+
+	public static final KeyStroke CLOSE_WINDOW_KEY_STROKE;
 	static { //allow initialization in headless environment
 		KeyStroke ks;
 		try {
@@ -886,7 +889,7 @@ public final class BeanUtils {
 		} catch (HeadlessException he) {
 			ks = KeyStroke.getKeyStroke(KeyEvent.VK_W,InputEvent.CTRL_DOWN_MASK);
 		}
-		CLOSE_WINDOW_KEY_STROKE = ks; 
+		CLOSE_WINDOW_KEY_STROKE = ks;
 	}
 	public static void addCloseWindowKeyboardAction(JComponent jComponent){
 		@SuppressWarnings("serial")
@@ -906,7 +909,7 @@ public final class BeanUtils {
 				}
 			}
 		};
-		
+
 		final String winCloseInputMapAction = "winCloseAction";
 		InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		if(inputMap.get(CLOSE_WINDOW_KEY_STROKE) == null){
@@ -922,15 +925,15 @@ public final class BeanUtils {
 		}
 	}
 	private static enum FLAG_STATE {START,FINISHED,INTERRUPTED,FAILED}
-	
+
 	public static String readBytesFromFile(File file, ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
 		StringBuffer stringBuffer = new StringBuffer();
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = new BufferedReader(new FileReader(file));
 			String line = new String();
-			while((line = bufferedReader.readLine()) != null) { 				
-				stringBuffer.append(line + "\n"); 
+			while((line = bufferedReader.readLine()) != null) {
+				stringBuffer.append(line + "\n");
 				if (clientTaskStatusSupport!=null && clientTaskStatusSupport.isInterrupted()){
 					break;
 				}
@@ -942,7 +945,7 @@ public final class BeanUtils {
 		}
 		return stringBuffer.toString();
 	}
-	
+
 	public static String downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		final ChannelFuture[] connectFuture = new ChannelFuture[1];
 		final ChannelFuture[] closeFuture = new ChannelFuture[1];
@@ -997,15 +1000,15 @@ public final class BeanUtils {
 					request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
 
 					Channel channel = connectFuture[0].getChannel();
-					
+
 					// Send the HTTP request.
 					channel.write(request);
-					
+
 					// Wait for the server to close the connection.
 					closeFuture[0] = channel.getCloseFuture();
 
 					closeFuture[0].awaitUninterruptibly();
-					
+
 					if (closeFuture[0].isCancelled()) {
 						bFlag[0] = FLAG_STATE.INTERRUPTED;
 						return;
@@ -1089,7 +1092,7 @@ public final class BeanUtils {
 		if (e.getMessage()!=null){
 			return e.getMessage();
 		}
-		
+
 		if (e.getCause()!=null){
 			if (e.getCause().getMessage()!=null){
 				return e.getCause().getMessage();
@@ -1100,7 +1103,7 @@ public final class BeanUtils {
 			return e.getClass().getName();
 		}
 	}
-	
+
 	public static org.jdom.Document getJDOMDocument(URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		//parse content
 		final String contentString = downloadBytes(url, clientTaskStatusSupport);
@@ -1123,7 +1126,7 @@ public final class BeanUtils {
 			}else {
 				convertedLikeString+= sb.charAt(i);
 			}
-		}	
+		}
 		if(convertedLikeString.indexOf("%") == -1 && convertedLikeString.indexOf("_") == -1){
 			convertedLikeString = "%"+convertedLikeString+"%";
 		}
@@ -1133,7 +1136,7 @@ public final class BeanUtils {
 		//Default ESCAPE character for VCell = '/' defined in DictionaryDbDriver.getDatabaseSpecies
 		return convertedLikeString;
 	}
-	
+
 	/**
 	 * send message to Virtual Cell server, if not in debug mode
 	 * @param userLoginInfo; if null, user previously set info if available
@@ -1162,7 +1165,7 @@ public final class BeanUtils {
 			System.err.println("Remote log message: " + message);
 		}
 	}
-	
+
 	/**
 	 * @param clzz
 	 * @return class name without package info
@@ -1176,5 +1179,32 @@ public final class BeanUtils {
 		}
 		return cname;
 	}
-
+	/**
+	 * downcast to object or return null
+	 * @param clzz return type, not null
+	 * @param obj may be null
+	 * @return obj as T or null if obj is null or not of type T
+	 */
+	public static <T> T downcast(Class<T> clzz, Object obj) {
+		if (obj != null && clzz.isAssignableFrom(obj.getClass())) {
+			@SuppressWarnings("unchecked")
+			T rval = (T) obj;
+			return rval;
+		}
+		return null;
+	}
+	/**
+	 * filter subtype out of a collection
+	 * @param clzz non null
+	 * @param coll non null
+	 * @return list containing elements from coll of type clzz
+	 */
+	public static <T>  List<T> filterCollection(Class<T> clzz,Collection<?> coll) {
+		Objects.requireNonNull(clzz);
+		Objects.requireNonNull(coll);
+		return coll.stream( )
+		.filter(clzz::isInstance)
+		.map(clzz::cast)
+		.collect(Collectors.toList());
+	}
 }

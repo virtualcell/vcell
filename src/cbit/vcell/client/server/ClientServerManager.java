@@ -9,7 +9,14 @@
  */
 
 package cbit.vcell.client.server;
+import java.awt.Window;
 import java.rmi.RemoteException;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.vcell.client.logicalwindow.OptionPaneHandler;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PropertyLoader;
@@ -49,15 +56,13 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 
 
 	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
-	class ClientConnectionStatus implements ConnectionStatus {
+	private class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
 		private String serverHost = null;
 		private String userName = null;
 		private int status = NOT_CONNECTED;
 
 		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/13/2004 1:20:19 PM)
 		 * @param userName java.lang.String
 		 * @param serverHost java.lang.String
 		 * @param status int
@@ -68,7 +73,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 					setUserName(null);
 					setServerHost(null);
 					break;
-				} 
+				}
 				case INITIALIZING:
 				case CONNECTED:
 				case DISCONNECTED: {
@@ -76,7 +81,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 					setUserName(userName);
 					setServerHost(serverHost);
 					break;
-				} 
+				}
 				default: {
 					throw new RuntimeException("unknown connection status: " + status);
 				}
@@ -84,94 +89,92 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 			setStatus(status);
 		}
 
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 4:49:13 PM)
-		 * @return boolean
-		 * @param obj java.lang.Object
-		 */
-		public boolean equals(Object obj) {
-			return ((obj != null) && (obj instanceof ConnectionStatus) && obj.toString().equals(toString()));
-		}
 
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return java.lang.String
-		 */
 		public java.lang.String getServerHost() {
 			return serverHost;
 		}
 
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return int
-		 */
 		public int getStatus() {
 			return status;
 		}
 
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @return java.lang.String
-		 */
 		public java.lang.String getUserName() {
 			return userName;
 		}
 
 
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 4:46:27 PM)
-		 * @return int
-		 */
-		public int hashCode() {
-			return toString().hashCode();
-		}
-
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @param newServerHost java.lang.String
-		 */
 		private void setServerHost(java.lang.String newServerHost) {
 			serverHost = newServerHost;
 		}
 
 
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @param newConnectionStatus int
-		 */
 		private void setStatus(int newStatus) {
 			status = newStatus;
 		}
 
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 1:32:32 PM)
-		 * @param newUserName java.lang.String
-		 */
 		private void setUserName(java.lang.String newUserName) {
 			userName = newUserName;
 		}
 
-
-		/**
-		 * Insert the method's description here.
-		 * Creation date: (5/10/2004 4:43:55 PM)
-		 * @return java.lang.String
-		 */
 		public String toString() {
 			return "status " + getStatus() + " server " + getServerHost() + " user " + getUserName();
+		}
+
+
+
+		@Override
+		public Reconnector getReconnector() {
+			return ClientServerManager.this.getReconnector();
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((serverHost == null) ? 0 : serverHost.hashCode());
+			result = prime * result + status;
+			result = prime * result + ((userName == null) ? 0 : userName.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ClientConnectionStatus other = (ClientConnectionStatus) obj;
+			if (serverHost == null) {
+				if (other.serverHost != null)
+					return false;
+			} else if (!serverHost.equals(other.serverHost))
+				return false;
+			if (status != other.status)
+				return false;
+			if (userName == null) {
+				if (other.userName != null)
+					return false;
+			} else if (!userName.equals(other.userName))
+				return false;
+			return true;
+		}
+
+	}
+	private enum ReconnectStatus {
+		NOT("Not reconnecting"),
+		FIRST("First reconnection attempt"),
+		SUBSEQUENT("Subsequent reconnect attempt");
+
+		private String label;
+
+		private ReconnectStatus(String label) {
+			this.label = label;
+		}
+		@Override
+		public String toString( ) {
+			return label;
 		}
 	}
 	private ClientServerInfo clientServerInfo = null;
@@ -184,7 +187,7 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	private DataSetController dataSetController = null;
 	// gotten from call to vcellConnection
 	private User user = null;
-	
+
 	private DocumentManager documentManager = new ClientDocumentManager(this, 10000000L);;
 	private JobManager jobManager = null;
 	private ExportController exportController = null;
@@ -192,7 +195,15 @@ public class ClientServerManager implements SessionManager,DataSetControllerProv
 	private VCDataManager vcDataManager = null;
 	private UserPreferences userPreferences = new UserPreferences(this);
 	protected transient java.beans.PropertyChangeSupport propertyChange;
+
 	private ConnectionStatus fieldConnectionStatus = new ClientConnectionStatus(null, null, ConnectionStatus.NOT_CONNECTED);
+	private ReconnectStatus reconnectStat = ReconnectStatus.NOT;
+	private long nextReconnectSeconds = 0;
+	/**
+	 * modeless window to warn about lost connection
+	 */
+	private CantConnect cantConnectWarning = null;
+	private Reconnector reconnector = null;
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -201,13 +212,17 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
+public ClientServerManager(ClientServerInfo clientServerInfo) {
+	this.clientServerInfo = clientServerInfo;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private void changeConnection(TopLevelWindowManager requester, VCellConnection newVCellConnection, boolean reconnect) {
+private void changeConnection(TopLevelWindowManager requester, VCellConnection newVCellConnection) {
 	VCellThreadChecker.checkRemoteInvocation();
-	
+
 	VCellConnection lastVCellConnection = getVcellConnection();
 	setVcellConnection(newVCellConnection);
 	if (getVcellConnection() != null) {
@@ -216,7 +231,7 @@ private void changeConnection(TopLevelWindowManager requester, VCellConnection n
 			// throw it away; doesn't properly support full reinits
 			// preload the document manager cache
 			((ClientDocumentManager)getDocumentManager()).initAllDatabaseInfos();
-			
+
 			// load user preferences
 			getUserPreferences().resetFromSaved(getDocumentManager().getPreferences());
 
@@ -250,7 +265,7 @@ public void reportPerformanceMonitorEvent(PerformanceMonitorEvent pme) throws Re
  * @return int
  */
 public void cleanup() {
-	setVcellConnection(null);	
+	setVcellConnection(null);
 }
 
 public MessageEvent[] getMessageEvents() throws RemoteException{
@@ -271,32 +286,36 @@ public static void checkClientServerSoftwareVersion(TopLevelWindowManager reques
 		for (int i = 0; i < hosts.length; i ++) {
 			String serverSoftwareVersion = RMIVCellConnectionFactory.getVCellSoftwareVersion(hosts[i]);
 			if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
-					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n" 
+					PopupGenerator.showWarningDialog(requester.getComponent(), "A new VCell client is available:\n"
 						+ "current version : " + clientSoftwareVersion + "\n"
 						+ "new version : " + serverSoftwareVersion + "\n"
 						+ "\nPlease exit VCell and download the latest client from VCell Software page (http://vcell.org).");
 				break;
 			}
-		}		
-	}	
+		}
+	}
+}
+
+
+public void connectNewServer(TopLevelWindowManager requester, ClientServerInfo csi) {
+	clientServerInfo = csi;
+	connect(requester);
 }
 
 /**
  * Insert the method's description here.
  * Creation date: (5/17/2004 6:26:14 PM)
- * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void connect(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) {
-	// just reconnecting ?
-	boolean reconnecting = clientServerInfo.equals(getClientServerInfo());
+public void connect(TopLevelWindowManager requester) {
 	checkClientServerSoftwareVersion(requester,clientServerInfo);
-	
-	// store credentials
-	setClientServerInfo(clientServerInfo);
+
 	// get new server connection
 	VCellConnection newVCellConnection = connectToServer(requester);
 	// update managers, status, etc.
-	changeConnection(requester, newVCellConnection, reconnecting);
+	changeConnection(requester, newVCellConnection);
+
+	//start polling if haven't already
+	asynchMessageManager.startPolling();
 }
 
 
@@ -306,7 +325,7 @@ public void connect(TopLevelWindowManager requester, ClientServerInfo clientServ
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectAs(TopLevelWindowManager requester, String user, DigestedPassword digestedPassword) {
-	ClientServerInfo clientServerInfo = null;
+	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
 			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
@@ -317,7 +336,7 @@ public void connectAs(TopLevelWindowManager requester, String user, DigestedPass
 			break;
 		}
 	}
-	connect(requester, clientServerInfo);
+	connect(requester);
 }
 
 
@@ -327,21 +346,21 @@ public void connectAs(TopLevelWindowManager requester, String user, DigestedPass
  */
 private VCellConnection connectToServer(TopLevelWindowManager requester) {
 	VCellThreadChecker.checkRemoteInvocation();
-	
+
 	VCellConnection newVCellConnection = null;
 	VCellConnectionFactory vcConnFactory = null;
 	String badConnStr = "";
 	try {
 		switch (getClientServerInfo().getServerType()) {
 			case ClientServerInfo.SERVER_REMOTE: {
-				String[] hosts = getClientServerInfo().getHosts(); 
+				String[] hosts = getClientServerInfo().getHosts();
 				for (int i = 0; i < hosts.length; i ++) {
 					try {
 						if (i == 0) {
 							badConnStr += "(";
 						}
 						getClientServerInfo().setActiveHost(hosts[i]);
-						
+
 						badConnStr += hosts[i] + ";";
 						vcConnFactory = new RMIVCellConnectionFactory(hosts[i], getClientServerInfo().getUserLoginInfo());
 						setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), hosts[i], ConnectionStatus.INITIALIZING));
@@ -360,29 +379,51 @@ private VCellConnection connectToServer(TopLevelWindowManager requester) {
 			}
 			case ClientServerInfo.SERVER_LOCAL: {
 				new PropertyLoader();
-				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);				
+				getClientServerInfo().setActiveHost(ClientServerInfo.LOCAL_SERVER);
 				SessionLog log = new StdoutSessionLog(getClientServerInfo().getUsername());
 				vcConnFactory = new LocalVCellConnectionFactory(getClientServerInfo().getUserLoginInfo(), log);
 				setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), ClientServerInfo.LOCAL_SERVER, ConnectionStatus.INITIALIZING));
 				newVCellConnection = vcConnFactory.createVCellConnection();
 				break;
 			}
-		}		
+		}
+		if (cantConnectWarning != null) { //clear warning message if it is up
+			cantConnectWarning.dispose();
+			cantConnectWarning = null;
+		}
+		reconnectStat = ReconnectStatus.NOT;
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(requester, aexc.getMessage());
 	} catch (ConnectionException cexc) {
+		String msg = badConnectMessage(badConnStr) + "\n\n" + cexc.getMessage();
 		cexc.printStackTrace(System.out);
-		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),getClientServerInfo().toString()+"\n"+VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + cexc.getMessage());
-		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + cexc.getMessage());
+		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
+		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
+			Window w = SwingUtilities.getWindowAncestor(requester.getComponent());
+			if (cantConnectWarning == null) {
+				cantConnectWarning = new CantConnect(w,msg);
+			}
+			else {
+				cantConnectWarning.setMessage(msg);
+			}
+			cantConnectWarning.setVisible(true);
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
-		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),getClientServerInfo().toString()+"\n"+VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\n\n" + exc.getMessage());
-		PopupGenerator.showErrorDialog(requester, VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, badConnStr) + "\nException:\n" + exc.getMessage());
+		String msg = badConnectMessage(badConnStr) + "\nException:\n" + exc.getMessage();
+		BeanUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
+		PopupGenerator.showErrorDialog(requester, msg);
 	}
-	
-	return newVCellConnection;	
+
+	return newVCellConnection;
 }
+
+private String badConnectMessage(String badConnStr) {
+	String ctype = reconnectStat == ReconnectStatus.NOT ? "connect" : "reconnect";
+	return VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, ctype, badConnStr);
+}
+
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException{
 	return getVCDataManager().fieldDataFileOperation(fieldDataFielOperationSpec);
@@ -453,11 +494,7 @@ public ConnectionStatus getConnectionStatus() {
 }
 
 public boolean isStatusConnected(){
-	if (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED){
-		return true;
-	} else {
-		return false;
-	}
+	return (fieldConnectionStatus.getStatus() == ConnectionStatus.CONNECTED);
 }
 
 /**
@@ -471,7 +508,7 @@ public synchronized DataSetController getDataSetController() throws DataAccessEx
 		return dataSetController;
 	}else if (getVcellConnection()==null){
 		throw new RuntimeException("cannot get Simulation Data Server, no VCell Connection\ntry Server->Reconnect");
-	}else{		
+	}else{
 		try {
 			dataSetController = getVcellConnection().getDataSetController();
 			return dataSetController;
@@ -661,11 +698,21 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 }
 
 /**
- * Insert the method's description here.
- * Creation date: (5/17/2004 6:26:14 PM)
+ * @param pollTime time until next attempt (seconds)
  */
-public void reconnect(TopLevelWindowManager requester) {
-	connect(requester, getClientServerInfo());	
+public void reconnect(long pollTime) {
+	nextReconnectSeconds = pollTime;
+	switch (reconnectStat) {
+	case NOT:
+		reconnectStat = ReconnectStatus.FIRST;
+		break;
+	case FIRST:
+		reconnectStat = ReconnectStatus.SUBSEQUENT;
+		break;
+	default:
+	}
+	TopLevelWindowManager am = TopLevelWindowManager.activeManager();
+	connect(am);
 }
 
 
@@ -690,9 +737,9 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * Creation date: (5/12/2004 4:45:19 PM)
  * @param newClientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
-public void setClientServerInfo(ClientServerInfo newClientServerInfo) {
-	clientServerInfo = newClientServerInfo;
-}
+//public void setClientServerInfo(ClientServerInfo newClientServerInfo) {
+//	clientServerInfo = newClientServerInfo;
+//}
 
 
 /**
@@ -710,7 +757,7 @@ public void setConnectionStatus(ConnectionStatus connectionStatus) {
  * Insert the method's description here.
  * Creation date: (5/13/2004 12:26:57 PM)
  * @param newVcellConnection VCellConnection
- * @throws DataAccessException 
+ * @throws DataAccessException
  */
 private void setVcellConnection(VCellConnection newVcellConnection) {
 	vcellConnection = newVcellConnection;
@@ -718,7 +765,7 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 	simulationController = null;
 	dataSetController = null;
 	userMetaDbServer = null;
-	
+
 	if (vcellConnection == null) {
 		return;
 	}
@@ -740,10 +787,77 @@ public void sendErrorReport(Throwable exception) {
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 	}
-	
+
 }
 
 void setDisconnected() {
+	getReconnector().start();
 	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+}
+
+public void attemptReconnect() {
+	getReconnector( ).start();
+}
+/**
+ * @return lazily created {@link Reconnector }
+ */
+private Reconnector getReconnector( ) {
+	if (reconnector == null) {
+		reconnector = new Reconnector(this);
+	}
+	return reconnector;
+}
+
+/**
+ * attempt reconnect now
+ */
+void reconnect() {
+	Reconnector rc = getReconnector();
+	rc.notificationPause(true);
+	try {
+		switch (reconnectStat) {
+		case NOT:
+			reconnectStat = ReconnectStatus.FIRST;
+			break;
+		case FIRST:
+			reconnectStat = ReconnectStatus.SUBSEQUENT;
+			break;
+		default:
+		}
+		TopLevelWindowManager am = TopLevelWindowManager.activeManager();
+		VCellConnection connection = connectToServer(am);
+		if (connection != null) { //success
+			changeConnection(am,connection);
+			rc.stop();
+			asynchMessageManager.startPolling();
+			return;
+		}
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getActiveHost(), ConnectionStatus.DISCONNECTED));
+	} finally {
+		rc.notificationPause(false);
+	}
+}
+@SuppressWarnings("serial")
+private static class CantConnect extends JFrame {
+
+	private JOptionPane op;
+
+	CantConnect(Window w, String msg) {
+		super("Warning");
+		op = new JOptionPane(msg,JOptionPane.WARNING_MESSAGE);
+		add(op);
+		pack( );
+		BeanUtils.centerOnComponent(this, w);
+		new OptionPaneHandler(this,op);
+	}
+
+	void setMessage(String txt) {
+		op.setMessage(txt);
+
+	}
+
+
+
+
 }
 }

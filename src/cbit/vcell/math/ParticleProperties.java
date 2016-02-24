@@ -24,13 +24,13 @@ import cbit.vcell.parser.SymbolTable;
 
 @SuppressWarnings("serial")
 public class ParticleProperties implements Serializable, Matchable {
-	
+
 	public abstract static class ParticleInitialCondition implements Serializable, Matchable {
 		public abstract String getVCML(int dimension);
 		abstract void bind(SymbolTable symbolTable) throws ExpressionBindingException;
 		abstract void flatten(MathSymbolTable mathSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException;
 	}
-	
+
 	public static class ParticleInitialConditionConcentration extends ParticleInitialCondition {
 		Expression distribution;
 		public ParticleInitialConditionConcentration(Expression dist) {
@@ -44,8 +44,8 @@ public class ParticleProperties implements Serializable, Matchable {
 			if (!(obj instanceof ParticleInitialConditionConcentration)) {
 				return false;
 			}
-			
-			ParticleInitialConditionConcentration pic = (ParticleInitialConditionConcentration) obj;		
+
+			ParticleInitialConditionConcentration pic = (ParticleInitialConditionConcentration) obj;
 			return Compare.isEqual(distribution, pic.distribution);
 		}
 		public String getVCML(int dimension) {
@@ -53,9 +53,9 @@ public class ParticleProperties implements Serializable, Matchable {
 			buffer.append(VCML.ParticleInitialConcentration + " " + VCML.BeginBlock +"\n");
 			buffer.append("\t\t\t"+VCML.ParticleDistribution + " " + distribution.infix() + ";\n");
 			buffer.append("\t\t"+" "+VCML.EndBlock+"\n");
-			return buffer.toString();	
+			return buffer.toString();
 		}
-		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {			
+		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
 			String token = tokens.nextToken();
 			if (!token.equals(VCML.BeginBlock)){
 				throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
@@ -73,7 +73,7 @@ public class ParticleProperties implements Serializable, Matchable {
 				}
 			}
 		}
-		void bind(SymbolTable symbolTable) throws ExpressionBindingException {		
+		void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 			distribution.bindExpression(symbolTable);
 		}
 		public Expression getDistribution() {
@@ -89,8 +89,8 @@ public class ParticleProperties implements Serializable, Matchable {
 		Expression locationX = null;
 		Expression locationY = null;
 		Expression locationZ = null;
-		private static final String UNIFORM = "u";
-		
+		public static final String UNIFORM = "u";
+
 		public ParticleInitialConditionCount(Expression count, Expression locationX,
 				Expression locationY, Expression locationZ) {
 			super();
@@ -108,7 +108,7 @@ public class ParticleProperties implements Serializable, Matchable {
 			super();
 			readVCML(tokens);
 		}
-		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {			
+		private void readVCML(CommentStringTokenizer tokens) throws MathFormatException, ExpressionException {
 			String token = tokens.nextToken();
 			if (!token.equals(VCML.BeginBlock)){
 				throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
@@ -135,7 +135,7 @@ public class ParticleProperties implements Serializable, Matchable {
 				}
 			}
 		}
-		
+
 		public String getVCML(int dimension) {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(VCML.ParticleInitialCount + " " + VCML.BeginBlock +"\n");
@@ -148,7 +148,7 @@ public class ParticleProperties implements Serializable, Matchable {
 				buffer.append("\t\t\t"+VCML.ParticleLocationZ + " " + locationZ.infix() + ";\n");
 			}
 			buffer.append("\t\t"+" "+VCML.EndBlock+"\n");
-			return buffer.toString();	
+			return buffer.toString();
 		}
 		public final Expression getCount() {
 			return count;
@@ -178,14 +178,14 @@ public class ParticleProperties implements Serializable, Matchable {
 			if (!(object instanceof ParticleInitialConditionCount)) {
 				return false;
 			}
-			
-			ParticleInitialConditionCount pic = (ParticleInitialConditionCount) object;		
-			return Compare.isEqual(count, pic.count) 
-					&&	Compare.isEqualOrNull(locationX, pic.locationX) 
-					&&	Compare.isEqualOrNull(locationY, pic.locationY) 
+
+			ParticleInitialConditionCount pic = (ParticleInitialConditionCount) object;
+			return Compare.isEqual(count, pic.count)
+					&&	Compare.isEqualOrNull(locationX, pic.locationX)
+					&&	Compare.isEqualOrNull(locationY, pic.locationY)
 					&&	Compare.isEqualOrNull(locationZ, pic.locationZ);
 		}
-		void bind(SymbolTable symbolTable) throws ExpressionBindingException {		
+		void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 			count.bindExpression(symbolTable);
 			if (locationX != null && !isXUniform()) {
 				locationX.bindExpression(symbolTable);
@@ -203,16 +203,16 @@ public class ParticleProperties implements Serializable, Matchable {
 			locationX = Equation.getFlattenedExpression(mathSymbolTable, locationX, bRoundCoefficients);;
 			locationY = Equation.getFlattenedExpression(mathSymbolTable, locationY, bRoundCoefficients);;
 			locationZ = Equation.getFlattenedExpression(mathSymbolTable, locationZ, bRoundCoefficients);;
-		}	
+		}
 	}
-	
+
 	private Variable var = null;
 	private Expression diffExp = null;
 	private Expression driftXExp = null;
 	private Expression driftYExp = null;
 	private Expression driftZExp = null;
 	private ArrayList<ParticleInitialCondition> listOfParticleInitialConditions = new ArrayList<ParticleInitialCondition>();
-	
+
 	public ParticleProperties(Variable var, Expression diffExp, Expression driftXExp, Expression driftYExp, Expression driftZExp, ArrayList<ParticleInitialCondition> initialConditions) {
 		super();
 		this.var = var;
@@ -222,20 +222,20 @@ public class ParticleProperties implements Serializable, Matchable {
 		this.driftZExp = driftZExp;
 		this.listOfParticleInitialConditions = initialConditions;
 	}
-	
+
 	public ParticleProperties(MathDescription mathDesc, CommentStringTokenizer tokens) throws ExpressionException, MathException {
 		super();
 		readVCML(mathDesc, tokens);
 	}
-	
-	private void readVCML(MathDescription mathDesc, CommentStringTokenizer tokens) throws ExpressionException, MathException {	
+
+	private void readVCML(MathDescription mathDesc, CommentStringTokenizer tokens) throws ExpressionException, MathException {
 		String varname = tokens.nextToken();
 		var = mathDesc.getVariable(varname);
 		if (var == null) {
 			throw new MathException("Invalid variable name " + varname + " specified for ParticleProperties ");
-			
+
 		}
-		
+
 		String token = tokens.nextToken();
 		if (!token.equals(VCML.BeginBlock)){
 			throw new MathFormatException("expecting "+VCML.BeginBlock+", found "+token);
@@ -269,7 +269,7 @@ public class ParticleProperties implements Serializable, Matchable {
 		return var;
 	}
 
-	public String getVCML(int dimension) {		
+	public String getVCML(int dimension) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.ParticleProperties + " " + var.getName() + " " + VCML.BeginBlock +"\n");
 		for (ParticleInitialCondition pic : listOfParticleInitialConditions){
@@ -286,7 +286,7 @@ public class ParticleProperties implements Serializable, Matchable {
 			buffer.append("\t\t" + VCML.ParticleDriftZ + " " + driftZExp.infix() + ";\n");
 		}
 		buffer.append("\t" + VCML.EndBlock + "\n");
-		return buffer.toString();	
+		return buffer.toString();
 	}
 
 	public final Expression getDiffusion() {
@@ -301,7 +301,7 @@ public class ParticleProperties implements Serializable, Matchable {
 		if (!(object instanceof ParticleProperties)) {
 			return false;
 		}
-		
+
 		ParticleProperties pp = (ParticleProperties) object;
 		if(!Compare.isEqual(var,pp.var)) {
 			return false;
@@ -333,10 +333,10 @@ public class ParticleProperties implements Serializable, Matchable {
 				return false;
 			}
 		}
-				
+
 		return true;
 	}
-	
+
 	public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		diffExp.bindExpression(symbolTable);
 		for (ParticleInitialCondition pic : listOfParticleInitialConditions) {
