@@ -1233,6 +1233,22 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		this.model = model;
 		getKineticLaw().bind(this);
 	}
+	
+	public boolean hasExplicitParticipantMatch() {
+		// returns true if any participant has at least one molecular type pattern with an explicit match
+		for(ReactantPattern rp : reactantPatterns) {
+			if(rp.getSpeciesPattern().hasExplicitParticipantMatch()) {
+				return true;
+			}
+		}
+		for(ProductPattern pp : productPatterns) {
+			if(pp.getSpeciesPattern().hasExplicitParticipantMatch()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 
 	public void refreshDependencies() {
 		getKineticLaw().refreshDependencies();
@@ -1487,5 +1503,6 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		// TODO Auto-generated method stub
 		
 	}
+
 }
 
