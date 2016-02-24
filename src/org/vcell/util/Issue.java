@@ -53,7 +53,7 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class Issue implements java.io.Serializable, Matchable {
-	
+
 	private java.util.Date date = new java.util.Date();
 	private String message = null;
 	private String tooltip = null;
@@ -71,7 +71,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	private static final int MAX_SEVERITY = 4;
 
 	private final static String severityName[] = { "info", "tip", "constraint", "warning", "error" };
-	
+
 	public enum IssueCategory {
 		Units,
 		Identifiers,
@@ -90,9 +90,9 @@ public class Issue implements java.io.Serializable, Matchable {
 		StructureNotMapped,
 		GeometryClassNotMapped,
 		SubVolumeVerificationError,
-		
+
 		ModelParameterExpressionError,
-		
+
 		InternalError,
 		ParameterEstimationGeneralWarning,
 		ParameterBoundsDefinition,
@@ -102,7 +102,7 @@ public class Issue implements java.io.Serializable, Matchable {
 		ParameterEstimationRefereceDataNoTime,
 		ParameterEstimationRefereceDataNotMapped,
 		ParameterEstimationRefereceDataMappedImproperly,
-		
+
 		MathDescription_NoGeometry,
 		MathDescription_Constant_NotANumber,
 		MathDescription_ExpressionBindingException,
@@ -117,21 +117,22 @@ public class Issue implements java.io.Serializable, Matchable {
 		MathDescription_SpatialModel_Event,
 		MathDescription_SpatialModel_PostProcessingBlock,
 		MathDescription_StochasticModel,
-		
+
 		Simulation_Override_NotFound,
 		Simulation_Override_NotSupported,
 		Simulation_SensAnal_And_FastSystem,
-		
+
 		OUTPUTFUNCTIONCONTEXT_FUNCTION_EXPBINDING,
 		Smoldyn_Geometry_3DWarning,
-		
+
 		Microscope_Measurement_ProjectionZKernel_Geometry_3DWarning,
-		
+
 		MembraneElectricalPolarityError,
-		
-		SBMLImport_UnsupportedAttributeOrElement, 
-		SBMLImport_Reaction, 
-		SBMLImport_MissingSpeciesInitCondition
+
+		SBMLImport_UnsupportedAttributeOrElement,
+		SBMLImport_Reaction,
+		SBMLImport_MissingSpeciesInitCondition,
+		SMOLYDN_DIFFUSION
 	}
 
 
@@ -155,7 +156,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	}
 	public Issue(ReactionStep argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this((Object)argSource, issueContext, argCategory, argMessage, null, argSeverity);
-		
+
 	}
 	public Issue(ReactionStep argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String tooltip,int argSeverity) {
 		this((Object)argSource, issueContext, argCategory, argMessage, tooltip, argSeverity);
@@ -163,9 +164,9 @@ public class Issue implements java.io.Serializable, Matchable {
 	public Issue(Structure argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
-	
-	
-	
+
+
+
 	//
 	// Applications - to be handled by BioModels
 	//
@@ -196,7 +197,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	public Issue(ReactionCombo argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, int argSeverity) {
 		this((Object)argSource, issueContext, argCategory, argMessage, argTooltip, argSeverity);
 	}
-	
+
 
 	//
 	// ParameterEstimation / Optimization - to be handled by BioModels (and Maybe VirtualFRAP)
@@ -217,15 +218,15 @@ public class Issue implements java.io.Serializable, Matchable {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
 
-	
+
 	//
 	// Geometry - to be handled by BioModels and MathModels
 	//
 	public Issue(Geometry argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
-	
-	
+
+
 	//
 	// MathDescription - to be handled by BioModels and MathModels
 	//
@@ -244,8 +245,8 @@ public class Issue implements java.io.Serializable, Matchable {
 	public Issue(Equation argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
-	
-	
+
+
 	//
 	// Simulation - to be handled by BioModels and MathModels
 	//
@@ -255,8 +256,8 @@ public class Issue implements java.io.Serializable, Matchable {
 	public Issue(OutputFunctionIssueSource argSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, int argSeverity) {
 		this(argSource, issueContext, argCategory, argMessage, null, argSeverity);
 	}
-	
-	
+
+
 	//
 	// too low level ... handle this soon
 	//

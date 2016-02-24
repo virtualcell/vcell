@@ -117,7 +117,7 @@ protected void initialize() throws SolverException
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
+		SmoldynSurfaceTessellator stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
 		stFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

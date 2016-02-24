@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,7 +55,7 @@ public class ResourceUtil {
 		private JavaVersion(String versionIdentifier) {
 			this.versionIdentifier = versionIdentifier;
 		}
-		
+
 	};
 	// temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	private static String lastUserLocalDir = null;
@@ -64,11 +65,11 @@ public class ResourceUtil {
 	public final static String EXE_BIT_SUFFIX;
 	public final static String EXE_SUFFIX;
 	public final static String NATIVELIB_SUFFIX;
-	public final static String RES_PACKAGE; 
+	public final static String RES_PACKAGE;
 	/**
 	 * name of native library directory (leaf only)
 	 */
-	public final static String NATIVE_LIB_DIR; 
+	public final static String NATIVE_LIB_DIR;
 	static {
 		String BIT_SUFFIX = "";
 		if (b64bit) {
@@ -91,7 +92,7 @@ public class ResourceUtil {
 		}
 	    EXE_BIT_SUFFIX = BIT_SUFFIX + EXE_SUFFIX;
 		NATIVE_LIB_DIR =   osname_prefix + (b64bit ? "64" : "32");
-		RES_PACKAGE = "/cbit/vcell/resource/" + NATIVE_LIB_DIR; 
+		RES_PACKAGE = "/cbit/vcell/resource/" + NATIVE_LIB_DIR;
 		NATIVELIB_SUFFIX = BIT_SUFFIX;
 	}
 	//public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
@@ -110,18 +111,18 @@ public class ResourceUtil {
 	private static File downloadDirectory = null;
 
 	private static List<File>  librariesLoaded = new ArrayList<File>();
-	private static boolean nativeLibrariesSetup = false; 
+	private static boolean nativeLibrariesSetup = false;
 	private static final boolean  IS_DEBUG = java.lang.management.ManagementFactory.getRuntimeMXBean().
 		    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
     private static final Logger lg = Logger.getLogger(ResourceUtil.class);
-		    
+
     /**
      * ensure class loaded so static initialization executes
      */
     public static void init( ) {
-    	
+
     }
-	
+
 	/**
 	 * class which can help find executable via some means
 	 */
@@ -129,13 +130,13 @@ public class ResourceUtil {
 		File find(String executableName);
 	}
 	/**
-	 * get executable based on name; will try stored values, common program names and optional finder 
+	 * get executable based on name; will try stored values, common program names and optional finder
 	 * @param name
 	 * @param useBitSuffix whether to use VCell rules for naming executable
 	 * @param efinder extra steps to find executable, may be null
 	 * @return executable file if it can be found
 	 * @throws FileNotFoundException if it can't
-	 * @throws BackingStoreException 
+	 * @throws BackingStoreException
 	 */	public static File getExecutable(String name, boolean useBitSuffix, ExecutableFinder efinder) throws FileNotFoundException, BackingStoreException	{		String executableName = name;
 		if (useBitSuffix) {
 			executableName += EXE_BIT_SUFFIX;
@@ -181,10 +182,10 @@ public class ResourceUtil {
 		}		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);	}	/**
 	 * @return system path directories
 	 * @throws RuntimeException if PATH environmental not set
-	 */ 	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
+	 */	public static Collection<File>  getSystemPath( ) {		final String PATH = System.getenv("PATH");		if (PATH==null || PATH.length() == 0){			throw new RuntimeException("PATH environment variable not set");		}
 		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
 	}
-	
+
 	/**
 	 * add system specific environment settings
 	 * @param envs
@@ -205,12 +206,12 @@ public class ResourceUtil {
 			//The 32 windows bit BNG2 compiled Perl program used for BioNetGen
 			//calls a cygwin compile "run_network" program. If run_network prints
 			//anything to standard error,The BNG script aborts
-			//The setting below prevents the cygwin "MS-DOS style path detected" warning from 
+			//The setting below prevents the cygwin "MS-DOS style path detected" warning from
 			//being issued
-			env.put("CYGWIN","nodosfilewarning"); 
+			env.put("CYGWIN","nodosfilewarning");
 		}
 	}
-	
+
 	/**
 	 * is application running inside a debugger?
 	 * @return true if it is
@@ -254,7 +255,7 @@ public class ResourceUtil {
 		 * before calling
 		 * @param name
 		 * @return executable
-		 * @throws BackingStoreException 
+		 * @throws BackingStoreException
 		 * @throws IllegalStateException if name not cached
 		 */
 		static File get(String name) throws BackingStoreException {
@@ -275,20 +276,20 @@ public class ResourceUtil {
 			prefs.put(name, f.getAbsolutePath());
 			return f;
 		}
-		
+
 		/**
 		 * remove stored locations from cache
-		 * @throws BackingStoreException 
+		 * @throws BackingStoreException
 		 */
 		static void forgetExecutableLocations( ) throws BackingStoreException {
 			prefs.clear();
 		}
-	
-	}	
-	
+
+	}
+
 	/**
 	 * @param basename name of executable without path or os specific extension
-	 * @param ll LicensedLibrary, may not be null 
+	 * @param ll LicensedLibrary, may not be null
 	 * @param firstLoad is the first exe loaded?
 	 * @return executable
 	 * @throws IOException, {@link UnsupportedOperationException} if license not accepted
@@ -301,7 +302,7 @@ public class ResourceUtil {
 			LicenseManager.install(ll);
 		}
 		ll.makePresentIn(getSolversDirectory());
-		
+
 		String name = basename + EXE_BIT_SUFFIX;
 		String res = RES_PACKAGE + "/" + name;
 		File exe = new java.io.File(getSolversDirectory(), name);
@@ -334,7 +335,7 @@ public class ResourceUtil {
 		}
 		return exe;
 	}
-	
+
 	static {
 		if (LibraryLicense.size != 1) {
 			//if a new license is added, we need to update the routine below
@@ -358,18 +359,26 @@ public class ResourceUtil {
 			System.err.print(jv.versionIdentifier + " ");
 		}
 		System.err.print("and can't determine that its running on one of these.  Assuming " + dflt.versionIdentifier + " as a default for safety");
-		return dflt; 
+		return dflt;
 	}
 
-	
+
 
 	/**
-	 * set path to native library directory 
+	 * set path to native library directory
 	 * @throws Error if load fails
 	 */
 	public static void setNativeLibraryDirectory( ) throws Error {
 		if (!nativeLibrariesSetup) {
-			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
+			String iRoot = PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot) ;
+			if (iRoot.equals("cwd")) {
+				File f = Paths.get("").toAbsolutePath().toFile();
+				if (!f.isDirectory()) {
+					throw new RuntimeException("Can't convert 'cwd' into directory");
+				}
+				iRoot = f.getAbsolutePath();
+			}
+
 			String nativeDir = iRoot + "/nativelibs/" + NATIVE_LIB_DIR;
 			NativeLoader.setNativeLibraryDirectory(nativeDir);
 		}
@@ -406,7 +415,7 @@ public class ResourceUtil {
 			}
 		}
 
-		return userHome; 
+		return userHome;
 	}
 
 	public static File getLocalRootDir()
@@ -419,7 +428,7 @@ public class ResourceUtil {
 			}
 		}
 
-		return localRootDir; 
+		return localRootDir;
 	}
 
 	public static File getLogDir()
@@ -432,7 +441,7 @@ public class ResourceUtil {
 			}
 		}
 
-		return logDir; 
+		return logDir;
 	}
 
 	public static File getLocalSimDir(String userSubDirName)
@@ -449,7 +458,7 @@ public class ResourceUtil {
 			}
 		}
 
-		return localSimDir; 
+		return localSimDir;
 	}
 
 	public static void writeResourceToFile(String resname, File file) throws IOException{
@@ -476,7 +485,7 @@ public class ResourceUtil {
 		} finally {
 			if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
 			if(bos != null){try{bos.close();}catch(Exception e){e.printStackTrace();}}
-		}			
+		}
 
 	}
 	public static void writeFileFromResource(String resname, File file) throws IOException {
@@ -492,7 +501,7 @@ public class ResourceUtil {
 		}
 	}
 
-	public static File getVcellHome() 
+	public static File getVcellHome()
 	{
 		if(vcellHome == null)
 		{
@@ -502,12 +511,12 @@ public class ResourceUtil {
 			}
 		}
 		return vcellHome;
-	}	
+	}
 
 	/**
 	 * directory to cache licensed files download from vcell.org
 	 */
-	public static File getDownloadDirectory() 
+	public static File getDownloadDirectory()
 	{
 		if(downloadDirectory == null)
 		{
@@ -518,13 +527,13 @@ public class ResourceUtil {
 		}
 		return downloadDirectory;
 	}
-	
+
 	/**
 	 * create Solvers Directory, if necessary
 	 * check last version of software which used directory, delete contents of directory if different
 	 * @return directory of locally run solvers
 	 */
-	public static File getSolversDirectory() 
+	public static File getSolversDirectory()
 	{
 		if(solversDirectory == null)
 		{
@@ -544,16 +553,16 @@ public class ResourceUtil {
 						String versionString = VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString();
 						Files.write(new File(solversDirectory,MANIFEST_FILE_NAME).toPath(),versionString.getBytes());
 					} catch (IOException e) {
-						lg.warn("Error cleaning solvers directory",e); 
+						lg.warn("Error cleaning solvers directory",e);
 					}
 				}
 			}
 		}
 		return solversDirectory;
-	}	
-	
+	}
+
 	/**
-	 * see if a directory has a readable manifest file and if it matches current software version 
+	 * see if a directory has a readable manifest file and if it matches current software version
 	 * @param testDir
 	 * @return true if all conditions met
 	 */

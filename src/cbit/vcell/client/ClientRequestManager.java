@@ -65,7 +65,6 @@ import javax.swing.Timer;
 import org.apache.commons.io.IOUtils;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.vcell.solver.smoldyn.SmoldynSurfaceDiffusionWarning;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -755,7 +754,7 @@ public void connectAs(final String user,  final DigestedPassword digestedPasswor
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
-	getClientServerManager().connect(requester, clientServerInfo);
+	getClientServerManager().connectNewServer(requester,clientServerInfo);
 }
 
 
@@ -849,9 +848,6 @@ public void createMathModelFromApplication(final BioModelWindowManager requester
 	if (simContext == null) {
 		PopupGenerator.showErrorDialog(requester, "Selected Application is null, cannot generate corresponding math model");
 		return;
-	}
-	if (simContext.isStoch()) {
-		SmoldynSurfaceDiffusionWarning.acknowledgeWarning(requester.getComponent());
 	}
 
 	AsynchClientTask task1 = new AsynchClientTask("Creating MathModel from BioModel Application", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
@@ -1773,9 +1769,6 @@ public AsynchClientTask[] createNewDocument(final TopLevelWindowManager requeste
 								}
 							}
 							Objects.requireNonNull(chosenSimContext);
-							if (SmoldynSurfaceDiffusionWarning.isSmoldynOrHybrid(chosenSimContext)) {
-								SmoldynSurfaceDiffusionWarning.acknowledgeWarning(component);
-							}
 							
 							BioModelInfo bioModelInfo = (BioModelInfo)hashTable.get("bioModelInfo");
 							//Get corresponding mathDesc to create new mathModel and return.
@@ -2915,7 +2908,7 @@ public void reconnect(final TopLevelWindowManager requester) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getClientServerManager().reconnect(requester);
+				getClientServerManager().connect(requester);
 				
 			}
 	};

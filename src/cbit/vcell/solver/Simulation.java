@@ -46,7 +46,14 @@ import cbit.vcell.util.VCellErrorMessages;
 @SuppressWarnings("serial")
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable,PropertyChangeListener {
 	public static final String PSF_FUNCTION_NAME = "__PSF__";
+	/**
+	 * {@link PropertyChangeEvent#getPropertyName()} value
+	 */
 	public static final String PROPERTY_NAME_SOLVER_TASK_DESCRIPTION = "solverTaskDescription";
+	/**
+	 * {@link PropertyChangeEvent#getPropertyName()} value
+	 */
+	public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_NON_SPATIAL_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_SPATIAL_TIMEPOINTS = 100000;
@@ -58,7 +65,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	public static final int WARNING_0DE_MEGABYTES = 50;
 	public static final int WARNING_PDE_MEGABYTES = 200;
 	public static final int WARNING_STOCH_MEGABYTES = 100; //stoch
-	
+
 	public static final int WARNING_SCAN_JOBS = 20;
 	public static final int MAX_LIMIT_SCAN_JOBS = 100;
 	/**
@@ -89,14 +96,17 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private java.lang.String fieldSimulationIdentifier = null;
 	private MeshSpecification fieldMeshSpecification = null;
 	private boolean fieldIsDirty = false;
-	
-	
+	private final transient SimulationWarning simWarning;
+
+private Simulation( ) {
+	simWarning = new SimulationWarning(this);
+}
 /**
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
 public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDescription) {
-	super();
+	this( );
 	addVetoableChangeListener(this);
 	this.fieldSimulationVersion = argSimulationVersion;
 	if (fieldSimulationVersion != null) {
@@ -106,7 +116,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 			this.fieldSimulationIdentifier = createSimulationID(fieldSimulationVersion.getVersionKey());
 		}
 	}
-	
+
 	this.fieldName = argSimulationVersion.getName();
 	this.fieldDescription = argSimulationVersion.getAnnot();
 
@@ -131,7 +141,7 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
  * is used when creating a Simulation from the database.
  */
 public Simulation(SimulationVersion simulationVersion, MathDescription mathDescription, CommentStringTokenizer mathOverridesTokenizer, CommentStringTokenizer solverTaskDescriptionTokenizer) throws DataAccessException, PropertyVetoException {
-	super();
+	this( );
 	addVetoableChangeListener(this);
 
 	fieldSimulationVersion = simulationVersion;
@@ -143,7 +153,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
 		}else{
 			fieldSimulationIdentifier = createSimulationID(simulationVersion.getVersionKey());
 		}
-	}	
+	}
 	if (mathDescription != null){
 		setMathDescription(mathDescription);
 		if (mathDescription.getGeometry().getDimension()>0){
@@ -162,7 +172,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
  * is used when creating a new Simulation.
  */
 public Simulation(MathDescription mathDescription) {
-	super();
+	this( );
 	addVetoableChangeListener(this);
 
 	try {
@@ -196,7 +206,7 @@ public Simulation(Simulation simulation) {
  * is used when copying a Simulation from an existing one.
  */
 public Simulation(Simulation simulation, boolean bCloneMath) {
-	super();
+	this( );
 	addVetoableChangeListener(this);
 
 	fieldSimulationVersion = null;
@@ -267,7 +277,7 @@ public boolean compareEqual(Matchable object) {
 		// check for content
 		//
 		if (!compareEqualMathematically(simulation)){
-			return false; 
+			return false;
 		}
 		//
 		// check for true equality
@@ -363,18 +373,19 @@ public boolean getIsDirty() {
 
 /**
  * Gets the isSpatial property (boolean) value.
- * @return {@link #fieldMathDescription#isSpatial()} 
+ * @return {@link #fieldMathDescription#isSpatial()}
  */
 public boolean isSpatial() {
 	assert fieldMathDescription != null ;
-	return fieldMathDescription.isSpatial(); 
+	return fieldMathDescription.isSpatial();
 }
 
 
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	
+	simWarning.gatherIssues(issueContext, issueList);
+
 	getMathOverrides().gatherIssues(issueContext, issueList);
-	
+
 	//
 	// Check if the math corresponding to this simulation has fast systems and if the solverTaskDescription contains a non-null sensitivity parameter.
 	// If so, the simulation is invalid.
@@ -391,11 +402,11 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 		Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_MathException,fieldMathDescription.getWarning(),Issue.SEVERITY_ERROR);
 		issueList.add(issue);
 	}
-	
+
 	Set<SolverFeature> supportedFeatures = getSolverTaskDescription().getSolverDescription().getSupportedFeatures();
 	Set<SolverFeature> missingFeatures = getRequiredFeatures();
 	missingFeatures.removeAll(supportedFeatures);
-	
+
 	if (!missingFeatures.isEmpty()) {
 		String text = "Selected solver '" + getSolverTaskDescription().getSolverDescription().getDisplayLabel() + "' does not support " +
 		"the following required features: \n";
@@ -552,7 +563,7 @@ public SimulationInfo getSimulationInfo() {
 	if (getVersion() != null) {
 		return new SimulationInfo(
 			getMathDescription().getKey(),
-			getSimulationVersion(),null); 
+			getSimulationVersion(),null);
 	} else {
 		return null;
 	}
@@ -585,9 +596,9 @@ public SolverTaskDescription getSolverTaskDescription() {
  * @return java.lang.String
  */
 public String getVCML() throws MathException {
-	
+
 	StringBuffer buffer = new StringBuffer();
-	
+
 	String name = (getVersion()!=null)?(getVersion().getName()):"unnamedSimulation";
 	buffer.append(VCML.Simulation+" "+name+" {\n");
 
@@ -614,7 +625,7 @@ public String getVCML() throws MathException {
 	}
 
 	buffer.append("}\n");
-	return buffer.toString();		
+	return buffer.toString();
 }
 
 
@@ -658,7 +669,7 @@ public void refreshDependencies() {
 	}
 	getSolverTaskDescription().refreshDependencies();
 	getMathOverrides().refreshDependencies();
-	
+
 	getMathDescription().removePropertyChangeListener(this);
 	getMathDescription().addPropertyChangeListener(this);
 
@@ -825,7 +836,7 @@ public static boolean testEquivalency(Simulation memorySimulation, Simulation da
 	if (memorySimulation == databaseSimulation){
 		return true;
 	}
-	
+
 	if (!mathCompareResults.isEquivalent()){
 		return false;
 	}else{
@@ -890,8 +901,9 @@ public boolean isSerialParameterScan() {
 }
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
-		if(evt.getSource() == getMathDescription() && evt.getPropertyName().equals("geometry")){
+		MathDescription md = getMathDescription();
+		boolean bIsMath = evt.getSource() == md;
+		if(bIsMath && evt.getPropertyName().equals("geometry")){
 			try{
 				refreshMeshSpec();
 			}catch(PropertyVetoException e){
@@ -899,7 +911,9 @@ public boolean isSerialParameterScan() {
 				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
-		
+		if (bIsMath)  {
+			simWarning.mathDescriptionChange(md);
+		}
 	}
 
 	private void refreshMeshSpec() throws PropertyVetoException{
@@ -916,10 +930,11 @@ public boolean isSerialParameterScan() {
 			setMeshSpecification(null);
 		}
 	}
-	
+
 	public boolean hasCellCenteredMesh()
 	{
 		return getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null
 				&& getSolverTaskDescription().getSolverDescription().isChomboSolver();
 	}
+
 }
