@@ -250,14 +250,22 @@ public class RbmUtils {
 	    	  Node child = node.jjtGetChild(i);
 	    	  Object object = child.jjtAccept(this, data);
 	    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
+	    		  ReactionRule rr = (ReactionRule) data;
+	    		  SpeciesPattern sp = (SpeciesPattern) object;
 	    		  String structureName = node.getCompartment();
 	    		  Structure structure;
 	    		  if(structureName != null && !structureName.isEmpty()) {
 	    			  structure = model.getStructure(structureName);
 	    		  } else {
-	    			  structure = ((ReactionRule)data).getStructure();
+	    			  structure = rr.getStructure();
 	    		  }
-	    		  ((ReactionRule) data).addReactant(new ReactantPattern((SpeciesPattern) object, structure));
+	    		  // if even one molecular type pattern in the rule has explicit match, we assume that what we parse has 
+	    		  // full match information already and don't try to rematch ourselves
+	    		  if(sp.hasExplicitParticipantMatch() || rr.hasExplicitParticipantMatch()) {
+	    			  rr.addReactant(new ReactantPattern(sp, structure), false);
+	    		  } else {
+	    			  rr.addReactant(new ReactantPattern(sp, structure));
+	    		  }
 	    	  }
 	      }
 	      return null;
@@ -268,14 +276,22 @@ public class RbmUtils {
 		    	  Node child = node.jjtGetChild(i);
 		    	  Object object = child.jjtAccept(this, data);
 		    	  if (data instanceof ReactionRule && object instanceof SpeciesPattern) {
+		    		  ReactionRule rr = (ReactionRule) data;
+		    		  SpeciesPattern sp = (SpeciesPattern) object;
 		    		  String structureName = node.getCompartment();
 		    		  Structure structure;
 		    		  if(structureName != null && !structureName.isEmpty()) {
 		    			  structure = model.getStructure(structureName);
 		    		  } else {
-		    			  structure = ((ReactionRule)data).getStructure();
+		    			  structure = rr.getStructure();
 		    		  }
-		    		  ((ReactionRule) data).addProduct(new ProductPattern((SpeciesPattern) object, structure));
+		    		  // if even one molecular type pattern in the rule has explicit match, we assume that what we parse has 
+		    		  // full match information already and don't try to rematch ourselves
+		    		  if(rr.hasExplicitParticipantMatch()) {
+		    			  rr.addProduct(new ProductPattern(sp, structure), false);
+		    		  } else {
+		    			  rr.addProduct(new ProductPattern(sp, structure));
+		    		  }
 		    	  }
 		     }
 		     return null;
@@ -423,6 +439,10 @@ public class RbmUtils {
 				}
 				MolecularTypePattern molecularTypePattern = new MolecularTypePattern(molecularType, false);
 				node.childrenAccept(this, molecularTypePattern);
+				String match = node.getMatchLabel();
+				if(match != null && !match.isEmpty()) {
+					molecularTypePattern.setParticipantMatchLabel(match);
+				}
 				((SpeciesPattern) data).addMolecularTypePattern(molecularTypePattern);
 				molecularTypePattern.ClearProcessedMolecularComponentsMultiMap();
 				return molecularTypePattern;

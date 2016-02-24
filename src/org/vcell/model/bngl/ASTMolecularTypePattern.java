@@ -47,4 +47,7 @@ public class ASTMolecularTypePattern extends SimpleNode {
 	public void setMatchLabel(String image) {
 		this.label = image;
 	}
+	public String getMatchLabel() {
+		return label;
+	}
 }
