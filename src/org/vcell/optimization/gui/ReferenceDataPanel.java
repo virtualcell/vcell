@@ -10,6 +10,7 @@
 
 package org.vcell.optimization.gui;
 import java.io.File;
+import java.text.ParseException;
 
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
@@ -60,7 +61,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 			if (e.getSource() == ReferenceDataPanel.this.getSubsampleButton()) 
 				updateReferenceData(subsample());
 			if (e.getSource() == ReferenceDataPanel.this.gethelpButton())
-				showHelp();
+				showHelp(null);
 			if (e.getSource() == ReferenceDataPanel.this.geteditButton())
 				showEditor();
 		};
@@ -361,9 +362,15 @@ private void updateReferenceDataFromFile() {
 				updateReferenceData(referenceData);
 			}
 		}
-	} catch (UserCancelException ex) {
-	} catch (Exception ex2) {
-		DialogUtils.showErrorDialog(this, ex2.getMessage(), ex2);
+	} catch (UserCancelException e) {
+		//ignore
+	} catch (Exception e) {
+		e.printStackTrace();
+		if(e instanceof ParseException){
+			showHelp((ParseException) e);
+		}else{
+			DialogUtils.showErrorDialog(this, e.getMessage(), e);
+		}
 	}
 }
 
@@ -435,7 +442,7 @@ private void showEditor() {
 	}
 	geteditorTextArea().setCaretPosition(0);
 	try {
-		int retVal = DialogUtils.showComponentOKCancelDialog(JOptionPane.getDesktopPaneForComponent(this),geteditorPanel(),"time series data editor");
+		int retVal = DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
 			RowColumnResultSet rc = (new CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
 			double weights[] = new double[rc.getDataColumnCount()];
@@ -443,7 +450,9 @@ private void showEditor() {
 			SimpleReferenceData simpleRefData = new SimpleReferenceData(rc,weights);
 			updateReferenceData(simpleRefData);
 		}
-	}catch (UtilCancelException e){
+	}catch (ParseException e){
+		e.printStackTrace();
+		showHelp(e);
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog(this,e.getMessage(), e);
@@ -454,9 +463,11 @@ private void showEditor() {
 /**
  * Comment
  */
-private void showHelp() {
+private void showHelp(ParseException e) {
 	String message =
-		"<html>Time Series Data format:" +
+		"<html>"+
+		(e!=null?e.getMessage() + "<br>" :"")+
+		"Time Series Data format:" +
 		"<ul>"+
 		"<li>Column 1 should contain the times.</li>"+
 		"<li>The first row must contain column names (e.g. t, var1, var2).</li>"+

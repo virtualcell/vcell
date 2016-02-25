@@ -10,6 +10,9 @@
 
 package cbit.vcell.math;
 
+import java.text.ParseException;
+
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 
 /**
  * 	the format assumed by this class should:
@@ -75,13 +78,13 @@ private void flushString(java.io.BufferedWriter bufferedWriter) {
  * @return data_structures.UnstructuredData
  * @param inputStream java.io.InputStream
  */
-public cbit.vcell.math.RowColumnResultSet importFrom(java.io.Reader reader) throws Exception {
+public cbit.vcell.math.RowColumnResultSet importFrom(java.io.Reader reader) throws ParseException {
 	java.io.BufferedReader bufferedReader = new java.io.BufferedReader(reader);
 	cbit.vcell.math.RowColumnResultSet data = new cbit.vcell.math.RowColumnResultSet();
 	
 	String[] stringTokens;
 	double[] doubleTokens;
-
+	try{
 	String firstLine = bufferedReader.readLine();//to read in column names.
 	//to read in first row of data to get an idea of data length(used for parsing column names).
 	doubleTokens = nextdoubles(bufferedReader);
@@ -100,6 +103,9 @@ public cbit.vcell.math.RowColumnResultSet importFrom(java.io.Reader reader) thro
 	}
 
 	return data;
+	}catch(Exception e){
+		throw (ParseException) new ParseException("Error importing values\n"+e.getMessage(), -1).initCause(e);
+	}
 }
 
 /**
