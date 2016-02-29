@@ -443,6 +443,32 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		return true;
 	}
 	
+	public String calculateSignature(List<MolecularType> molecularTypeList) {
+		// for a list of molecular types ordered like this: X, Z, Y 
+		// and a species pattern X().Z().Y().Z().Y().X().X()
+		// the signature will be X.X.X.Z.Z.Y.Y  (sorted by the order of the molecular types)
+		String signature = "";
+		for(int i=0; i<molecularTypeList.size(); i++) {
+			for(MolecularTypePattern mtp : molecularTypePatterns) {
+				MolecularType mt = mtp.getMolecularType();
+				if(i == molecularTypeList.indexOf(mt)) {	// we found a candidate
+					signature += mt.getDisplayName() + ".";
+				}
+			}
+		}
+		return signature.substring(0, signature.length()-1);
+	}
+	// as above, but we keep the order of the molecular type patterns X.Z.Y.Z.Y.X.X
+	public String getNameShort() {
+		String signature = "";
+		for(MolecularTypePattern mtp : molecularTypePatterns) {
+			MolecularType mt = mtp.getMolecularType();
+			signature += mt.getDisplayName() + ".";
+		}
+		return signature.substring(0, signature.length()-1);
+	}
+
+	
 	public void checkSpeciesPattern(IssueContext issueContext, List<Issue> issueList) {
 		for(MolecularTypePattern mtp : getMolecularTypePatterns()) {
 			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {

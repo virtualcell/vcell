@@ -36,6 +36,16 @@ import cbit.vcell.model.SpeciesContext;
 
 public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeInterface {
 	
+	public static final Color colorTable[] = new Color[] {
+		Color.red,
+		Color.blue,
+		Color.pink,
+		Color.cyan,
+		Color.orange,
+		Color.magenta,
+		Color.green
+	};
+	
 	private static final int baseWidth = 38;
 	private static final int baseHeight = 30;
 	private static final int cornerArc = 30;
@@ -338,13 +348,13 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 //					}
 //				} else {
 					switch(index) {
-					case 0:  primaryColor = isHighlighted() == true ? Color.white : Color.red.darker().darker(); break;
-					case 1:  primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
-					case 2:  primaryColor = isHighlighted() == true ? Color.white : Color.pink.darker().darker(); break;
-					case 3:  primaryColor = isHighlighted() == true ? Color.white : Color.cyan.darker().darker(); break;
-					case 4:  primaryColor = isHighlighted() == true ? Color.white : Color.orange.darker().darker(); break;
-					case 5:  primaryColor = isHighlighted() == true ? Color.white : Color.magenta.darker().darker(); break;
-					case 6:  primaryColor = isHighlighted() == true ? Color.white : Color.green.darker().darker().darker(); break;
+					case 0:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 1:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 2:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 3:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 4:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 5:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
+					case 6:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker().darker(); break;
 					default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
 					}
 //				}
