@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.pathway.PathwayModel;
@@ -62,10 +63,10 @@ import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
- * @author: 
+ * @author:
  */
 @SuppressWarnings("serial")
-public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener, 
+public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
 Identifiable, IdentifiableProvider, IssueSource
 {
 	public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
@@ -80,17 +81,18 @@ Identifiable, IdentifiableProvider, IssueSource
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private String fieldDescription = new String();
 	private VCMetaData vcMetaData = null;
-	
+
 	private final PathwayModel pathwayModel = new PathwayModel();
 	private final RelationshipModel relationshipModel = new RelationshipModel();
+	private static final Logger lg = Logger.getLogger(BioModel.class);
 
 	/**
 	 * BioModel constructor comment.
 	 */
 	public BioModel(Version version) {
 		super();
-		fieldName = new String("NoName");		
-		vcMetaData = new VCMetaData(this, null); 
+		fieldName = new String("NoName");
+		vcMetaData = new VCMetaData(this, null);
 		setModel(new Model("unnamed"));
 		addVetoableChangeListener(this);
 		addPropertyChangeListener(this);
@@ -101,7 +103,7 @@ Identifiable, IdentifiableProvider, IssueSource
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
+
 	/**
  * Insert the method's description here.
  * Creation date: (1/19/01 3:31:00 PM)
@@ -139,7 +141,7 @@ public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoE
 	}else{
 		setSimulations(BeanUtils.addElement(fieldSimulations,simulation));
 	}
-	
+
 }
 
 
@@ -213,7 +215,7 @@ public boolean compareEqual(Matchable obj) {
 	if(!getVCMetaData().compareEquals(bioModel.getVCMetaData())){
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -268,7 +270,7 @@ public boolean contains(Simulation simulation) {
 public BioModelChildSummary createBioModelChildSummary() {
 
 	SimulationContext[] simContexts = getSimulationContexts();
-	
+
 	String[] scNames = new String[simContexts.length];
 	MathType[] appTypes = new MathType[simContexts.length];
 	String[] scAnnots = new String[simContexts.length];
@@ -276,14 +278,14 @@ public BioModelChildSummary createBioModelChildSummary() {
 	int[] geoDims = new int[simContexts.length];
 	String[][] simNames = new String[simContexts.length][];
 	String[][] simAnnots = new String[simContexts.length][];
-	
+
 	for(int i=0;i<simContexts.length;i+= 1){
 		scNames[i] = simContexts[i].getName();
 		appTypes[i] = simContexts[i].getMathType();
 		scAnnots[i]= simContexts[i].getDescription();
 		geoNames[i] = simContexts[i].getGeometry().getName();
 		geoDims[i] = simContexts[i].getGeometry().getDimension();
-		
+
 		Simulation[] sims = simContexts[i].getSimulations();
 		simNames[i] = new String[sims.length];
 		simAnnots[i] =  new String[sims.length];
@@ -332,14 +334,19 @@ public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoExc
  */
 @Override
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-	long start_time = System.currentTimeMillis();
+	long start_time = 0;
+	if (lg.isInfoEnabled()) {
+		start_time = System.currentTimeMillis();
+	}
 	issueContext = issueContext.newChildContext(ContextType.BioModel, this);
 	getModel().gatherIssues(issueContext, issueList);
 	for (SimulationContext simulationContext : fieldSimulationContexts) {
 		simulationContext.gatherIssues(issueContext, issueList);
 	}
-	long end_time = System.currentTimeMillis();
-	System.out.println("Time spent on Issue detection: " + (end_time - start_time));
+	if (lg.isInfoEnabled()) {
+		long end_time = System.currentTimeMillis();
+		lg.info("Time spent on Issue detection: " + (end_time - start_time));
+	}
 //	for (Simulation simulation : fieldSimulations) {
 //		simulation.gatherIssues(issueContext,issueList);
 //	}
@@ -560,7 +567,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 
 	/**
 	 * This method gets called when a bound property is changed.
-	 * @param evt A PropertyChangeEvent object describing the event source 
+	 * @param evt A PropertyChangeEvent object describing the event source
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -632,7 +639,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 
 	// wei's code
-	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS) 
+	if (evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)
 			|| evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS))){
 		//remove the relationship objects if the biomodelEntity objects were removed
 		Set<BioModelEntityObject> removedObjects = relationshipModel.getBioModelEntityObjects();
@@ -660,7 +667,7 @@ public void refreshDependencies() {
 	removeVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	addVetoableChangeListener(this);
-	
+
 	fieldModel.refreshDependencies();
 	fieldModel.setVcMetaData(getVCMetaData());
 	for (int i=0;fieldSimulationContexts!=null && i<fieldSimulationContexts.length;i++){
@@ -1075,7 +1082,7 @@ public VCID getVCID(Identifiable identifiable) {
 	}else if (identifiable instanceof BioPaxObject){
 		localName = ((BioPaxObject)identifiable).getID();
 		className = "BioPaxObject";
-		
+
 	}else if (identifiable instanceof MolecularType){
 		localName = ((MolecularType)identifiable).getName();
 		className = "MolecularType";
@@ -1107,7 +1114,7 @@ public Set<Identifiable> getAllIdentifiables() {
 //	allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
 	Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
 	allIdenfiables.addAll(biopaxObjects);
-	
+
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getMolecularTypeList());
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getReactionRuleList());
 	allIdenfiables.addAll(fieldModel.getRbmModelContainer().getObservableList());
@@ -1121,7 +1128,7 @@ public String getFreeSimulationContextName() {
 		String name = SIMULATION_CONTEXT_DISPLAY_NAME + count;
 		if (getSimulationContext(name) == null){
 			return name;
-		}	
+		}
 		count++;
 	}
 }
@@ -1132,7 +1139,7 @@ public String getFreeSimulationName() {
 		String name = SIMULATION_DISPLAY_NAME + count;
 		if (getSimulation(name) == null){
 			return name;
-		}	
+		}
 		count++;
 	}
 }
@@ -1158,7 +1165,7 @@ public SimulationContext getSimulationContext(String name) {
 	public PathwayModel getPathwayModel() {
 		return pathwayModel;
 	}
-	
+
 	public RelationshipModel getRelationshipModel(){
 		return relationshipModel;
 	}
@@ -1166,13 +1173,13 @@ public SimulationContext getSimulationContext(String name) {
 	public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
 		ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
 		HashSet<NameScope> visited = new HashSet<NameScope>();
-		
+
 		fieldModel.getNameScope().findReferences(symbolTableEntry, references, visited);
-		
+
 		for (SimulationContext simContext : fieldSimulationContexts){
 			simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
 		}
-		
+
 		return references;
 	}
 }
