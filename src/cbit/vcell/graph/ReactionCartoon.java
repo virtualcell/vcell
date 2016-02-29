@@ -14,8 +14,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,8 +30,12 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.NodeReference;
 import cbit.vcell.model.Product;
+import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
@@ -233,6 +235,57 @@ public class ReactionCartoon extends ModelCartoon {
 			// add all reactionSteps that are in this structure (ReactionContainerShape), and draw the lines
 			getModel().removePropertyChangeListener(this);
 			getModel().addPropertyChangeListener(this);
+			
+			// TODO: =================================== Rules ================================================
+//			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
+//				rr.removePropertyChangeListener(this);
+//				rr.addPropertyChangeListener(this);
+//				Structure structure = rr.getStructure();
+//				if(getStructureSuite().areReactionsShownFor(structure)) {
+//					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
+//					ReactionRuleDiagramShape rrShape = (ReactionRuleDiagramShape) getShapeFromModelObject(rr);
+//					if (rrShape == null) {
+//						rrShape = new ReactionRuleDiagramShape(rr, this);
+//						addShape(rrShape);
+//						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+//						reactionContainerShape.addChildShape(rrShape);
+//						rrShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+//					}
+//					rrShape.refreshLabel();
+//					unwantedShapes.remove(rrShape);
+//					
+//					// add reaction participants as edges
+//					
+//					List<ReactionRuleParticipant> participants = rr.getReactionRuleParticipants();
+//					for(ReactionRuleParticipant participant : participants) {
+//						participant.getSpeciesPattern().removePropertyChangeListener(this);
+//						participant.getSpeciesPattern().addPropertyChangeListener(this);
+//						Structure speciesStructure = participant.getStructure();
+//						Structure reactionStructure = rr.getStructure();
+//						
+//						if(getStructureSuite().getStructures().contains(speciesStructure) && getStructureSuite().areReactionsShownFor(reactionStructure)) {
+//							ReactionRuleParticipantDiagramShape reactionParticipantShape = (ReactionRuleParticipantDiagramShape) getShapeFromModelObject(getModel(), participant);
+//							if (reactionParticipantShape == null) {
+//								if (participant instanceof ReactantPattern) {
+//									reactionParticipantShape = new ReactionRuleParticipantDiagramShape(participant, this);
+//								} else if (participant instanceof ProductPattern) {
+//									reactionParticipantShape = new ReactionRuleParticipantDiagramShape(participant, this);
+//								} else {
+//									throw new RuntimeException("unsupported ReactionRuleParticipant " + participant.getClass());
+//								}
+//								addShape(reactionParticipantShape);
+//								reactionParticipantShape.getSpaceManager().setRelPos(reactionContainerShape.getRandomPosition());
+//							}
+//							if(!containerShape.getChildren().contains(reactionParticipantShape)) {
+//								containerShape.addChildShape(reactionParticipantShape);								
+//							}
+//							unwantedShapes.remove(reactionParticipantShape);
+//							reactionParticipantShape.refreshLabel();
+//						}
+//					}
+//				}
+//			}
+			
 			for(ReactionStep reactionStep : getModel().getReactionSteps()) {
 				reactionStep.removePropertyChangeListener(this);
 				reactionStep.addPropertyChangeListener(this);
@@ -329,7 +382,17 @@ public class ReactionCartoon extends ModelCartoon {
 						NodeReference.SIMPLE_REACTION_NODE,
 						((ReactionStep) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
+			} else if (shape instanceof ReactionRuleDiagramShape) {
+				nodeList.add(new NodeReference(
+						NodeReference.SIMPLE_REACTION_NODE,
+						((ReactionStep) shape.getModelObject()).getName(),
+						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof SpeciesContextShape) {
+				nodeList.add(new NodeReference(
+						NodeReference.SPECIES_CONTEXT_NODE,
+						((SpeciesContext) shape.getModelObject()).getName(),
+						shape.getSpaceManager().getRelPos()));
+			} else if (shape instanceof ReactionRuleParticipantDiagramShape) {
 				nodeList.add(new NodeReference(
 						NodeReference.SPECIES_CONTEXT_NODE,
 						((SpeciesContext) shape.getModelObject()).getName(),

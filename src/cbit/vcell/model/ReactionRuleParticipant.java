@@ -1,12 +1,16 @@
 package cbit.vcell.model;
 
+import java.util.List;
+
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Compare;
+import org.vcell.util.Displayable;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.units.VCUnitDefinition;
 
-public abstract class ReactionRuleParticipant implements ModelProcessParticipant {
+public abstract class ReactionRuleParticipant implements Displayable, ModelProcessParticipant {
 	private final SpeciesPattern speciesPattern;
 	private Structure structure;
 	
@@ -41,6 +45,16 @@ public abstract class ReactionRuleParticipant implements ModelProcessParticipant
 		return null;
 	}
 
+	public String calculateSignature(List<MolecularType> molecularTypeList) {
+		String signature = structure.getName() + ":";
+		signature += speciesPattern.calculateSignature(molecularTypeList);
+		return signature;
+	}
+	
+	public String getDisplayNameShort() {
+		return getSpeciesPattern().getNameShort();
+	}
+	
 	@Override
 	public boolean compareEqual(Matchable obj) {
 		if (getClass().equals(obj.getClass())){

@@ -29,8 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.vcell.model.rbm.MolecularType;
+
 import cbit.gui.graph.GraphListener;
 import cbit.gui.graph.GraphResizeManager.ResizeMode;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionRuleParticipant;
 
 public abstract class GraphModel {
 	
@@ -249,6 +254,23 @@ public abstract class GraphModel {
 
 	public Shape getShapeFromModelObject(Object obj) {
 		return objectShapeMap.get(obj);
+	}
+	public Shape getShapeFromModelObject(Model model, ReactionRuleParticipant theirs) {
+		
+		List <MolecularType> mtList = model.getRbmModelContainer().getMolecularTypeList();
+		String theirSignature = theirs.calculateSignature(mtList);
+		for (Map.Entry<Object, Shape> entry : objectShapeMap.entrySet()) {
+			Object key = entry.getKey();
+			if(!(key instanceof ReactionRuleParticipant)) {
+				continue;
+			}
+			ReactionRuleParticipant ours = (ReactionRuleParticipant)key;
+			if(theirSignature.equals(ours.calculateSignature(mtList))) {
+			
+			return entry.getValue();
+			}
+		}
+		return null;
 	}
 
 	public Collection<Shape> getShapes() {

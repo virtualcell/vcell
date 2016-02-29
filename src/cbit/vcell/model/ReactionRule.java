@@ -385,6 +385,14 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			resolveMatches();
 		}
 	}
+	
+	public final List<ReactionRuleParticipant> getReactionRuleParticipants() {
+		List<ReactionRuleParticipant> all = new ArrayList<>();
+		all.addAll(reactantPatterns);
+		all.addAll(productPatterns);
+		return all;
+	}
+	
 	public final List<ReactantPattern> getReactantPatterns() {
 		return reactantPatterns;
 	}
