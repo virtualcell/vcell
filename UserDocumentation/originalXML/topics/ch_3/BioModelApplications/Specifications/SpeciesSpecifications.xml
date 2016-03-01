@@ -22,77 +22,55 @@
 	<para>
 	<imgReference target = "speciesSpecificationMenu.png"/>
 	</para>
-	Columns values for a selected species row can be changed with the rt-click menu.  Initial condition expressions and values can be copied/pasted using the rt-click menu.
+	Columns values for a selected species row can be changed with the mouse pop-up menu.  
+	Initial condition expressions and values can be copied/pasted using the mouse pop-up menu.
 	</appearance>
 	
 	<operations>
-	
-	<para> <bold>Viewing/Editing Species Specifications</bold></para>
-	<para>
-	<bold>Specifications</bold> can be accessed by selecting the 'Specifications' item under the application node in the 'Navigation' panel tree structure.
-	This displays the application in the 'View' panel on the right, with the <bold>Specifications</bold> tab selected. This view has 2 sub-tabs - one for 'Species' and another for 'Reactions'.
-	Selecting the <bold>Species</bold> tab in the 'Specifications' tab displays a table of the species in the model, with their location, initial conditions, etc. 
-	The table columns are sortable. Only the 'Initial Conditions' and 'Diffusion Constant' (in spatial applications) columns are editable.
-	</para>
-	
-	<para> <bold>Initial Conditions</bold></para>
-	<para>
-	Double clicking the 'Initial Conditions' column allows the user to input an numeric value or an expression for the initial condition for the concentration of the selected species. 
-	An equation may be used to restrict the concentration variable to a certain region within the model. 
-	For example, you might restrict the concentration of a variable, 1000, to a given region, defined by the y coordinates, by the following equation: ((1000.0 * (y>= 0.89))). 
-	In addition you may also define such concentrations in respect to another variable, a time dependent component or Field Data (see <link target="fieldData">Field Data</link>).
-	</para>
-	
-	<para><bold>Note:</bold> spatial variables 'x', 'y', 'z' are <bold>not</bold> allowed in expressions for initial conditions in <bold>non-spatial</bold> (compartmental) applications.</para>
-	
-	<para>
-	In <bold>stochastic applications</bold>, the user can choose to specify initial condition of a species either as concentration or as number of particles by choosing the appropriate radio button.
-	If the initial concentration is specified and the user chooses the 'number of particles' option, the initial concentration is converted to number of particles. 
-	</para>
-	
-	<para> <bold>Clamped Concentration</bold></para>
-	<para>
-	A species concentration can be set to 'Clamped'. The concentration of the selected species maintains a constant state; the species is neither broken down nor produced, nor does it diffuse. 
-	The species in this case is no longer a variable but instead becomes a parameter and the diffusion constant is disabled. 
+	<bold>Viewing/Editing Species Specifications</bold>
+	<list>
+	<item><bold>Activate</bold> by selecting the 'Specifications' item under a specific 'Applications' sub-node in the <link target="GeneralNavAndWinSetup">Navigation panel</link> tree structure.</item>
+	<item><bold>Display Species</bold> by selecting the 'Specifications' and 'Species' tabs in the <link target="GeneralNavAndWinSetup">View panel</link>  to show a table list of all species.</item>
+	<item><bold>Sort</bold> rows by values under a particular column by clicking the column 'header' (column names at the top of the table).</item>
+	<item><bold>Select</bold> a species from the table to display the 'Species Properties Pane' in the <link target="GeneralNavAndWinSetup">Properties panel</link> below the table.</item>
+	<item><bold>Edit Initial Condition</bold> by selecting a 'Species' table row and entering an expression in one of 3 ways.  
+	(1) double-click the 'Initial Condition' table-cell in the 'Species' table.  
+	(2) pop-up menu over 'Species' table and select 'Initial Condition'.  
+	(3) In the 'species properties' panel (below the 'Species' table) select the 'initConc' or 'initCount' parameter row and double-click the 'Expression' table-cell.  
+	The expression can refer to other application parameters (press cntrl-space for pop-up list).
+	In spatial applications an expression may be used to restrict the initial condition to a certain region within the application geometry domain by referring to axes (x, y or z) within the expression (e.g. (1000.0 * (y>= 0.89))).  
+	<link target="fieldData">Field Data</link> can also be used to import 'image' based spatially distributed 'initial conditions'.</item>
+	<item><bold>Convert Concentration/Counts</bold> of 'Initial Conditions' for <bold>Stochastic</bold> applications 
+	(see <link target="ApplicationOverview">Application Overview</link>) by selecting the <bold>Concentration</bold> or <bold>Number of Particles</bold> radio button.</item>
+	<item><bold>Edit Diffusion Expression</bold> (for spatial application) by selecting a 'Species' table row and entering an expression in one of 3 ways.  
+	(1) double-click the 'Diffusion Constant' table-cell in the 'Species' table.  
+	(2) pop-up menu over 'Species' table and select 'Diffusion Constant'.  
+	(3) In the 'species properties' panel (below the 'Species' table) select the 'diff' parameter row and double-click the 'Expression' table-cell.  
+	The diffusion expression can refer to other application parameters (press cntrl-space for pop-up list) and spatial axes x,y,z (e.g (10.0*(y>4.0)) where the value of 300 is confined within the area defined by the y coordinates).  
+	In addition, The diffusion expression can refer to time (e.g. ((t>2.5)*3)) where diffusion would be 3 after simulation time 2.5).</item>
+	<item><bold>Clamp Concentration</bold> by selecting a 'Species' table row and clicking the check-box under the 'Clamped' column.  
+	The concentration of the selected species remains constant for all simulation times and does not diffuse.  
+	The species in this case is no longer a variable but instead becomes a parameter and the diffusion constant is disabled.  
 	Known concentrations may be held constant in a reaction in order to aid in determining unknown concentrations of other species elements.
-	</para>
-
-	<para> <bold>Diffusion Constant</bold></para>
-	<para>
-	The 'Diffusion Constant' column in the table is available only for spatial applications. 
-	When present, double clicking in the column allows the user to enter a numeric value or expression to define the <bold>Diffusion Rate</bold> in a spatially dependent manner or as a value. 
-	As an example, the diffusion constant may be spatially defined by the following equation: (300.0*(y>4.0)), where the value of 300 is confined within the area defined by the y coordinates. 
-	In addition, the user may also define diffusion with a time dependent component.
-	</para>
+	</item>
+	<item><bold>Set Boundary Conditions</bold> (for spatial applications) by selecting a 'Species' table row then selecting a 'Species Properties' table row for a 'Description' column 
+	item that starts with 'Boundary Condition...'.  
+	The <bold>type</bold> of 'Boundary Condition' is set in <link target="geom_spatial_mapping">Structure Mapping</link>.  
+	The default 'Boundary Condition' for a given species at each boundary (X-,X+, Y-,Y+, Z-,Z+) is fixed at either zero, when using <bold>Flux type</bold>, 
+	or the concentration set in the Initial Condition field, when using <bold>Value type</bold>.  
+	Each 'Boundary Condition' can be assigned an expression of flux ('Flux type') or a clamped concentration different from that entered in the Initial Conditions field ('Value type').</item>
+	<item><bold>Set Velocities for Directed Transport</bold> (2D or 3D spatial applications) by selecting a 'Species' table row then selecting a 'Species Properties' table row for a 'Description' column 
+	item that starts with 'Velocity...'.
+	The velocities provided by the user are used to calculate the velocities of the species at any location within the model.  
+	Velocities can be provided as constant values or as a function of spatial coordinates, x,y,z as well as time.</item>
+	<item><bold>Set Randomized Initial Condition</bold> (non-spatial stochastic applications, see 'Non-Spatial Stochastic' figure above) by clicking the 
+	'Randomize Initial Condition' check-box.  
+	The solver will select an initial condition value from a Poisson distribution with the user defined initial condition as the mean of the Poisson distribution.</item>
 	
-	<para> <bold>Boundary Conditions</bold></para>
-	<para>
-	For spatial models, the type of Boundary Condition is set in <link target="geom_spatial_mapping">Structure Mapping</link>. 
-	The default Boundary Conditions for a given species at each boundary (X-,X+, Y-, Y+, Z-, Z+) are fixed at either zero, when using <bold>Flux</bold>, or the concentration set in the Initial Condition field, when using <bold>Value</bold> type. 
-	You can provide a numerical value or expressions for each boundary to provide a rate of flux ('Flux') or a clamped concentration different from that entered in the Initial Conditions field ('Value').
-	</para>
-	
-
-	<para> <bold>Velocity</bold></para>
-	<para>
-	Directed transport can be specified within the Virtual Cell as velocities in 2D and 3D spatial models. 
-	The velocities provided by the user are used to calculate the velocities of the species at any location within the model. 
-	Velocities can be provided as constant values or as a function of spatial coordinates, x,y,z as well as time.
-	</para>
-
-	<para>
-	The <bold>Boundary Conditions</bold> and <bold>Velocity</bold> terms for a species in a spatial application can be set when a species is selected in the 'Initial Conditions' table. 
-	This selection displays an <bold>Initial Conditions Property Pane</bold> in the 'Properties Panel' below. 
-	</para>
-	
-	<para>
-	<bold>Stochastic</bold> applications (see Stochastic figure) have additional specification parameters.  
-	The 'Concentration' and 'Number of Particles' buttons (any stochastic application) determine how the 'Initial Condition' column values are interpreted and displayed.  
-	The 'Randomize Initial Condition' (non-spatial stochastic application) when checked tells the solver to select an initial condition value from
-	a Poisson distribution with the user defined initial condition as the mean of the Poisson distribution.  
-	The <bold>Force Continuous</bold> column (spatial stochastic) indicates the spatial stochastic solver should treat any checkbox selected species row as a deterministic (continuous) variable.  
-	Spatial stochastic applications with 1 or more 'force Continuous' checkboxes selected are considered to be 'hybrid stochastic'.  
-	</para>
+	<item><bold>Set Force Continuous</bold> (for stochastic applications) by selecting a 'Species' table row and clicking the 
+	'Force Continuous' column (spatial stochastic) check-box.  The checked species will be treated by the solver as determistic (continuous) variables.  
+	Stochastic applications with 1 or more 'Force Continuous' check-boxes set are considered to be <link target="ApplicationOverview">Hybrid Deterministic Stochastic</link>.</item>
+	</list>
 	</operations>
 	
 </page>
