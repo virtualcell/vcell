@@ -51,7 +51,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
 	private List<MolecularTypeLargeShape> speciesShapes = new ArrayList<MolecularTypeLargeShape>();
 
-	final Graphics graphicsContext;
+	final LargeShapePanel shapePanel;
 	
 	private Displayable owner;
 	private SpeciesPattern sp;
@@ -62,21 +62,21 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, Graphics graphicsContext, boolean isError) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError) {
 		this.owner = null;
 		this.sp = null;
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.height = height;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		this.isError = true;
 
 		int xPattern = xPos;
-		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, graphicsContext, null);
+		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null);
 		speciesShapes.add(stls);
 	}
 		
-	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, Graphics graphicsContext, Displayable owner) {
+	public SpeciesPatternLargeShape(int xPos, int yPos, int height, SpeciesPattern sp, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
@@ -91,12 +91,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			this.yPos = yPos;
 		}
 		this.height = height;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, shapePanel, owner);
 			speciesShapes.add(stls);
 			return;
 		}
@@ -104,7 +104,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, graphicsContext, owner);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, this.yPos, mtp, shapePanel, owner);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
@@ -454,7 +454,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			}
 			
 			if(bs.mcp.getBondType().equals(BondType.Possible)) {
-				Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+				Graphics gc = shapePanel.getGraphics();
+				Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc);
 				g2.setFont(font);
 				g2.setColor(fontColor);
 				g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
@@ -561,7 +562,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
 			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);
 			
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Graphics gc = shapePanel.getGraphics();
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc);
 //			Font font = fontOld.deriveFont((float) (MolecularComponentLargeShape.componentDiameter/2));
 			g.setFont(font);
 			String nr = bp.id+"";

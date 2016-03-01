@@ -36,7 +36,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public static final int baseHeight = 19;			// was 17
 	public static final int cornerArc = 17;
 	
-	final Graphics graphicsContext;
+	final LargeShapePanel shapePanel;
 	
 	private boolean pattern;					// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
@@ -56,7 +56,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 
 		final static int xOffsetWidth = 16;
 
-		final Graphics graphicsContext;
+		final LargeShapePanel shapePanel;
 		private final Font font;
 		private int xPos;
 		private int yPos;
@@ -71,7 +71,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		private final Displayable owner;
 		private String displayName;
 		
-		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, Graphics gc, Displayable owner) {
+		public ComponentStateLargeShape(int x, int y, RbmElementAbstract reaComponent, RbmElementAbstract reaState, LargeShapePanel shapePanel, Displayable owner) {
 			this.xPos = x;
 			this.yPos = y;
 			
@@ -85,16 +85,17 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				this.csp = (ComponentStatePattern)reaState;
 				this.csd = csp.getComponentStateDefinition();	// may be null
 			}
-			this.graphicsContext = gc;
+			this.shapePanel = shapePanel;
 			
 			if(this.csd == null) {
 				this.displayName = "?";
 			} else {
 				this.displayName = adjustForSize(csd.getDisplayName());
 			}
+			Graphics gc = shapePanel.getGraphics();
 			this.font = deriveStateFont(gc);
 			this.height = computeStateHeight(gc);
-			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			FontMetrics fm = gc.getFontMetrics(font);
 			width = fm.stringWidth(displayName) + xOffsetWidth;		// pill will be wider than the text we show inside it
 		}
 		
@@ -139,8 +140,9 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 		@Override
 		public Rectangle getLabelOutline() {
+			Graphics gc = shapePanel.getGraphics();
 			Font font = getLabelFont();
-			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			FontMetrics fm = gc.getFontMetrics(font);
 			int stringWidth = fm.stringWidth(getFullName());
 			Rectangle labelOutline = new Rectangle(xPos+2, yPos, stringWidth+8, fm.getHeight()+5);
 			return labelOutline;
@@ -161,7 +163,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			// use this to force a different with, for instance if we want all the rectangles used
 			// for contains() to be equal
 			// we don't allow reducing the width below the width of the text
-			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			Graphics gc = shapePanel.getGraphics();
+			FontMetrics fm = gc.getFontMetrics(font);
 			int minWidth = fm.stringWidth(displayName);
 			if(width > minWidth) {
 				// we compared the widths of the strings, but we set the width of the "pill", so we add xOffsetWidth
@@ -251,39 +254,40 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, Graphics graphicsContext, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponent mc, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
 		this.mcp = null;
 		this.mc = mc;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		displayName = adjustForSize(mc.getDisplayName());
 		
-		Font font = deriveStateFont(graphicsContext);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = deriveStateFont(gc);
 		int stateHeight = getStringHeight(font)+2;	// we reserve 2 extra pixels height as separation between states
 		String longestStateName = getLongestStateName(mc);
 		
 		// we reserve enough space for component name or state name, whichever is longer
 		// TODO: this is not an exact science because so far we checked just for the number of characters
-		textWidth = getStringWidth(displayName) > getStateStringWidth(longestStateName, graphicsContext) ? getStringWidth(displayName) : getStateStringWidth(longestStateName, graphicsContext);
+		textWidth = getStringWidth(displayName) > getStateStringWidth(longestStateName, gc) ? getStringWidth(displayName) : getStateStringWidth(longestStateName, gc);
 		width = baseWidth + textWidth;
 		xPos = rightPos-width;
 		yPos = y;
 		for(int i=0; i<mc.getComponentStateDefinitions().size(); i++) {
 			ComponentStateDefinition csd = mc.getComponentStateDefinitions().get(i);
 			// align the end of the state shape with the end of the component shape
-			int xPosState = xPos + width - getStateStringWidth(longestStateName, graphicsContext) - ComponentStateLargeShape.xOffsetWidth;
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos - computeStateHeight(graphicsContext)*(i+1)+1, mc, csd, graphicsContext, owner);
-			csls.forceDifferentWidth(getStateStringWidth(longestStateName, graphicsContext));
+			int xPosState = xPos + width - getStateStringWidth(longestStateName, gc) - ComponentStateLargeShape.xOffsetWidth;
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos - computeStateHeight(gc)*(i+1)+1, mc, csd, shapePanel, owner);
+			csls.forceDifferentWidth(getStateStringWidth(longestStateName, gc));
 			stateShapes.add(csls);
 		}
 	}
-	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, Graphics graphicsContext, Displayable owner) {
+	public MolecularComponentLargeShape(int rightPos, int y, MolecularComponentPattern mcp, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = true;
 		this.mcp = mcp;
 		this.mc = mcp.getMolecularComponent();
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		
 		displayName = adjustForSize(mc.getDisplayName());
 		String stateName = "";
@@ -292,9 +296,10 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			ComponentStateDefinition csd = mcp.getComponentStatePattern().getComponentStateDefinition();
 			stateName = adjustForSize(csd.getDisplayName());
 		}
+		Graphics gc = shapePanel.getGraphics();
 		String longestStateName = getLongestStateName(mc);
 		int displayNameWidth = getStringWidth(displayName);
-		int longestStateNameWidth = getStateStringWidth(longestStateName, graphicsContext);
+		int longestStateNameWidth = getStateStringWidth(longestStateName, gc);
 		
 		textWidth = displayNameWidth > longestStateNameWidth ? displayNameWidth : longestStateNameWidth;
 		width = width + textWidth;
@@ -304,8 +309,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		if(csp != null) {
 			// align the end of the state shape with the end of the component shape
 			int xPosState = xPos + width - longestStateNameWidth - ComponentStateLargeShape.xOffsetWidth;
-			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos-computeStateHeight(graphicsContext)+1, mcp, csp, graphicsContext, owner);
-			csls.forceDifferentWidth(getStateStringWidth(longestStateName, graphicsContext));
+			ComponentStateLargeShape csls = new ComponentStateLargeShape(xPosState, yPos-computeStateHeight(gc)+1, mcp, csp, shapePanel, owner);
+			csls.forceDifferentWidth(getStateStringWidth(longestStateName, gc));
 			stateShapes.add(csls);
 		}
 	}
@@ -352,15 +357,17 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	}
 	@Override
 	public Rectangle getLabelOutline() {
+		Graphics gc = shapePanel.getGraphics();
 		Font font = getLabelFont();
-		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(getFullName());
 		Rectangle labelOutline = new Rectangle(xPos+6, yPos+2, stringWidth+18, fm.getHeight()+2);
 		return labelOutline;
 	}
 	@Override
 	public Font getLabelFont() {
-		return MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+		Graphics gc = shapePanel.getGraphics();
+		return MolecularComponentLargeShape.deriveComponentFontBold(gc);
 	}
 	@Override
 	public String getFullName() {
@@ -403,13 +410,15 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	
 	private int getStringWidth(String s) {
 //		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		Font font = deriveComponentFontBold(graphicsContext);
-		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = deriveComponentFontBold(gc);
+		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
 		return stringWidth;
 	}
 	private int getStringHeight(Font font) {
-		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		Graphics gc = shapePanel.getGraphics();
+		FontMetrics fm = gc.getFontMetrics(font);
 		int stringHeight = fm.getHeight();
 		return stringHeight;
 	}
@@ -512,7 +521,8 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setColor(componentColor);
 		}
 		
-		Font font = deriveComponentFontBold(graphicsContext);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = deriveComponentFontBold(gc);
 		g.setFont(font);
 		if(hidden == false) {
 			g.setColor(Color.black);

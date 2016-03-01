@@ -15,6 +15,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Displayable;
 
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 
 @Deprecated
@@ -39,7 +40,7 @@ public class SwingPaintDemo {
 	}
 }
 
-class MyPanel extends JPanel {
+class MyPanel extends LargeShapePanel {
 	
 	private class MyDisplayable implements Displayable {
 		String name = "myName";
@@ -55,9 +56,8 @@ class MyPanel extends JPanel {
 	}
 
 	MolecularType mt = new MolecularType("egfr", null);
-	Graphics panelContext = getGraphics();
 	Displayable d = new MyDisplayable();
-	LargeShape molecularTypeShape = new MolecularTypeLargeShape(50, 50, mt, panelContext, d);
+	LargeShape molecularTypeShape = new MolecularTypeLargeShape(50, 50, mt, this, d);
 
 	public MyPanel() {
 		setBorder(BorderFactory.createLineBorder(Color.black));

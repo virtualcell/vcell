@@ -108,6 +108,7 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
@@ -151,7 +152,7 @@ public class SpeciesPropertiesPanel extends DocumentEditorSubPanel {
 	private JPopupMenu popupFromShapeMenu;
 
 	private SpeciesPatternLargeShape spls;
-	private JPanel shapePanel = null;
+	private LargeShapePanel shapePanel = null;
 	
 	public class BioModelNodeEditableTree extends JTree {
 		@Override
@@ -388,7 +389,7 @@ private void initConnections() throws java.lang.Exception {
 private void initialize() {
 	try {
 		Border border = BorderFactory.createLineBorder(Color.gray);
-		shapePanel = new JPanel() {		// glyph (shape) panel
+		shapePanel = new LargeShapePanel() {		// glyph (shape) panel
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
@@ -705,8 +706,7 @@ public static final int yOffsetInitial = 10;
 private void updateShape() {
 	if(fieldSpeciesContext!= null) {
 		SpeciesPattern sp = fieldSpeciesContext.getSpeciesPattern();
-		Graphics panelContext = shapePanel.getGraphics();
-		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, panelContext, fieldSpeciesContext);
+		spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, fieldSpeciesContext);
 		
 		int maxXOffset = xOffsetInitial + spls.getWidth();
 		int maxYOffset = yOffsetInitial + 80;

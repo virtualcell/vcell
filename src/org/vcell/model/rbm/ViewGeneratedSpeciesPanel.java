@@ -44,6 +44,7 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
@@ -60,7 +61,7 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 	private JTextField textFieldSearch = null;
 	
 	private final NetworkConstraintsPanel owner;
-	JPanel shapePanel = null;
+	LargeShapePanel shapePanel = null;
 	private SpeciesPatternLargeShape spls;
 
 	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
@@ -112,13 +113,12 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 				structure.setName(strStructure, false);
 
 				SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
-				Graphics panelContext = shapePanel.getGraphics();
-				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, panelContext, sc);
+				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc);
 				shapePanel.repaint();
 				} catch (ParseException | PropertyVetoException e1) {
 					e1.printStackTrace();
 					Graphics panelContext = shapePanel.getGraphics();
-					spls = new SpeciesPatternLargeShape(20, 20, -1, panelContext, true);	// error (red circle)
+					spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
 					shapePanel.repaint();
 				}
 			}
@@ -221,7 +221,7 @@ private void initialize() {
 		add(textFieldSearch, gbc);
 		
 		// ------------------------------------------------- shapePanel ----------------
-		shapePanel = new JPanel() {
+		shapePanel = new LargeShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
