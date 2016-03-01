@@ -1724,8 +1724,9 @@ private javax.swing.JMenuItem getReconnectMenuItem() {
 		try {
 			ivjReconnectMenuItem = new javax.swing.JMenuItem();
 			ivjReconnectMenuItem.setName("ReconnectMenuItem");
-			ivjReconnectMenuItem.setText("Reconnect");
+			ivjReconnectMenuItem.setText("Reconnect (Refresh)");
 			ivjReconnectMenuItem.setEnabled(false);
+
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
