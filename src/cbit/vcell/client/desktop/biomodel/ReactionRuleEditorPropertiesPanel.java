@@ -59,6 +59,7 @@ import org.vcell.util.gui.VCellIcons;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
@@ -95,7 +96,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 //	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 //	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
-	private JPanel shapePanel;
+	private LargeShapePanel shapePanel;
 	private JScrollPane scrollPane;
 	private JPanel productPanel;
 	private JPanel reactantPanel;
@@ -208,7 +209,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		try {
 
-			shapePanel = new JPanel() {
+			shapePanel = new LargeShapePanel() {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
@@ -632,12 +633,11 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	public static final int ReservedSpaceForNameOnYAxis = 10;
 	private void updateShape() {
 		int maxXOffset;
-		Graphics gc = splitPaneHorizontal.getTopComponent().getGraphics();
 		
-		reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, gc, reactionRule, true);
+		reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
 		maxXOffset = Math.max(xOffsetInitial, reactantShape.getXOffset());
 		
-		productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, gc, reactionRule, false);
+		productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, shapePanel, reactionRule, false);
 		maxXOffset = Math.max(maxXOffset, productShape.getXOffset());
 
 		// TODO: instead of offset+100 compute the exact width of the image
