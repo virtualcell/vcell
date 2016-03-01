@@ -48,6 +48,7 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
@@ -66,7 +67,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	private JTextField textFieldSearch = null;
 	
 	private final NetworkConstraintsPanel owner;
-	JPanel shapePanel = null;
+	LargeShapePanel shapePanel = null;
 	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
@@ -150,8 +151,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
-						Graphics panelContext = shapePanel.getGraphics();
-						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, panelContext, true);	// error (red circle)
+						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
 						reactantPatternShapeList.clear();
 						productPatternShapeList.clear();
 						reactantPatternShapeList.add(spls);
@@ -186,8 +186,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 					reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
-						Graphics panelContext = shapePanel.getGraphics();
-						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, panelContext, true);	// error (red circle)
+						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
 						reactantPatternShapeList.clear();
 						productPatternShapeList.clear();
 						reactantPatternShapeList.add(spls);
@@ -202,13 +201,12 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				reactantPatternShapeList.clear();
 				int xOffset = 20;
 				if(rpList != null && rpList.size() > 0) {
-					Graphics gc = shapePanel.getGraphics();
 					for(int i = 0; i<rpList.size(); i++) {
 						SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
 						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 							mtp.setParticipantMatchLabel("*");
 						}
-						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, gc, reactionRule);
+						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
 						if(i < rpList.size()-1) {
 							sps.addEndText("+");
 						} else {
@@ -226,13 +224,12 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				List<ProductPattern> ppList = reactionRule.getProductPatterns();
 				productPatternShapeList.clear();
 				if(ppList != null && ppList.size() > 0) {
-					Graphics gc = shapePanel.getGraphics();
 					for(int i = 0; i<ppList.size(); i++) {
 						SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
 						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
 							mtp.setParticipantMatchLabel("*");
 						}
-						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, gc, reactionRule);
+						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
 						if(i < ppList.size()-1) {
 							sps.addEndText("+");
 						}
@@ -344,7 +341,7 @@ private void initialize() {
 		
 		
 // -------------------------------------------------------------------------------------------
-		shapePanel = new JPanel() {
+		shapePanel = new LargeShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);

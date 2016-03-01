@@ -96,6 +96,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.FluxReactionShape;
 import cbit.vcell.graph.LargeShape;
+import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
@@ -203,7 +204,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
 	JScrollPane scrollPane;
-	private JPanel shapePanel = null;
+	private LargeShapePanel shapePanel = null;
 	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
@@ -400,7 +401,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		annotationBorder.setTitlePosition(TitledBorder.TOP);
 		annotationBorder.setTitleFont(getFont().deriveFont(Font.BOLD));
 
-		shapePanel = new JPanel() {
+		shapePanel = new LargeShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
@@ -570,8 +571,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
 			molecularTypeShapeList.clear();
 			int maxYOffset = computeStatesVerticalOffset(molecularType);
-			Graphics panelContext = splitPane.getRightComponent().getGraphics();
-			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, panelContext, molecularType);
+			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, shapePanel, molecularType);
 			molecularTypeShapeList.add(stls);
 
 			int maxXOffset = xOffsetInitial + stls.getWidth();

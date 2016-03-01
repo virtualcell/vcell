@@ -22,7 +22,8 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	int xPos;
 	int yPos;
 	int height;
-	Graphics gc;
+	LargeShapePanel shapePanel;
+	
 	ReactionRule rr;
 	boolean isReactants;
 	int xOffset;
@@ -31,12 +32,12 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	List<SpeciesPatternLargeShape> speciesPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	
 	
-	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, Graphics gc, Displayable owner, boolean isReactants) {
+	public ReactionRulePatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, Displayable owner, boolean isReactants) {
 
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.height = height;
-		this.gc = gc;
+		this.shapePanel = shapePanel;
 		this.rr = (ReactionRule)owner;
 		this.isReactants = isReactants;
 		this.xOffset = ReactionRuleEditorPropertiesPanel.xOffsetInitial;
@@ -51,7 +52,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<rpList.size(); i++) {
 				SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, gc, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < rpList.size()-1) {
 					sps.addEndText("+");
@@ -72,7 +73,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			}
 			for(int i = 0; i<ppList.size(); i++) {
 				SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, gc, rr);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, yPos, -1, sp, shapePanel, rr);
 //				if(i==0) { sps.setHighlight(true); }
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");

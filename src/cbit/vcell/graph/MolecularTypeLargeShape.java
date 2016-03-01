@@ -50,44 +50,44 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	private static final int baseHeight = 30;
 	private static final int cornerArc = 30;
 
-	private boolean pattern;					// we draw component or we draw component pattern (and perhaps a bond)
+	private boolean pattern;			// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
 	private int yPos = 0;
 	private int width = baseWidth;
 	private int height = baseHeight;
 
-	final Graphics graphicsContext;
+	final LargeShapePanel shapePanel;
 	
 	private final String name;
 	private final MolecularType mt;
 	private final MolecularTypePattern mtp;
-	private final Displayable owner;
+	private final Displayable owner;	// the topmost entity to which this shape belongs (a rule, an observable, a molecular type, etc)
 
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
 	
 	// this is only called for plain species context (no pattern)
-	public MolecularTypeLargeShape(int xPos, int yPos, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;		// null owner means we want to display a red circle (meaning error)
 		this.pattern = false;
 		this.mt = null;
 		this.mtp = null;
 		this.xPos = xPos;
 		this.yPos = yPos;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		this.name = "";
 
 		width = baseWidth+4;	// we write no name inside, we'll just draw a roundish green shape
 		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 	}
 	// this is only called for molecular type
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = false;
 		this.mt = mt;
 		this.mtp = null;
 		this.xPos = xPos;
 		this.yPos = yPos;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		// adjustment for name width and for the width of the components
 		// TODO: properly calculate the width based on the font and size of each letter
 		int numComponents = mt.getComponentList().size();
@@ -97,7 +97,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			// WARNING! we create temporary component shapes whose coordinates are invented, we use them only to compute 
 			// the width of the molecular type shape; only after that is known we can finally compute the exact coordinates
 			// of the components
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, graphicsContext, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, shapePanel, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize();
@@ -113,20 +113,20 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			int y = yPos + height - MolecularComponentLargeShape.baseHeight;
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, graphicsContext, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, shapePanel, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 			componentShapes.add(0, mlcls);
 		}
 	}
 	// called for species contexts (with patterns) and observable
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, Graphics graphicsContext, Displayable owner) {
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner) {
 		this.owner = owner;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
 		this.mtp = mtp;
 		this.xPos = xPos;
 		this.yPos = yPos;
-		this.graphicsContext = graphicsContext;
+		this.shapePanel = shapePanel;
 		
 		int numComponents = mt.getComponentList().size();	// components
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
@@ -134,7 +134,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, graphicsContext, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, shapePanel, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize();
@@ -151,7 +151,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, graphicsContext, owner);
+			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, shapePanel, owner);
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 			componentShapes.add(0, mlcls);
 		}
@@ -185,8 +185,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 	
 	private int getStringWidth(String s) {
-		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = gc.getFont().deriveFont(Font.BOLD);
+		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(s);
 //		AffineTransform at = font.getTransform();
 //		FontRenderContext frc = new FontRenderContext(at,true,true);
@@ -220,15 +221,17 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 	@Override
 	public Rectangle getLabelOutline() {
-		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
-		FontMetrics fm = graphicsContext.getFontMetrics(font);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = gc.getFont().deriveFont(Font.BOLD);
+		FontMetrics fm = gc.getFontMetrics(font);
 		int stringWidth = fm.stringWidth(getFullName());
 		Rectangle labelOutline = new Rectangle(xPos+8, yPos+7, stringWidth+11, fm.getHeight()+5);
 		return labelOutline;
 	}
 	@Override
 	public Font getLabelFont() {
-		Font font = graphicsContext.getFont().deriveFont(Font.BOLD);
+		Graphics gc = shapePanel.getGraphics();
+		Font font = gc.getFont().deriveFont(Font.BOLD);
 		return font;
 	}
 	@Override
@@ -390,7 +393,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			g.setColor(Color.black);
 			g2.drawString(name, textX, textY);
 			
-			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			Graphics gc = shapePanel.getGraphics();
+			FontMetrics fm = gc.getFontMetrics(font);
 			int stringWidth = fm.stringWidth(name);
 			if(owner instanceof ReactionRule && mtp != null && mtp.hasExplicitParticipantMatch()) {
 				Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
@@ -485,7 +489,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			return;
 		}
 		if(mtp != null && mtp.hasExplicitParticipantMatch() && mtp.getParticipantMatchLabel().equals(matchKey)) {
-			Graphics g = graphicsContext;
+			Graphics g = shapePanel.getGraphics();
 			Graphics2D g2 = (Graphics2D)g;
 			Font fontOld = g2.getFont();
 			Color colorOld = g2.getColor();
@@ -493,7 +497,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			Font font = fontOld.deriveFont(Font.BOLD);
 			Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
 			g.setFont(smallerFont);
-			FontMetrics fm = graphicsContext.getFontMetrics(font);
+			FontMetrics fm = g.getFontMetrics(font);
 			int stringWidth = fm.stringWidth(name);
 			int textX = xPos + 11;
 			int textY =  yPos + baseHeight - 9;
