@@ -23,12 +23,10 @@ import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 public class SpeciesPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable {
 	public static final String PROPERTY_NAME_MOLECULAR_TYPE_PATTERNS = "molecularTypePatterns";
 	private List<MolecularTypePattern> molecularTypePatterns = new ArrayList<MolecularTypePattern>();
-	private transient boolean bHighlighted = false;
 	
 	public static class Bond implements Serializable {
 		public MolecularTypePattern molecularTypePattern;
 		public MolecularComponentPattern molecularComponentPattern;
-		private transient boolean bHighlighted = false;
 		
 		private Bond(MolecularTypePattern molecularTypePattern,		// keep this constructor private!!!
 				MolecularComponentPattern molecularComponentPattern) {
@@ -190,12 +188,6 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 		public String getId() {
 			System.err.println("Bond.getId() ... need to implement something good here ... not yet implemented well.");
 			return "BondId_"+hashCode();
-		}
-		public boolean isHighlighted() {
-			return bHighlighted;
-		}
-		public void setHighlighted(boolean isHighlighted) {
-			this.bHighlighted = isHighlighted;
 		}
 	}
 	
@@ -499,13 +491,6 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 				entity.gatherIssues(issueContext, issueList);
 			}
 		}
-	}
-
-	public boolean isHighlighted() {
-		return bHighlighted;
-	}
-	public void setHighlighted(boolean isHighlighted) {
-		this.bHighlighted = isHighlighted;
 	}
 
 	public static final String typeName = "Species Pattern";

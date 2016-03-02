@@ -207,13 +207,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public boolean isHighlighted() {
 			
 			if(owner instanceof RbmObservable) {
-				return csp.isHighlighted();
+				return shapePanel.isHighlighted(csp);
 			} else if(owner instanceof MolecularType) {
-				return csd.isHighlighted();
+				return shapePanel.isHighlighted(csd);
 			} else if(owner instanceof SpeciesContext) {
-				return csp.isHighlighted();
+				return shapePanel.isHighlighted(csp);
 			} else if(owner instanceof ReactionRule) {
-				return csp.isHighlighted();
+				return shapePanel.isHighlighted(csp);
 			}
 			return false;
 		}
@@ -221,13 +221,13 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public void setHighlight(boolean b, boolean param) {
 			// param is ignored
 			if(owner instanceof RbmObservable) {
-				csp.setHighlighted(b);
+				shapePanel.csp = b ? csp : null;
 			} else if(owner instanceof MolecularType) {
-				csd.setHighlighted(b);
+				shapePanel.csd = b ? csd : null;
 			} else if(owner instanceof SpeciesContext) {
-				csp.setHighlighted(b);
+				shapePanel.csp = b ? csp : null;
 			} else if(owner instanceof ReactionRule) {
-				csp.setHighlighted(b);
+				shapePanel.csp = b ? csp : null;
 			}
 		}
 		@Override
@@ -542,30 +542,30 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 	public void setHighlight(boolean b, boolean param) {
 		// param is ignored
 		if(owner instanceof RbmObservable) {
-			mcp.setHighlighted(b);
+			shapePanel.mcp = b ? mcp : null;
 		} else if(owner instanceof MolecularType) {
-			mc.setHighlighted(b);
+			shapePanel.mc = b ? mc : null;
 		} else if(owner instanceof SpeciesContext) {
-			mcp.setHighlighted(b);
+			shapePanel.mcp = b ? mcp : null;
 		} else if(owner instanceof ReactionRule) {
-			mcp.setHighlighted(b);
+			shapePanel.mcp = b ? mcp : null;
 		}
 	}
 	@Override
 	public boolean isHighlighted() {
 		if(owner instanceof RbmObservable) {
-			return mcp.isHighlighted();
+			return shapePanel.isHighlighted(mcp);
 		} else if(owner instanceof MolecularType) {
-			return mc.isHighlighted();
+			return shapePanel.isHighlighted(mc);
 		} else if(owner instanceof SpeciesContext) {
-			return mcp.isHighlighted();
+			return shapePanel.isHighlighted(mcp);
 		} else if(owner instanceof ReactionRule) {
-			return mcp.isHighlighted();
+			return shapePanel.isHighlighted(mcp);
 		}
 		return false;
 	}
 	@Override
-	public void turnHighlightOffRecursive(Graphics g) {	// not really recursive, no subchildren (for now)
+	public void turnHighlightOffRecursive(Graphics g) {
 		boolean oldHighlight = isHighlighted();
 		setHighlight(false, false);
 		if(oldHighlight == true) {

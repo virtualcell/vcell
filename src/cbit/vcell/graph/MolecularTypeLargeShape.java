@@ -441,15 +441,15 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	public void setHighlight(boolean b, boolean param) {
 		// param is being ignored
 		if(owner instanceof RbmObservable) {
-			mtp.setHighlighted(b);
+			shapePanel.mtp = b ? mtp : null;
 		} else if(owner instanceof MolecularType) {
-			mt.setHighlighted(b);
+			shapePanel.mt = b ? mt : null;
 		} else if(owner instanceof SpeciesContext) {
 			if(mtp != null) {
-				mtp.setHighlighted(b);		// plain species don't have sp, nor mtp
+				shapePanel.mtp = b ? mtp : null;	// plain species don't have sp, nor mtp
 			}
 		} else if(owner instanceof ReactionRule) {
-			mtp.setHighlighted(b);
+			shapePanel.mtp = b ? mtp : null;
 		} else {
 			System.out.println("Unexpected owner: " + owner);
 		}
@@ -457,17 +457,17 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	@Override
 	public boolean isHighlighted() {
 		if(owner instanceof RbmObservable) {
-			return mtp.isHighlighted();
+			return shapePanel.isHighlighted(mtp);
 		} else if(owner instanceof MolecularType) {
-			return mt.isHighlighted();
+			return shapePanel.isHighlighted(mt);
 		} else if(owner instanceof SpeciesContext) {
 			if(mtp != null) {
-				return mtp.isHighlighted();
+				return shapePanel.isHighlighted(mtp);
 			} else {
 				return false;
 			}
 		} else if(owner instanceof ReactionRule) {
-			return mtp.isHighlighted();
+			return shapePanel.isHighlighted(mtp);
 		} else {
 			System.out.println("Unexpected owner: " + owner);
 		}

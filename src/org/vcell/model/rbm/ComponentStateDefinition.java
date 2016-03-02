@@ -18,7 +18,6 @@ public class ComponentStateDefinition extends RbmElementAbstract implements Matc
 	Displayable
 {
 	private String name;   // e.g. Phosphorated, ...
-	private transient boolean bHighlighted = false;
 
 	public ComponentStateDefinition(String name) {
 		this.name = name;
@@ -86,13 +85,6 @@ public class ComponentStateDefinition extends RbmElementAbstract implements Matc
 //		} else {
 //			issueList.add(new Issue(this, issueContet, IssueCategory.Identifiers, name, Issue.SEVERITY_WARNING));
 		}
-	}
-	
-	public boolean isHighlighted() {
-		return bHighlighted;
-	}
-	public void setHighlighted(boolean isHighlighted) {
-		this.bHighlighted = isHighlighted;
 	}
 	
 	public static final String typeName = "State";

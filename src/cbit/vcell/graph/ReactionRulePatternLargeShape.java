@@ -216,29 +216,30 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	}
 
 	public boolean isHighlightedReactants() {
-		if(!rr.isHighlighted()) {
+		if(!shapePanel.isHighlighted(rr)) {
 			return false;
 		}
-		return rr.isHighlightedReactants();
+		return shapePanel.whatIsHighlighted == LargeShapePanel.WhatIsHighlighted.reactant ? true : false;
 	}
 	public boolean isHighlightedProducts() {
-		if(!rr.isHighlighted()) {
+		if(!shapePanel.isHighlighted(rr)) {
 			return false;
 		}
-		return !rr.isHighlightedReactants();
+		return shapePanel.whatIsHighlighted == LargeShapePanel.WhatIsHighlighted.product ? true : false;
 	}
 	@Override
 	@Deprecated
 	public boolean isHighlighted() {	// don't use this, is insufficient; use isHighlightedReactants() or isHighlightedProducts() 
-		return rr.isHighlighted();
+		return shapePanel.isHighlighted(rr);
 	}
 	@Override
 	public void setHighlight(boolean highlight, boolean isReactants) {
-		if(rr == null) {
-			// TODO: add code here, what if a plain reaction?
+		if(rr == null || highlight == false) {
+			shapePanel.rr = null;
 			return;
 		}
-		rr.setHighlighted(highlight, isReactants);		
+		shapePanel.rr = rr;
+		shapePanel.whatIsHighlighted = isReactants ? LargeShapePanel.WhatIsHighlighted.reactant : LargeShapePanel.WhatIsHighlighted.product;
 	}
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {
