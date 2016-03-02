@@ -203,9 +203,9 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 	private JSplitPane splitPaneHorizontal = new JSplitPane(JSplitPane.VERTICAL_SPLIT);	// between shape and annotation
-	JScrollPane scrollPane;
+	private JScrollPane scrollPane;
 	private LargeShapePanel shapePanel = null;
-	List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
+	private List<MolecularTypeLargeShape> molecularTypeShapeList = new ArrayList<MolecularTypeLargeShape>();
 
 	private JPopupMenu popupMenu;
 	private JMenuItem addFromTreeMenuItem;
@@ -536,7 +536,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		setMolecularType(molecularType);
 		if(molecularType != null) {
 			// we want to start with a "normal" state for the depiction (not highlighted).
-			molecularType.setHighlightedRecursively(false);
+			shapePanel.setHighlightedRecursively(molecularType, LargeShapePanel.Highlight.off);
 		}
 	}
 	

@@ -2,35 +2,115 @@ package cbit.vcell.graph;
 
 import javax.swing.JPanel;
 
-import org.vcell.util.Displayable;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.ComponentStatePattern;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
+
+import cbit.vcell.graph.LargeShapePanel.Highlight;
+import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.ReactionRule;
 
 @SuppressWarnings("serial")
 public class LargeShapePanel extends JPanel {
 	
+	public static enum Highlight { on, off }
+	public static enum WhatIsHighlighted { reactant, product }
+	
 	// here we store the entity that needs to be displayed highlighted (selected object and maybe its container)
 	
-	// the entity that is selected (for example a molecule, component, a state, a pattern...) 
+	// the entity that is selected (for example a molecule, component, a state, a pattern...)
 	// that and will be painted as "highlighted"
-	private Displayable highlightedEntity = null;
+	public ReactionRule rr = null;
+	public WhatIsHighlighted whatIsHighlighted = WhatIsHighlighted.reactant;
+	public RbmObservable o = null;
+	public SpeciesPattern sp = null;
+	public MolecularType mt = null;
+	public MolecularTypePattern mtp = null;
+	public MolecularComponent mc = null;
+	public MolecularComponentPattern mcp = null;
+	public ComponentStateDefinition csd = null;
+	public ComponentStatePattern csp = null;
+	// bonds are not being highlighted
 	
-	// used to draw the light blue border around the container (reactant pattern for example) that contains 
-	// the selected entity (a state for example)
-	private Displayable highlightedContainer = null;	
-	
-	public Displayable getHighlightedEntity() {
-		return highlightedEntity;
+	public void resetSpeciesPattern() {
+		sp = null;
+		mtp = null;
+		mcp = null;
+		csp = null;
 	}
-	public void setHighlightedEntity(Displayable highlightedEntity) {
-		this.highlightedEntity = highlightedEntity;
+	public void setHighlightedRecursively(MolecularType theirs, Highlight highlight) {
+		if(highlight == Highlight.on) {
+			mt = theirs;
+		} else {
+			mt = null;
+			mc = null;
+			csd = null;
+		}
 	}
-	
-	public Displayable getHighlightedContainer() {
-		return highlightedContainer;
+	public void setHighlightedRecursively(RbmObservable theirs, Highlight highlight) {
+		if(highlight == Highlight.on) {
+			o = theirs;
+		} else {
+			sp = null;
+			mtp = null;
+			mcp = null;
+			csp = null;
+		}
 	}
-	public void setHighlightedContainer(Displayable highlightedContainer) {
-		this.highlightedContainer = highlightedContainer;
+
+	public boolean isHighlighted(MolecularType candidate) {
+		if(candidate == mt) {
+			return true;
+		}
+		return false;
 	}
-	
-	
+	public boolean isHighlighted(MolecularTypePattern candidate) {
+		if(candidate == mtp) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isHighlighted(MolecularComponent candidate) {
+		if(candidate == mc) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isHighlighted(MolecularComponentPattern candidate) {
+		if(candidate == mcp) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isHighlighted(ComponentStateDefinition candidate) {
+		if(candidate == csd) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isHighlighted(ComponentStatePattern candidate) {
+		if(candidate == csp) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isHighlighted(SpeciesPattern candidate) {
+		if(candidate == sp) {
+			return true;
+		}
+		return false;
+	}
+	public boolean isHighlighted(ReactionRule candidate) {
+		if(candidate == rr) {
+			return true;
+		}
+		return false;
+	}
 
 }
