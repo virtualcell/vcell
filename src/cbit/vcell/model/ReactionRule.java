@@ -64,8 +64,6 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 //	private String productWarning = null;
 	private Structure structure = null;
 	private transient Model model = null;
-	private transient boolean bHighlighted = false;
-	private transient boolean bHighlightedReactants = false;
 
 	private final ReactionRuleNameScope nameScope = new ReactionRuleNameScope();
 	public class ReactionRuleNameScope extends BioNameScope {
@@ -1478,23 +1476,6 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 			}
 		}
 		return true;
-	}
-
-	public boolean isHighlighted() {
-		// one of either reactants or products is highlighted if true
-		// neither is highlighted if false
-		return bHighlighted;
-	}
-	public boolean isHighlightedReactants() {
-		// ATTENTION! valid only if bHighlighted is true
-		// reactants is highlighted if true
-		// products is highlighted if false
-		return bHighlightedReactants;
-	}
-	public void setHighlighted(boolean highlight, boolean isReactants) {
-		// if the first argument is false the second one is meaningless
-		this.bHighlighted = highlight;
-		this.bHighlightedReactants = isReactants;
 	}
 
 	public static final String typeName = "Reaction Rule";

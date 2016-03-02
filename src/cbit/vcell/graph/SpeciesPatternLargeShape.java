@@ -594,29 +594,23 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		// TODO: actually I need to look at the owner, sp may be null for a plain species (green circle)
 		// or for errors (where we display a red circle)
 		if(sp == null) {
-			// TODO:   ADD CODE HERE
+			shapePanel.sp = null;
 			return;
 		}
-		sp.setHighlighted(b);
+		shapePanel.sp = b ? sp : null;
 	}
 	@Override
 	public boolean isHighlighted() {
 		if(sp == null) {
-			// TODO:   ADD CODE HERE, see above
+			// TODO:   ADD CODE HERE?, see above
 			return false;
 		}
-		return sp.isHighlighted();
+		return shapePanel.isHighlighted(sp);
 	}
 	@Override
 	public void turnHighlightOffRecursive(Graphics g) {
-		boolean oldHighlight = isHighlighted();
-		setHighlight(false, false);
-		if(oldHighlight == true) {
-			paintSelf(g);			// paint self not highlighted if previously highlighted
-		}
-		for(MolecularTypeLargeShape mtls : speciesShapes) {
-			mtls.turnHighlightOffRecursive(g);
-		}
+		shapePanel.resetSpeciesPattern();
+			paintSelf(g);			// paint self not highlighted
 	}
 
 	public void flash(String matchKey) {
