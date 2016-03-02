@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -90,6 +91,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private ReactionRulePropertiesTreeModel reactantTreeModel = null;
 	private ReactionRulePropertiesTreeModel productTreeModel = null;
 	
+	private JButton addReactantButton = null;
+	private JButton addProductButton = null;
+
+	
 	ReactionRulePatternLargeShape reactantShape;
 	ReactionRulePatternLargeShape productShape;
 	
@@ -147,6 +152,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			if (e.getSource() == getAddReactantMenuItem()) {
 				addReactant();
 			} else if (e.getSource() == getAddProductMenuItem()) {
+				addProduct();
+			} else if (e.getSource() == getAddReactantButton()) {
+				addReactant();
+			} else if (e.getSource() == getAddProductButton()) {
 				addProduct();
 			} else if (e.getSource() == getDeleteMenuItem()) {
 				delete();
@@ -208,12 +217,10 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private static int yDividerLocation = 100;
 	private void initialize() {
 		try {
-
 			shapePanel = new LargeShapePanel() {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
-					
 					reactantShape.paintSelf(g);
 					productShape.paintSelf(g);
 				}
@@ -277,25 +284,48 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			});
 			shapePanel.setLayout(new GridBagLayout());
 			shapePanel.setBackground(Color.white);	
-			
 			scrollPane = new JScrollPane(shapePanel);
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			
-			splitPaneHorizontal.setOneTouchExpandable(true);
-//			splitPaneHorizontal.setDividerLocation(yDividerLocation);
-//			splitPaneHorizontal.setResizeWeight(0.1);
+			JPanel optionsPanel = new JPanel();
+			optionsPanel.setPreferredSize(new Dimension(110, 200));
+			optionsPanel.setLayout(new GridBagLayout());
+			
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			optionsPanel.add(getAddReactantButton(), gbc);
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.weighty = 1.0;
+			gbc.insets = new Insets(2,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			optionsPanel.add(getAddProductButton(), gbc);
+		
+			JPanel containerOfScrollPanel = new JPanel();
+			containerOfScrollPanel.setLayout(new BorderLayout());
+			containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+			containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
 			
 			JPanel lowerPanel = new JPanel();
 			lowerPanel.setLayout(new GridBagLayout());
 
-			splitPaneHorizontal.setTopComponent(scrollPane);
+			splitPaneHorizontal.setTopComponent(containerOfScrollPanel);
 			splitPaneHorizontal.setBottomComponent(lowerPanel);
 			
 			splitPaneTrees.setResizeWeight(0.5);
 			splitPaneTrees.setDividerLocation(340);		// absolute value
 			splitPaneTrees.setDividerSize(6);
 			splitPaneTrees.setOneTouchExpandable(true);
+			splitPaneHorizontal.setOneTouchExpandable(true);
+//			splitPaneHorizontal.setDividerLocation(yDividerLocation);
 
 			reactantTree = new BioModelNodeEditableTree();
 			reactantTreeModel = new ReactionRulePropertiesTreeModel(reactantTree, ReactionRuleParticipantType.Reactant);
@@ -357,7 +387,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			reactantPanel.setBackground(Color.white);
 			
 			int gridy = 0;
-			GridBagConstraints gbc = new GridBagConstraints();
+			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
 			gbc.weightx = 1.0;
@@ -445,7 +475,6 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			splitPaneHorizontal.getBottomComponent().setPreferredSize(new Dimension());
 			splitPaneHorizontal.setDividerLocation(1.0d);
 
-			
 			setLayout(new BorderLayout());
 			add(splitPaneHorizontal, BorderLayout.CENTER);
 			setBackground(Color.white);
@@ -573,6 +602,21 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		return editMenuItem;
 	}
 	
+	private JButton getAddReactantButton() {
+		if (addReactantButton == null) {
+			addReactantButton = new JButton("Add Reactant");
+			addReactantButton.addActionListener(eventHandler);
+		}
+		return addReactantButton;
+	}
+	private JButton getAddProductButton() {
+		if (addProductButton == null) {
+			addProductButton = new JButton("Add Product");
+			addProductButton.addActionListener(eventHandler);
+		}
+		return addProductButton;
+	}
+
 	private void handleException(java.lang.Throwable exception) {
 
 		/* Uncomment the following lines to print uncaught exceptions to stdout */
