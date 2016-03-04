@@ -103,6 +103,7 @@ public class RuleAnalysisReport {
 	}
 
 	private double symmetryFactor = 1;
+	private final ArrayList<String> errors = new ArrayList<String>();
 	private final Map<MolecularTypeEntry,ArrayList<MolecularTypeEntry>> forwardMolecularMapping = new LinkedHashMap<MolecularTypeEntry,ArrayList<MolecularTypeEntry>>();
 	private final Map<MolecularComponentEntry, MolecularComponentEntry> forwardComponentMapping = new LinkedHashMap<MolecularComponentEntry,MolecularComponentEntry>();
 	private final ArrayList<RuleAnalysisReport.Operation> operations = new ArrayList<RuleAnalysisReport.Operation>();
@@ -134,6 +135,74 @@ public class RuleAnalysisReport {
 	
 	public double getSymmetryFactor(){
 		return symmetryFactor;
+	}
+	
+	public boolean hasBondChanged(MolecularComponentEntry component){
+		for (Operation op : operations){
+			if (op instanceof AddBondOperation){
+				AddBondOperation bondOp = (AddBondOperation)op;
+				if (bondOp.addedProductBondEntry.reactantComponent1 == component ||
+					bondOp.addedProductBondEntry.reactantComponent2 == component ||
+					forwardComponentMapping.get(bondOp.addedProductBondEntry.reactantComponent1) == component ||
+					forwardComponentMapping.get(bondOp.addedProductBondEntry.reactantComponent2) == component){
+					return true;
+				}
+					
+			}
+			if (op instanceof DeleteBondOperation){
+				DeleteBondOperation bondOp = (DeleteBondOperation)op;
+				if (bondOp.removedBondEntry.reactantComponent1 == component ||
+					bondOp.removedBondEntry.reactantComponent2 == component ||
+					forwardComponentMapping.get(bondOp.removedBondEntry.reactantComponent1) == component ||
+					forwardComponentMapping.get(bondOp.removedBondEntry.reactantComponent2) == component){
+					return true;
+				}
+					
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasNoMatch(MolecularTypeEntry molecularTypeEntry) {
+		System.out.println("-------------------");
+		for (Operation op : operations){
+			System.out.println(op.toString());
+			if (op instanceof AddMolecularTypeOperation){
+				AddMolecularTypeOperation addOp = (AddMolecularTypeOperation)op;
+				if (addOp.unmatchedProductMoleculeEntry == molecularTypeEntry){
+					return true;
+				}	
+			}
+			if (op instanceof DeleteMolecularTypeOperation){
+				DeleteMolecularTypeOperation deleteOp = (DeleteMolecularTypeOperation)op;
+				if (deleteOp.removedReactantMolecularEntry == molecularTypeEntry){
+					return true;
+				}
+					
+			}
+			if (op instanceof DeleteParticipantOperation){
+				DeleteParticipantOperation deleteOp = (DeleteParticipantOperation)op;
+				if (deleteOp.removedParticipantEntry.getMolecularTypeEntries().contains(molecularTypeEntry)){
+					return true;
+				}
+					
+			}
+		}
+		return false;
+	}
+
+
+	public boolean hasStateChanged(MolecularComponentEntry component) {
+		for (Operation op : operations){
+			if (op instanceof ChangeStateOperation){
+				ChangeStateOperation stateOp = (ChangeStateOperation)op;
+				if (stateOp.productComponentEntry == component ||
+					stateOp.reactantComponentEntry == component){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public MolecularComponentEntry getMapping(MolecularComponentEntry component) {
@@ -198,4 +267,14 @@ public class RuleAnalysisReport {
 		}
 		return null;
 	}
+
+	public void addError(String error) {
+		errors.add(error);
+	}
+	
+	public List<String> getErrors(){
+		return errors;
+	}
+
+
 }

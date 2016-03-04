@@ -28,6 +28,9 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
+import org.vcell.util.IssueContext;
+import org.vcell.util.Issue.Severity;
 
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.RbmObservable;
@@ -334,22 +337,42 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			if(mt == null || mt.getModel() == null) {
 				primaryColor = Color.blue.darker().darker();
 			} else {
-				RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
-				List<MolecularType> mtList = rbmmc.getMolecularTypeList();
-				int index = mtList.indexOf(mt);
-				index = index%7;
-//				if(owner instanceof MolecularType) {
-//					switch(index) {
-//					case 0:  primaryColor = isHighlighted() == true ? Color.red : Color.red.darker().darker(); break;
-//					case 1:  primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
-//					case 2:  primaryColor = isHighlighted() == true ? Color.pink : Color.pink.darker().darker(); break;
-//					case 3:  primaryColor = isHighlighted() == true ? Color.cyan : Color.cyan.darker().darker(); break;
-//					case 4:  primaryColor = isHighlighted() == true ? Color.orange : Color.orange.darker().darker(); break;
-//					case 5:  primaryColor = isHighlighted() == true ? Color.magenta.brighter() : Color.magenta.darker().darker(); break;
-//					case 6:  primaryColor = isHighlighted() == true ? Color.green.brighter() : Color.green.darker().darker(); break;
-//					default: primaryColor = isHighlighted() == true ? Color.blue.brighter().brighter() : Color.blue.darker().darker(); break;
-//					}
-//				} else {
+				if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+					ReactionRule reactionRule = (ReactionRule)owner;
+
+					switch (shapePanel.hasNoMatch(mtp)){
+					case CHANGED:{
+						primaryColor = Color.orange;
+						break;
+					}
+					case UNCHANGED:{
+						primaryColor = AbstractComponentShape.componentHidden;
+						break;
+					}
+					case ANALYSISFAILED:{
+						ArrayList<Issue> issueList = new ArrayList<Issue>();
+						reactionRule.gatherIssues(new IssueContext(), issueList);
+						boolean bRuleHasErrorIssues = false;
+						for (Issue issue : issueList){
+							if (issue.getSeverity() == Severity.ERROR){
+								bRuleHasErrorIssues = true;
+								break;
+							}
+						}
+						if (bRuleHasErrorIssues) {
+							primaryColor = AbstractComponentShape.componentHidden;
+						}else{
+							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+							primaryColor = Color.red.darker();
+						}
+						break;
+					}
+					}
+				} else {
+					RbmModelContainer rbmmc = mt.getModel().getRbmModelContainer();
+					List<MolecularType> mtList = rbmmc.getMolecularTypeList();
+					int index = mtList.indexOf(mt);
+					index = index%7;
 					switch(index) {
 					case 0:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
 					case 1:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker(); break;
@@ -360,7 +383,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 					case 6:  primaryColor = isHighlighted() == true ? Color.white : colorTable[index].darker().darker().darker(); break;
 					default: primaryColor = isHighlighted() == true ? Color.white : Color.blue.darker().darker(); break;
 					}
-//				}
+				}
 			}
 		}
 		GradientPaint p = new GradientPaint(xPos, yPos, primaryColor, xPos, yPos + baseHeight/2, Color.WHITE, true);

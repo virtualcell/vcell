@@ -23,12 +23,12 @@ public class ModelRuleFactory {
 		private final ReactionRule reactionRule;
 		private final int ruleIndex;
 		
-		private final ArrayList<ParticipantEntry> reactantEntries = new ArrayList<ParticipantEntry>();
-		private final ArrayList<ParticipantEntry> productEntries = new ArrayList<ParticipantEntry>();
-		private final ArrayList<MolecularTypeEntry> reactantMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
-		private final ArrayList<MolecularComponentEntry> reactantMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
-		private final ArrayList<MolecularTypeEntry> productMolecularTypeEntries = new ArrayList<MolecularTypeEntry>();
-		private final ArrayList<MolecularComponentEntry> productMolecularComponentEntries = new ArrayList<MolecularComponentEntry>();
+		private final ArrayList<ModelParticipantEntry> reactantEntries = new ArrayList<ModelParticipantEntry>();
+		private final ArrayList<ModelParticipantEntry> productEntries = new ArrayList<ModelParticipantEntry>();
+		private final ArrayList<ModelMolecularTypeEntry> reactantMolecularTypeEntries = new ArrayList<ModelMolecularTypeEntry>();
+		private final ArrayList<ModelMolecularComponentEntry> reactantMolecularComponentEntries = new ArrayList<ModelMolecularComponentEntry>();
+		private final ArrayList<ModelMolecularTypeEntry> productMolecularTypeEntries = new ArrayList<ModelMolecularTypeEntry>();
+		private final ArrayList<ModelMolecularComponentEntry> productMolecularComponentEntries = new ArrayList<ModelMolecularComponentEntry>();
 		private final ArrayList<ReactantBondEntry> reactantBondEntries = new ArrayList<ReactantBondEntry>();
 		private final ArrayList<ProductBondEntry> productBondEntries = new ArrayList<ProductBondEntry>();
 		
@@ -85,7 +85,36 @@ public class ModelRuleFactory {
 
 		@Override
 		public Double getSymmetryFactor() {
-			return null; // go ask BNG?
+			System.err.println("symmetry factor is wrong");
+			return new Double(1); // this is not yet correct, go ask BNG?
+		}
+
+		public MolecularComponentEntry findMolecularComponentEntry(MolecularComponentPattern mcp) {
+			for (ModelMolecularComponentEntry entry : reactantMolecularComponentEntries){
+				if (entry.molecularComponentPattern == mcp){
+					return entry;
+				}
+			}
+			for (ModelMolecularComponentEntry entry : productMolecularComponentEntries){
+				if (entry.molecularComponentPattern == mcp){
+					return entry;
+				}
+			}
+			return null;
+		}
+
+		public MolecularTypeEntry findMolecularTypeEntry(MolecularTypePattern mcp) {
+			for (ModelMolecularTypeEntry entry : reactantMolecularTypeEntries){
+				if (entry.molecularTypePattern == mcp){
+					return entry;
+				}
+			}
+			for (ModelMolecularTypeEntry entry : productMolecularTypeEntries){
+				if (entry.molecularTypePattern == mcp){
+					return entry;
+				}
+			}
+			return null;
 		}
 
 	}
@@ -315,9 +344,6 @@ public class ModelRuleFactory {
 				rule.reactantMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
-					if(mcp.getBondType() == BondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
-						continue;
-					}
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.reactantMolecularComponentEntries.add(mce);
 					
@@ -354,9 +380,6 @@ public class ModelRuleFactory {
 				rule.productMolecularTypeEntries.add(molecularTypeEntry);
 				int componentIndex = 0;
 				for (MolecularComponentPattern mcp : mtp.getComponentPatternList()){
-					if(mcp.getBondType() == BondType.Possible && (mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny())) {
-						continue;
-					}
 					ModelMolecularComponentEntry mce = new ModelMolecularComponentEntry(molecularTypeEntry, componentIndex, mcp);
 					rule.productMolecularComponentEntries.add(mce);
 

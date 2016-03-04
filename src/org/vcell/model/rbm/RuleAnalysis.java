@@ -289,7 +289,7 @@ public class RuleAnalysis {
 //		return Double.parseDouble(symmetry_factor_str);
 //	}
 	
-	public static RuleAnalysisReport analyze(RuleEntry rule) {
+	public static RuleAnalysisReport analyze(RuleEntry rule, boolean bThrowExceptions) {
 		
 		RuleAnalysisReport report = new RuleAnalysisReport();
 
@@ -406,7 +406,13 @@ public class RuleAnalysis {
 			String productState = productComponentEntry.getExplicitState();
 			if (reactantState != null || productState != null){
 				if (reactantState == null || productState == null){
-					throw new RuntimeException("reactant state = "+reactantState+" and product state = "+productState+", not allowed, null not allowed.");
+					String errMsg = "reactant state = "+reactantState+" and product state = "+productState+", not allowed, null not allowed.";
+					if (bThrowExceptions){
+						throw new RuntimeException(errMsg);
+					}else{
+						report.addError(errMsg);
+						continue;
+					}
 				}
 				if (!reactantState.equals(productState)){
 					report.addOperation(new RuleAnalysisReport.ChangeStateOperation(reactantComponentEntry, productComponentEntry, productState));
@@ -460,7 +466,13 @@ public class RuleAnalysis {
 			MolecularComponentEntry reactantComponent2 = report.getReactantComponentEntry(addedProductBond.productComponent2);
 			if(reactantComponent1 == null || reactantComponent2 == null) {
 				// TODO: need to find out what's causing this, for now we just catch it
-				throw new RuntimeException("Null reactant component(s) for bond entry while generationg an addBond operation");
+				String errMsg = "Null reactant component(s) for bond entry while generationg an addBond operation";
+				if (bThrowExceptions){
+					throw new RuntimeException(errMsg);
+				}else{
+					report.addError(errMsg);
+					continue;
+				}
 			}
 			ReactantBondEntry addedReactantBond = new ReactantBondEntry(reactantComponent1, reactantComponent2);
 			report.addOperation(new RuleAnalysisReport.AddBondOperation(addedReactantBond));
