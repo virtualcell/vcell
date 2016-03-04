@@ -557,7 +557,11 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			Font fontOld = g.getFont();
 //			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
-			g2.setColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]);
+			if(shapePanel.isShowDifferencesOnly()) {
+				g2.setColor(Color.gray);
+			} else {
+				g2.setColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]);
+			}
 			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+offset+i*separ);
 			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
 			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);

@@ -346,7 +346,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 						break;
 					}
 					case UNCHANGED:{
-						primaryColor = AbstractComponentShape.componentHidden;
+						primaryColor = AbstractComponentShape.componentVeryLightGray;
+//						primaryColor = AbstractComponentShape.componentHidden;
+//						primaryColor = Color.lightGray;
 						break;
 					}
 					case ANALYSISFAILED:{
