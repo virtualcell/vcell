@@ -30,7 +30,7 @@ public class Issue implements java.io.Serializable, Matchable {
 	private String tooltip = null;
 	private IssueCategory category = null;
 	private IssueSource source = null;
-	private IssueSource source2 = null;
+	private IssueSource detailedSource = null;
 	private IssueContext issueContext = null;
 	private Severity severity = Severity.INFO;
 	private String hyperlink;
@@ -187,10 +187,10 @@ public class Issue implements java.io.Serializable, Matchable {
 	/**
 	 * @param argTooltip may be null; HTML formatted
 	 */
-	public Issue(IssueSource argSource, IssueSource argSource2, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, Severity argSeverity) {
+	public Issue(IssueSource argSource, IssueSource argDetailedSource, IssueContext issueContext, IssueCategory argCategory, String argMessage, String argTooltip, Severity argSeverity) {
 		super();
 		this.source = argSource;
-		this.source2 = argSource2;
+		this.detailedSource = argDetailedSource;
 		this.issueContext = issueContext;
 		this.message = argMessage;
 	this.tooltip = argTooltip;
@@ -216,7 +216,7 @@ public boolean compareEqual(Matchable obj) {
 		if (other.source!=this.source){
 			return false;
 		}
-		if (other.source2!=this.source2){
+		if (other.detailedSource!=this.detailedSource){
 			return false;
 		}
 		if (!other.category.equals(category)){
@@ -253,7 +253,7 @@ public boolean equal(Object object) {
 		if (!source.equals(otherIssue.source)){
 			return false;
 		}
-		if (!source2.equals(otherIssue.source2)){
+		if (!detailedSource.equals(otherIssue.detailedSource)){
 			return false;
 		}
 		if (!category.equals(otherIssue.category)){
@@ -347,8 +347,8 @@ public String getSeverityName() {
 public IssueSource getSource() {
 	return source;
 }
-public Object getSource2() {
-	return source2;
+public IssueSource getDetailedSource() {
+	return detailedSource;
 }
 
 public IssueContext getIssueContext() {

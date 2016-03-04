@@ -90,7 +90,7 @@ public abstract class AbstractComponentShape {
 		}
 		return hidden;
 	}
-	public static boolean hasIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
+	public static boolean hasErrorIssues(Displayable owner, MolecularComponentPattern mcp, MolecularComponent mc) {
 		if(issueManager == null) {
 			return false;
 		}
@@ -100,15 +100,14 @@ public abstract class AbstractComponentShape {
 		
 		List<Issue> allIssueList = issueManager.getIssueList();
 		for (Issue issue: allIssueList) {
-			if(issue.getSeverity().ordinal() < Issue.SEVERITY_WARNING.ordinal()) {
+			if(issue.getSeverity() != Issue.Severity.ERROR) {
 				continue;
 			}
-			
 			Object source = issue.getSource();
-			Object source2 = issue.getSource2();
-			if(mcp != null && source == owner && source2 == mcp) {
+			Object detailedSource = issue.getDetailedSource();
+			if(mcp != null && source == owner && detailedSource == mcp) {
 				return true;
-			} else if(mc != null & source == owner && source2 == mc) {
+			} else if(mc != null & source == owner && detailedSource == mc) {
 				return true;
 			}
 		}

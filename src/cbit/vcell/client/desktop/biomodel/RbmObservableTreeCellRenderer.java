@@ -107,7 +107,7 @@ public class RbmObservableTreeCellRenderer extends RbmTreeCellRenderer {
 					icon = VCellIcons.rbmComponentErrorIcon;
 					return this;
 				}
-				if(AbstractComponentShape.hasIssues((RbmObservable)parentObject, mcp, mcp.getMolecularComponent())) {
+				if(AbstractComponentShape.hasErrorIssues((RbmObservable)parentObject, mcp, mcp.getMolecularComponent())) {
 					icon = VCellIcons.rbmComponentErrorIcon;
 				}
 			} else if (userObject instanceof StateLocal) {
