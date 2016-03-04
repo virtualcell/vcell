@@ -13,6 +13,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.linear.RRQRDecomposition;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -22,6 +23,8 @@ import org.vcell.model.rbm.RbmElementAbstract;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.Issue;
+import org.vcell.util.Issue.Severity;
+import org.vcell.util.IssueContext;
 
 import cbit.vcell.client.desktop.biomodel.RbmTreeCellRenderer;
 import cbit.vcell.model.RbmObservable;
@@ -181,15 +184,58 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, height, cornerArc, cornerArc);
-			if(!isHighlighted()) {
-				if(csd == null) {
-					g2.setColor(componentHidden);		// show it gray if it has "any" state
-				} else {
-					g2.setColor(componentPaleYellow);
+			
+			
+			if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+				ReactionRule reactionRule = (ReactionRule)owner;
+				if(csd != null) {
+					Color stateColor = null;
+					switch (shapePanel.hasStateChanged(mcp)){
+					case CHANGED:{
+						stateColor = Color.orange;
+						break;
+					}
+					case UNCHANGED:{
+						stateColor = componentHidden;
+						break;
+					}
+					case ANALYSISFAILED:{
+						ArrayList<Issue> issueList = new ArrayList<Issue>();
+						reactionRule.gatherIssues(new IssueContext(), issueList);
+						boolean bRuleHasErrorIssues = false;
+						for (Issue issue : issueList){
+							if (issue.getSeverity() == Severity.ERROR){
+								bRuleHasErrorIssues = true;
+								break;
+							}
+						}
+						if (bRuleHasErrorIssues) {
+							stateColor = componentHidden;
+						}else{
+							System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+							stateColor = Color.red.darker();
+						}
+						break;
+					}
+					}
+					g2.setColor(stateColor);
+				}else{
+					g2.setColor(componentHidden);
 				}
 			} else {
-				g2.setColor(Color.white);
+				if(!isHighlighted()) {
+					if(csd == null) {
+						g2.setColor(componentHidden);		// show it gray if it has "any" state
+					} else {
+						g2.setColor(componentPaleYellow);
+					}
+				} else {
+					g2.setColor(Color.white);
+				}
+			
 			}
+			
+			
 			g2.fill(normalRectangle);
 			g.setColor(Color.black);
 			g2.draw(normalRectangle);
@@ -443,14 +489,48 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
 			}
 		} else if(owner instanceof ReactionRule) {
-			componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
-			if(mcp.isbVisible()) {
-				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+			ReactionRule reactionRule = (ReactionRule)owner;
+			
+			if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+				switch (shapePanel.hasBondChanged(mcp)){
+				case CHANGED:{
+					componentColor = Color.orange;
+					break;
+				}
+				case UNCHANGED:{
+					componentColor = componentHidden;
+					break;
+				}
+				case ANALYSISFAILED:{
+					ArrayList<Issue> issueList = new ArrayList<Issue>();
+					reactionRule.gatherIssues(new IssueContext(), issueList);
+					boolean bRuleHasErrorIssues = false;
+					for (Issue issue : issueList){
+						if (issue.getSeverity() == Severity.ERROR){
+							bRuleHasErrorIssues = true;
+							break;
+						}
+					}
+					if (bRuleHasErrorIssues) {
+						componentColor = componentHidden;
+					}else{
+						System.err.println("ReactionRule Analysis failed, but there are not Error Issues with ReactionRule "+reactionRule.getName());
+						componentColor = Color.red.darker();
+					}
+					break;
+				}
+				}
+			} else {
+				componentColor = highlight == true ? componentHidden.brighter() : componentHidden;
+				if(mcp.isbVisible()) {
+					componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+				}
+				ComponentStatePattern csp = mcp.getComponentStatePattern();
+				if(csp != null && !csp.isAny()) {
+					componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
+				}
 			}
-			ComponentStatePattern csp = mcp.getComponentStatePattern();
-			if(csp != null && !csp.isAny()) {
-				componentColor = highlight == true ? componentGreen.brighter() : componentGreen;
-			}
+			
 		}
 		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
 			componentColor = highlight == true ? componentBad.brighter() : componentBad;

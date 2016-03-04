@@ -282,7 +282,7 @@ public class NFsimXMLWriter {
 			
 			MathRuleFactory mathRuleFactory = new MathRuleFactory();
 			MathRuleEntry rule = mathRuleFactory.createRuleEntry(particleJumpProcess, reactionRuleIndex);
-			RuleAnalysisReport report = RuleAnalysis.analyze(rule);
+			RuleAnalysisReport report = RuleAnalysis.analyze(rule, true);
 			Element reactionRuleElement = RuleAnalysis.getNFSimXML(rule, report); // remember, we have to add RateLaw
 			
 //			ArrayList<MolecularTypeOfReactionParticipant> currentReactantElementsOfReaction = new ArrayList<MolecularTypeOfReactionParticipant>();

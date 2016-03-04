@@ -14,6 +14,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -24,6 +27,7 @@ import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -93,7 +97,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JButton addReactantButton = null;
 	private JButton addProductButton = null;
-
+	private JCheckBox showDifferencesCheckbox = null;
 	
 	ReactionRulePatternLargeShape reactantShape;
 	ReactionRulePatternLargeShape productShape;
@@ -129,7 +133,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
-		TreeWillExpandListener
+		TreeWillExpandListener, ItemListener
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -205,6 +209,18 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			}
 			if (veto) {
 				throw new ExpandVetoException(e);	// veto root colapse
+			}
+		}
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				System.out.println("Selected");
+				shapePanel.setShowDifferencesOnly(true);
+				shapePanel.repaint();
+			} else {
+				System.out.println("Deselected");
+				shapePanel.setShowDifferencesOnly(false);
+				shapePanel.repaint();
 			}
 		}
 	}
@@ -308,7 +324,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
 			optionsPanel.add(getAddProductButton(), gbc);
-		
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 3;
+			gbc.weighty = 1.0;
+			gbc.insets = new Insets(2,4,4,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.SOUTHWEST;
+			optionsPanel.add(getShowDifferencesCheckbox(), gbc);
+			
 			JPanel containerOfScrollPanel = new JPanel();
 			containerOfScrollPanel.setLayout(new BorderLayout());
 			containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
@@ -616,6 +641,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		return addProductButton;
 	}
+	private JCheckBox getShowDifferencesCheckbox() {
+		if(showDifferencesCheckbox == null) {
+			showDifferencesCheckbox = new JCheckBox("Show Differences");
+			showDifferencesCheckbox.addItemListener(eventHandler);
+		}
+		return showDifferencesCheckbox;
+	}
 
 	private void handleException(java.lang.Throwable exception) {
 
@@ -659,6 +691,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(eventHandler);
 		}
+		shapePanel.setReactionRule(reactionRule);
 		productTreeModel.setReactionRule(reactionRule);
 		reactantTreeModel.setReactionRule(reactionRule);
 		updateInterface();
@@ -769,7 +802,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				JMenuItem addMenuItem = new JMenuItem("Add Reactant");
 				addMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), reactionRule.getStructure())); 
+						reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), reactionRule.getStructure()));
+						shapePanel.repaint();
 					}
 				});
 				popupFromShapeMenu.add(addMenuItem);
@@ -783,7 +817,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 								reactionRule.removeReactant(rp);
 								Structure st = rp.getStructure();
 								if(reactionRule.getReactantPatterns().isEmpty()) {
-									reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), st)); 
+									reactionRule.addReactant(new ReactantPattern(new SpeciesPattern(), st));
+									shapePanel.repaint();
 								}
 							}
 						}
@@ -806,6 +841,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 								mcp.setBondType(BondType.Possible);
 							}
 							sp.addMolecularTypePattern(molecularTypePattern);
+							shapePanel.repaint();
 						}
 					});
 				}
@@ -875,6 +911,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
 						sp.removeMolecularTypePattern(mtp);
+						shapePanel.repaint();
 					}
 				});
 				popupFromShapeMenu.add(deleteMenuItem);
@@ -933,7 +970,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				JMenuItem addMenuItem = new JMenuItem("Add Product");
 				addMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), reactionRule.getStructure())); 
+						reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), reactionRule.getStructure()));
+						shapePanel.repaint();
 					}
 				});
 				popupFromShapeMenu.add(addMenuItem);
@@ -947,7 +985,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 								reactionRule.removeProduct(pp);
 								Structure st = pp.getStructure();
 								if(reactionRule.getProductPatterns().isEmpty()) {
-									reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), st)); 
+									reactionRule.addProduct(new ProductPattern(new SpeciesPattern(), st));
+									shapePanel.repaint();
 								}
 							}
 						}
@@ -970,6 +1009,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 								mcp.setBondType(BondType.Possible);
 							}
 							sp.addMolecularTypePattern(molecularTypePattern);
+							shapePanel.repaint();
 						}
 					});
 				}
@@ -1039,6 +1079,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
 						SpeciesPattern sp = locationContext.sps.getSpeciesPattern();
 						sp.removeMolecularTypePattern(mtp);
+						shapePanel.repaint();
 					}
 				});
 				popupFromShapeMenu.add(deleteMenuItem);
@@ -1239,7 +1280,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 							productTreeModel.populateTree();
 						}
 						treeModel.populateTree();
-//						shapePanel.repaint();
+						shapePanel.repaint();
 					}
 				});
 			}
@@ -1377,7 +1418,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						productTreeModel.populateTree();
 					}
 					treeModel.populateTree();
-//					shapePanel.repaint();				
+					shapePanel.repaint();				
 				}
 			});
 			index++;

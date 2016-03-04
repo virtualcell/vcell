@@ -211,7 +211,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			String identifier = RuleAnalysis.getID(mathRuleEntry);
 			Element rreTheirs = ruleElementMap.get(identifier);
 			
-			RuleAnalysisReport report = RuleAnalysis.analyze(mathRuleEntry);
+			RuleAnalysisReport report = RuleAnalysis.analyze(mathRuleEntry, true);
 			Element rreOurs = RuleAnalysis.getNFSimXML(mathRuleEntry, report);
 
 			compareOperations(rreTheirs, rreOurs);
