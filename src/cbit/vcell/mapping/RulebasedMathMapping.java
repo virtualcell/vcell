@@ -871,7 +871,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
         MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
         ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);	// compare the xml from BioNetGen with the one we build
         
-        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule);
+        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule, true);
         Set<String> ours = mathReport.getSummaryAsSet();
         Set<String> theirs = getSummaryAsSet(rrarBiomodelForward);
         if (compareSets(ours, theirs) == true){
