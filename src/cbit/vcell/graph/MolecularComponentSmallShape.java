@@ -140,7 +140,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 //			// comment this out if don't want to show the states at all
 //			componentColor = componentYellow;
 //		}
-		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
+		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
 			componentColor = componentBad;
 		}
 		return componentColor;
