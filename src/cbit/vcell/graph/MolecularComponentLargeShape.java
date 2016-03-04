@@ -532,7 +532,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			}
 			
 		}
-		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
+		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
 			componentColor = highlight == true ? componentBad.brighter() : componentBad;
 		}
 		return componentColor;
@@ -585,7 +585,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		RoundRectangle2D normalRectangle = new RoundRectangle2D.Float(xPos, yPos, width, baseHeight, cornerArc, cornerArc);
 		RoundRectangle2D innerRectangle = new RoundRectangle2D.Float(xPos+1, yPos+1, width-2, baseHeight-2, cornerArc-2, cornerArc-2);
 		g2.fill(normalRectangle);
-		if(AbstractComponentShape.hasIssues(owner, mcp, mc)) {
+		if(AbstractComponentShape.hasErrorIssues(owner, mcp, mc)) {
 			g2.setColor(Color.red);
 		} else {
 			if(hidden == false) {

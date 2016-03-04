@@ -309,7 +309,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				continue;	// nothing to do here, we already fired an issue about component missing 
 			} else if(mcThatList.length > 1) {
 				String msg = "Multiple " + MolecularComponent.typeName + "s with the same name are not yet supported.";
-				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+				issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, msg, Issue.SEVERITY_ERROR));
 			} else {	// found exactly 1 component
 				MolecularComponent mcThat = mcThatList[0];
 				List<ComponentStateDefinition> csdListThat = mcThat.getComponentStateDefinitions();
@@ -319,7 +319,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 					}
 					if(!cspThis.isAny() || (cspThis.getComponentStateDefinition() != null)) {
 						String msg = MolecularComponentPattern.typeName + " " + mcNameThis + " is in an invalid State.";
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+						issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, msg, Issue.SEVERITY_WARNING));
 					}
 				} else {						// we check if mcpThis has any of these states... it should!
 					if((cspThis == null) || cspThis.isAny() || (cspThis.getComponentStateDefinition() == null)) {
@@ -329,7 +329,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 						String csdNameThis = cspThis.getComponentStateDefinition().getName();
 						if(csdNameThis.isEmpty() || (mcThat.getComponentStateDefinition(csdNameThis) == null) ) {
 							String msg = "Invalid State " + csdNameThis + " for component pattern " + mcNameThis;
-							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
+							issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, msg, Issue.SEVERITY_WARNING));
 						}
 					}
 				}
@@ -1105,7 +1105,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 					if(incompatibleBonds) {
 						String message = "Reactant " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
 						message += " and its matching Product " + MolecularComponentPattern.typeName + " " + mcpProduct.getDisplayName() + " have incompatible Bond Types.";
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+						issueList.add(new Issue(this, mcpProduct, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
 					}
 					boolean incompatibleStates = true;
 					if(mcpReactant.getMolecularComponent().getComponentStateDefinitions().isEmpty()) {
@@ -1113,9 +1113,13 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 					} else {
 						ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
 						ComponentStatePattern cspProduct = mcpProduct.getComponentStatePattern();
-						if(cspReactant == null || cspProduct == null) {
+						if(cspReactant == null) {
 							String message = "Required " + ComponentStatePattern.typeName + " missing for " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
-							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+							issueList.add(new Issue(this, mcpReactant, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
+						}
+						if(cspProduct == null) {
+							String message = "Required " + ComponentStatePattern.typeName + " missing for " + MolecularComponentPattern.typeName + " " + mcpProduct.getDisplayName();
+							issueList.add(new Issue(this, mcpProduct, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));
 						}
 						if(cspReactant.isAny() && cspProduct.isAny()) {
 							incompatibleStates = false;
@@ -1125,7 +1129,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 						if(incompatibleStates) {
 							String message = "Reactant " + MolecularComponentPattern.typeName + " " + mcpReactant.getDisplayName();
 							message += " and its matching Product " + MolecularComponentPattern.typeName + " " + mcpProduct.getDisplayName() + " have incompatible States";
-							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));						}
+							issueList.add(new Issue(this, mcpProduct, issueContext, IssueCategory.Identifiers, message, message, Issue.Severity.ERROR));						}
 					}
 				}
 			}
