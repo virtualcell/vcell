@@ -491,7 +491,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		} else if(owner instanceof ReactionRule) {
 			ReactionRule reactionRule = (ReactionRule)owner;
 			
-			if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
+			if(shapePanel.isShowDifferencesOnly()) {
 				switch (shapePanel.hasBondChanged(mcp)){
 				case CHANGED:{
 					componentColor = Color.orange;
