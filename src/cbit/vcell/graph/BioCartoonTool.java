@@ -363,8 +363,8 @@ public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	}
 	
 	private static Structure matchMembraneAdjacentStructure(Structure[] toAllStructures,Structure currentStruct,Structure rxPartStruct,StructureTopology structTopology,StructureTopology toStructureTopology,Membrane oldMembr,Structure pasteToStruct){
-		if(rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName()) ||
-			rxPartStruct.getName().equals(structTopology.getInsideFeature(oldMembr).getName())){
+		if((structTopology.getOutsideFeature(oldMembr) != null && rxPartStruct.getName().equals(structTopology.getOutsideFeature(oldMembr).getName())) ||
+			(structTopology.getInsideFeature(oldMembr) != null && rxPartStruct.getName().equals(structTopology.getInsideFeature(oldMembr).getName()))){
 			for(Structure struct:toAllStructures){
 				if(struct.getName().equals(rxPartStruct.getName())){
 					return struct;
