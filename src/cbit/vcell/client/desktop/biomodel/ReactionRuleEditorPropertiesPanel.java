@@ -16,7 +16,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -70,6 +69,7 @@ import cbit.vcell.graph.MolecularTypeLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionRulePatternLargeShape;
+import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
@@ -105,7 +105,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 //	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 //	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
-	private LargeShapePanel shapePanel;
+	private RulesShapePanel shapePanel;
 	private JScrollPane scrollPane;
 	private JPanel productPanel;
 	private JPanel reactantPanel;
@@ -233,7 +233,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private static int yDividerLocation = 100;
 	private void initialize() {
 		try {
-			shapePanel = new LargeShapePanel() {
+			shapePanel = new RulesShapePanel() {
 				@Override
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);

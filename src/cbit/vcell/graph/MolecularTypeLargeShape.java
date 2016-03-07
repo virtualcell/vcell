@@ -340,7 +340,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				if(shapePanel.isShowDifferencesOnly() && owner instanceof ReactionRule) {
 					ReactionRule reactionRule = (ReactionRule)owner;
 
-					switch (shapePanel.hasNoMatch(mtp)){
+					switch (((RulesShapePanel)shapePanel).hasNoMatch(mtp)){
 					case CHANGED:{
 						primaryColor = Color.orange;
 						break;
