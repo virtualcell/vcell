@@ -190,7 +190,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				ReactionRule reactionRule = (ReactionRule)owner;
 				if(csd != null) {
 					Color stateColor = null;
-					switch (shapePanel.hasStateChanged(mcp)){
+					switch (((RulesShapePanel)shapePanel).hasStateChanged(mcp)){
 					case CHANGED:{
 						stateColor = Color.orange;
 						break;
@@ -492,7 +492,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 			ReactionRule reactionRule = (ReactionRule)owner;
 			
 			if(shapePanel.isShowDifferencesOnly()) {
-				switch (shapePanel.hasBondChanged(mcp)){
+				switch (((RulesShapePanel)shapePanel).hasBondChanged(mcp)){
 				case CHANGED:{
 					componentColor = Color.orange;
 					break;
