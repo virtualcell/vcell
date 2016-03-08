@@ -47,6 +47,7 @@ import cbit.vcell.biomodel.meta.IdentifiableProvider;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.BioModelEntityObject;
@@ -1181,5 +1182,13 @@ public SimulationContext getSimulationContext(String name) {
 		}
 
 		return references;
+	}
+
+	private transient RulesShapePanel rulesShapeManager = null;
+	public void setRulesShapeManager(RulesShapePanel rulesShapeManager) {
+		this.rulesShapeManager = rulesShapeManager;
+	}
+	public RulesShapePanel getRulesShapeManager() {
+		return rulesShapeManager;
 	}
 }

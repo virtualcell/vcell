@@ -232,10 +232,7 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 				} else {
 					g2.setColor(Color.white);
 				}
-			
 			}
-			
-			
 			g2.fill(normalRectangle);
 			g.setColor(Color.black);
 			g2.draw(normalRectangle);
