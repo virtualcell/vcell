@@ -501,7 +501,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 
 		splitPaneHorizontal.setTopComponent(scrollPane);
 		splitPaneHorizontal.setBottomComponent(generalPanel);
-
+		splitPaneHorizontal.setResizeWeight(0.9d);
+		splitPaneHorizontal.setDividerLocation(0.8d);
+		
 // -------------------------------------------------------------------------------------------------		
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setLeftComponent(leftPanel);
