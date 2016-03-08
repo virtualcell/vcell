@@ -45,6 +45,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 	private final AbstractShape parentShape = null;
 	private Displayable owner;
 	private SpeciesPattern sp;
+	private LargeShapePanel shapeManager = null;
 	private String startText = new String();	// we display this before the Shape (positioned left of xPos - attention!)
 	private String endText = new String();		// we display this after the Shape, it's position is outside "width"
 	
@@ -54,27 +55,31 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		normal,
 		highlightBonds,
 	}
-	
 	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, Graphics graphicsContext, Displayable owner,
+			boolean isSelected) {
+		this(xPos, yPos, sp, null, graphicsContext, owner, isSelected);
+	}
+	public SpeciesPatternSmallShape(int xPos, int yPos, SpeciesPattern sp, LargeShapePanel shapeManager, Graphics graphicsContext, Displayable owner,
 			boolean isSelected) {
 		this.owner = owner;
 		this.sp = sp;
 		this.xPos = xPos;
 		this.yPos = yPos;
+		this.shapeManager = shapeManager;
 		this.graphicsContext = graphicsContext;
 		this.isSelected = isSelected;
 
 		int xPattern = xPos;
 		if(sp == null) {
 			// plain species context, no pattern
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this);
 			speciesShapes.add(stls);
 			return;
 		}
 		int numPatterns = sp.getMolecularTypePatterns().size();
 		for(int i = 0; i<numPatterns; i++) {
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(i);
-			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, graphicsContext, owner, this);
+			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, mtp, shapeManager, graphicsContext, owner, this);
 			xPattern += stls.getWidth() + separationWidth; 
 			speciesShapes.add(stls);
 		}
