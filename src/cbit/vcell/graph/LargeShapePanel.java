@@ -28,11 +28,8 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 
 	public static enum Highlight { on, off }
 	public static enum WhatIsHighlighted { reactant, product }
-	
-	// here we store the entity that needs to be displayed highlighted (selected object and maybe its container)
-	
 	// the entity that is selected (for example a molecule, component, a state, a pattern...)
-	// that and will be painted as "highlighted"
+	// and will be painted as "highlighted"
 	public ReactionRule rr = null;
 	public WhatIsHighlighted whatIsHighlighted = WhatIsHighlighted.reactant;
 	public RbmObservable o = null;

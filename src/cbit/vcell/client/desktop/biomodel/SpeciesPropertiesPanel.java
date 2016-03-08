@@ -982,7 +982,7 @@ private void updateShape() {
 			for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 				JMenuItem menuItem = new JMenuItem(mt.getName());
 				Graphics gc = shapePanel.getGraphics();
-				Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
+				Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
 				menuItem.setIcon(icon);
 				addMenuItem.add(menuItem);
 				menuItem.addActionListener(new ActionListener() {
@@ -1294,7 +1294,7 @@ private void updateShape() {
 				for (final MolecularType mt : bioModel.getModel().getRbmModelContainer().getMolecularTypeList()) {
 					JMenuItem menuItem = new JMenuItem(mt.getName());
 					Graphics gc = splitPane.getRightComponent().getGraphics();
-					Icon icon = new MolecularTypeSmallShape(1, 4, mt, gc, mt, null);
+					Icon icon = new MolecularTypeSmallShape(1, 4, mt, null, gc, mt, null);
 					menuItem.setIcon(icon);
 					getAddMenu().add(menuItem);
 					menuItem.addActionListener(new ActionListener() {

@@ -912,7 +912,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							MolecularType mt = (MolecularType)selectedObject;
 							Graphics cellContext = table.getGraphics();
 							if(mt != null) {
-								stls = new MolecularTypeSmallShape(4, 3, mt, cellContext, mt, null);
+								stls = new MolecularTypeSmallShape(4, 3, mt, null, cellContext, mt, null);
 							}
 						}
 					} else {
@@ -988,7 +988,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							int xPos = 4;
 							for(int i = 0; i<rpList.size(); i++) {
 								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
 								if(i < rpList.size()-1) {
 									spss.addEndText("+");
 								} else {
@@ -1007,7 +1007,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
 								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
-								spss = new SpeciesPatternSmallShape(xPos, 2, sp, panelContext, rr, isSelected);
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
