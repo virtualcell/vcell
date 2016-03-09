@@ -49,9 +49,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		Color.green
 	};
 	
-	private static final int baseWidth = 38;
+	private static final int baseWidth = 25;
 	private static final int baseHeight = 30;
 	private static final int cornerArc = 30;
+	private static final int compartmentOffset = 13;	// the first molecule in the species pattern is wider to provide space to draw the compartment
 
 	private boolean pattern;			// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
@@ -79,7 +80,7 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		this.shapePanel = shapePanel;
 		this.name = "";
 
-		width = baseWidth+4;	// we write no name inside, we'll just draw a roundish green shape
+		width = baseWidth+4;	// width is ignored, we write no name inside, we'll just draw a roundish green shape
 		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 	}
 	// this is only called for molecular type
@@ -121,8 +122,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			componentShapes.add(0, mlcls);
 		}
 	}
-	// called for species contexts (with patterns) and observable
-	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner) {
+	// called for species patterns (rules, species, observables)
+	public MolecularTypeLargeShape(int xPos, int yPos, MolecularTypePattern mtp, LargeShapePanel shapePanel, Displayable owner, int positionInPattern) {
 		this.owner = owner;
 		this.pattern = true;
 		this.mt = mtp.getMolecularType();
@@ -130,6 +131,12 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.shapePanel = shapePanel;
+		
+		// we adjust the width of the first molecule in the species pattern to make space for the compartment depiction
+		width = baseWidth;
+		if(positionInPattern == 0) {
+			width += compartmentOffset;
+		}
 		
 		int numComponents = mt.getComponentList().size();	// components
 		int offsetFromRight = 0;		// total width of all components, based on the length of their names
@@ -141,8 +148,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
 		}
 		name = adjustForSize();
-		width = baseWidth + offsetFromRight;	// adjusted for # of components
-		width += getStringWidth(name);				// adjust for the length of the name of the molecular type
+		width += offsetFromRight;				// adjusted for # of components
+		width += getStringWidth(name);			// adjust for the length of the name of the molecular type
 		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
 		
 		int fixedPart = xPos + width;
