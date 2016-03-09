@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.vcell.util.BigString;
+import org.vcell.util.CoordinateIndex;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
@@ -49,6 +50,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -205,6 +207,37 @@ public class HybridSolverTester {
 			
 	}
 	
+	public static ArrayList<Integer> calcSimLocs(String csSimLocs,CartesianMesh mesh){
+		ArrayList<Integer> simLocs = new ArrayList<Integer>();
+		StringTokenizer st = new StringTokenizer(csSimLocs, ":");
+		while(st.hasMoreTokens()){
+			String token = st.nextToken();
+			if(token.contains(",")){//box
+				CoordinateIndex coord0,coord1;
+				StringTokenizer st2 = new StringTokenizer(token, ",");
+				int volIndex = Integer.parseInt(st2.nextToken());
+				coord0 = mesh.getCoordinateIndexFromVolumeIndex(volIndex);
+				volIndex = Integer.parseInt(st2.nextToken());
+				coord1 = mesh.getCoordinateIndexFromVolumeIndex(volIndex);
+				for (int z = coord0.z; (coord0.z<coord1.z?z <= coord1.z:z >= coord1.z); z+= (Integer.signum(coord1.z-coord0.z)==0?-1:Integer.signum(coord1.z-coord0.z))) {
+					
+					for (int y = coord0.y; (coord0.y<coord1.y?y <= coord1.y:y >= coord1.y); y+= (Integer.signum(coord1.y-coord0.y)==0?-11:Integer.signum(coord1.y-coord0.y))) {
+						
+						for (int x = coord0.x; (coord0.x<coord1.x?x <= coord1.x:x >= coord1.x); x+= (Integer.signum(coord1.x-coord0.x)==0?-1:Integer.signum(coord1.x-coord0.x))) {
+							
+							int location = mesh.getVolumeIndex(new CoordinateIndex(x, y, z));
+							simLocs.add(location);
+						}
+					}
+				}
+			}else{//points
+				int location = Integer.parseInt(token);
+				simLocs.add(location);
+			}
+		}
+		return simLocs;
+	}
+	
 	private static void makeAltCSV(String csTimes,String csSimLocs,String csSimVars,FileWriter fw,String user,String simID,boolean bInit,File userSimDataDir) throws Exception{
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(simID), new User(user, null));
 		final String prefix = "SimID_"+simID+"_";
@@ -216,12 +249,13 @@ public class HybridSolverTester {
 			simTimes.add(timePoint);
 		}
 		
-		ArrayList<Integer> simLocs = new ArrayList<Integer>();
-		st = new StringTokenizer(csSimLocs, ":");
-		while(st.hasMoreTokens()){
-			int location = Integer.parseInt(st.nextToken());
-			simLocs.add(location);
-		}
+		ArrayList<Integer> simLocs = null;
+//		ArrayList<Integer> simLocs = new ArrayList<Integer>();
+//		st = new StringTokenizer(csSimLocs, ":");
+//		while(st.hasMoreTokens()){
+//			int location = Integer.parseInt(st.nextToken());
+//			simLocs.add(location);
+//		}
 		
 		ArrayList<String> simVars = new ArrayList<String>();
 		st = new StringTokenizer(csSimVars, ":");
@@ -233,7 +267,6 @@ public class HybridSolverTester {
 		int jobCounter = 0;
 		final int TIME_SPACE_EXTRA = 1;
 		while(true){
-			double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
 			SimulationData simData = null;
 			try{
@@ -246,6 +279,10 @@ public class HybridSolverTester {
 				}
 				break;
 			}
+			if(simLocs == null){
+				simLocs = calcSimLocs(csSimLocs,simData.getMesh());
+			}
+			double[][][] trialData = new double[simTimes.size()][simLocs.size()][simVars.size()];
 			if(jobCounter == 0){
 				//Convert user input times to actual data times
 				double[] allDatasetTimes = simData.getDataTimes();
