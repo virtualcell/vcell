@@ -221,7 +221,7 @@ public class HybridSolverTester {
 				coord1 = mesh.getCoordinateIndexFromVolumeIndex(volIndex);
 				for (int z = coord0.z; (coord0.z<coord1.z?z <= coord1.z:z >= coord1.z); z+= (Integer.signum(coord1.z-coord0.z)==0?-1:Integer.signum(coord1.z-coord0.z))) {
 					
-					for (int y = coord0.y; (coord0.y<coord1.y?y <= coord1.y:y >= coord1.y); y+= (Integer.signum(coord1.y-coord0.y)==0?-11:Integer.signum(coord1.y-coord0.y))) {
+					for (int y = coord0.y; (coord0.y<coord1.y?y <= coord1.y:y >= coord1.y); y+= (Integer.signum(coord1.y-coord0.y)==0?-1:Integer.signum(coord1.y-coord0.y))) {
 						
 						for (int x = coord0.x; (coord0.x<coord1.x?x <= coord1.x:x >= coord1.x); x+= (Integer.signum(coord1.x-coord0.x)==0?-1:Integer.signum(coord1.x-coord0.x))) {
 							
