@@ -237,6 +237,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		panel1.add(entityName1, gbc);
 
+		gbc = new GridBagConstraints();
 		searchSabioDatabaseButton = new JButton("Search");
 		searchSabioDatabaseButton.addActionListener(eventHandler);
 		searchSabioDatabaseButton.setEnabled(true);
