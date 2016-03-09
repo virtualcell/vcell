@@ -1045,6 +1045,7 @@ public class RbmUtils {
 						}
 						reactionRuleNames.add(reactionRuleName);
 						line = reactionRuleName + ":" + line;
+						sb.append(line + "\n");
 					} else {
 						sb.append(line + "\n");		// rule has label, we keep it as it is
 					}
