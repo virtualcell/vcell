@@ -1189,6 +1189,7 @@ public SimulationContext getSimulationContext(String name) {
 		this.rulesShapeManager = rulesShapeManager;
 	}
 	public RulesShapePanel getRulesShapeManager() {
-		return rulesShapeManager;
+		return null;
+//		return rulesShapeManager;
 	}
 }
