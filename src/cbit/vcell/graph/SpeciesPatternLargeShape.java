@@ -252,11 +252,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		return false;
 	}
 
-	static public void paintContour(Graphics g, Rectangle2D rect) {
+	@Deprecated
+	public void paintContour(Graphics g, Rectangle2D rect) {
+
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
-		int yPos = 0;
 			
 		Color paleBlue = Color.getHSBColor(0.6f, 0.05f, 1.0f);		// hue, saturation, brightness
 		Color darkerBlue = Color.getHSBColor(0.6f, 0.12f, 1.0f);	// a bit darker for border
@@ -270,6 +271,10 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		g2.setColor(colorOld);
 	}
 	public void paintContour(Graphics g) {
+		// we don't show contour when we display single row (view only, no edit)
+		if(shapePanel == null || shapePanel.isViewSingleRow()) {
+			return;
+		}
 		if(height == -1) {
 			height = defaultHeight;
 		}

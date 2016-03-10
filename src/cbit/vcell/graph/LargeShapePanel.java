@@ -17,14 +17,7 @@ import cbit.vcell.model.ReactionRule;
 public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	
 	private boolean showDifferencesOnly = false;
-	@Override
-	public boolean isShowDifferencesOnly() {
-		return showDifferencesOnly;
-	}
-	@Override
-	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
-		this.showDifferencesOnly = showDifferencesOnly;
-	}
+	private boolean bViewSingleRow = false;
 
 	public static enum Highlight { on, off }
 	public static enum WhatIsHighlighted { reactant, product }
@@ -41,6 +34,22 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	public ComponentStateDefinition csd = null;
 	public ComponentStatePattern csp = null;
 	// bonds are not being highlighted
+	
+	@Override
+	public boolean isShowDifferencesOnly() {
+		return showDifferencesOnly;
+	}
+	@Override
+	public void setShowDifferencesOnly(boolean showDifferencesOnly) {
+		this.showDifferencesOnly = showDifferencesOnly;
+	}
+	public boolean isViewSingleRow() {
+		return bViewSingleRow;
+	}
+	public void setViewSingleRow(boolean bViewSingleRow) {
+		this.bViewSingleRow = bViewSingleRow;
+	}
+	// ----------------------------------------------------------------------------------------------------
 	
 	public void resetSpeciesPattern() {
 		sp = null;
