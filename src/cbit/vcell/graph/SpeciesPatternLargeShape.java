@@ -317,7 +317,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		} else {
 			return;		// other things don't have structure
 		}
+		
 		if(structure == null) {
+			return;
+		}
+		// the fake flattened reactions we show in Specifications / Network Constraints / View
+		// don't have a real structure, so we show them structureless (for now)
+		if(structure.getName() == null) {
 			return;
 		}
 		
