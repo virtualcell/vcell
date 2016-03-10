@@ -28,6 +28,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -98,6 +99,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JButton addReactantButton = null;
 	private JButton addProductButton = null;
 	private JCheckBox showDifferencesCheckbox = null;
+	private JCheckBox viewSingleRowCheckbox = null;
 	
 	ReactionRulePatternLargeShape reactantShape;
 	ReactionRulePatternLargeShape productShape;
@@ -213,14 +215,21 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void itemStateChanged(ItemEvent e) {
-			if(e.getStateChange() == ItemEvent.SELECTED) {
-				System.out.println("Selected");
-				shapePanel.setShowDifferencesOnly(true);
-				shapePanel.repaint();
-			} else {
-				System.out.println("Deselected");
-				shapePanel.setShowDifferencesOnly(false);
-				shapePanel.repaint();
+			if(e.getSource() == getShowDifferencesCheckbox()) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					shapePanel.setShowDifferencesOnly(true);
+					shapePanel.repaint();
+				} else {
+					shapePanel.setShowDifferencesOnly(false);
+					shapePanel.repaint();
+				}
+			} else if(e.getSource() == getViewSingleRowCheckbox()) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					shapePanel.setViewSingleRow(true);
+				} else {
+					shapePanel.setViewSingleRow(false);
+				}
+				updateInterface();
 			}
 		}
 	}
@@ -245,6 +254,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					super.mouseClicked(e);
+					if(viewSingleRowCheckbox.isSelected()) {
+						return;
+					}
 					if(e.getButton() == 1) {		// left click selects the object (we highlight it)
 						Point whereClicked = e.getPoint();
 						PointLocationInShapeContext locationContext = new PointLocationInShapeContext(whereClicked);
@@ -305,7 +317,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			
 			JPanel optionsPanel = new JPanel();
-			optionsPanel.setPreferredSize(new Dimension(110, 200));
+			optionsPanel.setPreferredSize(new Dimension(120, 200));
 			optionsPanel.setLayout(new GridBagLayout());
 			
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -319,17 +331,35 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 1;
-			gbc.weighty = 1.0;
+//			gbc.weighty = 1.0;
 			gbc.insets = new Insets(2,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
 			optionsPanel.add(getAddProductButton(), gbc);
 			
+			
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.weightx = 1;
+			gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.insets = new Insets(4, 4, 4, 10);
+			optionsPanel.add(new JLabel(""), gbc);
+
+			
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 3;
-			gbc.weighty = 1.0;
-			gbc.insets = new Insets(2,4,4,4);
+			gbc.insets = new Insets(2,4,0,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.SOUTHWEST;
+			optionsPanel.add(getViewSingleRowCheckbox(), gbc);
+		
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 4;
+			gbc.insets = new Insets(0,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;
 			optionsPanel.add(getShowDifferencesCheckbox(), gbc);
@@ -648,6 +678,13 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		return showDifferencesCheckbox;
 	}
+	private JCheckBox getViewSingleRowCheckbox() {
+		if(viewSingleRowCheckbox == null) {
+			viewSingleRowCheckbox = new JCheckBox("Single Row View");
+			viewSingleRowCheckbox.addItemListener(eventHandler);
+		}
+		return viewSingleRowCheckbox;
+	}
 
 	private void handleException(java.lang.Throwable exception) {
 
@@ -711,19 +748,31 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	public static final int yOffsetReactantInitial = 8;
 	public static final int yOffsetProductInitial = 100;
 	public static final int ReservedSpaceForNameOnYAxis = 10;
+	
 	private void updateShape() {
 		int maxXOffset;
 		
-		reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
-		maxXOffset = Math.max(xOffsetInitial, reactantShape.getXOffset());
-		
-		productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, shapePanel, reactionRule, false);
-		maxXOffset = Math.max(maxXOffset, productShape.getXOffset());
+		if(viewSingleRowCheckbox.isSelected()) {
+			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
+			int xOffset = reactantShape.getRightEnd() + 70;
+			
+			productShape = new ReactionRulePatternLargeShape(xOffset, yOffsetReactantInitial, -1, shapePanel, reactionRule, false);
+			xOffset += productShape.getRightEnd();
 
-		// TODO: instead of offset+100 compute the exact width of the image
-		Dimension preferredSize = new Dimension(maxXOffset+90, yOffsetProductInitial+80+20);
-		shapePanel.setPreferredSize(preferredSize);
-
+			// TODO: instead of offset+100 compute the exact width of the image
+			Dimension preferredSize = new Dimension(xOffset+90, yOffsetReactantInitial+80+20);
+			shapePanel.setPreferredSize(preferredSize);
+			
+		} else {
+			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
+			maxXOffset = Math.max(xOffsetInitial, reactantShape.getXOffset());
+			
+			productShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetProductInitial, -1, shapePanel, reactionRule, false);
+			maxXOffset = Math.max(maxXOffset, productShape.getXOffset());
+	
+			Dimension preferredSize = new Dimension(maxXOffset+90, yOffsetProductInitial+80+20);
+			shapePanel.setPreferredSize(preferredSize);
+		}
 		splitPaneHorizontal.getTopComponent().repaint();
 	}
 	

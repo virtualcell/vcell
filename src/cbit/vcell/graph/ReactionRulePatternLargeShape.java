@@ -40,7 +40,8 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		this.shapePanel = shapePanel;
 		this.rr = (ReactionRule)owner;
 		this.isReactants = isReactants;
-		this.xOffset = ReactionRuleEditorPropertiesPanel.xOffsetInitial;
+//		this.xOffset = ReactionRuleEditorPropertiesPanel.xOffsetInitial+xPos;
+		this.xOffset = xPos;
 		
 		speciesPatternShapeList.clear();
 		ReactionRule rr = (ReactionRule)owner;
@@ -95,6 +96,19 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	}
 	public int getXOffset() {
 		return xOffset;
+	}
+	public int getRightEnd(){		// get the x of the right end of the species pattern
+		if(speciesPatternShapeList.isEmpty()) {
+			return xPos + MolecularTypeLargeShape.getDummyWidth();
+		}
+		int xRightmostMolecularType = 0;
+		for(SpeciesPatternLargeShape spls : speciesPatternShapeList) {
+			int theirs = spls.getRightEnd();
+			if(xRightmostMolecularType < theirs) {
+				xRightmostMolecularType = theirs;
+			}
+		}
+		return xRightmostMolecularType;
 	}
 	
 	public boolean contains(PointLocationInShapeContext locationContext) {
@@ -176,6 +190,10 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		g2.setColor(colorOld);
 	}
 	public void paintContour(Graphics g) {
+		
+		 if(shapePanel.isViewSingleRow()) {
+			 return;
+		 }
 		if(height == -1) {
 			height = 80;
 		}
@@ -193,23 +211,38 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern
 		Rectangle2D rect = new Rectangle2D.Double(xSp-1, ySP-1, 2000, hSP+2);
-		if(isHighlightedReactants() && isReactants) {
-			g2.setColor(darkerBlue);
-			g2.draw(rect);
-		} else if(!isHighlightedReactants() && isReactants) {
-//			g2.setPaint(Color.white);
-//			g2.fill(rect);
-			g2.setColor(Color.white);
-			g2.draw(rect);
-		}
-		else if(isHighlightedProducts() && !isReactants) {
-			g2.setColor(darkerBlue);
-			g2.draw(rect);
-		} else if(!isHighlightedProducts() && !isReactants) {
-//			g2.setPaint(Color.white);
-//			g2.fill(rect);
-			g2.setColor(Color.white);
-			g2.draw(rect);
+		
+		if(shapePanel == null || shapePanel.isViewSingleRow()) {
+			// we don't show contour when we display single row (view only, no edit), hence always paint white
+			if(isHighlightedReactants() && isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			} else if(!isHighlightedReactants() && isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			}
+			else if(isHighlightedProducts() && !isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			} else if(!isHighlightedProducts() && !isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			}
+		} else {
+			if(isHighlightedReactants() && isReactants) {
+				g2.setColor(darkerBlue);
+				g2.draw(rect);
+			} else if(!isHighlightedReactants() && isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			}
+			else if(isHighlightedProducts() && !isReactants) {
+				g2.setColor(darkerBlue);
+				g2.draw(rect);
+			} else if(!isHighlightedProducts() && !isReactants) {
+				g2.setColor(Color.white);
+				g2.draw(rect);
+			}
 		}
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);

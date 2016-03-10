@@ -499,6 +499,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 				return false;
 			}
 		} else if(owner instanceof ReactionRule) {
+			// we don't highlight when we display single row (view only, no edit), hence no selection
+			if(shapePanel == null || shapePanel.isViewSingleRow()) {
+				return false;
+			}
 			return shapePanel.isHighlighted(mtp);
 		} else {
 			System.out.println("Unexpected owner: " + owner);
