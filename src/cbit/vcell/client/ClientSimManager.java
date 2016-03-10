@@ -295,6 +295,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 								dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
 							}	
 							dataViewerController = new SimResultsViewerController(dataManager, sim);
+							dataSetControllerImpl.addDataJobListener(documentWindowManager);
 						}
 						// make the viewer
 						dataViewerControllers.put(vcSimulationIdentifier, dataViewerController);
