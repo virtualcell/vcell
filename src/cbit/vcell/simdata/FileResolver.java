@@ -163,8 +163,9 @@ public class FileResolver {
 		String end = MovingBoundarySolver.MOVING_BOUNDARY_FILE_END;
 		NameResolve nr = new NameResolve(String.join("_","SimID",sk.toString(),Integer.toString(ji), end),sameId,true);
 		rval.add( nr);
-
-		rval.add( new NameResolve(SimulationData.createCanonicalSimLogFileName(sk,ji,true),FileResolver::toOldStyle) );
+		if(ji == 0){//only jobindex=0 can be 'oldStyle'
+			rval.add( new NameResolve(SimulationData.createCanonicalSimLogFileName(sk,ji,true),FileResolver::toOldStyle) );
+		}
 		return rval;
 	}
 }
