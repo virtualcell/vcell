@@ -111,7 +111,9 @@ public class SimulationData extends VCData {
 				throw new FileNotFoundException("If secondaryUserDir defined it must exist and be a directory");
 			}
 			fileResolve.registerDirectory(primaryUserDir);
-			fileResolve.registerDirectory(secondaryUserDir);
+			if(secondaryUserDir != null){
+				fileResolve.registerDirectory(secondaryUserDir);
+			}
 			LocInfo locInfo = fileResolve.getLocation(argVCDataID);
 			simulationKey = locInfo.simulationKey;
 			userDirectory = locInfo.directory;
