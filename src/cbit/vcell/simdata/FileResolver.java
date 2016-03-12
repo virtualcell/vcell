@@ -1,6 +1,7 @@
 package cbit.vcell.simdata;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -77,7 +78,7 @@ public class FileResolver {
 		directories.add(f);
 	}
 
-	public LocInfo getLocation(VCDataIdentifier di) {
+	public LocInfo getLocation(VCDataIdentifier di) throws FileNotFoundException{
 		Objects.requireNonNull(di);
 		VCKeyDataIdentifier kdi = BeanUtils.downcast(VCKeyDataIdentifier.class, di);
 		if (kdi != null) {
@@ -106,7 +107,7 @@ public class FileResolver {
 					lsb.newline();
 				}
 			}
-			throw new RuntimeException(lsb.toString());
+			throw new FileNotFoundException(lsb.toString());
 		}
 		throw new RuntimeException(di + " of type " + di.getClass().getName() + " not VCKeyDataIdentifier");
 	}
