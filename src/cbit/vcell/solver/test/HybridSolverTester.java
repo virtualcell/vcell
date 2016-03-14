@@ -457,7 +457,7 @@ public class HybridSolverTester {
 			// 'boris' 21 (VCellDB->vc_userinfo->{id,userid})
 			this.user = new User(this.userid, new KeyValue(this.useridKey));
 			this.simPrefix  = "SimID_"+this.simID+"_";
-			this.userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+this.user);
+			this.userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+this.user.getName());
 		}
 		@Override
 		public String toString() {
