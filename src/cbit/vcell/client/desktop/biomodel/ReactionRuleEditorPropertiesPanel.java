@@ -75,6 +75,7 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -719,14 +720,18 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JButton getZoomLargerButton() {
 		if (zoomLargerButton == null) {
-			zoomLargerButton = new JButton("+");
+			zoomLargerButton = new JButton();		// "+"
+			Icon icon = new ZoomShape(ZoomShape.Sign.plus);
+			zoomLargerButton.setIcon(icon);
 			zoomLargerButton.addActionListener(eventHandler);
 		}
 		return zoomLargerButton;
 	}
 	private JButton getZoomSmallerButton() {
 		if (zoomSmallerButton == null) {
-			zoomSmallerButton = new JButton("-");
+			zoomSmallerButton = new JButton();		// -
+			Icon icon = new ZoomShape(ZoomShape.Sign.minus);
+			zoomSmallerButton.setIcon(icon);
 			zoomSmallerButton.addActionListener(eventHandler);
 		}
 		return zoomSmallerButton;
