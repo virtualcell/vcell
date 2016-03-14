@@ -115,6 +115,5 @@ public class RulesShapePanel extends LargeShapePanel {
 		this.reactionRule = reactionRule;
 		repaint();
 	}
-
 	
 }

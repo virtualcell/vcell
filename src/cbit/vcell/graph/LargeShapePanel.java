@@ -18,6 +18,13 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	
 	private boolean showDifferencesOnly = false;
 	private boolean bViewSingleRow = false;
+	
+	// zooming the shape, 0 means normal size, a negative number means smaller shape
+	private static final int SmallestZoomFactor = -7;			// -7 is the smallest where the shapes scale decently well
+	public static final int SmallestZoomFactorWithText = -5;	// -5 is the smallest where we show text
+	private static final int DefaultZoomFactor = 0;
+	private static final int LargestZoomFactor = 0;
+	private int zoomFactor = DefaultZoomFactor;	
 
 	public static enum Highlight { on, off }
 	public static enum WhatIsHighlighted { reactant, product }
@@ -49,6 +56,38 @@ public class LargeShapePanel extends JPanel implements ShapeModeInterface {
 	public void setViewSingleRow(boolean bViewSingleRow) {
 		this.bViewSingleRow = bViewSingleRow;
 	}
+	public boolean zoomLarger() {	// returns false when upper limit was reached
+		zoomFactor++;
+		if(zoomFactor >= LargestZoomFactor) {
+			zoomFactor = LargestZoomFactor;
+			System.out.println("MAX. Factor is " + zoomFactor);
+			return false;
+		} else {
+			System.out.println("Up. Factor is " + zoomFactor);
+			return true;
+		}
+	}
+	public boolean zoomSmaller() {	// returns false when lower limit was reached
+		zoomFactor--;
+		if(zoomFactor <= SmallestZoomFactor) {
+			zoomFactor = SmallestZoomFactor;
+			System.out.println("MIN. Factor is " + zoomFactor);
+			return false;
+		} else {
+			System.out.println("Down. Factor is " + zoomFactor);
+			return true;
+		}
+	}
+	public boolean isLargestZoomFactor() {
+		return zoomFactor >= LargestZoomFactor ? true : false;
+	}
+	public boolean isSmallestZoomFactor() {
+		return zoomFactor <= SmallestZoomFactor ? true : false;
+	}
+	public int getZoomFactor() {
+		return zoomFactor;
+	}
+
 	// ----------------------------------------------------------------------------------------------------
 	
 	public void resetSpeciesPattern() {

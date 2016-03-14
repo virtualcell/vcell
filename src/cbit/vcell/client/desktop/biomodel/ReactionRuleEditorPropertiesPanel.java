@@ -100,13 +100,12 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JButton addProductButton = null;
 	private JCheckBox showDifferencesCheckbox = null;
 	private JCheckBox viewSingleRowCheckbox = null;
-	
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
+		
 	ReactionRulePatternLargeShape reactantShape;
 	ReactionRulePatternLargeShape productShape;
 	
-//	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
-//	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
-
 	private RulesShapePanel shapePanel;
 	private JScrollPane scrollPane;
 	private JPanel productPanel;
@@ -167,6 +166,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				delete();
 			} else if (e.getSource() == getEditMenuItem()) {
 				editEntity();
+			} else if (e.getSource() == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				updateInterface();
+			} else if (e.getSource() == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				updateInterface();
 			}
 		}
 		@Override
@@ -294,7 +303,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					locationContext.highlightDeepestShape();
 //					if(locationContext.getDeepestShape() == null) {
 //						// nothing selected means all the reactant bar or all the product bar is selected 
-						int xExtent = SpeciesPatternLargeShape.xExtent;
+						int xExtent = SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 						Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 						Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 						
@@ -320,45 +329,66 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			optionsPanel.setPreferredSize(new Dimension(120, 200));
 			optionsPanel.setLayout(new GridBagLayout());
 			
+			getZoomSmallerButton().setEnabled(true);
+			getZoomLargerButton().setEnabled(false);
+			
+			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 0;
+			gbc.gridy = gridy;
 			gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
 			optionsPanel.add(getAddReactantButton(), gbc);
 			
+			gridy++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 1;
-//			gbc.weighty = 1.0;
+			gbc.gridy = gridy;
 			gbc.insets = new Insets(2,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
 			optionsPanel.add(getAddProductButton(), gbc);
 			
-			
+			gridy++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 2;
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(4,4,0,4);
+			gbc.anchor = GridBagConstraints.WEST;
+			optionsPanel.add(getZoomLargerButton(), gbc);
+
+			gridy++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(0,4,4,4);
+			gbc.anchor = GridBagConstraints.WEST;
+			optionsPanel.add(getZoomSmallerButton(), gbc);
+			
+			gridy++;
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
 			gbc.weightx = 1;
 			gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.insets = new Insets(4, 4, 4, 10);
 			optionsPanel.add(new JLabel(""), gbc);
 
-			
+			gridy++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 3;
+			gbc.gridy = gridy;
 			gbc.insets = new Insets(2,4,0,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;
 			optionsPanel.add(getViewSingleRowCheckbox(), gbc);
-		
+
+			gridy++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
-			gbc.gridy = 4;
+			gbc.gridy = gridy;
 			gbc.insets = new Insets(0,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;
@@ -441,7 +471,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			reactantPanel.setLayout(new GridBagLayout());
 			reactantPanel.setBackground(Color.white);
 			
-			int gridy = 0;
+			gridy = 0;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
@@ -680,12 +710,28 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	}
 	private JCheckBox getViewSingleRowCheckbox() {
 		if(viewSingleRowCheckbox == null) {
-			viewSingleRowCheckbox = new JCheckBox("Single Row View");
+			viewSingleRowCheckbox = new JCheckBox("Single Row Viewer");
 			viewSingleRowCheckbox.addItemListener(eventHandler);
 		}
 		return viewSingleRowCheckbox;
 	}
 
+	
+	private JButton getZoomLargerButton() {
+		if (zoomLargerButton == null) {
+			zoomLargerButton = new JButton("+");
+			zoomLargerButton.addActionListener(eventHandler);
+		}
+		return zoomLargerButton;
+	}
+	private JButton getZoomSmallerButton() {
+		if (zoomSmallerButton == null) {
+			zoomSmallerButton = new JButton("-");
+			zoomSmallerButton.addActionListener(eventHandler);
+		}
+		return zoomSmallerButton;
+	}
+	
 	private void handleException(java.lang.Throwable exception) {
 
 		/* Uncomment the following lines to print uncaught exceptions to stdout */
@@ -835,7 +881,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		}
 		
 		boolean bReactantsZone = false;
-		int xExtent = SpeciesPatternLargeShape.xExtent;
+		int xExtent = SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 		Rectangle2D reactantRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetReactantInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 		Rectangle2D productRectangle = new Rectangle2D.Double(xOffsetInitial-xExtent, yOffsetProductInitial-3, 3000, 80-2+ReservedSpaceForNameOnYAxis);
 		if(locationContext.isInside(reactantRectangle)) {

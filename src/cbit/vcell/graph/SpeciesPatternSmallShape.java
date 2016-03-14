@@ -186,7 +186,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		if(!startText.isEmpty()) {
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext, null);
 			Color fontColor = Color.black;
 			g2.setFont(font);
 			g2.setColor(fontColor);
@@ -221,7 +221,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 		}
 		
 		if(!endText.isEmpty()) {
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext);
+			Font font = MolecularComponentLargeShape.deriveComponentFontBold(graphicsContext, null);
 			Color fontColor = Color.black;
 			g2.setFont(font);
 			g2.setColor(fontColor);
