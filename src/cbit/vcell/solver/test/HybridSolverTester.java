@@ -289,7 +289,7 @@ public class HybridSolverTester {
 		}
 		
 		int jobCounter = 0;
-		final int TIME_SPACE_EXTRA = 1;
+		final int TIME_SPACE_EXTRA = 0;
 		while(true){
 			VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimID, jobCounter);
 			SimulationData simData = null;
@@ -451,8 +451,10 @@ public class HybridSolverTester {
 			this.bCalcOnly = bCalcOnly;
 			this.dbPassword = dbPassword;
 			this.useridKey = useridKey;
+			// alpha rmi-alpha.cam.uchc.edu 40106 (DeployVCell->Configuration->deploymentProperties.xml->rmibootstrap->site)
 			this.rmiServer = rmiServer;
 			this.rmiPort = rmiPort;
+			// 'boris' 21 (VCellDB->vc_userinfo->{id,userid})
 			this.user = new User(this.userid, new KeyValue(this.useridKey));
 			this.simPrefix  = "SimID_"+this.simID+"_";
 			this.userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+this.user);
