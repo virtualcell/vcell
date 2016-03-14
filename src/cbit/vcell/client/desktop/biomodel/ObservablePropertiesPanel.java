@@ -649,16 +649,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private void updateShape() {
 		spsList.clear();
 		int maxXOffset = xOffsetInitial;
-		int maxYOffset = 88 + 80;
+		int maxYOffset = 88 + SpeciesPatternLargeShape.defaultHeight;
 		if(observable != null && observable.getSpeciesPatternList() != null && observable.getSpeciesPatternList().size() > 0) {
 			for(int i = 0; i<observable.getSpeciesPatternList().size(); i++) {
 				SpeciesPattern sp = observable.getSpeciesPatternList().get(i);
-				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(80+ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable);
+				SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffsetInitial, 8+(SpeciesPatternLargeShape.defaultHeight+ReservedSpaceForNameOnYAxis)*i, 80, sp, shapePanel, observable);
 				spsList.add(sps);
 				int xOffset = sps.getRightEnd();
 				maxXOffset = Math.max(maxXOffset, xOffset);
 			}
-			maxYOffset = Math.max(maxYOffset,8+(80+ReservedSpaceForNameOnYAxis)*observable.getSpeciesPatternList().size() + 80);
+			maxYOffset = Math.max(maxYOffset,8+(80+ReservedSpaceForNameOnYAxis)*observable.getSpeciesPatternList().size() + SpeciesPatternLargeShape.defaultHeight);
 		}
 		Dimension preferredSize = new Dimension(maxXOffset+200, maxYOffset);
 		shapePanel.setPreferredSize(preferredSize);
