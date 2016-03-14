@@ -596,7 +596,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			return yOffsetInitial;
 
 		} else {
-			int stateHeight = MolecularComponentLargeShape.computeStateHeight(shapePanel.getGraphics());
+			int stateHeight = MolecularComponentLargeShape.computeStateHeight(shapePanel.getGraphics(), shapePanel);
 			return yOffsetInitial + stateHeight * (maxNumberOfStates-1);
 		}
 	}

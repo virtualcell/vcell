@@ -19,10 +19,14 @@ import cbit.vcell.model.ReactionRuleParticipant;
 
 public class ReactionRulePatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
+	public static final int DistanceBetweenSpeciesPatterns = 50;
+	
 	int xPos;
 	int yPos;
 	int height;
+	
 	LargeShapePanel shapePanel;
+	private final int distanceBetweenSpeciesPatterns;
 	
 	ReactionRule rr;
 	boolean isReactants;
@@ -46,6 +50,14 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		speciesPatternShapeList.clear();
 		ReactionRule rr = (ReactionRule)owner;
 
+		if(shapePanel == null) {
+			distanceBetweenSpeciesPatterns = DistanceBetweenSpeciesPatterns;
+		} else {
+			int Ratio = 1;	// arbitrary factor, to be determined
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;	// negative if going smaller
+			distanceBetweenSpeciesPatterns = DistanceBetweenSpeciesPatterns + zoomFactor;
+		}
+		
 		if(isReactants) {
 			List<ReactantPattern> rpList = rr.getReactantPatterns();
 			if(rpList == null || rpList.size() == 0) {
@@ -64,7 +76,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 						sps.addEndText("->");
 					}
 				}
-				xOffset = sps.getRightEnd() + 48;	// distance between species patterns
+				xOffset = sps.getRightEnd() + distanceBetweenSpeciesPatterns;	// distance between species patterns
 				speciesPatternShapeList.add(sps);
 			}
 		} else {
@@ -79,7 +91,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 				if(i < ppList.size()-1) {
 					sps.addEndText("+");
 				}
-				xOffset = sps.getRightEnd() + 48;	// distance between species patterns
+				xOffset = sps.getRightEnd() + distanceBetweenSpeciesPatterns;	// distance between species patterns
 				speciesPatternShapeList.add(sps);
 			}
 		}
@@ -99,7 +111,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	}
 	public int getRightEnd(){		// get the x of the right end of the species pattern
 		if(speciesPatternShapeList.isEmpty()) {
-			return xPos + MolecularTypeLargeShape.getDummyWidth();
+			return xPos + MolecularTypeLargeShape.getDummyWidth(shapePanel);
 		}
 		int xRightmostMolecularType = 0;
 		for(SpeciesPatternLargeShape spls : speciesPatternShapeList) {
@@ -154,17 +166,17 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 	}
 	public void paintGhost(Graphics g, boolean bShow) {
 		if(height == -1) {
-			height = 80;
+			height = SpeciesPatternLargeShape.defaultHeight;
 		}
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 			
-		int xOffset = xPos-SpeciesPatternLargeShape.xExtent;
+		int xOffset = xPos-SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 		for(SpeciesPatternLargeShape spls : speciesPatternShapeList) {
 			xOffset = Math.max(xOffset, spls.getRightEnd());
 		}
-		xOffset += 30;
+		xOffset += 30;	// offset from the left margin of the panel
 		// compute the dimensions of the SP contour
 		// TODO: keep this code in sync! xOffset is now a bit off to the right than the "contains" area, because it 
 		//		 would interfere with the painting of the -> or <-> (reaction arrow)
@@ -195,7 +207,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			 return;
 		 }
 		if(height == -1) {
-			height = 80;
+			height = SpeciesPatternLargeShape.defaultHeight;
 		}
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
@@ -206,7 +218,7 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 		
 		// compute the dimensions of the SP contour
 		// TODO: keep this code in sync!
-		int xSp = xPos-SpeciesPatternLargeShape.xExtent;
+		int xSp = xPos-SpeciesPatternLargeShape.calculateXExtent(shapePanel);
 		int ySP = yPos-3;
 		int hSP = SpeciesPatternLargeShape.defaultHeight-2+ReactionRuleEditorPropertiesPanel.ReservedSpaceForNameOnYAxis;
 		// the dimensions of participants contour is exactly 1 pixel wider than the dimensions of the species pattern

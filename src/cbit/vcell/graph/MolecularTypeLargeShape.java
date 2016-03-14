@@ -49,16 +49,22 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		Color.green
 	};
 	
-	private static final int baseWidth = 25;
-	private static final int baseHeight = 30;
-	private static final int cornerArc = 30;
-	private static final int compartmentOffset = 13;	// the first molecule in the species pattern is wider to provide space to draw the compartment
+	private static final int BaseWidth = 25;
+	private static final int BaseHeight = 30;
+	private static final int CornerArc = 30;
+	private static final int CompartmentOffset = 13;	// the first molecule in the species pattern is wider to provide space to draw the compartment
 
+	private final int baseWidth;
+	private final int baseHeight;
+	private final int cornerArc;
+	private final int compartmentOffset;
+
+	
 	private boolean pattern;			// we draw component or we draw component pattern (and perhaps a bond)
 	private int xPos = 0;
 	private int yPos = 0;
-	private int width = baseWidth;
-	private int height = baseHeight;
+	private int width;
+	private final int height;
 
 	final LargeShapePanel shapePanel;
 	
@@ -68,6 +74,44 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	private final Displayable owner;	// the topmost entity to which this shape belongs (a rule, an observable, a molecular type, etc)
 
 	List <MolecularComponentLargeShape> componentShapes = new ArrayList<MolecularComponentLargeShape>();
+		
+	private static int calculateBaseWidth(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return BaseWidth;
+		} else {
+			int Ratio = 2;	// arbitrary factor, to be determined
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;	// negative if going smaller
+			return BaseWidth + zoomFactor;
+		}
+	}
+	private static int calculateBasHeight(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return BaseHeight;
+		} else {
+			int Ratio = 3;
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;
+			return BaseHeight + zoomFactor;
+		}
+	}
+	private static int calculateCornerArc(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return CornerArc;
+		} else {
+			int Ratio = 3;
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;
+			return CornerArc + zoomFactor;
+		}
+	}
+	private static int calculateCompartmentOffset(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return CompartmentOffset;
+		} else {
+			int Ratio = 1;
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;
+			return CompartmentOffset + zoomFactor;
+		}
+	}
+	
 	
 	// this is only called for plain species context (no pattern)
 	public MolecularTypeLargeShape(int xPos, int yPos, LargeShapePanel shapePanel, Displayable owner) {
@@ -80,8 +124,13 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		this.shapePanel = shapePanel;
 		this.name = "";
 
+		baseWidth = calculateBaseWidth(shapePanel);
+		baseHeight = calculateBasHeight(shapePanel);
+		cornerArc = calculateCornerArc(shapePanel);
+		compartmentOffset = calculateCompartmentOffset(shapePanel);
+		
 		width = baseWidth+4;	// width is ignored, we write no name inside, we'll just draw a roundish green shape
-		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
+		height = baseHeight + MolecularComponentLargeShape.calculateBasHeight(shapePanel) / 2;
 	}
 	// this is only called for molecular type
 	public MolecularTypeLargeShape(int xPos, int yPos, MolecularType mt, LargeShapePanel shapePanel, Displayable owner) {
@@ -92,6 +141,12 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.shapePanel = shapePanel;
+		
+		baseWidth = calculateBaseWidth(shapePanel);
+		baseHeight = calculateBasHeight(shapePanel);
+		cornerArc = calculateCornerArc(shapePanel);
+		compartmentOffset = calculateCompartmentOffset(shapePanel);
+		
 		// adjustment for name width and for the width of the components
 		// TODO: properly calculate the width based on the font and size of each letter
 		int numComponents = mt.getComponentList().size();
@@ -102,23 +157,23 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			// the width of the molecular type shape; only after that is known we can finally compute the exact coordinates
 			// of the components
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mc, shapePanel, owner);
-			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 		}
 		name = adjustForSize();
 		width = baseWidth + offsetFromRight;	// adjusted for # of components
 //		width += 6 * name.length();				// adjust for the length of the name of the molecular type
 		width += getStringWidth(name);				// adjust for the length of the name of the molecular type
-		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
+		height = baseHeight + MolecularComponentLargeShape.calculateBasHeight(shapePanel) / 2;
 
 		int fixedPart = xPos + width;
 		offsetFromRight = 10;
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = yPos + height - MolecularComponentLargeShape.baseHeight;
+			int y = yPos + height - MolecularComponentLargeShape.calculateBasHeight(shapePanel);
 			// now that we know the dimensions of the molecular type shape we create the component shapes
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mc, shapePanel, owner);
-			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 			componentShapes.add(0, mlcls);
 		}
 	}
@@ -131,7 +186,12 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.shapePanel = shapePanel;
-		
+
+		baseWidth = calculateBaseWidth(shapePanel);
+		baseHeight = calculateBasHeight(shapePanel);
+		cornerArc = calculateCornerArc(shapePanel);
+		compartmentOffset = calculateCompartmentOffset(shapePanel);
+
 		// we adjust the width of the first molecule in the species pattern to make space for the compartment depiction
 		width = baseWidth;
 		if(positionInPattern == 0) {
@@ -145,24 +205,24 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(100, 50, mcp, shapePanel, owner);
-			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 		}
 		name = adjustForSize();
 		width += offsetFromRight;				// adjusted for # of components
 		width += getStringWidth(name);			// adjust for the length of the name of the molecular type
-		height = baseHeight + MolecularComponentLargeShape.baseHeight / 2;
+		height = baseHeight + MolecularComponentLargeShape.calculateBasHeight(shapePanel) / 2;
 		
 		int fixedPart = xPos + width;
 		offsetFromRight = 10;
 		for(int i=numComponents-1; i >=0; i--) {
 			int rightPos = fixedPart - offsetFromRight;		// we compute distance from right end
-			int y = yPos + height - MolecularComponentLargeShape.baseHeight;
+			int y = yPos + height - MolecularComponentLargeShape.calculateBasHeight(shapePanel);
 
 //			MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
 			MolecularComponent mc = mt.getComponentList().get(i);
 			MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 			MolecularComponentLargeShape mlcls = new MolecularComponentLargeShape(rightPos, y, mcp, shapePanel, owner);
-			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.componentSeparation;
+			offsetFromRight += mlcls.getWidth() + MolecularComponentLargeShape.calculateComponentSeparation(shapePanel);
 			componentShapes.add(0, mlcls);
 		}
 	}
@@ -172,6 +232,10 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 	}
 
 	private String adjustForSize() {
+		if(shapePanel.getZoomFactor() < LargeShapePanel.SmallestZoomFactorWithText) {
+			// when we zoom to very small shapes we must stop writing the text
+			return "  ";
+		}
 		// we truncate to 12 characters any name longer than 12 characters
 		// we keep the first 7 letters, then 2 points, then the last 3 letters
 		String s = null;
@@ -417,18 +481,19 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		if(mt == null && mtp == null) {		// plain species context
 			 // don't write any text inside
 		} else {							// molecular type, species pattern
-			
-			int textX = xPos + 11;
-			int textY =  yPos + baseHeight - 9;
-			Font font = fontOld.deriveFont(Font.BOLD);
+			Graphics gc = shapePanel.getGraphics();
+			Font font = deriveMoleculeFontBold(g, shapePanel);
 			g.setFont(font);
 			g.setColor(Color.black);
+			int fontSize = font.getSize();
+			
+			int textX = xPos + 11;
+			int textY =  yPos + baseHeight - (baseHeight - fontSize)/2;
 			g2.drawString(name, textX, textY);
 			
-			Graphics gc = shapePanel.getGraphics();
-			FontMetrics fm = gc.getFontMetrics(font);
-			int stringWidth = fm.stringWidth(name);
 			if(owner instanceof ReactionRule && mtp != null && mtp.hasExplicitParticipantMatch()) {
+				FontMetrics fm = gc.getFontMetrics(font);
+				int stringWidth = fm.stringWidth(name);
 				Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
 				g.setFont(smallerFont);
 				g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
@@ -443,8 +508,16 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		g.setFont(fontOld);
 		g.setColor(colorOld);
 	}
+	
+	public static Font deriveMoleculeFontBold(Graphics gc, LargeShapePanel shapePanel) {
+		Font fontOld = gc.getFont();
+		int bh = calculateBasHeight(shapePanel);
+		Font font = fontOld.deriveFont((float) (bh*7/17)).deriveFont(Font.BOLD);
+		return font;
+	}
 
-	public static void paintDummy(Graphics g, int xPos, int yPos) {
+
+	public static void paintDummy(Graphics g, int xPos, int yPos, LargeShapePanel shapePanel) {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Stroke strokeOld = g2.getStroke();
@@ -453,9 +526,9 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		final float dash1[] = { 6.0f };
 		final BasicStroke dashed = new BasicStroke(2.0f,BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f);
 		g2.setStroke(dashed);
-		int w = getDummyWidth();
-		int h = baseHeight;
-		int c = cornerArc;
+		int w = getDummyWidth(shapePanel);
+		int h = calculateBasHeight(shapePanel);
+		int c = calculateCornerArc(shapePanel);
 		RoundRectangle2D rect = new RoundRectangle2D.Float(xPos, yPos, w, h, c, c);
 		//RoundRectangle2D inner = new RoundRectangle2D.Float(xPos+1, yPos+1, w-2, h-2, c-3, c-3);
 		g2.setPaint(Color.LIGHT_GRAY);
@@ -465,8 +538,8 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 		g2.setColor(colorOld);
 		g2.setStroke(strokeOld);
 	}
-	public static int getDummyWidth() {
-		return baseWidth+30;
+	public static int getDummyWidth(LargeShapePanel shapePanel) {
+		return calculateBaseWidth(shapePanel)+30;
 	}
 	
 	@Override
@@ -529,16 +602,18 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			Graphics2D g2 = (Graphics2D)g;
 			Font fontOld = g2.getFont();
 			Color colorOld = g2.getColor();
+			
 			Color color = (Color.red).darker();
-			Font font = fontOld.deriveFont(Font.BOLD);
+			Font font = deriveMoleculeFontBold(g, shapePanel);
 			Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
 			g.setFont(smallerFont);
 			FontMetrics fm = g.getFontMetrics(font);
 			int stringWidth = fm.stringWidth(name);
 			int textX = xPos + 11;
-			int textY =  yPos + baseHeight - 9;
+			int textY =  yPos + baseHeight - (baseHeight - smallerFont.getSize())/2;
 			g.setColor(color);
 			g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
+			
 			g.setFont(fontOld);
 			g.setColor(colorOld);
 		}

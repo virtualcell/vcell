@@ -41,10 +41,17 @@ import cbit.vcell.model.Structure;
 
 public class SpeciesPatternLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
-	public static final int yLetterOffset = 11;		// y position of Bond id and/or State name
+	private static final int YLetterOffset = 11;		// y position of Bond id and/or State name
 	public static final int separationWidth = 1;	// width between 2 molecular type patterns
 	public static final int defaultHeight = 80;		// we actually always use this height, we never compute it as initially planned
-		
+	
+	// left and right extension of the sp, used for reactions only
+	// clicking within these limits still means we're inside that sp
+	private static final int XExtent = 20;
+	
+	private final int yLetterOffset;
+	public final int xExtent;
+	
 	private int xPos = 0;
 	private int yPos = 0;		// y position where we draw the shape
 	private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
@@ -61,6 +68,26 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	List <BondSingle> bondSingles = new ArrayList <BondSingle>();	// component with no explicit bond
 	List <BondPair> bondPairs = new ArrayList <BondPair>();
 
+	
+	public static int calculateYLetterOffset(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return YLetterOffset;
+		} else {
+			int Ratio = 1;	// arbitrary factor, to be determined
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;	// negative if going smaller
+			return YLetterOffset + zoomFactor;
+		}
+	}
+	public static int calculateXExtent(LargeShapePanel shapePanel) {
+		if(shapePanel == null) {
+			return XExtent;
+		} else {
+			int Ratio = 1;	// arbitrary factor, to be determined
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;	// negative if going smaller
+			return XExtent + zoomFactor;
+		}
+	}
+	
 	// this is only used to display an error in the ViewGeneratedSpeciespanel
 	public SpeciesPatternLargeShape(int xPos, int yPos, int height, LargeShapePanel shapePanel, boolean isError) {
 		this.owner = null;
@@ -70,6 +97,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		this.height = height;
 		this.shapePanel = shapePanel;
 		this.isError = true;
+		
+		yLetterOffset = calculateYLetterOffset(shapePanel);
+		xExtent = calculateXExtent(shapePanel);
 
 		int xPattern = xPos;
 		MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xPattern, yPos, shapePanel, null);
@@ -90,8 +120,12 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		} else {
 			this.yPos = yPos;
 		}
-		this.height = height;
 		this.shapePanel = shapePanel;
+		
+		yLetterOffset = calculateYLetterOffset(shapePanel);
+		xExtent = calculateXExtent(shapePanel);
+
+		this.height = height;
 
 		int xPattern = xPos;
 		if(sp == null) {
@@ -180,7 +214,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	public int getWidth() {
 		if(speciesShapes.isEmpty()) {
-			return MolecularTypeLargeShape.getDummyWidth();
+			return MolecularTypeLargeShape.getDummyWidth(shapePanel);
 		}
 		int width = 0;
 		for(MolecularTypeLargeShape stls : speciesShapes) {
@@ -190,7 +224,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 	}
 	public int getRightEnd(){		// get the x of the right end of the species pattern
 		if(speciesShapes.isEmpty()) {
-			return xPos + MolecularTypeLargeShape.getDummyWidth();
+			return xPos + MolecularTypeLargeShape.getDummyWidth(shapePanel);
 		}
 		int xRightmostMolecularType = 0;
 		int widthRightmostMolecularType = 0;
@@ -208,8 +242,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		this.endText = string;
 	}
 	
-	static final public int xExtent = 20;	// left and right extension of the sp, used for reactions only
-											// clicking within these limits still means we're inside that sp
 	@Override
 	public boolean contains(PointLocationInShapeContext locationContext) {
 		
@@ -336,21 +368,40 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
 		Font fontOld = g2.getFont();
+		
+		Font font;
+		int w;
+		String name = structure.getName();
+		int z = shapePanel.getZoomFactor();
+		if(z > -3) {
+			font = fontOld.deriveFont(Font.BOLD);
+			w = 44;
+			if(name.length() > 3) {
+				name = name.substring(0, 3) + "..";
+			}
+		} else if(z < LargeShapePanel.SmallestZoomFactorWithText) {
+			font = fontOld.deriveFont(fontOld.getSize2D()*0.8f);
+			w = 24;
+			if(name.length() > 2) {
+				name = name.substring(0, 2) + ".";
+			}
+		} else {
+			font = fontOld;
+			w = 38;
+			if(name.length() > 3) {
+				name = name.substring(0, 3) + "..";
+			}
+		}
 			
 		Color darker = Color.gray;	// a bit darker for border
-		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, 44, 58);
+		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 58);
 		g2.setColor(darker);
 		g2.draw(border);
 		Color lighter = new Color(224, 224, 224);
-		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, 44, 57);
+		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, w, 57);
 		g2.setPaint(lighter);
 		g2.fill(filling);
 		
-		String name = structure.getName();
-		if(name.length() > 3) {
-			name = name.substring(0, 3) + "..";
-		}
-		Font font = fontOld.deriveFont(Font.BOLD);
 		g.setFont(font);
 		g.setColor(structureColor);
 		g2.drawString(name, xPos-4, yPos+48);
@@ -364,12 +415,6 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		paintSelf(g, true);
 	}
 	public void paintSelf(Graphics g, boolean bPaintContour) {
-		
-		// bond related attributes
-		final int offset = 18;			// initial height of vertical bar
-		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
-		final int xTwoLetterOffset = 13;
-		int separ = 5;					// default y distance between 2 adjacent bars
 		
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -399,7 +444,7 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //		}
 		
 		if(speciesShapes.isEmpty()) {		// paint empty dummy
-			MolecularTypeLargeShape.paintDummy(g, xPos, yPos);
+			MolecularTypeLargeShape.paintDummy(g, xPos, yPos, shapePanel);
 		}
 		for(MolecularTypeLargeShape stls : speciesShapes) {
 			stls.paintSelf(g);
@@ -447,8 +492,28 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //			g2.setFont(fontOld);
 //			g2.setColor(colorOld);
 //		}
+		
+		// --- ------- Bonds between components ------------------------------------------------------------------------
+		
+		int yDouble = 18;					// initial height of vertical bar of matched bond
+		if(shapePanel != null) {
+			int Ratio = 1;	// arbitrary factor, to be determined
+			int zoomFactor = shapePanel.getZoomFactor() * Ratio;	// negative if going smaller
+			yDouble += zoomFactor;
+		}
+		int yExists = 5;					// distance between 2 vertical line segments of "exists" bond
+		int ysExists = 3;					// separation between 2 vertical line segments of "exists" bond
+		if(shapePanel != null) {
+			double zoomFactor = (double)(shapePanel.getZoomFactor())/3.0;	// negative if going smaller
+			yExists += (int)zoomFactor;
+			ysExists += (int)zoomFactor;
+		}
+		
+		// bond related attributes
+		final int xOneLetterOffset = 7;	// offset of the bond id - we assume there will never be more than 99
+		final int xTwoLetterOffset = 13;
+		int separ = 5;					// default y distance between 2 adjacent bars
 
-		// bonds between components
 		for(int i=0; i<bondSingles.size(); i++) {
 			BondSingle bs = bondSingles.get(i);
 			Color colorOld = g2.getColor();
@@ -464,27 +529,29 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 				lineColor = Color.gray;
 			}
 			
-			if(bs.mcp.getBondType().equals(BondType.Possible)) {
+			if(bs.mcp.getBondType().equals(BondType.Possible)) {	//		?  (Possible)
 				Graphics gc = shapePanel.getGraphics();
-				Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc);
-				g2.setFont(font);
-				g2.setColor(fontColor);
-				g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
 				
+				if(shapePanel.getZoomFactor() >= LargeShapePanel.SmallestZoomFactorWithText) {
+					Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
+					g2.setFont(font);
+					g2.setColor(fontColor);
+					g2.drawString(bs.mcp.getBondType().symbol, bs.from.x-xOneLetterOffset, bs.from.y+yLetterOffset);
+				}
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+3);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+ysExists);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+3);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+ysExists);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+5, bs.from.x, bs.from.y+8);
+				g2.drawLine(bs.from.x, bs.from.y+yExists, bs.from.x, bs.from.y+yExists+ysExists);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+5, bs.from.x+1, bs.from.y+8);
+				g2.drawLine(bs.from.x+1, bs.from.y+yExists, bs.from.x+1, bs.from.y+yExists+ysExists);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y+10, bs.from.x, bs.from.y+13);
+				g2.drawLine(bs.from.x, bs.from.y+yExists*2, bs.from.x, bs.from.y+yExists*2+ysExists);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y+10, bs.from.x+1, bs.from.y+13);
+				g2.drawLine(bs.from.x+1, bs.from.y+yExists*2, bs.from.x+1, bs.from.y+yExists*2+ysExists);
 
 			} else if(bs.mcp.getBondType().equals(BondType.Exists)) {
 //				g2.setColor(plusSignGreen);								// draw a green '+' sign
@@ -494,9 +561,9 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 //				g2.drawLine(bs.from.x-5, bs.from.y+4, bs.from.x-5, bs.from.y+9);
 
 				g2.setColor(lineColor);
-				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+13);
+				g2.drawLine(bs.from.x, bs.from.y, bs.from.x, bs.from.y+yExists*2+ysExists);
 				g2.setColor(Color.gray);
-				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+13);
+				g2.drawLine(bs.from.x+1, bs.from.y, bs.from.x+1, bs.from.y+yExists*2+ysExists);
 			} else {
 //				g2.setColor(Color.red.darker());									// draw a dark red '-' sign
 //				g2.drawLine(bs.from.x-10, bs.from.y+5, bs.from.x-4, bs.from.y+5);	// horizontal
@@ -573,27 +640,28 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			} else {
 				g2.setColor(RbmTreeCellRenderer.bondHtmlColors[bp.id]);
 			}
-			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+offset+i*separ);
-			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+offset+i*separ);
-			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ, bp.to.x, bp.to.y+offset+i*separ);
+			g2.drawLine(bp.from.x, bp.from.y, bp.from.x, bp.from.y+yDouble+i*separ);
+			g2.drawLine(bp.to.x, bp.to.y, bp.to.x, bp.to.y+yDouble+i*separ);
+			g2.drawLine(bp.from.x, bp.from.y+yDouble+i*separ, bp.to.x, bp.to.y+yDouble+i*separ);
 			
 			Graphics gc = shapePanel.getGraphics();
-			Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc);
-//			Font font = fontOld.deriveFont((float) (MolecularComponentLargeShape.componentDiameter/2));
-			g.setFont(font);
-			String nr = bp.id+"";
-			if(nr.length()<2) {
-				g2.drawString(nr, bp.from.x-xOneLetterOffset, bp.from.y+yLetterOffset);
-				g2.drawString(nr, bp.to.x-xOneLetterOffset, bp.to.y+yLetterOffset);
-			} else {
-				g2.drawString(nr, bp.from.x-xTwoLetterOffset, bp.from.y+yLetterOffset);
-				g2.drawString(nr, bp.to.x-xTwoLetterOffset, bp.to.y+yLetterOffset);
+			if(shapePanel.getZoomFactor() >= LargeShapePanel.SmallestZoomFactorWithText) {
+				Font font = MolecularComponentLargeShape.deriveComponentFontBold(gc, shapePanel);
+				g.setFont(font);
+				String nr = bp.id+"";
+				if(nr.length()<2) {
+					g2.drawString(nr, bp.from.x-xOneLetterOffset, bp.from.y+yLetterOffset);
+					g2.drawString(nr, bp.to.x-xOneLetterOffset, bp.to.y+yLetterOffset);
+				} else {
+					g2.drawString(nr, bp.from.x-xTwoLetterOffset, bp.from.y+yLetterOffset);
+					g2.drawString(nr, bp.to.x-xTwoLetterOffset, bp.to.y+yLetterOffset);
+				}
 			}
 
 			g2.setColor(Color.lightGray);
-			g2.drawLine(bp.from.x+1, bp.from.y+1, bp.from.x+1, bp.from.y+offset+i*separ);
-			g2.drawLine(bp.to.x+1, bp.to.y+1, bp.to.x+1, bp.to.y+offset+i*separ);
-			g2.drawLine(bp.from.x, bp.from.y+offset+i*separ+1, bp.to.x+1, bp.to.y+offset+i*separ+1);
+			g2.drawLine(bp.from.x+1, bp.from.y+1, bp.from.x+1, bp.from.y+yDouble+i*separ);
+			g2.drawLine(bp.to.x+1, bp.to.y+1, bp.to.x+1, bp.to.y+yDouble+i*separ);
+			g2.drawLine(bp.from.x, bp.from.y+yDouble+i*separ+1, bp.to.x+1, bp.to.y+yDouble+i*separ+1);
 			
 			g.setFont(fontOld);
 			g2.setColor(colorOld);
