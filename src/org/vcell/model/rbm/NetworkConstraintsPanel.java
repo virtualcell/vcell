@@ -631,7 +631,8 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 //			System.out.println("NetworkConstraintsPanel: " + "NCTableModel: " + "simContext: " + System.identityHashCode(networkConstraintsTableModel.getSimulationContext()));
 		
 		ViewGeneratedReactionsPanel panel = new ViewGeneratedReactionsPanel(this);
-		panel.setReactions(fieldSimulationContext.getMostRecentlyCreatedOutputSpec().getBNGReactions());
+		final BNGOutputSpec mostRecentlyCreatedOutputSpec = fieldSimulationContext.getMostRecentlyCreatedOutputSpec();
+		panel.setReactions(mostRecentlyCreatedOutputSpec.getBNGReactions());
 		panel.setPreferredSize(new Dimension(800,550));
 		
 //		if(viewReactionsDialog != null) {

@@ -135,20 +135,21 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				String[] patterns = left.split(regex);
 				for (String spString : patterns) {
 					try {
+						spString = spString.trim();
 						// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
 						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
 						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
 						speciesPattern.resolveBonds();
-						Feature structure = new Feature(null) {
-							public boolean compareEqual(Matchable obj) { return false; }
-							public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
-								setName0(name);
+						Structure structure;
+						if(strStructure != null) {
+							if(tempModel.getStructure(strStructure) == null) {
+								tempModel.addFeature(strStructure);
 							}
-							public String getTypeName() { return null; }
-							public int getDimension() { return 0; }
-						};
-						structure.setName(strStructure, false);
-					reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
+							structure = tempModel.getStructure(strStructure);
+						} else {
+							structure = tempModel.getStructure(0);
+						}
+						reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
@@ -163,18 +164,18 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 				patterns = right.split(regex);
 				for (String spString : patterns) {
 					try {
-						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+						spString = spString.trim();						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
 						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
 						speciesPattern.resolveBonds();
-						Feature structure = new Feature(null) {
-							public boolean compareEqual(Matchable obj) { return false; }
-							public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
-								setName0(name);
+						Structure structure;
+						if(strStructure != null) {
+							if(tempModel.getStructure(strStructure) == null) {
+								tempModel.addFeature(strStructure);
 							}
-							public String getTypeName() { return null; }
-							public int getDimension() { return 0; }
-						};
-						structure.setName(strStructure, false);
+							structure = tempModel.getStructure(strStructure);
+						} else {
+							structure = tempModel.getStructure(0);
+						}
 //					BNGLParser parser = new BNGLParser(new StringReader(sp));
 //					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
 //					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
@@ -183,7 +184,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 //						mtp.setParticipantMatchLabel("*");
 //					}
 //					System.out.println(speciesPattern.toString());
-					reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
+						reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
 					} catch(Throwable ex) {
 						ex.printStackTrace();
 						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
