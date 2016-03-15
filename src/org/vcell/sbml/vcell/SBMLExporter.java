@@ -254,9 +254,9 @@ protected void addCompartments() {
 			Feature outsideFeature = structTopology.getOutsideFeature(vcMembrane);
 			if (outsideFeature != null) {
 				sbmlCompartment.setOutside(TokenMangler.mangleToSName(outsideFeature.getName()));
-				sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
-				sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 			}
+			sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
+			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 		sbmlCompartment.setConstant(true);
 
