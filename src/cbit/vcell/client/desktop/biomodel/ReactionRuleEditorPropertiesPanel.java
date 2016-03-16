@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -355,7 +356,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(4,4,0,4);
+			gbc.insets = new Insets(8,4,0,4);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomLargerButton(), gbc);
 
@@ -723,6 +724,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			zoomLargerButton = new JButton();		// "+"
 			Icon icon = new ZoomShape(ZoomShape.Sign.plus);
 			zoomLargerButton.setIcon(icon);
+			zoomLargerButton.setBorder(BorderFactory.createEmptyBorder());
+			zoomLargerButton.setContentAreaFilled(false);
+			zoomLargerButton.setFocusPainted(false);
 			zoomLargerButton.addActionListener(eventHandler);
 		}
 		return zoomLargerButton;
@@ -732,6 +736,9 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			zoomSmallerButton = new JButton();		// -
 			Icon icon = new ZoomShape(ZoomShape.Sign.minus);
 			zoomSmallerButton.setIcon(icon);
+			zoomSmallerButton.setBorder(BorderFactory.createEmptyBorder());
+			zoomSmallerButton.setContentAreaFilled(false);
+			zoomSmallerButton.setFocusPainted(false);
 			zoomSmallerButton.addActionListener(eventHandler);
 		}
 		return zoomSmallerButton;

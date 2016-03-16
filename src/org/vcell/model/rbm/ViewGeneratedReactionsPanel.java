@@ -10,6 +10,7 @@
 
 package org.vcell.model.rbm;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -18,16 +19,21 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyVetoException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -40,17 +46,13 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.vcell.model.bngl.ASTSpeciesPattern;
-import org.vcell.model.bngl.BNGLParser;
-import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.util.Matchable;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.graph.LargeShapePanel;
+import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.model.Feature;
+import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
@@ -65,15 +67,36 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	private GeneratedReactionTableModel tableModel = null; 
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
-	
+
+	private JCheckBox showDifferencesCheckbox = null;
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
+
 	private final NetworkConstraintsPanel owner;
-	LargeShapePanel shapePanel = null;
+	RulesShapePanel shapePanel = null;
 	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
 	
-	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
+	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener, ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				int[] selectedRows = table.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShape(selectedRows[0]);
+				}
+			} else if (e.getSource() == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				int[] selectedRows = table.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShape(selectedRows[0]);
+				}
+			}
 		}
 		public void insertUpdate(DocumentEvent e) {
 			searchTable();
@@ -93,153 +116,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 		public void valueChanged(ListSelectionEvent e) {
 			int[] selectedRows = table.getSelectedRows();
 			if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
-				GeneratedReactionTableRow reactionTableRow = tableModel.getValueAt(selectedRows[0]);
-				String inputString = reactionTableRow.getExpression();
-				System.out.println(selectedRows[0] + ": " + inputString);
-//				ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputString, bioModel);
-				
-				Model tempModel = null;
-				try {
-					tempModel = new Model("MyTempModel");
-					tempModel.addFeature("c0");
-				} catch (ModelException | PropertyVetoException e1) {
-					e1.printStackTrace();
-				}
-				if(owner != null && owner.getSimulationContext() != null) {
-					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-					try {
-						tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
-					} catch (PropertyVetoException e1) {
-						e1.printStackTrace();
-						throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
-					}
-				} else {
-					return;		// something is wrong, we just show nothing rather than crash
-				}
-				
-				int arrowIndex = inputString.indexOf("<->");
-				boolean bReversible = true;
-				if (arrowIndex < 0) {
-					arrowIndex = inputString.indexOf("->");
-					bReversible = false;
-				}
-				
-				String left = inputString.substring(0, arrowIndex).trim();
-				String right = inputString.substring(arrowIndex + (bReversible ? 3 : 2)).trim();
-				if (left.length() == 0 && right.length() == 0) {
-					return;
-				}
-				ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
-				
-				String regex = "[^!]\\+";
-				String[] patterns = left.split(regex);
-				for (String spString : patterns) {
-					try {
-						spString = spString.trim();
-						// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
-						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
-						speciesPattern.resolveBonds();
-						Structure structure;
-						if(strStructure != null) {
-							if(tempModel.getStructure(strStructure) == null) {
-								tempModel.addFeature(strStructure);
-							}
-							structure = tempModel.getStructure(strStructure);
-						} else {
-							structure = tempModel.getStructure(0);
-						}
-						reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
-					} catch(Throwable ex) {
-						ex.printStackTrace();
-						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
-						reactantPatternShapeList.clear();
-						productPatternShapeList.clear();
-						reactantPatternShapeList.add(spls);
-						shapePanel.repaint();
-						return;
-					}
-				}
-				
-				patterns = right.split(regex);
-				for (String spString : patterns) {
-					try {
-						spString = spString.trim();						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-						String strStructure = RbmUtils.parseCompartment(spString, tempModel);
-						speciesPattern.resolveBonds();
-						Structure structure;
-						if(strStructure != null) {
-							if(tempModel.getStructure(strStructure) == null) {
-								tempModel.addFeature(strStructure);
-							}
-							structure = tempModel.getStructure(strStructure);
-						} else {
-							structure = tempModel.getStructure(0);
-						}
-//					BNGLParser parser = new BNGLParser(new StringReader(sp));
-//					ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
-//					BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
-//					SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
-//					for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
-//						mtp.setParticipantMatchLabel("*");
-//					}
-//					System.out.println(speciesPattern.toString());
-						reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
-					} catch(Throwable ex) {
-						ex.printStackTrace();
-						SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
-						reactantPatternShapeList.clear();
-						productPatternShapeList.clear();
-						reactantPatternShapeList.add(spls);
-						shapePanel.repaint();
-						return;
-					}
-				}			
-				System.out.println(" --- done.");
-// ----------------------------------------------------------------------------------------------------
-				
-				List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
-				reactantPatternShapeList.clear();
-				int xOffset = 20;
-				if(rpList != null && rpList.size() > 0) {
-					for(int i = 0; i<rpList.size(); i++) {
-						SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
-						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-							mtp.setParticipantMatchLabel("*");
-						}
-						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
-						if(i < rpList.size()-1) {
-							sps.addEndText("+");
-						} else {
-							if(reactionRule.isReversible()) {
-								sps.addEndText("<->");
-							} else {
-								sps.addEndText("->");
-							}
-						}
-						xOffset = sps.getRightEnd() + 45;
-						reactantPatternShapeList.add(sps);
-					}
-				}
-				xOffset += 15;	// space for the <-> sign
-				List<ProductPattern> ppList = reactionRule.getProductPatterns();
-				productPatternShapeList.clear();
-				if(ppList != null && ppList.size() > 0) {
-					for(int i = 0; i<ppList.size(); i++) {
-						SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
-						for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
-							mtp.setParticipantMatchLabel("*");
-						}
-						SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
-						if(i < ppList.size()-1) {
-							sps.addEndText("+");
-						}
-						xOffset = sps.getRightEnd() + 45;
-						productPatternShapeList.add(sps);
-					}
-				}
-				shapePanel.repaint();
-				
+				updateShape(selectedRows[0]);
 			}
 		}
 		@Override
@@ -255,6 +132,19 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 						table.setRowSelectionInterval(0,0);
 					}
 				});
+			}
+		}
+		
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			if(e.getSource() == getShowDifferencesCheckbox()) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					shapePanel.setShowDifferencesOnly(true);
+					shapePanel.repaint();
+				} else {
+					shapePanel.setShowDifferencesOnly(false);
+					shapePanel.repaint();
+				}
 			}
 		}
 	}
@@ -275,11 +165,232 @@ private void handleException(java.lang.Throwable exception) {
 	 exception.printStackTrace(System.out);
 }
 
+public void updateShape(int selectedRow) {
+	GeneratedReactionTableRow reactionTableRow = tableModel.getValueAt(selectedRow);
+	String inputString = reactionTableRow.getExpression();
+	System.out.println(selectedRow + ": " + inputString);
+//	ReactionRule newReactionRule = (ReactionRule)RbmUtils.parseReactionRule(inputString, bioModel);
+	
+	Model tempModel = null;
+	try {
+		tempModel = new Model("MyTempModel");
+		tempModel.addFeature("c0");
+	} catch (ModelException | PropertyVetoException e1) {
+		e1.printStackTrace();
+	}
+	if(owner != null && owner.getSimulationContext() != null) {
+		List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
+		try {
+			tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
+		}
+	} else {
+		return;		// something is wrong, we just show nothing rather than crash
+	}
+	
+	int arrowIndex = inputString.indexOf("<->");
+	boolean bReversible = true;
+	if (arrowIndex < 0) {
+		arrowIndex = inputString.indexOf("->");
+		bReversible = false;
+	}
+	
+	String left = inputString.substring(0, arrowIndex).trim();
+	String right = inputString.substring(arrowIndex + (bReversible ? 3 : 2)).trim();
+	if (left.length() == 0 && right.length() == 0) {
+		return;
+	}
+	ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
+	
+	String regex = "[^!]\\+";
+	String[] patterns = left.split(regex);
+	for (String spString : patterns) {
+		try {
+			spString = spString.trim();
+			// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
+			SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+			String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+			speciesPattern.resolveBonds();
+			Structure structure;
+			if(strStructure != null) {
+				if(tempModel.getStructure(strStructure) == null) {
+					tempModel.addFeature(strStructure);
+				}
+				structure = tempModel.getStructure(strStructure);
+			} else {
+				structure = tempModel.getStructure(0);
+			}
+			reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
+		} catch(Throwable ex) {
+			ex.printStackTrace();
+			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+			reactantPatternShapeList.clear();
+			productPatternShapeList.clear();
+			reactantPatternShapeList.add(spls);
+			shapePanel.repaint();
+			return;
+		}
+	}
+	
+	patterns = right.split(regex);
+	for (String spString : patterns) {
+		try {
+			spString = spString.trim();						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+			String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+			speciesPattern.resolveBonds();
+			Structure structure;
+			if(strStructure != null) {
+				if(tempModel.getStructure(strStructure) == null) {
+					tempModel.addFeature(strStructure);
+				}
+				structure = tempModel.getStructure(strStructure);
+			} else {
+				structure = tempModel.getStructure(0);
+			}
+//		BNGLParser parser = new BNGLParser(new StringReader(sp));
+//		ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
+//		BnglObjectConstructionVisitor constructionVisitor = new BnglObjectConstructionVisitor(tempModel, null, false);
+//		SpeciesPattern speciesPattern = (SpeciesPattern) astSpeciesPattern.jjtAccept(constructionVisitor, null);
+//		for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+//			mtp.setParticipantMatchLabel("*");
+//		}
+//		System.out.println(speciesPattern.toString());
+			reactionRule.addProduct(new ProductPattern(speciesPattern, structure));
+		} catch(Throwable ex) {
+			ex.printStackTrace();
+			SpeciesPatternLargeShape spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+			reactantPatternShapeList.clear();
+			productPatternShapeList.clear();
+			reactantPatternShapeList.add(spls);
+			shapePanel.repaint();
+			return;
+		}
+	}			
+	System.out.println(" --- done.");
+//----------------------------------------------------------------------------------------------------
+	
+	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
+	reactantPatternShapeList.clear();
+	int xOffset = 20;
+	if(rpList != null && rpList.size() > 0) {
+		for(int i = 0; i<rpList.size(); i++) {
+			SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				mtp.setParticipantMatchLabel("*");
+			}
+			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+			if(i < rpList.size()-1) {
+				sps.addEndText("+");
+			} else {
+				if(reactionRule.isReversible()) {
+					sps.addEndText("<->");
+				} else {
+					sps.addEndText("->");
+				}
+			}
+			xOffset = sps.getRightEnd() + 45;
+			reactantPatternShapeList.add(sps);
+		}
+	}
+	xOffset += 15;	// space for the <-> sign
+	List<ProductPattern> ppList = reactionRule.getProductPatterns();
+	productPatternShapeList.clear();
+	if(ppList != null && ppList.size() > 0) {
+		for(int i = 0; i<ppList.size(); i++) {
+			SpeciesPattern sp = ppList.get(i).getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				mtp.setParticipantMatchLabel("*");
+			}
+			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+			if(i < ppList.size()-1) {
+				sps.addEndText("+");
+			}
+			xOffset = sps.getRightEnd() + 45;
+			productPatternShapeList.add(sps);
+		}
+	}
+	Dimension preferredSize = new Dimension(xOffset+90, 50);
+	shapePanel.setPreferredSize(preferredSize);
+
+	shapePanel.repaint();
+}
+
 private void initialize() {
 	try {
 		setName("ViewGeneratedReactionsPanel");
 		setLayout(new GridBagLayout());
 			
+		
+// -------------------------------------------------------------------------------------------
+		shapePanel = new RulesShapePanel() {
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternLargeShape stls : reactantPatternShapeList) {
+					stls.paintSelf(g);
+				}
+				for(SpeciesPatternLargeShape stls : productPatternShapeList) {
+					stls.paintSelf(g);
+				}
+			}
+		};
+		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+		shapePanel.setLayout(new GridBagLayout());
+		shapePanel.setBackground(Color.white);
+		
+		JScrollPane scrollPane = new JScrollPane(shapePanel);
+		scrollPane.setBorder(loweredBevelBorder);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setLayout(new GridBagLayout());
+		
+		getZoomSmallerButton().setEnabled(true);
+		getZoomLargerButton().setEnabled(false);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0,0,0,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomLargerButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(2,0,4,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomSmallerButton(), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		optionsPanel.add(new JLabel(""), gbc);
+
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 3;
+//		gbc.insets = new Insets(0,4,4,4);
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.SOUTHWEST;
+//		optionsPanel.add(getShowDifferencesCheckbox(), gbc);
+		
+		JPanel containerOfScrollPanel = new JPanel();
+		containerOfScrollPanel.setLayout(new BorderLayout());
+		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+		containerOfScrollPanel.setPreferredSize(new Dimension(500, 135));	// dimension of shape panel
+
+		// -----------------------------------------------------------------------------
+
 		table = new EditorScrollTable();
 		tableModel = new GeneratedReactionTableModel(table);
 		table.setModel(tableModel);
@@ -292,7 +403,7 @@ private void initialize() {
 		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColIndex).setMaxWidth(60);				// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
-		GridBagConstraints gbc = new GridBagConstraints();		
+		gbc = new GridBagConstraints();		
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -300,7 +411,7 @@ private void initialize() {
 		gbc.gridwidth = 8;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		table.setPreferredScrollableViewportSize(new Dimension(400,200));
+//		table.setPreferredScrollableViewportSize(new Dimension(400,200));
 		add(table.getEnclosingScrollPane(), gbc);
 		
 //		gbc = new java.awt.GridBagConstraints();
@@ -340,46 +451,52 @@ private void initialize() {
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
 		
-		
-// -------------------------------------------------------------------------------------------
-		shapePanel = new LargeShapePanel() {
-			@Override
-			public void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				for(SpeciesPatternLargeShape stls : reactantPatternShapeList) {
-					stls.paintSelf(g);
-				}
-				for(SpeciesPatternLargeShape stls : productPatternShapeList) {
-					stls.paintSelf(g);
-				}
-			}
-		};
-		Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-		Dimension preferredSize = new Dimension(500, 50);
-		shapePanel.setPreferredSize(preferredSize);
-		shapePanel.setLayout(new GridBagLayout());
-		shapePanel.setBorder(loweredBevelBorder);
-		shapePanel.setBackground(Color.white);
-		shapePanel.setVisible(true);
-
 		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.3;
 		gbc.gridwidth = 8;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
-		add(shapePanel, gbc);
-		
-//		setBackground(Color.white);
+		add(containerOfScrollPanel, gbc);
 		
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+private JCheckBox getShowDifferencesCheckbox() {
+	if(showDifferencesCheckbox == null) {
+		showDifferencesCheckbox = new JCheckBox("Show Differences");
+		showDifferencesCheckbox.addItemListener(eventHandler);
+	}
+	return showDifferencesCheckbox;
+}
+private JButton getZoomLargerButton() {
+	if (zoomLargerButton == null) {
+		zoomLargerButton = new JButton();		// "+"
+		Icon icon = new ZoomShape(ZoomShape.Sign.plus);
+		zoomLargerButton.setIcon(icon);
+		zoomLargerButton.setBorder(BorderFactory.createEmptyBorder());
+		zoomLargerButton.setContentAreaFilled(false);
+		zoomLargerButton.setFocusPainted(false);
+		zoomLargerButton.addActionListener(eventHandler);
+	}
+	return zoomLargerButton;
+}
+private JButton getZoomSmallerButton() {
+	if (zoomSmallerButton == null) {
+		zoomSmallerButton = new JButton();		// -
+		Icon icon = new ZoomShape(ZoomShape.Sign.minus);
+		zoomSmallerButton.setIcon(icon);
+		zoomSmallerButton.setBorder(BorderFactory.createEmptyBorder());
+		zoomSmallerButton.setContentAreaFilled(false);
+		zoomSmallerButton.setFocusPainted(false);
+		zoomSmallerButton.addActionListener(eventHandler);
+	}
+	return zoomSmallerButton;
 }
 
 private void searchTable() {
