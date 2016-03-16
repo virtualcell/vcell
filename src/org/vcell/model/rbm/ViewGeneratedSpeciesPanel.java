@@ -26,7 +26,6 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -39,15 +38,14 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ParseException;
-import org.vcell.util.Matchable;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
-import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -84,11 +82,17 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 				String inputString = speciesTableRow.getExpression();
 //				System.out.println(selectedRows[0] + ": " + inputString);
 				
-				Model model = new Model("MyTempModel");
+				Model tempModel = null;
+				try {
+					tempModel = new Model("MyTempModel");
+					tempModel.addFeature("c0");
+				} catch (ModelException | PropertyVetoException e1) {
+					e1.printStackTrace();
+				}
 				if(owner != null && owner.getSimulationContext() != null) {
 					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
 					try {
-						model.getRbmModelContainer().setMolecularTypeList(mtList);
+						tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
 					} catch (PropertyVetoException e1) {
 						e1.printStackTrace();
 						throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
@@ -98,24 +102,23 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 					return;
 				}
 				try {
-				SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, model);
-				String strStructure = RbmUtils.parseCompartment(inputString, model);
+				SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
+				String strStructure = RbmUtils.parseCompartment(inputString, tempModel);
 				sp.resolveBonds();
 //				System.out.println(sp.toString());
-				Feature structure = new Feature(null) {
-					public boolean compareEqual(Matchable obj) { return false; }
-					public void setName(String name, boolean bFromGUI) throws PropertyVetoException {
-						setName0(name);
+				Structure structure;
+				if(strStructure != null) {
+					if(tempModel.getStructure(strStructure) == null) {
+						tempModel.addFeature(strStructure);
 					}
-					public String getTypeName() { return null; }
-					public int getDimension() { return 0; }
-				};
-				structure.setName(strStructure, false);
-
+					structure = tempModel.getStructure(strStructure);
+				} else {
+					structure = tempModel.getStructure(0);
+				}
 				SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
 				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc);
 				shapePanel.repaint();
-				} catch (ParseException | PropertyVetoException e1) {
+				} catch (ParseException | PropertyVetoException | ModelException e1) {
 					e1.printStackTrace();
 					Graphics panelContext = shapePanel.getGraphics();
 					spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
