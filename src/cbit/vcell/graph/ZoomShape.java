@@ -25,9 +25,6 @@ public class ZoomShape implements Icon {
 		this.sign = sign;
 	}
 	
-	
-	
-	
 	@Override
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 
@@ -88,11 +85,11 @@ public class ZoomShape implements Icon {
 
 	@Override
 	public int getIconWidth() {
-		return diameter;
+		return diameter+4;
 	}
 	@Override
 	public int getIconHeight() {
-		return diameter + 4;
+		return diameter+4;
 	}
 
 }
