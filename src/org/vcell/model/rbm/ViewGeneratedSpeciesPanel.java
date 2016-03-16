@@ -10,6 +10,7 @@
 
 package org.vcell.model.rbm;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -25,7 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -44,6 +49,7 @@ import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Species;
@@ -58,12 +64,32 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
 	
+	private JButton zoomLargerButton = null;
+	private JButton zoomSmallerButton = null;
+
 	private final NetworkConstraintsPanel owner;
 	LargeShapePanel shapePanel = null;
 	private SpeciesPatternLargeShape spls;
 
 	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if (e.getSource() == getZoomLargerButton()) {
+				boolean ret = shapePanel.zoomLarger();
+				getZoomLargerButton().setEnabled(ret);
+				getZoomSmallerButton().setEnabled(true);
+				int[] selectedRows = table.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShape(selectedRows[0]);
+				}
+			} else if (e.getSource() == getZoomSmallerButton()) {
+				boolean ret = shapePanel.zoomSmaller();
+				getZoomLargerButton().setEnabled(true);
+				getZoomSmallerButton().setEnabled(ret);
+				int[] selectedRows = table.getSelectedRows();
+				if(selectedRows.length == 1) {
+					updateShape(selectedRows[0]);
+				}
+			}
 		}
 		public void insertUpdate(DocumentEvent e) {
 			searchTable();
@@ -78,52 +104,7 @@ public class ViewGeneratedSpeciesPanel extends DocumentEditorSubPanel  {
 		public void valueChanged(ListSelectionEvent e) {
 			int[] selectedRows = table.getSelectedRows();
 			if(selectedRows.length == 1 && !e.getValueIsAdjusting()) {
-				GeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRows[0]);
-				String inputString = speciesTableRow.getExpression();
-//				System.out.println(selectedRows[0] + ": " + inputString);
-				
-				Model tempModel = null;
-				try {
-					tempModel = new Model("MyTempModel");
-					tempModel.addFeature("c0");
-				} catch (ModelException | PropertyVetoException e1) {
-					e1.printStackTrace();
-				}
-				if(owner != null && owner.getSimulationContext() != null) {
-					List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
-					try {
-						tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
-					} catch (PropertyVetoException e1) {
-						e1.printStackTrace();
-						throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
-					}
-				} else {
-					System.out.println("something is wrong, we just do nothing rather than crash");
-					return;
-				}
-				try {
-				SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
-				String strStructure = RbmUtils.parseCompartment(inputString, tempModel);
-				sp.resolveBonds();
-//				System.out.println(sp.toString());
-				Structure structure;
-				if(strStructure != null) {
-					if(tempModel.getStructure(strStructure) == null) {
-						tempModel.addFeature(strStructure);
-					}
-					structure = tempModel.getStructure(strStructure);
-				} else {
-					structure = tempModel.getStructure(0);
-				}
-				SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
-				spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc);
-				shapePanel.repaint();
-				} catch (ParseException | PropertyVetoException | ModelException e1) {
-					e1.printStackTrace();
-					Graphics panelContext = shapePanel.getGraphics();
-					spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
-					shapePanel.repaint();
-				}
+				updateShape(selectedRows[0]);
 			}
 		}
 		@Override
@@ -163,6 +144,61 @@ private void initialize() {
 		setName("ViewGeneratedSpeciesPanel");
 		setLayout(new GridBagLayout());
 			
+		shapePanel = new LargeShapePanel() {
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(spls != null) {
+					spls.paintSelf(g);
+				}
+			}
+		};
+		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+		shapePanel.setLayout(new GridBagLayout());
+		shapePanel.setBackground(Color.white);
+
+		JScrollPane scrollPane = new JScrollPane(shapePanel);
+		scrollPane.setBorder(loweredBevelBorder);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setLayout(new GridBagLayout());
+		
+		getZoomSmallerButton().setEnabled(true);
+		getZoomLargerButton().setEnabled(false);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(0,0,0,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomLargerButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.insets = new Insets(2,0,4,10);
+		gbc.anchor = GridBagConstraints.WEST;
+		optionsPanel.add(getZoomSmallerButton(), gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		optionsPanel.add(new JLabel(""), gbc);
+
+		JPanel containerOfScrollPanel = new JPanel();
+		containerOfScrollPanel.setLayout(new BorderLayout());
+		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+		containerOfScrollPanel.setPreferredSize(new Dimension(500, 135));	// dimension of shape panel
+		
+		// ------------------------------------------------------------------------
+		
 		table = new EditorScrollTable();
 		tableModel = new GeneratedSpeciesTableModel(table);
 		table.setModel(tableModel);
@@ -175,7 +211,7 @@ private void initialize() {
 		table.getColumnModel().getColumn(GeneratedSpeciesTableModel.iColIndex).setMaxWidth(60);		// left column wide enough for 6-7 digits
 		
 		int gridy = 0;
-		GridBagConstraints gbc = new java.awt.GridBagConstraints();		
+		gbc = new java.awt.GridBagConstraints();		
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
@@ -186,9 +222,9 @@ private void initialize() {
 		table.setPreferredScrollableViewportSize(new Dimension(400,200));
 		add(table.getEnclosingScrollPane(), gbc);
 		
-		gbc = new java.awt.GridBagConstraints();
-		gbc.gridx = 9;
-		gbc.gridy = gridy;
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 9;
+//		gbc.gridy = gridy;
 		
 		// add toolTipText for each table cell
 		table.addMouseMotionListener(new MouseMotionAdapter() { 
@@ -222,41 +258,101 @@ private void initialize() {
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(4, 0, 4, 4);
 		add(textFieldSearch, gbc);
-		
-		// ------------------------------------------------- shapePanel ----------------
-		shapePanel = new LargeShapePanel() {
-			@Override
-			public void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				if(spls != null) {
-					spls.paintSelf(g);
-				}
-			}
-		};
-		Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-		Dimension preferredSize = new Dimension(500, 50);
-		shapePanel.setPreferredSize(preferredSize);
-		shapePanel.setLayout(new GridBagLayout());
-		shapePanel.setBorder(loweredBevelBorder);
-		shapePanel.setBackground(Color.white);
-		shapePanel.setVisible(true);
 
 		gridy ++;	
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.3;
 		gbc.gridwidth = 8;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
-		add(shapePanel, gbc);
-		
+		add(containerOfScrollPanel, gbc);
+
 				
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+}
+
+public void updateShape(int selectedRow) {
+	GeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRow);
+	String inputString = speciesTableRow.getExpression();
+//	System.out.println(selectedRows[0] + ": " + inputString);
+	
+	Model tempModel = null;
+	try {
+		tempModel = new Model("MyTempModel");
+		tempModel.addFeature("c0");
+	} catch (ModelException | PropertyVetoException e1) {
+		e1.printStackTrace();
+	}
+	if(owner != null && owner.getSimulationContext() != null) {
+		List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
+		try {
+			tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
+		} catch (PropertyVetoException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
+		}
+	} else {
+		System.out.println("something is wrong, we just do nothing rather than crash");
+		return;
+	}
+	try {
+	SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
+	String strStructure = RbmUtils.parseCompartment(inputString, tempModel);
+	sp.resolveBonds();
+//	System.out.println(sp.toString());
+	Structure structure;
+	if(strStructure != null) {
+		if(tempModel.getStructure(strStructure) == null) {
+			tempModel.addFeature(strStructure);
+		}
+		structure = tempModel.getStructure(strStructure);
+	} else {
+		structure = tempModel.getStructure(0);
+	}
+	SpeciesContext sc = new SpeciesContext(new Species("a",""), structure, sp);
+	spls = new SpeciesPatternLargeShape(20, 20, -1, sp, shapePanel, sc);
+	
+	} catch (ParseException | PropertyVetoException | ModelException e1) {
+		e1.printStackTrace();
+		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true);	// error (red circle)
+		shapePanel.repaint();
+	}
+	
+	int xOffset = spls.getRightEnd() + 45;
+	Dimension preferredSize = new Dimension(xOffset+90, 50);
+	shapePanel.setPreferredSize(preferredSize);
+	
+	shapePanel.repaint();
+}
+
+private JButton getZoomLargerButton() {
+	if (zoomLargerButton == null) {
+		zoomLargerButton = new JButton();		// "+"
+		Icon icon = new ZoomShape(ZoomShape.Sign.plus);
+		zoomLargerButton.setIcon(icon);
+		zoomLargerButton.setBorder(BorderFactory.createEmptyBorder());
+		zoomLargerButton.setContentAreaFilled(false);
+		zoomLargerButton.setFocusPainted(false);
+		zoomLargerButton.addActionListener(eventHandler);
+	}
+	return zoomLargerButton;
+}
+private JButton getZoomSmallerButton() {
+	if (zoomSmallerButton == null) {
+		zoomSmallerButton = new JButton();		// -
+		Icon icon = new ZoomShape(ZoomShape.Sign.minus);
+		zoomSmallerButton.setIcon(icon);
+		zoomSmallerButton.setBorder(BorderFactory.createEmptyBorder());
+		zoomSmallerButton.setContentAreaFilled(false);
+		zoomSmallerButton.setFocusPainted(false);
+		zoomSmallerButton.addActionListener(eventHandler);
+	}
+	return zoomSmallerButton;
 }
 
 private void searchTable() {
