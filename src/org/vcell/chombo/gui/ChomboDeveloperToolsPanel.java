@@ -93,8 +93,13 @@ public class ChomboDeveloperToolsPanel extends CollapsiblePanel {
 
 	public final void setSolverTaskDescription(SolverTaskDescription newValue) {
 		this.solverTaskDescription = newValue;
-		smallVolFracTextField.setText(solverTaskDescription.getChomboSolverSpec().getSmallVolfracThreshold() + "");
-		includeNewFeatureCheckBox.setSelected(solverTaskDescription.getChomboSolverSpec().isActivateFeatureUnderDevelopment());
+		if(solverTaskDescription.getChomboSolverSpec() != null){
+			smallVolFracTextField.setText(solverTaskDescription.getChomboSolverSpec().getSmallVolfracThreshold() + "");
+			includeNewFeatureCheckBox.setSelected(solverTaskDescription.getChomboSolverSpec().isActivateFeatureUnderDevelopment());
+		}else{
+			smallVolFracTextField.setText("");
+			includeNewFeatureCheckBox.setSelected(false);
+		}
 	}
 
 }
