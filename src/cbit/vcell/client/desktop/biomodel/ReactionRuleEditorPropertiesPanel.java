@@ -76,6 +76,7 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.MolecularComponentLargeShape.ComponentStateLargeShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
@@ -721,24 +722,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JButton getZoomLargerButton() {
 		if (zoomLargerButton == null) {
-			zoomLargerButton = new JButton();		// "+"
-			Icon icon = new ZoomShape(ZoomShape.Sign.plus);
-			zoomLargerButton.setIcon(icon);
-			zoomLargerButton.setBorder(BorderFactory.createEmptyBorder());
-			zoomLargerButton.setContentAreaFilled(false);
-			zoomLargerButton.setFocusPainted(false);
+			zoomLargerButton = new JButton();
+			ZoomShape.setZoomMod(zoomLargerButton, Sign.plus);
 			zoomLargerButton.addActionListener(eventHandler);
 		}
 		return zoomLargerButton;
 	}
 	private JButton getZoomSmallerButton() {
 		if (zoomSmallerButton == null) {
-			zoomSmallerButton = new JButton();		// -
-			Icon icon = new ZoomShape(ZoomShape.Sign.minus);
-			zoomSmallerButton.setIcon(icon);
-			zoomSmallerButton.setBorder(BorderFactory.createEmptyBorder());
-			zoomSmallerButton.setContentAreaFilled(false);
-			zoomSmallerButton.setFocusPainted(false);
+			zoomSmallerButton = new JButton();
+			ZoomShape.setZoomMod(zoomSmallerButton, Sign.minus);
 			zoomSmallerButton.addActionListener(eventHandler);
 		}
 		return zoomSmallerButton;

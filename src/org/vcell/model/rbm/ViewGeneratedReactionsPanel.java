@@ -50,6 +50,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.ZoomShape;
+import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
@@ -444,11 +445,7 @@ private void initialize() {
 private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
-		Icon icon = new ZoomShape(ZoomShape.Sign.plus);
-		zoomLargerButton.setIcon(icon);
-		zoomLargerButton.setBorder(BorderFactory.createEmptyBorder());
-		zoomLargerButton.setContentAreaFilled(false);
-		zoomLargerButton.setFocusPainted(false);
+		ZoomShape.setZoomMod(zoomLargerButton, Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -456,11 +453,7 @@ private JButton getZoomLargerButton() {
 private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
-		Icon icon = new ZoomShape(ZoomShape.Sign.minus);
-		zoomSmallerButton.setIcon(icon);
-		zoomSmallerButton.setBorder(BorderFactory.createEmptyBorder());
-		zoomSmallerButton.setContentAreaFilled(false);
-		zoomSmallerButton.setFocusPainted(false);
+		ZoomShape.setZoomMod(zoomSmallerButton, Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;
