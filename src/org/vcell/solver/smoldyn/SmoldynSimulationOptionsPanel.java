@@ -280,7 +280,7 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			
 		setVisible(true);
 		SmoldynSimulationOptions smoldynSimulationOptions = solverTaskDescription.getSmoldynSimulationOptions();
-		Integer randomSeed = smoldynSimulationOptions.getRandomSeed();
+		Integer randomSeed = (smoldynSimulationOptions==null?null:smoldynSimulationOptions.getRandomSeed());
 		if (randomSeed == null) {
 			randomSeedTextField.setEditable(false);
 			randomSeedCheckBox.setSelected(false);
@@ -290,12 +290,13 @@ public class SmoldynSimulationOptionsPanel extends CollapsiblePanel {
 			randomSeedTextField.setText(randomSeed.toString());
 			lastUserEnteredSeed = randomSeed;
 		}
+		if(smoldynSimulationOptions != null){
+			highResCheckBox.setSelected(smoldynSimulationOptions.isUseHighResolutionSample());
+			saveParticleLocationsCheckBox.setSelected(smoldynSimulationOptions.isSaveParticleLocations());
 		
-		highResCheckBox.setSelected(smoldynSimulationOptions.isUseHighResolutionSample());
-		saveParticleLocationsCheckBox.setSelected(smoldynSimulationOptions.isSaveParticleLocations());
-		
-		gaussianTableSizeTextField.setText("" + smoldynSimulationOptions.getGaussianTableSize());
-		accuracyTextField.setText("" + smoldynSimulationOptions.getAccuracy());
+			gaussianTableSizeTextField.setText("" + smoldynSimulationOptions.getGaussianTableSize());
+			accuracyTextField.setText("" + smoldynSimulationOptions.getAccuracy());
+		}
 	}
 	
 	private void setNewAccuracy(){
