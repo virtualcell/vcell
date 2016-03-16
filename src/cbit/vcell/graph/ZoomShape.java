@@ -10,19 +10,39 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 
 public class ZoomShape implements Icon {
 
-	public static final int diameter = 20;
+	public static final int Diameter = 20;
 	public enum Sign { plus, minus };
+	private enum State { normal, pressed };
 	
-	private Sign sign;
+	private final Sign sign;
+	private final State state;
+	private final int diameter;
 
-	public ZoomShape(Sign sign) {
+	// one should invoke the static method setZoomMod below for a button using this icon
+	// to make it perform and paint properly
+	//
+	public ZoomShape(Sign sign, State state) {
 		super();
 		this.sign = sign;
+		this.state = state;
+		if(sign == Sign.plus) {				// for unknown reason people want them the same size
+			this.diameter = Diameter;
+		} else {
+			this.diameter = Diameter;
+//			this.diameter = Diameter-6;		// personally I prefer the zoom out to be smaller
+		}
+	}
+	public ZoomShape(Sign sign, State state, int diameter) {
+		super();
+		this.sign = sign;
+		this.state = state;
+		this.diameter = diameter;
 	}
 	
 	@Override
@@ -42,14 +62,31 @@ public class ZoomShape implements Icon {
 		Color colorOld = g2.getColor();
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
+		Color interior = Color.white;
 		Color exterior;
 		Color signColor;
 		Color contour;
+		
+		Color c1, c2;
+		if(sign == Sign.plus) {
+			c1 = SpeciesPatternLargeShape.componentGreen;
+			c2 = Color.green;
+		} else {
+			c1 = SpeciesPatternLargeShape.componentBad;
+			c2 = Color.red;
+		}
+		
 		if(b.isEnabled()) {
-			exterior = SpeciesPatternLargeShape.componentGreen.darker();
-			signColor = Color.green.darker().darker().darker();
-			contour = SpeciesPatternLargeShape.componentGreen.darker().darker().darker();
-			} else {
+			if(state == State.normal) {
+				exterior = c1.darker();
+				signColor = c2.darker().darker().darker();
+			} else {	// same colors, brighter when button is pressed
+				exterior = c1;
+				signColor = c2.darker().darker();
+			}
+			contour = c1.darker().darker().darker();
+			
+		} else {	// disabled
 			exterior = Color.lightGray;
 			signColor = Color.gray;
 			contour = Color.gray;
@@ -59,7 +96,7 @@ public class ZoomShape implements Icon {
 		float radius = diameter*0.5f;
 		Point2D focus = new Point2D.Float(xPos+diameter/3-1, yPos+diameter/3-1);
 		float[] dist = {0.1f, 1.0f};
-		Color[] colors = {Color.white, exterior};
+		Color[] colors = {interior, exterior};
 		RadialGradientPaint p = new RadialGradientPaint(center, radius, focus, dist, colors, CycleMethod.NO_CYCLE);
 		g2.setPaint(p);
 		Ellipse2D circle = new Ellipse2D.Double(xPos, yPos, diameter, diameter);
@@ -68,17 +105,21 @@ public class ZoomShape implements Icon {
 		g2.setPaint(contour);
 		g2.draw(circle2);
 		
+		// TODO: use diameter instead of hardcoded numbers for the horizontal and vertical lines
+		
+		int i = diameter / 4;	// offset left and right from center (for the vertical and orizontal lines)
+		
 		int cx = b.getWidth() / 2;		// center of circle
 		int cy = b.getHeight() / 2;
 		g2.setColor(signColor);
-		g2.drawLine(cx-6, cy-1, cx+4, cy-1);	// horizontal
-		g2.drawLine(cx-6, cy, cx+4, cy);
-		g2.drawLine(cx-6, cy+1, cx+4, cy+1);
-		if(sign == Sign.plus) {					// draw a green '+' sign
+		g2.drawLine(cx-i-1, cy-1, cx+i-1, cy-1);	// horizontal bar of the '-' or '+' signs
+		g2.drawLine(cx-i-1, cy, cx+i-1, cy);
+		g2.drawLine(cx-i-1, cy+1, cx+i-1, cy+1);
+		if(sign == Sign.plus) {					// draw the vertical bar of the '+' sign
 			
-			g2.drawLine(cx, cy-5, cx, cy+5);	// vertical
-			g2.drawLine(cx-1, cy-5, cx-1, cy+5);
-			g2.drawLine(cx-2, cy-5, cx-2, cy+5);
+			g2.drawLine(cx, cy-i, cx, cy+i);	// vertical
+			g2.drawLine(cx-1, cy-i, cx-1, cy+i);
+			g2.drawLine(cx-2, cy-i, cx-2, cy+i);
 		}
 		g.setColor(colorOld);
 	}
@@ -90,6 +131,34 @@ public class ZoomShape implements Icon {
 	@Override
 	public int getIconHeight() {
 		return diameter+4;
+	}
+	
+	public static void setZoomMod(JButton button, Sign sign) {
+		Icon iconNormal = new ZoomShape(sign, State.normal);
+		Icon iconPressed = new ZoomShape(sign, State.pressed);
+		button.setIcon(iconNormal);
+		button.setPressedIcon(iconPressed);
+		button.setBorder(BorderFactory.createEmptyBorder());
+		button.setContentAreaFilled(false);
+		button.setFocusPainted(false);
+		button.setFocusable(false);
+		if(sign == Sign.plus) {
+			button.setToolTipText("Zoom In");
+		} else {
+			button.setToolTipText("Zoom Out");
+		}
+	}	
+	
+	public static void setZoomToolbarMod(JButton button, Sign sign) {
+		Icon iconNormal = new ZoomShape(sign, State.normal, 16);
+		Icon iconPressed = new ZoomShape(sign, State.pressed, 16);
+		button.setIcon(iconNormal);
+		button.setPressedIcon(iconPressed);
+		if(sign == Sign.plus) {
+			button.setToolTipText("Zoom In");
+		} else {
+			button.setToolTipText("Zoom Out");
+		}
 	}
 
 }
