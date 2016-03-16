@@ -99,7 +99,7 @@ public class SimulationData extends VCData {
 		private int jobIndex = 0;
 		private TreeSet<String> amplistorNotfoundSet = new TreeSet<String>();
 		boolean bNonSpatial = false;
-		private static final FileResolver fileResolve = FileResolver.get();
+		private final FileResolver fileResolve = new FileResolver();
 
 		SimDataAmplistorInfo simDataAmplistorInfo;
 		public AmplistorHelper(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws FileNotFoundException{
