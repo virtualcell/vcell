@@ -339,6 +339,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
 			gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -348,6 +349,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
 			gbc.insets = new Insets(2,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -357,22 +359,23 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(8,4,0,4);
+			gbc.insets = new Insets(8,4,4,2);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomLargerButton(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(8,2,4,4);
+			gbc.anchor = GridBagConstraints.WEST;
+			optionsPanel.add(getZoomSmallerButton(), gbc);
+			// apparently we don't need a fake 3rd cell to the right
 
 			gridy++;
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(0,4,4,4);
-			gbc.anchor = GridBagConstraints.WEST;
-			optionsPanel.add(getZoomSmallerButton(), gbc);
-			
-			gridy++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
 			gbc.weightx = 1;
 			gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
 			gbc.anchor = GridBagConstraints.WEST;
@@ -383,6 +386,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
 			gbc.insets = new Insets(2,4,0,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;
@@ -392,6 +396,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
 			gbc.insets = new Insets(0,4,4,4);
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.anchor = GridBagConstraints.SOUTHWEST;

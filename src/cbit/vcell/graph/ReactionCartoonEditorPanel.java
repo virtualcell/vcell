@@ -48,6 +48,7 @@ import cbit.gui.graph.CartoonTool.Mode;
 import cbit.gui.graph.GraphLayoutManager;
 import cbit.gui.graph.GraphPane;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.graph.structures.StructureSuite;
 import cbit.vcell.model.Model;
 
@@ -521,14 +522,26 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				zoomInButton = createToolBarButton();
 				zoomInButton.setName("ZoomInButton");
-				zoomInButton.setToolTipText("Zoom In");
+				ZoomShape.setZoomToolbarMod(zoomInButton, Sign.plus);
 				zoomInButton.setActionCommand("ZoomIn");
-				zoomInButton.setIcon(loadIcon("/images/zoomin.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
 		}
 		return zoomInButton;
+	}
+	private JButton getZoomOutButton() {
+		if (zoomOutButton == null) {
+			try {
+				zoomOutButton = createToolBarButton();
+				zoomOutButton.setName("ZoomOutButton");
+				ZoomShape.setZoomToolbarMod(zoomOutButton, Sign.minus);
+				zoomOutButton.setActionCommand("ZoomOut");
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return zoomOutButton;
 	}
 	
 	private JButton getFloatRequestButton() {
@@ -544,21 +557,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			}
 		}
 		return floatRequestButton;
-	}
-
-	private JButton getZoomOutButton() {
-		if (zoomOutButton == null) {
-			try {
-				zoomOutButton = createToolBarButton();
-				zoomOutButton.setName("ZoomOutButton");
-				zoomOutButton.setToolTipText("Zoom Out");
-				zoomOutButton.setActionCommand("ZoomOut");
-				zoomOutButton.setIcon(loadIcon("/images/zoomout.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return zoomOutButton;
 	}
 
 	// TODO centralize exception handling
