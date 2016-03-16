@@ -16,7 +16,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCKeyDataIdentifier;
 
-import cbit.vcell.solvers.MovingBoundaryFileWriter;
 import cbit.vcell.solvers.MovingBoundarySolver;
 
 
@@ -57,21 +56,12 @@ public class FileResolver {
 		}
 	}
 
-	private static FileResolver INSTANCE;
 	/**
 	 * places to look
 	 */
 	private final Set<File> directories;
-	private FileResolver( ) {
+	public FileResolver( ) {
 		directories = new HashSet<>( );
-	}
-
-	public static FileResolver get( ) {
-		if (INSTANCE == null) {
-			INSTANCE = new FileResolver();
-
-		}
-		return INSTANCE;
 	}
 
 	public void registerDirectory(File f) {
@@ -154,7 +144,7 @@ public class FileResolver {
 	 * @param sk = kdi.getSimuationKey
 	 * @return name information to look for
 	 */
-	private static Collection<NameResolve> names(VCKeyDataIdentifier kdi, KeyValue sk) {
+	private Collection<NameResolve> names(VCKeyDataIdentifier kdi, KeyValue sk) {
 		VCAssert.assertTrue(kdi.getSimulationKey() == sk);
 		ArrayList<NameResolve> rval = new ArrayList<>(3);
 		int ji = kdi.getJobIndex();
