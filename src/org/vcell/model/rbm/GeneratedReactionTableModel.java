@@ -31,9 +31,13 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedReactionTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 2;
+	public static final int colCount = 3;
 	public static final int iColIndex = 0;
-	public static final int iColExpression = 1;
+	public static final int iColRule = 1;
+	public static final int iColExpression = 2;
+	
+	private static final String reverse = "_reverse_";
+
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -45,13 +49,15 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedReactionTableModel(EditorScrollTable table) {
-		super(table, new String[] {"Index", "Expression"});
+		super(table, new String[] {"Index", "Origin", "Expression"});
 		setMaxRowsPerPage(1000);
 	}
 	
 	public Class<?> getColumnClass(int iCol) {
 		switch (iCol){		
 			case iColIndex:{
+				return String.class;
+			}case iColRule:{
 				return String.class;
 			}case iColExpression:{
 				return String.class;
@@ -62,10 +68,18 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	
 	public Object getValueAt(int iRow, int iCol) {
 		GeneratedReactionTableRow reactionTableRow = getValueAt(iRow);
-		BNGReaction reactionObject = reactionTableRow.getReactionObject();
 		switch(iCol) {
 			case iColIndex:{
 				return reactionTableRow.getIndex();
+			}
+			case iColRule:{
+				BNGReaction reactionObject = reactionTableRow.getReactionObject();
+				String name = reactionObject.getRuleName();
+				if(name.contains(reverse)) {
+					name = name.substring(reverse.length());
+					
+				}
+				return name;
 			}
 			case iColExpression:{
 				return reactionTableRow.getExpression();
@@ -78,7 +92,7 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	
 	public boolean isCellEditable(int iRow, int iCol) {
 		return false;
-		}
+	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		return;
