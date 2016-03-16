@@ -68,7 +68,6 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	private EditorScrollTable table = null;
 	private JTextField textFieldSearch = null;
 
-	private JCheckBox showDifferencesCheckbox = null;
 	private JButton zoomLargerButton = null;
 	private JButton zoomSmallerButton = null;
 
@@ -78,7 +77,7 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
 
 	
-	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener, ItemListener {
+	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == getZoomLargerButton()) {
 				boolean ret = shapePanel.zoomLarger();
@@ -135,18 +134,6 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 			}
 		}
 		
-		@Override
-		public void itemStateChanged(ItemEvent e) {
-			if(e.getSource() == getShowDifferencesCheckbox()) {
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					shapePanel.setShowDifferencesOnly(true);
-					shapePanel.repaint();
-				} else {
-					shapePanel.setShowDifferencesOnly(false);
-					shapePanel.repaint();
-				}
-			}
-		}
 	}
 	
 public ViewGeneratedReactionsPanel(NetworkConstraintsPanel owner) {
@@ -321,9 +308,7 @@ private void initialize() {
 	try {
 		setName("ViewGeneratedReactionsPanel");
 		setLayout(new GridBagLayout());
-			
-		
-// -------------------------------------------------------------------------------------------
+
 		shapePanel = new RulesShapePanel() {
 			@Override
 			public void paintComponent(Graphics g) {
@@ -375,14 +360,6 @@ private void initialize() {
 		gbc.insets = new Insets(4, 4, 4, 10);
 		optionsPanel.add(new JLabel(""), gbc);
 
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 3;
-//		gbc.insets = new Insets(0,4,4,4);
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.SOUTHWEST;
-//		optionsPanel.add(getShowDifferencesCheckbox(), gbc);
-		
 		JPanel containerOfScrollPanel = new JPanel();
 		containerOfScrollPanel.setLayout(new BorderLayout());
 		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
@@ -467,13 +444,6 @@ private void initialize() {
 	}
 }
 
-private JCheckBox getShowDifferencesCheckbox() {
-	if(showDifferencesCheckbox == null) {
-		showDifferencesCheckbox = new JCheckBox("Show Differences");
-		showDifferencesCheckbox.addItemListener(eventHandler);
-	}
-	return showDifferencesCheckbox;
-}
 private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
