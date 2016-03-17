@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.MultipleGradientPaint.CycleMethod;
@@ -60,6 +61,8 @@ public class ZoomShape implements Icon {
 		
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
+		Paint paintOld = g2.getPaint();
+		
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		Color interior = Color.white;
@@ -121,7 +124,8 @@ public class ZoomShape implements Icon {
 			g2.drawLine(cx-1, cy-i, cx-1, cy+i);
 			g2.drawLine(cx-2, cy-i, cx-2, cy+i);
 		}
-		g.setColor(colorOld);
+		g2.setColor(colorOld);
+		g2.setPaint(paintOld);
 	}
 
 	@Override
@@ -154,6 +158,8 @@ public class ZoomShape implements Icon {
 		Icon iconPressed = new ZoomShape(sign, State.pressed, 16);
 		button.setIcon(iconNormal);
 		button.setPressedIcon(iconPressed);
+		button.setFocusPainted(false);
+		button.setFocusable(false);
 		if(sign == Sign.plus) {
 			button.setToolTipText("Zoom In");
 		} else {
