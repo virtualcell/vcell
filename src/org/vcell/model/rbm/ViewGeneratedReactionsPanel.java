@@ -47,6 +47,7 @@ import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.graph.ResizeCanvasShape;
 import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.ZoomShape;
@@ -445,7 +446,8 @@ private void initialize() {
 private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
-		ZoomShape.setZoomMod(zoomLargerButton, Sign.plus);
+//		ResizeCanvasShape.setCanvasNormalMod(zoomLargerButton, ResizeCanvasShape.Sign.expand);
+		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -453,7 +455,8 @@ private JButton getZoomLargerButton() {
 private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
-		ZoomShape.setZoomMod(zoomSmallerButton, Sign.minus);
+//		ResizeCanvasShape.setCanvasNormalMod(zoomSmallerButton, ResizeCanvasShape.Sign.shrink);
+		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;
