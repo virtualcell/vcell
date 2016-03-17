@@ -227,8 +227,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				shrinkCanvasButton = createToolBarButton();
 				shrinkCanvasButton.setName("ShrinkCanvasButton");
-				shrinkCanvasButton.setToolTipText("Shrink Canvas");
-				shrinkCanvasButton.setIcon(shrinkLayoutIcon);
+				ResizeCanvasShape.setCanvasNormalMod(shrinkCanvasButton, ResizeCanvasShape.Sign.shrink);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -241,8 +240,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				expandCanvasButton = createToolBarButton();
 				expandCanvasButton.setName("ExpandCanvasButton");
-				expandCanvasButton.setToolTipText("Expand Canvas");
-				expandCanvasButton.setIcon(expandLayoutIcon);
+				ResizeCanvasShape.setCanvasNormalMod(expandCanvasButton, ResizeCanvasShape.Sign.expand);
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -522,7 +520,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				zoomInButton = createToolBarButton();
 				zoomInButton.setName("ZoomInButton");
-				ZoomShape.setZoomToolbarMod(zoomInButton, Sign.plus);
+				ZoomShape.setZoomToolbarMod(zoomInButton, ZoomShape.Sign.plus);
 				zoomInButton.setActionCommand("ZoomIn");
 			} catch (Throwable throwable) {
 				handleException(throwable);
@@ -535,7 +533,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try {
 				zoomOutButton = createToolBarButton();
 				zoomOutButton.setName("ZoomOutButton");
-				ZoomShape.setZoomToolbarMod(zoomOutButton, Sign.minus);
+				ZoomShape.setZoomToolbarMod(zoomOutButton, ZoomShape.Sign.minus);
 				zoomOutButton.setActionCommand("ZoomOut");
 			} catch (Throwable throwable) {
 				handleException(throwable);

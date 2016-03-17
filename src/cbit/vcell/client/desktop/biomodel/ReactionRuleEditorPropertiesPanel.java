@@ -728,7 +728,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JButton getZoomLargerButton() {
 		if (zoomLargerButton == null) {
 			zoomLargerButton = new JButton();
-			ZoomShape.setZoomMod(zoomLargerButton, Sign.plus);
+			ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
 			zoomLargerButton.addActionListener(eventHandler);
 		}
 		return zoomLargerButton;
@@ -736,7 +736,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private JButton getZoomSmallerButton() {
 		if (zoomSmallerButton == null) {
 			zoomSmallerButton = new JButton();
-			ZoomShape.setZoomMod(zoomSmallerButton, Sign.minus);
+			ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
 			zoomSmallerButton.addActionListener(eventHandler);
 		}
 		return zoomSmallerButton;
