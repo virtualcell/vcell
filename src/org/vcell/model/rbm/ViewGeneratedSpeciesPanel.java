@@ -334,7 +334,7 @@ public void updateShape(int selectedRow) {
 private JButton getZoomLargerButton() {
 	if (zoomLargerButton == null) {
 		zoomLargerButton = new JButton();		// "+"
-		ZoomShape.setZoomMod(zoomLargerButton, Sign.plus);
+		ZoomShape.setZoomMod(zoomLargerButton, ZoomShape.Sign.plus);
 		zoomLargerButton.addActionListener(eventHandler);
 	}
 	return zoomLargerButton;
@@ -342,7 +342,7 @@ private JButton getZoomLargerButton() {
 private JButton getZoomSmallerButton() {
 	if (zoomSmallerButton == null) {
 		zoomSmallerButton = new JButton();		// -
-		ZoomShape.setZoomMod(zoomSmallerButton, Sign.minus);
+		ZoomShape.setZoomMod(zoomSmallerButton, ZoomShape.Sign.minus);
 		zoomSmallerButton.addActionListener(eventHandler);
 	}
 	return zoomSmallerButton;
