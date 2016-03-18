@@ -462,7 +462,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getSpeciesButton() {
 		if (speciesButton == null) {
 			try {
-				speciesButton = createModeButton("SpeciesButton", "Species Tool", Mode.SPECIES, loadIcon("/images/species.gif"));
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				SpeciesToolShape.setSpeciesToolMod(button);
+				button.setActionCommand(Mode.SPECIES.getActionCommand());
+				speciesButton = button;
+//				speciesButton = createModeButton("SpeciesButton", "Species Tool", Mode.SPECIES, loadIcon("/images/species.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}

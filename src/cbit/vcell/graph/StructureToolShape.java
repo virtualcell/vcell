@@ -47,10 +47,10 @@ public class StructureToolShape implements Icon {
 		Stroke strokeOld = g2.getStroke();
 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2.setStroke(new BasicStroke(1.8f));
-		
 		Color c1, c2, c3;
 		int xx, yy;
+		
+		g2.setStroke(new BasicStroke(1.8f));
 		if(state == State.normal) {
 			c1 = SpeciesPatternLargeShape.componentBad.darker();
 			c2 = Color.black;
@@ -70,6 +70,7 @@ public class StructureToolShape implements Icon {
 		g2.setPaint(gp1);
 		g2.draw(e1);
 
+		g2.setStroke(new BasicStroke(1.6f));
 		if(state == State.normal) {
 			c1 = Color.black;
 			c2 = SpeciesPatternLargeShape.componentGreen.darker();
@@ -113,6 +114,4 @@ public class StructureToolShape implements Icon {
 		button.setFocusable(false);
 		button.setToolTipText("Structure Tool");
 	}
-
-
 }
