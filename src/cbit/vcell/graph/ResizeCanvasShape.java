@@ -10,6 +10,7 @@ import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Stroke;
 import java.awt.geom.Point2D;
 
 import javax.swing.Icon;
@@ -53,6 +54,7 @@ public class ResizeCanvasShape implements Icon {
 		Graphics2D g2 = (Graphics2D)g;
 		Color colorOld = g2.getColor();
 		Paint paintOld = g2.getPaint();
+		Stroke strokeOld = g2.getStroke();
 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -159,8 +161,7 @@ public class ResizeCanvasShape implements Icon {
 			g2.drawLine(cx+o, cy+o, cx+o+d, cy+o);			// lower right
 			g2.drawLine(cx+o, cy+o, cx+o, cy+o+d);
 		}
-
-		
+		g2.setStroke(strokeOld);
 		g2.setColor(colorOld);
 		g2.setPaint(paintOld);
 	}
