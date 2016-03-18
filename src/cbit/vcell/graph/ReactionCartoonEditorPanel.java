@@ -475,8 +475,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getStructureButton() {
 		if (structureButton == null) {
 			try {
-				structureButton = createModeButton("StructureButton", "Structure Tool", 
-						Mode.STRUCTURE, loadIcon("/images/feature.gif"));
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				StructuresShape.setStructureToolMod(button);
+				button.setActionCommand(Mode.STRUCTURE.getActionCommand());
+				structureButton = button;
+//				structureButton = createModeButton("StructureButton", "Structure Tool", Mode.STRUCTURE, loadIcon("/images/feature.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
