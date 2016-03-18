@@ -18,14 +18,14 @@ import org.vcell.util.gui.JToolBarToggleButton;
 
 import cbit.vcell.graph.ResizeCanvasShape.Sign;
 
-public class StructuresShape implements Icon {
+public class StructureToolShape implements Icon {
 
 	private enum State { normal, selected };
 
 	private final State state;
 	private final int diameter = 20;
 
-	public StructuresShape(State state) {
+	public StructureToolShape(State state) {
 		super();
 		this.state = state;
 	}
@@ -104,8 +104,8 @@ public class StructuresShape implements Icon {
 	
 	public static void setStructureToolMod(JToolBarToggleButton button) {
 		ReactionCartoonEditorPanel.setToolBarButtonSizes(button);
-		Icon iconNormal = new StructuresShape(State.normal);
-		Icon iconSelected = new StructuresShape(State.selected);
+		Icon iconNormal = new StructureToolShape(State.normal);
+		Icon iconSelected = new StructureToolShape(State.selected);
 		button.setName("StructureButton");
 		button.setIcon(iconNormal);
 		button.setSelectedIcon(iconSelected);

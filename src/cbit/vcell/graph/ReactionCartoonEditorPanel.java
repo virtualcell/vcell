@@ -462,8 +462,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getSpeciesButton() {
 		if (speciesButton == null) {
 			try {
-				speciesButton = createModeButton("SpeciesButton", "Species Tool", 
-						Mode.SPECIES, loadIcon("/images/species.gif"));
+				speciesButton = createModeButton("SpeciesButton", "Species Tool", Mode.SPECIES, loadIcon("/images/species.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
@@ -476,7 +475,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		if (structureButton == null) {
 			try {
 				JToolBarToggleButton button = new JToolBarToggleButton();
-				StructuresShape.setStructureToolMod(button);
+				StructureToolShape.setStructureToolMod(button);
 				button.setActionCommand(Mode.STRUCTURE.getActionCommand());
 				structureButton = button;
 //				structureButton = createModeButton("StructureButton", "Structure Tool", Mode.STRUCTURE, loadIcon("/images/feature.gif"));
