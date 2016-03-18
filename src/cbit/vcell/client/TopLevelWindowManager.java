@@ -299,11 +299,14 @@ public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws E
 		Geometry geometry = ((MathModel)doc).getMathDescription().getGeometry();
 		geometry.precomputeAll(new GeometryThumbnailImageFactoryAWT());
 		Simulation[] simulations = ((MathModel)doc).getSimulations();
-		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+//		VCSimulationIdentifier simIDs[] = new VCSimulationIdentifier[simulations.length];
+		ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<>();
 		for (int i = 0; i < simulations.length; i++){
-			simIDs[i] = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+			if(simulations[i].getSimulationInfo() != null){
+				simIDs.add(simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier());
+			}
 		}
-		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs);
+		getRequestManager().getDocumentManager().preloadSimulationStatus(simIDs.toArray(new VCSimulationIdentifier[0]));
 	} else if (doc instanceof Geometry) {
 		((Geometry)doc).precomputeAll(new GeometryThumbnailImageFactoryAWT());
 	}
