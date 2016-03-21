@@ -90,6 +90,8 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager.ComboboxROIName;
+import cbit.vcell.graph.ZoomShape;
+import cbit.vcell.graph.ZoomShape.Sign;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -2263,10 +2265,8 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zoomInButton.setMargin(new Insets(2, 2, 2, 2));
 			zoomInButton.setMinimumSize(new Dimension(32, 32));
 			zoomInButton.setMaximumSize(new Dimension(32, 32));
-			zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
 			zoomInButton.setPreferredSize(new Dimension(32, 32));
-			zoomInButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomin.gif")));
-			zoomInButton.setToolTipText("Zoom In");
+			ZoomShape.setZoomOverlayEditorMod(zoomInButton, ZoomShape.Sign.plus);
 			zoomInButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					getImagePane().setZoom(getImagePane().getZoom()*1.3f);
@@ -2289,17 +2289,15 @@ public class OverlayEditorPanelJAI extends JPanel{
 			zoomOutButton.setPreferredSize(new Dimension(32, 32));
 			zoomOutButton.setMinimumSize(new Dimension(32, 32));
 			zoomOutButton.setMaximumSize(new Dimension(32, 32));
-			zoomOutButton.setMargin(new Insets(2, 2, 2, 2));
-			zoomOutButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomout.gif")));
 			zoomOutButton.setPreferredSize(new Dimension(32, 32));
-			zoomOutButton.setToolTipText("Zoom Out");
+			zoomOutButton.setMargin(new Insets(2, 2, 2, 2));
+			ZoomShape.setZoomOverlayEditorMod(zoomOutButton, ZoomShape.Sign.minus);
 			zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					getImagePane().setZoom(getImagePane().getZoom()/1.3f);
 					updateLabel(-1,-1);
 				}
 			});
-			zoomOutButton.setIcon(new ImageIcon(getClass().getResource("/images/zoomout.gif")));
 		}
 		return zoomOutButton;
 	}
