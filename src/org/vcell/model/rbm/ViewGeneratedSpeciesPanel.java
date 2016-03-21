@@ -201,7 +201,7 @@ private void initialize() {
 		// ------------------------------------------------------------------------
 		
 		table = new EditorScrollTable();
-		tableModel = new GeneratedSpeciesTableModel(table);
+		tableModel = new GeneratedSpeciesTableModel(table, owner);
 		table.setModel(tableModel);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 		table.getModel().addTableModelListener(eventHandler);
