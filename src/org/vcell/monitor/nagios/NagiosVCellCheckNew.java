@@ -80,10 +80,10 @@ public class NagiosVCellCheckNew {
 	private static class NagArgsHelper {
 		public String host=null;
 		public ArrayList<Integer> rmiPorts = new ArrayList<Integer>();
-		public String password=null;
+		public String vcellNagiosPassword=null;
 		public VCELL_CHECK_LEVEL checkLevel=null;
-		public int warningTimeout = 60; //seconds
-		public int criticalTimeout = 300; //seconds
+		public int warningTimeout = 120; //seconds, default warn if test longer than 2 minutes
+		public int criticalTimeout = 300; //seconds, default error if test longer than 5 minutes
 		public int monitorSocket = -1; //within 1025-65535
 //		public long lastSimRanTime = System.currentTimeMillis();
 		public NagArgsHelper(String[] args) throws Exception{
@@ -108,7 +108,7 @@ public class NagiosVCellCheckNew {
 					}
 				}else if(args[i].equals("-p")){
 					i++;
-					this.password = args[i];
+					this.vcellNagiosPassword = args[i];
 				}else if(args[i].equals("-L")){
 					i++;
 					this.checkLevel = VCELL_CHECK_LEVEL.valueOf(args[i]);
@@ -145,7 +145,7 @@ public class NagiosVCellCheckNew {
 						"} -H vcellRMIHost -i rmiPorts -p vcellNagiosPassword -w warningTimeout -c criticalTimeout -m monitorSocket");
 				}
 			}
-			if(host == null || rmiPorts.size() == 0 || password == null || monitorSocket == -1){
+			if(host == null || rmiPorts.size() == 0 || vcellNagiosPassword == null || monitorSocket == -1){
 				throw new IllegalArgumentException("Error - Host, rmiPort(s), dbPassword, monitorSocket must all be non null");
 			}
 		}
@@ -249,16 +249,14 @@ public class NagiosVCellCheckNew {
 	
 	private static void exceededTimeouts(NagArgsHelper nagArgsHelper,CheckResults checkResults) throws Exception{
 		if(nagArgsHelper.criticalTimeout != -1 &&
-			checkResults.levelTimesMillisec.get(nagArgsHelper.checkLevel) != null &&
-			((checkResults.levelTimesMillisec.get(nagArgsHelper.checkLevel))/1000) > nagArgsHelper.criticalTimeout){
+			checkResults.totalTime > nagArgsHelper.criticalTimeout){
 			
 			throw new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout+
 				(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
 			}
 
 		if(nagArgsHelper.warningTimeout != -1 &&
-				checkResults.levelTimesMillisec.get(nagArgsHelper.checkLevel) != null &&
-				((checkResults.levelTimesMillisec.get(nagArgsHelper.checkLevel))/1000) > nagArgsHelper.warningTimeout){
+				checkResults.totalTime > nagArgsHelper.warningTimeout){
 			
 			throw new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout+
 					(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
@@ -267,12 +265,15 @@ public class NagiosVCellCheckNew {
 	private static class CheckResults {
 		public String vcellVersion;
 		public TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec;
+		public long totalTime;//milliseconds
 		public SimulationStatusPersistent lastSimStatus;
-		public CheckResults(String vcellVersion, TreeMap<VCELL_CHECK_LEVEL, Long> levelTimes,SimulationStatusPersistent lastSimStatus) {
+		public CheckResults(String vcellVersion, TreeMap<VCELL_CHECK_LEVEL, Long> levelTimes,
+				SimulationStatusPersistent lastSimStatus,long totalTime) {
 			super();
 			this.vcellVersion = vcellVersion;
 			this.levelTimesMillisec = levelTimes;
 			this.lastSimStatus = lastSimStatus;
+			this.totalTime = totalTime;
 		}
 		
 	}
@@ -349,7 +350,7 @@ public class NagiosVCellCheckNew {
 				if(rmiPort == -1){
 					continue;
 				}
-				result = checkVCell(nagArgsHelper.checkLevel,bForceCleanup,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",nagArgsHelper.password,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
+				result = checkVCell(nagArgsHelper.checkLevel,bForceCleanup,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",nagArgsHelper.vcellNagiosPassword,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
 //				if(result != null && !result.equals(temp)){
 //					throw new UnexpectedTestStateException("Not expecting rmiport="+nagArgsHelper.rmiPorts.get(0)+" result="+result+" and rmiport="+rmiPort+" result="+temp+" to be different");
 //				}
@@ -506,7 +507,7 @@ public class NagiosVCellCheckNew {
 //		if(criticalTimeout != -1 && ((endTime-startTime)/1000) > criticalTimeout){throw new Exception(checkLevel.toString()+" test exceeded criticalTimeout="+criticalTimeout+" seconds lastSimStatus="+lastSimStatus);}
 //		if(warningTimeout != -1 && ((endTime-startTime)/1000) > warningTimeout){throw new WarningTestConditionException(checkLevel.toString()+" test exceeded warningTimeout="+warningTimeout+" seconds lastSimStatus="+lastSimStatus);}
 
-		return new CheckResults(vcellBootstrap.getVCellSoftwareVersion(), levelTimesMillisec,lastSimStatus);
+		return new CheckResults(vcellBootstrap.getVCellSoftwareVersion(), levelTimesMillisec,lastSimStatus,System.currentTimeMillis()-startTime);
 	}
 
 	private static class VCellStatus {
@@ -731,7 +732,7 @@ public class NagiosVCellCheckNew {
 
 	public static void killMonitorProcess(int port) throws Exception{
 		//lsof -iTCP -sTCP:LISTEN -P -n
-		Executable executable = new Executable(new String[] {"lsof","-iTCP","-sTCP:LISTEN","-P","-n"});
+		Executable executable = new Executable(new String[] {"lsof","-i","TCP:"+port});
 		try{
 			executable.start();
 		}catch(Exception e){
@@ -749,7 +750,7 @@ public class NagiosVCellCheckNew {
 			StringTokenizer st = new StringTokenizer(line," ");
 			String socketElement = null;
 			String pid = null;
-			if(st.nextElement().equals("java")){
+			if(st.nextToken().equals("java")){
 				pid = st.nextToken().trim();
 				st.nextToken();
 				st.nextToken();
