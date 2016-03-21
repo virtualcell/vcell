@@ -22,7 +22,9 @@ import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -30,10 +32,11 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpeciesTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 3;
+	public static final int colCount = 4;
 	public static final int iColIndex = 0;
 	public static final int iColOriginalName = 1;
-	public static final int iColExpression = 2;
+	public static final int iColStructure = 2;
+	public static final int iColExpression = 3;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -43,11 +46,14 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	private Model model;
 	
 	private ArrayList<GeneratedSpeciesTableRow> allGeneratedSpeciesList;
-	
+
+	private final NetworkConstraintsPanel owner;
+
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
-	public GeneratedSpeciesTableModel(EditorScrollTable table) {
-		super(table, new String[] {"Index", "Name", "Expression"});
+	public GeneratedSpeciesTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
+		super(table, new String[] {"Index", "Name", "Structure", "Expression"});
+		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
 	
@@ -56,6 +62,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 			case iColIndex:{
 				return String.class;
 			}case iColOriginalName:{
+				return String.class;
+			}case iColStructure:{
 				return String.class;
 			}case iColExpression:{
 				return String.class;
@@ -72,6 +80,19 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 			}
 			case iColOriginalName:{
 				return speciesTableRow.getOriginalName();
+			}
+			case iColStructure:{
+				BNGSpecies speciesObject = speciesTableRow.getSpeciesObject();
+				String expressionString = speciesTableRow.getExpression();
+				
+				if(expressionString.startsWith("@") && expressionString.contains("::")) {
+					String structName = expressionString.substring(1, expressionString.indexOf("::"));
+					return structName;
+				} else {
+					SimulationContext sc = owner.getSimulationContext();
+					Structure struct = sc.getModel().getStructure(0);
+					return struct.getName();
+				}
 			}
 			case iColExpression:{
 				return speciesTableRow.getExpression();

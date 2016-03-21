@@ -52,6 +52,7 @@ import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.graph.ZoomShape.Sign;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
@@ -188,6 +189,23 @@ public void updateShape(int selectedRow) {
 	if (left.length() == 0 && right.length() == 0) {
 		return;
 	}
+	/* 
+	 * TODO: we can recover the original rule that generated the flattened reaction we now try to transform back into a fake rule
+	 * and use the real structure name from that rule (which we need anyway for the column Structure in the table) 
+	 * like we do in the table model:
+	 * BNGReaction reactionObject = reactionTableRow.getReactionObject();
+	 * String ruleName = reactionObject.getRuleName();
+	 * if(ruleName.contains(reverse)) {
+	 *	ruleName = ruleName.substring(reverse.length());
+	 * }
+	 * SimulationContext sc = owner.getSimulationContext();
+	 * ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(ruleName);
+	 * if(rr != null && rr.getStructure() != null) {
+	 *	return rr.getStructure().getName();
+	 * } else {
+	 *	return "?";
+	 * }
+	 */
 	ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
 	
 	String regex = "[^!]\\+";
@@ -223,7 +241,8 @@ public void updateShape(int selectedRow) {
 	patterns = right.split(regex);
 	for (String spString : patterns) {
 		try {
-			spString = spString.trim();						SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
+			spString = spString.trim();						
+			SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
 			String strStructure = RbmUtils.parseCompartment(spString, tempModel);
 			speciesPattern.resolveBonds();
 			Structure structure;
@@ -368,7 +387,7 @@ private void initialize() {
 		// -----------------------------------------------------------------------------
 
 		table = new EditorScrollTable();
-		tableModel = new GeneratedReactionTableModel(table);
+		tableModel = new GeneratedReactionTableModel(table, owner);
 		table.setModel(tableModel);
 		table.getSelectionModel().addListSelectionListener(eventHandler);
 		table.getModel().addTableModelListener(eventHandler);
