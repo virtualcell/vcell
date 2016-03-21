@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ "$#" != "8" ] ; then 
+	echo "Usage: launchVCellMonitor -H rmiHost -i rmiPort -p vcellNagiosPassword -m responsePort"
+	exit $UNKNOWN
+fi
+
+while getopts ":H:i:p:m:" opt; do
+  case $opt in
+    H) rmiHost="$OPTARG"
+    ;;
+    i) rmiPort="$OPTARG"
+    ;;
+    p) vcellNagiosPassword="$OPTARG"
+    ;;
+    m) responsePort="$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+#
+# include common variable definitions
+#
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+
+. $DIR/vcell.include
+
+jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+nice ${common_jre} -Dtest.monitor.port=$rmiPort -cp ${common_jvm_jars} ${jvmprop} org.vcell.monitor.nagios.NagiosVCellCheckNew \
+-H $rmiHost -i $rmiPort -p $vcellNagiosPassword -m $responsePort
+
+exit $?
