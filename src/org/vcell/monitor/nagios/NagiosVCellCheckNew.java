@@ -249,14 +249,14 @@ public class NagiosVCellCheckNew {
 	
 	private static void exceededTimeouts(NagArgsHelper nagArgsHelper,CheckResults checkResults) throws Exception{
 		if(nagArgsHelper.criticalTimeout != -1 &&
-			checkResults.totalTime > nagArgsHelper.criticalTimeout){
+			(checkResults.totalTime/1000) > nagArgsHelper.criticalTimeout){
 			
 			throw new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout+
 				(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
 			}
 
 		if(nagArgsHelper.warningTimeout != -1 &&
-				checkResults.totalTime > nagArgsHelper.warningTimeout){
+				(checkResults.totalTime/1000) > nagArgsHelper.warningTimeout){
 			
 			throw new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout+
 					(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
