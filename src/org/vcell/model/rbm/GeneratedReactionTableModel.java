@@ -24,6 +24,8 @@ import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
 
@@ -31,10 +33,11 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedReactionTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 3;
+	public static final int colCount = 4;
 	public static final int iColIndex = 0;
 	public static final int iColRule = 1;
-	public static final int iColExpression = 2;
+	public static final int iColStructure = 2;
+	public static final int iColExpression = 3;
 	
 	private static final String reverse = "_reverse_";
 
@@ -46,10 +49,13 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	private BNGReaction[] reactions;
 	private ArrayList<GeneratedReactionTableRow> allGeneratedReactionsList;
 	
+	private final NetworkConstraintsPanel owner;
+	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
-	public GeneratedReactionTableModel(EditorScrollTable table) {
-		super(table, new String[] {"Index", "Origin", "Expression"});
+	public GeneratedReactionTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
+		super(table, new String[] {"Index", "Rule", "Structure", "Expression"});
+		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
 	
@@ -58,6 +64,8 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 			case iColIndex:{
 				return String.class;
 			}case iColRule:{
+				return String.class;
+			}case iColStructure:{
 				return String.class;
 			}case iColExpression:{
 				return String.class;
@@ -77,9 +85,22 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 				String name = reactionObject.getRuleName();
 				if(name.contains(reverse)) {
 					name = name.substring(reverse.length());
-					
 				}
 				return name;
+			}
+			case iColStructure:{
+				BNGReaction reactionObject = reactionTableRow.getReactionObject();
+				String name = reactionObject.getRuleName();
+				if(name.contains(reverse)) {
+					name = name.substring(reverse.length());
+				}
+				SimulationContext sc = owner.getSimulationContext();
+				ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(name);
+				if(rr != null && rr.getStructure() != null) {
+					return rr.getStructure().getName();
+				} else {
+					return "?";
+				}
 			}
 			case iColExpression:{
 				return reactionTableRow.getExpression();
