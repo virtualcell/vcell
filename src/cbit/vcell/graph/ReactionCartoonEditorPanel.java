@@ -363,25 +363,44 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	private JToolBarToggleButton getLineDirectedButton() {
 		if (lineDirectedButton == null) {
 			try {
-				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", 
-						Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				ReactionToolShape.setPlainReactionToolMod(button);
+				button.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
+				lineDirectedButton = button;
+//				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
 		}
 		return lineDirectedButton;
 	}
-
 	private JToolBarToggleButton getLineCatalystButton() {
 		if (lineCatalystButton == null) {
 			try {
-				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", 
-						Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				ReactionToolShape.setCatalystToolMod(button);
+				button.setActionCommand(Mode.LINECATALYST.getActionCommand());
+				lineCatalystButton = button;
+//				lineCatalystButton = createModeButton("LineCatalystButton", "Set a catalyst", Mode.LINECATALYST, loadIcon("/images/lineCatalyst.gif"));
 			} catch (Throwable throwable) {
 				handleException(throwable);
 			}
 		}
 		return lineCatalystButton;
+	}
+	private JToolBarToggleButton getFluxReactionButton() {
+		if (fluxReactionButton == null) {
+			try {
+				JToolBarToggleButton button = new JToolBarToggleButton();
+				ReactionToolShape.setFluxTransportToolMod(button);
+				button.setActionCommand(Mode.FLUX.getActionCommand());
+				fluxReactionButton = button;
+//				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
+			} catch (Throwable throwable) {
+				handleException(throwable);
+			}
+		}
+		return fluxReactionButton;
 	}
 
 	public Model getModel() {
@@ -488,18 +507,6 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			}
 		}
 		return structureButton;
-	}
-
-	
-	private JToolBarToggleButton getFluxReactionButton() {
-		if (fluxReactionButton == null) {
-			try {
-				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return fluxReactionButton;
 	}
 
 //	private JToolBarToggleButton getStepButton() {
