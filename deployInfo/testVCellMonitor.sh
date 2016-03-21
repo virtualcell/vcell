@@ -22,7 +22,7 @@ fi
 
 timeout 1 echo $testrequest >&3 		## Initiate monitor communication by sending 'hello'
 if [ $? != 0 ]; then                    ## Check 'request' sent
-        echo "Error, request "$testrequest" failed'               ## Status message for nagios
+        echo "Error, request "$testrequest" failed"               ## Status message for nagios
         exit $UNKNOWN                   ## 'request' failed, respond with nagios 'UNKNOWN' code
 fi
 
