@@ -137,6 +137,7 @@ public class ZoomShape implements Icon {
 		return diameter+4;
 	}
 	
+	// zoom in / out in the Applications / Specifications / Network viewers
 	public static void setZoomMod(JButton button, Sign sign) {
 		Icon iconNormal = new ZoomShape(sign, State.normal);
 		Icon iconPressed = new ZoomShape(sign, State.pressed);
@@ -151,8 +152,8 @@ public class ZoomShape implements Icon {
 		} else {
 			button.setToolTipText("Zoom Out");
 		}
-	}	
-	
+	}
+	// zoom in / out in the reaction diagram toolbar
 	public static void setZoomToolbarMod(JButton button, Sign sign) {
 		Icon iconNormal = new ZoomShape(sign, State.normal, 16);
 		Icon iconPressed = new ZoomShape(sign, State.pressed, 16);
@@ -166,5 +167,20 @@ public class ZoomShape implements Icon {
 			button.setToolTipText("Zoom Out");
 		}
 	}
+	// zoom in / out button in the OverlayEditorPane for vCell and vFrap 
+	public static void setZoomOverlayEditorMod(JButton button, Sign sign) {
+		Icon iconNormal = new ZoomShape(sign, State.normal, 16);
+		Icon iconPressed = new ZoomShape(sign, State.pressed, 18);
+		button.setIcon(iconNormal);
+		button.setPressedIcon(iconPressed);
+//		button.setFocusPainted(false);
+//		button.setFocusable(false);
+		if(sign == Sign.plus) {
+			button.setToolTipText("Zoom In");
+		} else {
+			button.setToolTipText("Zoom Out");
+		}
+	}
+	
 
 }
