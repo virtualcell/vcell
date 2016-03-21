@@ -60,7 +60,7 @@ public class ResizeCanvasShape implements Icon {
 
 		Color interior;			// the nock (base end, towards the fletching) of the arrow shaft
 		Color exterior;			// the spine (tip end, connecting to the arrow head) of the shaft
-		Color tip = Color.blue.darker();	// the arrow head
+		Color tip;				// the arrow head
 		Color[] colors;
 		float[] dist;
 		
