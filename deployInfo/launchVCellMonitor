@@ -1,25 +1,5 @@
 #!/bin/bash
 
-if [ "$#" != "8" ] ; then 
-	echo "Usage: launchVCellMonitor -H rmiHost -i rmiPort -p vcellNagiosPassword -m responsePort"
-	exit $UNKNOWN
-fi
-
-while getopts ":H:i:p:m:" opt; do
-  case $opt in
-    H) rmiHost="$OPTARG"
-    ;;
-    i) rmiPort="$OPTARG"
-    ;;
-    p) vcellNagiosPassword="$OPTARG"
-    ;;
-    m) responsePort="$OPTARG"
-    ;;
-    \?) echo "Invalid option -$OPTARG" >&2
-    ;;
-  esac
-done
-
 #
 # include common variable definitions
 #
@@ -28,6 +8,11 @@ if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
 
 . $DIR/vcell.include
 
+multirmiPort=$bootstrap_high_rmiport
+if [ -z "$bootstrap_http_rmiport" ]; then
+	multirmiPort=$multirmiPort":"$bootstrap_http_rmiport
+fi
+
 jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
 
 #
@@ -35,7 +20,7 @@ jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_prope
 #
 shopt -s -o nounset
 
-nice ${common_jre} -Dtest.monitor.port=$rmiPort -cp ${common_jvm_jars} ${jvmprop} org.vcell.monitor.nagios.NagiosVCellCheckNew \
--H $rmiHost -i $rmiPort -p $vcellNagiosPassword -m $responsePort
+nice ${common_jre} -Dtest.monitor.port=$check_vcell_alive_queryport -cp ${common_jvm_jars} ${jvmprop} ${check_vcell_alive_mainclass} \
+-H $bootstrap_rmihost -i $multirmiPort -p $check_vcell_alive_nagiospw -m $check_vcell_alive_queryport
 
 exit $?
