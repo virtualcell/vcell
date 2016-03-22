@@ -533,7 +533,7 @@ public class NagiosVCellMonitor {
 				throw new IllegalArgumentException("message cannot be null message="+message);
 			}
 			this.message = message;
-			this.checkResultsMap = checkResultsMap;
+			this.checkResultsMap = (checkResultsMap==null?new HashMap<Integer, CheckResults>():checkResultsMap);
 		}
 //		public MonitorMode getMonitormoMode(){
 //			return monitorMode;
