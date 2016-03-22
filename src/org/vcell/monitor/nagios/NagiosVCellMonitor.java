@@ -590,6 +590,7 @@ public class NagiosVCellMonitor {
 			for(Integer rmiPort:checkResultsMap.keySet()){
 				CheckResults checkResults = checkResultsMap.get(rmiPort);
 				if(checkResults != null && checkResults.levelTimesMillisec != null){
+					sb.append(" totalTime(rmi"+rmiPort+")"+"="+(checkResults.totalTime)/1000+"s");
 					for (VCELL_CHECK_LEVEL vcellCheckLevel:checkResults.levelTimesMillisec.keySet()) {
 						sb.append(" "+vcellCheckLevel.name()+"(rmi"+rmiPort+")"+"="+(checkResults.levelTimesMillisec.get(vcellCheckLevel))/1000+"s");
 					}

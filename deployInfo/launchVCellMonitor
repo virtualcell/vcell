@@ -20,7 +20,7 @@ jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_prope
 #
 shopt -s -o nounset
 
-nice ${common_jre} -Dtest.monitor.port=$check_vcell_alive_queryport -cp ${common_jvm_jars} ${jvmprop} ${check_vcell_alive_mainclass} \
+nice ${common_jre} -Dtest.monitor.port=$check_vcell_alive_queryport -Djava.awt.headless=true -cp ${common_jvm_jars} ${jvmprop} ${check_vcell_alive_mainclass} \
 -H $bootstrap_rmihost -i $multirmiPort -p $check_vcell_alive_nagiospw -m $check_vcell_alive_queryport
 
 exit $?
