@@ -45,7 +45,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
-public class NagiosVCellCheckNew {
+public class NagiosVCellMonitor {
 
 	private static class UnexpectedTestStateException extends Exception {
 		public UnexpectedTestStateException(String message){
@@ -65,7 +65,7 @@ public class NagiosVCellCheckNew {
 	}
 
 	private static Exception argsException =
-		new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellCheckNew.class.getSimpleName()+".jar -L checkLevel{"+
+		new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -L checkLevel{"+
 			VCELL_CHECK_LEVEL.RMI_ONLY_0.toString()+","+
 			VCELL_CHECK_LEVEL.CONNECT_1.toString()+","+
 			VCELL_CHECK_LEVEL.INFOS_2.toString()+","+
@@ -135,7 +135,7 @@ public class NagiosVCellCheckNew {
 					}
 
 				}else{
-					throw new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellCheckNew.class.getSimpleName()+".jar -L checkLevel{"+
+					throw new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -L checkLevel{"+
 						VCELL_CHECK_LEVEL.RMI_ONLY_0.toString()+","+
 						VCELL_CHECK_LEVEL.CONNECT_1.toString()+","+
 						VCELL_CHECK_LEVEL.INFOS_2.toString()+","+
@@ -182,8 +182,13 @@ public class NagiosVCellCheckNew {
 					int simRunCount = 0;
 					int messyCount = 0;
 //					VCELL_CHECK_LEVEL currentVCellCheckLevel = null;
-					CheckResults lastResult;
+					HashMap<Integer, CheckResults> lastResult;
 					while(true){
+						if(getVCellStatus(true) instanceof VCellHoldStatus){
+							//end this thread
+							//deploy is happening, quit testing, nagios replies will continue in other thread
+							break;
+						}
 //						if(getVCellStatus().getMonitormoMode().equals(MonitorMode.kill)){
 //							//This monitor is being shut down
 //							break;
@@ -214,24 +219,20 @@ public class NagiosVCellCheckNew {
 							}
 							messyCount = 0;
 							exceededTimeouts(nagArgsHelper, lastResult);
-							setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.OK, nagArgsHelper.checkLevel,
-									"OK "+nagArgsHelper.host+" "+nagArgsHelper.rmiPorts.get(0)+(nagArgsHelper.rmiPorts.size()>1?":"+nagArgsHelper.rmiPorts.get(0):""),
-									null,lastResult),bFullCheck);
+							setVCellStatus(new VCellNagioStatus(nagArgsHelper.checkLevel,nagArgsHelper.host,lastResult),bFullCheck);
 						}catch(MessyTestEnvironmentException e){
 							messyCount++;
 							e.printStackTrace();
 						}catch(Exception e){
 							messyCount = 0;
 							e.printStackTrace(System.out);
-							if(e instanceof UnexpectedTestStateException){
-								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.UNKNOWN, nagArgsHelper.checkLevel, e.getMessage(), e,null),bFullCheck);
-							}else if(e instanceof WarningTestConditionException){
-								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.WARNING, nagArgsHelper.checkLevel, e.getMessage(), e,null),bFullCheck);
-							}else{
-								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.CRITICAL, nagArgsHelper.checkLevel, 
-									(e.getCause()==null?"":e.getCause().getClass().getSimpleName()+" "+e.getCause().getMessage()+":")+e.getClass().getName()+" "+e.getMessage(),
-									e,null),bFullCheck);
-							}
+//							if(e instanceof UnexpectedTestStateException){
+//								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.UNKNOWN, nagArgsHelper.checkLevel, e.getMessage(), e,null),bFullCheck);
+//							}else if(e instanceof WarningTestConditionException){
+//								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.WARNING, nagArgsHelper.checkLevel, e.getMessage(), e,null),bFullCheck);
+//							}else{
+								setVCellStatus(new VCellNagioStatus(nagArgsHelper.checkLevel,nagArgsHelper.host+" "+e.getMessage(),null),bFullCheck);
+//							}
 						}finally{
 							simRunCount++;
 							try{Thread.sleep(SLEEP_TIME);}catch(InterruptedException e2){e2.printStackTrace();}
@@ -247,47 +248,58 @@ public class NagiosVCellCheckNew {
 		}
 	}
 	
-	private static void exceededTimeouts(NagArgsHelper nagArgsHelper,CheckResults checkResults) throws Exception{
-		if(nagArgsHelper.criticalTimeout != -1 &&
-			(checkResults.totalTime/1000) > nagArgsHelper.criticalTimeout){
-			
-			throw new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout+
-				(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
+	private static void exceededTimeouts(NagArgsHelper nagArgsHelper,HashMap<Integer, CheckResults> checkResultsHash) throws Exception{
+		for(Integer rmiPort:checkResultsHash.keySet()){
+			CheckResults checkResults = checkResultsHash.get(rmiPort);
+			if(checkResults.exception != null){//only check normal results for timeouts
+				continue;
 			}
-
-		if(nagArgsHelper.warningTimeout != -1 &&
-				(checkResults.totalTime/1000) > nagArgsHelper.warningTimeout){
-			
-			throw new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout+
-					(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
-			}		
+			if(nagArgsHelper.criticalTimeout != -1 &&
+				(checkResults.totalTime/1000) > nagArgsHelper.criticalTimeout){
+				
+				checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+						new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout)));
+				
+//				throw new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout+
+//					(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
+			}else if(nagArgsHelper.warningTimeout != -1 &&
+					(checkResults.totalTime/1000) > nagArgsHelper.warningTimeout){
+				
+				checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+						new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout)));
+				
+//				throw new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout+
+//						(checkResults.lastSimStatus==null?"":" seconds lastSimStatus="+checkResults.lastSimStatus));
+			}	
+		}
 	}
 	private static class CheckResults {
 		public String vcellVersion;
 		public TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec;
 		public long totalTime;//milliseconds
 		public SimulationStatusPersistent lastSimStatus;
+		public Exception exception;
 		public CheckResults(String vcellVersion, TreeMap<VCELL_CHECK_LEVEL, Long> levelTimes,
-				SimulationStatusPersistent lastSimStatus,long totalTime) {
+				SimulationStatusPersistent lastSimStatus,long totalTime,Exception exception) {
 			super();
 			this.vcellVersion = vcellVersion;
 			this.levelTimesMillisec = levelTimes;
 			this.lastSimStatus = lastSimStatus;
 			this.totalTime = totalTime;
+			this.exception = exception;
 		}
-		
 	}
-	public static CheckResults mainArgs(NagArgsHelper nagArgsHelper,boolean bForceCleanup) throws Exception{
+	public static HashMap<Integer, CheckResults> mainArgs(NagArgsHelper nagArgsHelper,boolean bForceCleanup) throws Exception{
 		if(nagArgsHelper == null){
 			throw new UnexpectedTestStateException("Main args for testing loop cannot be null");
 		}
 //		PrintStream sysout = System.out;
 //		PrintStream syserr = System.err;
 //		try{
-			ByteArrayOutputStream baos_out = new ByteArrayOutputStream();
-			ByteArrayOutputStream baos_err = new ByteArrayOutputStream();
-			System.setOut(new PrintStream(baos_out));
-			System.setErr(new PrintStream(baos_err));
+//			ByteArrayOutputStream baos_out = new ByteArrayOutputStream();
+//			ByteArrayOutputStream baos_err = new ByteArrayOutputStream();
+//			System.setOut(new PrintStream(baos_out));
+//			System.setErr(new PrintStream(baos_err));
 
 //			String host=null;
 //			ArrayList<Integer> rmiPorts = new ArrayList<Integer>();
@@ -345,21 +357,19 @@ public class NagiosVCellCheckNew {
 //				}
 //			}
 			//Test multiple ports if present, both return the same result
-			CheckResults result = null;
+			HashMap<Integer, CheckResults> rmiPortResults = new HashMap<>();
 			for(Integer rmiPort:nagArgsHelper.rmiPorts){
 				if(rmiPort == -1){
 					continue;
 				}
-				result = checkVCell(nagArgsHelper.checkLevel,bForceCleanup,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",nagArgsHelper.vcellNagiosPassword,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
-//				if(result != null && !result.equals(temp)){
-//					throw new UnexpectedTestStateException("Not expecting rmiport="+nagArgsHelper.rmiPorts.get(0)+" result="+result+" and rmiport="+rmiPort+" result="+temp+" to be different");
-//				}
-//				result = temp;
+				CheckResults result = checkVCell(nagArgsHelper.checkLevel,bForceCleanup,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",
+						nagArgsHelper.vcellNagiosPassword,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
+				if(result == null){
+					throw new UnexpectedTestStateException("test result not expected to be null");
+				}
+				rmiPortResults.put(rmiPort, result);
 			}
-			if(result == null){
-				throw new UnexpectedTestStateException("test result not expected to be null");
-			}
-			return result;
+			return rmiPortResults;
 			
 //		}finally{
 //			System.setOut(sysout);
@@ -367,9 +377,12 @@ public class NagiosVCellCheckNew {
 //		}
 	}
 	private static CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, boolean bForceCleanup,String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int warningTimeout,int criticalTimeout) throws Exception{
-		long startTime = System.currentTimeMillis();
+//		vcellVersion, levelTimes, lastSimStatus, totalTime
 		SimulationStatusPersistent lastSimStatus = null;
-		TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec = new TreeMap<NagiosVCellCheckNew.VCELL_CHECK_LEVEL, Long>();
+		String vcellVersion = null;
+		TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec = new TreeMap<NagiosVCellMonitor.VCELL_CHECK_LEVEL, Long>();
+		long startTime = System.currentTimeMillis();
+		try{
 //		ArrayList<Long> checkTimes = new ArrayList<Long>(VCELL_CHECK_LEVEL.values().length);
 //		for (long i = 0; i < VCELL_CHECK_LEVEL.values().length; i++) {
 //			checkTimes.add(i);
@@ -384,6 +397,7 @@ public class NagiosVCellCheckNew {
 		}catch(Exception e){
 			throw new UnexpectedTestStateException("Error during bootstrap lookup, "+e.getClass().getSimpleName()+" "+e.getMessage());
 		}
+		vcellVersion = vcellBootstrap.getVCellSoftwareVersion();
 		levelTimesMillisec.put(VCELL_CHECK_LEVEL.RMI_ONLY_0, System.currentTimeMillis()-startTime);
 //		checkTimes.set(VCELL_CHECK_LEVEL.RMI_ONLY_0.ordinal(), System.currentTimeMillis()-startTime);
 //		System.out.println(VCELL_CHECK_LEVEL.RMI_ONLY_0.name()+" "+checkTimes.get(VCELL_CHECK_LEVEL.RMI_ONLY_0.ordinal()));
@@ -503,68 +517,123 @@ public class NagiosVCellCheckNew {
 				}
 			}
 		}
-//		long endTime = System.currentTimeMillis();
-//		if(criticalTimeout != -1 && ((endTime-startTime)/1000) > criticalTimeout){throw new Exception(checkLevel.toString()+" test exceeded criticalTimeout="+criticalTimeout+" seconds lastSimStatus="+lastSimStatus);}
-//		if(warningTimeout != -1 && ((endTime-startTime)/1000) > warningTimeout){throw new WarningTestConditionException(checkLevel.toString()+" test exceeded warningTimeout="+warningTimeout+" seconds lastSimStatus="+lastSimStatus);}
-
-		return new CheckResults(vcellBootstrap.getVCellSoftwareVersion(), levelTimesMillisec,lastSimStatus,System.currentTimeMillis()-startTime);
+		return new CheckResults(vcellVersion, levelTimesMillisec,lastSimStatus,System.currentTimeMillis()-startTime,null);
+		}catch(Exception e){
+			return new CheckResults(vcellVersion, levelTimesMillisec, lastSimStatus, System.currentTimeMillis()-startTime, e);
+		}
 	}
 
 	private static class VCellStatus {
-		private NAGIOS_STATUS nagiosStatus;
+//		private NAGIOS_STATUS nagiosStatus;
 		private String message;
 //		private MonitorMode monitorMode;
-		private CheckResults checkResults;
-		private VCellStatus(/*MonitorMode monitorMode,*/NAGIOS_STATUS nagiosStatus,String message,CheckResults checkResults){
-			this.nagiosStatus = nagiosStatus;
-//			this.monitorMode = monitorMode;
+		private HashMap<Integer, CheckResults> checkResultsMap;
+		private VCellStatus(String message,HashMap<Integer, CheckResults> checkResultsMap){
+			if(message == null){
+				throw new IllegalArgumentException("message cannot be null message="+message);
+			}
 			this.message = message;
-			this.checkResults = checkResults;
+			this.checkResultsMap = checkResultsMap;
 		}
 //		public MonitorMode getMonitormoMode(){
 //			return monitorMode;
 //		}
-		public String getNagiosReply(){
-			StringBuffer sb = new StringBuffer(nagiosStatus.ordinal()+(message==null?"No message":message));
-			if(checkResults != null && checkResults.levelTimesMillisec != null){
-				sb.append(" |");
-				for (VCELL_CHECK_LEVEL vcellCheckLevel:checkResults.levelTimesMillisec.keySet()) {
-					sb.append(" "+vcellCheckLevel.name()+"="+(checkResults.levelTimesMillisec.get(vcellCheckLevel))/1000+"s");
+		private NAGIOS_STATUS getNagiosStatus(){
+			NAGIOS_STATUS worstStatus = NAGIOS_STATUS.OK;
+			for(Integer rmiPort:checkResultsMap.keySet()){
+				CheckResults checkResults = checkResultsMap.get(rmiPort);
+				if(checkResults.exception != null){
+					if(checkResults.exception instanceof UnexpectedTestStateException){
+						if(worstStatus == NAGIOS_STATUS.OK || worstStatus == NAGIOS_STATUS.WARNING){
+							worstStatus = NAGIOS_STATUS.UNKNOWN;
+						}
+					}else if(checkResults.exception instanceof WarningTestConditionException){
+						if(worstStatus == NAGIOS_STATUS.OK){
+							worstStatus = NAGIOS_STATUS.WARNING;
+						}
+					}else{
+						worstStatus = NAGIOS_STATUS.CRITICAL;
+					}
 				}
-//				for(int i=VCELL_CHECK_LEVEL.RMI_ONLY_0.ordinal();i < VCELL_CHECK_LEVEL.values().length;i++){
-//					if(checkResults.checkTimes.get(i) != null){
-//						sb.append(" "+VCELL_CHECK_LEVEL.values()[i].name()+"="+(checkResults.checkTimes.get(i))/1000+"s");
-//					}
-//				}
+			}
+			return worstStatus;
+		}
+		private String getMessage(){
+			StringBuffer sb = new StringBuffer();
+			if(this instanceof VCellHoldStatus){
+				return message;
+			}
+			sb.append(message+" ");
+			for(Integer rmiPort:checkResultsMap.keySet()){
+				CheckResults checkResults = checkResultsMap.get(rmiPort);
+				if(checkResults.exception != null){
+					sb.append("rmi("+rmiPort+")"+checkResults.exception.getMessage()+" ");
+				}else{
+					sb.append("rmi("+rmiPort+")OK");
+				}
+			}
+			// escape message characters for nagios
+			for (int i = 0; i < sb.length(); i++) {
+				if(sb.charAt(i) == '='){
+					sb.replace(i, i+1, "(equal)");
+				}else if(sb.charAt(i) == '\''){
+					sb.replace(i, i+1, "(snglquot)");
+				}else if(sb.charAt(i) == '|'){
+					sb.replace(i, i+1, "(pipe)");
+				}
 			}
 			return sb.toString();
+		}
+		public String getNagiosReply(){
+			StringBuffer sb = new StringBuffer();
+			// Add performance info for nagios
+			for(Integer rmiPort:checkResultsMap.keySet()){
+				CheckResults checkResults = checkResultsMap.get(rmiPort);
+				if(checkResults != null && checkResults.levelTimesMillisec != null){
+					for (VCELL_CHECK_LEVEL vcellCheckLevel:checkResults.levelTimesMillisec.keySet()) {
+						sb.append(" "+vcellCheckLevel.name()+"(rmi"+rmiPort+")"+"="+(checkResults.levelTimesMillisec.get(vcellCheckLevel))/1000+"s");
+					}
+				}
+			}
+			return getNagiosStatus().ordinal()+getMessage()+(sb.length()==0?"":" |"+sb.toString());
 		}
 	}
 	private static class VCellNagioStatus extends VCellStatus {
 		private VCELL_CHECK_LEVEL vcellCheckLevel;
-		private Exception exception;
-		public VCellNagioStatus(NAGIOS_STATUS nagiosStatus,VCELL_CHECK_LEVEL vcellCheckLevel, String message,Exception exception,CheckResults checkResults) {
-			super(/*MonitorMode.normal,*/nagiosStatus,message,checkResults);
-			if(nagiosStatus == null || message == null){
-				throw new IllegalArgumentException("status and message cannot be null status="+nagiosStatus+" message="+message);
-			}
+		public VCellNagioStatus(VCELL_CHECK_LEVEL vcellCheckLevel, String message,HashMap<Integer, CheckResults> checkResultsMap) {
+			super(message,checkResultsMap);
+//			if(nagiosStatus == null || message == null){
+//				throw new IllegalArgumentException("status and message cannot be null status="+nagiosStatus+" message="+message);
+//			}
 			this.vcellCheckLevel = vcellCheckLevel;
-			this.exception = exception;
 		}
 		public VCELL_CHECK_LEVEL getVCellCheckLevel(){
 			return vcellCheckLevel;
 		}
-		public Exception getException(){
-			return exception;
+	}
+	private static class VCellHoldStatus extends VCellStatus{
+		public VCellHoldStatus(String message){
+			super(message, null);
 		}
 	}
 //	private static enum MonitorMode {normal,deploy,kill};
 //	private static String deployReply = NAGIOS_STATUS.OK.ordinal()+"Deploy In Progress";
 //	private static MonitorMode monitorMode = MonitorMode.normal;
 //	private static Socket latestSocket = null;
-	private static VCellStatus vcellStatusConnect = new VCellStatus(/*MonitorMode.deploy,*/NAGIOS_STATUS.OK,"Deploying...",null);
-	private static VCellStatus vcellStatusFull = new VCellStatus(/*MonitorMode.deploy,*/NAGIOS_STATUS.OK,"Deploying...",null);
+	private static String holdMessage = null;
+	private static VCellStatus vcellStatusConnect = new VCellStatus("Starting...",null);
+	private static VCellStatus vcellStatusFull = new VCellStatus("Starting...",null);
 	private static synchronized void setVCellStatus(VCellStatus status,boolean bFull){
+		if(status instanceof VCellHoldStatus){
+			// Sets on hold during deploy, stops testing but keeps replies going
+			vcellStatusConnect = status;
+			vcellStatusFull = status;
+			return;
+		}else if (vcellStatusFull instanceof VCellHoldStatus){
+			// On hold, used during deploy while VCell is reset to keep nagios happy
+			return;
+		}
+		// If not on hold
 		if(bFull){
 			vcellStatusFull = status;
 		}else{
@@ -631,7 +700,12 @@ public class NagiosVCellCheckNew {
 ////								setVCellStatus(new VCellStatus(MonitorMode.normal, NAGIOS_STATUS.OK, "Begin Tests..."));
 ////								out.println(getVCellStatus().getNagiosReply());
 //							}else 
-							if(request.equals("statusConnect")){
+							if(request.startsWith("hold:")){
+								setVCellStatus(new VCellHoldStatus(request), true);
+								//nagios never sends this request
+								// Request for VCell test status from nagios server
+								out.println(getVCellStatus(true).getNagiosReply());
+							}else if(request.equals("statusConnect")){
 								//nagios only sends this request
 								// Request for VCell test status from nagios server
 								out.println(getVCellStatus(false).getNagiosReply());
