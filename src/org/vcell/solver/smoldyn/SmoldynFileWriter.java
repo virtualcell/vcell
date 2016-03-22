@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.zip.DeflaterOutputStream;
 
 import org.apache.commons.math3.random.RandomDataGenerator;
+import org.apache.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Coordinate;
@@ -150,8 +151,9 @@ public class SmoldynFileWriter extends SolverFileWriter
 			return "TrianglePanel [" + name + ' ' + triangle + "]";
 		}
 	}
-	private static final int MAX_MOL_LIMIT     = 1_000_000;
-	private static final int MININUM_MOLECULES =    50_000;
+	private static final int MAX_MOLECULE_LIMIT       = 1_000_000;
+	private static final int MIN_MOLECULE_LIMIT 		  =    50_000;
+	private static final int MOLECULE_MAX_COEFFICIENT =        10;
 	private long randomSeed = 0; //value assigned in the constructor
 	private RandomDataGenerator dist = new RandomDataGenerator();
 
@@ -204,6 +206,7 @@ public class SmoldynFileWriter extends SolverFileWriter
 	private Map<Polygon, MembraneElement> polygonMembaneElementMap = null;
 	private CartesianMesh cartesianMesh = null;
 	private String baseFileName = null;
+	private static final Logger lg = Logger.getLogger(SmoldynFileWriter.class);
 
 public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging)
 {
@@ -1010,6 +1013,9 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 					}
 					totalCount += count;
 					localsb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName + " " + (float)lox + "-" + (float)hix);
+					if (lg.isTraceEnabled()) {
+						lg.trace("Component subdomain " + variableName + " count " + count);
+					}
 					if (dimension > 1) {
 						localsb.append(" " + loy + "-" + hiy);
 
@@ -1076,6 +1082,9 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 				continue;
 			}
 			totalCount += count;
+			if (lg.isTraceEnabled()) {
+				lg.trace("Membrane subdomain " + subDomain.getName( ) + ' ' + variableName + " count " + count);
+			}
 			localsb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol + " " + count + " " + variableName + " " + subDomain.getName() + " "
 					+ SmoldynVCellMapper.SmoldynKeyword.tri + " " + trianglePanel.name + "\n");
 		}
@@ -1094,6 +1103,9 @@ private int writeInitialConcentration(ParticleInitialConditionConcentration init
 
 	}
 
+	if (lg.isDebugEnabled( )) {
+		lg.debug("Subdomain " + subDomain.getName( ) + ' ' + variableName + " total count " + totalCount);
+	}
 	return totalCount;
 }
 
@@ -1177,6 +1189,9 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 							sb.append(ct.node.getZ());
 						}
 						sb.append('\n');
+						if (lg.isTraceEnabled()) {
+							lg.trace("initial count for " + subDomain.getName() + ' ' + variableName  + " is " + count);
+						}
 						return count;
 					}
 				}
@@ -1205,16 +1220,31 @@ private void writeMolecules() throws ExpressionException, MathException {
 					max_mol += writeInitialConcentration((ParticleInitialConditionConcentration)pic, subDomain, particleProperties.getVariable(), variableName, sb);
 				}
 			}
+			if (lg.isDebugEnabled( )) {
+				lg.debug("subdomain " + subDomain.getName() + ' ' + variableName + " processed, maximum mol estimate now " + max_mol);
+			}
 		}
 	}
 
-	if (max_mol > MAX_MOL_LIMIT) {
-		throw new MathException(VCellErrorMessages.getSmoldynMaxMolReachedErrorMessage((long)max_mol, MAX_MOL_LIMIT));
+	if (max_mol > MAX_MOLECULE_LIMIT) {
+		throw new MathException(VCellErrorMessages.getSmoldynMaxMolReachedErrorMessage((long)max_mol, MAX_MOLECULE_LIMIT));
 	}
 
+	int max_adjusted = max_mol * MOLECULE_MAX_COEFFICIENT;
+	if (max_adjusted < MIN_MOLECULE_LIMIT) {
+		if (lg.isInfoEnabled()) {
+			lg.info("adjusting computed max " + max_adjusted + " to minimum " + MIN_MOLECULE_LIMIT);
+		}
+		max_adjusted = MIN_MOLECULE_LIMIT;
+	}
+	if (max_adjusted > MAX_MOLECULE_LIMIT) {
+		if (lg.isInfoEnabled()) {
+			lg.info("adjusting computed max " + max_adjusted + " to maximum " + MAX_MOLECULE_LIMIT); 
+		}
+		max_adjusted = MAX_MOLECULE_LIMIT;
+	}
 	printWriter.println("# molecules");
-	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(MININUM_MOLECULES, max_mol * 10));
-	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
+	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_mol + " " + max_adjusted); 
 	printWriter.println(sb);
 }
 
