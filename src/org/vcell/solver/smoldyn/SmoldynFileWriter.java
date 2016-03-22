@@ -1134,6 +1134,9 @@ private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDom
 		} else {
 			if (isCompartment) {
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName);
+				if (lg.isTraceEnabled()) {
+					lg.trace("initial count for compartment " + subDomain.getName() + ' ' + variableName  + " is " + count);
+				}
 				try {
 					if (initialCount.isXUniform()) {
 						sb.append(" " + initialCount.getLocationX().infix());
