@@ -150,7 +150,8 @@ public class SmoldynFileWriter extends SolverFileWriter
 			return "TrianglePanel [" + name + ' ' + triangle + "]";
 		}
 	}
-	private static final int MAX_MOL_LIMIT = 1000000;
+	private static final int MAX_MOL_LIMIT     = 1_000_000;
+	private static final int MININUM_MOLECULES =    50_000;
 	private long randomSeed = 0; //value assigned in the constructor
 	private RandomDataGenerator dist = new RandomDataGenerator();
 
@@ -925,7 +926,7 @@ private String getVariableName(Variable var, SubDomain subdomain) throws MathExc
 	}
 }
 
-private double writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, Variable variable, String variableName, StringBuilder sb) throws ExpressionException, MathException {
+private int writeInitialConcentration(ParticleInitialConditionConcentration initialConcentration, SubDomain subDomain, Variable variable, String variableName, StringBuilder sb) throws ExpressionException, MathException {
 	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[]{ReservedVariable.X.getName(), ReservedVariable.Y.getName(), ReservedVariable.Z.getName()});
 	Expression disExpression = new Expression(initialConcentration.getDistribution());
 	disExpression.bindExpression(simulationSymbolTable);
@@ -943,7 +944,7 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 		}
 	}
 
-	double totalCount = 0;
+	int totalCount = 0;
 	StringBuilder localsb = new StringBuilder();
 	if (subDomain instanceof CompartmentSubDomain) {
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
@@ -1097,10 +1098,10 @@ private double writeInitialConcentration(ParticleInitialConditionConcentration i
 }
 
 
-private double writeInitialCount(ParticleInitialConditionCount initialCount, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
-	double count = 0;
+private int writeInitialCount(ParticleInitialConditionCount initialCount, SubDomain subDomain, String variableName, StringBuilder sb) throws ExpressionException, MathException {
+	int count = 0;
 	try {
-		count = subsituteFlattenToConstant(initialCount.getCount());
+		count = (int) subsituteFlattenToConstant(initialCount.getCount());
 	} catch (NotAConstantException ex) {
 		String errMsg = "\n" +
 						"Initial count for variable " + variableName + " is not a constant. Spatial stochastic simulation requires constant value for initial count.\n" +
@@ -1108,20 +1109,19 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 		throw new ExpressionException(errMsg);
 	}
 	if (count > 0) {
-		int intcount = (int)count;
 		final boolean isCompartment = subDomain instanceof CompartmentSubDomain;
 		if (initialCount.isUniform()) {
 			// here count has to split between all compartments
 			if (isCompartment) {
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.compartment_mol);
-				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + "\n");
+				sb.append(" " + count + " " + variableName + " " + subDomain.getName() + "\n");
 			} else if (subDomain instanceof MembraneSubDomain) {
 				sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol);
-				sb.append(" " + intcount + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
+				sb.append(" " + count + " " + variableName + " " + subDomain.getName() + " " + SmoldynVCellMapper.SmoldynKeyword.all + " " + SmoldynVCellMapper.SmoldynKeyword.all + "\n");
 			}
 		} else {
 			if (isCompartment) {
-				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + intcount + " " + variableName);
+				sb.append(SmoldynVCellMapper.SmoldynKeyword.mol + " " + count + " " + variableName);
 				try {
 					if (initialCount.isXUniform()) {
 						sb.append(" " + initialCount.getLocationX().infix());
@@ -1159,7 +1159,7 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 						final char space = ' ';
 						sb.append(SmoldynVCellMapper.SmoldynKeyword.surface_mol);
 						sb.append(space);
-						sb.append(intcount);
+						sb.append(count);
 						sb.append(space);
 						sb.append(variableName);
 						sb.append(space);
@@ -1190,7 +1190,7 @@ private double writeInitialCount(ParticleInitialConditionCount initialCount, Sub
 private void writeMolecules() throws ExpressionException, MathException {
 	// write molecules
 	StringBuilder sb = new StringBuilder();
-	double max_mol = 0;
+	int max_mol = 0;
 	Enumeration<SubDomain> subDomainEnumeration = mathDesc.getSubDomains();
 	while (subDomainEnumeration.hasMoreElements()) {
 		SubDomain subDomain = subDomainEnumeration.nextElement();
@@ -1213,7 +1213,7 @@ private void writeMolecules() throws ExpressionException, MathException {
 	}
 
 	printWriter.println("# molecules");
-	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(50000, max_mol * 10));
+	int smoldyn_max_mol = (int)Math.min(MAX_MOL_LIMIT, Math.max(MININUM_MOLECULES, max_mol * 10));
 	printWriter.println(SmoldynVCellMapper.SmoldynKeyword.max_mol + " " + smoldyn_max_mol);
 	printWriter.println(sb);
 }
