@@ -12,6 +12,7 @@ package org.vcell.model.rbm;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -31,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -43,13 +45,18 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGReaction;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.ResizeCanvasShape;
 import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.mapping.SimulationContext;
@@ -58,6 +65,7 @@ import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
@@ -382,7 +390,11 @@ private void initialize() {
 		containerOfScrollPanel.setLayout(new BorderLayout());
 		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
 		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
-		containerOfScrollPanel.setPreferredSize(new Dimension(500, 135));	// dimension of shape panel
+
+		Dimension dim = new Dimension(500, 140);
+		containerOfScrollPanel.setPreferredSize(dim);	// dimension of shape panel
+		containerOfScrollPanel.setMinimumSize(dim);
+		containerOfScrollPanel.setMaximumSize(dim);
 
 		// -----------------------------------------------------------------------------
 
@@ -450,13 +462,93 @@ private void initialize() {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
+//		gbc.weightx = 1.0;
+//		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
 		add(containerOfScrollPanel, gbc);
 		
+		// rendering the small shapes of a fake rule in the Depiction column of this viewer table)
+		// TODO: this renderer is almost identical with the one in BioModelEditorModelPanel (which paints the small shapes 
+		// of a rule in the Depiction column of the reaction table)
+		DefaultScrollTableCellRenderer rbmReactionShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			List<SpeciesPatternSmallShape> spssList = new ArrayList<SpeciesPatternSmallShape>();
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == tableModel) {
+						selectedObject = tableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof GeneratedReactionTableRow) {
+							
+							ReactionRule rr = ((GeneratedReactionTableRow)selectedObject).getReactionRule();
+							Graphics panelContext = table.getGraphics();
+							BioModel bioModel = owner.getSimulationContext().getBioModel();
+
+							spssList.clear();
+							List<ReactantPattern> rpList = rr.getReactantPatterns();
+							int xPos = 4;
+							for(int i = 0; i<rpList.size(); i++) {
+								SpeciesPattern sp = rr.getReactantPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								if(i < rpList.size()-1) {
+									spss.addEndText("+");
+								} else {
+									if(rr.isReversible()) {
+										spss.addEndText("<->");
+										xPos += 7;
+									} else {
+										spss.addEndText("->");
+									}
+								}
+								xPos += spss.getWidth() + 14;
+								spssList.add(spss);
+							}
+							
+							List<ProductPattern> ppList = rr.getProductPatterns();
+							xPos+= 7;
+							for(int i = 0; i<ppList.size(); i++) {
+								SpeciesPattern sp = rr.getProductPattern(i).getSpeciesPattern();
+								spss = new SpeciesPatternSmallShape(xPos, 2, sp, bioModel.getRulesShapeManager(), panelContext, rr, isSelected);
+								if(i < ppList.size()-1) {
+									spss.addEndText("+");
+								}
+								xPos += spss.getWidth() + 14;
+								spssList.add(spss);
+							}
+						}
+					} else {
+						spssList.clear();
+					}
+				}
+				setText("");
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				for(SpeciesPatternSmallShape spss : spssList) {
+					if(spss == null) {
+						continue;
+					}
+					spss.paintSelf(g);
+				}
+			}
+		};
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setPreferredWidth(400);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setMinWidth(400);
+		
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColExpression).setPreferredWidth(30);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

@@ -12,6 +12,7 @@ package org.vcell.model.rbm;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
@@ -25,6 +26,8 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
@@ -33,11 +36,12 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedReactionTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 4;
+	public static final int colCount = 5;
 	public static final int iColIndex = 0;
 	public static final int iColRule = 1;
 	public static final int iColStructure = 2;
-	public static final int iColExpression = 3;
+	public static final int iColDepiction = 3;
+	public static final int iColExpression = 4;
 	
 	private static final String reverse = "_reverse_";
 
@@ -48,13 +52,14 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 
 	private BNGReaction[] reactions;
 	private ArrayList<GeneratedReactionTableRow> allGeneratedReactionsList;
+	private Model model = null;		// fake model where we insert all the so called rules 
 	
 	private final NetworkConstraintsPanel owner;
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedReactionTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
-		super(table, new String[] {"Index", "Rule", "Structure", "Expression"});
+		super(table, new String[] {"Index", "Rule", "Structure", "Depiction", "Expression"});
 		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
@@ -67,6 +72,8 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 				return String.class;
 			}case iColStructure:{
 				return String.class;
+			}case iColDepiction:{
+				return Object.class;
 			}case iColExpression:{
 				return String.class;
 			}
@@ -172,13 +179,23 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	}
 	
 	private GeneratedReactionTableRow createTableRow(BNGReaction reaction, int index, String interactionLabel) {
-		GeneratedReactionTableRow row = new GeneratedReactionTableRow(reaction);
-		
+		GeneratedReactionTableRow row = new GeneratedReactionTableRow(reaction, owner);
 		row.setIndex(index+" ");
-		row.setExpression(interactionLabel);
+		row.setExpression(interactionLabel, getModel());
 		return row;
 	}
 	
+	private Model getModel() {
+		if(model == null) {
+			try {
+				model = new Model("MyTempModel");
+				model.addFeature("c0");
+			} catch (ModelException | PropertyVetoException e1) {
+				e1.printStackTrace();
+			}
+		}
+		return model;
+	}
 	
 	public void setReactions(BNGReaction[] newValue) {
 		if (reactions == newValue) {

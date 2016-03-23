@@ -12,6 +12,7 @@ package org.vcell.model.rbm;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -31,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -43,16 +45,21 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.vcell.model.bngl.ParseException;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.client.desktop.biomodel.BioModelEditorSpeciesTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.graph.ZoomShape.Sign;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -196,8 +203,12 @@ private void initialize() {
 		containerOfScrollPanel.setLayout(new BorderLayout());
 		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
 		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
-		containerOfScrollPanel.setPreferredSize(new Dimension(500, 135));	// dimension of shape panel
 		
+		Dimension dim = new Dimension(500, 135);
+		containerOfScrollPanel.setPreferredSize(dim);	// dimension of shape panel
+		containerOfScrollPanel.setMinimumSize(dim);
+		containerOfScrollPanel.setMaximumSize(dim);
+
 		// ------------------------------------------------------------------------
 		
 		table = new EditorScrollTable();
@@ -264,14 +275,58 @@ private void initialize() {
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
-		gbc.weightx = 1.0;
+//		gbc.weightx = 1.0;
 		gbc.gridwidth = 8;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.fill = java.awt.GridBagConstraints.BOTH;
 		gbc.insets = new Insets(4,4,4,4);
 		add(containerOfScrollPanel, gbc);
+		
+		// rendering the small shapes of the flattened species in the Depiction column of this viewer table)
+		// TODO: this renderer is almost identical with the one in BioModelEditorModelPanel (which paints the small shapes 
+		// of a species context in the Depiction column of the species table)
+		DefaultScrollTableCellRenderer rbmSpeciesShapeDepictionCellRenderer = new DefaultScrollTableCellRenderer() {
+			SpeciesPatternSmallShape spss = null;
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, 
+					boolean isSelected, boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof VCellSortTableModel<?>) {
+					Object selectedObject = null;
+					if (table.getModel() == tableModel) {
+						selectedObject = tableModel.getValueAt(row);
+					}
+					if (selectedObject != null) {
+						if(selectedObject instanceof GeneratedSpeciesTableRow) {
+							
+							SpeciesContext sc = ((GeneratedSpeciesTableRow)selectedObject).getSpecies();
+							SpeciesPattern sp = sc.getSpeciesPattern();		// sp cannot be null
+							Graphics panelContext = table.getGraphics();
+							spss = new SpeciesPatternSmallShape(4, 2, sp, panelContext, sc, isSelected);
+						}
+					} else {
+						spss = null;
+					}
+				}
+				setText("");
+				return this;
+			}
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				if(spss != null) {
+					spss.paintSelf(g);
+				}
+			}
+		};
 
-				
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setCellRenderer(rbmSpeciesShapeDepictionCellRenderer);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setPreferredWidth(400);
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColDepiction).setMinWidth(400);
+		
+		table.getColumnModel().getColumn(GeneratedReactionTableModel.iColExpression).setPreferredWidth(30);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

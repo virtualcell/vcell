@@ -11,6 +11,7 @@
 package org.vcell.model.rbm;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -24,6 +25,7 @@ import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.SymbolTable;
@@ -32,11 +34,12 @@ import cbit.vcell.parser.SymbolTable;
 public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpeciesTableRow> 
 	implements  PropertyChangeListener, AutoCompleteTableModel{
 
-	public static final int colCount = 4;
+	public static final int colCount = 5;
 	public static final int iColIndex = 0;
 	public static final int iColOriginalName = 1;
 	public static final int iColStructure = 2;
-	public static final int iColExpression = 3;
+	public static final int iColDepiction = 3;
+	public static final int iColExpression = 4;
 	
 	// filtering variables 
 	protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
@@ -52,7 +55,7 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 
 	public GeneratedSpeciesTableModel(EditorScrollTable table, NetworkConstraintsPanel owner) {
-		super(table, new String[] {"Index", "Name", "Structure", "Expression"});
+		super(table, new String[] {"Index", "Name", "Structure", "Depiction", "Expression"});
 		this.owner = owner;
 		setMaxRowsPerPage(1000);
 	}
@@ -65,6 +68,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				return String.class;
 			}case iColStructure:{
 				return String.class;
+			}case iColDepiction:{
+				return Object.class;
 			}case iColExpression:{
 				return String.class;
 			}
@@ -90,8 +95,14 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 					return structName;
 				} else {
 					SimulationContext sc = owner.getSimulationContext();
-					Structure struct = sc.getModel().getStructure(0);
-					return struct.getName();
+					if(sc.getModel().getStructures().length > 1) {
+						// sanity check: structure should be explicit in the expression 
+						// if we have more than 1 compartments
+						return "?";
+					} else {
+						Structure struct = sc.getModel().getStructure(0);
+						return struct.getName();
+					}
 				}
 			}
 			case iColExpression:{
@@ -196,13 +207,23 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	}
 	
 	private GeneratedSpeciesTableRow createTableRow(BNGSpecies species, int index, String originalName, String interactionLabel) {
-		GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(originalName, species);
+		GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(originalName, species, owner);
 		
 		row.setIndex(index+" ");
-		row.setExpression(interactionLabel);
+		row.setExpression(interactionLabel, getModel());
 		return row;
 	}
-	
+	private Model getModel() {
+		if(model == null) {
+			try {
+				model = new Model("MyTempModel");
+				model.addFeature("c0");
+			} catch (ModelException | PropertyVetoException e1) {
+				e1.printStackTrace();
+			}
+		}
+		return model;
+	}
 	
 	public void setData(Model model, BNGSpecies[] speciess) {
 		if (this.model == model && this.speciess == speciess) {
