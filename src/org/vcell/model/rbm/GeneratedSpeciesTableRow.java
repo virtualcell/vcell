@@ -1,6 +1,18 @@
 package org.vcell.model.rbm;
 
+import java.beans.PropertyVetoException;
+import java.util.List;
+
+import org.vcell.model.bngl.ParseException;
+
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelException;
+import cbit.vcell.model.ReactionRule;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 
 public class GeneratedSpeciesTableRow {
 
@@ -9,9 +21,13 @@ public class GeneratedSpeciesTableRow {
 	private String index;
 	private String expression;
 
-	public GeneratedSpeciesTableRow(String originalName, BNGSpecies speciesObject) {
+	private final NetworkConstraintsPanel owner;
+	private SpeciesContext species;
+
+	public GeneratedSpeciesTableRow(String originalName, BNGSpecies speciesObject, NetworkConstraintsPanel owner) {
 		this.setOriginalName(originalName);
 		this.speciesObject = speciesObject;
+		this.owner = owner;
 	}
 	
 	public String getOriginalName() {
@@ -33,8 +49,46 @@ public class GeneratedSpeciesTableRow {
 	public String getExpression() {
 		return expression;
 	}
-	public void setExpression(String expression) {
+	public void setExpression(String expression, Model model) {
 		this.expression = expression;
+		deriveSpecies(expression, model);
+	}
+	
+	private void deriveSpecies(String inputString, Model tempModel) {
+
+		if(owner != null && owner.getSimulationContext() != null) {
+			List <MolecularType> mtList = owner.getSimulationContext().getModel().getRbmModelContainer().getMolecularTypeList();
+			try {
+				tempModel.getRbmModelContainer().setMolecularTypeList(mtList);
+			} catch (PropertyVetoException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
+			}
+		} else {
+			System.out.println("something is wrong, we just do nothing rather than crash");
+			return;
+		}
+		try {
+		SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
+		String strStructure = RbmUtils.parseCompartment(inputString, tempModel);
+		sp.resolveBonds();
+//		System.out.println(sp.toString());
+		Structure structure;
+		if(strStructure != null) {
+			if(tempModel.getStructure(strStructure) == null) {
+				tempModel.addFeature(strStructure);
+			}
+			structure = tempModel.getStructure(strStructure);
+		} else {
+			structure = tempModel.getStructure(0);
+		}
+		species = new SpeciesContext(new Species("a",""), structure, sp);
+		} catch (ParseException | PropertyVetoException | ModelException e1) {
+			e1.printStackTrace();
+		}
+	}
+	public SpeciesContext getSpecies() {
+		return species;
 	}
 }
 
