@@ -2,6 +2,8 @@ package org.vcell.monitor.nagios;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -16,12 +18,14 @@ import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.MissingFormatArgumentException;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.axis.transport.http.SocketInputStream;
 import org.vcell.util.BigString;
 import org.vcell.util.Executable;
+import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -36,6 +40,7 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -47,6 +52,8 @@ import cbit.vcell.xml.XmlHelper;
 
 public class NagiosVCellMonitor {
 
+	public static final String VCELL_NAGIOS_USER = "vcellNagios";
+	
 	private static class UnexpectedTestStateException extends Exception {
 		public UnexpectedTestStateException(String message){
 			super(message);
@@ -405,7 +412,7 @@ public class NagiosVCellMonitor {
 			if(vcellNagiosPassword == null){
 				throw new UnexpectedTestStateException("vcellNagios Password required for "+VCELL_CHECK_LEVEL.CONNECT_1.toString()+" and above");
 			}
-			UserLoginInfo userLoginInfo = new UserLoginInfo("vcellNagios", new DigestedPassword(vcellNagiosPassword));
+			UserLoginInfo userLoginInfo = new UserLoginInfo(VCELL_NAGIOS_USER, new DigestedPassword(vcellNagiosPassword));
 			VCellConnection vcellConnection = vcellBootstrap.getVCellConnection(userLoginInfo);
 			levelTimesMillisec.put(VCELL_CHECK_LEVEL.CONNECT_1, System.currentTimeMillis()-startTime-levelTimesMillisec.get(VCELL_CHECK_LEVEL.RMI_ONLY_0));
 //			checkTimes.set(VCELL_CHECK_LEVEL.CONNECT_1.ordinal(), System.currentTimeMillis()-startTime-checkTimes.get(VCELL_CHECK_LEVEL.RMI_ONLY_0.ordinal()));
@@ -447,6 +454,7 @@ public class NagiosVCellMonitor {
 						if(checkLevel.ordinal() >= VCELL_CHECK_LEVEL.RUN_5.ordinal()){
 							KeyValue copy1Key = null;
 							KeyValue copy2Key = null;
+							VCSimulationIdentifier testRunSimID = null;
 							try{
 								if(simulationContext.getSimulations().length != 1){
 									throw new UnexpectedTestStateException("Expecting only 1 sim to be copied for "+checkLevel.toString());
@@ -485,15 +493,15 @@ public class NagiosVCellMonitor {
 								if(simulationStatus != null && !simulationStatus.isNeverRan()){
 									throw new UnexpectedTestStateException("Expecting new sim to have 'never ran' status for "+checkLevel.toString());
 								}
-								VCSimulationIdentifier newSimID = new VCSimulationIdentifier(newSimulation.getVersion().getVersionKey(), copyBioModel.getVersion().getOwner());
-								vcellConnection.getSimulationController().startSimulation(newSimID, 1);
+								testRunSimID = new VCSimulationIdentifier(newSimulation.getVersion().getVersionKey(), copyBioModel.getVersion().getOwner());
+								vcellConnection.getSimulationController().startSimulation(testRunSimID, 1);
 								
 								lastSimStatus = simulationStatus;
 								MessageEvent[] messageEvents = null;
 								while(simulationStatus == null || (!simulationStatus.isStopped() && !simulationStatus.isCompleted() && !simulationStatus.isFailed())){
 									Thread.sleep(200);
 									if(((System.currentTimeMillis()-startTime)/1000) > criticalTimeout){
-										vcellConnection.getSimulationController().stopSimulation(newSimID);
+										vcellConnection.getSimulationController().stopSimulation(testRunSimID);
 										vcellConnection.getMessageEvents();
 										break;
 									}
@@ -502,13 +510,14 @@ public class NagiosVCellMonitor {
 										lastSimStatus = simulationStatus;
 									}
 									if(simulationStatus!=null && simulationStatus.isFailed()){
-										throw new Exception("time "+((System.currentTimeMillis()-startTime)/1000)+", Sim execution failed key:"+newSimID.getSimulationKey()+" sim "+newSimulation.getName()+" model "+copyBioModel.getVersion().getName()+" messg "+simulationStatus.getFailedMessage());
+										throw new Exception("time "+((System.currentTimeMillis()-startTime)/1000)+", Sim execution failed key:"+testRunSimID.getSimulationKey()+" sim "+newSimulation.getName()+" model "+copyBioModel.getVersion().getName()+" messg "+simulationStatus.getFailedMessage());
 									}
 									messageEvents = vcellConnection.getMessageEvents();
 								}
 							}finally{
 								try{if(copy1Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy1Key);}}catch(Exception e){e.printStackTrace();}
 								try{if(copy2Key != null){vcellConnection.getUserMetaDbServer().deleteBioModel(copy2Key);}}catch(Exception e){e.printStackTrace();}
+								if(testRunSimID != null){deleteSimData(testRunSimID);}
 							}
 							levelTimesMillisec.put(VCELL_CHECK_LEVEL.RUN_5, System.currentTimeMillis()-startTime-levelTimesMillisec.get(VCELL_CHECK_LEVEL.DATA_4));
 //							checkTimes.set(VCELL_CHECK_LEVEL.RUN_5.ordinal(), System.currentTimeMillis()-startTime-checkTimes.get(VCELL_CHECK_LEVEL.DATA_4.ordinal()));
@@ -523,6 +532,43 @@ public class NagiosVCellMonitor {
 		}
 	}
 
+	private static boolean bPropertiesRead = false;
+	private static File userDataDir = null;
+	private static void deleteSimData(final VCSimulationIdentifier testRunSimID){
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try{
+					if(!bPropertiesRead){
+						bPropertiesRead = true;
+						PropertyLoader.loadProperties();
+						String dataDir = System.getProperty(PropertyLoader.primarySimDataDirProperty);
+						if(dataDir == null){
+							return;
+						}
+						userDataDir = new File(dataDir,VCELL_NAGIOS_USER);
+					}
+					if(userDataDir != null){
+						String simID = Simulation.createSimulationID(testRunSimID.getSimulationKey());
+						File[] deleteTheseFiles = userDataDir.listFiles(new FilenameFilter() {
+							
+							@Override
+							public boolean accept(File dir, String name) {
+								return name.startsWith(simID);
+							}
+						});
+						if(deleteTheseFiles != null && deleteTheseFiles.length>0){
+							for(File deleteFile:deleteTheseFiles){
+								deleteFile.delete();
+							}
+						}
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
 	private static class VCellStatus {
 //		private NAGIOS_STATUS nagiosStatus;
 		private String message;
