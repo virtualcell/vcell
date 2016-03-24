@@ -69,6 +69,7 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	 * (pending a better refactoring)
 	 */
 	private ExecutableCommand primaryCommand;
+	private File primaryUserDir = null;
 	
 	private boolean unixMode = false;
 	
@@ -76,17 +77,22 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 	public static final int HESM_THROW_EXCEPTION = 1;
 	public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
 	
+	public FVSolverStandalone (SimulationTask simTask, File workingDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
+		this(simTask, workingDir, null, sessionLog, bMsging);
+	}
 
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
  * @param platform cbit.vcell.solvers.Platform
- * @param directory java.lang.String
+ * @param workingUserDir output files are generated into this directory during simulation
+ * @param primaryUserDir in parallel, output files need to copy to this directory for users to see
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public FVSolverStandalone (SimulationTask simTask, File dir, SessionLog sessionLog, boolean bMsging) throws SolverException {
-	super(simTask, dir, sessionLog, bMsging);
+public FVSolverStandalone (SimulationTask simTask, File workingUserDir, File primaryUserDir, SessionLog sessionLog, boolean bMsging) throws SolverException {
+	super(simTask, workingUserDir, sessionLog, bMsging);
+	this.primaryUserDir = primaryUserDir;
 	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use FVSolver on non-spatial simulation");
 	}
@@ -304,7 +310,7 @@ protected void initialize() throws SolverException {
 		PrintWriter pw = null;
 		try {
 			pw = new PrintWriter(new FileWriter(fvinputFile));
-			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), bMessaging).write();
+			new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), primaryUserDir, bMessaging).write();
 		} finally {
 			if (pw != null) {
 				pw.close();
