@@ -214,7 +214,7 @@ public void runBioNetGen(BNGInput bngInput) {
 	// Create a hash and put in the details required to run the ClientTaskDispatcher
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put(BNG_OUTPUT_PANEL, getBngOutputPanel());
-	final BNGExecutorService bngService = new BNGExecutorService(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
+	final BNGExecutorService bngService = BNGExecutorService.getInstance(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
 
 	// Create the AsynchClientTasks : in this case, running the BioNetGen (non-swing) and then displaying the output (swing) tasks.
 	AsynchClientTask[] tasksArray = new AsynchClientTask[2];
