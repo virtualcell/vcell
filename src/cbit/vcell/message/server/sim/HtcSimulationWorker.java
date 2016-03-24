@@ -247,7 +247,8 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	String subFile = htcLogDirString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 
 	File userDir = new File(chores.runDirectory);
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userDir, simTask, true);
+	File primaryUserDir = new File(chores.finalDataDirectory);
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userDir, primaryUserDir, simTask, true);
 	realSolver.setUnixMode();
 
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
