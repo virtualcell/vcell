@@ -23,19 +23,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.client.logicalwindow.LWHandle.LWModality;
 import org.vcell.model.rbm.EditConstraintsPanel.ActionButtons;
 import org.vcell.util.BeanUtils;
-import org.vcell.util.Issue;
 import org.vcell.util.ProgressDialogListener;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
@@ -68,7 +64,6 @@ import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.mapping.gui.NetworkConstraintsTableModel;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
@@ -578,7 +573,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 		input += genNetStr;
 		
 		BNGInput bngInput = new BNGInput(input);
-		final BNGExecutorService bngService = new BNGExecutorService(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
+		final BNGExecutorService bngService = BNGExecutorService.getInstance(bngInput, NetworkGenerationRequirements.NoTimeoutMS);
 		bngService.registerBngUpdaterCallback(this);
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 

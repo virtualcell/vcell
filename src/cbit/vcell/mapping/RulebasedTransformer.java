@@ -558,7 +558,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
-			final BNGExecutorService bngService = new BNGExecutorService(bngInput,networkGenerationRequirements.timeoutDurationMS);
+			final BNGExecutorService bngService = BNGExecutorService.getInstance(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {
 			ex.printStackTrace(System.out);

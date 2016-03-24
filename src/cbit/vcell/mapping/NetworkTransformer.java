@@ -39,7 +39,6 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
-import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.Reactant;
@@ -199,7 +198,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
-			final BNGExecutorService bngService = new BNGExecutorService(bngInput,networkGenerationRequirements.timeoutDurationMS);
+			final BNGExecutorService bngService = BNGExecutorService.getInstance(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
 		} catch (BNGException ex) {
 			ex.printStackTrace(System.out);
