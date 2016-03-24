@@ -138,6 +138,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 	private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
 	private static final String DISTANCE_MAP_FILE_EXTENSION = ".dmf";
 	private File userDirectory = null;
+	private File primaryUserDirectory = null;
 	private boolean bInlineVCG = false;
 	private Geometry resampledGeometry = null;
 	private int psfFieldIndex = -1;
@@ -171,6 +172,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 		SUNDIALS_PDE_SOLVER,
 		DISCONTINUITY_TIMES,
 		BASE_FILE_NAME,
+		PRIMARY_DATA_DIR,
 		ENDING_TIME,
 		TIME_STEP,
 		TIME_INTERVALS,
@@ -256,9 +258,14 @@ public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry g
 }
 
 public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir, boolean arg_bMessaging) {
+	this(pw, simTask, geo, dir, null, arg_bMessaging);
+}
+
+public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File dir, File primaryUserDir, boolean arg_bMessaging) {
 	super(pw, simTask, arg_bMessaging);
 	resampledGeometry = geo;
 	userDirectory = dir;
+	this.primaryUserDirectory = primaryUserDir;
 	bChomboSolver = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isChomboSolver();
 }
 
@@ -1356,6 +1363,10 @@ private void writeSimulationParamters() throws ExpressionException, MathExceptio
 		printWriter.println(FVInputFileKeyword.SOLVER + " " + FVInputFileKeyword.FV_SOLVER + " " + solverTaskDesc.getErrorTolerance().getRelativeErrorTolerance());
 	}
 	printWriter.println(FVInputFileKeyword.BASE_FILE_NAME + " " + new File(userDirectory, simTask.getSimulationJob().getSimulationJobID()).getAbsolutePath());
+	if (solverTaskDesc.isParallel() && primaryUserDirectory != null && !primaryUserDirectory.equals(userDirectory))
+	{
+		printWriter.println(FVInputFileKeyword.PRIMARY_DATA_DIR + " " + primaryUserDirectory.getAbsolutePath());
+	}
 	printWriter.println(FVInputFileKeyword.ENDING_TIME + " " + solverTaskDesc.getTimeBounds().getEndingTime());
 	OutputTimeSpec outputTimeSpec = solverTaskDesc.getOutputTimeSpec();	
 	if (solverTaskDesc.getSolverDescription().isChomboSolver())
