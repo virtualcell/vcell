@@ -43,11 +43,7 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 	//
 	long bngoutputFileLength = bngOutputFile.length();
 	StringBuffer stringBuffer = new StringBuffer();
-	FileInputStream is = null;
-	try {
-		is = new FileInputStream(bngOutputFile);
-		InputStreamReader reader = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(reader);
+	try (BufferedReader br = new BufferedReader(new FileReader(bngOutputFile))) {
 		char charArray[] = new char[100000];
 		while (true) {
 			int numRead = br.read(charArray, 0, charArray.length);
@@ -56,10 +52,6 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 			} else if (numRead == -1) {
 				break;
 			}
-		}
-	}finally{
-		if (is != null){
-			is.close();
 		}
 	}
 
@@ -96,12 +88,12 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 	int RXN_LIST = 5;
 	int OBS_GPS_LIST = 6;
 	int list = 0;
-	Vector paramVector = new Vector();
-	Vector moleculesVector = new Vector();
-	Vector speciesVector = new Vector();
-	Vector rxnRulesVector = new Vector();
-	Vector rxnVector = new Vector();
-	Vector obsGroupsVector = new Vector();
+	Vector<BNGParameter> paramVector = new Vector<BNGParameter>();
+	Vector<BNGMolecule> moleculesVector = new Vector<BNGMolecule>();
+	Vector<BNGSpecies> speciesVector = new Vector<BNGSpecies>();
+//	Vector rxnRulesVector = new Vector();
+	Vector<BNGReaction> rxnVector = new Vector<BNGReaction>();
+	Vector<ObservableGroup> obsGroupsVector = new Vector<ObservableGroup>();
 
 	while (lineTokenizer.hasMoreTokens()) {
 		token1 = lineTokenizer.nextToken();
@@ -163,7 +155,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 		if (list == MOLECULE_LIST) {
 			nextLine = new StringTokenizer(token1, blankDelimiters);
 			int i = 0;
-			int speciesNtwkFileIndx = 0;
+//			int speciesNtwkFileIndx = 0;
 			String moleculeName = null;
 			// 'nextLine' is the line with a molecule (the index can be ignored).
 			while (nextLine.hasMoreTokens()) {
@@ -257,7 +249,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 					StringTokenizer nextPart = new StringTokenizer(token2, commaDelimiters);
 					String token3 = null;
 					int specNo = 0;
-					Vector reactantVector = new Vector();
+					Vector<BNGSpecies> reactantVector = new Vector<BNGSpecies>();
 					while (nextPart.hasMoreTokens()) {
 						token3 = nextPart.nextToken();
 						if (token3 != null) {
@@ -276,7 +268,7 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 					StringTokenizer nextPart = new StringTokenizer(token2, commaDelimiters);
 					String token3 = null;
 					int specNo = 0;
-					Vector productVector = new Vector();
+					Vector<BNGSpecies> productVector = new Vector<BNGSpecies>();
 					while (nextPart.hasMoreTokens()) {
 						token3 = nextPart.nextToken();
 						if (token3 != null) {
@@ -323,8 +315,8 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 			nextLine = new StringTokenizer(token1, blankDelimiters);
 			int i = 0;
 			String observableName = null;
-			Vector obsSpeciesVector = new Vector();
-			Vector obsMultiplicityVector = new Vector();
+			Vector<BNGSpecies> obsSpeciesVector = new Vector<BNGSpecies>();
+			Vector<Integer> obsMultiplicityVector = new Vector<Integer>();
 			// 'nextLine' is the line with an observable group and the species that satisfy the observable rule in the input file
 			while (nextLine.hasMoreTokens()) {
 				token2 = nextLine.nextToken();
@@ -406,13 +398,13 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 /**
  * BNGOutputFileParser constructor comment.
  */
-public static BNGSpecies getSpecies(int speciesIndx, Vector speciesVector) {
+public static BNGSpecies getSpecies(int speciesIndx, Vector<BNGSpecies> speciesVector) {
 	//
 	// Given the species index for a reactant/product species and the species vector, return the species that matches the index.
 	//
 	BNGSpecies matchingSpecies = null;
 	for (int i = 0; i < speciesVector.size(); i++){
-		matchingSpecies = (BNGSpecies)speciesVector.elementAt(i);
+		matchingSpecies = speciesVector.elementAt(i);
 		if (matchingSpecies.getNetworkFileIndex() == speciesIndx) {
 			return matchingSpecies;
 		}
@@ -433,7 +425,7 @@ public static void printBNGNetOutput(BNGOutputSpec bngOutputSpec) {
 	BNGParameter[] params = bngOutputSpec.getBNGParams();
 	BNGMolecule[] moleculeTypes = bngOutputSpec.getBNGMolecules();
 	BNGSpecies[] species = bngOutputSpec.getBNGSpecies();
-	BNGReactionRule[] reactionRules = bngOutputSpec.getBNGReactionRules();
+//	BNGReactionRule[] reactionRules = bngOutputSpec.getBNGReactionRules();
 	BNGReaction[] reactions = bngOutputSpec.getBNGReactions();
 	ObservableGroup[] observableGps = bngOutputSpec.getObservableGroups();
 
