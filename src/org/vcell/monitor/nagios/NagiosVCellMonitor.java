@@ -703,6 +703,7 @@ public class NagiosVCellMonitor {
 //	}
 //	private static final String KILL_RESPONSE = NAGIOS_STATUS.OK.ordinal()+"Exiting...";
 	
+	public static final String MONITOR_HOLD_CMD = "hold:";
 	public static void nagiosRequestServicingLoop(ServerSocket serverSocket) throws IOException,NumberFormatException{
 		
 //		ServerSocket serverSocket = null;
@@ -747,7 +748,7 @@ public class NagiosVCellMonitor {
 ////								setVCellStatus(new VCellStatus(MonitorMode.normal, NAGIOS_STATUS.OK, "Begin Tests..."));
 ////								out.println(getVCellStatus().getNagiosReply());
 //							}else 
-							if(request.startsWith("hold:")){
+							if(request.startsWith(MONITOR_HOLD_CMD)){
 								setVCellStatus(new VCellHoldStatus(request), true);
 								//nagios never sends this request
 								// Request for VCell test status from nagios server
