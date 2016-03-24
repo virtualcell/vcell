@@ -9,6 +9,9 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ProtocolException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,6 +19,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.rmi.Naming;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.MissingFormatArgumentException;
 import java.util.Properties;
@@ -187,7 +191,7 @@ public class NagiosVCellMonitor {
 					final int SIM_RUN_WAIT = 1;// iterations of SLEEP_TIME to wait between simulation RUN tests
 					final int MAX_MESSY = 1;// iterations of SLEEP_TIME to wait before forcing cleanup
 					int simRunCount = 0;
-					int messyCount = 0;
+//					int messyCount = 0;
 //					VCELL_CHECK_LEVEL currentVCellCheckLevel = null;
 					HashMap<Integer, CheckResults> lastResult;
 					while(true){
@@ -211,27 +215,27 @@ public class NagiosVCellMonitor {
 							if(bFullCheck){//full test
 								simRunCount = 0;//reset sim run wait
 								nagArgsHelper.checkLevel = VCELL_CHECK_LEVEL.RUN_5;
-								lastResult = mainArgs(nagArgsHelper,messyCount>MAX_MESSY);								
+								lastResult = mainArgs(nagArgsHelper);								
 //								exceededTimeouts(nagArgsHelper, lastResult);
 //								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.OK, nagArgsHelper.checkLevel,
 //										"OK "+nagArgsHelper.host+" "+nagArgsHelper.rmiPorts.get(0)+(nagArgsHelper.rmiPorts.size()>1?":"+nagArgsHelper.rmiPorts.get(0):""),
 //										null,lastResult),true);
+//								messyCount = 0;
 							}else{//quick test
 								nagArgsHelper.checkLevel = VCELL_CHECK_LEVEL.INFOS_2;
-								lastResult = mainArgs(nagArgsHelper, false);
+								lastResult = mainArgs(nagArgsHelper);
 //								exceededTimeouts(nagArgsHelper, lastResult);
 //								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.OK, nagArgsHelper.checkLevel,
 //										"OK "+nagArgsHelper.host+" "+nagArgsHelper.rmiPorts.get(0)+(nagArgsHelper.rmiPorts.size()>1?":"+nagArgsHelper.rmiPorts.get(0):""),
 //										null,lastResult),false);
 							}
-							messyCount = 0;
 							exceededTimeouts(nagArgsHelper, lastResult);
 							setVCellStatus(new VCellNagioStatus(nagArgsHelper.checkLevel,nagArgsHelper.host,lastResult),bFullCheck);
-						}catch(MessyTestEnvironmentException e){
-							messyCount++;
-							e.printStackTrace();
+//						}catch(MessyTestEnvironmentException e){
+//							messyCount++;
+//							e.printStackTrace();
 						}catch(Exception e){
-							messyCount = 0;
+//							messyCount = 0;
 							e.printStackTrace(System.out);
 //							if(e instanceof UnexpectedTestStateException){
 //								setVCellStatus(new VCellNagioStatus(NAGIOS_STATUS.UNKNOWN, nagArgsHelper.checkLevel, e.getMessage(), e,null),bFullCheck);
@@ -296,7 +300,7 @@ public class NagiosVCellMonitor {
 			this.exception = exception;
 		}
 	}
-	public static HashMap<Integer, CheckResults> mainArgs(NagArgsHelper nagArgsHelper,boolean bForceCleanup) throws Exception{
+	public static HashMap<Integer, CheckResults> mainArgs(NagArgsHelper nagArgsHelper) throws Exception{
 		if(nagArgsHelper == null){
 			throw new UnexpectedTestStateException("Main args for testing loop cannot be null");
 		}
@@ -369,7 +373,7 @@ public class NagiosVCellMonitor {
 				if(rmiPort == -1){
 					continue;
 				}
-				CheckResults result = checkVCell(nagArgsHelper.checkLevel,bForceCleanup,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",
+				CheckResults result = checkVCell(nagArgsHelper.checkLevel,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",
 						nagArgsHelper.vcellNagiosPassword,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
 				if(result == null){
 					throw new UnexpectedTestStateException("test result not expected to be null");
@@ -383,7 +387,7 @@ public class NagiosVCellMonitor {
 //			System.setErr(syserr);
 //		}
 	}
-	private static CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, boolean bForceCleanup,String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int warningTimeout,int criticalTimeout) throws Exception{
+	private static CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int warningTimeout,int criticalTimeout) throws Exception{
 //		vcellVersion, levelTimes, lastSimStatus, totalTime
 		SimulationStatusPersistent lastSimStatus = null;
 		String vcellVersion = null;
@@ -465,13 +469,22 @@ public class NagiosVCellMonitor {
 								}
 								
 								String copyModelName = testModelName+"_"+"rmiport"+"_"+rmiPort;
-								for(BioModelInfo bioModelInfo:vcInfoContainer.getBioModelInfos()){
-									if(userLoginInfo.getUserName().equals(bioModelInfo.getVersion().getOwner().getName()) && bioModelInfo.getVersion().getName().equals(copyModelName)){
-										if(bForceCleanup){
-											try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){e.printStackTrace();}		
-										}else{
-											throw new MessyTestEnvironmentException("Messy test environment, not expecting "+copyModelName+" to exist at this point");
+								boolean bForceCleanup = true;
+								while(true){
+									boolean bMessy = false;
+									for(BioModelInfo bioModelInfo:vcInfoContainer.getBioModelInfos()){
+										if(userLoginInfo.getUserName().equals(bioModelInfo.getVersion().getOwner().getName()) && bioModelInfo.getVersion().getName().equals(copyModelName)){
+											bMessy = true;
+											if(bForceCleanup){
+												bForceCleanup = false;
+												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){e.printStackTrace();}		
+											}else{
+												throw new MessyTestEnvironmentException("Messy test environment, not expecting "+copyModelName+" and couldn't cleanup");
+											}
 										}
+									}
+									if(!bMessy){
+										break;
 									}
 								}
 								BigString copyBioModelXMLStr = vcellConnection.getUserMetaDbServer().saveBioModelAs(bioModelXML, copyModelName, null);
@@ -797,7 +810,31 @@ public class NagiosVCellMonitor {
 	
 	public static ServerSocket claimSocket(int port) throws Exception{
 		killMonitorProcess(port);
-		return new ServerSocket(port);
+//		NetworkInterface nif = NetworkInterface.getByName("eth0");
+//		Enumeration<InetAddress> nifAddresses = nif.getInetAddresses();
+//		InetAddress inetAddress = nifAddresses.nextElement();
+//		System.out.println("----------"+inetAddress.toString());
+//		return new ServerSocket(port,50,inetAddress);
+		ServerSocket myServersocket = null;
+	       for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+	           NetworkInterface intf = en.nextElement();
+//	           if(intf.getName().equals("eth0")){
+		           for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+		               InetAddress inetAddress = enumIpAddr.nextElement();
+		               System.out.println("InetAddress="+inetAddress.toString()+" intf="+intf.toString());
+		               if (!inetAddress.isLoopbackAddress()) {
+		                   if (inetAddress instanceof Inet4Address && intf.getName().equals("eth0")) {
+		                	   System.out.println("socket="+inetAddress.toString());
+		                	   myServersocket = new ServerSocket(port,50,inetAddress); //((Inet4Address)inetAddress);
+		                   }
+		               }
+		           }
+//	           }
+	       }
+	       if(myServersocket != null){
+	    	   return myServersocket;
+	       }
+	       throw new Exception("InetAddress not found");
 
 //		boolean bKillSuccess = true;
 //		Socket clientSocket = null;
