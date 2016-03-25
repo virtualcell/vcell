@@ -1,12 +1,12 @@
 #!/bin/bash
 
 printusage() {
-	echo "Usage: JavaPreprocessor64 simTaskFile userdir"
+	echo "Usage: JavaPreprocessor64 [simTaskFile] [userdir] <parallel Dir>"
 	exit 1
 }
 
 # main code
-if [ "$#" != "2" ] ; then 
+if [ "$#" < "3" ] ; then 
 	printusage
 fi
 
