@@ -83,7 +83,7 @@ public class SolverPreprocessor  {
 	}
 
 	public static void main(java.lang.String[] args) {
-		if (args.length <= 2) {
+		if (args.length < 2) {
 			System.out.print(SolverPreprocessor.class.getName()+" ");
 			System.out.println(Arrays.toString(args));
 			System.out.println("Missing arguments: " + SolverPreprocessor.class.getName() + " [simulationTaskFile] [userdir] <parallel dir> ");
