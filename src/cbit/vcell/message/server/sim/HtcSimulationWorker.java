@@ -17,6 +17,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -152,6 +153,9 @@ private static class PostProcessingChores {
 	boolean isCopyNeeded( ) {
 		return !runDirectory.equals(finalDataDirectory);
 	}
+	boolean isParallel( ) {
+		return !runDirectory.equals(finalDataDirectory);
+	}
 
 	public boolean isVtkUser() {
 		return isVtk;
@@ -246,13 +250,13 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
     String jobname = HtcProxy.createHtcSimJobName(new HtcProxy.SimTaskInfo(simTask.getSimKey(), simTask.getSimulationJob().getJobIndex(), simTask.getTaskID()));   //"S_" + simTask.getSimKey() + "_" + simTask.getSimulationJob().getJobIndex()+ "_" + simTask.getTaskID();
 	String subFile = htcLogDirString+jobname + clonedHtcProxy.getSubmissionFileExtension();
 
-	File userDir = new File(chores.runDirectory);
+	File parallelDir = new File(chores.runDirectory);
 	File primaryUserDir = new File(chores.finalDataDirectory);
-	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, userDir, primaryUserDir, simTask, true);
+	Solver realSolver = (AbstractSolver)SolverFactory.createSolver(log, primaryUserDir,parallelDir, simTask, true);
 	realSolver.setUnixMode();
 
 	String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
-	String simTaskFilePath = ResourceUtil.forceUnixPath(new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
+	String simTaskFilePath = ResourceUtil.forceUnixPath(new File(primaryUserDir ,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml").toString());
 
 	if (clonedHtcProxy.getCommandService() instanceof CommandServiceSsh){
 		// write simTask file locally, and send it to server, and delete local copy.
@@ -272,6 +276,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	final int jobId = simTask.getSimulationJob().getJobIndex();
 
 	ExecutableCommand.Container commandContainer = new ExecutableCommand.Container( );
+	//the post processor command itself is neither messaging nor parallel; it's independent of the previous solver call
 	ExecutableCommand postprocessorCmd = new ExecutableCommand(false, false,
 			PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
 			simKey.toString(),
@@ -290,12 +295,18 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 	if (realSolver instanceof AbstractCompiledSolver) {
 		AbstractCompiledSolver compiledSolver = (AbstractCompiledSolver)realSolver;
 
+		List<String> args = new ArrayList<>( 4 );
+		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
+		args.add( simTaskFilePath );
+		args.add( primaryUserDir.getAbsolutePath() );
+		if ( chores.isParallel()) {
+			args.add(chores.runDirectory);
+		}
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(false, false,
-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor),
-				simTaskFilePath,
-				ResourceUtil.forceUnixPath(userDir.getAbsolutePath()) );
+		//the pre-processor command itself is neither messaging nor parallel; it's independent of the subsequent solver call
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(false, false,args);
 		commandContainer.add(preprocessorCmd);
+		
 		for (ExecutableCommand ec  : compiledSolver.getCommands()) {
 			if (ec.isMessaging()) {
 				ec.addArgument("-tid");
@@ -318,7 +329,7 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Ses
 		ExecutableCommand ec = new ExecutableCommand(false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),
 				simTaskFilePath,
-				ResourceUtil.forceUnixPath(userDir.getAbsolutePath())
+				ResourceUtil.forceUnixPath(parallelDir.getAbsolutePath())
 		);
 		commandContainer.add(ec);
 	}

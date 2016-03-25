@@ -49,7 +49,7 @@ public class SolverFactory {
  */
 	
 	private interface Maker {
-		Solver make(SimulationTask task, File workingDir, File primaryDir, SessionLog log, boolean messaging) throws SolverException;
+		Solver make(SimulationTask task, File userDir, File parallelDir, SessionLog log, boolean messaging) throws SolverException;
 	}
 	
 	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<SolverDescription, SolverFactory.Maker>( );
@@ -79,17 +79,17 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.MovingBoundary, (t,d,pd,sl,m) -> new MovingBoundarySolver(t, d, sl,m) ); 
 	}
 	
-public static Solver createSolver(SessionLog sessionLog, File workingDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(SessionLog sessionLog, File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
 	{
-		return createSolver(sessionLog, workingDir, null, simTask, bMessaging);
+		return createSolver(sessionLog, userDir, null, simTask, bMessaging);
 	}
 }
 
-public static Solver createSolver(SessionLog sessionLog, File workingDir, File primaryDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(SessionLog sessionLog, File userDir, File parallelDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
 	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
 
-	File simTaskFile = new File(workingDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");
-	if (workingDir.exists() && !simTaskFile.exists()){
+	File simTaskFile = new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");
+	if (userDir.exists() && !simTaskFile.exists()){
 		try {
 			String simTaskXmlText = XmlHelper.simTaskToXML(simTask);
 			XmlUtil.writeXMLStringToFile(simTaskXmlText, simTaskFile.toString(), true);
@@ -104,7 +104,7 @@ public static Solver createSolver(SessionLog sessionLog, File workingDir, File p
 	}
 	Maker maker = FACTORY.get(solverDescription);
 	if (maker != null) {
-		Solver s = maker.make(simTask, workingDir, primaryDir, sessionLog,bMessaging); 
+		Solver s = maker.make(simTask, userDir, parallelDir, sessionLog,bMessaging); 
 		sessionLog.print("LocalSolverFactory.createSolver() returning " + solverDescription + " solver " + ExecutionTrace.justClassName(s));
 		return s;
 	}
