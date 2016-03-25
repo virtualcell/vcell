@@ -2,6 +2,7 @@ package cbit.vcell.solvers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * command string. Encapsulates information about the command
@@ -27,6 +28,11 @@ public class ExecutableCommand {
 	private boolean dirty;
 	
 	
+	/**
+	 * @param messaging
+	 * @param parallel
+	 * @param input variable list of Strings to pass
+	 */
 	public ExecutableCommand(boolean messaging, boolean parallel, String ... input) {
 		super();
 		this.messaging = messaging;
@@ -39,6 +45,22 @@ public class ExecutableCommand {
 			 //cmds.add(filePath.replace("C:","").replace("D:","").replace("\\","/"));
 			 cmds.add(filePath.replace("\\","/"));
 		}
+	}
+	
+	/**
+	 * @param messaging
+	 * @param parallel
+	 * @param input variable list of Strings to pass
+	 */
+	public ExecutableCommand(boolean messaging, boolean parallel, List<String> input) {
+		super();
+		this.messaging = messaging;
+		this.parallel = parallel;
+		this.exitCodeToken = null;
+		this.joined = null;
+		this.dirty = true;
+		List<String> cleaned = input.stream().map( (p) -> p.replace("\\", "/") ).collect(Collectors.toList());
+		this.cmds = new ArrayList<>(cleaned); 
 	}
 
 	/**

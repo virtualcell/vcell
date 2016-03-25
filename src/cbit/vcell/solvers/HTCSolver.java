@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import org.vcell.util.Executable;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
-import org.vcell.util.document.VCellServerID;
 
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solver.SolverException;
@@ -40,16 +39,17 @@ public abstract class HTCSolver extends AbstractSolver {
 
 /**
  * LSFSolver constructor comment.
- * @param simulation cbit.vcell.solver.Simulation
- * @param directory java.io.File
+ * @param userDirectory java.io.File
+ * @param parallelDirectory if required, may be null 
  * @param sessionLog cbit.vcell.server.SessionLog
+ * @param simulation cbit.vcell.solver.Simulation
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public HTCSolver(SimulationTask simTask, File directory, SessionLog sessionLog) throws SolverException {
-	super(simTask, directory, sessionLog);
+public HTCSolver(SimulationTask simTask, File userDirectory, File parallelDirectory, SessionLog sessionLog) throws SolverException {
+	super(simTask, userDirectory, sessionLog);
 	simulationTask = simTask;
 	if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {
-		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, directory, simTask, true);
+		realSolver = (AbstractSolver)SolverFactory.createSolver(sessionLog, userDirectory, parallelDirectory, simTask, true);
 		realSolver.addSolverListener(new SolverListener() {
 			public final void solverAborted(SolverEvent event) {		
 				fireSolverAborted(event.getSimulationMessage());
