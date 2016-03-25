@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
@@ -82,15 +83,18 @@ public class SolverPreprocessor  {
 	}
 
 	public static void main(java.lang.String[] args) {
-		if (args.length != 2) {
+		if (args.length <= 2) {
 			System.out.print(SolverPreprocessor.class.getName()+" ");
-			for (String arg : args){
-				System.out.print(" "+arg+" ");
-			}
-			System.out.println();
-			
-			System.out.println("Missing arguments: " + SolverPreprocessor.class.getName() + " simulationTaskFile userdir");
+			System.out.println(Arrays.toString(args));
+			System.out.println("Missing arguments: " + SolverPreprocessor.class.getName() + " [simulationTaskFile] [userdir] <parallel dir> ");
 			System.exit(1);
+		}
+		File parallelDirectory = null;
+		if (args.length >= 3) {
+			parallelDirectory = new File(args[2]);
+			if (parallelDirectory.isDirectory() && parallelDirectory.canWrite()) {
+				throw new IllegalArgumentException(parallelDirectory.getAbsolutePath() +  " is not a writeable directory");
+			}
 		}
 		Logging.init();
 		Logging.changeConsoleLogging(ConsoleDestination.STD_ERR, ConsoleDestination.STD_OUT); 
@@ -102,8 +106,8 @@ public class SolverPreprocessor  {
 			//
 			File simulationFile = new File(args[0]);
 			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
-			File userdir = new File(args[1]);
-			recoverLastSimulationData(simTask,userdir,log.getLogger());
+			File userDirectory = new File(args[1]);
+			recoverLastSimulationData(simTask,userDirectory,log.getLogger());
 			final String hostName = null;
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
@@ -114,10 +118,10 @@ public class SolverPreprocessor  {
 			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 			mbs.registerMBean(new VCellServiceMXBeanImpl(), new ObjectName(VCellServiceMXBean.jmxObjectName));
 			
- 	        final HTCSolver htcSolver = new HTCSolver(simTask, userdir,log) {
+ 	        final HTCSolver htcSolver = new HTCSolver(simTask, userDirectory,parallelDirectory, log) {
 				public void startSolver() {
 					try {
-						initialize();
+						super.initialize();
 					} catch (Exception e) {
 						e.printStackTrace();
 						SimulationMessage simMessage = SimulationMessage.jobFailed(e.getMessage());
