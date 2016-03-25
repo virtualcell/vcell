@@ -106,23 +106,6 @@ private void statCheck( ) {
 		return;
 	}
 
-	//oracle internal implementation is synchronized, so shouldn't need synchronization here
-	try {
-		if ( poolDataSource.getAvailableConnectionsCount() >= 5) {
-			return;
-		}
-		Level lvl = lg.getLevel();
-		try {
-			lg.setLevel(Level.INFO);
-			logStat( );
-		}
-		finally {
-			lg.setLevel(lvl);
-		}
-
-	} catch (Exception e) {
-		lg.warn("trouble getting available connection count", e);
-	}
 }
 
 /**
