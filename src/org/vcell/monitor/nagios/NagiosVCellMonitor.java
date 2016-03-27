@@ -150,18 +150,19 @@ public class NagiosVCellMonitor {
 
 	}
 	
-	public static final String MONITOR_HOLD_CMD = "hold:";
-	public static final String MONITOR_REQUEST_CONNECT = "statusConnect";
-	public static final String MONITOR_REQUEST_FULL = "statusFull";
+	public static enum StatusType {statusConnect,statusFull,hold};
 
 	public NagiosVCellMonitor(){
 	}
 	
+	public static String getHoldCommand(){
+		return StatusType.hold.name()+":";
+	}
 	public void startMonitor(NagArgsHelper nagArgsHelper){
 		try{
-			final int SLEEP_TIME = 60000;//millseconds time between each quick connect test
-			final int SIM_RUN_WAIT = 10;// iterations of SLEEP_TIME to wait between simulation RUN tests
-			statusMap.setStaleParameters(5*SLEEP_TIME, SIM_RUN_WAIT*2*SLEEP_TIME);
+			final int SLEEP_TIME = 1000*60;//millseconds time between each quick connect test
+			final int SIM_RUN_WAIT = 2;// iterations of SLEEP_TIME to wait between simulation RUN tests
+			statusMap.setStaleParameters(new Long(5*SLEEP_TIME), new Long(SIM_RUN_WAIT*2*SLEEP_TIME),new Long(1000*60*20));
 			
 			if(nagArgsHelper.monitorSocket <= 1024 || nagArgsHelper.monitorSocket >= 65536){
 				throw new IllegalArgumentException("monitorSocket must be within 1025 and 65535,val="+nagArgsHelper.monitorSocket);
@@ -188,15 +189,15 @@ public class NagiosVCellMonitor {
 					int simRunCount = 0;
 					HashMap<Integer, CheckResults> lastResult;
 					while(true){
-						if(getVCellStatus(MONITOR_HOLD_CMD) != null){
+						if(getVCellStatus(StatusType.hold) != null){
 							//end this thread
 							//deploy is happening, quit testing, nagios replies will continue in other thread
 							break;
 						}
 						lastResult = null;
-						String testMode = (simRunCount == SIM_RUN_WAIT?MONITOR_REQUEST_FULL:MONITOR_REQUEST_CONNECT);
+						StatusType statusType = (simRunCount == SIM_RUN_WAIT?StatusType.statusFull:StatusType.statusConnect);
 						try{
-							if(MONITOR_REQUEST_FULL.equals(testMode)){//full test
+							if(StatusType.statusFull.equals(statusType)){//full test
 								simRunCount = 0;//reset sim run wait
 								nagArgsHelper.checkLevel = VCELL_CHECK_LEVEL.RUN_5;
 								lastResult = mainArgs(nagArgsHelper);								
@@ -205,10 +206,10 @@ public class NagiosVCellMonitor {
 								lastResult = mainArgs(nagArgsHelper);
 							}
 							exceededTimeouts(nagArgsHelper, lastResult);
-							setVCellStatus(new VCellStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host,lastResult),testMode);
+							setVCellStatus(new VCellStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host,lastResult),statusType);
 						}catch(Exception e){
 							e.printStackTrace(System.out);
-							setVCellStatus(new VCellStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host+" "+e.getMessage(),null),testMode);
+							setVCellStatus(new VCellStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host+" "+e.getMessage(),null),statusType);
 						}finally{
 							simRunCount++;
 							try{Thread.sleep(SLEEP_TIME);}catch(InterruptedException e2){e2.printStackTrace();}
@@ -468,8 +469,11 @@ public class NagiosVCellMonitor {
 			}
 		}).start();
 	}
-	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", java.util.Locale.US);
+	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss", java.util.Locale.US);
 
+	public static String formatDate(Date date){
+		return dateTimeFormatter.format(date);
+	}
 	private static class VCellStatus {
 		private String message;
 		private HashMap<Integer, CheckResults> checkResultsMap;
@@ -482,7 +486,7 @@ public class NagiosVCellMonitor {
 			this.message = message;
 			this.checkResultsMap = (checkResultsMap==null?new HashMap<Integer, CheckResults>():checkResultsMap);
 		}
-		public static VCellStatus createStaleStatus(String testMode,String message){
+		public static VCellStatus createStaleStatus(String message){
 			VCellStatus vcellStatus = new VCellStatus(message, new HashMap<Integer, CheckResults>());
 			vcellStatus.staleStatus = NAGIOS_STATUS.UNKNOWN;
 			return vcellStatus;
@@ -548,55 +552,74 @@ public class NagiosVCellMonitor {
 					}
 				}
 			}
-			return getNagiosStatus().ordinal()+"("+dateTimeFormatter.format(statusCreateTime)+")"+getMessage()+(performacneSB.length()==0?"":" |"+performacneSB.toString());
+			return getNagiosStatus().ordinal()+"("+formatDate(statusCreateTime)+")"+getMessage()+(performacneSB.length()==0?"":" |"+performacneSB.toString());
 		}
 		public long getStatusCreateTime(){
 			return statusCreateTime.getTime();
 		}
 	}
 	private static class VCellHoldStatus extends VCellStatus{
-		public VCellHoldStatus(String message){
-			super(message, null);
+		public VCellHoldStatus(){
+			super("Monitor placed on hold", null);
 		}
 	}
-	private class StatusMap extends HashMap<String, VCellStatus>{
+	private class StatusMap extends HashMap<StatusType, VCellStatus>{
 		private Long staleStatusQuick;
 		private Long staleStatusLong;
+		private Long staleStatusHold;
 		public StatusMap() {
 			super();
-			statusMap.put(MONITOR_REQUEST_CONNECT, new VCellStatus("Starting...",null));
-			statusMap.put(MONITOR_REQUEST_FULL, new VCellStatus("Starting...",null));
+			this.put(StatusType.statusConnect, new VCellStatus("Starting...",null));
+			this.put(StatusType.statusFull, new VCellStatus("Starting...",null));
 //			statusMap.put(MONITOR_HOLD_CMD, null);
 		}
-		public void setStaleParameters(long staleStatusQuick,long staleStatusLong){
+		public void setStaleParameters(long staleStatusQuick,long staleStatusLong,Long staleStatusHold){
 			this.staleStatusQuick = staleStatusQuick;
 			this.staleStatusLong = staleStatusLong;
+			this.staleStatusHold = staleStatusHold;
 		}
-		private boolean isStale(String request){
-			if(staleStatusLong != null && MONITOR_REQUEST_FULL.equals(request) && staleStatusLong < (System.currentTimeMillis()-this.get(MONITOR_REQUEST_FULL).getStatusCreateTime())){
-				return true;
-			}else if(staleStatusQuick != null && MONITOR_REQUEST_CONNECT.equals(request) && staleStatusQuick < (System.currentTimeMillis()-this.get(MONITOR_REQUEST_CONNECT).getStatusCreateTime())){
-				return true;
+		private VCellStatus anyStale(StatusType statusType){
+			if(this.get(StatusType.hold) != null){// 'hold' overrides all other status
+				if(staleStatusHold != null && (System.currentTimeMillis()-this.get(StatusType.hold).getStatusCreateTime()) > staleStatusHold){
+					return this.get(StatusType.hold);
+				}
+				return null;
+			}else{
+				if(staleStatusLong != null && StatusType.statusFull.equals(statusType) && staleStatusLong < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
+					return this.get(StatusType.statusFull);
+				}else if(staleStatusQuick != null && StatusType.statusConnect.equals(statusType) && staleStatusQuick < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
+					return this.get(StatusType.statusConnect);
+				}
+				return null;
 			}
-			return false;
 		}
-		public VCellStatus getStaleStatus(String request){
-			if(isStale(request)){
-				VCellStatus vcStatus = this.get(request);
-				return VCellStatus.createStaleStatus(request,"Stale status after "+
-					(((System.currentTimeMillis()-vcStatus.getStatusCreateTime())/1000)/60)+" minutes: "+vcStatus.getNagiosReply());				
+		public VCellStatus getStaleStatus(StatusType statusType){
+			VCellStatus anyStale = anyStale(statusType);
+			if(anyStale != null){
+				return VCellStatus.createStaleStatus("Stale status after "+
+					(((System.currentTimeMillis()-anyStale.getStatusCreateTime())/1000)/60)+" minutes: "+anyStale.getNagiosReply());				
 			}
 			return null;
 		}
 	}
 	private StatusMap statusMap = new StatusMap();//default has no stale parameters defined
-	private synchronized void setVCellStatus(VCellStatus status,String request){
-		statusMap.put(request, status);
+	private synchronized void setVCellStatus(VCellStatus status,StatusType statusType){
+		statusMap.put(statusType, status);
 	}
-	private synchronized VCellStatus getVCellStatus(String request){
-		// If current status hasn't been updaated for awhile then wrap it with 'stale' status
-		VCellStatus staleStatus = statusMap.getStaleStatus(request);
-		return (staleStatus==null?statusMap.get(request):staleStatus);
+	private synchronized VCellStatus getVCellStatus(StatusType statusType){
+		// 'stale' has higher priority than {hold,connect,full}
+		// 'hold' has higher priority than {connect,full}
+		// return the highest priority message
+		VCellStatus staleStatus = statusMap.getStaleStatus(statusType);// any status can be stale
+		if(staleStatus != null){
+			return staleStatus;
+		}
+		VCellStatus holdStatus = statusMap.get(StatusType.hold);
+		if(holdStatus != null){
+			return holdStatus;
+		}
+		VCellStatus regularStatus = statusMap.get(statusType);
+		return regularStatus;
 	}
 	
 	public void nagiosRequestServicingLoop(ServerSocket serverSocket) throws IOException,NumberFormatException{
@@ -609,19 +632,19 @@ public class NagiosVCellMonitor {
 				// Read request
 				BufferedReader in = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
 				String request = in.readLine();
-				if(request.startsWith(MONITOR_HOLD_CMD)){
-					setVCellStatus(new VCellHoldStatus(request), MONITOR_HOLD_CMD);
+				if(request.startsWith(getHoldCommand())){
+					setVCellStatus(new VCellHoldStatus(), StatusType.hold);
 					//nagios never sends this request
 					// Stop testing but keep responding with hold message
-					out.println(getVCellStatus(MONITOR_HOLD_CMD).getNagiosReply());
-				}else if(request.equals(MONITOR_REQUEST_CONNECT)){
+					out.println(getVCellStatus(StatusType.hold).getNagiosReply());
+				}else if(request.equals(StatusType.statusConnect.name())){
 					//nagios only sends this request
 					// Request for VCell test status from nagios server
-					out.println(getVCellStatus(MONITOR_REQUEST_CONNECT).getNagiosReply());
-				}else if(request.equals(MONITOR_REQUEST_FULL)){
+					out.println(getVCellStatus(StatusType.statusConnect).getNagiosReply());
+				}else if(request.equals(StatusType.statusFull.name())){
 					//nagios only sends this request
 					// Request for VCell test status from nagios server
-					out.println(getVCellStatus(MONITOR_REQUEST_FULL).getNagiosReply());
+					out.println(getVCellStatus(StatusType.statusFull).getNagiosReply());
 				}else{
 					out.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Unknown Request '"+request);
 				}

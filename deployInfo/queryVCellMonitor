@@ -20,13 +20,13 @@ if [ $? != 0 ]; then                    ## Check connection succeeded
         exit $UNKNOWN                   ## Connection failed, respond with nagios 'UNKNOWN' code
 fi
 
-timeout 1 echo $testrequest >&3 		## Initiate monitor communication by sending 'hello'
+timeout 10 echo $testrequest >&3 		## Initiate monitor communication by sending 'hello'
 if [ $? != 0 ]; then                    ## Check 'request' sent
         echo "Error, request "$testrequest" failed"               ## Status message for nagios
         exit $UNKNOWN                   ## 'request' failed, respond with nagios 'UNKNOWN' code
 fi
 
-read -t 1 var1 <&3                      ## get response as VCell status in nagios format (digit+text+|+performance)
+read -t 10 var1 <&3                      ## get response as VCell status in nagios format (digit+text+|+performance)
 if [ $? != 0 ]; then                    ## Check 'request' response
         echo "status Response Failed"   ## Status message for nagios
         exit $UNKNOWN                   ## 'request' response failed, respond with nagios 'UNKNOWN' code
