@@ -559,8 +559,8 @@ public class NagiosVCellMonitor {
 		}
 	}
 	private static class VCellHoldStatus extends VCellStatus{
-		public VCellHoldStatus(){
-			super("Monitor placed on hold", null);
+		public VCellHoldStatus(String message){
+			super("Monitor on hold"+(message==null?"":", "+message), null);
 		}
 	}
 	private class StatusMap extends HashMap<StatusType, VCellStatus>{
@@ -633,7 +633,7 @@ public class NagiosVCellMonitor {
 				BufferedReader in = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
 				String request = in.readLine();
 				if(request.startsWith(getHoldCommand())){
-					setVCellStatus(new VCellHoldStatus(), StatusType.hold);
+					setVCellStatus(new VCellHoldStatus((request.length()>getHoldCommand().length()?request.substring(getHoldCommand().length()):null)), StatusType.hold);
 					//nagios never sends this request
 					// Stop testing but keep responding with hold message
 					out.println(getVCellStatus(StatusType.hold).getNagiosReply());

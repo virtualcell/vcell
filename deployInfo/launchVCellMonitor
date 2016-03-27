@@ -1,5 +1,7 @@
 #!/bin/bash
 
+currentTime=`date "+%Y%m%d_%H%M%S"`
+
 #
 # include common variable definitions
 #
@@ -22,6 +24,6 @@ jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_prope
 shopt -s -o nounset
 
 nohup ${common_jre} -Dtest.monitor.port=$check_vcell_alive_queryport -Djava.awt.headless=true ${debugargs} -cp ${common_jvm_jars} ${jvmprop} ${check_vcell_alive_mainclass} \
--H $bootstrap_rmihost -i $multirmiPort -p $check_vcell_alive_nagiospw -m $check_vcell_alive_queryport &
+-H $bootstrap_rmihost -i $multirmiPort -p $check_vcell_alive_nagiospw -m $check_vcell_alive_queryport >${common_logdir}/nagiosVCellMonitor_"$currentTime".log &
 
 exit $?
