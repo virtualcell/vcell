@@ -364,7 +364,6 @@ public class NagiosVCellMonitor {
 										if(userLoginInfo.getUserName().equals(bioModelInfo.getVersion().getOwner().getName()) && bioModelInfo.getVersion().getName().equals(copyModelName)){
 											bMessy = true;
 											if(bForceCleanup){
-												bForceCleanup = false;
 												try{vcellConnection.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());}catch(Exception e){e.printStackTrace();}		
 											}else{
 												throw new MessyTestEnvironmentException("Messy test environment, not expecting "+copyModelName+" and couldn't cleanup");
@@ -374,6 +373,7 @@ public class NagiosVCellMonitor {
 									if(!bMessy){
 										break;
 									}
+									bForceCleanup = false;
 								}
 								BigString copyBioModelXMLStr = vcellConnection.getUserMetaDbServer().saveBioModelAs(bioModelXML, copyModelName, null);
 								BioModel copyBioModel = XmlHelper.XMLToBioModel(new XMLSource(copyBioModelXMLStr.toString()));
