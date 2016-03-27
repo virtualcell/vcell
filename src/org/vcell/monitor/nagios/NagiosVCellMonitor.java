@@ -158,8 +158,9 @@ public class NagiosVCellMonitor {
 	public static String getHoldCommand(){
 		return StatusType.hold.name()+":";
 	}
-	public void startMonitor(NagArgsHelper nagArgsHelper){
+	public void startMonitor(NagArgsHelper newNagArgsHelper){
 		try{
+			nagArgsHelper = newNagArgsHelper;
 			final int SLEEP_TIME = 1000*60;//millseconds time between each quick connect test
 			final int SIM_RUN_WAIT = 2;// iterations of SLEEP_TIME to wait between simulation RUN tests
 			statusMap.setStaleParameters(new Long(5*SLEEP_TIME), new Long(SIM_RUN_WAIT*2*SLEEP_TIME),new Long(1000*60*20));
@@ -179,7 +180,7 @@ public class NagiosVCellMonitor {
 						
 					}
 				}
-			}).start();
+			},"NagiosRequestLoop").start();
 			
 			//Run Connection and Simulation tests thread
 			new Thread(new Runnable() {
@@ -216,18 +217,19 @@ public class NagiosVCellMonitor {
 						}
 					}
 				}
-			}).start();
+			},"VCellTestLoop").start();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 	}
 	
+	private NagArgsHelper nagArgsHelper;
+	private Integer myProcessID;
 	public static void main(String[] args) {
 		try{
-			NagArgsHelper nagArgsHelper = new NagArgsHelper(args);
 			NagiosVCellMonitor nagiosVCellMonitor = new NagiosVCellMonitor();
-			nagiosVCellMonitor.startMonitor(nagArgsHelper);
+			nagiosVCellMonitor.startMonitor(new NagArgsHelper(args));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -481,7 +483,7 @@ public class NagiosVCellMonitor {
 		private NAGIOS_STATUS staleStatus = null;
 		public VCellStatus(String message,HashMap<Integer, CheckResults> checkResultsMap){
 			if(message == null){
-				throw new IllegalArgumentException("message cannot be null message="+message);
+				throw new IllegalArgumentException("message cannot be null");
 			}
 			this.message = message;
 			this.checkResultsMap = (checkResultsMap==null?new HashMap<Integer, CheckResults>():checkResultsMap);
@@ -597,7 +599,7 @@ public class NagiosVCellMonitor {
 			VCellStatus anyStale = anyStale(statusType);
 			if(anyStale != null){
 				return VCellStatus.createStaleStatus("Stale status after "+
-					(((System.currentTimeMillis()-anyStale.getStatusCreateTime())/1000)/60)+" minutes: "+anyStale.getNagiosReply());				
+					(((System.currentTimeMillis()-anyStale.getStatusCreateTime())/1000)/60)+" minutes, use command (jstack "+myProcessID+") to debug.  lastStatus="+anyStale.getNagiosReply());				
 			}
 			return null;
 		}
@@ -661,9 +663,13 @@ public class NagiosVCellMonitor {
 		}
 	}
 	
-	public static ServerSocket claimSocket(int port) throws Exception{
+	public ServerSocket claimSocket(int port) throws Exception{
 		killMonitorProcess(port);
-		return new ServerSocket(port);
+		ServerSocket newServerSocket =  new ServerSocket(port);
+		Thread.sleep(2000);
+		myProcessID = getPidOnPort(port);
+		System.out.println("Monitor process ID pid="+myProcessID);
+		return newServerSocket;
 //		ServerSocket myServersocket = null;
 //	       for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
 //	           NetworkInterface intf = en.nextElement();
@@ -684,7 +690,7 @@ public class NagiosVCellMonitor {
 //	       throw new Exception("InetAddress not found");
 	}
 
-	public static void killMonitorProcess(int port) throws Exception{
+	public static Integer getPidOnPort(int port) throws Exception{
 		//lsof -iTCP -sTCP:LISTEN -P -n
 		Executable executable = new Executable(new String[] {"/usr/sbin/lsof","-i","TCP:"+port});
 		try{
@@ -693,19 +699,20 @@ public class NagiosVCellMonitor {
 			//this can happen is there are no processes we have permission to list
 			//assume the other monitor isn't running
 			e.printStackTrace();
-			return;
+			return null;
 		}
 		String s = executable.getStdoutString();
 		System.out.println(s);
 		StringReader sr = new StringReader(s);
 		BufferedReader br = new BufferedReader(sr);
 		String line = null;
+		Integer pid = null;
 		while((line = br.readLine())!=null){
+			System.out.println(line);
 			StringTokenizer st = new StringTokenizer(line," ");
 			String socketElement = null;
-			String pid = null;
 			if(st.nextToken().equals("java")){
-				pid = st.nextToken().trim();
+				pid = new Integer(st.nextToken().trim());
 				st.nextToken();
 				st.nextToken();
 				st.nextToken();
@@ -714,24 +721,32 @@ public class NagiosVCellMonitor {
 				st.nextToken();
 				socketElement = st.nextToken().trim();
 			}
-			String socket = null;
 			if(socketElement != null){
 				st = new StringTokenizer(socketElement,":");
+				String currentPort = null;
+				// Get port from last element
 				while(st.hasMoreElements()){
-					socket = st.nextToken();
+					currentPort = st.nextToken();
+				}
+				if(currentPort.equals(""+port)){
+					return pid;
 				}
 			}
-			if(socket != null){
-				System.out.println("pid="+pid+" socket="+socket);
-				//Find out if this is a monitor
-				executable = new Executable(new String[] {"/bin/ps","-fww","-p",pid});
+		}
+		throw new Exception("Error parsing pid/port information, pid="+pid+" port="+port);
+	}
+	public static void killMonitorProcess(int port) throws Exception{
+		Integer pid = getPidOnPort(port);
+		if(pid != null){
+			System.out.println("pid="+pid+" port="+port);
+			//Find out if this is a monitor
+			Executable executable = new Executable(new String[] {"/bin/ps","-fww","-p",pid.toString()});
+			executable.start();
+			String pStr = executable.getStdoutString();
+			System.out.println(pStr);
+			if(pStr.contains("-Dtest.monitor.port="+port)){
+				executable = new Executable(new String[] {"/bin/kill","-9",pid.toString()});
 				executable.start();
-				String pStr = executable.getStdoutString();
-				System.out.println(pStr);
-				if(pStr.contains("-Dtest.monitor.port="+port)){
-					executable = new Executable(new String[] {"/bin/kill","-9",pid});
-					executable.start();
-				}
 			}
 		}
 	}
