@@ -686,7 +686,7 @@ public class NagiosVCellMonitor {
 
 	public static void killMonitorProcess(int port) throws Exception{
 		//lsof -iTCP -sTCP:LISTEN -P -n
-		Executable executable = new Executable(new String[] {"lsof","-i","TCP:"+port});
+		Executable executable = new Executable(new String[] {"/usr/sbin/lsof","-i","TCP:"+port});
 		try{
 			executable.start();
 		}catch(Exception e){
@@ -724,12 +724,12 @@ public class NagiosVCellMonitor {
 			if(socket != null){
 				System.out.println("pid="+pid+" socket="+socket);
 				//Find out if this is a monitor
-				executable = new Executable(new String[] {"ps","-fww","-p",pid});
+				executable = new Executable(new String[] {"/bin/ps","-fww","-p",pid});
 				executable.start();
 				String pStr = executable.getStdoutString();
 				System.out.println(pStr);
 				if(pStr.contains("-Dtest.monitor.port="+port)){
-					executable = new Executable(new String[] {"kill","-9",pid});
+					executable = new Executable(new String[] {"/bin/kill","-9",pid});
 					executable.start();
 				}
 			}
