@@ -480,22 +480,25 @@ public class NagiosVCellMonitor {
 		private String message;
 		private HashMap<Integer, CheckResults> checkResultsMap;
 		private Date statusCreateTime = new Date();
-		private NAGIOS_STATUS staleStatus = null;
+		boolean bStale = false;
 		public VCellStatus(String message,HashMap<Integer, CheckResults> checkResultsMap){
+			this(message,checkResultsMap,false);
+		}
+		private VCellStatus(String message,HashMap<Integer, CheckResults> checkResultsMap, boolean bStale){
 			if(message == null){
 				throw new IllegalArgumentException("message cannot be null");
 			}
 			this.message = message;
 			this.checkResultsMap = (checkResultsMap==null?new HashMap<Integer, CheckResults>():checkResultsMap);
+			this.bStale = bStale;
+			System.out.println(getNagiosReply());
 		}
 		public static VCellStatus createStaleStatus(String message){
-			VCellStatus vcellStatus = new VCellStatus(message, new HashMap<Integer, CheckResults>());
-			vcellStatus.staleStatus = NAGIOS_STATUS.UNKNOWN;
-			return vcellStatus;
+			return new VCellStatus(message, new HashMap<Integer, CheckResults>(),true);
 		}
 		private NAGIOS_STATUS getNagiosStatus(){
-			if(staleStatus != null){
-				return staleStatus;
+			if(bStale){
+				return NAGIOS_STATUS.UNKNOWN;
 			}
 			NAGIOS_STATUS worstStatus = NAGIOS_STATUS.OK;
 			for(Integer rmiPort:checkResultsMap.keySet()){
