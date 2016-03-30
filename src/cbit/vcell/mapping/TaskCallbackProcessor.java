@@ -200,15 +200,15 @@ public class TaskCallbackProcessor {
 		split = string.split("\\n");
 		for(String s : split) {
 			if(s.startsWith("CPU TIME: total"))  {
-				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
-				consoleNotificationList.add(tcm);
-				sc.firePropertyChange("appendToConsole", "", tcm);
+//				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
+//				consoleNotificationList.add(tcm);
+//				sc.firePropertyChange("appendToConsole", "", tcm);
 			} else if (s.startsWith("Iteration")) {
-				String species = "species";
-				s = "    " + s.substring(0, s.indexOf("species") + species.length());
-				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
-				consoleNotificationList.add(tcm);
-				sc.firePropertyChange("appendToConsole", "", tcm);
+//				String species = "species";
+//				s = "    " + s.substring(0, s.indexOf("species") + species.length());
+//				TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
+//				consoleNotificationList.add(tcm);
+//				sc.firePropertyChange("appendToConsole", "", tcm);
 				checkMaxIterationConsistency(s);
 			} else if (s.startsWith("WARNING: maximal length of aggregate is reached in reaction")) {
 //				System.out.println(s);

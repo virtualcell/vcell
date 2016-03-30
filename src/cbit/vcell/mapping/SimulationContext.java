@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.SwingUtilities;
+
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.NetworkFreePanel;
 import org.vcell.util.BeanUtils;
@@ -103,7 +105,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class SimulationContext implements SimulationOwner, Versionable, Matchable, 
+public class SimulationContext implements SimulationOwner, Versionable, Matchable, BioNetGenUpdaterCallback,
 	ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, Serializable, IssueSource {
 	
 	public interface MathMappingCallback {
@@ -2719,6 +2721,34 @@ public Issue gatherIssueForMathOverride(IssueContext issueContext, Simulation si
 		return new Issue(simulation,issueContext,Issue.IssueCategory.Simulation_Override_NotSupported,msg,Severity.ERROR);
 	}
 	return null;
+}
+
+// ----------------------------------------------------------------------------------------
+@Override
+public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
+	setMostRecentlyCreatedOutputSpec(outputSpec);
+}
+
+@Override
+public void setNewCallbackMessage(TaskCallbackMessage message) {
+	if (!SwingUtilities.isEventDispatchThread()){
+		SwingUtilities.invokeLater(new Runnable(){
+
+			@Override
+			public void run() {
+				appendToConsole(message);
+			}
+			
+		});
+	}else{
+		appendToConsole(message);
+	}
+}
+
+@Override
+public boolean isInterrupted() {
+	// TODO Auto-generated method stub
+	return false;
 }
 
 }
