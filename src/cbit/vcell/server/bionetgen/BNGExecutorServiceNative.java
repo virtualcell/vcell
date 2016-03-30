@@ -103,7 +103,7 @@ public List<BioNetGenUpdaterCallback> getCallbacks() {
 	if(callbacks == null) {
 		callbacks = new ArrayList<BioNetGenUpdaterCallback>();
 	}
-	return Collections.unmodifiableList(callbacks);
+	return callbacks;
 }
 
 /**
