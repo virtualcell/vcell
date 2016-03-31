@@ -134,8 +134,10 @@ public class RbmNetworkGenerator {
 				modified = "@" + sc.getStructure().getName() + ":" + modified;
 			}
 
-			modified += "\t\t" + fakeSeedSpeciesParam.fakeParameterName;
-			seedSpeciesList.add(modified);				// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
+			modified += " " + fakeSeedSpeciesParam.fakeParameterName;
+			
+			modified = (i+1) + " " + modified;		// we label the seed species with the index
+			seedSpeciesList.add(modified);			// we build the seed species list now, we write it later (in the BEGIN SPECIES block)
 			fakeParameterList.add(fakeSeedSpeciesParam);
 		}
 
