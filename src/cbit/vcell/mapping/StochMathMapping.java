@@ -151,9 +151,9 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	
 	VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
 	VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
-	Expression reactionUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
+	Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
 
-	Expression factorExpr = Expression.mult(reactionStructureSize,reactionUnitFactor);
+	Expression factorExpr = Expression.mult(reactionStructureSize,reactionSubstanceUnitFactor);
 
 	//complete the probability expression by the reactants' stoichiometries 
 	Expression rxnProbabilityExpr = null; 	//to compose the stochastic variable(species) expression, e.g. s*(s-1)*(s-2)* speciesFactor.
@@ -168,7 +168,8 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 		{
 			stoichiometry = reacPart[i].getStoichiometry();
 			//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
-			Expression speciesFactor = Expression.div(speciesUnitFactor, reactionStructureSize);
+			Expression speciesStructureSize = new Expression(reacPart[i].getStructure().getStructureSize(), getNameScope());
+			Expression speciesFactor = Expression.div(speciesUnitFactor, speciesStructureSize);
 			//s*(s-1)(s-2)..(s-stoi+1)
 			SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[i].getSpeciesContext());
 			Expression spCount_exp = new Expression(spCountParam, getNameScope());
