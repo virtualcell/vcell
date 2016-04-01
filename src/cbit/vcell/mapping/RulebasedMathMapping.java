@@ -32,6 +32,7 @@ import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
@@ -865,7 +866,7 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		}
         System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(forwardRuleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
         ReactionRuleDirection forward = ReactionRuleDirection.forward;
-		System.out.println(RbmUtils.toBnglStringShort(reactionRule, true)+", direction="+forward);
+		System.out.println(RbmUtils.toBnglStringShort(reactionRule, CompartmentMode.show)+", direction="+forward);
 
         MathRuleFactory mathRuleFactory = new MathRuleFactory();
         MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);

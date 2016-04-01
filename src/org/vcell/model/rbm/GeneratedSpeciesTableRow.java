@@ -4,6 +4,8 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 
 import org.vcell.model.bngl.ParseException;
+import org.vcell.util.Displayable;
+import org.vcell.util.Pair;
 
 import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
@@ -69,10 +71,17 @@ public class GeneratedSpeciesTableRow {
 			return;
 		}
 		try {
-		SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
-		String strStructure = RbmUtils.parseCompartment(inputString, tempModel);
-		sp.resolveBonds();
-//		System.out.println(sp.toString());
+			
+		String strStructure = null;
+		if(inputString.contains(RbmUtils.SiteStruct)) {
+			// we are in the mode where we emulate compartments by adding the compartment name as a fake site
+			Pair<String, String> p = RbmUtils.extractCompartment(inputString);
+			strStructure = p.one;
+			inputString = p.two;
+		} else {
+			// should be the normal @comp::expression format - if it's not it will return null
+			strStructure = RbmUtils.parseCompartment(inputString, tempModel);
+		}
 		Structure structure;
 		if(strStructure != null) {
 			if(tempModel.getStructure(strStructure) == null) {
@@ -82,6 +91,9 @@ public class GeneratedSpeciesTableRow {
 		} else {
 			structure = tempModel.getStructure(0);
 		}
+		SpeciesPattern sp = (SpeciesPattern)RbmUtils.parseSpeciesPattern(inputString, tempModel);
+		sp.resolveBonds();
+//		System.out.println(sp.toString());
 		species = new SpeciesContext(new Species("a",""), structure, sp);
 		} catch (ParseException | PropertyVetoException | ModelException e1) {
 			e1.printStackTrace();

@@ -6,6 +6,7 @@ import java.util.List;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysis.MolecularComponentEntry;
@@ -80,7 +81,7 @@ public class ModelRuleFactory {
 
 		@Override
 		public String getReactionBNGLShort() {
-			return RbmUtils.toBnglStringShort(reactionRule, false);
+			return RbmUtils.toBnglStringShort(reactionRule, CompartmentMode.hide);
 		}
 
 		@Override
@@ -217,7 +218,7 @@ public class ModelRuleFactory {
 
 		@Override
 		public String toBngl() {
-			return RbmUtils.toBnglString(this.molecularTypePattern);
+			return RbmUtils.toBnglString(this.molecularTypePattern, null, CompartmentMode.hide);
 		}
 
 		@Override
@@ -231,7 +232,7 @@ public class ModelRuleFactory {
 
 		@Override
 		public String getMolecularTypeBNGL() {
-			return RbmUtils.toBnglString(molecularTypePattern.getMolecularType());
+			return RbmUtils.toBnglString(molecularTypePattern.getMolecularType(), null, CompartmentMode.hide);
 		}
 		
 	}

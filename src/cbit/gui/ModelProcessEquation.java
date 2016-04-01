@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
@@ -132,7 +133,7 @@ private void computeEquationString() {
 		equationString = equationleftHand + " " + REACTION_GOESTO + " " + equationRightHand;
 	}else if (modelProcess instanceof ReactionRule){
 		ReactionRule reactionRuleEmbedded = (ReactionRule)modelProcess;
-		equationString = RbmUtils.toBnglStringShort(reactionRuleEmbedded, false);
+		equationString = RbmUtils.toBnglStringShort(reactionRuleEmbedded, CompartmentMode.hide);
 	}
 }
 
