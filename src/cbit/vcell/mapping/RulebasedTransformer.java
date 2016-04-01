@@ -27,6 +27,7 @@ import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -532,7 +533,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		//
 		// we ignore compartment info and ask bionetgen to behave as if there's only one compartment (old way of doing things with no  "@compartment:"  prefix
 		//
-		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, false);
+		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		return bngl;

@@ -70,7 +70,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		String sBngOutputString = null;
 		String oldSeedSpeciesString;		// (used for display only) the seedSpecies which were given as input for the current iteration
 		
-		BNGOutputSpec outputSpec = null;
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
 				
@@ -109,7 +108,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		if(insufficientIterations) {
 			consoleNotification("The number of iterations may be insufficient.");
 		}
-		return sBngOutput;		// we basically return the bng output from the last iteration run
+		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
+		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
+		BNGOutput cBngOutput = sBngOutput;
+		String cBngOutputString = cBngOutput.getNetFileContent();
+		System.out.println(cBngOutputString);
+		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 
 	private void consoleNotification(String message) {

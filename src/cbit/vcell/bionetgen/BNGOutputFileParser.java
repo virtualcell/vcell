@@ -10,9 +10,13 @@
 
 package cbit.vcell.bionetgen;
 import cbit.vcell.parser.Expression;
+
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.io.*;
+
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.util.Pair;
 
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -63,6 +67,105 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 	return createBngOutputSpec(inputString);
 }
 
+public static String extractCompartments (String inputString) {
+	String newLineDelimiters = "\n\r";
+	String resultDelimiter = "\n";
+	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
+	
+	String token1 = new String("");
+	String token2 = new String("");
+	String blankDelimiters = " \t";
+	String commaDelimiters = ",";
+
+	// Need to track which type of list we are reading in from the list delimiter. For convenience, have a separate variable for each.
+	int PARAM_LIST = 1;
+	int MOLECULE_LIST = 2;
+	int SPECIES_LIST = 3;
+	int RXN_RULES_LIST = 4;
+	int RXN_LIST = 5;
+	int OBS_GPS_LIST = 6;
+	int list = 0;
+
+	StringBuilder result = new StringBuilder();
+	
+	while (lineTokenizer.hasMoreTokens()) {
+		token1 = lineTokenizer.nextToken();
+
+		// Identify type of list ...
+		if (token1.equals("begin parameters")) {
+			list = PARAM_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("begin molecule types")) {
+			list = MOLECULE_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("begin species")) {
+			list = SPECIES_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("begin reaction rules")) {
+			list = RXN_RULES_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("begin reactions")) {
+			list = RXN_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("begin groups")) {
+			list = OBS_GPS_LIST;
+			result.append(token1+resultDelimiter);
+			continue;
+		} else if (token1.equals("end parameters") || token1.equals("end molecule types") || token1.equals("end species") || token1.equals("end reaction rules") || token1.equals("end reactions") || token1.equals("end groups")) {
+			list = 0;
+			result.append(token1+resultDelimiter);
+			continue;
+		}
+
+		StringTokenizer nextLine = null;
+		if (list == 0) {						// keep any junk, everything is valuable!
+			result.append(token1+resultDelimiter);
+		}
+		if (list == PARAM_LIST) {				// copy the list of parameters as is
+			result.append(token1+resultDelimiter);
+		}
+		if (list == SPECIES_LIST) {				// extract compartment in list of molecule types
+			nextLine = new StringTokenizer(token1, blankDelimiters);
+			int i=0;
+			while (nextLine.hasMoreTokens()) {
+				token2 = nextLine.nextToken();
+				if (token2 != null) {
+					token2 = token2.trim();
+				}
+				System.out.println(token2);
+				if(i==0) {
+					result.append("\t" + token2);
+				}
+				if(i==1) {
+					Pair<String, String> p = RbmUtils.extractCompartment(token2);
+					String structure = p.one;
+					String expression = p.two;
+					String s = "@" + structure + "::" + expression;
+					System.out.println(s);
+					result.append(" " + s);
+				}
+				if(i==2) {
+					result.append(" " + token2);
+				}
+				i++;
+			}
+			result.append(resultDelimiter);
+		}
+		if (list == RXN_LIST) {					// copy the list of reactions as is
+			result.append(token1+resultDelimiter);
+		}
+		if (list == OBS_GPS_LIST) {				// copy the list of observables as is
+			result.append(token1+resultDelimiter);
+		}
+	}
+	String s = result.toString();
+	return s;
+}
 
 public static BNGOutputSpec createBngOutputSpec(String inputString) {
 

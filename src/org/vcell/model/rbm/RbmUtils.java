@@ -61,6 +61,8 @@ import org.vcell.model.bngl.Node;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.bngl.SimpleNode;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGReaction;
@@ -105,6 +107,7 @@ public class RbmUtils {
 	public static int reactionRuleLabelIndex;
 	@Deprecated
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
+	public static final String SiteStruct = "A0";
 	
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
@@ -1213,6 +1216,9 @@ public class RbmUtils {
 		}
 	}
 	
+	//
+	// this is called when the proper cBNGL syntax is observed, the species pattern has the form @comp::expression
+	//
 	public static String parseCompartment(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
 		if(inputString.startsWith("@") && inputString.contains("::")) {
@@ -1224,6 +1230,44 @@ public class RbmUtils {
 			return inputString;
 		}
 		return null;
+	}
+	//
+	// this is called only when the compartment is faked by a site whose state is the name of the compartment
+	// all the molecules in the species pattern have this extra fake site, and in an identical state (compartment)
+	// we eliminate this species from all the molecule and return the state (compartment name)
+	//
+	public static Pair<String, String> extractCompartment(String original) {
+		String pattern = RbmUtils.SiteStruct;
+		String compartment = null;
+		String cleaned = "";
+		while(true) {
+			if(!original.contains(pattern)) {
+				cleaned += original;	// all that's left in original needs to be appended to the cleaned string
+				break;					// no more patterns to match, we're done!
+			}
+			compartment = "";
+			cleaned += original.substring(0, original.indexOf(pattern));
+			original = original.substring(original.indexOf(pattern)+pattern.length()+1);	// ve get rid of all including the ~
+			while(true) {
+				// we keep moving the name of the compartment from original to cleaned until we encounter ',' or ')'
+				char c = original.charAt(0);
+				if(c == ',') {
+					original = original.substring(1);	// delete the comma
+					break;					// done cleaning this molecule
+				} else if(c == ')') {
+					if(cleaned.endsWith(",")) {
+						// our pattern was the last element, so we need to get rid of the orphaned comma we have in 'cleaned'
+						cleaned = cleaned.substring(0,  cleaned.length()-1);
+					}
+					break;					// done cleaning this molecule and we are at its end, no comma to delete
+				} else {
+					compartment += c;					// build compartment name
+					original = original.substring(1);	// delete this letter from the original
+				}
+			}
+		}
+		Pair<String, String> p = new Pair<String, String>(compartment, cleaned);
+		return p;
 	}
 	public static SpeciesPattern parseSpeciesPattern(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
@@ -1350,9 +1394,16 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
-	public static String toBnglString(MolecularType molecularType) {
+	public static String toBnglString(MolecularType molecularType, Model model, CompartmentMode compartmentMode) {
 		StringBuilder buffer = new StringBuilder(molecularType.getName());
 		buffer.append("(");
+		if(compartmentMode == CompartmentMode.asSite) {
+			String site = SiteStruct;
+			for(Structure str : model.getStructures()) {
+				site += "~" + str.getName();
+			}
+			buffer.append(site + ",");
+		}
 		List<MolecularComponent> componentList = molecularType.getComponentList();
 		for (int i = 0; i < componentList.size(); ++ i) {
 			if (i > 0) {
@@ -1388,7 +1439,24 @@ public class RbmUtils {
 			if (i > 0) {
 				buffer.append(".");
 			}
-			buffer.append(toBnglString(molecularTypePatterns.get(i)));
+			buffer.append(toBnglString(molecularTypePatterns.get(i), null, CompartmentMode.hide));
+		}
+		return buffer.toString();
+	}
+	public static String toBnglString(SpeciesPattern speciesPattern, Structure structure, CompartmentMode compartmentMode) {
+		if(compartmentMode != CompartmentMode.asSite) {
+			throw new RuntimeException("CompartmentMode must be 'asSite'");
+		}
+		if (speciesPattern == null) {
+			return "";
+		}
+		StringBuilder buffer = new StringBuilder();
+		List<MolecularTypePattern> molecularTypePatterns = speciesPattern.getMolecularTypePatterns();
+		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
+			if (i > 0) {
+				buffer.append(".");
+			}
+			buffer.append(toBnglString(molecularTypePatterns.get(i), structure, compartmentMode));
 		}
 		return buffer.toString();
 	}
@@ -1408,11 +1476,18 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 
-	public static String toBnglString(MolecularTypePattern molecularTypePattern) {
+	public static String toBnglString(MolecularTypePattern molecularTypePattern, Structure structure, CompartmentMode compartmentMode) {
 		StringBuilder buffer = new StringBuilder(molecularTypePattern.getMolecularType().getName());
 		buffer.append("(");
-		List<MolecularComponentPattern> componentPatterns = molecularTypePattern.getComponentPatternList();
 		boolean bAddComma = false;
+		if(compartmentMode == CompartmentMode.asSite) {
+			// insert a fake site, with bond "exists" and state named after the compartment of the species pattern
+//			String site = "struct~" + structure.getName() + "!+";
+			String site = SiteStruct + "~" + structure.getName();
+			bAddComma = true;		// if other components follow, we need a comma after this
+			buffer.append(site);
+		}
+		List<MolecularComponentPattern> componentPatterns = molecularTypePattern.getComponentPatternList();
 		for (MolecularComponentPattern mcp : componentPatterns) {
 			if (mcp.isImplied()) {
 				continue;
@@ -1494,7 +1569,7 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
-	public static String toBnglStringShort(ReactionRule reactionRule, boolean showCompartment) {
+	public static String toBnglStringShort(ReactionRule reactionRule, CompartmentMode compartmentMode) {
 		StringBuilder buffer = new StringBuilder();
 		List<ReactantPattern> reactants = reactionRule.getReactantPatterns();
 		for (int i = 0;  i < reactants.size(); ++i) {
@@ -1502,10 +1577,14 @@ public class RbmUtils {
 				buffer.append(" + ");
 			}
 			ReactantPattern rp = reactants.get(i);
-			if(showCompartment) {
+			if(compartmentMode == CompartmentMode.show) {
 				buffer.append("@" + rp.getStructure().getName() + ":");
+				buffer.append(toBnglString(rp.getSpeciesPattern()));
+			} else if(compartmentMode == CompartmentMode.asSite) {
+				buffer.append(toBnglString(rp.getSpeciesPattern(), rp.getStructure(), CompartmentMode.asSite));
+			} else {
+				buffer.append(toBnglString(rp.getSpeciesPattern()));
 			}
-			buffer.append(toBnglString(rp.getSpeciesPattern()));
 		}
 		buffer.append(reactionRule.isReversible() ? " <-> " : " -> ");
 		List<ProductPattern> products = reactionRule.getProductPatterns();
@@ -1514,10 +1593,14 @@ public class RbmUtils {
 				buffer.append(" + ");
 			}
 			ProductPattern pp = products.get(i);
-			if(showCompartment) {
+			if(compartmentMode == CompartmentMode.show) {
 				buffer.append("@" + pp.getStructure().getName() + ":");
+				buffer.append(toBnglString(pp.getSpeciesPattern()));
+			} else if(compartmentMode == CompartmentMode.asSite) {
+				buffer.append(toBnglString(pp.getSpeciesPattern(), pp.getStructure(), CompartmentMode.asSite));
+			} else {
+				buffer.append(toBnglString(pp.getSpeciesPattern()));
 			}
-			buffer.append(toBnglString(pp.getSpeciesPattern()));
 		}
 		return buffer.toString();
 	}
@@ -1546,9 +1629,9 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 	
-	public static String toBnglStringLong(ReactionRule reactionRule, boolean showCompartment) {
+	public static String toBnglStringLong(ReactionRule reactionRule, CompartmentMode compartmentMode) {
 		String str = reactionRule.getName() + ":\t";
-		str += toBnglStringShort(reactionRule, showCompartment);
+		str += toBnglStringShort(reactionRule, compartmentMode);
 		str += "\t\t";
 		if(reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate) != null) {
 			String str1 = reactionRule.getKineticLaw().getLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate).infixBng();
@@ -1568,16 +1651,16 @@ public class RbmUtils {
 		return str;
 	}
 	
-	public static String toBnglStringLong_internal(ReactionRule reactionRule, boolean showCompartment) {
+	public static String toBnglStringLong_internal(ReactionRule reactionRule, CompartmentMode compartmentMode) {
 		String str = reactionRule.getName() + ":\t";
 		if(reactionRule.getReactantPatterns().isEmpty()) {
 			str += "0";
 		}
-		str += toBnglStringShort(reactionRule, showCompartment);
+		str += toBnglStringShort(reactionRule, compartmentMode);
 		if(reactionRule.getProductPatterns().isEmpty()) {
 			str += " 0";	// this is the new syntax for Trash!!! 
 		}
-		str += "\t\t";
+		str += "\t";
 		switch (reactionRule.getKineticLaw().getRateLawType()){
 		case MassAction:{
 			FakeReactionRuleRateParameter fakeForwardRateParam = new FakeReactionRuleRateParameter(reactionRule, RbmKineticLawParameterType.MassActionForwardRate);
@@ -1601,13 +1684,17 @@ public class RbmUtils {
 		return ret  + "\t\t" + expression.infix();
 	}
 	
-	public static String toBnglString(RbmObservable observable, boolean showCompartment) {
+	public static String toBnglString(RbmObservable observable, CompartmentMode compartmentMode) {
 		String s = observable.getType() + "\t\t" + observable.getName() + "\t\t";
 		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
-			if(showCompartment) {
+			if(compartmentMode == CompartmentMode.show) {
 				s += "@" + observable.getStructure().getName() + ":";
+				s += toBnglString(sp) + "\t";
+			} else if(compartmentMode == CompartmentMode.asSite) {
+				s += toBnglString(sp, observable.getStructure(), CompartmentMode.asSite) + "\t";
+			} else {
+				s += toBnglString(sp) + "\t";	// CompartmentMode.hide
 			}
-			s += toBnglString(sp) + "\t";
 		}
 		return s;
 	}

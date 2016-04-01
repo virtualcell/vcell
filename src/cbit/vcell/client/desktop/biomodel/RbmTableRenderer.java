@@ -11,6 +11,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -25,7 +26,7 @@ public class RbmTableRenderer extends DefaultScrollTableCellRenderer {
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {	
 		super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		if (value instanceof MolecularType) {
-			String text = RbmUtils.toBnglString((MolecularType)value);
+			String text = RbmUtils.toBnglString((MolecularType)value, null, CompartmentMode.hide);
 			setText(text);
 		} else if (value instanceof SpeciesPattern) {
 			String text;

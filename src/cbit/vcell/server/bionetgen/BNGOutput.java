@@ -16,6 +16,7 @@ import org.jdom.Document;
 import org.vcell.util.BigString;
 
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.bionetgen.BNGOutputFileParser;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2005 2:59:47 PM)
@@ -56,6 +57,23 @@ public String getNetFileContent() {
 		return bng_fileContents[netFileIndices.iterator().next()].toString();
 	}
 	throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+}
+public void extractCompartmentsFromNetFile() {
+	HashSet<Integer> netFileIndices = new HashSet<Integer>();
+	for (int i=0;i<bng_filenames.length;i++){
+		if (bng_filenames[i].toLowerCase().endsWith(BNG_NET_FILE_SUFFIX)){
+			netFileIndices.add(i);
+		}
+	}
+	if (netFileIndices.size()!=1){
+		throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+	}
+	int location = netFileIndices.iterator().next();
+	String s = bng_fileContents[location].toString();
+	
+	String p = BNGOutputFileParser.extractCompartments(s);
+	
+	bng_fileContents[location] = new BigString(p);
 }
 
 

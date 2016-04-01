@@ -81,9 +81,9 @@ public class RbmNetworkGenerator {
 		
 		RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
 		RbmNetworkGenerator.writeParameters(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeMolecularTypes(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeMolecularTypes(writer, model, CompartmentMode.show);
 		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, true);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, CompartmentMode.show);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
 		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, applyApplicationFilters);
 		
@@ -96,12 +96,14 @@ public class RbmNetworkGenerator {
 	/*
 	 * modified bngl writer for special use restricted to network / rulebased transformer functionality
 	 */
+	public enum CompartmentMode {hide, show, asSite}
+	
 	public static void writeBngl_internal(SimulationContext simulationContext, PrintWriter writer,
 			Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap, 
 			Map<FakeSeedSpeciesInitialConditionsParameter, 
 			Pair<SpeciesContext, Expression>> speciesEquivalenceMap, 
 			NetworkGenerationRequirements networkGenerationRequirements,
-			boolean showCompartment) {
+			CompartmentMode compartmentMode) {
 		
 		String callerClassName = new Exception().getStackTrace()[1].getClassName();
 		String networkTransformerClassName = NetworkTransformer.class.getName();
@@ -129,9 +131,14 @@ public class RbmNetworkGenerator {
 			Pair<SpeciesContext, Expression> p = new Pair<SpeciesContext, Expression>(sc, initialConcentration);
 			speciesEquivalenceMap.put(fakeSeedSpeciesParam, p);
 			
-			String modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
-			if(showCompartment) {
+			String modified;
+			if(compartmentMode == CompartmentMode.show) {
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
 				modified = "@" + sc.getStructure().getName() + ":" + modified;
+			} else if (compartmentMode == CompartmentMode.asSite) {
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), sc.getStructure(), CompartmentMode.asSite);
+			} else {	// CompartmentMode.hide
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
 			}
 
 			modified += " " + fakeSeedSpeciesParam.fakeParameterName;
@@ -167,7 +174,7 @@ public class RbmNetworkGenerator {
 				}
 			}
 		}
-		if(showCompartment) {
+		if(compartmentMode == CompartmentMode.show) {
 			RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
 		}
 		
@@ -184,7 +191,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_PARAMETERS);
 		writer.println();
 		
-		RbmNetworkGenerator.writeMolecularTypes(writer, rbmModelContainer);
+		RbmNetworkGenerator.writeMolecularTypes(writer, model, compartmentMode);
 
 		// write modified version of seed species while maintaining the connection between the species context and the real seed species
 		writer.println(BEGIN_SPECIES);
@@ -194,8 +201,8 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 		
-		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, showCompartment);
-		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext, showCompartment);
+		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, compartmentMode);
+		RbmNetworkGenerator.writeReactions_internal(writer, simulationContext, compartmentMode);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -253,11 +260,12 @@ public class RbmNetworkGenerator {
 		writer.println(END_PARAMETERS);
 		writer.println();
 	}
-	private static void writeMolecularTypes(PrintWriter writer, RbmModelContainer rbmModelContainer) {
+	private static void writeMolecularTypes(PrintWriter writer, Model model, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_MOLECULE_TYPES);
+		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		for (MolecularType mt : molList) {
-			writer.println(RbmUtils.toBnglString(mt));
+			writer.println(RbmUtils.toBnglString(mt, model, compartmentMode));
 		}
 		writer.println(END_MOLECULE_TYPES);
 		writer.println();
@@ -272,11 +280,11 @@ public class RbmNetworkGenerator {
 		writer.println(END_SPECIES);
 		writer.println();
 	}
-	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean showCompartment ) {
+	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer, CompartmentMode compartmentMode ) {
 		writer.println(BEGIN_OBSERVABLES);
 		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
 		for (RbmObservable oo : observablesList) {
-			writer.println(RbmUtils.toBnglString(oo, showCompartment));
+			writer.println(RbmUtils.toBnglString(oo, compartmentMode));
 		}
 		writer.println(END_OBSERVABLES);
 		writer.println();
@@ -305,19 +313,19 @@ public class RbmNetworkGenerator {
 				continue;		// we skip those rules which are disabled (excluded)
 				}
 			}
-			writer.println(RbmUtils.toBnglStringLong(rr, true));
+			writer.println(RbmUtils.toBnglStringLong(rr, CompartmentMode.show));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
 	}
 	
-	private static void writeReactions_internal(PrintWriter writer, SimulationContext sc, boolean showCompartment) {
+	private static void writeReactions_internal(PrintWriter writer, SimulationContext sc, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_REACTIONS);
 		for (ReactionRuleSpec rrSpec : sc.getReactionContext().getReactionRuleSpecs()) {
 			if (rrSpec.isExcluded()){
 				continue;		// we skip those rules which are disabled (excluded)
 			}
-			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), showCompartment));
+			writer.println(RbmUtils.toBnglStringLong_internal(rrSpec.getReactionRule(), compartmentMode));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();

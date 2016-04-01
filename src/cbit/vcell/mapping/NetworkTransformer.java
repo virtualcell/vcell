@@ -15,6 +15,7 @@ import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
 import org.vcell.model.rbm.RbmNetworkGenerator;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.BeanUtils;
@@ -125,10 +126,10 @@ public class NetworkTransformer implements SimContextTransformer {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
 		if(simulationContext.getModel().getNumStructures() > 1) {
-			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, true);
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
 		} else {
 			// if we have just one structure use the "old" way of doing things with no structure prefix
-			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, false);
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
 
 		}
 		String bngl = bnglStringWriter.toString();
