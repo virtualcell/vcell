@@ -1116,7 +1116,6 @@ public final class BeanUtils {
 
 		//Monitor content
 		long maximumElapsedTime_ms = 1000*60*2;
-		maximumElapsedTime_ms = 1000*2;
 		long startTime_ms = System.currentTimeMillis();
 		while(true){
 			try {
