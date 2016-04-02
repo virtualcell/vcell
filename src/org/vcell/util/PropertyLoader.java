@@ -152,6 +152,8 @@ public class PropertyLoader {
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", RequiredFor.NOT, ValueType.BOOL);
 	
 	private static File systemTemporaryDirectory = null;
+	
+	public static final String nagiosMonitorPort = record("test.monitor.port", RequiredFor.NOT, ValueType.GEN);
 
 	/**
 	 * under which context(s) are we running? 
