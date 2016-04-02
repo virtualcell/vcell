@@ -88,11 +88,12 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCellSoftwareVersion;
 
-import com.ibm.icu.math.BigDecimal;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.util.AmplistorUtils;
+
+import com.ibm.icu.math.BigDecimal;
+
 import edu.uchc.connjur.wb.ExecutionTrace;
 /**
  * Insert the type's description here.
@@ -221,14 +222,6 @@ public final class BeanUtils {
 		if (window != null) {
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             final Rectangle maxBounds = ge.getMaximumWindowBounds();
-
-//			GraphicsEnvironment ge = GraphicsEnvironment.
-//					getLocalGraphicsEnvironment();
-//			GraphicsDevice[] gs = ge.getScreenDevices();
-//			if (gs.length > 0) {
-//				GraphicsDevice first = gs[0];
-//				GraphicsConfiguration gc = first.getDefaultConfiguration();
-//				gc.get
 			Dimension screenSize = maxBounds.getSize();
 			Dimension size = window.getSize();
 			if (size.height > screenSize.height)
