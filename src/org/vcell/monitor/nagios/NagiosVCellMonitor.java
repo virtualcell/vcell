@@ -40,6 +40,7 @@ import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.gui.SimulationStatusPersistent;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import net.schmizz.sshj.SSHClient;
 
 public class NagiosVCellMonitor {
 
@@ -168,7 +169,7 @@ public class NagiosVCellMonitor {
 			if(nagArgsHelper.monitorSocket <= 1024 || nagArgsHelper.monitorSocket >= 65536){
 				throw new IllegalArgumentException("monitorSocket must be within 1025 and 65535,val="+nagArgsHelper.monitorSocket);
 			}
-			final ServerSocket serverSocket = claimSocket(nagArgsHelper.monitorSocket);
+			final ServerSocket serverSocket = claimSocketLinuxLocal(nagArgsHelper.monitorSocket);
 
 			// Request servicing thread handles nagios queries
 			new Thread(new Runnable() {
@@ -666,11 +667,11 @@ public class NagiosVCellMonitor {
 		}
 	}
 	
-	public ServerSocket claimSocket(int port) throws Exception{
-		killMonitorProcess(port);
+	public ServerSocket claimSocketLinuxLocal(int port) throws Exception{
+		killMonitorProcessLinuxLocal(port);
 		ServerSocket newServerSocket =  new ServerSocket(port);
 		Thread.sleep(2000);
-		myProcessID = getPidOnPort(port);
+		myProcessID = getPidOnPortLinuxLocal(port);
 		System.out.println("Monitor process ID pid="+myProcessID);
 		return newServerSocket;
 //		ServerSocket myServersocket = null;
@@ -693,9 +694,18 @@ public class NagiosVCellMonitor {
 //	       throw new Exception("InetAddress not found");
 	}
 
-	public static Integer getPidOnPort(int port) throws Exception{
+	public static String[] createLSOFPort_LinuxCmdParams(int tcpPort){
+		return new String[] {"/usr/sbin/lsof","-i","TCP:"+tcpPort};
+	}
+	public static String[] createChekcMonitorProcess_LinuxCmdParams(Integer linuxProcessID){
+		return new String[] {"/bin/ps","-fww","-p",linuxProcessID.toString()};
+	}
+	public static String[] createKillProcess_LinuxCmdParams(Integer linuxProcessID){
+		return new String[] {"/bin/kill","-9",linuxProcessID.toString()};
+	}
+	public static Integer getPidOnPortLinuxLocal(int port) throws Exception{
 		//lsof -iTCP -sTCP:LISTEN -P -n
-		Executable executable = new Executable(new String[] {"/usr/sbin/lsof","-i","TCP:"+port});
+		Executable executable = new Executable(createLSOFPort_LinuxCmdParams(port));
 		try{
 			executable.start();
 		}catch(Exception e){
@@ -705,6 +715,10 @@ public class NagiosVCellMonitor {
 			return null;
 		}
 		String s = executable.getStdoutString();
+		return parseLSOF_ReturnPID(s,port);
+	}
+	
+	public static Integer parseLSOF_ReturnPID(String s,int port) throws Exception{
 		System.out.println(s);
 		StringReader sr = new StringReader(s);
 		BufferedReader br = new BufferedReader(sr);
@@ -738,17 +752,20 @@ public class NagiosVCellMonitor {
 		}
 		throw new Exception("Error parsing pid/port information, pid="+pid+" port="+port);
 	}
-	public static void killMonitorProcess(int port) throws Exception{
-		Integer pid = getPidOnPort(port);
-		if(pid != null){
-			System.out.println("pid="+pid+" port="+port);
+	public static String createJvmPortProperty(int port){
+		return "-D"+PropertyLoader.nagiosMonitorPort+"="+port;
+	}
+	public static void killMonitorProcessLinuxLocal(int port) throws Exception{
+		Integer linuxProcessID = getPidOnPortLinuxLocal(port);
+		if(linuxProcessID != null){
+			System.out.println("pid="+linuxProcessID+" port="+port);
 			//Find out if this is a monitor
-			Executable executable = new Executable(new String[] {"/bin/ps","-fww","-p",pid.toString()});
+			Executable executable = new Executable(createChekcMonitorProcess_LinuxCmdParams(linuxProcessID));
 			executable.start();
 			String pStr = executable.getStdoutString();
 			System.out.println(pStr);
-			if(pStr.contains("-Dtest.monitor.port="+port)){
-				executable = new Executable(new String[] {"/bin/kill","-9",pid.toString()});
+			if(pStr.contains(createJvmPortProperty(port))){
+				executable = new Executable(createKillProcess_LinuxCmdParams(linuxProcessID));
 				executable.start();
 			}
 		}

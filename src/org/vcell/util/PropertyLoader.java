@@ -157,6 +157,8 @@ public class PropertyLoader {
 	public static final String VTK_PYTHON_EXE_PATH = record("vcell.vtkPythonExecutablePath", ValueType.EXE);
 	public static final String VTK_PYTHON_MODULE_PATH = record("vcell.vtkPythonModulePath", ValueType.GEN);
 	public static final String VIS_TOOL = record("vcell.visToolPath", ValueType.DIR);
+	
+	public static final String nagiosMonitorPort = record("test.monitor.port", ValueType.GEN);
 	/**
 	 * native library directory, server side
 	 */
