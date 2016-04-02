@@ -38,6 +38,10 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 	 * token to sign flush event
 	 */
 	private static final String FLUSH_NOW = "";
+	/**
+	 * log these first messages immediately
+	 */
+	private static final int FIRST_MESSAGES = 200; 
 
 	private final LinkedBlockingQueue<String> messageQueue;
 	private static final Logger LG = Logger.getLogger(StdoutSessionLogConcurrent.class);
@@ -128,50 +132,73 @@ public class StdoutSessionLogConcurrent extends StdoutSessionLogA {
 		@Override
 		public void run() {
 			LG.debug("Writer begin");
-			
+			// log immediately on startup
+			for (int initialCount = 0; initialCount < FIRST_MESSAGES; initialCount++) {
+				String m = null; 
+				try {
+					m = messageQueue.take( );
+					out.print(m);
+					if (initialCount%5 == 0) {
+						out.flush();
+					}
+				} catch (InterruptedException e) {
+					if (testForShutdown(e, m) ) {
+						return;
+					}
+				}
+			}
+			LG.debug("shifting to buffered mode");
+			out.flush();
+
 			for (;;) {
 				String m = null;
 				try {
-					m = messageQueue.take( );
-					if (m != FLUSH_NOW) { 
+					m = messageQueue.take();
+					if (m != FLUSH_NOW) {
 						out.print(m);
 						if (++messageCount >= FLUSH_COUNT) {
 							if (LG.isDebugEnabled()) {
 								LG.debug("message count flush: " + messageCount + " limit:  " + FLUSH_COUNT);
 							}
-							flush( );
+							flush();
 						}
-					}
-					else {
+					} else {
 						if (LG.isDebugEnabled()) {
-								LG.debug("token flush: " + messageCount + " limit:  " + FLUSH_COUNT);
+							LG.debug("token flush: " + messageCount + " limit:  " + FLUSH_COUNT);
 						}
 						flush();
 					}
-					
+
 					if (interrupted() && shutdown.get()) {
 						if (LG.isDebugEnabled()) {
 							LG.debug("Writer shutdown, flag, last msg " + m);
 						}
-						
+
 						out.flush();
-						 //we been told to exit
+						// we been told to exit
 						return;
 					}
 				} catch (InterruptedException e) {
-					if (shutdown.get()) { //have we been told to exit?
-						if (LG.isDebugEnabled()) {
-							LG.debug("Writer shutdown, exception, last msg " + m,e);
-						}
-						out.flush();
+					if (testForShutdown(e, m)) {
 						return;
 					}
-					out.append(getName( ));
-					out.append(" interrupt");
-					e.printStackTrace(out);
-					LG.debug("Writer exception",e);
 				}
 			}
+		}
+
+		private boolean testForShutdown(InterruptedException e, String m) {
+			if (shutdown.get()) { // have we been told to exit?
+				if (LG.isDebugEnabled()) {
+					LG.debug("Writer shutdown, exception, last msg " + m, e);
+				}
+				out.flush();
+				return true;
+			}
+			out.append(getName());
+			out.append(" interrupt");
+			e.printStackTrace(out);
+			LG.debug("Writer exception", e);
+			return false;
 		}
 	}
 	
