@@ -1,0 +1,29 @@
+#!/bin/bash
+
+currentTime=`date "+%Y%m%d_%H%M%S"`
+
+#
+# include common variable definitions
+#
+DIR=${0%/*}
+if [[ ! -d "$DIR" ]]; then DIR="$PWD"; fi
+
+. $DIR/vcell.include
+
+multirmiPort=$bootstrap_high_rmiport
+if [ -n "$bootstrap_http_rmiport" ]; then
+	multirmiPort=$multirmiPort":"$bootstrap_http_rmiport
+fi
+
+debugargs="" #"${jmxargs} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000"
+jvmprop="-Xmx${check_vcell_alive_memoryMB}M  -Dvcell.propertyfile=${common_propertyfile} -Djava.io.tmpdir=${common_siteTmpDir}"
+
+#
+# make sure no variables are left unset
+#
+shopt -s -o nounset
+
+nohup ${common_jre} -D"$check_vcell_alive_queryportJVMDef"=$check_vcell_alive_queryport -Djava.awt.headless=true ${debugargs} -cp ${common_jvm_jars} ${jvmprop} ${check_vcell_alive_mainclass} \
+-H $bootstrap_rmihost -i $multirmiPort -p $check_vcell_alive_nagiospw -m $check_vcell_alive_queryport >${common_logdir}/nagiosVCellMonitor_"$currentTime".log &
+
+exit $?
