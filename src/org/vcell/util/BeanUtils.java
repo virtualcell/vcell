@@ -1013,6 +1013,14 @@ public final class BeanUtils {
 		return stringBuffer.toString();
 	}
 
+	/**
+	 * download bytes from URL; optionally provide progress reports; time out after 2 minutes. Note
+	 * returned string could be an error message from webserver
+	 * @param url not null
+	 * @param clientTaskStatusSupport could be null, in which case default status messages printed
+	 * @return downloadedString
+	 * @throws RuntimeException
+	 */
 	public static String downloadBytes(final URL url,final ClientTaskStatusSupport clientTaskStatusSupport){
 		final ChannelFuture[] connectFuture = new ChannelFuture[1];
 		final ChannelFuture[] closeFuture = new ChannelFuture[1];
@@ -1108,13 +1116,12 @@ public final class BeanUtils {
 
 		//Monitor content
 		long maximumElapsedTime_ms = 1000*60*2;
+		maximumElapsedTime_ms = 1000*2;
 		long startTime_ms = System.currentTimeMillis();
 		while(true){
 			try {
 				Thread.sleep(100);
-			} catch (Exception e) {
-//				throw UserCancelException.CANCEL_GENERIC;
-			}
+			} catch (Exception e) { }
 			long elapsedTime_ms = System.currentTimeMillis()-startTime_ms;
 			if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
 				bFlag[0] = FLAG_STATE.INTERRUPTED;
@@ -1133,7 +1140,7 @@ public final class BeanUtils {
 				if (closeFuture[0]!=null){
 					closeFuture[0].cancel();
 				}
-				readBytesThread.stop();
+				readBytesThread.interrupt();
 				throw new RuntimeException("Download timed out after "+(maximumElapsedTime_ms/1000)+" seconds");
 			}
 			if(bFlag[0] == FLAG_STATE.FINISHED){//finished normally
@@ -1153,6 +1160,29 @@ public final class BeanUtils {
 			}
 		}
 		return responseHandler.getResponseContent().toString();
+	}
+	
+	/**
+	 * download without status message; see {@link #downloadBytes(URL, ClientTaskStatusSupport)}
+	 */
+	public static String downloadBytesQuietly(final URL url) {
+		return downloadBytes(url,new SilentTaskSupport());
+	}
+	
+	private static class SilentTaskSupport implements ClientTaskStatusSupport {
+		@Override
+		public void setMessage(String message) { }
+		@Override
+		public void setProgress(int progress) { }
+		@Override
+		public int getProgress() {
+			return 0;
+		}
+		@Override
+		public boolean isInterrupted() {
+			return false;
+		}
+		@Override public void addProgressDialogListener(ProgressDialogListener progressDialogListener) { }
 	}
 
 	public static String exceptionMessage(Throwable e){
