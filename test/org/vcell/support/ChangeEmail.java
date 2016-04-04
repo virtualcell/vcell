@@ -57,7 +57,7 @@ public class ChangeEmail extends JFrame {
 		pane.setLayout(new MigLayout("","",""));
 
 		pane.add(new JLabel("Db password: "));
-		pwField = new JPasswordField(password);
+		pwField = new JPasswordField(password,20);
 		pane.add(pwField,"wrap");
 
 
@@ -199,7 +199,8 @@ public class ChangeEmail extends JFrame {
 
 
 	public static void main(String[] args) {
-		ChangeEmail ce = new ChangeEmail("cbittech");
+		String pw = args.length > 0 ? args[0] : "";
+		ChangeEmail ce = new ChangeEmail(pw);
 		ce.setVisible(true);
 	}
 
