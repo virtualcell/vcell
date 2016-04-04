@@ -24,8 +24,8 @@ public class EmailList {
 	private static final String BOUNCE_QUERY = "Select email from vcell.mailbounce";
 	private static final String DEFAULT_FILE = "emails.csv";
 
-	static String jdbcUrl = "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
-	static String userId = "vcell";
+	static final String JDBC_URL = "jdbc:oracle:thin:@vcell-db.cam.uchc.edu:1521/vcelldborcl.cam.uchc.edu";
+	static final String USER_ID = "vcell";
 	private final String password;
 	private final String filename;
 
@@ -52,7 +52,7 @@ public class EmailList {
 
 	/**
 	 *
-	 * @param password database (for {@link #userId}
+	 * @param password database (for {@link #USER_ID}
 	 * @param filename to write to
 	 */
 	EmailList(String password, String filename) {
@@ -132,8 +132,8 @@ public class EmailList {
 	 */
 	private Connection getConnection( ) throws SQLException {
 		OracleDataSource ds = new OracleDataSource();
-		ds.setURL(jdbcUrl);
-		Connection conn = ds.getConnection(userId,password);
+		ds.setURL(JDBC_URL);
+		Connection conn = ds.getConnection(USER_ID,password);
 		return conn;
 	}
 
