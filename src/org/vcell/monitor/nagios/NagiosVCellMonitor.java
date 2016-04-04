@@ -64,29 +64,30 @@ public class NagiosVCellMonitor {
 	}
 
 	private static Exception argsException =
-		new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -L checkLevel{"+
-			VCELL_CHECK_LEVEL.RMI_ONLY_0.toString()+","+
-			VCELL_CHECK_LEVEL.CONNECT_1.toString()+","+
-			VCELL_CHECK_LEVEL.INFOS_2.toString()+","+
-			VCELL_CHECK_LEVEL.LOAD_3.toString()+","+
-			VCELL_CHECK_LEVEL.DATA_4.toString()+","+
-			VCELL_CHECK_LEVEL.RUN_5.toString()+
-			"} -H vcellRMIHost -i rmiPort -p vcellNagiosPassword -w warningTimeout -c criticalTimeout -m monitorSocket");
+		new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -H vcellRMIHost -i rmiPort -p vcellNagiosPassword -m monitorSocket");
 	
 	public static enum NAGIOS_STATUS {OK,WARNING,CRITICAL,UNKNOWN};
 	public static enum VCELL_CHECK_LEVEL {RMI_ONLY_0,CONNECT_1,INFOS_2,LOAD_3,DATA_4,RUN_5};
-		
-	private static class NagArgsHelper {
+	public static enum NVM_PARAMS {sleepTimeSec,simRunCnt,connectWarningTimeout,connectCriticalTimeout,fullWarningTimeout,fullCriticalTimeout,holdStaleTimeout};
+	public static class NagArgsHelper {
 		public String host=null;
 		public ArrayList<Integer> rmiPorts = new ArrayList<Integer>();
 		public String vcellNagiosPassword=null;
 		public VCELL_CHECK_LEVEL checkLevel=null;
-		public int warningTimeout = 120; //seconds, default warn if test longer than 2 minutes
-		public int criticalTimeout = 300; //seconds, default error if test longer than 5 minutes
+		public HashMap<NVM_PARAMS, Integer> nvmParams = new HashMap<>();
 		public int monitorSocket = -1; //within 1025-65535
 //		public long lastSimRanTime = System.currentTimeMillis();
+		public int calcConnectStaleTimeout(){
+			return nvmParams.get(NVM_PARAMS.connectCriticalTimeout)+2*nvmParams.get(NVM_PARAMS.sleepTimeSec); //seconds, default error if connect status older than this
+		}
+		public int calcFullStaleTimeout(){
+			return nvmParams.get(NVM_PARAMS.fullCriticalTimeout)+(nvmParams.get(NVM_PARAMS.simRunCnt)*nvmParams.get(NVM_PARAMS.sleepTimeSec))+nvmParams.get(NVM_PARAMS.sleepTimeSec); //seconds, default error if full status older than this
+		}
 		public NagArgsHelper(String[] args) throws Exception{
 			super();
+			tryUpdateParameters(createParamCmd(new Integer[] {60,2,120,300,180,300,20*60}));
+			System.out.println(printableParamValues());
+
 			for(int i = 0;i < args.length;i++){
 				if(args[i].equals("-H")){
 					i++;
@@ -108,23 +109,6 @@ public class NagiosVCellMonitor {
 				}else if(args[i].equals("-p")){
 					i++;
 					this.vcellNagiosPassword = args[i];
-				}else if(args[i].equals("-L")){
-					i++;
-					this.checkLevel = VCELL_CHECK_LEVEL.valueOf(args[i]);
-				}else if(args[i].equals("-w")){
-					i++;
-					try{
-						this.warningTimeout = Integer.parseInt(args[i]);
-					}catch(NumberFormatException e){
-						throw new UnexpectedTestStateException("Error parsing warningTimeout Integer "+args[i]);
-					}
-				}else if(args[i].equals("-c")){
-					i++;
-					try{
-						this.criticalTimeout = Integer.parseInt(args[i]);
-					}catch(NumberFormatException e){
-						throw new UnexpectedTestStateException("Error parsing criticalTimeout Integer "+args[i]);
-					}
 				}else if(args[i].equals("-m")){
 					i++;
 					try{
@@ -134,21 +118,59 @@ public class NagiosVCellMonitor {
 					}
 
 				}else{
-					throw new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -L checkLevel{"+
-						VCELL_CHECK_LEVEL.RMI_ONLY_0.toString()+","+
-						VCELL_CHECK_LEVEL.CONNECT_1.toString()+","+
-						VCELL_CHECK_LEVEL.INFOS_2.toString()+","+
-						VCELL_CHECK_LEVEL.LOAD_3.toString()+","+
-						VCELL_CHECK_LEVEL.DATA_4.toString()+","+
-						VCELL_CHECK_LEVEL.RUN_5.toString()+
-						"} -H vcellRMIHost -i rmiPorts -p vcellNagiosPassword -w warningTimeout -c criticalTimeout -m monitorSocket");
+					throw new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -H vcellRMIHost -i rmiPorts -p vcellNagiosPassword -m monitorSocket");
 				}
 			}
 			if(host == null || rmiPorts.size() == 0 || vcellNagiosPassword == null || monitorSocket == -1){
 				throw new IllegalArgumentException("Error - Host, rmiPort(s), dbPassword, monitorSocket must all be non null");
 			}
 		}
-
+		public String createParamCmd(Integer[] paramValues){
+			StringBuffer sb = new StringBuffer();
+			sb.append(NagiosVCellMonitor.PARAM_CMD+":");
+			int count = 0;
+			for(NVM_PARAMS param:NVM_PARAMS.values()){
+				if(paramValues == null){
+					//current stored values
+					sb.append((param.ordinal() != 0?",":"")+nvmParams.get(param));
+				}else{
+					sb.append((param.ordinal() != 0?",":"")+paramValues[count]);
+				}
+				count++;
+			}
+			return sb.toString();
+		}
+		public String printableParamValues(){
+			StringBuffer sb = new StringBuffer();
+			sb.append(createParamCmd(null)+"  ");
+			for(NVM_PARAMS param:NVM_PARAMS.values()){
+				sb.append((param.ordinal() != 0?",":"")+param.name()+"="+nvmParams.get(param));
+			}
+			sb.append(",connectStaleTimeout(calc)="+calcConnectStaleTimeout());
+			sb.append(",fullStaleTimeout(calc)="+calcFullStaleTimeout());
+			return sb.toString();
+		}
+		public String tryUpdateParameters(String paramStr) throws Exception{
+			StringTokenizer st = new StringTokenizer(paramStr, ":,");
+			st.nextToken();//paramcmd
+			HashMap<NVM_PARAMS, Integer> tempParams = new HashMap<>();
+			//check all params are present and  parsable
+			for(NVM_PARAMS param:NVM_PARAMS.values()){
+				tempParams.put(param, Integer.parseInt(st.nextToken()));
+			}
+			//all OK
+			nvmParams.putAll(tempParams);
+			return printableParamValues();
+		}
+		public String printUsage(){
+			StringBuffer sb = new StringBuffer();
+			sb.append(PARAM_CMD+"{:");
+			for(NVM_PARAMS param:NVM_PARAMS.values()){
+				sb.append((param.ordinal() != 0?",":"")+param.name());
+			}
+			sb.append("}");
+			return sb.toString();
+		}
 	}
 	
 	public static enum StatusType {statusConnect,statusFull,hold};
@@ -159,12 +181,14 @@ public class NagiosVCellMonitor {
 	public static String getHoldCommand(){
 		return StatusType.hold.name()+":";
 	}
+	public static final VCELL_CHECK_LEVEL connectCheckLevel = VCELL_CHECK_LEVEL.INFOS_2;
+	public static final VCELL_CHECK_LEVEL fullCheckLevel = VCELL_CHECK_LEVEL.RUN_5;
 	public void startMonitor(NagArgsHelper newNagArgsHelper){
 		try{
 			nagArgsHelper = newNagArgsHelper;
-			final int SLEEP_TIME = 1000*60;//millseconds time between each quick connect test
-			final int SIM_RUN_WAIT = 2;// iterations of SLEEP_TIME to wait between simulation RUN tests
-			statusMap.setStaleParameters(new Long(5*SLEEP_TIME), new Long(SIM_RUN_WAIT*2*SLEEP_TIME),new Long(1000*60*20));
+//			final int SLEEP_TIME = 1000*60;//millseconds time between each quick connect test
+//			final int SIM_RUN_WAIT = 2;// iterations of SLEEP_TIME to wait between simulation RUN tests
+//			statusMap.setStaleParameters(new Long(5*SLEEP_TIME), new Long(SIM_RUN_WAIT*2*SLEEP_TIME),new Long(1000*60*20));
 			
 			if(nagArgsHelper.monitorSocket <= 1024 || nagArgsHelper.monitorSocket >= 65536){
 				throw new IllegalArgumentException("monitorSocket must be within 1025 and 65535,val="+nagArgsHelper.monitorSocket);
@@ -197,14 +221,14 @@ public class NagiosVCellMonitor {
 							break;
 						}
 						lastResult = null;
-						StatusType statusType = (simRunCount == SIM_RUN_WAIT?StatusType.statusFull:StatusType.statusConnect);
+						StatusType statusType = (simRunCount == nagArgsHelper.nvmParams.get(NVM_PARAMS.simRunCnt)?StatusType.statusFull:StatusType.statusConnect);
 						try{
 							if(StatusType.statusFull.equals(statusType)){//full test
 								simRunCount = 0;//reset sim run wait
-								nagArgsHelper.checkLevel = VCELL_CHECK_LEVEL.RUN_5;
+								nagArgsHelper.checkLevel = fullCheckLevel;
 								lastResult = mainArgs(nagArgsHelper);								
 							}else{//quick test
-								nagArgsHelper.checkLevel = VCELL_CHECK_LEVEL.INFOS_2;
+								nagArgsHelper.checkLevel = connectCheckLevel;
 								lastResult = mainArgs(nagArgsHelper);
 							}
 							exceededTimeouts(nagArgsHelper, lastResult);
@@ -214,7 +238,7 @@ public class NagiosVCellMonitor {
 							setVCellStatus(new VCellStatus(nagArgsHelper.checkLevel+":"+nagArgsHelper.host+" "+e.getMessage(),null),statusType);
 						}finally{
 							simRunCount++;
-							try{Thread.sleep(SLEEP_TIME);}catch(InterruptedException e2){e2.printStackTrace();}
+							try{Thread.sleep(nagArgsHelper.nvmParams.get(NVM_PARAMS.sleepTimeSec));}catch(InterruptedException e2){e2.printStackTrace();}
 						}
 					}
 				}
@@ -236,23 +260,31 @@ public class NagiosVCellMonitor {
 		}
 	}
 	
-	private static void exceededTimeouts(NagArgsHelper nagArgsHelper,HashMap<Integer, CheckResults> checkResultsHash) throws Exception{
+	private void exceededTimeouts(NagArgsHelper nagArgsHelper,HashMap<Integer, CheckResults> checkResultsHash) throws Exception{
 		for(Integer rmiPort:checkResultsHash.keySet()){
 			CheckResults checkResults = checkResultsHash.get(rmiPort);
 			if(checkResults.exception != null){//only check normal results for timeouts
 				continue;
 			}
-			if(nagArgsHelper.criticalTimeout != -1 &&
-				(checkResults.totalTime/1000) > nagArgsHelper.criticalTimeout){
-				
-				checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
-						new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.criticalTimeout)));
-			}else if(nagArgsHelper.warningTimeout != -1 &&
-					(checkResults.totalTime/1000) > nagArgsHelper.warningTimeout){
-				
-				checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
-						new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.warningTimeout)));
-			}	
+			long totalTimeSec = checkResults.totalTime/1000;
+			if(nagArgsHelper.checkLevel == fullCheckLevel){
+				if(	nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout) != -1 && totalTimeSec > nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout)){
+					checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+							new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout))));					
+				}else if(nagArgsHelper.nvmParams.get(NVM_PARAMS.fullWarningTimeout) != -1 && totalTimeSec > nagArgsHelper.nvmParams.get(NVM_PARAMS.fullWarningTimeout)){
+					checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+							new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.nvmParams.get(NVM_PARAMS.fullWarningTimeout))));										
+				}	
+			}else if(nagArgsHelper.checkLevel == connectCheckLevel){
+				if(	nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout) != -1 && totalTimeSec > nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout)){
+					checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+							new Exception(nagArgsHelper.checkLevel.toString()+" test exceeded criticalTimeout="+nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout))));					
+				}else if(nagArgsHelper.nvmParams.get(NVM_PARAMS.connectWarningTimeout) != -1 && totalTimeSec > nagArgsHelper.nvmParams.get(NVM_PARAMS.connectWarningTimeout) ){
+					checkResultsHash.put(rmiPort, new CheckResults(checkResults.vcellVersion, checkResults.levelTimesMillisec, checkResults.lastSimStatus, checkResults.totalTime, 
+							new WarningTestConditionException(nagArgsHelper.checkLevel.toString()+" test exceeded warningTimeout="+nagArgsHelper.nvmParams.get(NVM_PARAMS.connectWarningTimeout) )));										
+				}
+					
+			}
 		}
 	}
 	private static class CheckResults {
@@ -282,7 +314,7 @@ public class NagiosVCellMonitor {
 				continue;
 			}
 			CheckResults result = checkVCell(nagArgsHelper.checkLevel,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",
-					nagArgsHelper.vcellNagiosPassword,nagArgsHelper.warningTimeout,nagArgsHelper.criticalTimeout);
+					nagArgsHelper.vcellNagiosPassword,(nagArgsHelper.checkLevel == connectCheckLevel?nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout) :nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout) ));
 			if(result == null){
 				throw new UnexpectedTestStateException("test result not expected to be null");
 			}
@@ -290,7 +322,7 @@ public class NagiosVCellMonitor {
 		}
 		return rmiPortResults;
 	}
-	private CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int warningTimeout,int criticalTimeout) throws Exception{
+	private CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int criticalTimeout) throws Exception{
 		SimulationStatusPersistent lastSimStatus = null;
 		String vcellVersion = null;
 		TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec = new TreeMap<NagiosVCellMonitor.VCELL_CHECK_LEVEL, Long>();
@@ -477,7 +509,7 @@ public class NagiosVCellMonitor {
 	public static String formatDate(Date date){
 		return dateTimeFormatter.format(date);
 	}
-	private static class VCellStatus {
+	public static class VCellStatus {
 		private String message;
 		private HashMap<Integer, CheckResults> checkResultsMap;
 		private Date statusCreateTime = new Date();
@@ -569,41 +601,36 @@ public class NagiosVCellMonitor {
 			super("Monitor on hold"+(message==null?"":", "+message), null);
 		}
 	}
-	private class StatusMap extends HashMap<StatusType, VCellStatus>{
-		private Long staleStatusQuick;
-		private Long staleStatusLong;
-		private Long staleStatusHold;
+	public static class StatusMap extends HashMap<StatusType, VCellStatus>{
+		private static final int MILLISEC = 1000;
 		public StatusMap() {
 			super();
 			this.put(StatusType.statusConnect, new VCellStatus("Starting...",null));
 			this.put(StatusType.statusFull, new VCellStatus("Starting...",null));
-//			statusMap.put(MONITOR_HOLD_CMD, null);
 		}
-		public void setStaleParameters(long staleStatusQuick,long staleStatusLong,Long staleStatusHold){
-			this.staleStatusQuick = staleStatusQuick;
-			this.staleStatusLong = staleStatusLong;
-			this.staleStatusHold = staleStatusHold;
-		}
-		private VCellStatus anyStale(StatusType statusType){
+		private VCellStatus anyStale(StatusType statusType,NagArgsHelper nagArgsHelper){
 			if(this.get(StatusType.hold) != null){// 'hold' overrides all other status
-				if(staleStatusHold != null && (System.currentTimeMillis()-this.get(StatusType.hold).getStatusCreateTime()) > staleStatusHold){
+				Integer staleStatusHoldSec = nagArgsHelper.nvmParams.get(NVM_PARAMS.holdStaleTimeout);
+				if(staleStatusHoldSec != null && (System.currentTimeMillis()-this.get(StatusType.hold).getStatusCreateTime()) > (staleStatusHoldSec*MILLISEC)){
 					return this.get(StatusType.hold);
 				}
 				return null;
 			}else{
-				if(staleStatusLong != null && StatusType.statusFull.equals(statusType) && staleStatusLong < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
+				Integer staleStatusFull = nagArgsHelper.calcFullStaleTimeout();
+				Integer staleStatusConnect = nagArgsHelper.calcConnectStaleTimeout();
+				if(staleStatusFull != null && StatusType.statusFull.equals(statusType) && (staleStatusFull*MILLISEC) < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
 					return this.get(StatusType.statusFull);
-				}else if(staleStatusQuick != null && StatusType.statusConnect.equals(statusType) && staleStatusQuick < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
+				}else if(staleStatusConnect != null && StatusType.statusConnect.equals(statusType) && (staleStatusConnect*MILLISEC) < (System.currentTimeMillis()-this.get(statusType).getStatusCreateTime())){
 					return this.get(StatusType.statusConnect);
 				}
 				return null;
 			}
 		}
-		public VCellStatus getStaleStatus(StatusType statusType){
-			VCellStatus anyStale = anyStale(statusType);
+		public VCellStatus getStaleStatus(StatusType statusType,NagArgsHelper nagArgsHelper){
+			VCellStatus anyStale = anyStale(statusType,nagArgsHelper);
 			if(anyStale != null){
 				return VCellStatus.createStaleStatus("Stale status after "+
-					(((System.currentTimeMillis()-anyStale.getStatusCreateTime())/1000)/60)+" minutes, use command (jstack "+myProcessID+") to debug.  lastStatus="+anyStale.getNagiosReply());				
+					(((System.currentTimeMillis()-anyStale.getStatusCreateTime())/MILLISEC)/60)+" minutes, use command (jstack NagiosVCellMonitorProcessID) to debug.  lastStatus="+anyStale.getNagiosReply());				
 			}
 			return null;
 		}
@@ -616,7 +643,7 @@ public class NagiosVCellMonitor {
 		// 'stale' has higher priority than {hold,connect,full}
 		// 'hold' has higher priority than {connect,full}
 		// return the highest priority message
-		VCellStatus staleStatus = statusMap.getStaleStatus(statusType);// any status can be stale
+		VCellStatus staleStatus = statusMap.getStaleStatus(statusType,nagArgsHelper);// any status can be stale
 		if(staleStatus != null){
 			return staleStatus;
 		}
@@ -628,36 +655,52 @@ public class NagiosVCellMonitor {
 		return regularStatus;
 	}
 	
+	private static final String PARAM_CMD = "params";
+	private String processParamCmd(String request) throws Exception{
+		if(request.equals(PARAM_CMD)){
+			return nagArgsHelper.printableParamValues();
+		}else if(request.startsWith(PARAM_CMD+":")){
+			try{
+				return nagArgsHelper.tryUpdateParameters(request);
+			}catch(Exception e){
+				return "Error parsing '"+request+"' err="+e.getMessage()+"  usage="+nagArgsHelper.printUsage();
+			}
+		}
+		return "Error parsing paramCmd '"+request+"' usage="+nagArgsHelper.printUsage();
+	}
 	public void nagiosRequestServicingLoop(ServerSocket serverSocket) throws IOException,NumberFormatException{
 		while(true){
 			//Wait for nagiosServer or another monitor to contact us
 			Socket threadSocket = serverSocket.accept();
-			PrintWriter out = null;
+			PrintWriter socketWriter = null;
 			try{
-				out = new PrintWriter(threadSocket.getOutputStream(), true);
+				socketWriter = new PrintWriter(threadSocket.getOutputStream(), true);
 				// Read request
-				BufferedReader in = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
-				String request = in.readLine();
-				if(request.startsWith(getHoldCommand())){
+				BufferedReader socketReader = new BufferedReader(new InputStreamReader(threadSocket.getInputStream()));
+				String request = socketReader.readLine();
+				if(request.startsWith(PARAM_CMD)){
+					//nagios never sends this request
+					socketWriter.println(processParamCmd(request));
+				}else if(request.startsWith(getHoldCommand())){
 					setVCellStatus(new VCellHoldStatus((request.length()>getHoldCommand().length()?request.substring(getHoldCommand().length()):null)), StatusType.hold);
 					//nagios never sends this request
 					// Stop testing but keep responding with hold message
-					out.println(getVCellStatus(StatusType.hold).getNagiosReply());
+					socketWriter.println(getVCellStatus(StatusType.hold).getNagiosReply());
 				}else if(request.equals(StatusType.statusConnect.name())){
 					//nagios only sends this request
 					// Request for VCell test status from nagios server
-					out.println(getVCellStatus(StatusType.statusConnect).getNagiosReply());
+					socketWriter.println(getVCellStatus(StatusType.statusConnect).getNagiosReply());
 				}else if(request.equals(StatusType.statusFull.name())){
 					//nagios only sends this request
 					// Request for VCell test status from nagios server
-					out.println(getVCellStatus(StatusType.statusFull).getNagiosReply());
+					socketWriter.println(getVCellStatus(StatusType.statusFull).getNagiosReply());
 				}else{
-					out.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Unknown Request '"+request);
+					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Unknown Request '"+request);
 				}
 			}catch(Exception e){
 				e.printStackTrace();
-				if(out != null){
-					out.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Request Error '"+e.getClass().getName()+" "+(e.getMessage()==null?"":e.getMessage()));
+				if(socketWriter != null){
+					socketWriter.println(NAGIOS_STATUS.UNKNOWN.ordinal()+"Request Error '"+e.getClass().getName()+" "+(e.getMessage()==null?"":e.getMessage()));
 				}
 			}finally{
 				if(threadSocket != null){
