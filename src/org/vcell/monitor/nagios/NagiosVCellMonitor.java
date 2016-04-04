@@ -63,7 +63,7 @@ public class NagiosVCellMonitor {
 		}
 	}
 
-	private static Exception argsException =
+	private static final Exception argsException =
 		new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -H vcellRMIHost -i rmiPort -p vcellNagiosPassword -m monitorSocket");
 	
 	public static enum NAGIOS_STATUS {OK,WARNING,CRITICAL,UNKNOWN};
@@ -118,7 +118,7 @@ public class NagiosVCellMonitor {
 					}
 
 				}else{
-					throw new UnexpectedTestStateException("Usage: java -jar "+NagiosVCellMonitor.class.getSimpleName()+".jar -H vcellRMIHost -i rmiPorts -p vcellNagiosPassword -m monitorSocket");
+					throw argsException;
 				}
 			}
 			if(host == null || rmiPorts.size() == 0 || vcellNagiosPassword == null || monitorSocket == -1){
