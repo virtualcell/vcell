@@ -365,9 +365,13 @@ public class PDEDataViewer extends DataViewer {
 					AsynchClientTask filterCategoriesTask = new AsynchClientTask("Calculating Filter...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 						@Override
 						public void run(Hashtable<String, Object> hashTable) throws Exception {
-							if(getSimulationModelInfo() != null){
-								SimulationModelInfo simulationWorkspaceModelInfo = (SimulationModelInfo)PDEDataViewer.this.getSimulationModelInfo();
-								simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+							try {
+								if(getSimulationModelInfo() != null){
+									SimulationModelInfo simulationWorkspaceModelInfo = (SimulationModelInfo)PDEDataViewer.this.getSimulationModelInfo();
+									simulationWorkspaceModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+								}
+							}catch (Exception e){
+								e.printStackTrace();
 							}
 						}
 					};

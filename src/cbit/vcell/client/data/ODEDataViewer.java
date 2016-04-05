@@ -109,13 +109,17 @@ private synchronized void connPtoP1SetTarget() {
  * @param ht
  */
 private void calculateFilterTask(Hashtable<String,Object> ht) {
-	//
-	// this method is synchronized because it can be called from ClientTaskDispatcher thread
-	// from multiple invocations, this will force them to execute serially.
-	//
-	if(ODEDataViewer.this.getSimulationModelInfo() != null){
-		SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-		simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+	try {
+		//
+		// this method is synchronized because it can be called from ClientTaskDispatcher thread
+		// from multiple invocations, this will force them to execute serially.
+		//
+		if(ODEDataViewer.this.getSimulationModelInfo() != null){
+			SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
+			simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata();
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
 	}
 }
 
