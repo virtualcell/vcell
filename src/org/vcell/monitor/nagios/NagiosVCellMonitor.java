@@ -314,7 +314,9 @@ public class NagiosVCellMonitor {
 				continue;
 			}
 			CheckResults result = checkVCell(nagArgsHelper.checkLevel,nagArgsHelper.host, rmiPort,"VCellBootstrapServer",
-					nagArgsHelper.vcellNagiosPassword,(nagArgsHelper.checkLevel == connectCheckLevel?nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout) :nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout) ));
+					nagArgsHelper.vcellNagiosPassword,
+					(nagArgsHelper.checkLevel == connectCheckLevel?nagArgsHelper.nvmParams.get(NVM_PARAMS.connectCriticalTimeout) :nagArgsHelper.nvmParams.get(NVM_PARAMS.fullCriticalTimeout) ),
+					nagArgsHelper.monitorSocket);
 			if(result == null){
 				throw new UnexpectedTestStateException("test result not expected to be null");
 			}
@@ -322,7 +324,7 @@ public class NagiosVCellMonitor {
 		}
 		return rmiPortResults;
 	}
-	private CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int criticalTimeout) throws Exception{
+	private CheckResults checkVCell(VCELL_CHECK_LEVEL checkLevel, String rmiHostName,int rmiPort, String rmiBootstrapStubName,String vcellNagiosPassword,int criticalTimeout,int monitorPort) throws Exception{
 		SimulationStatusPersistent lastSimStatus = null;
 		String vcellVersion = null;
 		TreeMap<VCELL_CHECK_LEVEL, Long> levelTimesMillisec = new TreeMap<NagiosVCellMonitor.VCELL_CHECK_LEVEL, Long>();
@@ -391,7 +393,7 @@ public class NagiosVCellMonitor {
 									throw new UnexpectedTestStateException("Expecting completed sim to copy for "+checkLevel.toString());
 								}
 								
-								String copyModelName = testModelName+"_"+"rmiport"+"_"+rmiPort;
+								String copyModelName = testModelName+"_"+rmiHostName+"_rmi"+rmiPort+"_siteprt"+monitorPort;
 								boolean bForceCleanup = true;
 								while(true){
 									boolean bMessy = false;
