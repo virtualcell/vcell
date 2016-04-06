@@ -84,24 +84,24 @@ public String getName() {
 	return name;			// may contain compartment information
 }
 public String extractName() {
-	if(!name.contains("::")) {
+	if(!(name.contains(":") && name.contains("@"))) {
 		return name;
 	} else {
-		String shortName = name.substring(name.indexOf("::")+2);
+		String shortName = name.substring(name.indexOf(":")+1);
 		return shortName;
 	}
 }
 public boolean hasCompartment() {
-	if(!name.contains("::")) {		// we don't check for "@"
+	if(!(name.contains(":") && name.contains("@"))) {
 		return false;
 	}
 	return true;
 }
 public java.lang.String extractCompartment() {
-	if(!name.contains("::")) {
+	if(!(name.contains(":") && name.contains("@"))) {
 		return null;
 	} else {
-		String compartmentName = name.substring(1, name.indexOf("::"));
+		String compartmentName = name.substring(1, name.indexOf(":"));
 		return compartmentName;
 	}
 }

@@ -79,7 +79,7 @@ public class GeneratedSpeciesTableRow {
 			strStructure = p.one;
 			inputString = p.two;
 		} else {
-			// should be the normal @comp::expression format - if it's not it will return null
+			// should be the normal @comp:expression format - if it's not it will return null
 			strStructure = RbmUtils.parseCompartment(inputString, tempModel);
 		}
 		Structure structure;

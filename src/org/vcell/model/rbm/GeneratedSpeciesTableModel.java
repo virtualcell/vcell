@@ -90,8 +90,8 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 				BNGSpecies speciesObject = speciesTableRow.getSpeciesObject();
 				String expressionString = speciesTableRow.getExpression();
 				
-				if(expressionString.startsWith("@") && expressionString.contains("::")) {
-					String structName = expressionString.substring(1, expressionString.indexOf("::"));
+				if(expressionString.startsWith("@") && expressionString.contains(":")) {
+					String structName = expressionString.substring(1, expressionString.indexOf(":"));
 					return structName;
 				} else {
 					SimulationContext sc = owner.getSimulationContext();
