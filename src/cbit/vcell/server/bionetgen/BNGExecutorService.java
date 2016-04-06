@@ -9,7 +9,10 @@
  */
 
 package cbit.vcell.server.bionetgen;
+import java.beans.PropertyVetoException;
 import java.util.List;
+
+import org.vcell.model.bngl.ParseException;
 
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 
@@ -20,12 +23,16 @@ public interface BNGExecutorService {
 		//return new BNGExecutorServiceNative(bngInput, timeoutDurationMS);
 		return new BNGExecutorServiceMultipass(bngInput, timeoutDurationMS);
 	}
+	public static BNGExecutorService getInstanceOld(BNGInput bngInput, Long timeoutDurationMS){
+		return new BNGExecutorServiceNative(bngInput, timeoutDurationMS);
+//		return new BNGExecutorServiceMultipass(bngInput, timeoutDurationMS);
+	}
 		
 	public void registerBngUpdaterCallback(BioNetGenUpdaterCallback callbackOwner);
 	
 	public List<BioNetGenUpdaterCallback> getCallbacks();
 	
-	public BNGOutput executeBNG() throws BNGException;
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException;
 	
 	public void stopBNG() throws Exception;
 	
