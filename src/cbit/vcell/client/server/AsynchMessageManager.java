@@ -73,7 +73,6 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
  */
 public AsynchMessageManager(ClientServerManager csm) {
 	this.clientServerManager = csm;
-	DataAccessException.addListener(this);
 }
 /**
  * start polling for connection. Should be called after connect
@@ -84,6 +83,7 @@ public synchronized void startPolling() {
 		bPoll.set(true);
 		if (executorService == null) {
 			executorService = VCellExecutorService.get();
+			DataAccessException.addListener(this);
 		}
 		schedule(pollTime);
 	}
