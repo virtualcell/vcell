@@ -1217,12 +1217,12 @@ public class RbmUtils {
 	}
 	
 	//
-	// this is called when the proper cBNGL syntax is observed, the species pattern has the form @comp::expression
+	// this is called when the proper cBNGL syntax is observed, the species pattern has the form @comp:expression
 	//
 	public static String parseCompartment(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
-		if(inputString.startsWith("@") && inputString.contains("::")) {
-			inputString = inputString.substring(1, inputString.lastIndexOf("::"));
+		if(inputString.startsWith("@") && inputString.contains(":")) {
+			inputString = inputString.substring(1, inputString.lastIndexOf(":"));
 //			Structure struct = model.getStructure(inputString);
 //			if(struct == null) {
 //				throw new RuntimeException("RbmUtils: Unable to find structure of " + originalInputString);
@@ -1272,10 +1272,10 @@ public class RbmUtils {
 	public static SpeciesPattern parseSpeciesPattern(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
 		try {
-			if(inputString.startsWith("@") && inputString.contains("::")) {
+			if(inputString.startsWith("@") && inputString.contains(":")) {
 //				throw new ParseException("RbmUtils: Unable to parse SpeciesPattern with compartment information.");
 				// clean up the compartment information and parse the pure sp expression
-				inputString = inputString.substring(inputString.lastIndexOf("::")+2);
+				inputString = inputString.substring(inputString.lastIndexOf(":")+1);
 			}
 			BNGLParser parser = new BNGLParser(new StringReader(inputString));
 			ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
