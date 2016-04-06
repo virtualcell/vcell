@@ -1676,12 +1676,24 @@ public class RbmUtils {
 		}
 		}
 	}
-	
-	public static String toBnglString(SimulationContext sc, SpeciesContext speciesContext) {
+
+	public static String toBnglString(SimulationContext sc, SpeciesContext speciesContext, CompartmentMode compartmentMode) {
 		SpeciesContextSpec scs = sc.getReactionContext().getSpeciesContextSpec(speciesContext);
 		Expression expression = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
-		String ret = toBnglString(speciesContext.getSpeciesPattern());
-		return ret  + "\t\t" + expression.infix();
+		
+		SpeciesPattern sp = speciesContext.getSpeciesPattern();
+		
+		String s = "";
+		if(compartmentMode == CompartmentMode.show) {
+			s += "@" + speciesContext.getStructure().getName() + ":";
+			s += toBnglString(sp) + "\t";
+		} else if(compartmentMode == CompartmentMode.asSite) {
+			s += toBnglString(sp, speciesContext.getStructure(), CompartmentMode.asSite) + "\t";
+		} else {
+			s += toBnglString(sp) + "\t";	// CompartmentMode.hide
+		}
+		s += "\t" + expression.infix();
+		return s;
 	}
 	
 	public static String toBnglString(RbmObservable observable, CompartmentMode compartmentMode) {

@@ -1,6 +1,12 @@
 package cbit.vcell.server.bionetgen;
 
+import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -10,21 +16,30 @@ import java.util.List;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BNGLParser;
 import org.vcell.model.bngl.ParseException;
+import org.vcell.model.bngl.Token;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.PropertyLoader;
 
 import com.ibm.icu.util.StringTokenizer;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
+import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
 import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService {
 
@@ -36,6 +51,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	private BNGExecutorServiceNative onepassBngService;
 	private long startTime = -1;
 	private boolean insufficientIterations = true;
+	
+	private Model model;
+	private SimulationContext simContext;
 	
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
 		this.cBngInput = cBngInput;
@@ -56,12 +74,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	}
 
 	@Override
-	public BNGOutput executeBNG() throws BNGException {
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException {
 		this.startTime = System.currentTimeMillis();
 		
 		String cBngInputString = cBngInput.getInputString();
 		
-		NetworkConstraints nc = extractNetworkConstraints(cBngInputString);
 		// the "trick" - the modified molecules, species, etc - everything has an extra Site 
 		// with the compartments as possible States
 		String sBngInputString = preprocessInput(cBngInputString);
@@ -72,7 +89,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
-				
+
+		NetworkConstraints nc = simContext.getNetworkConstraints();
 		for (int i = 0; i<nc.getMaxIteration(); i++) {
 		
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
@@ -83,22 +101,34 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			this.onepassBngService = null;
 		
 			sBngOutputString = sBngOutput.getNetFileContent();		// .net file
-			String consoleOutput = sBngOutput.getConsoleOutput();
-			System.out.println(consoleOutput);
+//			String consoleOutput = sBngOutput.getConsoleOutput();
+//			System.out.println(consoleOutput);
 			
-			String sBngInputStringOld = sBngInputString;
-			String rawSeedSpeciesString = extractSeedSpecies(sBngOutputString);
-			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
+			String delta = "";
+			String rawSeedSpeciesString = "";
 
-			String delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
-			consoleNotification("======= Iteration " + (i+1) + " ===========================\n" + delta);
-			if(delta.isEmpty()) {
-				insufficientIterations = false;
-				break;			// early exit condition, 2 consecutive iteration yield the same result
-			}
-			
+			// this bloc is dealing with the strings, used for console display only
+			rawSeedSpeciesString = extractSeedSpecies(sBngOutputString);
+			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
+			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
+			String rs = extractReactions(sBngOutputString);
+			String s = "======= Iteration " + (i+1) + " ===========================\n" + delta;
+			s += "---------------------------------------\n" + rs;
+			consoleNotification(s);
+
+			doWork(sBngOutputString);
 			String correctedSeedSpeciesString = processSeedSpecies(rawSeedSpeciesString);
 			oldSeedSpeciesString = correctedSeedSpeciesString;
+
+			if(delta.isEmpty()) {
+				// TODO: better algorithm: if the most recent iteration didn't provide any VALID NEW species (after
+				// possible correction if needed) then we are done
+				// TODO: implement it !!!
+
+				insufficientIterations = false;
+				break;			// exit condition, 2 consecutive iteration yield the same result
+			}
+			
 			sBngInputString = prepareNewBnglString(sBngInputString, correctedSeedSpeciesString);
 			sBngInput = new BNGInput(sBngInputString);		// the new input for next iteration
 		}
@@ -115,6 +145,40 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		System.out.println(cBngOutputString);
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
+	
+	private void doWork(String netFile) {
+
+		// parse the .net file with BNGOutputFileParser
+		
+		
+		// identify new products, loop thorough each of them
+		
+		
+		// find the flattened reaction and from the reaction find the rule it's coming from
+				
+		
+		// check the product against the rule to see if it's valid
+		// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
+		//   compartment should only give valid products (is that so?)
+		
+		
+		// if valid, keep it as is and continue to next product
+		//
+		// if not valid, correct the fake "compartment" site to be conform to the compartment of the product pattern
+		// sanity check: the fake "compartment" sites of the molecular type patterns within a product MUST be all 
+		// in the same state (must be all in the same compartment).
+		
+		
+		// if the corrected species already exist, delete its reaction (useless activity except for the last iteration when 
+		//    we want the allow the user to view a valid list of flattened reactions (TODO: perhaps we keep it if the existing 
+		//    species and the identical one we just corrected come from diferent rules? is it even possible?)
+		
+		
+		// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
+		
+
+		
+	}
 
 	private void consoleNotification(String message) {
 		for (BioNetGenUpdaterCallback callback : getCallbacks()){
@@ -130,20 +194,80 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		}
 		this.bStopped = true;
 	}
-
 	@Override
 	public boolean isStopped() {
 		return bStopped;
 	}
-
 	@Override
 	public long getStartTime() {
 		return startTime;
 	}
 	
-	// ----------------------------------------------------------------------------------------------------------
-	// generate_network({max_iter=>5,max_agg=>10,overwrite=>1})
+	// parse the compartmental bngl file and produce the "trick"
+	// where each molecule has an extra Site with the compartments as possible States
+	// a reserved name will be used for this Site
 	//
+	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException {
+		
+		// take the cBNGL file (as string), parse it to recover the rules (we'll need them later)
+		// and create the bngl string with the extra, fake site for the compartments
+		BioModel bioModel = new BioModel(null);
+		bioModel.setName("BngBioModel");
+		model = new Model("model");
+		bioModel.setModel(model);
+		model.createFeature();
+
+		simContext = bioModel.addNewSimulationContext("BioNetGen app", SimulationContext.Application.NETWORK_DETERMINISTIC);
+		List<SimulationContext> appList = new ArrayList<SimulationContext>();
+		appList.add(simContext);
+		// set convention for initial conditions in generated application for seed species (concentration or count)
+		BngUnitSystem bngUnitSystem = new BngUnitSystem(BngUnitOrigin.DEFAULT);
+
+		InputStream is = new ByteArrayInputStream(cBngInputString.getBytes());
+		BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+		ASTModel astModel = RbmUtils.importBnglFile(br);
+		if(astModel.hasCompartments()) {
+			Structure struct = model.getStructure(0);
+			if(struct != null) {
+				try {
+					model.removeStructure(struct);
+				} catch (PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		BnglObjectConstructionVisitor constructionVisitor = null;
+		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
+		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
+		
+		
+		StringWriter bnglStringWriter = new StringWriter();
+		PrintWriter writer = new PrintWriter(bnglStringWriter);
+		
+		writer.println(RbmNetworkGenerator.BEGIN_MODEL);
+		writer.println();
+//		RbmNetworkGenerator.writeCompartments(writer, model, null);
+		RbmNetworkGenerator.writeParameters(writer, model.getRbmModelContainer(), false);
+		RbmNetworkGenerator.writeMolecularTypes(writer, model, CompartmentMode.asSite);
+		RbmNetworkGenerator.writeSpecies(writer, model, simContext, CompartmentMode.asSite);
+		RbmNetworkGenerator.writeObservables(writer, model.getRbmModelContainer(), CompartmentMode.asSite);
+//		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
+		RbmNetworkGenerator.writeReactions(writer, model.getRbmModelContainer(), null, false, CompartmentMode.asSite);
+		
+		writer.println(RbmNetworkGenerator.END_MODEL);	
+		writer.println();
+		
+		// we parse the real numbers from the bngl file provided by the caller, the nc in the simContext has the default ones
+		NetworkConstraints realNC = extractNetworkConstraints(cBngInputString);
+		simContext.getNetworkConstraints().setMaxMoleculesPerSpecies(realNC.getMaxMoleculesPerSpecies());
+		simContext.getNetworkConstraints().setMaxIteration(realNC.getMaxIteration());
+		RbmNetworkGenerator.generateNetworkEx(1, simContext.getNetworkConstraints().getMaxMoleculesPerSpecies(), writer, model.getRbmModelContainer(), simContext, NetworkGenerationRequirements.AllowTruncatedStandardTimeout);
+
+		String sInputString = bnglStringWriter.toString();
+		return sInputString;
+	}
+	
 	private static NetworkConstraints extractNetworkConstraints(String cBngInputString) {
 		NetworkConstraints nc = new NetworkConstraints();
 		
@@ -159,20 +283,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 
 		return nc;
 	}
-	// parse the compartmental bngl file and produce the "trick"
-	// where each molecule has an extra Site with the compartments as possible States
-	// a reserved name will be used for this Site
-	//
-	private static String preprocessInput(String cBngInputString) {
-				
-		// get rid of the default generate network command...
-		String prolog = cBngInputString.substring(0, cBngInputString.indexOf("max_iter=>") + "max_iter=>".length());
-		String epilog = cBngInputString.substring(cBngInputString.indexOf("max_iter=>") + "max_iter=>".length());
-		epilog = epilog.substring(epilog.indexOf(","));
-		
-		String sInputString = prolog + "1" + epilog;		// hardcoded only one iteration
-		return sInputString;
-	}
+
 	
 	// output - the resulting .net file we received from bngl.exe
 	//  we extract the seed species from the .net file,insert them in the .bngl file
@@ -235,6 +346,32 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		return rawSeedSpeciesString;
 	}
 
+	private static String extractReactions(String output) {
+		// extract the species from the output
+		boolean inReactionsBlock = false;
+		StringBuilder rb = new StringBuilder();
+		StringTokenizer st = new StringTokenizer(output, "\n");
+		while (st.hasMoreElements()) {
+			String nextToken = st.nextToken().trim();
+
+			if(nextToken.equals("begin reactions")) {
+				inReactionsBlock = true;
+				continue;
+			} else if(nextToken.equals("end reactions")) {
+				inReactionsBlock = false;
+				break;		// nothing more to do, we got all our species
+			}
+			if(inReactionsBlock == false) {
+				continue;
+			}
+			// inside species block;
+			rb.append(nextToken);
+			rb.append("\n");
+		}
+		String rawReactionsString = rb.toString();
+		System.out.println(rawReactionsString);
+		return rawReactionsString;
+	}
 	
 	// process the seed species extracted from the .net file (see if they belong to the right compartment
 	// and adjust them accordingly if they don't)

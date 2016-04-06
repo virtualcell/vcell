@@ -50,22 +50,22 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 
 public class RbmNetworkGenerator {
 	
-	private static final String BEGIN_MODEL = "begin model";
-	private static final String END_MODEL = "end model";
-	private static final String BEGIN_REACTIONS = "begin reaction rules";
-	private static final String END_REACTIONS = "end reaction rules";
-	private static final String BEGIN_OBSERVABLES = "begin observables";
-	private static final String END_OBSERVABLES = "end observables";
-	private static final String BEGIN_FUNCTIONS = "begin functions";
-	private static final String END_FUNCTIONS = "end functions";
-	private static final String END_MOLECULE_TYPES = "end molecule types";
-	private static final String BEGIN_MOLECULE_TYPES = "begin molecule types";
-	private static final String BEGIN_SPECIES = "begin seed species";
-	private static final String END_SPECIES = "end seed species";
-	private static final String END_PARAMETERS = "end parameters";
-	private static final String BEGIN_PARAMETERS = "begin parameters";
-	private static final String BEGIN_COMPARTMENTS = "begin compartments";
-	private static final String END_COMPARTMENTS = "end compartments";
+	public static final String BEGIN_MODEL = "begin model";
+	public static final String END_MODEL = "end model";
+	public static final String BEGIN_REACTIONS = "begin reaction rules";
+	public static final String END_REACTIONS = "end reaction rules";
+	public static final String BEGIN_OBSERVABLES = "begin observables";
+	public static final String END_OBSERVABLES = "end observables";
+	public static final String BEGIN_FUNCTIONS = "begin functions";
+	public static final String END_FUNCTIONS = "end functions";
+	public static final String END_MOLECULE_TYPES = "end molecule types";
+	public static final String BEGIN_MOLECULE_TYPES = "begin molecule types";
+	public static final String BEGIN_SPECIES = "begin seed species";
+	public static final String END_SPECIES = "end seed species";
+	public static final String END_PARAMETERS = "end parameters";
+	public static final String BEGIN_PARAMETERS = "begin parameters";
+	public static final String BEGIN_COMPARTMENTS = "begin compartments";
+	public static final String END_COMPARTMENTS = "end compartments";
 
 	/*
 	 * Used for exporting to file with extension .bngl
@@ -82,10 +82,10 @@ public class RbmNetworkGenerator {
 		RbmNetworkGenerator.writeCompartments(writer, model, simulationContext);
 		RbmNetworkGenerator.writeParameters(writer, rbmModelContainer, ignoreFunctions);
 		RbmNetworkGenerator.writeMolecularTypes(writer, model, CompartmentMode.show);
-		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext);
+		RbmNetworkGenerator.writeSpecies(writer, model, simulationContext, CompartmentMode.show);
 		RbmNetworkGenerator.writeObservables(writer, rbmModelContainer, CompartmentMode.show);
 		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
-		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, applyApplicationFilters);
+		RbmNetworkGenerator.writeReactions(writer, rbmModelContainer, null, applyApplicationFilters, CompartmentMode.show);
 		
 		writer.println(END_MODEL);	
 		writer.println();
@@ -217,7 +217,7 @@ public class RbmNetworkGenerator {
 	}
 // ======================================================================================================
 
-	private static void writeCompartments(PrintWriter writer, Model model, SimulationContext sc) {
+	public static void writeCompartments(PrintWriter writer, Model model, SimulationContext sc) {
 		writer.println(BEGIN_COMPARTMENTS);
 		for(int i=0; i< model.getStructures().length; i++) {
 			Structure s = model.getStructure(i);
@@ -245,7 +245,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_COMPARTMENTS);
 		writer.println();
 	}
-	private static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
+	public static void writeParameters(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
 		writer.println(BEGIN_PARAMETERS);
 		List<Parameter> paramList = rbmModelContainer.getParameterList();
 		for (Parameter param : paramList) {
@@ -260,7 +260,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_PARAMETERS);
 		writer.println();
 	}
-	private static void writeMolecularTypes(PrintWriter writer, Model model, CompartmentMode compartmentMode) {
+	public static void writeMolecularTypes(PrintWriter writer, Model model, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_MOLECULE_TYPES);
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
@@ -270,17 +270,22 @@ public class RbmNetworkGenerator {
 		writer.println(END_MOLECULE_TYPES);
 		writer.println();
 	}
-	private static void writeSpecies(PrintWriter writer, Model model, SimulationContext simulationContext) {
+	public static void writeSpecies(PrintWriter writer, Model model, SimulationContext simulationContext, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_SPECIES);
 		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+		int i = 1;
 		for(SpeciesContext sc : speciesContexts) {
-			if(!sc.hasSpeciesPattern()) { continue; }
-			writer.println("@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(simulationContext, sc));
+			if(!sc.hasSpeciesPattern()) { 
+				continue;
+			}
+//			writer.println("@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(simulationContext, sc, compartmentMode));
+			writer.println(i + " " + RbmUtils.toBnglString(simulationContext, sc, compartmentMode));
+			i++;
 		}
 		writer.println(END_SPECIES);
 		writer.println();
 	}
-	private static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer, CompartmentMode compartmentMode ) {
+	public static void writeObservables(PrintWriter writer, RbmModelContainer rbmModelContainer, CompartmentMode compartmentMode ) {
 		writer.println(BEGIN_OBSERVABLES);
 		List<RbmObservable> observablesList = rbmModelContainer.getObservableList();
 		for (RbmObservable oo : observablesList) {
@@ -289,7 +294,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_OBSERVABLES);
 		writer.println();
 	}
-	private static void writeFunctions(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
+	public static void writeFunctions(PrintWriter writer, RbmModelContainer rbmModelContainer, boolean ignoreFunctions) {
 		if(!ignoreFunctions) {
 			writer.println(BEGIN_FUNCTIONS);
 			List<Parameter> functionList = rbmModelContainer.getFunctionList();
@@ -303,17 +308,17 @@ public class RbmNetworkGenerator {
 			writer.println();
 		}
 	}
-	private static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, boolean applyApplicationFilters) {
+	public static void writeReactions(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, boolean applyApplicationFilters, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_REACTIONS);
 		List<ReactionRule> reactionList = rbmModelContainer.getReactionRuleList();
 		for (ReactionRule rr : reactionList) {
 			if(applyApplicationFilters && sc != null) {
 				ReactionRuleSpec rrs = sc.getReactionContext().getReactionRuleSpec(rr);
 				if(rrs != null && rrs.isExcluded()) {
-				continue;		// we skip those rules which are disabled (excluded)
+					continue;		// we skip those rules which are disabled (excluded)
 				}
 			}
-			writer.println(RbmUtils.toBnglStringLong(rr, CompartmentMode.show));
+			writer.println(RbmUtils.toBnglStringLong(rr, compartmentMode));
 		}
 		writer.println(END_REACTIONS);	
 		writer.println();
@@ -330,7 +335,7 @@ public class RbmNetworkGenerator {
 		writer.println(END_REACTIONS);	
 		writer.println();
 	}
-	private static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
+	public static void writeNetworkConstraints(PrintWriter writer, RbmModelContainer rbmModelContainer, SimulationContext sc, NetworkGenerationRequirements networkGenerationRequirements) {
 		if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_DETERMINISTIC)) {
 			generateNetwork(writer, rbmModelContainer, sc, networkGenerationRequirements);
 		} else if(sc.getApplicationType().equals(SimulationContext.Application.NETWORK_STOCHASTIC)) {
