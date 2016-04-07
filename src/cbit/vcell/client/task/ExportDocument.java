@@ -20,6 +20,7 @@ import java.util.Hashtable;
 
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.exporter.ExtensionFilter;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.gui.exporter.SelectorExtensionFilter;
 
@@ -81,14 +82,17 @@ private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter 
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
 	File exportFile = fetch(hashTable,EXPORT_FILE,File.class, true);
-	SelectorExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,SelectorExtensionFilter.class, true);
+	ExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,ExtensionFilter.class, true);
 	
 	DocumentManager documentManager = fetch(hashTable,DocumentManager.IDENT,DocumentManager.class,true);
 	String resultString = null;
 	if (documentToExport instanceof BioModel) {
+		if(!(fileFilter instanceof SelectorExtensionFilter)){
+			throw new Exception("Expecting fileFilter type "+SelectorExtensionFilter.class.getName()+" but got "+fileFilter.getClass().getName());
+		}
 		BioModel bioModel = (BioModel)documentToExport;
 		SimulationContext chosenSimContext = fetch(hashTable,SIM_CONTEXT,SimulationContext.class, false);
-		fileFilter.writeBioModel(documentManager, bioModel, exportFile, chosenSimContext); 
+		((SelectorExtensionFilter)fileFilter).writeBioModel(documentManager, bioModel, exportFile, chosenSimContext); 
 /*		DELETE this after finishing validation testing
 		
 		// check format requested

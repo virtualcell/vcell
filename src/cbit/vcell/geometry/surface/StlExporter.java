@@ -145,6 +145,9 @@ public class StlExporter {
 	 */
 	public static void writeBinaryStl(GeometrySurfaceDescription geometrySurfaceDescription, File file) throws java.io.IOException {
 
+		if(!file.getName().toLowerCase().endsWith(".stl")){
+			file = new File(file.getParentFile(),file.getName()+".stl");
+		}
 		GeometricRegion regions[] = geometrySurfaceDescription.getGeometricRegions();
 		SurfaceCollection surfaceCollection = geometrySurfaceDescription.getSurfaceCollection();
 		//
@@ -164,6 +167,7 @@ public class StlExporter {
 			throw new RuntimeException("Surfaces not defined");
 		}
 		FileChannel channel = null;
+		RandomAccessFile randomAccessFile = null;
 		try {
 			int triangleCount = 0;
 			for (int i=0;i<surfaceCollection.getSurfaceCount();i++){
@@ -173,7 +177,8 @@ public class StlExporter {
 			int bytesPerTriangle = 4*3 + 4*3+4*3+4*3 + 2;
 			int fileLength = 80 + 4 + bytesPerTriangle*triangleCount;
 
-			channel = new RandomAccessFile(file, "rw").getChannel();
+			randomAccessFile = new RandomAccessFile(file, "rw");
+			channel = randomAccessFile.getChannel();
 			ByteBuffer buf = channel.map(MapMode.READ_WRITE, 0L, fileLength);
 			buf.order(ByteOrder.LITTLE_ENDIAN); // stl should be little endian (ref: "http://en.wikipedia.org/wiki/STL_(file_format)" )
 	
@@ -226,9 +231,9 @@ public class StlExporter {
 				}
 			}
 		}finally{
-			if (channel!=null){
-				channel.close();
-			}
+			if (channel!=null){try{channel.close();}catch(Exception e){e.printStackTrace();}}
+			if (randomAccessFile!=null){try{randomAccessFile.close();}catch(Exception e){e.printStackTrace();}}
+			System.gc();
 		}
 	}
 	
