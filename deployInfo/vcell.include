@@ -2,14 +2,13 @@
 # GENERAL INCLUDE FILE FOR COMMON VCELL VARIABLES
 #
 #
-# Java 7 / 8 switch
-JAVA_NUM=8
-if [ $JAVA_NUM -ne 8 ]; then
-	JAVA_VERSION=current
-	JDK_VERSION=currentjdk
-else
+EVAL_JAVA=0  #1 to use eval version
+if [ $EVAL_JAVA -eq 0 ]; then
 	JAVA_VERSION=current8
 	JDK_VERSION=currentjdk8
+else
+	JAVA_VERSION=currentEval
+	JDK_VERSION=currentjdkEval
 fi
 
 #--------------------------------------
