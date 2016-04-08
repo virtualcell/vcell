@@ -56,6 +56,9 @@ public String getKey() {
 public String getRuleName() {
 	return ruleName;
 }
+@Deprecated
+// we shouldn't have the _reverse_ as part of the name anymore, during parsing we 
+//   take the _reverse_ out of the name and set the bRuleReversed flag instead
 public String extractRuleName() {
 	if(ruleName.contains("_reverse_")) {
 		return ruleName.substring("_reverse_".length());
@@ -63,71 +66,41 @@ public String extractRuleName() {
 		return ruleName;
 	}
 }
-
-
 public boolean isRuleReversed() {
 	return bRuleReversed;
 }
 
+public int findProductPosition(BNGSpecies our) {
+	
+	for(int i=0; i<products.length; i++) {		// always only look in the products
+		BNGSpecies candidate = products[i];
+		if(our.equals(candidate)) {
+			return i;
+		}
+	}
+	return -1;	// not found
+}
 
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public Expression getParamExpression() {
 	return paramExpression;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public BNGSpecies[] getProducts() {
 	return products;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public BNGSpecies[] getReactants() {
 	return reactants;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public void setParamExpression(Expression argExpr) {
 	paramExpression = argExpr;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public void setProducts(BNGSpecies[] argPdts) {
 	products = argPdts;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public void setReactants(BNGSpecies[] argReacts) {
 	reactants = argReacts;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 6:01:30 PM)
- */
 public String writeReaction() {
 	//
 	// Writes out the reaction represented by this class in the proper reaction format :
@@ -161,12 +134,10 @@ public String writeReaction() {
 		}
 		reactionStr = reactionStr + " + " + getProducts()[i].getName();
 	}
-
 	reactionStr = reactionStr + "\t\t";
 	
 	// Write the parameter expression
 	reactionStr = reactionStr + getParamExpression().infix();
-
 	return reactionStr;
 }
 

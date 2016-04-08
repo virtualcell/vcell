@@ -75,8 +75,8 @@ public class GeneratedSpeciesTableRow {
 		String strStructure = null;
 		if(inputString.contains(RbmUtils.SiteStruct)) {
 			// we are in the mode where we emulate compartments by adding the compartment name as a fake site
-			Pair<String, String> p = RbmUtils.extractCompartment(inputString);
-			strStructure = p.one;
+			Pair<List<String>, String> p = RbmUtils.extractCompartment(inputString);
+			strStructure = p.one.get(0);
 			inputString = p.two;
 		} else {
 			// should be the normal @comp:expression format - if it's not it will return null
