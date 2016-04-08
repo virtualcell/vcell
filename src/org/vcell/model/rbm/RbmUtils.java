@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -107,7 +108,7 @@ public class RbmUtils {
 	public static int reactionRuleLabelIndex;
 	@Deprecated
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
-	public static final String SiteStruct = "A0";
+	public static final String SiteStruct = "___c";
 	
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
@@ -1236,16 +1237,16 @@ public class RbmUtils {
 	// all the molecules in the species pattern have this extra fake site, and in an identical state (compartment)
 	// we eliminate this species from all the molecule and return the state (compartment name)
 	//
-	public static Pair<String, String> extractCompartment(String original) {
+	public static Pair<List<String>, String> extractCompartment(String original) {
 		String pattern = RbmUtils.SiteStruct;
-		String compartment = null;
+		List<String> compartments = new ArrayList<>();
 		String cleaned = "";
 		while(true) {
 			if(!original.contains(pattern)) {
 				cleaned += original;	// all that's left in original needs to be appended to the cleaned string
 				break;					// no more patterns to match, we're done!
 			}
-			compartment = "";
+			String compartment = "";
 			cleaned += original.substring(0, original.indexOf(pattern));
 			original = original.substring(original.indexOf(pattern)+pattern.length()+1);	// ve get rid of all including the ~
 			while(true) {
@@ -1265,9 +1266,38 @@ public class RbmUtils {
 					original = original.substring(1);	// delete this letter from the original
 				}
 			}
+			if(!compartments.contains(compartment)) {
+				compartments.add(compartment);
+			}
 		}
-		Pair<String, String> p = new Pair<String, String>(compartment, cleaned);
+		Pair<List<String>, String> p = new Pair<List<String>, String>(compartments, cleaned);
 		return p;
+	}
+	// almost as above, we replace all the "fake" compartments with the good one
+	public static String repairCompartment(String original, String compartment) {
+		String pattern = RbmUtils.SiteStruct;
+		String cleaned = "";
+		while(true) {
+			if(!original.contains(pattern)) {
+				cleaned += original;	// all that's left in original needs to be appended to the cleaned string
+				break;					// no more patterns to match, we're done!
+			}
+			cleaned += original.substring(0, original.indexOf(pattern)+pattern.length()+1);
+			original = original.substring(original.indexOf(pattern)+pattern.length()+1);
+			while(true) {
+				// we keep deleting the compartment from original until we encounter ',' or ')'
+				char c = original.charAt(0);
+				if(c == ',') {
+					break;					// done cleaning this molecule
+				} else if(c == ')') {
+					break;					// done cleaning this molecule
+				} else {
+					original = original.substring(1);	// slowly consume compartment letters from the original
+				}
+			}
+			cleaned += compartment;
+		}
+		return cleaned;
 	}
 	public static SpeciesPattern parseSpeciesPattern(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
@@ -1488,14 +1518,20 @@ public class RbmUtils {
 			buffer.append(site);
 		}
 		List<MolecularComponentPattern> componentPatterns = molecularTypePattern.getComponentPatternList();
+		List<String> mcpStrings = new ArrayList<>();
 		for (MolecularComponentPattern mcp : componentPatterns) {
 			if (mcp.isImplied()) {
 				continue;
 			}
+			mcpStrings.add(toBnglString(mcp));
+		}
+		Collections.sort(mcpStrings);	// we sort alphabetically the components!!! so that they hopefully match the .net format
+		
+		for(String s : mcpStrings) {
 			if (bAddComma) {
 				buffer.append(",");
 			}
-			buffer.append(toBnglString(mcp));
+			buffer.append(s);
 			bAddComma = true;
 		}
 		buffer.append(")");
@@ -1686,26 +1722,26 @@ public class RbmUtils {
 		String s = "";
 		if(compartmentMode == CompartmentMode.show) {
 			s += "@" + speciesContext.getStructure().getName() + ":";
-			s += toBnglString(sp) + "\t";
+			s += toBnglString(sp) + "";
 		} else if(compartmentMode == CompartmentMode.asSite) {
-			s += toBnglString(sp, speciesContext.getStructure(), CompartmentMode.asSite) + "\t";
+			s += toBnglString(sp, speciesContext.getStructure(), CompartmentMode.asSite) + "";
 		} else {
-			s += toBnglString(sp) + "\t";	// CompartmentMode.hide
+			s += toBnglString(sp) + "";	// CompartmentMode.hide
 		}
-		s += "\t" + expression.infix();
+		s += " " + expression.infix();
 		return s;
 	}
 	
 	public static String toBnglString(RbmObservable observable, CompartmentMode compartmentMode) {
-		String s = observable.getType() + "\t\t" + observable.getName() + "\t\t";
+		String s = observable.getType() + " " + observable.getName() + " ";
 		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
 			if(compartmentMode == CompartmentMode.show) {
 				s += "@" + observable.getStructure().getName() + ":";
-				s += toBnglString(sp) + "\t";
+				s += toBnglString(sp) + " ";
 			} else if(compartmentMode == CompartmentMode.asSite) {
-				s += toBnglString(sp, observable.getStructure(), CompartmentMode.asSite) + "\t";
+				s += toBnglString(sp, observable.getStructure(), CompartmentMode.asSite) + " ";
 			} else {
-				s += toBnglString(sp) + "\t";	// CompartmentMode.hide
+				s += toBnglString(sp) + " ";	// CompartmentMode.hide
 			}
 		}
 		return s;
@@ -1713,7 +1749,7 @@ public class RbmUtils {
 
 	public static String toBnglString(Parameter parameter, boolean bFunction) {
 		if (!bFunction){		// parameter
-			String str = parameter.getName() + "\t\t";
+			String str = parameter.getName() + " ";
 			if(parameter.getExpression() != null) {
 				str += parameter.getExpression().infixBng();
 			} else {

@@ -10,8 +10,14 @@
 
 package cbit.vcell.bionetgen;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.util.Matchable;
+import org.vcell.util.Pair;
 
 import cbit.vcell.parser.Expression;
 /**
@@ -29,9 +35,6 @@ public abstract class BNGSpecies implements Matchable, Serializable {
 	private String name = null;
 	private Expression concentration = null;
 
-/**
- * BNGSpecies constructor comment.
- */
 public BNGSpecies(String argName, Expression argConc, int argNetwkFileIndx) {
 	super();
 	name = argName;
@@ -39,10 +42,6 @@ public BNGSpecies(String argName, Expression argConc, int argNetwkFileIndx) {
 	networkFileIndex = argNetwkFileIndx;
 }
 
-
-/**
- * compareEqual method comment.
- */
 public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
@@ -61,25 +60,11 @@ public boolean compareEqual(org.vcell.util.Matchable object) {
 		return true;
 	}
 	return false;
-
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @return java.lang.String
- */
 public Expression getConcentration() {
 	return concentration;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @return java.lang.String
- */
 public String getName() {
 	return name;			// may contain compartment information
 }
@@ -106,62 +91,99 @@ public java.lang.String extractCompartment() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @return java.lang.String
- */
 public int getNetworkFileIndex() {
 	return networkFileIndex;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:31:44 PM)
- * @return boolean
- */
 public abstract boolean isWellDefined();
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:31:44 PM)
- * @return boolean
- */
 public abstract BNGSpecies[] parseBNGSpeciesName();
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @param newName java.lang.String
- */
 public void setConcentration(Expression newConc) {
 	concentration = newConc;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @param newName java.lang.String
- */
 public void setName(java.lang.String newName) {
 	name = newName;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/13/2006 5:30:41 PM)
- * @param newName java.lang.String
- */
+public String toBnglString() {
+	return new String(getNetworkFileIndex() + " " + getName() + " " + getConcentration().infix());
+}
 public String toString() {
 	return new String(getNetworkFileIndex() + ";\t" + getName() + ";\t" + getConcentration().infix());
+}
+public String toStringMedium() {
+	return new String(extractName() + " " + getConcentration().infix());
 }
 public String toStringShort() {
 	return new String(getName());
 }
+
+public static Pair<List<BNGSpecies>, List<BNGSpecies>> diff(List<BNGSpecies> older, BNGSpecies[] newer) {
+	List<BNGSpecies> removed = new ArrayList<>();
+	List<BNGSpecies> added = new ArrayList<>();
+	
+	// whatever is present in 'older' list and is missing in 'newer' list - means that it was removed
+	boolean found;
+	for(BNGSpecies o : older) {
+		found = false;
+		for(BNGSpecies n : newer) {
+			if(o.getNetworkFileIndex() == n.getNetworkFileIndex()) {
+				found = true;
+				break;
+			}
+		}
+		if(!found) {
+//			System.out.println(o);
+//			System.out.println(n);
+			removed.add(o);
+		}
+	}
+	// whatever is present in 'newer' list and is missing in 'older' list - means that it was added
+	for(BNGSpecies n : newer) {
+		found = false;
+		for(BNGSpecies o : older) {
+			if(n.getNetworkFileIndex() == o.getNetworkFileIndex()) {
+				found = true;
+				break;
+			}
+		}
+		if(!found) {
+			added.add(n);
+		}
+	}
+	Pair<List<BNGSpecies>, List<BNGSpecies>> p = new Pair<>(removed, added);
+	return p;
+}
+
+
+//@Override
+//public boolean equals(Object thatObject) {
+//	if(!(thatObject instanceof BNGSpecies)) {
+//		return false;
+//	}
+//	BNGSpecies that = (BNGSpecies)thatObject;
+//
+//	
+//	
+//	return true;
+//}
+
+//private List<String> extractComponentPatterns(String mtp) {
+//	String input = mtp.substring(mtp.indexOf("(")+1);
+//	input = input.substring(0, input.indexOf(")"));
+//	System.out.println(input);
+//	
+//	List<String> mcpList = new ArrayList<> ();
+//	String delimiters = "'";
+//	StringTokenizer tokenizer = new StringTokenizer(input, delimiters);
+//	String token = new String("");
+//
+//	while (tokenizer.hasMoreTokens()) {
+//		token = tokenizer.nextToken();
+//		token = token.trim();
+//		mcpList.add(token);
+//	}
+//	Collections.sort(mcpList);
+//	return mcpList;
+//}
 }

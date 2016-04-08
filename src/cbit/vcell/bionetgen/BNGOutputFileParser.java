@@ -11,6 +11,8 @@
 package cbit.vcell.bionetgen;
 import cbit.vcell.parser.Expression;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.io.*;
@@ -142,8 +144,8 @@ public static String extractCompartments (String inputString) {
 					result.append("\t" + token2);
 				}
 				if(i==1) {
-					Pair<String, String> p = RbmUtils.extractCompartment(token2);
-					String structure = p.one;
+					Pair<List<String>, String> p = RbmUtils.extractCompartment(token2);
+					String structure = p.one.get(0);
 					String expression = p.two;
 					String s = "@" + structure + ":" + expression;
 					System.out.println(s);
@@ -166,6 +168,64 @@ public static String extractCompartments (String inputString) {
 	String s = result.toString();
 	return s;
 }
+
+public static List<BNGSpecies> createBngSpeciesOutputSpec(String inputString) {
+
+	String newLineDelimiters = "\n\r";
+	StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
+	
+	String token1 = new String("");
+	String token2 = new String("");
+	String blankDelimiters = " \t";
+	List<BNGSpecies> speciesVector = new ArrayList<>();
+
+	while (lineTokenizer.hasMoreTokens()) {
+		token1 = lineTokenizer.nextToken();
+
+		StringTokenizer nextLine = null;
+
+		// Fill in list of species ONLY
+		nextLine = new StringTokenizer(token1, blankDelimiters);
+		int i = 0;
+		int speciesNtwkFileIndx = 0;
+		String speciesName = null;
+		Expression speciesConcExpr = null;
+		// 'nextLine' is the line with a species and its concentration; the index is necessary to build the reactions.
+		while (nextLine.hasMoreTokens()) {
+			token2 = nextLine.nextToken();
+			if (token2 != null) {
+				token2 = token2.trim();
+			}
+			// First token is index number, second is the name, last token is the concentration.
+			if (i == 0) {
+				speciesNtwkFileIndx = Integer.parseInt(token2);
+			} else if (i == 1) {
+				speciesName = token2;
+			} else if (i == 2) {
+				try {
+					speciesConcExpr = new Expression(token2);
+				} catch (ExpressionException e) {
+					throw new RuntimeException("Error in reading expression for species concentration \""+speciesName+"\"");
+				}
+			}
+			i++;
+		}
+		// After parsing species from the line, create a new BNGSpecies and add it to speciesVector.
+		if (speciesName != null && speciesConcExpr != null && speciesNtwkFileIndx > 0) {
+			BNGSpecies newSpecies = null;
+			if (speciesName.indexOf(".") >= 0) {
+				newSpecies = new BNGComplexSpecies(speciesName, speciesConcExpr, speciesNtwkFileIndx);
+			} else if ( (speciesName.indexOf("(") > 0) && (speciesName.indexOf(".") < 0) ) {
+				newSpecies = new BNGMultiStateSpecies(speciesName, speciesConcExpr, speciesNtwkFileIndx);
+			} else {
+				newSpecies = new BNGSingleStateSpecies(speciesName, speciesConcExpr, speciesNtwkFileIndx);
+			}
+			speciesVector.add(newSpecies);
+		}
+	}
+	return speciesVector;
+}
+
 
 public static BNGOutputSpec createBngOutputSpec(String inputString) {
 
@@ -396,14 +456,25 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 						throw new RuntimeException("Could not create parameter expression for reaction : " + e.getMessage());
 					}
 				} else if (i == 4) {
-					StringTokenizer ruleOriginTokens = new StringTokenizer(token2, "#()");
-					ruleName = ruleOriginTokens.nextToken();
-					if (ruleOriginTokens.hasMoreTokens()){
-						String reverse = ruleOriginTokens.nextToken();
-						if (reverse.equals("reverse")){
-							ruleReversed = true;
-						}
+					if(!token2.startsWith("#")) {
+						throw new RuntimeException("Unrecognized prefix for the rule name field: " + token2);
 					}
+					ruleName = token2.substring(1);
+					if(ruleName.startsWith("_reverse_")) {
+						ruleReversed = true;
+						ruleName = ruleName.substring("_reverse_".length());
+					} else {
+						ruleReversed = false;
+					}
+//					
+//					StringTokenizer ruleOriginTokens = new StringTokenizer(token2, "#()");
+//					ruleName = ruleOriginTokens.nextToken();
+//					if (ruleOriginTokens.hasMoreTokens()){
+//						String reverse = ruleOriginTokens.nextToken();
+//						if (reverse.equals("reverse")){
+//							ruleReversed = true;
+//						}
+//					}
 				}
 				i++;
 			}

@@ -75,6 +75,29 @@ public void extractCompartmentsFromNetFile() {
 	
 	bng_fileContents[location] = new BigString(p);
 }
+public void insertSeedSpeciesInNetFile(String newSeedSpecies) {
+	HashSet<Integer> netFileIndices = new HashSet<Integer>();
+	for (int i=0;i<bng_filenames.length;i++){
+		if (bng_filenames[i].toLowerCase().endsWith(BNG_NET_FILE_SUFFIX)){
+			netFileIndices.add(i);
+		}
+	}
+	if (netFileIndices.size()!=1){
+		throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+	}
+	int location = netFileIndices.iterator().next();
+	String s = bng_fileContents[location].toString();
+	
+	String prologue = s.substring(0, s.indexOf("begin species"));
+	String epilogue = s.substring(s.indexOf("end species"));
+	
+	String d = prologue;
+	d += "begin species\n";
+	d += newSeedSpecies;
+	d += epilogue;
+	
+	bng_fileContents[location] = new BigString(d);
+}
 
 
 public Document getNFSimXMLDocument() {

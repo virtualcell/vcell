@@ -22,13 +22,18 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Pair;
 import org.vcell.util.PropertyLoader;
 
 import com.ibm.icu.util.StringTokenizer;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.bionetgen.BNGComplexSpecies;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
+import cbit.vcell.bionetgen.BNGReaction;
+import cbit.vcell.bionetgen.BNGSpecies;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
@@ -39,6 +44,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService {
@@ -91,7 +97,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
 
 		NetworkConstraints nc = simContext.getNetworkConstraints();
-		for (int i = 0; i<nc.getMaxIteration(); i++) {
+		int i;		// iterations counter
+		for (i = 0; i<nc.getMaxIteration(); i++) {
 		
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
 			for (BioNetGenUpdaterCallback callback : getCallbacks()){
@@ -116,11 +123,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
 
-			doWork(sBngOutputString);
-			String correctedSeedSpeciesString = processSeedSpecies(rawSeedSpeciesString);
-			oldSeedSpeciesString = correctedSeedSpeciesString;
+			List<BNGSpecies> correctedSeedSpecies = doWork(oldSeedSpeciesString, sBngOutputString);
+			String correctedSeedSpeciesString = processSeedSpecies(correctedSeedSpecies);
+			oldSeedSpeciesString += correctedSeedSpeciesString;
 
-			if(delta.isEmpty()) {
+			if(correctedSeedSpecies.isEmpty()) {
 				// TODO: better algorithm: if the most recent iteration didn't provide any VALID NEW species (after
 				// possible correction if needed) then we are done
 				// TODO: implement it !!!
@@ -129,15 +136,19 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				break;			// exit condition, 2 consecutive iteration yield the same result
 			}
 			
-			sBngInputString = prepareNewBnglString(sBngInputString, correctedSeedSpeciesString);
+			sBngInputString = prepareNewBnglString(sBngInputString, oldSeedSpeciesString);
 			sBngInput = new BNGInput(sBngInputString);		// the new input for next iteration
 		}
 		// final operations
 		// TODO: here need to do the real processing for insufficient iterations and max molecules per species
-		consoleNotification("Done " + nc.getMaxIteration() + " iterations.");
 		if(insufficientIterations) {
+			consoleNotification("Done after " + nc.getMaxIteration() + "/"+ nc.getMaxIteration() + " iterations.");
 			consoleNotification("The number of iterations may be insufficient.");
+		} else {
+			consoleNotification("Done after " + (i+1) + "/" + nc.getMaxIteration() + " iterations.");
 		}
+		// oldSeedSpeciesString contains the final list of seed species
+		sBngOutput.insertSeedSpeciesInNetFile(oldSeedSpeciesString);
 		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
 		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
 		BNGOutput cBngOutput = sBngOutput;
@@ -146,38 +157,126 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	
-	private void doWork(String netFile) {
+	private List<BNGSpecies> doWork(String oldSpecies, String newNetFile) throws ParseException {
 
+		// TODO: make a map to preserve the ancestry of each generated species (rule and iteration that generated it)
+		// each species may be generated multiple times, by different rules, at different iterations
+		// the key should be the normalized (sorted lexicographically) expression of each species
+		
 		// parse the .net file with BNGOutputFileParser
-		
-		
+		List<BNGSpecies> oldSpec = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSpecies);	// species only
+		BNGOutputSpec workSpec = BNGOutputFileParser.createBngOutputSpec(newNetFile);		// all file, we need reactions too
+		List<BNGSpecies> newSpec = new ArrayList<>();
+
 		// identify new products, loop thorough each of them
+		Pair<List<BNGSpecies>, List<BNGSpecies>> p = BNGSpecies.diff(oldSpec, workSpec.getBNGSpecies());
+		List<BNGSpecies> removed = p.one;
+		List<BNGSpecies> added = p.two;		// after possible needed corrections we may end up with more or less new species for this iteration
+		if(!removed.isEmpty()) {
+			// this may actually be fired if the BNGSpecies.equals() fails for some reason
+			throw new RuntimeException("No existing BNGSpecies may be removed: \n" + removed.get(0));
+		}
+		if(added.isEmpty()) {
+			System.out.println("No new species added this iteration. Finished!");
+		}
 		
+		// as we validate and we add new species, we use this index to set their network index
+		// we can't get the indexes given to the newly generated species for granted, during correction we may 
+		// lose or gain species
+		int firstAvailableIndex = BNGOutputSpec.getFirstAvailableSpeciesIndex(oldSpec);
+		for(BNGSpecies s : added) {
 		
 		// find the flattened reaction and from the reaction find the rule it's coming from
+			for(BNGReaction r : workSpec.getBNGReactions()) {
 				
-		
-		// check the product against the rule to see if it's valid
-		// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
-		//   compartment should only give valid products (is that so?)
-		
-		
-		// if valid, keep it as is and continue to next product
-		//
-		// if not valid, correct the fake "compartment" site to be conform to the compartment of the product pattern
-		// sanity check: the fake "compartment" sites of the molecular type patterns within a product MUST be all 
-		// in the same state (must be all in the same compartment).
-		
-		
-		// if the corrected species already exist, delete its reaction (useless activity except for the last iteration when 
-		//    we want the allow the user to view a valid list of flattened reactions (TODO: perhaps we keep it if the existing 
-		//    species and the identical one we just corrected come from diferent rules? is it even possible?)
-		
-		
-		// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
-		
-
-		
+				String message = "";						// console only message
+				int position = r.findProductPosition(s);
+				if(position == -1) {
+					continue;	// this species is not a product of this reaction, nothing to do
+				}
+				
+				String ruleName = r.getRuleName();
+				boolean isReversed = r.isRuleReversed();	// if the rule is reversed we need to search this species in the reactants!!
+				System.out.println("Species " + s + " found in rule " + r.getRuleName() + ", at index " + position);
+			
+//				SpeciesPattern ourCandidate = RbmUtils.parseSpeciesPattern(s.getName(), model);
+				
+				// check the product against the rule to see if it's valid
+				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
+				//   compartment should only give valid products (is that so?)
+				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
+				String structureNameFromRule;
+				if(isReversed) {
+					SpeciesPattern sp = rr.getReactantPattern(position).getSpeciesPattern();
+					structureNameFromRule = rr.getReactantPattern(position).getStructure().getName();
+				} else {
+					SpeciesPattern sp = rr.getProductPattern(position).getSpeciesPattern();
+					structureNameFromRule = rr.getProductPattern(position).getStructure().getName();
+				}
+				
+				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
+				boolean needsRepairing = false;
+				if(pair.one.size() > 1) {
+					System.out.println(s.getName() + " multiple compartments, needs repairing.");
+					message += s.getName() + " needs repairing... ";
+					needsRepairing = true;
+				} else {
+					String structure = pair.one.get(0);
+					if(!structure.equals(structureNameFromRule)) {
+						System.out.println(s.getName() + " single compartment, needs repairing.");
+						message += s.getName() + " needs repairing... ";
+						needsRepairing = true;
+					}
+				}
+				BNGSpecies candidate;	// new generated species that we may add the list of species for the next iteration
+				// we use firstAvailableIndex because the index in the species s may be already out of order because of species
+				// deleted or added previously during earlier iterations through newly created species
+				if(needsRepairing) {
+				// if not valid, correct the fake "compartment" site to be conform to the compartment of 
+				// the product pattern
+					String speciesRepairedName = RbmUtils.repairCompartment(s.getName(), structureNameFromRule);
+					candidate = new BNGComplexSpecies(speciesRepairedName, s.getConcentration(), firstAvailableIndex);
+					System.out.println(candidate.getName() + " repaired!");
+					message += "repaired from rule " + rr.getDisplayName() + "... ";
+					System.out.println("");
+				} else {
+					candidate = new BNGComplexSpecies(s.getName(), s.getConcentration(), firstAvailableIndex);
+				}
+				// if the new species (corrected, if it was needed) already exist, delete its reaction (useless activity except for the last iteration 
+				//    when we want the allow the user to view a valid list of flattened reactions (TODO: perhaps we keep it if the existing 
+				//    species and the identical one we just corrected come from diferent rules? is it even possible?)
+				// search in both listed - it may exist in either if correction took place (on this species or on any other species created during this iteration)
+				BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpec);
+				BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpec);
+				// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
+				if(existingMatchInNew == null && existingMatchInOld == null) {
+					newSpec.add(candidate);
+					message += "Candidate " + candidate.getName() + " added to the seed species list.";
+					firstAvailableIndex++;
+					// TODO: we also need to modify the list of reactions, which we'll need for display only after we exit
+				} else {
+					message += "Candidate " + candidate.getName() + " already exists, not added.";
+				}
+				if(!message.isEmpty()) {
+					consoleNotification(message);
+				}
+			}	// end checking reactions for this species
+		}		// end all new species
+		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
+		System.out.println("   Added " + newSpec.size() + " new species");
+		System.out.println(" ");
+		return newSpec;
+	}
+	
+	// process the seed species extracted from the .net file (see if they belong to the right compartment
+	// and adjust them accordingly if they don't)
+	//
+	private static String processSeedSpecies(List<BNGSpecies> correctedSeedSpecies) {
+		String correctedSeedSpeciesString = "";
+		for(BNGSpecies s : correctedSeedSpecies) {
+			correctedSeedSpeciesString += s.toBnglString() + "\n";
+		}
+		return correctedSeedSpeciesString;
 	}
 
 	private void consoleNotification(String message) {
@@ -371,16 +470,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		String rawReactionsString = rb.toString();
 		System.out.println(rawReactionsString);
 		return rawReactionsString;
-	}
-	
-	// process the seed species extracted from the .net file (see if they belong to the right compartment
-	// and adjust them accordingly if they don't)
-	//
-	private static String processSeedSpecies(String rawSeedSpeciesString) {
-//		TaskCallbackMessage message = new TaskCallbackMessage(TaskCallbackStatus.Notification, speciesStr);
-//		sc.appendToConsole(message);
-		String correctedSeedSpeciesString = new String(rawSeedSpeciesString);
-		return correctedSeedSpeciesString;
 	}
 	
 	// sBngInputStringOld - .the bngl file we used for the current iteration (which we just finished)
