@@ -3,8 +3,14 @@
 #
 #
 # 
-JAVA_VERSION=current8
-JDK_VERSION=currentjdk8
+EVAL_JAVA=1  #1 to use eval version
+if [ $EVAL_JAVA -eq 0 ]; then
+	JAVA_VERSION=current8
+	JDK_VERSION=currentjdk8
+else
+	JAVA_VERSION=currentEval
+	JDK_VERSION=currentjdkEval
+fi
 
 #--------------------------------------
 # common definitions
