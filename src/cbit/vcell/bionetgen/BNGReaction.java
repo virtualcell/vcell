@@ -141,6 +141,38 @@ public String writeReaction() {
 	return reactionStr;
 }
 
+public String toBnglString() {
+	String reactionStr = "";
+	
+	int numReactants = getReactants().length;
+	int numPdts = getProducts().length;
+	
+	for (int i = 0; i < numReactants; i++){
+		if (i == numReactants-1) {
+			reactionStr += getReactants()[i].getNetworkFileIndex();
+		} else {
+			reactionStr += getReactants()[i].getNetworkFileIndex() + ",";
+
+		}
+	}
+	reactionStr += " ";
+	for (int i = 0; i < numPdts; i++){
+		if (i == numPdts-1) {
+			reactionStr += getProducts()[i].getNetworkFileIndex();
+		} else {
+			reactionStr += getProducts()[i].getNetworkFileIndex() + ",";
+		}
+	}
+	reactionStr += " " + getParamExpression().infix();
+	
+	reactionStr += " #";
+	if(bRuleReversed) {
+		reactionStr += "_reverse_";
+	}
+	reactionStr += ruleName;
+
+	return reactionStr;
+}
 
 public String toStringShort() {
 	// almost like writeReaction() above except there's no expression
