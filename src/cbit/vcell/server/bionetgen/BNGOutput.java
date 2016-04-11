@@ -98,7 +98,32 @@ public void insertSeedSpeciesInNetFile(String newSeedSpecies) {
 	
 	bng_fileContents[location] = new BigString(d);
 }
-
+public void insertReactionsInNetFile(String reactions) {
+	if(reactions == null) {
+		return;
+	}
+	HashSet<Integer> netFileIndices = new HashSet<Integer>();
+	for (int i=0;i<bng_filenames.length;i++){
+		if (bng_filenames[i].toLowerCase().endsWith(BNG_NET_FILE_SUFFIX)){
+			netFileIndices.add(i);
+		}
+	}
+	if (netFileIndices.size()!=1){
+		throw new RuntimeException("BioNetGen was unable to generate reaction network.");
+	}
+	int location = netFileIndices.iterator().next();
+	String s = bng_fileContents[location].toString();
+	
+	String prologue = s.substring(0, s.indexOf("begin reactions"));
+	String epilogue = s.substring(s.indexOf("end reactions"));
+	
+	String d = prologue;
+	d += "begin reactions\n";
+	d += reactions;
+	d += epilogue;
+	
+	bng_fileContents[location] = new BigString(d);
+}
 
 public Document getNFSimXMLDocument() {
 	HashSet<Integer> netFileIndices = new HashSet<Integer>();

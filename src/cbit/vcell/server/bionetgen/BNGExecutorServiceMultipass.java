@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -91,7 +92,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		BNGInput sBngInput = new BNGInput(sBngInputString);
 		BNGOutput sBngOutput = null;		// output after each iteration
 		String sBngOutputString = null;
-		String oldSeedSpeciesString;		// (used for display only) the seedSpecies which were given as input for the current iteration
+		String oldSeedSpeciesString;			// the seedSpecies which were given as input for the current iteration
+		String correctedReactionsString = null;	// the BNGReactions as they are at the end of the current iteration, after corrections of the species
 		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
@@ -100,6 +102,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		int i;		// iterations counter
 		for (i = 0; i<nc.getMaxIteration(); i++) {
 		
+			correctedReactionsString = null;
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
 			for (BioNetGenUpdaterCallback callback : getCallbacks()){
 //				this.onepassBngService.registerBngUpdaterCallback(callback);
@@ -123,14 +126,13 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
 
-			List<BNGSpecies> correctedSeedSpecies = doWork(oldSeedSpeciesString, sBngOutputString);
-			String correctedSeedSpeciesString = processSeedSpecies(correctedSeedSpecies);
+			Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions = doWork(oldSeedSpeciesString, sBngOutputString);
+			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSeedSpeciesAndReactions);
+			correctedReactionsString = extractCorrectedReactionsAsString(correctedSeedSpeciesAndReactions);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
 
-			if(correctedSeedSpecies.isEmpty()) {
-				// TODO: better algorithm: if the most recent iteration didn't provide any VALID NEW species (after
-				// possible correction if needed) then we are done
-				// TODO: implement it !!!
+			if(correctedSeedSpeciesAndReactions.one.isEmpty()) {
+				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 
 				insufficientIterations = false;
 				break;			// exit condition, 2 consecutive iteration yield the same result
@@ -149,6 +151,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		}
 		// oldSeedSpeciesString contains the final list of seed species
 		sBngOutput.insertSeedSpeciesInNetFile(oldSeedSpeciesString);
+		sBngOutput.insertReactionsInNetFile(correctedReactionsString);
 		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
 		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
 		BNGOutput cBngOutput = sBngOutput;
@@ -157,19 +160,22 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	
-	private List<BNGSpecies> doWork(String oldSpecies, String newNetFile) throws ParseException {
+	private Pair<List<BNGSpecies>, List<BNGReaction>> doWork(String oldSpeciesString, String newNetFile) throws ParseException {
 
 		// TODO: make a map to preserve the ancestry of each generated species (rule and iteration that generated it)
 		// each species may be generated multiple times, by different rules, at different iterations
 		// the key should be the normalized (sorted lexicographically) expression of each species
 		
 		// parse the .net file with BNGOutputFileParser
-		List<BNGSpecies> oldSpec = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSpecies);	// species only
-		BNGOutputSpec workSpec = BNGOutputFileParser.createBngOutputSpec(newNetFile);		// all file, we need reactions too
-		List<BNGSpecies> newSpec = new ArrayList<>();
+		List<BNGSpecies> oldSpeciesList = BNGOutputFileParser.createBngSpeciesOutputSpec(oldSpeciesString);	// seed species at the beginning of the current iteration
+		BNGOutputSpec workSpec = BNGOutputFileParser.createBngOutputSpec(newNetFile);		// .net file content generated during current iteration
+		List<BNGSpecies> newSpeciesList = new ArrayList<>();		// we build here the list of valid (perhaps even corrected) NEW species
+		
+		// we build here the list of flattened reactions (corrected at need, if the species were corrected)
+		ArrayList<BNGReaction> newReactionsList = new ArrayList<BNGReaction>(Arrays.asList(workSpec.getBNGReactions()));
 
 		// identify new products, loop thorough each of them
-		Pair<List<BNGSpecies>, List<BNGSpecies>> p = BNGSpecies.diff(oldSpec, workSpec.getBNGSpecies());
+		Pair<List<BNGSpecies>, List<BNGSpecies>> p = BNGSpecies.diff(oldSpeciesList, workSpec.getBNGSpecies());
 		List<BNGSpecies> removed = p.one;
 		List<BNGSpecies> added = p.two;		// after possible needed corrections we may end up with more or less new species for this iteration
 		if(!removed.isEmpty()) {
@@ -183,11 +189,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		// as we validate and we add new species, we use this index to set their network index
 		// we can't get the indexes given to the newly generated species for granted, during correction we may 
 		// lose or gain species
-		int firstAvailableIndex = BNGOutputSpec.getFirstAvailableSpeciesIndex(oldSpec);
+		int firstAvailableIndex = BNGOutputSpec.getFirstAvailableSpeciesIndex(oldSpeciesList);
 		for(BNGSpecies s : added) {
 		
 		// find the flattened reaction and from the reaction find the rule it's coming from
-			for(BNGReaction r : workSpec.getBNGReactions()) {
+			for(BNGReaction r : newReactionsList) {
 				
 				String message = "";						// console only message
 				int position = r.findProductPosition(s);
@@ -207,10 +213,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				String structureNameFromRule;
 				if(isReversed) {
-					SpeciesPattern sp = rr.getReactantPattern(position).getSpeciesPattern();
 					structureNameFromRule = rr.getReactantPattern(position).getStructure().getName();
 				} else {
-					SpeciesPattern sp = rr.getProductPattern(position).getSpeciesPattern();
 					structureNameFromRule = rr.getProductPattern(position).getStructure().getName();
 				}
 				
@@ -242,41 +246,61 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				} else {
 					candidate = new BNGComplexSpecies(s.getName(), s.getConcentration(), firstAvailableIndex);
 				}
-				// if the new species (corrected, if it was needed) already exist, delete its reaction (useless activity except for the last iteration 
-				//    when we want the allow the user to view a valid list of flattened reactions (TODO: perhaps we keep it if the existing 
-				//    species and the identical one we just corrected come from diferent rules? is it even possible?)
-				// search in both listed - it may exist in either if correction took place (on this species or on any other species created during this iteration)
-				BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpec);
-				BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpec);
+				//
+				// At this point we have a valid candidate - but we may not need it if it already exist in the list of old seed species or in the list of
+				// new seed species we're building now (it may exist in either if correction took place)
+				//
+				// We correct the reaction to match the networkFileIndex of this species (useless activity except for the last iteration 
+				//    when we want the valid list of flattened reactions 
+				//
+				BNGSpecies existingMatchInNew = BNGOutputSpec.findMatch(candidate, newSpeciesList);
+				BNGSpecies existingMatchInOld = BNGOutputSpec.findMatch(candidate, oldSpeciesList);
+				if(existingMatchInNew != null && existingMatchInOld != null) {
+					throw new RuntimeException("The new 'candidate' species cannot exist in both the list of existing seed species and in the new one we're building");
+				}
 				// if it doesn't exist we add it to the list of seed species we are preparing for the next iteration
 				if(existingMatchInNew == null && existingMatchInOld == null) {
-					newSpec.add(candidate);
+					newSpeciesList.add(candidate);
 					message += "Candidate " + candidate.getName() + " added to the seed species list.";
 					firstAvailableIndex++;
-					// TODO: we also need to modify the list of reactions, which we'll need for display only after we exit
+					r.getProducts()[position] = candidate;		// correct the reaction
 				} else {
 					message += "Candidate " + candidate.getName() + " already exists, not added.";
+					BNGSpecies existingMatch;		// at this point we know for sure that there's one and only one match
+					if(existingMatchInNew != null) {
+						existingMatch = existingMatchInNew;
+					} else {
+						existingMatch = existingMatchInOld;
+					}
+					r.getProducts()[position] = existingMatch;	// correct the reaction
 				}
 				if(!message.isEmpty()) {
 					consoleNotification(message);
 				}
+				
 			}	// end checking reactions for this species
 		}		// end all new species
 		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
-		System.out.println("   Added " + newSpec.size() + " new species");
+		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
-		return newSpec;
+		Pair<List<BNGSpecies>, List<BNGReaction>> pair = new Pair<>(newSpeciesList, newReactionsList);
+		return pair;
 	}
 	
-	// process the seed species extracted from the .net file (see if they belong to the right compartment
-	// and adjust them accordingly if they don't)
-	//
-	private static String processSeedSpecies(List<BNGSpecies> correctedSeedSpecies) {
+	private static String extractCorrectedSeedSpeciesAsString(Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions) {
 		String correctedSeedSpeciesString = "";
-		for(BNGSpecies s : correctedSeedSpecies) {
+		for(BNGSpecies s : correctedSeedSpeciesAndReactions.one) {
 			correctedSeedSpeciesString += s.toBnglString() + "\n";
 		}
 		return correctedSeedSpeciesString;
+	}
+	private static String extractCorrectedReactionsAsString(Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions) {
+		String correctedReactionsString = "";
+		for(int i=0; i<correctedSeedSpeciesAndReactions.two.size(); i++) {
+			BNGReaction r = correctedSeedSpeciesAndReactions.two.get(i);
+			correctedReactionsString += (i+1) + " " + r.toBnglString() + "\n";
+		}
+		return correctedReactionsString;
 	}
 
 	private void consoleNotification(String message) {

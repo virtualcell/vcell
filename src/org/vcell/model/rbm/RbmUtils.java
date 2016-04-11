@@ -108,7 +108,7 @@ public class RbmUtils {
 	public static int reactionRuleLabelIndex;
 	@Deprecated
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
-	public static final String SiteStruct = "___c";
+	public static final String SiteStruct = "AAA";
 	
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
