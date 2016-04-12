@@ -35,6 +35,7 @@ import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
@@ -50,6 +51,12 @@ import cbit.vcell.model.Structure;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService {
 
+	private class CorrectedSRO {	// corrected species, reactions and observables, at the end of each iteration
+		List<BNGSpecies> speciesList;
+		List<BNGReaction> reactionsList;
+		List<ObservableGroup> observablesList;
+	}
+	
 	private final BNGInput cBngInput;	// compartmental .bng input file
 	
 	private final Long timeoutDurationMS;

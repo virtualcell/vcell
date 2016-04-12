@@ -163,7 +163,15 @@ public String toBnglString() {
 			reactionStr += getProducts()[i].getNetworkFileIndex() + ",";
 		}
 	}
-	reactionStr += " " + getParamExpression().infix();
+	String infix = paramExpression.infix();
+	if(infix.startsWith("(") && infix.endsWith(")")) {
+		infix = infix.substring(1, infix.length()-2);
+		infix = infix.replaceAll("\\s+","");
+		if(infix.contains("*")) {
+			infix = infix.substring(infix.indexOf("*")+1);
+		}
+	}
+	reactionStr += " " + infix;
 	
 	reactionStr += " #";
 	if(bRuleReversed) {
