@@ -90,9 +90,12 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 			case iColRule:{
 				BNGReaction reactionObject = reactionTableRow.getReactionObject();
 				String name = reactionObject.getRuleName();
-				if(name.contains(reverse)) {
-					name = name.substring(reverse.length());
+				if(reactionObject.isRuleReversed()) {
+					name += " (rev)";
 				}
+//				if(name.contains(reverse)) {
+//					name = name.substring(reverse.length());
+//				}
 				return name;
 			}
 			case iColStructure:{
