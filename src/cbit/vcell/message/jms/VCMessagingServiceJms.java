@@ -34,7 +34,13 @@ public abstract class VCMessagingServiceJms extends VCMessagingService {
 	public VCMessageSession createProducerSession(){
 		MessageProducerSessionJms messageProducerSession;
 		try {
-			messageProducerSession = new MessageProducerSessionJms(this);
+			messageProducerSession = new MessageProducerSessionJms(this){
+				@Override
+				public void close() {
+					messagingProducerSessions.remove(this);
+					super.close();
+				}
+			};
 			messagingProducerSessions.add(messageProducerSession);
 			return messageProducerSession;
 		} catch (JMSException e) {
@@ -58,11 +64,13 @@ public abstract class VCMessagingServiceJms extends VCMessagingService {
 		}
 		System.out.println(toString()+" consumer close() invocations");
 		for (ConsumerContextJms consumerContext : consumerContexts){
+			consumerContexts.remove(consumerContext);
 			consumerContext.close();
 		}
 		
 		System.out.println(toString()+" message producer close requests");
 		for (MessageProducerSessionJms messageProducerSession : messagingProducerSessions){
+			messagingProducerSessions.remove(messageProducerSession);
 			messageProducerSession.close();
 		}
 		System.out.println(toString()+" closeAll() complete");

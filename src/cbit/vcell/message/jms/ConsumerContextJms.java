@@ -35,6 +35,7 @@ public class ConsumerContextJms implements Runnable {
 		bProcessing = true;
 		System.out.println(toString()+" consumer thread starting.");
 		while (bProcessing){
+			MessageProducerSessionJms temporaryMessageProducerSession = null;
 			try {
 				Message jmsMessage = jmsMessageConsumer.receive(CONSUMER_POLLING_INTERVAL_MS);
 				if (jmsMessage!=null){
@@ -44,8 +45,9 @@ public class ConsumerContextJms implements Runnable {
 						VCMessageJms vcMessage = new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 						vcMessage.loadBlobFile();
 						vcMessagingServiceJms.getDelegate().onMessageReceived(vcMessage,vcConsumer.getVCDestination());
-						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession,vcMessagingServiceJms);
+						temporaryMessageProducerSession = new MessageProducerSessionJms(vcMessagingServiceJms);
 						queueConsumer.getQueueListener().onQueueMessage(vcMessage, temporaryMessageProducerSession);
+						temporaryMessageProducerSession.commit();
 						jmsSession.commit();
 						vcMessage.removeBlobFile();
 					} else if (vcConsumer instanceof VCTopicConsumer){
@@ -53,8 +55,9 @@ public class ConsumerContextJms implements Runnable {
 						VCMessageJms vcMessage = new VCMessageJms(jmsMessage, vcMessagingServiceJms.getDelegate());
 						vcMessage.loadBlobFile();
 						vcMessagingServiceJms.getDelegate().onMessageReceived(vcMessage,vcConsumer.getVCDestination());
-						MessageProducerSessionJms temporaryMessageProducerSession = new MessageProducerSessionJms(jmsSession,vcMessagingServiceJms);
+						temporaryMessageProducerSession = new MessageProducerSessionJms(vcMessagingServiceJms);
 						topicConsumer.getTopicListener().onTopicMessage(vcMessage, temporaryMessageProducerSession);
+						temporaryMessageProducerSession.commit();
 						jmsSession.commit();
 						vcMessage.removeBlobFile();
 					}else{
@@ -74,6 +77,10 @@ public class ConsumerContextJms implements Runnable {
 				}
 			} catch (Exception e) {
 				log.exception(e);
+			}finally{
+				if(temporaryMessageProducerSession != null){
+					temporaryMessageProducerSession.close();
+				}
 			}
 		}
 		System.out.println(toString()+" consumer thread exiting.");

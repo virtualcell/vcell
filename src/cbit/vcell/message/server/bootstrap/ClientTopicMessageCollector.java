@@ -198,7 +198,9 @@ public void init() {
  * Creation date: (3/5/2004 9:28:52 AM)
  * @param listener cbit.rmi.event.MessageListener
  */
-public void removeMessageListener(MessageListener listener) {}
+public void removeMessageListener(MessageListener listener) {
+	listenerList.remove(MessageListener.class, listener);
+}
 
 
 /**
