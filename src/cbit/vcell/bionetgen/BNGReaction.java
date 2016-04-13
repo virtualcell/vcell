@@ -165,11 +165,7 @@ public String toBnglString() {
 	}
 	String infix = paramExpression.infix();
 	if(infix.startsWith("(") && infix.endsWith(")")) {
-		infix = infix.substring(1, infix.length()-2);
-		infix = infix.replaceAll("\\s+","");
-		if(infix.contains("*")) {
-			infix = infix.substring(infix.indexOf("*")+1);
-		}
+		infix = infix.replaceAll("\\s+","");	// remove spaces
 	}
 	reactionStr += " " + infix;
 	
@@ -178,7 +174,6 @@ public String toBnglString() {
 		reactionStr += "_reverse_";
 	}
 	reactionStr += ruleName;
-
 	return reactionStr;
 }
 

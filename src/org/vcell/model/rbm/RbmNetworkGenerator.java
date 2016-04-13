@@ -133,12 +133,12 @@ public class RbmNetworkGenerator {
 			
 			String modified;
 			if(compartmentMode == CompartmentMode.show) {
-				modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide);
 				modified = "@" + sc.getStructure().getName() + ":" + modified;
 			} else if (compartmentMode == CompartmentMode.asSite) {
 				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), sc.getStructure(), CompartmentMode.asSite);
 			} else {	// CompartmentMode.hide
-				modified = RbmUtils.toBnglString(sc.getSpeciesPattern());
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide);
 			}
 
 			modified += " " + fakeSeedSpeciesParam.fakeParameterName;
@@ -280,6 +280,20 @@ public class RbmNetworkGenerator {
 			}
 //			writer.println("@" + sc.getStructure().getName() + ":" + RbmUtils.toBnglString(simulationContext, sc, compartmentMode));
 			writer.println(i + " " + RbmUtils.toBnglString(simulationContext, sc, compartmentMode));
+			i++;
+		}
+		writer.println(END_SPECIES);
+		writer.println();
+	}
+	public static void writeSpeciesSortedAlphabetically(PrintWriter writer, Model model, SimulationContext simulationContext, CompartmentMode compartmentMode) {
+		writer.println(BEGIN_SPECIES);
+		SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+		int i = 1;
+		for(SpeciesContext sc : speciesContexts) {
+			if(!sc.hasSpeciesPattern()) { 
+				continue;
+			}
+			writer.println(i + " " + RbmUtils.toBnglStringSortedAlphabetically(simulationContext, sc, compartmentMode));
 			i++;
 		}
 		writer.println(END_SPECIES);

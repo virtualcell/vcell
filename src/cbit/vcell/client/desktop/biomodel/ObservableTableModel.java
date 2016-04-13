@@ -21,6 +21,7 @@ import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.util.Displayable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.gui.DialogUtils;
@@ -262,7 +263,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				case structure:
 					return scale * o1.getStructure().getName().compareToIgnoreCase(o2.getStructure().getName());
 				case species_pattern:
-					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0)).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0)));
+					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0), null, CompartmentMode.hide).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0), null, CompartmentMode.hide));
 				case type:					
 					return scale * o1.getType().name().compareToIgnoreCase(o2.getType().name());
 				}
