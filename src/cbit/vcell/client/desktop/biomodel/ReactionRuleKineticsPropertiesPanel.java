@@ -392,9 +392,7 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 			DialogUtils.showErrorDialog(this, e1.getMessage());
 		}
 	}
-	private void setReversible(boolean bReversible) {
-		reactionRule.setReversible(bReversible);
-	}
+	
 	public void setReactionRule(ReactionRule newValue) {
 		if (reactionRule == newValue) {
 			return;
@@ -409,6 +407,9 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		}
 		tableModel.setReactionRule(reactionRule);
 		refreshInterface();
+	}
+	private void setReversible(boolean bReversible) {
+		reactionRule.setReversible(bReversible);
 	}
 
 	protected void refreshInterface() {

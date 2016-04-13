@@ -99,6 +99,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private ReactionRulePropertiesTreeModel reactantTreeModel = null;
 	private ReactionRulePropertiesTreeModel productTreeModel = null;
 	
+	private JCheckBox isReversibleCheckBox;
 	private JButton addReactantButton = null;
 	private JButton addProductButton = null;
 	private JCheckBox showDifferencesCheckbox = null;
@@ -179,6 +180,8 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				getZoomLargerButton().setEnabled(true);
 				getZoomSmallerButton().setEnabled(ret);
 				updateInterface();
+			} else if (e.getSource() == isReversibleCheckBox) {
+				setReversible(isReversibleCheckBox.isSelected());
 			}
 		}
 		@Override
@@ -328,8 +331,12 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 			
+			isReversibleCheckBox = new JCheckBox("");
+			isReversibleCheckBox.addActionListener(eventHandler);
+			isReversibleCheckBox.setEnabled(true);
+
 			JPanel optionsPanel = new JPanel();
-			optionsPanel.setPreferredSize(new Dimension(120, 200));
+			optionsPanel.setPreferredSize(new Dimension(130, 200));
 			optionsPanel.setLayout(new GridBagLayout());
 			
 			getZoomSmallerButton().setEnabled(true);
@@ -337,6 +344,22 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			
 			int gridy = 0;
 			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0; 
+			gbc.gridy = gridy;
+			gbc.insets = new Insets(6,6,2,4);
+			gbc.anchor = GridBagConstraints.LINE_END;
+			optionsPanel.add(new JLabel("Reversible"), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = gridy;
+			gbc.gridwidth = 3;
+			gbc.insets = new Insets(6,4,2,4);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			optionsPanel.add(isReversibleCheckBox, gbc);
+			
+			gridy++;
+			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
 			gbc.gridwidth = 3;
@@ -359,14 +382,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(8,4,4,2);
+			gbc.insets = new Insets(8,4,4,0);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomLargerButton(), gbc);
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 1;
 			gbc.gridy = gridy;
-			gbc.insets = new Insets(8,2,4,4);
+			gbc.insets = new Insets(8,0,4,4);
 			gbc.anchor = GridBagConstraints.WEST;
 			optionsPanel.add(getZoomSmallerButton(), gbc);
 			// apparently we don't need a fake 3rd cell to the right
@@ -792,11 +815,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		reactantTreeModel.setReactionRule(reactionRule);
 		updateInterface();
 	}
+	private void setReversible(boolean bReversible) {
+		reactionRule.setReversible(bReversible);
+	}
 
 	protected void updateInterface() {
 		if (reactionRule == null){	// sanity check
+			isReversibleCheckBox.setSelected(false);
 			return;
 		}
+		isReversibleCheckBox.setSelected(reactionRule.isReversible());
 		updateShape();
 	}
 
