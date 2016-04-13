@@ -69,6 +69,8 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private PerformanceMonitoringFacility performanceMonitoringFacility;
 	private int rmiPort;
 
+	private ClientTopicMessageCollector clientMessageCollector = null;
+	
 	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, 
 		SessionLog sessionLog, VCMessagingService vcMessagingService, ClientTopicMessageCollector clientMessageCollector, LocalVCellServer aLocalVCellServer, int argRmiPort) 
 		throws RemoteException, FileNotFoundException {
@@ -82,8 +84,9 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 		this.fieldLocalVCellServer = aLocalVCellServer;
 		this.vcMessagingService = vcMessagingService;
 		
+		this.clientMessageCollector = clientMessageCollector;
 		messageService = new SimpleMessageService(userLoginInfo.getUser());
-		clientMessageCollector.addMessageListener(messageService);
+		this.clientMessageCollector.addMessageListener(messageService);
 		
 		sessionLog.print("new LocalVCellConnectionMessaging(" + userLoginInfo.getUser().getName() + ")");	
 		fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
@@ -110,6 +113,10 @@ public void close() {
 	
 	bClosed = true;
 	
+	clientMessageCollector.removeMessageListener(messageService);
+	fieldLocalVCellServer.getExportServiceImpl().removeExportListener(this);
+	fieldLocalVCellServer.getDataSetControllerImpl().removeDataJobListener(this);
+
 	if (vcMessageSessionData!=null){
 		vcMessageSessionData.close();
 	}
@@ -248,6 +255,8 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
  * Creation date: (4/16/2004 11:22:31 AM)
  */
 public boolean isTimeout() throws java.rmi.RemoteException {
+//	System.out.println("messageService.timeSinceLastPoll()="+messageService.timeSinceLastPoll()+" ms");
+//	return messageService.timeSinceLastPoll() > 10000;//MAX_TIME_WITHOUT_POLLING_MS;
 	return messageService.timeSinceLastPoll() > MAX_TIME_WITHOUT_POLLING_MS;
 }
 

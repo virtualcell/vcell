@@ -61,6 +61,7 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private int rmiPort;
 
 	private long CLEANUP_INTERVAL = TimeUnit.MINUTES.toMillis(10);
+//	private long CLEANUP_INTERVAL = 5000;//TimeUnit.MINUTES.toMillis(10);
 	private static Logger lg = Logger.getLogger(LocalVCellServer.class);
 /**
  * This method was created by a SmartGuide.

@@ -259,7 +259,8 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements java.a
 		public void mousePressed(java.awt.event.MouseEvent e) {};
 		public void mouseReleased(java.awt.event.MouseEvent e) {};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == DataValueSurfaceViewer.this && (evt.getPropertyName().equals("surfaceCollectionDataInfo"))) 
+			if (evt.getSource() == DataValueSurfaceViewer.this && 
+				(evt.getPropertyName().equals("surfaceCollectionDataInfo") || evt.getPropertyName().equals("surfaceCollectionDataInfoProvider"))) 
 				connEtoC2(evt);
 			if (evt.getSource() == DataValueSurfaceViewer.this.getSurfaceViewerTool1() && (evt.getPropertyName().equals("currentManipulation"))) 
 				connEtoC14(evt);

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -15,6 +16,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
@@ -33,7 +35,7 @@ import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
 
 public class MessageProducerSessionJms implements VCMessageSession {
-		
+//		private static int tmpQCnt = 0;
 		private VCMessagingServiceJms vcMessagingServiceJms = null;
 		private TemporaryQueue commonTemporaryQueue = null;
 		private Connection connection = null;
@@ -41,6 +43,8 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		protected boolean bIndependent;
 		
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
+//			System.out.println("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
+//			Thread.dumpStack();
 			this.vcMessagingServiceJms = vcMessagingServiceJms;
 			this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
 			this.connection.setExceptionListener(new ExceptionListener() {
@@ -55,14 +59,17 @@ public class MessageProducerSessionJms implements VCMessageSession {
 			this.bIndependent = true;
 		}
 
-		public MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms) {
-			this.vcMessagingServiceJms = vcMessagingServiceJms;
-			this.session = session;
-			this.bIndependent = false;
-		}
+//		public MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms) {
+//			System.out.println("-----\nmpjms MessageProducerSessionJms(Session session, VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
+//			Thread.dumpStack();
+//			this.vcMessagingServiceJms = vcMessagingServiceJms;
+//			this.session = session;
+//			this.bIndependent = false;
+//		}
 
-		public Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException {
+		public /*synchronized*/ Object sendRpcMessage(VCellQueue queue, VCRpcRequest vcRpcRequest, boolean returnRequired, long timeoutMS, String[] specialProperties, Object[] specialValues, UserLoginInfo userLoginInfo) throws VCMessagingException, VCMessagingInvocationTargetException {
 			MessageProducer messageProducer = null;
+			MessageProducerSessionJms tempMessageProducerSessionJms = null;
 			try {
 				if (!bIndependent){
 					throw new VCMessagingException("cannot invoke RpcMessage from within another transaction, create an independent message producer");
@@ -73,12 +80,14 @@ public class MessageProducerSessionJms implements VCMessageSession {
 				//
 				// use MessageProducerSessionJms to create the rpcRequest message (allows "Blob" messages to be formed as needed).
 				//
-				MessageProducerSessionJms tempMessageProducerSessionJms = new MessageProducerSessionJms(session,vcMessagingServiceJms);
+				tempMessageProducerSessionJms = new MessageProducerSessionJms(vcMessagingServiceJms);
+//				tempMessageProducerSessionJms = new MessageProducerSessionJms(session,vcMessagingServiceJms);
 				VCMessageJms vcRpcRequestMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(vcRpcRequest);
 				Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
 				
 				rpcMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,VCMessagingConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
 				rpcMessage.setStringProperty(VCMessagingConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
+//				rpcMessage.setJMSExpiration(5000);
 				if (specialValues != null) {
 					for (int i = 0; i < specialValues.length; i ++) {
 						rpcMessage.setObjectProperty(specialProperties[i], specialValues[i]);
@@ -133,9 +142,16 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				throw new VCMessagingException(e.getMessage(),e);
 			} finally {
 				try {
+					
+					if(tempMessageProducerSessionJms != null){
+						tempMessageProducerSessionJms.commit();
+						tempMessageProducerSessionJms.close();
+					}
+					
 					if (messageProducer!=null){
 						messageProducer.close();
 					}
+//					try{Thread.sleep(10000);}catch(Exception e){e.printStackTrace();}
 				} catch (JMSException e) {
 					onException(e);
 				}
@@ -302,6 +318,11 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 
 		public void close() {
 			try {
+//				System.out.println("---------------\nmpjms close()\ntmpQCnt="+(--tmpQCnt)+"--------------------");
+//				Thread.dumpStack();
+////				if(msgProducers.size() > 0){
+//					Thread.dumpStack();
+//				}
 				if (session!=null){
 					session.close();
 				}
@@ -309,6 +330,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					commonTemporaryQueue.delete();
 				}
 				if (connection!=null){
+					connection.stop();
 					connection.close();
 				}
 			}catch (JMSException e){
