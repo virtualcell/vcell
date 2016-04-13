@@ -212,7 +212,7 @@ public class RbmUtils {
 			}
 			return seedSpecies;
 			} catch (Exception ex) {
-				throw new RuntimeException("Initial condition for Species " + toBnglString(seedSpecies.getSpeciesPattern()) + " can not be initialized: " + ex.getMessage());
+				throw new RuntimeException("Initial condition for Species " + toBnglString(seedSpecies.getSpeciesPattern(), null, CompartmentMode.hide) + " can not be initialized: " + ex.getMessage());
 			}	
 		}
 
@@ -1297,7 +1297,26 @@ public class RbmUtils {
 			}
 			cleaned += compartment;
 		}
+		// the cleaned string may be unsorted now that we replaced some strings here and there
+		cleaned = sortAlphabetically(cleaned, ".");
 		return cleaned;
+	}
+	private static String sortAlphabetically(String input, String separators) {
+		List<String> entities = new ArrayList<>();
+		StringTokenizer tokenizer = new StringTokenizer(input, separators);
+		while (tokenizer.hasMoreTokens()) {
+			entities.add(tokenizer.nextToken());
+		}
+		Collections.sort(entities);
+		String output = "";
+		for(int i=0; i<entities.size(); i++) {
+			if(i>0) {
+				output += ".";
+			}
+			output += entities.get(i);
+		}
+		
+		return output;
 	}
 	public static SpeciesPattern parseSpeciesPattern(String originalInputString, Model model) throws ParseException {
 		String inputString = new String(originalInputString);
@@ -1458,35 +1477,38 @@ public class RbmUtils {
 		buffer.append(")");
 		return buffer.toString();
 	}
-	
-	public static String toBnglString(SpeciesPattern speciesPattern) {
-		if (speciesPattern == null) {
-			return "";
-		}
+
+	// ordered by position in the UI - this is what we want to show to the user or to export to file
+	public static String toBnglString(SpeciesPattern speciesPattern, Structure structure, CompartmentMode compartmentMode) {
 		StringBuilder buffer = new StringBuilder();
 		List<MolecularTypePattern> molecularTypePatterns = speciesPattern.getMolecularTypePatterns();
 		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
 			if (i > 0) {
 				buffer.append(".");
 			}
-			buffer.append(toBnglString(molecularTypePatterns.get(i), null, CompartmentMode.hide));
+			buffer.append(toBnglString(molecularTypePatterns.get(i), structure, compartmentMode, false));
 		}
 		return buffer.toString();
 	}
-	public static String toBnglString(SpeciesPattern speciesPattern, Structure structure, CompartmentMode compartmentMode) {
-		if(compartmentMode != CompartmentMode.asSite) {
-			throw new RuntimeException("CompartmentMode must be 'asSite'");
-		}
+	// ---------------------------------------------------------------------------------- with sorting alphabetically
+	// sorted alphabetically - because that is what BioNetGen is producing and at times we want to 
+	// compare species patterns for identity as strings
+	public static String toBnglStringSortedAlphabetically(SpeciesPattern speciesPattern, Structure structure, CompartmentMode compartmentMode) {
 		if (speciesPattern == null) {
 			return "";
 		}
+		List<String> mtpSortedList = new ArrayList<>();
+		for(MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+			mtpSortedList.add(toBnglString(mtp, structure, compartmentMode, true));		// true means we sort alphabetically
+		}
+		Collections.sort(mtpSortedList);
+
 		StringBuilder buffer = new StringBuilder();
-		List<MolecularTypePattern> molecularTypePatterns = speciesPattern.getMolecularTypePatterns();
-		for (int i = 0; i < molecularTypePatterns.size(); ++ i) {
+		for (int i = 0; i < mtpSortedList.size(); ++ i) {
 			if (i > 0) {
 				buffer.append(".");
 			}
-			buffer.append(toBnglString(molecularTypePatterns.get(i), structure, compartmentMode));
+			buffer.append(mtpSortedList.get(i));
 		}
 		return buffer.toString();
 	}
@@ -1506,7 +1528,7 @@ public class RbmUtils {
 		return buffer.toString();
 	}
 
-	public static String toBnglString(MolecularTypePattern molecularTypePattern, Structure structure, CompartmentMode compartmentMode) {
+	public static String toBnglString(MolecularTypePattern molecularTypePattern, Structure structure, CompartmentMode compartmentMode, boolean sort) {
 		StringBuilder buffer = new StringBuilder(molecularTypePattern.getMolecularType().getName());
 		buffer.append("(");
 		boolean bAddComma = false;
@@ -1525,7 +1547,9 @@ public class RbmUtils {
 			}
 			mcpStrings.add(toBnglString(mcp));
 		}
-		Collections.sort(mcpStrings);	// we sort alphabetically the components!!! so that they hopefully match the .net format
+		if(sort) {
+			Collections.sort(mcpStrings);	// we sort alphabetically the components!!! so that they hopefully match the .net format
+		}
 		
 		for(String s : mcpStrings) {
 			if (bAddComma) {
@@ -1615,11 +1639,11 @@ public class RbmUtils {
 			ReactantPattern rp = reactants.get(i);
 			if(compartmentMode == CompartmentMode.show) {
 				buffer.append("@" + rp.getStructure().getName() + ":");
-				buffer.append(toBnglString(rp.getSpeciesPattern()));
+				buffer.append(toBnglString(rp.getSpeciesPattern(), null, CompartmentMode.hide));
 			} else if(compartmentMode == CompartmentMode.asSite) {
 				buffer.append(toBnglString(rp.getSpeciesPattern(), rp.getStructure(), CompartmentMode.asSite));
 			} else {
-				buffer.append(toBnglString(rp.getSpeciesPattern()));
+				buffer.append(toBnglString(rp.getSpeciesPattern(), null, CompartmentMode.hide));
 			}
 		}
 		buffer.append(reactionRule.isReversible() ? " <-> " : " -> ");
@@ -1631,11 +1655,11 @@ public class RbmUtils {
 			ProductPattern pp = products.get(i);
 			if(compartmentMode == CompartmentMode.show) {
 				buffer.append("@" + pp.getStructure().getName() + ":");
-				buffer.append(toBnglString(pp.getSpeciesPattern()));
+				buffer.append(toBnglString(pp.getSpeciesPattern(), null, CompartmentMode.hide));	// because we already set the compartment
 			} else if(compartmentMode == CompartmentMode.asSite) {
 				buffer.append(toBnglString(pp.getSpeciesPattern(), pp.getStructure(), CompartmentMode.asSite));
 			} else {
-				buffer.append(toBnglString(pp.getSpeciesPattern()));
+				buffer.append(toBnglString(pp.getSpeciesPattern(), null, CompartmentMode.hide));
 			}
 		}
 		return buffer.toString();
@@ -1716,17 +1740,33 @@ public class RbmUtils {
 	public static String toBnglString(SimulationContext sc, SpeciesContext speciesContext, CompartmentMode compartmentMode) {
 		SpeciesContextSpec scs = sc.getReactionContext().getSpeciesContextSpec(speciesContext);
 		Expression expression = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
-		
 		SpeciesPattern sp = speciesContext.getSpeciesPattern();
 		
 		String s = "";
 		if(compartmentMode == CompartmentMode.show) {
 			s += "@" + speciesContext.getStructure().getName() + ":";
-			s += toBnglString(sp) + "";
+			s += toBnglString(sp, null, CompartmentMode.hide) + "";
 		} else if(compartmentMode == CompartmentMode.asSite) {
 			s += toBnglString(sp, speciesContext.getStructure(), CompartmentMode.asSite) + "";
 		} else {
-			s += toBnglString(sp) + "";	// CompartmentMode.hide
+			s += toBnglString(sp, null, CompartmentMode.hide) + "";
+		}
+		s += " " + expression.infix();
+		return s;
+	}
+	public static String toBnglStringSortedAlphabetically(SimulationContext sc, SpeciesContext speciesContext, CompartmentMode compartmentMode) {
+		SpeciesContextSpec scs = sc.getReactionContext().getSpeciesContextSpec(speciesContext);
+		Expression expression = scs.getParameter(SpeciesContextSpec.ROLE_InitialConcentration).getExpression();
+		SpeciesPattern sp = speciesContext.getSpeciesPattern();
+		
+		String s = "";		// nothing to sort here, sorting done within the species pattern
+		if(compartmentMode == CompartmentMode.show) {
+			s += "@" + speciesContext.getStructure().getName() + ":";
+			s += toBnglStringSortedAlphabetically(sp, null, CompartmentMode.hide) + "";
+		} else if(compartmentMode == CompartmentMode.asSite) {
+			s += toBnglStringSortedAlphabetically(sp, speciesContext.getStructure(), CompartmentMode.asSite) + "";
+		} else {
+			s += toBnglStringSortedAlphabetically(sp, null, CompartmentMode.hide) + "";
 		}
 		s += " " + expression.infix();
 		return s;
@@ -1737,11 +1777,11 @@ public class RbmUtils {
 		for(SpeciesPattern sp : observable.getSpeciesPatternList()) {
 			if(compartmentMode == CompartmentMode.show) {
 				s += "@" + observable.getStructure().getName() + ":";
-				s += toBnglString(sp) + " ";
+				s += toBnglString(sp, null, CompartmentMode.hide) + " ";
 			} else if(compartmentMode == CompartmentMode.asSite) {
 				s += toBnglString(sp, observable.getStructure(), CompartmentMode.asSite) + " ";
 			} else {
-				s += toBnglString(sp) + " ";	// CompartmentMode.hide
+				s += toBnglString(sp, null, CompartmentMode.hide) + " ";
 			}
 		}
 		return s;

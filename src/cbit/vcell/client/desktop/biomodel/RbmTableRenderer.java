@@ -31,7 +31,7 @@ public class RbmTableRenderer extends DefaultScrollTableCellRenderer {
 		} else if (value instanceof SpeciesPattern) {
 			String text;
 			if (isSelected) {
-				text = RbmUtils.toBnglString((SpeciesPattern) value);
+				text = RbmUtils.toBnglString((SpeciesPattern) value, null, CompartmentMode.hide);
 			} else {
 				text = "<html>" + RbmTableRenderer.toHtml((SpeciesPattern) value, isSelected) + "</html>";
 			}

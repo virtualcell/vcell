@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Compare;
 import org.vcell.util.Issue;
@@ -297,7 +298,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	
 	@Override
 	public String toString() {
-		return RbmUtils.toBnglString(this);
+		return RbmUtils.toBnglString(this, null, CompartmentMode.hide);
 	}
 	
 	public int nextBondId() {		

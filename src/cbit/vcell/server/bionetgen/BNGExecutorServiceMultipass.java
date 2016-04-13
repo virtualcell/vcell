@@ -52,6 +52,12 @@ import cbit.vcell.model.Structure;
 public class BNGExecutorServiceMultipass implements BNGExecutorService {
 
 	private class CorrectedSRO {	// corrected species, reactions and observables, at the end of each iteration
+		
+		public CorrectedSRO(List<BNGSpecies> speciesList, ArrayList<BNGReaction> reactionsList, ArrayList<ObservableGroup> observablesList) {
+			this.speciesList = speciesList;
+			this.reactionsList = reactionsList;
+			this.observablesList = observablesList;
+		}
 		List<BNGSpecies> speciesList;
 		List<BNGReaction> reactionsList;
 		List<ObservableGroup> observablesList;
@@ -102,6 +108,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		String oldSeedSpeciesString;			// the seedSpecies which were given as input for the current iteration
 		String correctedReactionsString = null;	// the BNGReactions as they are at the end of the current iteration, after corrections of the species
 		
+		// TODO: extract
+		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
 
@@ -118,9 +126,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			this.onepassBngService = null;
 		
 			sBngOutputString = sBngOutput.getNetFileContent();		// .net file
-//			String consoleOutput = sBngOutput.getConsoleOutput();
-//			System.out.println(consoleOutput);
-			
 			String delta = "";
 			String rawSeedSpeciesString = "";
 
@@ -133,12 +138,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
 
-			Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions = doWork(oldSeedSpeciesString, sBngOutputString);
-			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSeedSpeciesAndReactions);
-			correctedReactionsString = extractCorrectedReactionsAsString(correctedSeedSpeciesAndReactions);
+			CorrectedSRO correctedSRO = doWork(oldSeedSpeciesString, sBngOutputString);
+			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSRO);
+			correctedReactionsString = extractCorrectedReactionsAsString(correctedSRO);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
 
-			if(correctedSeedSpeciesAndReactions.one.isEmpty()) {
+			if(correctedSRO.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 
 				insufficientIterations = false;
@@ -167,7 +172,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	
-	private Pair<List<BNGSpecies>, List<BNGReaction>> doWork(String oldSpeciesString, String newNetFile) throws ParseException {
+	private CorrectedSRO doWork(String oldSpeciesString, String newNetFile) throws ParseException {
 
 		// TODO: make a map to preserve the ancestry of each generated species (rule and iteration that generated it)
 		// each species may be generated multiple times, by different rules, at different iterations
@@ -180,7 +185,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		
 		// we build here the list of flattened reactions (corrected at need, if the species were corrected)
 		ArrayList<BNGReaction> newReactionsList = new ArrayList<BNGReaction>(Arrays.asList(workSpec.getBNGReactions()));
-
+		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>(Arrays.asList(workSpec.getObservableGroups()));
+				
 		// identify new products, loop thorough each of them
 		Pair<List<BNGSpecies>, List<BNGSpecies>> p = BNGSpecies.diff(oldSpeciesList, workSpec.getBNGSpecies());
 		List<BNGSpecies> removed = p.one;
@@ -290,24 +296,32 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
-		Pair<List<BNGSpecies>, List<BNGReaction>> pair = new Pair<>(newSpeciesList, newReactionsList);
-		return pair;
+		CorrectedSRO sro = new CorrectedSRO(newSpeciesList, newReactionsList, newObservablesList);
+		return sro;
 	}
 	
-	private static String extractCorrectedSeedSpeciesAsString(Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions) {
+	private static String extractCorrectedSeedSpeciesAsString(CorrectedSRO corrected) {
 		String correctedSeedSpeciesString = "";
-		for(BNGSpecies s : correctedSeedSpeciesAndReactions.one) {
+		for(BNGSpecies s : corrected.speciesList) {
 			correctedSeedSpeciesString += s.toBnglString() + "\n";
 		}
 		return correctedSeedSpeciesString;
 	}
-	private static String extractCorrectedReactionsAsString(Pair<List<BNGSpecies>, List<BNGReaction>> correctedSeedSpeciesAndReactions) {
+	private static String extractCorrectedReactionsAsString(CorrectedSRO corrected) {
 		String correctedReactionsString = "";
-		for(int i=0; i<correctedSeedSpeciesAndReactions.two.size(); i++) {
-			BNGReaction r = correctedSeedSpeciesAndReactions.two.get(i);
+		for(int i=0; i<corrected.reactionsList.size(); i++) {
+			BNGReaction r = corrected.reactionsList.get(i);
 			correctedReactionsString += (i+1) + " " + r.toBnglString() + "\n";
 		}
 		return correctedReactionsString;
+	}
+	private static String extractCorrectedObservablesAsString(CorrectedSRO corrected) {
+		String correctedObservablesString = "";
+		for(int i=0; i<corrected.reactionsList.size(); i++) {
+			ObservableGroup o = corrected.observablesList.get(i);
+//			correctedObservablesString += (i+1) + " " + o.toBnglString() + "\n";
+		}
+		return correctedObservablesString;
 	}
 
 	private void consoleNotification(String message) {
@@ -371,16 +385,14 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
 		
-		
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter writer = new PrintWriter(bnglStringWriter);
-		
 		writer.println(RbmNetworkGenerator.BEGIN_MODEL);
 		writer.println();
 //		RbmNetworkGenerator.writeCompartments(writer, model, null);
 		RbmNetworkGenerator.writeParameters(writer, model.getRbmModelContainer(), false);
 		RbmNetworkGenerator.writeMolecularTypes(writer, model, CompartmentMode.asSite);
-		RbmNetworkGenerator.writeSpecies(writer, model, simContext, CompartmentMode.asSite);
+		RbmNetworkGenerator.writeSpeciesSortedAlphabetically(writer, model, simContext, CompartmentMode.asSite);
 		RbmNetworkGenerator.writeObservables(writer, model.getRbmModelContainer(), CompartmentMode.asSite);
 //		RbmNetworkGenerator.writeFunctions(writer, rbmModelContainer, ignoreFunctions);
 		RbmNetworkGenerator.writeReactions(writer, model.getRbmModelContainer(), null, false, CompartmentMode.asSite);
