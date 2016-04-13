@@ -113,6 +113,8 @@ public class BNGLUnitsPanel extends JPanel {
 		for(ConcUnitSystem s : ConcUnitSystem.values()) {
 			concentrationUnitsCombo.addItem(s.description);
 		}
+		concentrationUnitsCombo.setSelectedIndex(1);	// we select by default element 1 (micromolar) which is the most sensible choice
+		
 		cVolumeUnitsCombo.addItem(VolumeUnitSystem.VolumeUnit_um3.description);		// TODO: hardcoded for now
 		for(VolumeUnitSystem s : VolumeUnitSystem.values()) {
 			mVolumeUnitsCombo.addItem(s.description);
