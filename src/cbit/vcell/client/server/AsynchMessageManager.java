@@ -107,7 +107,7 @@ private void poll( )  {
 		return;
 	}
 	lg.trace("polling");
-	boolean report = counter%50 == 0;
+	boolean report = counter++%50 == 0;
 	long begin = 0;
 	long end = 0;
 	 //
