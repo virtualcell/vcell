@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -16,7 +15,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
-import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
@@ -41,7 +39,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 		private Connection connection = null;
 		private Session session = null;
 		protected boolean bIndependent;
-		
+
 		public MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms) throws JMSException {
 //			System.out.println("-----\nmpjms MessageProducerSessionJms(VCMessagingServiceJms vcMessagingServiceJms)\ntmpQCnt="+(++tmpQCnt)+"----------");
 //			Thread.dumpStack();
@@ -84,7 +82,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 //				tempMessageProducerSessionJms = new MessageProducerSessionJms(session,vcMessagingServiceJms);
 				VCMessageJms vcRpcRequestMessage = (VCMessageJms)tempMessageProducerSessionJms.createObjectMessage(vcRpcRequest);
 				Message rpcMessage = vcRpcRequestMessage.getJmsMessage();
-				
+
 				rpcMessage.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,VCMessagingConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
 				rpcMessage.setStringProperty(VCMessagingConstants.SERVICE_TYPE_PROPERTY,vcRpcRequest.getRequestedServiceType().getName());
 //				rpcMessage.setJMSExpiration(5000);
@@ -128,7 +126,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 						} else {
 							return returnValue;
 						}
-					} 
+					}
 				} else {
 					rpcMessage.setJMSReplyTo(commonTemporaryQueue);
 					messageProducer.setTimeToLive(timeoutMS);
@@ -142,12 +140,12 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				throw new VCMessagingException(e.getMessage(),e);
 			} finally {
 				try {
-					
+
 					if(tempMessageProducerSessionJms != null){
 						tempMessageProducerSessionJms.commit();
 						tempMessageProducerSessionJms.close();
 					}
-					
+
 					if (messageProducer!=null){
 						messageProducer.close();
 					}
@@ -193,11 +191,11 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				throw new RuntimeException("expected JMS message for JMS message service");
 			}
 		}
-		
+
 		public void sendQueueMessage(VCellQueue queue, VCMessage message) throws VCMessagingException {
 			sendQueueMessage(queue,message,null,null);
 		}
-		
+
 		public void sendTopicMessage(VCellTopic topic, VCMessage message) throws VCMessagingException {
 			if (message instanceof VCMessageJms){
 				VCMessageJms jmsMessage = (VCMessageJms)message;
@@ -211,7 +209,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				} catch (JMSException e) {
 					e.printStackTrace(System.out);
 					onException(e);
-				}				
+				}
 			}else{
 				throw new RuntimeException("must send a JMS message to a JMS messaging service");
 			}
@@ -248,13 +246,13 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				// if the serialized object is very large, send it as a BlobMessage (ActiveMQ specific).
 				long t1 = System.currentTimeMillis();
 				byte[] serializedBytes = null;
-				
+
 				if (object!=null){
 					serializedBytes = BeanUtils.toSerialized(object);
 				}
-				
+
 				long blobMessageSizeThreshold = Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.jmsBlobMessageMinSize));
-				
+
 				if (serializedBytes!=null && serializedBytes.length > blobMessageSizeThreshold){
 					//
 					// get (or create) directory to store Message BLOBs
@@ -263,7 +261,7 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 					if (!tempdir.exists()){
 						tempdir.mkdirs();
 					}
-					
+
 					//
 					// write serialized message to "temp" file.
 					//
@@ -294,10 +292,10 @@ System.out.println("MessageProducerSessionJms.sendRpcMessage(): looking for repl
 				throw new RuntimeException("unable to create object message",e);
 			} catch (Exception e){
 				e.printStackTrace();
-				throw new RuntimeException(e.getMessage(),e);				
+				throw new RuntimeException(e.getMessage(),e);
 			}
 		}
-		
+
 		public VCMessage createMessage() {
 			try {
 				Message jmsMessage = session.createMessage();
