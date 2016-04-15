@@ -9,10 +9,14 @@
  */
 
 package cbit.vcell.bionetgen;
+import cbit.vcell.model.Model;
 import cbit.vcell.parser.Expression;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.io.*;
@@ -566,6 +570,139 @@ public static BNGOutputSpec createBngOutputSpec(String inputString) {
 	
 	BNGOutputSpec bngOutput = new BNGOutputSpec(paramsArray, moleculesArray, speciesArray, null, rxnsArray, observableGpsArray);
 	return bngOutput;
+}
+
+// almost like the observable group parsing code above, but not close enough to allow one single function
+// correct the observables indexes using the indexesMap
+// if an index is not among the keys it means it wasn't generated during the current iteration and must be left unchanged
+//
+public static ObservableGroup parseAndCorrectObservableGroup(StringTokenizer nextLine, Map<String, List<String>> indexesMap, List<BNGSpecies> speciesList, Model model) {
+	String token2;
+	int i = 0;
+	String observableName = null;
+	String structureName = null;
+	Map<String, Pair<BNGSpecies, Integer>> map = new HashMap<>();        
+	
+	// 'nextLine' is the line with an observable group and the species that satisfy the observable rule in the input file
+	while (nextLine.hasMoreTokens()) {
+		token2 = nextLine.nextToken();
+		if (token2 != null) {
+			token2 = token2.trim();
+		}
+		// First token is index number - ignore, second is the observable name, last token is the set of species that satisfy observable rule.
+		if (i == 0) {
+			i++;
+			continue;
+		} else if (i == 1) {
+			observableName = token2;
+			structureName = model.getRbmModelContainer().getObservable(observableName).getStructure().getName();
+		} else if (i == 2) {
+			// This string is a list of numbers (species indices) with a multiplicity factor (# of molecules) separated by commas
+			StringTokenizer nextPart = new StringTokenizer(token2, ",");
+			String token3 = null;
+			while (nextPart.hasMoreTokens()) {
+				token3 = nextPart.nextToken();
+				if (token3 != null) {
+					token3 = token3.trim();
+				}
+				
+				Integer multiplicity;
+				String sKey;
+				int key;
+				if (token3.indexOf("*") > 0) {
+					//
+					// If the observable group corresponds to a molecule observable rule, the species list in the group
+					// could have a multiplicity factor, and occurs as : 'x*yy' where 'x' is the # of molecules
+					// and 'yy' is the index of the species in the list of species that appears in the beginning of the
+					// network file. Strip out the multiplicity factor from 'token3' and store it in the 'obsMultiplicityVector';
+					// strip out the species # and get the corresponding species and store it in 'obsSpeciesVector'.
+					//
+					int ii = token3.indexOf("*");
+					String indx = token3.substring(0, ii);
+					multiplicity = new Integer(indx);
+					sKey = token3.substring(ii+1);
+					key = Integer.parseInt(sKey);
+				} else {
+					//
+					// If the observable group corresponds to a species observable rule, the species list in the group
+					// occurs as 'x' where x is the species index in the list of species that appears in the beginning of the
+					// network file. Store the species corresponding to the index in the 'obsSpeciesVector' and store a
+					// multiplicity of 1 for the corresponding species in the 'obsMultiplicityVector'.
+					//
+					sKey = token3;
+					key = Integer.parseInt(token3);
+					multiplicity = new Integer(1);
+				}
+				
+				BNGSpecies species;
+				if(indexesMap.containsKey(sKey)) {
+					List<String> namesList = indexesMap.get(sKey);
+					species = matchSpeciesWithObservable(namesList, speciesList, structureName);
+				} else {
+					// thing not in the map of newly created species, means it's already a seed species and the key is correct
+					species = speciesList.get(key-1);	// key starts at 1
+				}
+				if(species == null) {
+//					System.out.println("Rejecting species index " + sKey + " for not matching the compartment of observable: " + observableName);
+					continue;
+				} else {
+					Pair<BNGSpecies, Integer> newp = new Pair<>(species, multiplicity);
+					Pair<BNGSpecies, Integer> oldp = map.put(species.getNetworkFileIndex()+"", newp);
+					if(oldp != null) {				// after correction there's a chance to end up replacing another BNGSpecies with the same index which is there already
+						if(oldp.one != newp.one) {	// sanity check: they should be the same
+							throw new RuntimeException("Same network file index " + species.getNetworkFileIndex() + " for 2 species " + oldp.one.getName() + " and " + newp.one.getName());
+						}
+					}
+				}
+			}
+		}
+		i++;
+	}
+	
+	Map<String, Pair<BNGSpecies, Integer>> treeMap = new TreeMap<>(map);	// we sort the map by key using a tree
+	Vector<BNGSpecies> obsSpeciesVector = new Vector<BNGSpecies>();
+	Vector<Integer> obsMultiplicityVector = new Vector<Integer>();
+	for(Map.Entry<String, Pair<BNGSpecies, Integer>> entry : treeMap.entrySet()) {
+		Pair<BNGSpecies, Integer> p = entry.getValue();
+		obsSpeciesVector.addElement(p.one);
+		obsMultiplicityVector.addElement(p.two);
+	}
+
+	// After parsing observable group from the line, create a new ObservableGroup and add it to observable group vector.
+	if (observableName != null && obsMultiplicityVector.size() > 0 && obsSpeciesVector.size() > 0) {
+		BNGSpecies[] obsSpeciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
+		Integer[] obsMultiplicityArray = (Integer[])org.vcell.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
+		int[] obsMultiplicityFactors = new int[obsMultiplicityArray.length];
+		for (int k = 0; k < obsMultiplicityFactors.length; k++){
+			obsMultiplicityFactors[k] = obsMultiplicityArray[k].intValue();
+		}
+		ObservableGroup newObsGroup = new ObservableGroup(observableName, obsSpeciesArray, obsMultiplicityFactors);
+		return newObsGroup;
+	}
+	return null;
+}
+private static BNGSpecies matchSpeciesWithObservable(List<String> namesList, List<BNGSpecies> speciesList, String structureName) {
+	BNGSpecies candidate = null;
+	boolean foundCandidate = false;
+	for(String speciesIndex : namesList) {
+		for(BNGSpecies s : speciesList) {
+			final String candidateIndex = s.getNetworkFileIndex()+"";
+			if(speciesIndex.equals(candidateIndex)) {
+				candidate = s;
+				foundCandidate = true;
+				break;
+			}
+		}
+		// now we check if the compartment of the candidate matches the compartment of the observable
+		if(foundCandidate) {
+			final String candidateName = candidate.getName();
+			Pair<List<String>, String> p = RbmUtils.extractCompartment(candidateName);
+			if(p.one.get(0).equals(structureName)) {
+				return candidate;
+			}
+		}
+	}
+	return null;
 }
 
 
