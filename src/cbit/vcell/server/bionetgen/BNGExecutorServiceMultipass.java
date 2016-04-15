@@ -6,18 +6,19 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import org.vcell.model.bngl.ASTModel;
-import org.vcell.model.bngl.BNGLParser;
 import org.vcell.model.bngl.ParseException;
-import org.vcell.model.bngl.Token;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
@@ -26,8 +27,6 @@ import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Pair;
 import org.vcell.util.PropertyLoader;
-
-import com.ibm.icu.util.StringTokenizer;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGComplexSpecies;
@@ -43,9 +42,9 @@ import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.RequestType;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
@@ -74,6 +73,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	
 	private Model model;
 	private SimulationContext simContext;
+	
+	// we transform observables with multipe species pattern into multiple observables
+	// with one species pattern each (here we keep track)
+	private Map<String, RbmObservable> observableMap = new LinkedHashMap<>();
+	private List<RbmObservable> oldObservableList = null;		// original observables
 	
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
 		this.cBngInput = cBngInput;
@@ -105,10 +109,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		BNGInput sBngInput = new BNGInput(sBngInputString);
 		BNGOutput sBngOutput = null;		// output after each iteration
 		String sBngOutputString = null;
-		String oldSeedSpeciesString;			// the seedSpecies which were given as input for the current iteration
-		String correctedReactionsString = null;	// the BNGReactions as they are at the end of the current iteration, after corrections of the species
-		
-		// TODO: extract
+		String oldSeedSpeciesString;				// the seedSpecies which were given as input for the current iteration
+		String correctedReactionsString = null;		// the BNGReactions as they are at the end of the current iteration, after corrections of the species
+		String correctedObservablesString = null;	// the ObservableGroups as they are at the end of the current iteration, after corrections of the species
 		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
@@ -142,6 +145,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSRO);
 			correctedReactionsString = extractCorrectedReactionsAsString(correctedSRO);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
+			correctedObservablesString = extractCorrectedObservablesAsString(correctedSRO);
 
 			if(correctedSRO.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
@@ -162,8 +166,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			consoleNotification("Done after " + (i+1) + "/" + nc.getMaxIteration() + " iterations.");
 		}
 		// oldSeedSpeciesString contains the final list of seed species
-		sBngOutput.insertSeedSpeciesInNetFile(oldSeedSpeciesString);
-		sBngOutput.insertReactionsInNetFile(correctedReactionsString);
+		sBngOutput.insertEntitiesInNetFile(oldSeedSpeciesString, "species");
+		sBngOutput.insertEntitiesInNetFile(correctedReactionsString, "reactions");
+		sBngOutput.insertEntitiesInNetFile(correctedObservablesString, "groups");
 		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
 		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
 		BNGOutput cBngOutput = sBngOutput;
@@ -185,7 +190,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		
 		// we build here the list of flattened reactions (corrected at need, if the species were corrected)
 		ArrayList<BNGReaction> newReactionsList = new ArrayList<BNGReaction>(Arrays.asList(workSpec.getBNGReactions()));
-		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>(Arrays.asList(workSpec.getObservableGroups()));
+		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>();		// here we put all the observables after correction
+//		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>(Arrays.asList(workSpec.getObservableGroups()));
 				
 		// identify new products, loop thorough each of them
 		Pair<List<BNGSpecies>, List<BNGSpecies>> p = BNGSpecies.diff(oldSpeciesList, workSpec.getBNGSpecies());
@@ -199,6 +205,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			System.out.println("No new species added this iteration. Finished!");
 		}
 		
+		// in this map we store which of the indexes of species generated during the current iteration 
+		// were converted into what after correction
+		// an index may exist already in which case we won't save a duplicate or the same new species (that needs repair)
+		// may result in more new species after being fixed
+		Map<String, List<String>> indexesMap = new LinkedHashMap<>();
+
 		// as we validate and we add new species, we use this index to set their network index
 		// we can't get the indexes given to the newly generated species for granted, during correction we may 
 		// lose or gain species
@@ -245,6 +257,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 						needsRepairing = true;
 					}
 				}
+				
 				BNGSpecies candidate;	// new generated species that we may add the list of species for the next iteration
 				// we use firstAvailableIndex because the index in the species s may be already out of order because of species
 				// deleted or added previously during earlier iterations through newly created species
@@ -277,6 +290,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 					message += "Candidate " + candidate.getName() + " added to the seed species list.";
 					firstAvailableIndex++;
 					r.getProducts()[position] = candidate;		// correct the reaction
+					
+					manageIndexesMap(indexesMap, s, candidate);
+					
 				} else {
 					message += "Candidate " + candidate.getName() + " already exists, not added.";
 					BNGSpecies existingMatch;		// at this point we know for sure that there's one and only one match
@@ -286,6 +302,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 						existingMatch = existingMatchInOld;
 					}
 					r.getProducts()[position] = existingMatch;	// correct the reaction
+					
+					manageIndexesMap(indexesMap, s, existingMatch);
 				}
 				if(!message.isEmpty()) {
 					consoleNotification(message);
@@ -293,11 +311,87 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				
 			}	// end checking reactions for this species
 		}		// end all new species
+		
+		// now correct the observables using the indexesMap
+		// if an index is not among the keys it means it wasn't generated during the current iteration and must be left unchanged
+		ArrayList<ObservableGroup> tmpObservablesList = new ArrayList<ObservableGroup>();
+		for(int i=0; i<workSpec.getObservableGroups().length; i++) {
+			ObservableGroup o = workSpec.getObservableGroups()[i];
+			String s = (i+1) + " " + o.toBnglString();
+			StringTokenizer st = new StringTokenizer(s, " \t");
+			List<BNGSpecies> completeList = new ArrayList<>(oldSpeciesList);
+			completeList.addAll(newSpeciesList);
+			ObservableGroup newO = BNGOutputFileParser.parseAndCorrectObservableGroup(st, indexesMap, completeList, model);
+			if(newO != null) {
+				tmpObservablesList.add(newO);
+			} else {
+				System.out.println("'null' observable generated for: " + s);
+			}
+		}
+		
+		// now merge the observables with just one species pattern into their originals
+		for(RbmObservable o : oldObservableList) {
+			
+			Map<String, Pair<BNGSpecies, Integer>> map = new HashMap<>();
+			for(ObservableGroup og : tmpObservablesList) {
+				
+				final String observableGroupName = og.getObservableGroupName();
+				final RbmObservable rbmObservable = observableMap.get(observableGroupName);
+				if(o.getDisplayName().equals(rbmObservable.getDisplayName())) {	// this og was generated by this rbm observable
+					for(int i=0; i<og.getListofSpecies().length; i++) {
+						
+						BNGSpecies species = og.getListofSpecies()[i];
+						Integer multiplicity = og.getSpeciesMultiplicity()[i];
+						Pair<BNGSpecies, Integer> newp = new Pair<>(species, multiplicity);
+						Pair<BNGSpecies, Integer> oldp = map.put(species.getNetworkFileIndex()+"", newp);
+						if(oldp != null) {				// same species may come multiple times from different "single" observables as we rebuild the original
+							if(oldp.one != newp.one) {	// sanity check: they should be the same
+								throw new RuntimeException("Same network file index " + species.getNetworkFileIndex() + " for 2 species " + oldp.one.getName() + " and " + newp.one.getName());
+							}
+						}
+					}
+				}
+			}
+			
+			Map<String, Pair<BNGSpecies, Integer>> treeMap = new TreeMap<>(map);	// we sort the map by key using a tree
+			Vector<BNGSpecies> obsSpeciesVector = new Vector<BNGSpecies>();
+			Vector<Integer> obsMultiplicityVector = new Vector<Integer>();
+			for(Map.Entry<String, Pair<BNGSpecies, Integer>> entry : treeMap.entrySet()) {
+				obsSpeciesVector.addElement(entry.getValue().one);
+				obsMultiplicityVector.addElement(entry.getValue().two);
+			}
+			if (o.getName() != null && obsMultiplicityVector.size() > 0 && obsSpeciesVector.size() > 0) {
+				BNGSpecies[] obsSpeciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
+				Integer[] obsMultiplicityArray = (Integer[])org.vcell.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
+				int[] obsMultiplicityFactors = new int[obsMultiplicityArray.length];
+				for (int k = 0; k < obsMultiplicityFactors.length; k++){
+					obsMultiplicityFactors[k] = obsMultiplicityArray[k].intValue();
+				}
+				ObservableGroup newObsGroup = new ObservableGroup(o.getName(), obsSpeciesArray, obsMultiplicityFactors);
+				newObservablesList.add(newObsGroup);
+			}
+		}
+		
 		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
 		CorrectedSRO sro = new CorrectedSRO(newSpeciesList, newReactionsList, newObservablesList);
 		return sro;
+	}
+	
+	// the newly created species 'from' may exist already or it may expand after correction in multiple species
+	// we manage a correspondence map to know which observable indexes need to be corrected
+	private void manageIndexesMap(Map<String, List<String>> indexesMap, BNGSpecies from, BNGSpecies to) {
+		String key = from.getNetworkFileIndex()+"";
+		if(indexesMap.containsKey(key)) {
+			List<String> list = indexesMap.get(key);
+			list.add(to.getNetworkFileIndex() + "");
+			indexesMap.put(key, list);
+		} else {
+			List<String> list = new ArrayList<>();
+			list.add(to.getNetworkFileIndex()+"");
+			indexesMap.put(key, list);
+		}
 	}
 	
 	private static String extractCorrectedSeedSpeciesAsString(CorrectedSRO corrected) {
@@ -317,9 +411,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	}
 	private static String extractCorrectedObservablesAsString(CorrectedSRO corrected) {
 		String correctedObservablesString = "";
-		for(int i=0; i<corrected.reactionsList.size(); i++) {
+		for(int i=0; i<corrected.observablesList.size(); i++) {
 			ObservableGroup o = corrected.observablesList.get(i);
-//			correctedObservablesString += (i+1) + " " + o.toBnglString() + "\n";
+			correctedObservablesString += (i+1) + " " + o.toBnglString() + "\n";
 		}
 		return correctedObservablesString;
 	}
@@ -384,6 +478,24 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		BnglObjectConstructionVisitor constructionVisitor = null;
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
+		
+		// break complex observables with multiple species patterns in "simple" observables with just one species pattern
+		// keep the original list of observables so that at the end we can rebuild the proper observable groups
+		//
+		oldObservableList = model.getRbmModelContainer().getObservableList();
+		List<RbmObservable> newList = new ArrayList<>();
+		int nameIndex = 0;
+		for(RbmObservable oldO : oldObservableList) {
+			for(SpeciesPattern sp : oldO.getSpeciesPatternList()) {
+				String key = "O_" + nameIndex;
+				RbmObservable newO = new RbmObservable(model, key, oldO.getStructure(), oldO.getType());
+				newO.addSpeciesPattern(sp);
+				observableMap.put(key, oldO);	// we remember the originator of each "simple" observable
+				newList.add(newO);
+				nameIndex++;
+			}
+		}
+		model.getRbmModelContainer().setObservableList(newList);	// switch to the newly created observables with a single species pattern each
 		
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter writer = new PrintWriter(bnglStringWriter);

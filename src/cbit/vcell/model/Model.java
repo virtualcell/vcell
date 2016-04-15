@@ -1463,7 +1463,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			return new ReactionRule(Model.this, label, structure, bReversible);
 		}
 		
-		private final void setObservableList(List<RbmObservable> newValue) throws PropertyVetoException {
+		public final void setObservableList(List<RbmObservable> newValue) throws PropertyVetoException {
 			List<RbmObservable> oldValue = observableList;
 			fireVetoableChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
 			if (oldValue != null) {

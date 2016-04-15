@@ -27,9 +27,6 @@ public class ObservableGroup  implements Serializable {
 	private BNGSpecies[] listofSpecies = null;
 	private int[] speciesMultiplicity = null;
 
-/**
- * ObservableGroup constructor comment.
- */
 public ObservableGroup(String argName, BNGSpecies[] argSpeciesList, int[] argSpecMultiplicity) {
 	super();
 	observableGroupName = argName;
@@ -48,59 +45,25 @@ public ObservableGroup(String argName, BNGSpecies[] argSpeciesList, int[] argSpe
 		}
 	}
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public BNGSpecies[] getListofSpecies() {
 	return listofSpecies;
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public String getObservableGroupName() {
 	return observableGroupName;
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public int[] getSpeciesMultiplicity() {
 	return speciesMultiplicity;
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public void setListofSpecies(BNGSpecies[] argSpeciesList) {
 	listofSpecies = argSpeciesList;
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public void setObservableName(String argName) {
 	observableGroupName = argName;
 }
-
-
-/**
- * ObservableGroup constructor comment.
- */
 public void setSpeciesMultiplicity(int[] argSpeciesMultiplicity) {
 	speciesMultiplicity = argSpeciesMultiplicity;
 }
 
-
-/**
- * toString comment.
- */
 public String toString() {
 	String obsGp = getObservableGroupName() + ";\t\t";
 	for (int i = 0; i < listofSpecies.length; i++){
@@ -120,4 +83,24 @@ public String toString() {
 	}
 	return obsGp;
 }
+public String toBnglString() {
+	String obsGp = getObservableGroupName() + " ";
+	for (int i = 0; i < listofSpecies.length; i++){
+		if (i == listofSpecies.length-1) {
+			if (speciesMultiplicity[i] == 1) {
+				obsGp = obsGp + listofSpecies[i].getNetworkFileIndex();
+			} else {
+				obsGp = obsGp + speciesMultiplicity[i] + "*" + listofSpecies[i].getNetworkFileIndex();
+			}
+		} else {
+			if (speciesMultiplicity[i] == 1) {
+				obsGp = obsGp + listofSpecies[i].getNetworkFileIndex() + ",";
+			} else {
+				obsGp = obsGp + speciesMultiplicity[i] + "*" + listofSpecies[i].getNetworkFileIndex() + ",";
+			}
+		}
+	}
+	return obsGp;
+}
+
 }

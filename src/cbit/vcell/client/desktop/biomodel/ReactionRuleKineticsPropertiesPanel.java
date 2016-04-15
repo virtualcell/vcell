@@ -449,8 +449,6 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 					return component;
 				}
 			});
-			
-				
 		}
 		return kineticsTypeComboBox;
 	}
