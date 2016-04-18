@@ -1,6 +1,7 @@
 package cbit.vcell.message.jms.activeMQ;
 
 import java.net.URI;
+import java.util.Objects;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -21,6 +22,7 @@ import cbit.vcell.message.jms.VCMessagingServiceJms;
 
 public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	private BrokerService broker = null;
+	private static String JMS_URL;
 	
 	public VCMessagingServiceActiveMQ() {
 		super();
@@ -29,8 +31,7 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	@Override
 	public ConnectionFactory createConnectionFactory(){
 		//return new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&broker.useJmx=false&create=false");
-		String jmsUrl = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
-		return new ActiveMQConnectionFactory(jmsUrl);
+		return new ActiveMQConnectionFactory(jmsUrl( ));
 	}
 	
 	@Override
@@ -40,8 +41,7 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 	
 			try {
 				TransportConnector connector = new TransportConnector();
-				String jmsUrl = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
-				connector.setUri(new URI(jmsUrl));
+				connector.setUri(new URI(jmsUrl( )));
 				broker.addConnector(connector);
 				broker.start();
 			} catch (Exception e) {
@@ -67,5 +67,16 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms {
 		}
 		return jmsMessageConsumer;
 	}
-
+	
+	/**
+	 * lazily retrieve from {@link PropertyLoader#jmsURL}
+	 * @return static string
+	 */
+	private String jmsUrl( ) {
+		if (JMS_URL == null) {
+			JMS_URL = PropertyLoader.getRequiredProperty(PropertyLoader.jmsURL);
+			Objects.requireNonNull(JMS_URL);
+		}
+		return JMS_URL;
+	}
 }
