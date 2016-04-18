@@ -1,5 +1,7 @@
 package cbit.vcell.message;
 
+import java.util.Objects;
+
 import org.vcell.util.PropertyLoader;
 
 public class VCellTopic implements VCDestination {
@@ -7,10 +9,12 @@ public class VCellTopic implements VCDestination {
 	public final static VCellTopic DaemonControlTopic = new VCellTopic(PropertyLoader.jmsDaemonControlTopic, null);
 	public final static VCellTopic ServiceControlTopic = new VCellTopic(PropertyLoader.jmsServiceControlTopic, null);
 
-	private String vcellPropertyName;
-	private String topicName;
+	private final String topicName;
 	private VCellTopic(String propertyName, String topicName){
-		this.vcellPropertyName = propertyName;
+		if (topicName == null) {
+			topicName = PropertyLoader.getRequiredProperty(propertyName);
+			Objects.requireNonNull(topicName);
+		}
 		this.topicName = topicName;
 	}
 	
@@ -19,10 +23,7 @@ public class VCellTopic implements VCDestination {
 	}
 	
 	public String getName() {
-		if (topicName!=null){
 			return topicName;
-		}
-		return PropertyLoader.getRequiredProperty(vcellPropertyName);
 	}
 		
 	public boolean equals(Object obj){
