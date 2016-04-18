@@ -148,13 +148,13 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == observableTree) {
-				showPopupMenu(e);
+//				showPopupMenu(e);
 			}
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == observableTree) {
-				showPopupMenu(e);
+//				showPopupMenu(e);
 			}			
 		}
 		@Override
