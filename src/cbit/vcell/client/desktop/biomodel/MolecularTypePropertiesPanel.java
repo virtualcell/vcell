@@ -147,14 +147,14 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == molecularTypeTree) {
-				showPopupMenu(e);
+//				showPopupMenu(e);
 			}
 		}
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			if (!e.isConsumed() && e.getSource() == molecularTypeTree) {
 				// the popup menu when click inside shape is called elsewhere below
-				showPopupMenu(e);
+//				showPopupMenu(e);
 			}			
 		}
 		@Override
