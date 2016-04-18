@@ -109,4 +109,4 @@ check_vcell_alive_memoryMB=20
 check_vcell_alive_nagiospw=GENERATED
 check_vcell_alive_queryport=GENERATED
 check_vcell_alive_queryportJVMDef=GENERATED
-
+check_vcell_alive_timingparams=GENERATED
