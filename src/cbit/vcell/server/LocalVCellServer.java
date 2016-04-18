@@ -55,7 +55,6 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private int rmiPort;
 
 	private long CLEANUP_INTERVAL = 600*1000;	//Wants to be a property?
-	
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
