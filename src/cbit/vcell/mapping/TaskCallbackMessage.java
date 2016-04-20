@@ -3,6 +3,7 @@ package cbit.vcell.mapping;
 public class TaskCallbackMessage {
 	
 	public enum TaskCallbackStatus {
+		// commands
 		Clean,
 		TaskStart,
 		@Deprecated
@@ -10,11 +11,16 @@ public class TaskCallbackMessage {
 		TaskEndNotificationOnly,					// same as above but doesn't adjust the simulation context flags
 		TaskEndAdjustSimulationContextFlagsOnly,	// // same as above but only adjust the simulation context flags
 		TaskStopped,
-		Notification,
 		DetailBatch,
 		Detail,
-		Error,		// red, bold
-		Warning,	// red
+
+		// adjusts previous/current iteration number of species flags and insufficient molecules flag at the end of each iteration (Multipass exec service only)
+		AdjustAllFlags,
+		
+		// mostly display related
+		Notification,
+		Error,			// red, bold
+		Warning,		// red
 		Other;
 	}
 

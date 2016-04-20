@@ -48,7 +48,7 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
-public class BNGExecutorServiceMultipass implements BNGExecutorService {
+public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
 
 	private class CorrectedSRO {	// corrected species, reactions and observables, at the end of each iteration
 		
@@ -69,8 +69,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	private boolean bStopped = false;
 	private BNGExecutorServiceNative onepassBngService;
 	private long startTime = -1;
-	private boolean insufficientIterations = true;
 	
+	private int previousIterationTotalSpecies = 0;	// TaskCallbackProcessor needs these to compute if the number of iterations is sufficient
+	private int currentIterationTotalSpecies = 0;
+	private int needAdjustMaxMolecules = 0;			// TaskCallbackProcessor needs this to see if the number of molecules per species is sufficient
+
 	private Model model;
 	private SimulationContext simContext;
 	
@@ -123,7 +126,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			correctedReactionsString = null;
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
 			for (BioNetGenUpdaterCallback callback : getCallbacks()){
-//				this.onepassBngService.registerBngUpdaterCallback(callback);
+				this.onepassBngService.registerBngUpdaterCallback(this);
 			}
 			sBngOutput = this.onepassBngService.executeBNG();
 			this.onepassBngService = null;
@@ -137,8 +140,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
 			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
 			String rs = extractReactions(sBngOutputString);
-			String s = "======= Iteration " + (i+1) + " ===========================\n" + delta;
-			s += "---------------------------------------\n" + rs;
+			String s = "   Iteration " + (i+1) + " ===========================";
+//			s += "\n" + delta;
+//			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
 
 			CorrectedSRO correctedSRO = doWork(oldSeedSpeciesString, sBngOutputString);
@@ -149,9 +153,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 
 			if(correctedSRO.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
-
-				insufficientIterations = false;
-				break;			// exit condition, 2 consecutive iteration yield the same result
+				break;
 			}
 			
 			sBngInputString = prepareNewBnglString(sBngInputString, oldSeedSpeciesString);
@@ -159,12 +161,16 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		}
 		// final operations
 		// TODO: here need to do the real processing for insufficient iterations and max molecules per species
-		if(insufficientIterations) {
-			consoleNotification("Done after " + nc.getMaxIteration() + "/"+ nc.getMaxIteration() + " iterations.");
-			consoleNotification("The number of iterations may be insufficient.");
-		} else {
-			consoleNotification("Done after " + (i+1) + "/" + nc.getMaxIteration() + " iterations.");
-		}
+//		if(insufficientIterations) {
+//			consoleNotification("Done after " + nc.getMaxIteration() + "/"+ nc.getMaxIteration() + " iterations.");
+//			consoleNotification("The number of iterations may be insufficient.");
+//		} else {
+//			consoleNotification("Done after " + (i+1) + "/" + nc.getMaxIteration() + " iterations.");
+//		}
+//		
+//		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndNotificationOnly, "");
+//		broadcastCallbackMessage(tcm);
+		
 		// oldSeedSpeciesString contains the final list of seed species
 		sBngOutput.insertEntitiesInNetFile(oldSeedSpeciesString, "species");
 		sBngOutput.insertEntitiesInNetFile(correctedReactionsString, "reactions");
@@ -172,8 +178,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		// analyze the sBnglOutput, strip the fake "compartment" site and produce the proper cBnglOutput
 		sBngOutput.extractCompartmentsFromNetFile();	// converts the net file inside sBngOutput
 		BNGOutput cBngOutput = sBngOutput;
-		String cBngOutputString = cBngOutput.getNetFileContent();
-		System.out.println(cBngOutputString);
+//		String cBngOutputString = cBngOutput.getNetFileContent();
+//		System.out.println(cBngOutputString);
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	
@@ -209,12 +215,19 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 		// were converted into what after correction
 		// an index may exist already in which case we won't save a duplicate or the same new species (that needs repair)
 		// may result in more new species after being fixed
+		// param1: original index of the newly created species before repairing it
+		// param2: list of the indexes of the species resulting from the original after repairing
 		Map<String, List<String>> indexesMap = new LinkedHashMap<>();
 
 		// as we validate and we add new species, we use this index to set their network index
 		// we can't get the indexes given to the newly generated species for granted, during correction we may 
 		// lose or gain species
 		int firstAvailableIndex = BNGOutputSpec.getFirstAvailableSpeciesIndex(oldSpeciesList);
+		
+		int summaryCreated = added.size();
+		int summaryRepaired = 0;
+		int summaryExisted = 0;
+		int summarySpecies = 0;			// species we're adding at the end of this iteration, after repairing and checking for existing
 		for(BNGSpecies s : added) {
 		
 		// find the flattened reaction and from the reaction find the rule it's coming from
@@ -228,10 +241,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				
 				String ruleName = r.getRuleName();
 				boolean isReversed = r.isRuleReversed();	// if the rule is reversed we need to search this species in the reactants!!
-				System.out.println("Species " + s + " found in rule " + r.getRuleName() + ", at index " + position);
+//				System.out.println("Species " + s + " found in rule " + r.getRuleName() + ", at index " + position);
 			
-//				SpeciesPattern ourCandidate = RbmUtils.parseSpeciesPattern(s.getName(), model);
-				
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
@@ -246,13 +257,13 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
 				boolean needsRepairing = false;
 				if(pair.one.size() > 1) {
-					System.out.println(s.getName() + " multiple compartments, needs repairing.");
+//					System.out.println(s.getName() + " multiple compartments, needs repairing.");
 					message += s.getName() + " needs repairing... ";
 					needsRepairing = true;
 				} else {
 					String structure = pair.one.get(0);
 					if(!structure.equals(structureNameFromRule)) {
-						System.out.println(s.getName() + " single compartment, needs repairing.");
+//						System.out.println(s.getName() + " single compartment, needs repairing.");
 						message += s.getName() + " needs repairing... ";
 						needsRepairing = true;
 					}
@@ -266,8 +277,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				// the product pattern
 					String speciesRepairedName = RbmUtils.repairCompartment(s.getName(), structureNameFromRule);
 					candidate = new BNGComplexSpecies(speciesRepairedName, s.getConcentration(), firstAvailableIndex);
-					System.out.println(candidate.getName() + " repaired!");
+//					System.out.println(candidate.getName() + " repaired!");
 					message += "repaired from rule " + rr.getDisplayName() + "... ";
+					summaryRepaired++;
 					System.out.println("");
 				} else {
 					candidate = new BNGComplexSpecies(s.getName(), s.getConcentration(), firstAvailableIndex);
@@ -288,6 +300,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				if(existingMatchInNew == null && existingMatchInOld == null) {
 					newSpeciesList.add(candidate);
 					message += "Candidate " + candidate.getName() + " added to the seed species list.";
+					summarySpecies++;
 					firstAvailableIndex++;
 					r.getProducts()[position] = candidate;		// correct the reaction
 					
@@ -301,14 +314,14 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 					} else {
 						existingMatch = existingMatchInOld;
 					}
+					summaryExisted++;
 					r.getProducts()[position] = existingMatch;	// correct the reaction
 					
 					manageIndexesMap(indexesMap, s, existingMatch);
 				}
-				if(!message.isEmpty()) {
-					consoleNotification(message);
-				}
-				
+//				if(!message.isEmpty()) {
+//					consoleNotification(message);
+//				}
 			}	// end checking reactions for this species
 		}		// end all new species
 		
@@ -371,10 +384,22 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 				newObservablesList.add(newObsGroup);
 			}
 		}
-		
-		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
+//		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
+		
+		String summary = "   " + summaryCreated + " species were created.\n";
+		summary += "   " + summaryRepaired + " species needed repairing.\n";
+		summary += "   " + summaryExisted + " species already present, not added to the seed species list.\n";
+		summary += "   " + summarySpecies + " new species added.\n";
+		consoleNotification(summary);
+		
+		currentIterationTotalSpecies = previousIterationTotalSpecies + summarySpecies;	// total number of species at this moment
+		String message = previousIterationTotalSpecies + "," + currentIterationTotalSpecies + "," + needAdjustMaxMolecules;
+		TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.AdjustAllFlags, message);
+		broadcastCallbackMessage(newCallbackMessage);
+		
+		previousIterationTotalSpecies = currentIterationTotalSpecies;
 		CorrectedSRO sro = new CorrectedSRO(newSpeciesList, newReactionsList, newObservablesList);
 		return sro;
 	}
@@ -416,13 +441,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			correctedObservablesString += (i+1) + " " + o.toBnglString() + "\n";
 		}
 		return correctedObservablesString;
-	}
-
-	private void consoleNotification(String message) {
-		for (BioNetGenUpdaterCallback callback : getCallbacks()){
-			TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.Notification, message);
-			callback.setNewCallbackMessage(newCallbackMessage);
-		}
 	}
 
 	@Override
@@ -566,11 +584,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			rawSeedSpecies.append("\n");
 		}
 		String rawSeedSpeciesString = rawSeedSpecies.toString();
-		System.out.println(rawSeedSpeciesString);
+//		System.out.println(rawSeedSpeciesString);
 		return rawSeedSpeciesString;
 	}
 	// used only initially to extract and display the original seed species
-	private static String extractOriginalSeedSpecies(String s) {
+	private String extractOriginalSeedSpecies(String s) {
 		// extract the species from the output
 		boolean inSpeciesBlock = false;
 		int index = 1;
@@ -593,10 +611,12 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 //			rawSeedSpecies.append(index + " ");
 			rawSeedSpecies.append(nextToken);
 			rawSeedSpecies.append("\n");
+			
+			previousIterationTotalSpecies++;
+			currentIterationTotalSpecies++;
 			index++;
 		}
 		String rawSeedSpeciesString = rawSeedSpecies.toString();
-		System.out.println(rawSeedSpeciesString);
 		return rawSeedSpeciesString;
 	}
 
@@ -623,7 +643,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 			rb.append("\n");
 		}
 		String rawReactionsString = rb.toString();
-		System.out.println(rawReactionsString);
+//		System.out.println(rawReactionsString);
 		return rawReactionsString;
 	}
 	
@@ -643,13 +663,45 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService {
 	}
 	
 	private static void dump(String fileName, String text) {
-		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
-		if (debugUser.equals("danv") || debugUser.equals("mblinov"))
-		{
-			String fullPath = "c:\\TEMP\\dump\\"+fileName;
-			System.out.println("Dumping to file: " + fullPath);
-			RulebasedTransformer.saveAsText(fullPath, text);
+//		String debugUser = PropertyLoader.getProperty("debug.user", "not_defined");
+//		if (debugUser.equals("danv") || debugUser.equals("mblinov"))
+//		{
+//			String fullPath = "c:\\TEMP\\dump\\"+fileName;
+//			System.out.println("Dumping to file: " + fullPath);
+//			RulebasedTransformer.saveAsText(fullPath, text);
+//		}
+	}
+
+	// ------------------------------------------------------------------------------- BioNetGenUpdaterCallback stuff -----
+	private void broadcastCallbackMessage(TaskCallbackMessage newCallbackMessage) {
+		for (BioNetGenUpdaterCallback callback : getCallbacks()){
+			callback.setNewCallbackMessage(newCallbackMessage);
 		}
+	}
+	private void consoleNotification(String message) {
+		for (BioNetGenUpdaterCallback callback : getCallbacks()){
+			TaskCallbackMessage newCallbackMessage = new TaskCallbackMessage(TaskCallbackStatus.Notification, message);
+			callback.setNewCallbackMessage(newCallbackMessage);
+		}
+	}
+
+	
+	@Override
+	public void updateBioNetGenOutput(BNGOutputSpec outputSpec) {
+		System.out.println(" === updateBioNetGenOutput - called");
+	}
+	@Override
+	public void setNewCallbackMessage(TaskCallbackMessage newCallbackMessage) {
+//		System.out.println(" === setNewCallbackMessage - called, command: " + newCallbackMessage.getStatus().name() + ", message: " + newCallbackMessage.getText().substring(0, 25));
+		if(newCallbackMessage.getText().contains("WARNING: maximal length of aggregate is reached in reaction")) {
+
+			needAdjustMaxMolecules = 1;		// set the "insufficient molecules per species" flag here
+		}
+	}
+	@Override
+	public boolean isInterrupted() {
+		System.out.println(" === isInterrupted - called");
+		return false;
 	}
 }
 
