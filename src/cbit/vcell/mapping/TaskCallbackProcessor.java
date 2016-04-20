@@ -2,6 +2,7 @@ package cbit.vcell.mapping;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,7 +141,7 @@ public class TaskCallbackProcessor {
 				}
 			}
 			break;
-		case TaskStopped:		// by user
+		case TaskStopped:		// by user, fired by cancelButton_actionPerformed(...
 			System.out.println("Task stopped by user");
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
 			consoleNotificationList.add(tcm);
@@ -148,11 +149,6 @@ public class TaskCallbackProcessor {
 			previousIterationSpecies = 0;	// we can't evaluate the max iterations anymore
 			currentIterationSpecies = 0;
 			needAdjustMaxMolecules = false;	// we don't know anymore if we need to adjust the max molecules or not
-			break;
-		case Notification:		// normal notification, just display the string
-			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
-			consoleNotificationList.add(tcm);
-			sc.firePropertyChange("appendToConsole", "", tcm);
 			break;
 		case Detail:			// specific details, string will be processed, details extracted, formatted, etc
 			processDetail(string);
@@ -178,6 +174,11 @@ public class TaskCallbackProcessor {
 				}
 			}
 			break;
+		case Notification:		// normal notification, just display the string
+			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, string);
+			consoleNotificationList.add(tcm);
+			sc.firePropertyChange("appendToConsole", "", tcm);
+			break;
 		case Error:	
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, string);
 			consoleNotificationList.add(tcm);
@@ -187,6 +188,18 @@ public class TaskCallbackProcessor {
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Warning, string);
 			consoleNotificationList.add(tcm);
 			sc.firePropertyChange("appendToConsole", "", tcm);
+			break;
+		// -------------------------- notification from the Multipass executor service
+		case AdjustAllFlags:
+			StringTokenizer flags = new StringTokenizer(string, ",");
+			String token = flags.nextToken();
+			previousIterationSpecies = Integer.parseInt(token);
+			token = flags.nextToken();
+			currentIterationSpecies = Integer.parseInt(token);
+			token = flags.nextToken();
+			if(!token.equals("0")) {
+				needAdjustMaxMolecules = true;
+			}
 			break;
 		default:
 			break;

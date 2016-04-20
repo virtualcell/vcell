@@ -110,9 +110,9 @@ public static int getFirstAvailableSpeciesIndex(List<BNGSpecies> bngSpecies) {
 }
 public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList) {
 	for(BNGSpecies theirs : theirsList) {
-		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
+//		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
 		if(theirs.getName().equals(ours.getName())) {
-			System.out.println(" --- MATCHED!");
+//			System.out.println(" --- MATCHED!");
 			return theirs;
 		}
 	}

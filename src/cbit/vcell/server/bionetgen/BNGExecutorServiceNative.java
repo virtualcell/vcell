@@ -119,15 +119,11 @@ public BNGOutput executeBNG() throws BNGException {
 	BNGOutput bngOutput = null;
 	startTime = System.currentTimeMillis();
 
-	// prepare executables and working directory;
-	initialize();
+	initialize();	// prepare executables and working directory
 	
 	try {
-
-
 		File bngInputFile = null;
 		FileOutputStream fos = null;
-
 
 		String tempFilePrefix = workingDir.getName();
 		try {
@@ -190,7 +186,6 @@ public BNGOutput executeBNG() throws BNGException {
 			filenames.add(filename);
 			filecontents.add(FileUtils.readFileToString(file) );
 		}		
-
 		bngOutput = new BNGOutput(stdoutString, filenames.toArray(new String[0]), filecontents.toArray(new String[0]));
 
 	} catch(ExecutableException | IOException ex ){
@@ -209,7 +204,6 @@ public BNGOutput executeBNG() throws BNGException {
 			}
 		}
 	}
-
 	return bngOutput;
 }
 

@@ -590,6 +590,7 @@ public class NetworkConstraintsPanel extends DocumentEditorSubPanel implements B
 					bngService.stopBNG();
 					String s = "...user cancelled.";
 					TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStopped, s);
+					// message will be processed in TaskCallbackProcessor::case TaskStopped
 					setNewCallbackMessage(tcm);
 				} catch (Exception e) {
 					e.printStackTrace();
