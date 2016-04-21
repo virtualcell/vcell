@@ -45,6 +45,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.RbmObservable.ObservableType;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
@@ -345,6 +346,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		// now merge the observables with just one species pattern into their originals
 		for(RbmObservable o : oldObservableList) {
 			
+			boolean addMultiplicity = false;
+			if(o.getType() == ObservableType.Molecules) {
+				addMultiplicity = true;
+			}
 			Map<String, Pair<BNGSpecies, Integer>> map = new HashMap<>();
 			for(ObservableGroup og : tmpObservablesList) {
 				
@@ -355,13 +360,18 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						
 						BNGSpecies species = og.getListofSpecies()[i];
 						Integer multiplicity = og.getSpeciesMultiplicity()[i];
-						Pair<BNGSpecies, Integer> newp = new Pair<>(species, multiplicity);
-						Pair<BNGSpecies, Integer> oldp = map.put(species.getNetworkFileIndex()+"", newp);
-						if(oldp != null) {				// same species may come multiple times from different "single" observables as we rebuild the original
-							if(oldp.one != newp.one) {	// sanity check: they should be the same
-								throw new RuntimeException("Same network file index " + species.getNetworkFileIndex() + " for 2 species " + oldp.one.getName() + " and " + newp.one.getName());
+						Pair<BNGSpecies, Integer> oldp = map.get(species.getNetworkFileIndex()+"");
+						// already exists? same species may come multiple times from different "single" observables as we rebuild the original
+						if(oldp != null) {
+							if(oldp.one != species) {	// sanity check: should be the same BNGSpecies object
+								throw new RuntimeException("Same network file index " + species.getNetworkFileIndex() + " for 2 species " + oldp.one.getName() + " and " + species.getName());
+							}
+							if(addMultiplicity) {
+								multiplicity += oldp.two;	// for molecule observables we add the multiplicity; for species observables we don't (always 1)
 							}
 						}
+						Pair<BNGSpecies, Integer> newp = new Pair<>(species, multiplicity);
+						map.put(species.getNetworkFileIndex()+"", newp);
 					}
 				}
 			}
