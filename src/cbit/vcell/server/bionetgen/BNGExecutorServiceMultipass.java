@@ -51,16 +51,14 @@ import cbit.vcell.model.Structure;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
 
-	private class CorrectedSRO {	// corrected species, reactions and observables, at the end of each iteration
+	private class CorrectedSR {	// corrected species and reactions, at the end of each iteration
 		
-		public CorrectedSRO(List<BNGSpecies> speciesList, ArrayList<BNGReaction> reactionsList, ArrayList<ObservableGroup> observablesList) {
+		public CorrectedSR(List<BNGSpecies> speciesList, ArrayList<BNGReaction> reactionsList) {
 			this.speciesList = speciesList;
 			this.reactionsList = reactionsList;
-			this.observablesList = observablesList;
 		}
 		List<BNGSpecies> speciesList;
 		List<BNGReaction> reactionsList;
-		List<ObservableGroup> observablesList;
 	}
 	
 	private final BNGInput cBngInput;	// compartmental .bng input file
@@ -115,7 +113,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		String sBngOutputString = null;
 		String oldSeedSpeciesString;				// the seedSpecies which were given as input for the current iteration
 		String correctedReactionsString = null;		// the BNGReactions as they are at the end of the current iteration, after corrections of the species
-		String correctedObservablesString = null;	// the ObservableGroups as they are at the end of the current iteration, after corrections of the species
 		
 		oldSeedSpeciesString = extractOriginalSeedSpecies(sBngInputString);		// before the first iteration we show the original seed species
 		consoleNotification("======= Original Seed Species ===========================\n" + oldSeedSpeciesString);
@@ -126,9 +123,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		
 			correctedReactionsString = null;
 			this.onepassBngService = new BNGExecutorServiceNative(sBngInput, timeoutDurationMS);
-			for (BioNetGenUpdaterCallback callback : getCallbacks()){
-				this.onepassBngService.registerBngUpdaterCallback(this);
-			}
+			this.onepassBngService.registerBngUpdaterCallback(this);	// we are the only callback for the native service, acting as middleman
+			
 			sBngOutput = this.onepassBngService.executeBNG();
 			this.onepassBngService = null;
 		
@@ -141,18 +137,17 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			dump("dumpIteration" + (i+1) + ".txt", rawSeedSpeciesString);
 			delta = rawSeedSpeciesString.substring(oldSeedSpeciesString.length());
 			String rs = extractReactions(sBngOutputString);
-			String s = "   Iteration " + (i+1) + " ===========================";
+			String s = "  --- Iteration " + (i+1) + " ---------------------------";
 //			s += "\n" + delta;
 //			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
 
-			CorrectedSRO correctedSRO = doWork(oldSeedSpeciesString, sBngOutputString);
-			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSRO);
-			correctedReactionsString = extractCorrectedReactionsAsString(correctedSRO);
+			CorrectedSR correctedSR = doWork(oldSeedSpeciesString, sBngOutputString);
+			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSR);
+			correctedReactionsString = extractCorrectedReactionsAsString(correctedSR);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
-			correctedObservablesString = extractCorrectedObservablesAsString(correctedSRO);
 
-			if(correctedSRO.speciesList.isEmpty()) {
+			if(correctedSR.speciesList.isEmpty()) {
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 				break;
 			}
@@ -160,17 +155,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			sBngInputString = prepareNewBnglString(sBngInputString, oldSeedSpeciesString);
 			sBngInput = new BNGInput(sBngInputString);		// the new input for next iteration
 		}
-		// final operations
-		// TODO: here need to do the real processing for insufficient iterations and max molecules per species
-//		if(insufficientIterations) {
-//			consoleNotification("Done after " + nc.getMaxIteration() + "/"+ nc.getMaxIteration() + " iterations.");
-//			consoleNotification("The number of iterations may be insufficient.");
-//		} else {
-//			consoleNotification("Done after " + (i+1) + "/" + nc.getMaxIteration() + " iterations.");
-//		}
-//		
-//		TaskCallbackMessage tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskEndNotificationOnly, "");
-//		broadcastCallbackMessage(tcm);
+		// run one more iteration with all the seed species calculated above and with one single fake 
+		// rule (so that no new seed species will be created), to properly compute the observables
+	
+		String obsInputString = prepareObservableRun(sBngInputString);	// the ObservableGroups
+		BNGInput obsBngInput = new BNGInput(obsInputString);
+		this.onepassBngService = new BNGExecutorServiceNative(obsBngInput, timeoutDurationMS);
+		this.onepassBngService.registerBngUpdaterCallback(this);
+		BNGOutput obsBngOutput = this.onepassBngService.executeBNG();
+		String correctedObservablesString = extractCorrectedObservablesAsString(obsBngOutput);
 		
 		// oldSeedSpeciesString contains the final list of seed species
 		sBngOutput.insertEntitiesInNetFile(oldSeedSpeciesString, "species");
@@ -183,8 +176,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //		System.out.println(cBngOutputString);
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
-	
-	private CorrectedSRO doWork(String oldSpeciesString, String newNetFile) throws ParseException {
+	// -------------------------------------------------------------------------------------------------------------------------------------------------
+
+	private CorrectedSR doWork(String oldSpeciesString, String newNetFile) throws ParseException {
 
 		// TODO: make a map to preserve the ancestry of each generated species (rule and iteration that generated it)
 		// each species may be generated multiple times, by different rules, at different iterations
@@ -197,7 +191,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		
 		// we build here the list of flattened reactions (corrected at need, if the species were corrected)
 		ArrayList<BNGReaction> newReactionsList = new ArrayList<BNGReaction>(Arrays.asList(workSpec.getBNGReactions()));
-		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>();		// here we put all the observables after correction
+//		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>();		// here we put all the observables after correction
 //		ArrayList<ObservableGroup> newObservablesList = new ArrayList<ObservableGroup>(Arrays.asList(workSpec.getObservableGroups()));
 				
 		// identify new products, loop thorough each of them
@@ -323,77 +317,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //				if(!message.isEmpty()) {
 //					consoleNotification(message);
 //				}
-			}	// end checking reactions for this species
-		}		// end all new species
+			}		// end checking reactions for this species
+		}			// end all new species
 		
-		// now correct the observables using the indexesMap
-		// if an index is not among the keys it means it wasn't generated during the current iteration and must be left unchanged
-		ArrayList<ObservableGroup> tmpObservablesList = new ArrayList<ObservableGroup>();
-		for(int i=0; i<workSpec.getObservableGroups().length; i++) {
-			ObservableGroup o = workSpec.getObservableGroups()[i];
-			String s = (i+1) + " " + o.toBnglString();
-			StringTokenizer st = new StringTokenizer(s, " \t");
-			List<BNGSpecies> completeList = new ArrayList<>(oldSpeciesList);
-			completeList.addAll(newSpeciesList);
-			ObservableGroup newO = BNGOutputFileParser.parseAndCorrectObservableGroup(st, indexesMap, completeList, model);
-			if(newO != null) {
-				tmpObservablesList.add(newO);
-			} else {
-				System.out.println("'null' observable generated for: " + s);
-			}
-		}
-		
-		// now merge the observables with just one species pattern into their originals
-		for(RbmObservable o : oldObservableList) {
-			
-			boolean addMultiplicity = false;
-			if(o.getType() == ObservableType.Molecules) {
-				addMultiplicity = true;
-			}
-			Map<String, Pair<BNGSpecies, Integer>> map = new HashMap<>();
-			for(ObservableGroup og : tmpObservablesList) {
-				
-				final String observableGroupName = og.getObservableGroupName();
-				final RbmObservable rbmObservable = observableMap.get(observableGroupName);
-				if(o.getDisplayName().equals(rbmObservable.getDisplayName())) {	// this og was generated by this rbm observable
-					for(int i=0; i<og.getListofSpecies().length; i++) {
-						
-						BNGSpecies species = og.getListofSpecies()[i];
-						Integer multiplicity = og.getSpeciesMultiplicity()[i];
-						Pair<BNGSpecies, Integer> oldp = map.get(species.getNetworkFileIndex()+"");
-						// already exists? same species may come multiple times from different "single" observables as we rebuild the original
-						if(oldp != null) {
-							if(oldp.one != species) {	// sanity check: should be the same BNGSpecies object
-								throw new RuntimeException("Same network file index " + species.getNetworkFileIndex() + " for 2 species " + oldp.one.getName() + " and " + species.getName());
-							}
-							if(addMultiplicity) {
-								multiplicity += oldp.two;	// for molecule observables we add the multiplicity; for species observables we don't (always 1)
-							}
-						}
-						Pair<BNGSpecies, Integer> newp = new Pair<>(species, multiplicity);
-						map.put(species.getNetworkFileIndex()+"", newp);
-					}
-				}
-			}
-			
-			Map<String, Pair<BNGSpecies, Integer>> treeMap = new TreeMap<>(map);	// we sort the map by key using a tree
-			Vector<BNGSpecies> obsSpeciesVector = new Vector<BNGSpecies>();
-			Vector<Integer> obsMultiplicityVector = new Vector<Integer>();
-			for(Map.Entry<String, Pair<BNGSpecies, Integer>> entry : treeMap.entrySet()) {
-				obsSpeciesVector.addElement(entry.getValue().one);
-				obsMultiplicityVector.addElement(entry.getValue().two);
-			}
-			if (o.getName() != null && obsMultiplicityVector.size() > 0 && obsSpeciesVector.size() > 0) {
-				BNGSpecies[] obsSpeciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
-				Integer[] obsMultiplicityArray = (Integer[])org.vcell.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
-				int[] obsMultiplicityFactors = new int[obsMultiplicityArray.length];
-				for (int k = 0; k < obsMultiplicityFactors.length; k++){
-					obsMultiplicityFactors[k] = obsMultiplicityArray[k].intValue();
-				}
-				ObservableGroup newObsGroup = new ObservableGroup(o.getName(), obsSpeciesArray, obsMultiplicityFactors);
-				newObservablesList.add(newObsGroup);
-			}
-		}
 //		System.out.println("------------- Finished checking newly generated species for this iteration. Summary:");
 		System.out.println("   Added " + newSpeciesList.size() + " new species");
 		System.out.println(" ");
@@ -410,8 +336,39 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		broadcastCallbackMessage(newCallbackMessage);
 		
 		previousIterationTotalSpecies = currentIterationTotalSpecies;
-		CorrectedSRO sro = new CorrectedSRO(newSpeciesList, newReactionsList, newObservablesList);
-		return sro;
+		CorrectedSR sr = new CorrectedSR(newSpeciesList, newReactionsList);
+		return sr;
+	}
+	
+	private String prepareObservableRun(String inputString) {
+		String outputString = "";
+		
+		// we add a fake molecular type and a fake reaction rule
+		String pattern = "end molecule types";
+		String prologue = inputString.substring(0, inputString.indexOf(pattern));
+		String epilogue = inputString.substring(inputString.indexOf(pattern));
+		outputString = prologue + "AAAAAA(AAA~x~y)\n" + epilogue;
+		
+		pattern = "end seed species";
+		prologue = outputString.substring(0, outputString.indexOf(pattern));
+		epilogue = outputString.substring(outputString.indexOf(pattern));
+		outputString = prologue + "AAAAAA(AAA~x) 0.0\n" + epilogue;
+		
+		pattern = "begin reaction rules";
+		prologue = outputString.substring(0, outputString.indexOf(pattern)+pattern.length());
+		pattern = "end reaction rules";
+		epilogue = outputString.substring(outputString.indexOf(pattern));
+		outputString = prologue + "\nr0: AAAAAA(AAA~x) <-> AAAAAA(AAA~y) 1,1\n" + epilogue;
+		return outputString;
+	}
+	private String extractCorrectedObservablesAsString(BNGOutput sBngOutput) {
+		String input = sBngOutput.getNetFileContent();
+		
+		String pattern = "begin groups";
+		String observablesString = input.substring(input.indexOf(pattern)+pattern.length());
+		pattern = "end groups";
+		observablesString = observablesString.substring(0, observablesString.indexOf(pattern));
+		return observablesString;
 	}
 	
 	// the newly created species 'from' may exist already or it may expand after correction in multiple species
@@ -429,28 +386,20 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		}
 	}
 	
-	private static String extractCorrectedSeedSpeciesAsString(CorrectedSRO corrected) {
+	private static String extractCorrectedSeedSpeciesAsString(CorrectedSR corrected) {
 		String correctedSeedSpeciesString = "";
 		for(BNGSpecies s : corrected.speciesList) {
 			correctedSeedSpeciesString += s.toBnglString() + "\n";
 		}
 		return correctedSeedSpeciesString;
 	}
-	private static String extractCorrectedReactionsAsString(CorrectedSRO corrected) {
+	private static String extractCorrectedReactionsAsString(CorrectedSR corrected) {
 		String correctedReactionsString = "";
 		for(int i=0; i<corrected.reactionsList.size(); i++) {
 			BNGReaction r = corrected.reactionsList.get(i);
 			correctedReactionsString += (i+1) + " " + r.toBnglString() + "\n";
 		}
 		return correctedReactionsString;
-	}
-	private static String extractCorrectedObservablesAsString(CorrectedSRO corrected) {
-		String correctedObservablesString = "";
-		for(int i=0; i<corrected.observablesList.size(); i++) {
-			ObservableGroup o = corrected.observablesList.get(i);
-			correctedObservablesString += (i+1) + " " + o.toBnglString() + "\n";
-		}
-		return correctedObservablesString;
 	}
 
 	@Override
