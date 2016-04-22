@@ -107,7 +107,6 @@ public class SolverPreprocessor  {
 			File simulationFile = new File(args[0]);
 			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
 			File userDirectory = new File(args[1]);
-			recoverLastSimulationData(simTask,userDirectory,log.getLogger());
 			final String hostName = null;
 
 			VCMongoMessage.serviceStartup(ServiceName.solverPreprocessor, Integer.valueOf(simTask.getSimKey().toString()), args);
