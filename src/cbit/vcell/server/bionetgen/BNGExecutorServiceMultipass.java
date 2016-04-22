@@ -9,13 +9,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Vector;
 
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.ParseException;
@@ -24,9 +21,7 @@ import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Pair;
-import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGComplexSpecies;
@@ -34,18 +29,14 @@ import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.bionetgen.ObservableGroup;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
-import cbit.vcell.mapping.RulebasedTransformer;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.RbmObservable.ObservableType;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
@@ -76,11 +67,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private Model model;
 	private SimulationContext simContext;
 	
-	// we transform observables with multipe species pattern into multiple observables
-	// with one species pattern each (here we keep track)
-	private Map<String, RbmObservable> observableMap = new LinkedHashMap<>();
-	private List<RbmObservable> oldObservableList = null;		// original observables
-	
+
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
 		this.cBngInput = cBngInput;
 		this.timeoutDurationMS = timeoutDurationMS;
@@ -455,24 +442,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		BnglObjectConstructionVisitor constructionVisitor = null;
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
-		
-		// break complex observables with multiple species patterns in "simple" observables with just one species pattern
-		// keep the original list of observables so that at the end we can rebuild the proper observable groups
-		//
-		oldObservableList = model.getRbmModelContainer().getObservableList();
-		List<RbmObservable> newList = new ArrayList<>();
-		int nameIndex = 0;
-		for(RbmObservable oldO : oldObservableList) {
-			for(SpeciesPattern sp : oldO.getSpeciesPatternList()) {
-				String key = "O_" + nameIndex;
-				RbmObservable newO = new RbmObservable(model, key, oldO.getStructure(), oldO.getType());
-				newO.addSpeciesPattern(sp);
-				observableMap.put(key, oldO);	// we remember the originator of each "simple" observable
-				newList.add(newO);
-				nameIndex++;
-			}
-		}
-		model.getRbmModelContainer().setObservableList(newList);	// switch to the newly created observables with a single species pattern each
 		
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter writer = new PrintWriter(bnglStringWriter);

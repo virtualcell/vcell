@@ -37,6 +37,7 @@ import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Product;
@@ -669,11 +670,12 @@ public class NetworkTransformer implements SimContextTransformer {
 		mathMappingCallback.setProgressFraction(progressFractionQuota/8.0f*7.0f);
 		startTime = System.currentTimeMillis();
 		System.out.println("\nObservables :");
+		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
 			ObservableGroup o = outputSpec.getObservableGroups()[i];
 //			System.out.println(i+1 + ":\t\t" + o.toString());
 			
-			if(model.getRbmModelContainer().getParameter(o.getObservableGroupName()) != null) {
+			if(rbmmc.getParameter(o.getObservableGroupName()) != null) {
 				System.out.println("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
@@ -683,11 +685,11 @@ public class NetworkTransformer implements SimContextTransformer {
 				terms.add(term);
 			}
 			Expression exp = Expression.add(terms.toArray(new Expression[terms.size()]));
-			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
-			RbmObservable originalObservable = model.getRbmModelContainer().getObservable(o.getObservableGroupName());
+			exp.bindExpression(rbmmc.getSymbolTable());
+			RbmObservable originalObservable = rbmmc.getObservable(o.getObservableGroupName());
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
-			model.getRbmModelContainer().removeObservable(originalObservable);
-			Parameter newParameter = model.getRbmModelContainer().addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
+			rbmmc.removeObservable(originalObservable);
+			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
 
 			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
