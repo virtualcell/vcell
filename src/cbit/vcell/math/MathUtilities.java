@@ -11,12 +11,17 @@
 package cbit.vcell.math;
 
 import java.beans.PropertyVetoException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Vector;
+
+import org.apache.log4j.Logger;
 
 import cbit.vcell.math.MathCompareResults.Decision;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
@@ -44,6 +49,7 @@ public class MathUtilities {
 //	final String FAILURE_DIV_BY_ZERO =			 	" MathsDifferent:FailedDivideByZero ";
 //	final String FAILURE_UNKNOWN = 					" MathsDifferent:FailedUnknown ";
 //	final String UNKNOWN_DIFFERENCE_IN_MATH =		" MathsDifferent:Unknown ";
+	private static final Logger lg = Logger.getLogger(MathUtilities.class);
 
 /**
  * This method was created by a SmartGuide.
@@ -68,33 +74,48 @@ public static Enumeration<Variable> getRequiredVariables(Expression exp, SymbolT
  * @param exp cbit.vcell.parser.Expression
  */
 private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+	
 	Vector<Variable> requiredVarList = new Vector<Variable>();
 	if (exp != null){
 		String identifiers[] = exp.getSymbols();
+		if (lg.isDebugEnabled()) {
+			lg.debug("from expression " + exp + " parsing identifiers " + Arrays.toString(identifiers) );
+		}
 		if (identifiers != null){
 			for (int i=0;i<identifiers.length;i++){
+				String id = identifiers[i];
 				//
 				// look for globally bound variables
 				//
-				SymbolTableEntry entry = symbolTable.getEntry(identifiers[i]);
+				SymbolTableEntry entry = symbolTable.getEntry(id);
 				//
 				// look for reserved symbols
 				//
 				if (entry == null){
-					entry = ReservedMathSymbolEntries.getReservedVariableEntry(identifiers[i]);
+					entry = ReservedMathSymbolEntries.getReservedVariableEntry(id);
+					if (lg.isDebugEnabled()) {
+						lg.debug("id " + id + "not in symbol table looked for reserved symbols,found = " + (entry !=null));
+					}
+				}
+				else if (lg.isDebugEnabled()){
+					lg.debug("symbolTable.getEntry( ) returned " + entry + " for " + id);
+					
 				}
 				//
 				// PseudoConstant's are locally bound variables, look for existing binding
 				//
 				if (entry == null){
-					SymbolTableEntry ste = exp.getSymbolBinding(identifiers[i]);
+					SymbolTableEntry ste = exp.getSymbolBinding(id);
 					if (ste instanceof PseudoConstant){
 						entry = ste;
 					}
-				}				
 				if (entry == null){
-					throw new ExpressionBindingException("unresolved symbol "+identifiers[i]+" in expression "+exp);
+					ExpressionBindingException ebe = new ExpressionBindingException("unresolved symbol "+id+" in expression "+exp);
+					lg.debug("found " + ste + "but it's not a PseudoConstant; throwing ", ebe);
+					
+					throw ebe;
 				}		
+				}				
 				if (!(entry instanceof Variable)) {
 					throw new RuntimeException("MathUtilities.getRequiredVariablesExplicit() only gets required math variable. Use math side symbol table, e.g. MathDescription, SimulationSymbolTable, etc.");
 				}
@@ -123,13 +144,18 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		//
 		// get All symbols (identifiers), make list of functions
 		//
-//System.out.println("substituteFunctions() exp2 = '"+exp2+"'");
+		if (lg.isDebugEnabled()) {
+			lg.debug("substituteFunctions() exp2 = '"+exp2+"'");
+		}
 		Enumeration<Variable> enum1 = getRequiredVariablesExplicit(exp2, symbolTable);
 		Vector<Variable> functionList = new Vector<Variable>();
 		while (enum1.hasMoreElements()){
-			Variable var = (Variable)enum1.nextElement();
+			Variable var = enum1.nextElement();
 			if (var instanceof Function){
 				functionList.addElement(var);
+				if (lg.isDebugEnabled()) {
+					lg.debug("added " + var + " to function list");
+				}
 			}
 		}
 		//
@@ -144,9 +170,13 @@ public static Expression substituteFunctions(Expression exp, SymbolTable symbolT
 		for (int i=0;i<functionList.size();i++){
 			Function funct = (Function)functionList.elementAt(i);
 			Expression functExp = new Expression(funct.getName()+";");
-//System.out.println("flattenFunctions(pass="+count+"), substituting '"+funct.getExpression()+"' for function '"+functExp+"'");
+			if (lg.isDebugEnabled()) {
+				lg.debug("flattenFunctions(pass="+count+"), substituting '"+funct.getExpression()+"' for function '"+functExp+"'");
+			}
 			exp2.substituteInPlace(functExp,new Expression(funct.getExpression()));
-//System.out.println(".......substituted exp2 = '"+exp2+"'");
+			if (lg.isDebugEnabled()) {
+				lg.debug(".......substituted exp2 = '"+exp2+"'");
+			}
 		}
 	}
 //	exp2 = exp2.flatten();
