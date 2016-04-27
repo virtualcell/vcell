@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -617,15 +618,18 @@ private static boolean isTestAccount(ConnectionStatus connectionStatus) {
  * @param newID java.lang.String
  */
 public void updateDocumentID(java.lang.String oldID, java.lang.String newID) {
+	Objects.requireNonNull(oldID);
+	Objects.requireNonNull(newID);
 	TopLevelWindow window = windowsHash.get(oldID);
 	TopLevelWindowManager manager = managersHash.get(oldID);
+	Objects.requireNonNull(window);
+	Objects.requireNonNull(manager);
 	windowsHash.remove(oldID);
 	managersHash.remove(oldID);
-	windowsHash.put(newID, window);
+	windowsHash.put(newID, window);//Null pointer exception on VCellSupport 4/27/2016 -- added requireNonNull statements for localization of problem
 	managersHash.put(newID, manager);
 	setCanonicalTitle(newID);
 }
-
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 3:15:04 PM)
