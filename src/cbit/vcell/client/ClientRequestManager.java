@@ -1231,7 +1231,7 @@ private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage)
 	return fdfos;
 }
 
-public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceFile) throws Exception{
+public static SurfaceCollection createSurfaceCollectionFromSurfaceFile(File surfaceFile) throws Exception{
 	SurfaceCollection surfaceCollection = null;
 	if(ExtensionFilter.isMatchingExtension(surfaceFile, ".stl")){
 		surfaceCollection = StlReader.readStl(surfaceFile);
@@ -1293,6 +1293,11 @@ public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceF
 			if(tempstlFile != null){tempstlFile.delete();}
 		}
 	}
+	return surfaceCollection;
+}
+
+public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceFile) throws Exception{
+	SurfaceCollection surfaceCollection = createSurfaceCollectionFromSurfaceFile(surfaceFile);
 	if(surfaceCollection != null){
 		Geometry geometry = RayCaster.createGeometryFromSTL(new GeometryThumbnailImageFactoryAWT(), surfaceCollection, 1000000);
 		FieldDataFileOperationSpec fdfos = new FieldDataFileOperationSpec();

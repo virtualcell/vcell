@@ -57,6 +57,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
@@ -90,6 +91,10 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.geometry.surface.Polygon;
+import cbit.vcell.geometry.surface.Surface;
+import cbit.vcell.geometry.surface.SurfaceCollection;
+import cbit.vcell.render.Vect3d;
 
 public class ROIMultiPaintManager implements PropertyChangeListener{
 
@@ -705,6 +710,7 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		}
 	}
+	
 	public Geometry showGUI(
 			final String okButtonText,
 			final String sourceDataName,
@@ -825,9 +831,24 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 			}
 		});
 		
+		JButton importJButton = new JButton("Import stl...");
+		importJButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				StatsHelper statsHelper = new StatsHelper();
+				statsHelper.xmin = 0;
+				statsHelper.xmax = 1;
+				statsHelper.ymin = 0;
+				statsHelper.ymax = 1;
+				statsHelper.zmin = 0;
+				statsHelper.zmax = 1;
+				importSTL(null/*statsHelper*/,new Vect3d(128, 128, 128),new Vect3d(0,0,0));
+			}
+		});
+
 		okCancelJPanel.add(okJButton);
 		okCancelJPanel.add(attributesJButton);
 		okCancelJPanel.add(exportJButton);
+		okCancelJPanel.add(importJButton);
 //		okCancelJPanel.add(surfaceButton);
 		okCancelJPanel.add(cancelJButton);
 		
@@ -841,6 +862,164 @@ public class ROIMultiPaintManager implements PropertyChangeListener{
 		}
 		return finalGeometryHolder[0];
 	}
+
+	private File lastImportDir;
+	private void importSTL(StatsHelper statsHelper,Vect3d primarySampleSizes,Vect3d subSampleOffset){
+		try {
+			JFileChooser importJFC = new JFileChooser(lastImportDir);
+			importJFC.setDialogTitle("Choose .stl file to import");
+			importJFC.setMultiSelectionEnabled(true);
+			int result = importJFC.showOpenDialog(overlayEditorPanelJAI);
+			if(result == JFileChooser.APPROVE_OPTION){
+				ComboboxROIName[] comboboxROINames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();
+				if(comboboxROINames == null || comboboxROINames.length == 0){
+					DialogUtils.showWarningDialog(overlayEditorPanelJAI, "At least 1 ROI must be defined before importing STL.");
+					return;
+				}
+				String[][] rowData = new String[comboboxROINames.length][2];
+				for (int i = 0; i < rowData.length; i++) {
+					rowData[i][0] = comboboxROINames[i].getROIName();
+					rowData[i][1] = comboboxROINames[i].getContrastColorIndex()+"";
+				}
+				int[] selection = null;
+				byte value = -1;
+				try{
+					selection = DialogUtils.showComponentOKCancelTableList(overlayEditorPanelJAI, "Choose ROI to import into", new String[] {"ROI Name","ROI value"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+					if(selection != null && selection.length==1){
+						value = (byte)comboboxROINames[selection[0]].getContrastColorIndex();
+					}else{
+						DialogUtils.showWarningDialog(overlayEditorPanelJAI, "Select ROI to import STL");
+						return;
+					}
+				}catch(UserCancelException e){
+					return;
+				}
+				File[] selectedFiles = importJFC.getSelectedFiles();
+				if(statsHelper == null){
+					statsHelper = calcMinMax(selectedFiles);
+				}
+				Vect3d worldOrigin = new Vect3d(statsHelper.xmin, statsHelper.ymin, statsHelper.zmin);
+				Vect3d worldCollapsedBoundingBox = new Vect3d(statsHelper.xmax-statsHelper.xmin, statsHelper.ymax-statsHelper.ymin, statsHelper.zmax-statsHelper.zmin);
+				Vect3d scale = new Vect3d(worldCollapsedBoundingBox.getX()/(10.0*primarySampleSizes.getX()), worldCollapsedBoundingBox.getY()/(10.0*primarySampleSizes.getY()), worldCollapsedBoundingBox.getZ()/(10.0*primarySampleSizes.getZ()));
+				for (int j = 0; j < selectedFiles.length; j++) {
+					File selectedFile = selectedFiles[j];
+					if(j==0){
+						if(selectedFile.isDirectory()){
+							lastImportDir = selectedFile;
+						}else{
+							lastImportDir = selectedFile.getParentFile();
+						}
+					}
+					SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedFile);
+					for (int i = 0; i < surfaceCollection.getSurfaceCount(); i++) {
+						Surface surface = surfaceCollection.getSurfaces(i);
+						System.out.println("surface "+i);
+						for (int k = 0; k < surface.getPolygonCount(); k++){
+							Polygon polygon = surface.getPolygons(k);
+							if(k%10000 == 0){
+								System.out.println("progress= file "+(j+1)+" of "+selectedFiles.length+" "+((k*100)/surface.getPolygonCount())+"%");
+							}
+//							System.out.println("  polygon "+j+" "+polygon.getNodes(0)+" "+polygon.getNodes(1)+" "+polygon.getNodes(2));
+							Vect3d line1 = new Vect3d(polygon.getNodes(0));
+							Vect3d end1 = new Vect3d(polygon.getNodes(2));
+							Vect3d incr1 = Vect3d.sub(end1,line1);
+							incr1.unit();
+							incr1.set(incr1.getX()*scale.getX(), incr1.getY()*scale.getY(), incr1.getZ()*scale.getZ());
+//							Vect3d line2 = new Vect3d(polygon.getNodes(0));
+//							Vect3d incr2 = Vect3d.sub(new Vect3d(polygon.getNodes(2)),new Vect3d(polygon.getNodes(0)));
+//							incr2.unit();
+//							incr2.scale(SCALE);
+							while(true){
+//								System.out.println("    new line");
+								Vect3d line3 = new Vect3d(line1);
+								Vect3d end3 = new Vect3d(polygon.getNodes(1));
+								Vect3d incr3 = Vect3d.sub(end3,line3);
+								incr3.unit();
+								incr3.set(incr3.getX()*scale.getX(), incr3.getY()*scale.getY(), incr3.getZ()*scale.getZ());
+								while(true){
+									calcXYZ(line3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+//									double x = (((line3.getX()-xmin)/wd.getX())*(meshd.getX()-1));
+//									double y = (((line3.getY()-ymin)/wd.getY())*(meshd.getY()-1));
+//									double z = (((line3.getZ()-zmin)/wd.getZ())*(meshd.getZ()-1));
+//									System.out.println("    "+x+" "+y+" "+z);
+									line3.add(incr3);
+									Vect3d check =  Vect3d.sub(end3, line3);
+									if(Math.signum(check.getX()) != Math.signum(incr3.getX()) || Math.signum(check.getY()) != Math.signum(incr3.getY()) || Math.signum(check.getZ()) != Math.signum(incr3.getZ())){
+										calcXYZ(end3, worldOrigin, worldCollapsedBoundingBox, primarySampleSizes,subSampleOffset,value);
+										break;
+									}
+								}
+								line1.add(incr1);
+								Vect3d check =  Vect3d.sub(end1, line1);
+								if(Math.signum(check.getX()) != Math.signum(incr1.getX()) || Math.signum(check.getY()) != Math.signum(incr1.getY()) || Math.signum(check.getZ()) != Math.signum(incr1.getZ())){
+									break;
+								}
+							}
+						}
+					}
+				}
+				updateAuxiliaryInfo(originalISize, null);
+				getUpdateDisplayAfterCropTask().run(null);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(overlayEditorPanelJAI, e.getMessage());
+		}
+	}
+	
+	private void calcXYZ(Vect3d line3,Vect3d worldOrigin,Vect3d worldCollapsedBoundingBox,Vect3d primarySampleSizes,Vect3d subSampleOffset,byte value)throws Exception{
+		double x = (((line3.getX()-worldOrigin.getX())/worldCollapsedBoundingBox.getX())*(primarySampleSizes.getX()-1));
+		double y = (((line3.getY()-worldOrigin.getY())/worldCollapsedBoundingBox.getY())*(primarySampleSizes.getY()-1));
+		double z = (((line3.getZ()-worldOrigin.getZ())/worldCollapsedBoundingBox.getZ())*(primarySampleSizes.getZ()-1));
+		int subX = (int)(x-subSampleOffset.getX());
+		int subY = (int)(y-subSampleOffset.getY());
+		int subZ = (int)(z-subSampleOffset.getZ());
+		if(subX >= 0 && subX < roiComposite[0].getWidth() &&
+			subY >= 0 && subY < roiComposite[0].getHeight() &&
+			subZ >= 0 && subZ < roiComposite.length){
+			
+			BufferedImage plane = roiComposite[subZ];
+			byte[] data = ((DataBufferByte)plane.getRaster().getDataBuffer()).getData();
+			data[subX + (plane.getWidth()*subY)] = value;
+
+		}
+		
+	}
+	
+	private static class StatsHelper{
+		public double xmin;
+		public double ymin;
+		public double zmin;
+		public double xmax;
+		public double ymax;
+		public double zmax;
+	}
+
+	private static StatsHelper calcMinMax(File[] selectedFiles) throws Exception{
+		StatsHelper statsHelper = new StatsHelper();
+		for (int j = 0; j < selectedFiles.length; j++) {
+			File selectedfiFile = selectedFiles[j];
+			SurfaceCollection surfaceCollection = ClientRequestManager.createSurfaceCollectionFromSurfaceFile(selectedfiFile);
+			for (int i = 0; i < surfaceCollection.getNodes().length; i++) {
+				if(j == 0 && i==0){
+					statsHelper.xmin = surfaceCollection.getNodes()[i].getX();
+					statsHelper.xmax = statsHelper.xmin;
+					statsHelper.ymin = surfaceCollection.getNodes()[i].getY();
+					statsHelper.ymax = statsHelper.ymin;
+					statsHelper.zmin = surfaceCollection.getNodes()[i].getZ();
+					statsHelper.zmax = statsHelper.zmin;
+				}
+				statsHelper.xmin = Math.min(statsHelper.xmin, surfaceCollection.getNodes()[i].getX());
+				statsHelper.ymin = Math.min(statsHelper.ymin, surfaceCollection.getNodes()[i].getY());
+				statsHelper.zmin = Math.min(statsHelper.zmin, surfaceCollection.getNodes()[i].getZ());
+				statsHelper.xmax = Math.max(statsHelper.xmax, surfaceCollection.getNodes()[i].getX());
+				statsHelper.ymax = Math.max(statsHelper.ymax, surfaceCollection.getNodes()[i].getY());
+				statsHelper.zmax = Math.max(statsHelper.zmax, surfaceCollection.getNodes()[i].getZ());
+			}
+		}
+		return statsHelper;
+	}
+
 	
 	private void export(){
 		final String PNG_FILETYPE = "png";
