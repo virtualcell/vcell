@@ -37,6 +37,8 @@ import cbit.vcell.mapping.TaskCallbackMessage;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
 
@@ -231,9 +233,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				String structureNameFromRule;
 				if(isReversed) {
-					structureNameFromRule = rr.getReactantPattern(position).getStructure().getName();
+					final ReactantPattern reactantPattern = rr.getReactantPattern(position);
+					structureNameFromRule = reactantPattern.getStructure().getName();
 				} else {
-					structureNameFromRule = rr.getProductPattern(position).getStructure().getName();
+					final ProductPattern productPattern = rr.getProductPattern(position);
+					structureNameFromRule = productPattern.getStructure().getName();
 				}
 				
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());

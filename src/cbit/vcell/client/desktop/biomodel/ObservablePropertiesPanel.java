@@ -784,7 +784,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			JMenuItem deleteMenuItem = new JMenuItem("Delete Species Pattern");
 			deleteMenuItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					observable.getSpeciesPatternList().remove((SpeciesPattern)selectedObject);
+//					observable.getSpeciesPatternList().remove((SpeciesPattern)selectedObject);
+					observable.removeSpeciesPattern((SpeciesPattern)selectedObject);
 					
 					final TreePath path = observableTreeModel.findObjectPath(null, observable);
 					observableTree.setSelectionPath(path);

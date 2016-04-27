@@ -592,10 +592,20 @@ public class NetworkTransformer implements SimContextTransformer {
 				MassActionKinetics targetKinetics = new MassActionKinetics(sr);
 				sr.setKinetics(targetKinetics);
 				KineticsParameter kforward = targetKinetics.getForwardRateParameter();
+				KineticsParameter kreverse = targetKinetics.getReverseRateParameter();
+				String kforwardNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getName();
+				if (!kforward.getName().equals(kforwardNewName)){
+					targetKinetics.renameParameter(kforward.getName(), kforwardNewName);
+					kforward = targetKinetics.getForwardRateParameter();
+				}
+				final String kreverseNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getName();
+				if (!kreverse.getName().equals(kreverseNewName)){
+					targetKinetics.renameParameter(kreverse.getName(), kreverseNewName);
+					kreverse = targetKinetics.getReverseRateParameter();
+				}
 				applyKineticsExpressions(forwardBNGReaction, kforward, targetKinetics);
 				if (reverseBNGReaction!=null){
-					KineticsParameter kReverse = targetKinetics.getReverseRateParameter();
-					applyKineticsExpressions(reverseBNGReaction, kReverse, targetKinetics);
+					applyKineticsExpressions(reverseBNGReaction, kreverse, targetKinetics);
 				}
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();
@@ -639,6 +649,17 @@ public class NetworkTransformer implements SimContextTransformer {
 				MassActionKinetics k = new MassActionKinetics(sr);
 				sr.setKinetics(k);
 				KineticsParameter kforward = k.getForwardRateParameter();
+				KineticsParameter kreverse = k.getReverseRateParameter();
+				String kforwardNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate).getName();
+				if (!kforward.getName().equals(kforwardNewName)){
+					k.renameParameter(kforward.getName(), kforwardNewName);
+					kforward = k.getForwardRateParameter();
+				}
+				final String kreverseNewName = rr.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate).getName();
+				if (!kreverse.getName().equals(kreverseNewName)){
+					k.renameParameter(kreverse.getName(), kreverseNewName);
+					kreverse = k.getReverseRateParameter();
+				}
 				applyKineticsExpressions(reverseBNGReaction, kforward, k);
 	//			String fieldParameterName = kforward.getName();
 	//			fieldParameterName += "_" + r.getRuleName();

@@ -123,8 +123,13 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 		return null;
 	}
-	
-	// TODO: why did we stop using setSpeciesPattern and instead made addSpeciesPattern  ???
+	public void removeSpeciesPattern(SpeciesPattern sp) {
+		
+		int index = getSpeciesPatternList().indexOf(sp);
+		sp.removePropertyChangeListener(this);
+		getSpeciesPatternList().remove(index);
+//		firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN, sp, null);
+	}
 	public boolean addSpeciesPattern(SpeciesPattern newValue) {
 		boolean ret = speciesPatternList.add(newValue);
 		if (newValue != null && ret == true) {
@@ -133,12 +138,9 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			resolveStates();
 		}
 		if(ret == true) {
-			firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN, null, newValue);	// is this correct?
+			firePropertyChange(PROPERTY_NAME_SPECIES_PATTERN, null, newValue);
 		}
 		return ret;
-	}
-	public final List<SpeciesPattern> getSpeciesPatternList() {
-		return speciesPatternList;
 	}
 	public void setSpeciesPatternList(List<SpeciesPattern> newValue) {
 		List<SpeciesPattern> oldValue = speciesPatternList;
@@ -155,6 +157,9 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			resolveBonds();
 		}
 		firePropertyChange(RbmObservable.PROPERTY_NAME_SPECIES_PATTERN_LIST, oldValue, newValue);
+	}
+	public final List<SpeciesPattern> getSpeciesPatternList() {
+		return speciesPatternList;
 	}
 
 	@Override
