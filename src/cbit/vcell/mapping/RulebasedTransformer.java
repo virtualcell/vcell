@@ -298,7 +298,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 			e.printStackTrace();
 			throw new RuntimeException("Unexpected transform exception: "+e.getMessage());
 		}
-		transformedSimContext.getModel().refreshDependencies();
+		final Model transformedModel = transformedSimContext.getModel();
+		transformedModel.refreshDependencies();
 		transformedSimContext.refreshDependencies1(false);
 
 		ArrayList<ModelEntityMapping> entityMappings = new ArrayList<ModelEntityMapping>();
@@ -328,10 +329,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 //			}
 //		}
 		
-		for(SpeciesContext sc : newModel.getSpeciesContexts()) {
-			em = new ModelEntityMapping(originalModel.getSpeciesContext(sc.getName()), sc);		// map new and old species contexts
+		for(SpeciesContext newSpeciesContext : newModel.getSpeciesContexts()) {
+			final SpeciesContext originalSpeciesContext = originalModel.getSpeciesContext(newSpeciesContext.getName());
+			em = new ModelEntityMapping(originalSpeciesContext, newSpeciesContext);		// map new and old species contexts
 			entityMappings.add(em);
-			if(sc.hasSpeciesPattern()) {
+			if(newSpeciesContext.hasSpeciesPattern()) {
 				continue;	// it's perfect already and can't be improved
 			}
 			try {
@@ -340,16 +342,16 @@ public class RulebasedTransformer implements SimContextTransformer {
 				MolecularTypePattern newmtp_sc = new MolecularTypePattern(newmt);
 				SpeciesPattern newsp_sc = new SpeciesPattern();
 				newsp_sc.addMolecularTypePattern(newmtp_sc);
-				sc.setSpeciesPattern(newsp_sc);
+				newSpeciesContext.setSpeciesPattern(newsp_sc);
 				
-				RbmObservable newo = new RbmObservable(newModel,"O0_"+newmt.getName()+"_tot",sc.getStructure(),RbmObservable.ObservableType.Molecules);
+				RbmObservable newo = new RbmObservable(newModel,"O0_"+newmt.getName()+"_tot",newSpeciesContext.getStructure(),RbmObservable.ObservableType.Molecules);
 				MolecularTypePattern newmtp_ob = new MolecularTypePattern(newmt);
 				SpeciesPattern newsp_ob = new SpeciesPattern();
 				newsp_ob.addMolecularTypePattern(newmtp_ob);
 				newo.addSpeciesPattern(newsp_ob);
 				newModel.getRbmModelContainer().addObservable(newo);
 
-				em = new ModelEntityMapping(originalModel.getSpeciesContext(sc.getName()), newo);	// map new observable to old species context
+				em = new ModelEntityMapping(originalSpeciesContext, newo);	// map new observable to old species context
 				entityMappings.add(em);
 			} catch (ModelException e) {
 				e.printStackTrace();
@@ -464,7 +466,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					int stoichiometry = p.getStoichiometry();
 					for(int i=0; i<stoichiometry; i++) {
 						SpeciesPattern speciesPattern = new SpeciesPattern(p.getSpeciesContext().getSpeciesPattern());
-						ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, rr.getStructure());
+						ReactantPattern reactantPattern = new ReactantPattern(speciesPattern, p.getStructure());
 						rr.addReactant(reactantPattern);
 					}
 					
@@ -472,7 +474,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					int stoichiometry = p.getStoichiometry();
 					for(int i=0; i<stoichiometry; i++) {
 						SpeciesPattern speciesPattern = new SpeciesPattern(p.getSpeciesContext().getSpeciesPattern());
-						ProductPattern productPattern = new ProductPattern(speciesPattern, rr.getStructure());
+						ProductPattern productPattern = new ProductPattern(speciesPattern, p.getStructure());
 						rr.addProduct(productPattern);
 					}
 				}
