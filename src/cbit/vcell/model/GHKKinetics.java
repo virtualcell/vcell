@@ -184,30 +184,32 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 	Expression T = getSymbolExpression(model.getTEMPERATURE());
 	
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();
-	Reactant R0 = null;
-	Product P0 = null;
+	ReactionParticipant Neg0 = null;
+	ReactionParticipant Pos0 = null;
 	for (int i = 0; i < reactionParticipants.length; i++){
-		if (reactionParticipants[i] instanceof Reactant){
-			R0 = (Reactant)reactionParticipants[i];
-		}
-		if (reactionParticipants[i] instanceof Product){
-			P0 = (Product)reactionParticipants[i];
+		ReactionParticipant rp = reactionParticipants[i];
+		if ((rp instanceof Reactant || rp instanceof Product)){
+			if (rp.getStructure() == negativeFeature){
+				Neg0 = rp;
+			}else if (rp.getStructure() == positiveFeature){
+				Pos0 = rp;
+			}
 		}
 	}
 			
 	//"-A0*pow("+VALENCE_SYMBOL+",2)*"+VOLTAGE_SYMBOL+"*pow("+F+",2)/("+R+"*"+T+")*(R0-(P0*exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+"))))/(1 - exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+")))"
-	if (R0!=null && P0!=null && P!=null){
+	if (Neg0!=null && Pos0!=null && P!=null){
 		// PRIMARY CURRENT DENSITY
 		//
 		Expression V_exp = getSymbolExpression(V);
 		Expression carrier_z = getSymbolExpression(getKineticsParameterFromRole(Kinetics.ROLE_CarrierChargeValence));
 		Expression net_z = carrier_z;
-		Expression P0_exp = getSymbolExpression(P0.getSpeciesContext());
-		Expression R0_exp = getSymbolExpression(R0.getSpeciesContext());
+		Expression Neg0_exp = getSymbolExpression(Neg0.getSpeciesContext());
+		Expression Pos0_exp = getSymbolExpression(Pos0.getSpeciesContext());
 		Expression P_exp = getSymbolExpression(P);
 		Expression exponentTerm = Expression.div(Expression.mult(Expression.negate(carrier_z), F, V_exp), Expression.mult(R, T));
 		Expression expTerm = Expression.exp(exponentTerm);
-		Expression term1 = Expression.add(R0_exp, Expression.negate(Expression.mult(P0_exp, expTerm)));
+		Expression term1 = Expression.add(Pos0_exp, Expression.negate(Expression.mult(Neg0_exp, expTerm)));
 		Expression numerator = Expression.negate(Expression.mult(P_exp, K_GHK, Expression.power(carrier_z, 2.0), V_exp, Expression.power(F, 2.0), term1));
 		Expression denominator = Expression.mult(R, T, Expression.add(new Expression(1.0), Expression.negate(expTerm)));
 		Expression newCurrExp = Expression.div(numerator, denominator);
