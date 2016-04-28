@@ -1003,12 +1003,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			} else if(selectedObject instanceof MolecularTypePattern) {		// move left / right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				int numMtp = locationContext.sps.getSpeciesPattern().getMolecularTypePatterns().size();
 				
 				String moveRightMenuText = "Move <b>" + "right" + "</b>";
 				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
 				Icon icon = VCellIcons.moveRightIcon;
 				moveRightMenuItem.setIcon(icon);
+				moveRightMenuItem.setEnabled(numMtp < 2 ? false : true);
 				moveRightMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1026,6 +1028,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
 				icon = VCellIcons.moveLeftIcon;
 				moveLeftMenuItem.setIcon(icon);
+				moveLeftMenuItem.setEnabled(numMtp < 2 ? false : true);
 				moveLeftMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1171,12 +1174,14 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			} else if(selectedObject instanceof MolecularTypePattern) {		// move left / right / delete molecule / reassign match
 				MolecularTypePattern mtp = (MolecularTypePattern)selectedObject;
+				int numMtp = locationContext.sps.getSpeciesPattern().getMolecularTypePatterns().size();
 				
 				String moveRightMenuText = "Move <b>" + "right" + "</b>";
 				moveRightMenuText = "<html>" + moveRightMenuText + "</html>";
 				JMenuItem moveRightMenuItem = new JMenuItem(moveRightMenuText);
 				Icon icon = VCellIcons.moveRightIcon;
 				moveRightMenuItem.setIcon(icon);
+				moveRightMenuItem.setEnabled(numMtp < 2 ? false : true);
 				moveRightMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1194,6 +1199,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				JMenuItem moveLeftMenuItem = new JMenuItem(moveLeftMenuText);
 				icon = VCellIcons.moveLeftIcon;
 				moveLeftMenuItem.setIcon(icon);
+				moveLeftMenuItem.setEnabled(numMtp < 2 ? false : true);
 				moveLeftMenuItem.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						MolecularTypePattern from = (MolecularTypePattern)selectedObject;
@@ -1333,17 +1339,17 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		
 		if(!bIsReactant) {		// product has restrictions for states and bonds, depending on reactant
 			BondType reactantComponentBondType = reactionRule.getReactantComponentBondType(mcp);
-			if(reactantComponentBondType != null && reactantComponentBondType == BondType.Exists) {
+			if(reactantComponentBondType != null && reactantComponentBondType == BondType.Exists) {				// has external		+
 //				existBondProhibited = true;
 				noneBondProhibited = true;
 				possibleBondProhibited = true;
 				specifiedBondProhibited = true;
-			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.None) {
+			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.None) {		// is unbound		-
 				existBondProhibited = true;
 //				noneBondProhibited = true;
 				possibleBondProhibited = true;
 //				specifiedBondProhibited = true;
-			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.Possible) {
+			} else if(reactantComponentBondType != null && reactantComponentBondType == BondType.Possible) {	// may be bound		?
 				existBondProhibited = true;
 				noneBondProhibited = true;
 //				possibleBondProhibited = true;
@@ -1434,6 +1440,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		editBondMenu.setText(specifiedString);
 		editBondMenu.setToolTipText("Specified");
 		editBondMenu.removeAll();
+		editBondMenu.setEnabled(!specifiedBondProhibited);
 		final Map<String, Bond> itemMap = new LinkedHashMap<String, Bond>();
 		
 		String noneString = mcp.getBondType() == BondType.None ? "<html><b>" + "Site is unbound" + "</b></html>" : "<html>" + "Site is unbound" + "</html>";
@@ -1442,7 +1449,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 		itemMap.put(noneString, null);
 		itemMap.put(existsString, null);
 		itemMap.put(possibleString, null);
-		if(mtp != null && sp != null) {
+		if(mtp != null && sp != null && !specifiedBondProhibited) {
 			List<Bond> bondPartnerChoices = sp.getAllBondPartnerChoices(mtp, mc);
 			for(Bond b : bondPartnerChoices) {
 //				if(b.equals(mcp.getBond())) {
