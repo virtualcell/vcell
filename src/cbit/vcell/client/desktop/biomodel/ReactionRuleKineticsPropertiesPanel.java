@@ -81,6 +81,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
@@ -91,9 +92,12 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.ReactionRule.ReactionRuleParticipantType;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.model.gui.ParameterTableModel;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 
 
 @SuppressWarnings("serial")
@@ -405,11 +409,21 @@ public class ReactionRuleKineticsPropertiesPanel extends DocumentEditorSubPanel 
 		if (newValue != null) {
 			newValue.addPropertyChangeListener(eventHandler);
 		}
-		tableModel.setReactionRule(reactionRule);
+		getReactionRulePropertiesTableModel().setReactionRule(reactionRule);
 		refreshInterface();
 	}
 	private void setReversible(boolean bReversible) {
 		reactionRule.setReversible(bReversible);
+		if(!bReversible && reactionRule != null) {
+			// we know for sure it must be MassAction
+			LocalParameter lp = reactionRule.getKineticLaw().getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+			try {
+				lp.setExpression(new Expression(0.0d));
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace();
+			}
+		}
+		getReactionRulePropertiesTableModel().refreshData();
 	}
 
 	protected void refreshInterface() {

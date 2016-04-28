@@ -94,7 +94,7 @@ public Class<?> getColumnClass(int column) {
 /**
  * getValueAt method comment.
  */
-private void refreshData() {
+public void refreshData() {
 	List<Parameter> parameterList = null;
 	if (reactionStep != null) {
 		parameterList = new ArrayList<Parameter>();
@@ -152,6 +152,14 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}
 	Parameter parameter = getValueAt(rowIndex);
+	if(reactionStep != null && parameter instanceof KineticsParameter) {
+		KineticsParameter kp = (KineticsParameter)parameter;
+		if(kp.getRole() == Kinetics.ROLE_KReverse) {
+			if(!reactionStep.isReversible()) {
+				return false;		// disable Kr if rule is not reversible
+			}
+		}
+	}
 	switch (columnIndex) {
 	case COLUMN_NAME:
 		return parameter.isNameEditable();
