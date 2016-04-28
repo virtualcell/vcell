@@ -92,7 +92,7 @@ public Class<?> getColumnClass(int column) {
 	}
 }
 
-private void refreshData() {
+void refreshData() {
 	List<Object> parameterList = null;
 	if (reactionRule != null) {
 		parameterList = new ArrayList<Object>();

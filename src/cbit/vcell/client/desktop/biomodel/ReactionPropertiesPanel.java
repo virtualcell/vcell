@@ -59,17 +59,22 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.HMM_IRRKinetics;
+import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.gui.ParameterTableModel;
 import cbit.vcell.model.gui.ReactionElectricalPropertiesPanel;
+import cbit.vcell.parser.Expression;
 
 @SuppressWarnings("serial")
 public class ReactionPropertiesPanel extends DocumentEditorSubPanel {
@@ -424,6 +429,11 @@ public static void main(java.lang.String[] args) {
 
 private void setReversible(boolean bReversible) {
 	reactionStep.setReversible(bReversible);
+	if(reactionStep.getKinetics() instanceof MassActionKinetics) {
+		KineticsParameter kp = reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
+		kp.setExpression(new Expression(0.0d));
+	}
+	getParameterTableModel().refreshData();
 }
 
 /**
@@ -735,13 +745,24 @@ protected void updateInterface() {
 		updateToggleButtonLabel();
 		nameTextField.setText(reactionStep.getName());
 		annotationTextArea.setText(bioModel.getModel().getVcMetaData().getFreeTextAnnotation(reactionStep));
-		isReversibleCheckBox.setSelected(reactionStep.isReversible());
+		final boolean reversible = reactionStep.isReversible();
+		if(reactionStep.getKinetics() instanceof HMM_IRRKinetics) {
+			isReversibleCheckBox.setSelected(false);	// the flag says true for MM irreversible
+			isReversibleCheckBox.setEnabled(false);
+		} else if (reactionStep.getKinetics() instanceof HMM_REVKinetics) {
+			isReversibleCheckBox.setSelected(true);
+			isReversibleCheckBox.setEnabled(false);
+		} else {
+			isReversibleCheckBox.setSelected(reversible);
+			isReversibleCheckBox.setEnabled(true);
+		}
 	} else {
 		nameTextField.setText(null);
 		annotationTextArea.setText(null);
 		electricalPropertiesLabel.setVisible(false);
 		reactionElectricalPropertiesPanel.setVisible(false);
 		isReversibleCheckBox.setSelected(false);
+		isReversibleCheckBox.setEnabled(true);
 	}
 	listLinkedPathwayObjects();
 }
