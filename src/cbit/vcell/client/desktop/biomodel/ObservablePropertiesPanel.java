@@ -19,6 +19,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -125,6 +127,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 				addNewFromTree();
 			} else if (source == getEditFromTreeMenuItem()) {
 				observableTree.startEditingAtPath(observableTree.getSelectionPath());
+			} else if (e.getSource() == getAddSpeciesButton()) {
+				addSpeciesPattern();
 			} else if (e.getSource() == getAddSpeciesPatternFromShapeMenuItem()) {
 				addSpeciesPattern();
 			} else if (source == getDeleteFromShapeMenuItem()) {
@@ -204,7 +208,9 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	private ObservableTreeModel observableTreeModel = null;
 	private RbmObservable observable;
 	private JLabel titleLabel = null;
+	JScrollPane scrollPane;
 	private JTextArea annotationTextArea;
+	private JButton addSpeciesButton = null;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
@@ -239,11 +245,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	public void addSpeciesPattern() {
 		SpeciesPattern sp = new SpeciesPattern();
 		observable.addSpeciesPattern(sp);
-		final TreePath path = observableTreeModel.findObjectPath(null, observable);
+		final TreePath path = observableTreeModel.findObjectPath(null, sp);
 		observableTree.setSelectionPath(path);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {				
 				observableTree.scrollPathToVisible(path);
+				int h = SpeciesPatternLargeShape.defaultHeight;
+				Rectangle r = new Rectangle(0, observable.getSpeciesPatternList().size()*h, 20, h);
+				scrollPane.getViewport().scrollRectToVisible(r);	// scroll up to the newly added SP
 			}
 		});
 	}
@@ -473,6 +482,33 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		});
 //		shapePanel.addMouseListener(eventHandler);		// alternately use this
 		
+		JPanel optionsPanel = new JPanel();
+		optionsPanel.setPreferredSize(new Dimension(100, 200));		// gray options panel
+		optionsPanel.setLayout(new GridBagLayout());
+		
+		gridy = 0;
+		gbc = new GridBagConstraints();
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.insets = new Insets(4,4,2,4);			// top, left bottom, right
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+		optionsPanel.add(getAddSpeciesButton(), gbc);
+
+		gridy++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1;
+		gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(4, 4, 4, 10);
+		optionsPanel.add(new JLabel(""), gbc);
+
+// -----------------------------------------------------------------------------------------		
 		JPanel generalPanel = new JPanel();		// right bottom panel, contains just the annotation
 		generalPanel.setBorder(annotationBorder);
 		generalPanel.setLayout(new GridBagLayout());
@@ -495,11 +531,16 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4, 4, 4, 4);
 		generalPanel.add(jsp, gbc);
 
-		JScrollPane scrollPane = new JScrollPane(shapePanel);
+		scrollPane = new JScrollPane(shapePanel);	// where we display the shapes
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-		splitPaneHorizontal.setTopComponent(scrollPane);
+		JPanel containerOfScrollPanel = new JPanel();
+		containerOfScrollPanel.setLayout(new BorderLayout());
+		containerOfScrollPanel.add(optionsPanel, BorderLayout.WEST);
+		containerOfScrollPanel.add(scrollPane, BorderLayout.CENTER);
+
+		splitPaneHorizontal.setTopComponent(containerOfScrollPanel);
 		splitPaneHorizontal.setBottomComponent(generalPanel);
 		splitPaneHorizontal.setResizeWeight(0.9d);
 		splitPaneHorizontal.setDividerLocation(0.8d);
@@ -521,6 +562,14 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		
 		annotationTextArea.addFocusListener(eventHandler);
 		annotationTextArea.addMouseListener(eventHandler);
+	}
+	
+	private JButton getAddSpeciesButton() {
+		if (addSpeciesButton == null) {
+			addSpeciesButton = new JButton("Add Species");
+			addSpeciesButton.addActionListener(eventHandler);
+		}
+		return addSpeciesButton;
 	}
 	
 	private JMenu getAddFromTreeMenu() {
@@ -624,6 +673,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			shapePanel.setHighlightedRecursively(observable, LargeShapePanel.Highlight.off);
 		}
 		updateInterface();
+		scrollPane.getViewport().setViewPosition(new Point(0,0));	// scroll to top to show the first species pattern of the observable
 	}
 	
 	private void updateInterface() {

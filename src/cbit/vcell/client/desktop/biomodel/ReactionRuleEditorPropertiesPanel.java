@@ -336,7 +336,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 			isReversibleCheckBox.setEnabled(true);
 
 			JPanel optionsPanel = new JPanel();
-			optionsPanel.setPreferredSize(new Dimension(130, 200));
+			optionsPanel.setPreferredSize(new Dimension(140, 200));
 			optionsPanel.setLayout(new GridBagLayout());
 			
 			getZoomSmallerButton().setEnabled(true);
