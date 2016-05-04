@@ -129,11 +129,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		
 	}
 	
-	
-	
 	public static void issueRenderer(JLabel renderer, String defaultToolTipText, JTable table, int row, int column, SortTableModel tableModel) {
-		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.SEVERITY_ERROR);
-		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.SEVERITY_WARNING);
+		List<Issue> issueListError = tableModel.getIssues(row, column, Issue.Severity.ERROR);
+		List<Issue> issueListWarning = tableModel.getIssues(row, column, Issue.Severity.WARNING);
 		Icon icon = null;
 		Point mousePosition = table.getMousePosition();
 		Color red = Color.getHSBColor(0f, 0.4f, 1.0f);		// hue, saturation, brightness
@@ -170,8 +168,9 @@ public class DefaultScrollTableCellRenderer extends DefaultTableCellRenderer {
 		} else {
 			if(column == 0) {
 				icon = VCellIcons.issueGoodIcon;
+				renderer.setToolTipText(null);	// no tooltip for column 0 when we have no issues on that line
 			}
-			if(defaultToolTipText != null && !defaultToolTipText.isEmpty()) {
+			if(column != 0 && defaultToolTipText != null && !defaultToolTipText.isEmpty()) {
 				renderer.setToolTipText(defaultToolTipText);
 			} else {
 				renderer.setToolTipText(null);
