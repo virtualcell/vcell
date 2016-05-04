@@ -11,11 +11,14 @@
 package cbit.vcell.model;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
 
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext;
 import org.vcell.util.Matchable;
 
+import cbit.vcell.model.Model.ElectricalTopology;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
@@ -26,18 +29,18 @@ import cbit.vcell.parser.ExpressionException;
 public class GHKKinetics extends DistributedKinetics {
 /**
  * NernstKinetics constructor comment.
- * @param reactionStep cbit.vcell.model.ReactionStep
+ * @param fluxReaction cbit.vcell.model.FluxReaction
  * @exception java.lang.Exception The exception description.
  */
-public GHKKinetics(ReactionStep reactionStep) throws ExpressionException {
-	super(KineticsDescription.GHK.getName(),reactionStep);
+public GHKKinetics(FluxReaction fluxReaction) throws ExpressionException {
+	super(KineticsDescription.GHK.getName(),fluxReaction);
 	try {
 		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
 		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),new Expression(0.0),ROLE_ReactionRate,null);
 		KineticsParameter permeabilityParm = new KineticsParameter(getDefaultParameterName(ROLE_Permeability),new Expression(0.0),ROLE_Permeability,null);
-		KineticsParameter chargeValence = new KineticsParameter(getDefaultParameterName(ROLE_ChargeValence),new Expression(1.0),ROLE_ChargeValence,null);
+		KineticsParameter carrierChargeValence = new KineticsParameter(getDefaultParameterName(ROLE_CarrierChargeValence),new Expression(1.0),ROLE_CarrierChargeValence,null);
 
-		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, chargeValence, permeabilityParm });
+		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, carrierChargeValence, permeabilityParm });
 		updateGeneratedExpressions();
 		refreshUnits();
 	}catch (PropertyVetoException e){
@@ -71,9 +74,10 @@ public boolean compareEqual(Matchable obj) {
  * Creation date: (5/12/2004 3:11:16 PM)
  * @return cbit.util.Issue[]
  */
-public void gatherIssues(java.util.Vector<Issue> issueList) {
+@Override
+public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	
-	super.gatherIssues(issueList);
+	super.gatherIssues(issueContext, issueList);
 
 	//
 	// check for correct number of reactants and products
@@ -90,10 +94,10 @@ public void gatherIssues(java.util.Vector<Issue> issueList) {
 		}
 	}
 	if (reactantCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
+		issueList.add(new Issue(getReactionStep(), issueContext, IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one reactant",Issue.SEVERITY_ERROR));
 	}
 	if (productCount!=1){
-		issueList.add(new Issue(this,IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
+		issueList.add(new Issue(getReactionStep(), issueContext, IssueCategory.KineticsApplicability,"GHK Kinetics must have exactly one product",Issue.SEVERITY_WARNING));
 	}
 }
 /**
@@ -112,6 +116,7 @@ public KineticsDescription getKineticsDescription() {
 public KineticsParameter getPermeabilityParameter() {
 	return getKineticsParameterFromRole(ROLE_Permeability);
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 3:56:05 PM)
@@ -137,7 +142,7 @@ protected void refreshUnits() {
 			if (permeabilityParm != null){
 				permeabilityParm.setUnitDefinition(modelUnitSystem.getPermeabilityUnit());
 			}
-			KineticsParameter chargeValenceParm = getKineticsParameterFromRole(ROLE_ChargeValence);
+			KineticsParameter chargeValenceParm = getChargeValenceParameter();
 			if (chargeValenceParm!=null){
 				chargeValenceParm.setUnitDefinition(modelUnitSystem.getInstance_DIMENSIONLESS());
 			}
@@ -158,66 +163,63 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 		return;
 	}
 	
+	Membrane membrane = (Membrane)getReactionStep().getStructure();
+	if (!(getReactionStep().getStructure() instanceof Membrane)){
+		return;
+	}
+	ElectricalTopology electricalTopology = getReactionStep().getModel().getElectricalTopology();
+	Membrane.MembraneVoltage V = membrane.getMembraneVoltage();
+	Feature negativeFeature = electricalTopology.getNegativeFeature(membrane);
+	Feature positiveFeature = electricalTopology.getPositiveFeature(membrane);
+
+	if (negativeFeature == null || positiveFeature == null){
+		return;
+	}
+
 	KineticsParameter P = getKineticsParameterFromRole(ROLE_Permeability);
 	Model model = getReactionStep().getModel();
 	Expression F = getSymbolExpression(model.getFARADAY_CONSTANT());
 	Expression K_GHK = getSymbolExpression(model.getK_GHK());
 	Expression R = getSymbolExpression(model.getGAS_CONSTANT());
 	Expression T = getSymbolExpression(model.getTEMPERATURE());
-	Membrane.MembraneVoltage V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
-	Expression V_exp = getSymbolExpression(V);
-	Expression z = getSymbolExpression(getKineticsParameterFromRole(Kinetics.ROLE_ChargeValence));
 	
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();
-	Reactant R0 = null;
-	Product P0 = null;
+	ReactionParticipant Neg0 = null;
+	ReactionParticipant Pos0 = null;
 	for (int i = 0; i < reactionParticipants.length; i++){
-		if (reactionParticipants[i] instanceof Reactant){
-			R0 = (Reactant)reactionParticipants[i];
-		}
-		if (reactionParticipants[i] instanceof Product){
-			P0 = (Product)reactionParticipants[i];
+		ReactionParticipant rp = reactionParticipants[i];
+		if ((rp instanceof Reactant || rp instanceof Product)){
+			if (rp.getStructure() == negativeFeature){
+				Neg0 = rp;
+			}else if (rp.getStructure() == positiveFeature){
+				Pos0 = rp;
+			}
 		}
 	}
-	
-	// TODO need to store voltage polarity for GHK kinetics. (e.g. store "ground" feature....) ... or on MembraneVoltage ... need to specify ...
-	System.out.println("need to store voltage polarity for GHK kinetics.");
-		
+			
 	//"-A0*pow("+VALENCE_SYMBOL+",2)*"+VOLTAGE_SYMBOL+"*pow("+F+",2)/("+R+"*"+T+")*(R0-(P0*exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+"))))/(1 - exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+")))"
-	if (R0!=null && P0!=null && P!=null){
-		Expression P0_exp = getSymbolExpression(P0.getSpeciesContext());
-		Expression R0_exp = getSymbolExpression(R0.getSpeciesContext());
+	if (Neg0!=null && Pos0!=null && P!=null){
+		// PRIMARY CURRENT DENSITY
+		//
+		Expression V_exp = getSymbolExpression(V);
+		Expression carrier_z = getSymbolExpression(getKineticsParameterFromRole(Kinetics.ROLE_CarrierChargeValence));
+		Expression net_z = carrier_z;
+		Expression Neg0_exp = getSymbolExpression(Neg0.getSpeciesContext());
+		Expression Pos0_exp = getSymbolExpression(Pos0.getSpeciesContext());
 		Expression P_exp = getSymbolExpression(P);
-		Expression exponentTerm = Expression.div(Expression.mult(Expression.negate(z), F, V_exp), Expression.mult(R, T));
+		Expression exponentTerm = Expression.div(Expression.mult(Expression.negate(carrier_z), F, V_exp), Expression.mult(R, T));
 		Expression expTerm = Expression.exp(exponentTerm);
-		Expression term1 = Expression.add(R0_exp, Expression.negate(Expression.mult(P0_exp, expTerm)));
-		Expression numerator = Expression.negate(Expression.mult(P_exp, K_GHK, Expression.power(z, 2.0), V_exp, Expression.power(F, 2.0), term1));
+		Expression term1 = Expression.add(Pos0_exp, Expression.negate(Expression.mult(Neg0_exp, expTerm)));
+		Expression numerator = Expression.negate(Expression.mult(P_exp, K_GHK, Expression.power(carrier_z, 2.0), V_exp, Expression.power(F, 2.0), term1));
 		Expression denominator = Expression.mult(R, T, Expression.add(new Expression(1.0), Expression.negate(expTerm)));
 		Expression newCurrExp = Expression.div(numerator, denominator);
 		
 //		Expression newCurrExp = new Expression("-"+P.getName()+"*"+K_GHK.getName()+"*pow("+z+",2)*"+V.getName()+"*pow("+F.getName()+",2)/("+R.getName()+"*"+T.getName()+")*("+R0.getName()+"-("+P0.getName()+"*exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+"))))/(1 - exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+")))");
 		currentParm.setExpression(newCurrExp);
-		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-			Expression tempRateExpression = null;
-			Expression current = getSymbolExpression(currentParm);
-			if (getReactionStep() instanceof SimpleReaction){
-				Expression N_PMOLE = getSymbolExpression(model.getN_PMOLE());
-				tempRateExpression = Expression.mult(Expression.div(N_PMOLE, Expression.mult(z, F)), current);
-			}else{
-				Expression F_nmol = getSymbolExpression(model.getFARADAY_CONSTANT_NMOLE());
-				tempRateExpression = Expression.div(current, Expression.mult(z, F_nmol));
-			}
-			if (rateParm == null){
-				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),tempRateExpression,ROLE_ReactionRate, getReactionStep().getModel().getUnitSystem().getMembraneReactionRateUnit()));
-			}else{
-				rateParm.setExpression(tempRateExpression);
-			}
-		}else{
-			if (rateParm != null && !rateParm.getExpression().isZero()){
-				//removeKineticsParameter(rateParm);
-				rateParm.setExpression(new Expression(0.0));
-			}
-		}
+		
+		// SECONDARY REACTION RATE
+		// update from current density
+		updateReactionRatesFromInwardCurrentDensity();
 	}
 }
 }
