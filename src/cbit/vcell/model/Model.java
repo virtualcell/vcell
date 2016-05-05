@@ -2464,8 +2464,8 @@ public String getReactionName(String prefix, String suffix) {
 	}
 	return reactionName;
 }
-public String getReactionName(String candidate) {
-	if(!isReactionNameInUse(candidate)) {
+public String getReactionName(String candidate) {		// used only in the rulebased transformer
+	if(!isReactionNameInUse(candidate) && getSpeciesContext(candidate) == null) {
 		return candidate;
 	}
 	int count=0;
@@ -2473,7 +2473,9 @@ public String getReactionName(String candidate) {
 	while (true) {
 		reactionName = candidate + count;
 		if ((getReactionStep(reactionName) == null) && (getRbmModelContainer().getReactionRule(reactionName) == null)){
-			break;
+			if(getSpeciesContext(reactionName) == null) {
+				break;
+			}
 		}
 		count++;
 	}
