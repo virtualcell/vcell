@@ -64,8 +64,10 @@ import cbit.vcell.model.HMM_REVKinetics;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Macroscopic_IRRKinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Microscopic_IRRKinetics;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
@@ -751,6 +753,12 @@ protected void updateInterface() {
 			isReversibleCheckBox.setEnabled(false);
 		} else if (reactionStep.getKinetics() instanceof HMM_REVKinetics) {
 			isReversibleCheckBox.setSelected(true);
+			isReversibleCheckBox.setEnabled(false);
+		} else if(reactionStep.getKinetics() instanceof Microscopic_IRRKinetics) {
+			isReversibleCheckBox.setSelected(false);
+			isReversibleCheckBox.setEnabled(false);
+		} else if(reactionStep.getKinetics() instanceof Macroscopic_IRRKinetics) {
+			isReversibleCheckBox.setSelected(false);
 			isReversibleCheckBox.setEnabled(false);
 		} else {
 			isReversibleCheckBox.setSelected(reversible);
