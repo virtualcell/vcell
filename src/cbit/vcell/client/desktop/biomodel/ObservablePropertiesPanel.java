@@ -483,7 +483,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 //		shapePanel.addMouseListener(eventHandler);		// alternately use this
 		
 		JPanel optionsPanel = new JPanel();
-		optionsPanel.setPreferredSize(new Dimension(100, 200));		// gray options panel
+		optionsPanel.setPreferredSize(new Dimension(120, 200));		// gray options panel
 		optionsPanel.setLayout(new GridBagLayout());
 		
 		gridy = 0;
@@ -566,7 +566,7 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	
 	private JButton getAddSpeciesButton() {
 		if (addSpeciesButton == null) {
-			addSpeciesButton = new JButton("Add Species");
+			addSpeciesButton = new JButton("Add Pattern");
 			addSpeciesButton.addActionListener(eventHandler);
 		}
 		return addSpeciesButton;
