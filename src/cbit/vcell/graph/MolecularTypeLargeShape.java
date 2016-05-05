@@ -492,11 +492,14 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			g2.drawString(name, textX, textY);
 			
 			if(owner instanceof ReactionRule && mtp != null && mtp.hasExplicitParticipantMatch()) {
-				FontMetrics fm = gc.getFontMetrics(font);
-				int stringWidth = fm.stringWidth(name);
-				Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
-				g.setFont(smallerFont);
-				g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
+				int z = shapePanel.getZoomFactor();
+				if(z >= LargeShapePanel.SmallestZoomFactorWithText) {	// hide the matching too when we don't display the name
+					FontMetrics fm = gc.getFontMetrics(font);
+					int stringWidth = fm.stringWidth(name);
+					Font smallerFont = font.deriveFont(font.getSize() * 0.8F);
+					g.setFont(smallerFont);
+					g2.drawString(mtp.getParticipantMatchLabel(), textX + stringWidth + 2, textY + 2);
+				}
 			}
 		}
 		g.setFont(fontOld);

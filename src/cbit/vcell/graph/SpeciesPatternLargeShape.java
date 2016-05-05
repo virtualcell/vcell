@@ -370,29 +370,26 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Font fontOld = g2.getFont();
 		
 		Font font;
-		int w;
+		int w;			// width of compartment shape, adjusted continuously based on zoom factor
 		String name = structure.getName();
 		int z = shapePanel.getZoomFactor();
 		if(z > -3) {
 			font = fontOld.deriveFont(Font.BOLD);
-			w = 44;
-			if(name.length() > 3) {
-				name = name.substring(0, 3) + "..";
-			}
+			g.setFont(font);
+			w = 46+3*z;
+			name = buildCompartmentName(g, name, "..", w);
 		} else if(z < LargeShapePanel.SmallestZoomFactorWithText) {
 			font = fontOld.deriveFont(fontOld.getSize2D()*0.8f);
-			w = 24;
-			if(name.length() > 2) {
-				name = name.substring(0, 2) + ".";
-			}
+			g.setFont(font);
+			w = 20;
+			name = buildCompartmentName(g, name, ".", w);
 		} else {
 			font = fontOld;
-			w = 38;
-			if(name.length() > 3) {
-				name = name.substring(0, 3) + "..";
-			}
+			g.setFont(font);
+			w = 44+3*z;
+			name = buildCompartmentName(g, name, "..", w);
 		}
-			
+		
 		Color darker = Color.gray;	// a bit darker for border
 		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 58);
 		g2.setColor(darker);
@@ -402,13 +399,29 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		g2.setPaint(lighter);
 		g2.fill(filling);
 		
-		g.setFont(font);
 		g.setColor(structureColor);
 		g2.drawString(name, xPos-4, yPos+48);
 		
 		g2.setFont(fontOld);
 	    g2.setPaint(paintOld);
 		g2.setColor(colorOld);
+	}
+	private static String buildCompartmentName(Graphics g, String name, String fill, int w) {
+		// we truncate and pad the compartment name at need so that it will fit inside the width of the compartment shape
+		int effectiveWidth = g.getFontMetrics().stringWidth(name);
+		int availableWidth = w-6;
+		if(effectiveWidth < availableWidth) {
+			return name;
+		}
+		String truncatedName;
+		for(int i=1; i<name.length(); i++) {
+			truncatedName = name.substring(0, name.length()-i) + fill;
+			effectiveWidth = g.getFontMetrics().stringWidth(truncatedName);
+			if(effectiveWidth < availableWidth) {
+				return truncatedName;
+			}
+		}
+		return ".";		// there may be some font which won't fit at all in which case we show just a dot
 	}
 	
 	public void paintSelf(Graphics g) {
