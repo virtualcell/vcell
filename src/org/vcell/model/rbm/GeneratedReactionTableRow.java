@@ -5,6 +5,7 @@ import java.util.List;
 
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ProductPattern;
@@ -71,8 +72,34 @@ public class GeneratedReactionTableRow {
 		if (left.length() == 0 && right.length() == 0) {
 			return;
 		}
-
-		reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
+		
+		String name = reactionObject.getRuleName();
+		if(name.contains(GeneratedReactionTableModel.reverse)) {
+			name = name.substring(GeneratedReactionTableModel.reverse.length());
+		}
+		// try to get the name of the original structure from the original rule and make here another structure with the same name
+		String strStructure = null;
+		Structure structure;
+		SimulationContext sc = owner.getSimulationContext();
+		ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(name);
+		if(rr != null && rr.getStructure() != null) {
+			strStructure = rr.getStructure().getName();
+		}
+		if(strStructure != null) {
+			if(tempModel.getStructure(strStructure) == null) {
+				try {
+					tempModel.addFeature(strStructure);
+				} catch (ModelException | PropertyVetoException e) {
+					e.printStackTrace();
+				}
+			}
+			structure = tempModel.getStructure(strStructure);
+		} else {
+			structure = tempModel.getStructure(0);
+		}
+		// making the fake rules just for display purpose, actually they are the flattened reactions resulted from bngl
+		// the name is probably not unique, it's likely that many flattened reactions are derived from the same rule
+		reactionRule = tempModel.getRbmModelContainer().createReactionRule(name, structure, bReversible);
 		
 		String regex = "[^!]\\+";
 		String[] patterns = left.split(regex);
@@ -81,9 +108,8 @@ public class GeneratedReactionTableRow {
 				spString = spString.trim();
 				// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
 				SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-				String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+				strStructure = RbmUtils.parseCompartment(spString, tempModel);
 				speciesPattern.resolveBonds();
-				Structure structure;
 				if(strStructure != null) {
 					if(tempModel.getStructure(strStructure) == null) {
 						tempModel.addFeature(strStructure);
@@ -104,9 +130,8 @@ public class GeneratedReactionTableRow {
 			try {
 				spString = spString.trim();						
 				SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-				String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+				strStructure = RbmUtils.parseCompartment(spString, tempModel);
 				speciesPattern.resolveBonds();
-				Structure structure;
 				if(strStructure != null) {
 					if(tempModel.getStructure(strStructure) == null) {
 						tempModel.addFeature(strStructure);
