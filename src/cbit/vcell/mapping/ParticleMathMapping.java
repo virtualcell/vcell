@@ -644,7 +644,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			}
 
 			ParticleProperties particleProperties = new ParticleProperties(particleVariable, diffusion, driftXExp, driftYExp, driftZExp, particleInitialConditions);
-			SubDomain subDomain = mathDesc.getSubDomain(sm.getGeometryClass().getName());
+			GeometryClass myGC = sm.getGeometryClass();
+			if(myGC == null){
+				throw new MappingException("Application '"+getSimulationContext().getName()+"'\nGeometry->StructureMapping->("+sm.getStructure().getTypeName()+")'"+sm.getStructure().getName()+"' must be mapped to geometry domain.\n(see 'Problems' tab)");
+			}
+			SubDomain subDomain = mathDesc.getSubDomain(myGC.getName());
 			subDomain.addParticleProperties(particleProperties);
 		}
 	}
