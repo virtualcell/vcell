@@ -74,6 +74,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			// plain species context, no pattern
 			MolecularTypeSmallShape stls = new MolecularTypeSmallShape(xPattern, yPos, shapeManager, graphicsContext, owner, this);
 			speciesShapes.add(stls);
+			width = stls.getWidth();
 			return;
 		}
 		int numPatterns = sp.getMolecularTypePatterns().size();
@@ -225,7 +226,7 @@ public class SpeciesPatternSmallShape extends AbstractComponentShape implements 
 			Color fontColor = Color.black;
 			g2.setFont(font);
 			g2.setColor(fontColor);
-			g2.drawString(endText, getRightEnd()+3, yPos+9);
+			g2.drawString(endText, getRightEnd()+4, yPos+9);
 		}
 
 		g2.setFont(fontOld);

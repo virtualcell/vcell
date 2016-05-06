@@ -999,10 +999,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 										spss.addEndText("->");
 									}
 								}
-								xPos += spss.getWidth() + 14;
+								xPos += spss.getWidth() + 15;
 								spssList.add(spss);
 							}
-							
 							List<ProductPattern> ppList = rr.getProductPatterns();
 							xPos+= 7;
 							for(int i = 0; i<ppList.size(); i++) {
@@ -1011,7 +1010,7 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(i < ppList.size()-1) {
 									spss.addEndText("+");
 								}
-								xPos += spss.getWidth() + 14;
+								xPos += spss.getWidth() + 15;
 								spssList.add(spss);
 							}
 						} else {
@@ -1027,8 +1026,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								} else {
 									spss.addEndText("->");
 								}
-								int offset = sp != null ? 15 : 25;
-								xPos += spss.getWidth() + offset;
+								int offset = sp == null ? 17 : 15;
+								int w = spss.getWidth();
+								xPos += w + offset;
 								spssList.add(spss);
 							}
 							xPos+= 8;
@@ -1044,7 +1044,9 @@ public class BioModelEditorModelPanel extends DocumentEditorSubPanel implements 
 								if(i < rs.getNumProducts()-1) {
 									spss.addEndText("+");
 								}
-								xPos += spss.getWidth() + 26;
+								int offset = sp == null ? 17 : 15;
+								int w = spss.getWidth();
+								xPos += w + offset;
 								spssList.add(spss);
 							}
 						}
