@@ -43,7 +43,7 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	public static final int iColDepiction = 3;
 	public static final int iColExpression = 4;
 	
-	private static final String reverse = "_reverse_";
+	static final String reverse = "_reverse_";
 
 	
 	// filtering variables 
