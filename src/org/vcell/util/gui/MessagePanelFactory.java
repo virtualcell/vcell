@@ -130,7 +130,7 @@ public class MessagePanelFactory {
 	private static class JPanelWithSendOption extends DialogMessagePanel {
 		private final ErrorContext errorContext;
 		private String logContent;
-	
+		private int generatedOptionType = JOptionPane.YES_NO_OPTION;
 		JPanelWithSendOption(String message, ErrorContext errorContext) {
 			commonConstructionCode(this,message);
 			this.errorContext = errorContext;
@@ -157,12 +157,14 @@ public class MessagePanelFactory {
 					}
 				});
 				buttonPanel.add(helpBtn);
-			}	
+			}else{
+				generatedOptionType = JOptionPane.DEFAULT_OPTION;
+			}
 		}
 		
 		@Override
 		public int optionType() {
-			return JOptionPane.YES_NO_OPTION; 
+			return generatedOptionType; 
 		}
 		
 		private boolean isHaveContext( ) {
