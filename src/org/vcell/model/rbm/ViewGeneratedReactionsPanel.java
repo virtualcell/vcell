@@ -182,7 +182,7 @@ public void updateShape(int selectedRow) {
 			throw new RuntimeException("Unexpected exception setting " + MolecularType.typeName + " list: "+e1.getMessage(),e1);
 		}
 	} else {
-		return;		// something is wrong, we just show nothing rather than crash
+		throw new RuntimeException("Owner or SimulationContext are null.");		// This should not be possible
 	}
 	
 	int arrowIndex = inputString.indexOf("<->");
@@ -197,25 +197,37 @@ public void updateShape(int selectedRow) {
 	if (left.length() == 0 && right.length() == 0) {
 		return;
 	}
-	/* 
-	 * TODO: we can recover the original rule that generated the flattened reaction we now try to transform back into a fake rule
-	 * and use the real structure name from that rule (which we need anyway for the column Structure in the table) 
-	 * like we do in the table model:
-	 * BNGReaction reactionObject = reactionTableRow.getReactionObject();
-	 * String ruleName = reactionObject.getRuleName();
-	 * if(ruleName.contains(reverse)) {
-	 *	ruleName = ruleName.substring(reverse.length());
-	 * }
-	 * SimulationContext sc = owner.getSimulationContext();
-	 * ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(ruleName);
-	 * if(rr != null && rr.getStructure() != null) {
-	 *	return rr.getStructure().getName();
-	 * } else {
-	 *	return "?";
-	 * }
-	 */
-	ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule("aaa", tempModel.getStructures()[0], bReversible);
-	
+
+	// we recover the original rule that generated the flattened reaction we now try to transform back into a fake rule
+	BNGReaction reactionObject = reactionTableRow.getReactionObject();
+	String name = reactionObject.getRuleName();
+	if(name.contains(GeneratedReactionTableModel.reverse)) {
+		name = name.substring(GeneratedReactionTableModel.reverse.length());
+	}
+	// get the name of the original structure from the original rule and make here another structure with the same name
+	String strStructure = null;
+	Structure ruleStructure;
+	SimulationContext sc = owner.getSimulationContext();
+	ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(name);
+	if(rr != null && rr.getStructure() != null) {
+		strStructure = rr.getStructure().getName();
+	}
+	if(strStructure != null) {
+		if(tempModel.getStructure(strStructure) == null) {
+			try {
+				tempModel.addFeature(strStructure);
+			} catch (ModelException | PropertyVetoException e) {
+				e.printStackTrace();
+			}
+		}
+		ruleStructure = tempModel.getStructure(strStructure);
+	} else {
+		throw new RuntimeException("Failed to recover a Structure name from the Reaction Rule: " + name);
+	}
+	// making the fake rules just for display purpose, actually they are the flattened reactions resulted from bngl
+	// the name is probably not unique, it's likely that many flattened reactions are derived from the same rule
+	ReactionRule reactionRule = tempModel.getRbmModelContainer().createReactionRule(name, ruleStructure, bReversible);
+
 	String regex = "[^!]\\+";
 	String[] patterns = left.split(regex);
 	for (String spString : patterns) {
@@ -223,7 +235,7 @@ public void updateShape(int selectedRow) {
 			spString = spString.trim();
 			// if compartments are present, we're cheating big time making some fake compartments just for compartment name display purposes
 			SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-			String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+			strStructure = RbmUtils.parseCompartment(spString, tempModel);
 			speciesPattern.resolveBonds();
 			Structure structure;
 			if(strStructure != null) {
@@ -232,7 +244,7 @@ public void updateShape(int selectedRow) {
 				}
 				structure = tempModel.getStructure(strStructure);
 			} else {
-				structure = tempModel.getStructure(0);
+				structure = ruleStructure;		// if nothing explicit for a participant, we use by default the structure of the rule
 			}
 			reactionRule.addReactant(new ReactantPattern(speciesPattern, structure));
 		} catch(Throwable ex) {
@@ -251,7 +263,7 @@ public void updateShape(int selectedRow) {
 		try {
 			spString = spString.trim();						
 			SpeciesPattern speciesPattern = (SpeciesPattern)RbmUtils.parseSpeciesPattern(spString, tempModel);
-			String strStructure = RbmUtils.parseCompartment(spString, tempModel);
+			strStructure = RbmUtils.parseCompartment(spString, tempModel);
 			speciesPattern.resolveBonds();
 			Structure structure;
 			if(strStructure != null) {
@@ -260,7 +272,7 @@ public void updateShape(int selectedRow) {
 				}
 				structure = tempModel.getStructure(strStructure);
 			} else {
-				structure = tempModel.getStructure(0);
+				structure = ruleStructure;
 			}
 //		BNGLParser parser = new BNGLParser(new StringReader(sp));
 //		ASTSpeciesPattern astSpeciesPattern = parser.SpeciesPattern();
@@ -281,7 +293,6 @@ public void updateShape(int selectedRow) {
 			return;
 		}
 	}			
-	System.out.println(" --- done.");
 //----------------------------------------------------------------------------------------------------
 	
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
