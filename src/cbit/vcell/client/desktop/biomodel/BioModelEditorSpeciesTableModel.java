@@ -262,7 +262,7 @@ public class BioModelEditorSpeciesTableModel extends BioModelEditorRightSideTabl
 					speciesContext.setSpeciesPattern(sp);
 					break;
 				}
-			} else {				// empty row being edited
+			} else {				// empty row being edited - Deprecated, we now must use the "New Species" button
 				switch (column) {
 				case COLUMN_NAME:	// only "name" column is editable
 					String inputValue = ((String)value);

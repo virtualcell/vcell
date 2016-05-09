@@ -4578,7 +4578,7 @@ private ReactionRule getRbmReactionRule(Element reactionRuleElement, Model newMo
 	}
 	try {
 		boolean reversible = Boolean.valueOf(reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleReversibleTag));
-		String structureName = reactionRuleElement.getAttributeValue(XMLTags.StructureAttrTag, newModel.getStructures()[0].getName());	// TODO: probably incorrect?
+		String structureName = reactionRuleElement.getAttributeValue(XMLTags.StructureAttrTag, newModel.getStructures()[0].getName());	// get 1st structure if attribute missing
 		Structure structure = newModel.getStructure(structureName);
 		ReactionRule reactionRule = new ReactionRule(newModel, n, structure, reversible);
 		String reactionRuleLabel = reactionRuleElement.getAttributeValue(XMLTags.RbmReactionRuleLabelTag);	// we ignore this, name and label are the same thing for now

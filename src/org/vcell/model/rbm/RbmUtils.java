@@ -232,6 +232,7 @@ public class RbmUtils {
 		
 		public Object visit(ASTReactionRule node, Object data) {
 			if (data instanceof RbmModelContainer) {
+				// TODO: use the proper structure for the reaction once it gets implemented in the parser
 				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule(node.getLabel(), model.getStructures()[0], node.getArrowString().equals("<->"));
 				node.childrenAccept(this, reactionRule);
 				if(model.getStructures().length > 0) {
