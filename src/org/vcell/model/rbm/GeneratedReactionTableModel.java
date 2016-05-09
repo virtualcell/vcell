@@ -83,13 +83,12 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 	
 	public Object getValueAt(int iRow, int iCol) {
 		GeneratedReactionTableRow reactionTableRow = getValueAt(iRow);
+		BNGReaction reactionObject = reactionTableRow.getReactionObject();
+		String name = reactionObject.getRuleName();
 		switch(iCol) {
-			case iColIndex:{
+			case iColIndex:
 				return reactionTableRow.getIndex();
-			}
-			case iColRule:{
-				BNGReaction reactionObject = reactionTableRow.getReactionObject();
-				String name = reactionObject.getRuleName();
+			case iColRule:
 				if(reactionObject.isRuleReversed()) {
 					name += " (rev)";
 				}
@@ -97,10 +96,7 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 //					name = name.substring(reverse.length());
 //				}
 				return name;
-			}
-			case iColStructure:{
-				BNGReaction reactionObject = reactionTableRow.getReactionObject();
-				String name = reactionObject.getRuleName();
+			case iColStructure:
 				if(name.contains(reverse)) {
 					name = name.substring(reverse.length());
 				}
@@ -111,13 +107,11 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 				} else {
 					return "?";
 				}
-			}
-			case iColExpression:{
+			case iColDepiction:
+			case iColExpression:
 				return reactionTableRow.getExpression();
-			}
-			default:{
+			default:
 				return null;
-			}
 		}
 	}
 	

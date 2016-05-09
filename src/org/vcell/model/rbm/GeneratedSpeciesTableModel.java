@@ -80,12 +80,10 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	public Object getValueAt(int iRow, int iCol) {
 		GeneratedSpeciesTableRow speciesTableRow = getValueAt(iRow);
 		switch(iCol) {
-			case iColIndex:{
+			case iColIndex:
 				return speciesTableRow.getIndex();
-			}
-			case iColOriginalName:{
+			case iColOriginalName:
 				return speciesTableRow.getOriginalName();
-			}
 			case iColStructure:{
 				BNGSpecies speciesObject = speciesTableRow.getSpeciesObject();
 				String expressionString = speciesTableRow.getExpression();
@@ -105,12 +103,11 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 					}
 				}
 			}
-			case iColExpression:{
+			case iColDepiction:
+			case iColExpression:
 				return speciesTableRow.getExpression();
-			}
-			default:{
+			default:
 				return null;
-			}
 		}
 	}
 	
