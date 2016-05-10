@@ -714,5 +714,14 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			mtls.flash(matchKey);
 		}
 	}
+	
+	@Override
+	public String getDisplayName() {
+		throw new UnsupportedOperationException();
+	}
+	@Override
+	public String getDisplayType() {
+		return SpeciesPattern.typeName;
+	}
 
 }
