@@ -621,4 +621,13 @@ public class MolecularTypeLargeShape implements LargeShape, HighlightableShapeIn
 			g.setColor(colorOld);
 		}
 	}
+
+	@Override
+	public String getDisplayName() {
+		throw new UnsupportedOperationException();
+	}
+	@Override
+	public String getDisplayType() {
+		return MolecularType.typeName;
+	}
 }

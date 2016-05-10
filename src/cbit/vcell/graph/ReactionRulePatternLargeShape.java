@@ -322,6 +322,13 @@ public class ReactionRulePatternLargeShape extends AbstractComponentShape implem
 			sps.flash(matchKey);
 		}
 	}
-
 	
+	@Override
+	public String getDisplayName() {
+		throw new UnsupportedOperationException();
+	}
+	@Override
+	public String getDisplayType() {
+		return ReactionRule.typeName;
+	}
 }

@@ -363,6 +363,16 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		public MolecularComponentPattern getMolecularComponentPattern() {
 			return mcp;
 		}
+		
+		@Override
+		public String getDisplayName() {
+			throw new UnsupportedOperationException();
+		}
+		@Override
+		public String getDisplayType() {
+			return ComponentStateDefinition.typeName;
+		}
+
 	}	// --- end class ComponentStateLargeShape ---------------------------------------------------------------
 
 	// rightPos is rightmost corner of the ellipse, we compute the xPos based on the text width
@@ -776,4 +786,12 @@ public class MolecularComponentLargeShape extends AbstractComponentShape impleme
 		}
 	}
 
+	@Override
+	public String getDisplayName() {
+		throw new UnsupportedOperationException();
+	}
+	@Override
+	public String getDisplayType() {
+		return MolecularComponent.typeName;
+	}
 }
