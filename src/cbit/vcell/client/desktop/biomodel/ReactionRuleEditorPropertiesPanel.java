@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,12 +60,14 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
+import org.vcell.util.Displayable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.ReactionRuleParticipantLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeLargeShape;
@@ -325,6 +328,21 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 					}
 				}
 			});
+			shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
+			    public void mouseMoved(MouseEvent e) { 	
+			            Point overWhat = e.getPoint();
+			            PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
+			            reactantShape.contains(locationContext);
+			            productShape.contains(locationContext);
+			            HighlightableShapeInterface hsi = locationContext.getDeepestShape();
+			            if(hsi == null) {
+			            	shapePanel.setToolTipText("Right click anywhere for specific popup menus");
+			            } else {
+			            	shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
+			            }
+			    } 
+			});
+			
 			shapePanel.setLayout(new GridBagLayout());
 			shapePanel.setBackground(Color.white);	
 			scrollPane = new JScrollPane(shapePanel);
