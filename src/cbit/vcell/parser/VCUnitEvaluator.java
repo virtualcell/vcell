@@ -243,13 +243,10 @@ public class VCUnitEvaluator {
 	}
 
 
-	public VCUnitDefinition computeUnit(VCUnitDefinition units []) throws VCUnitException {
-
-		return computeUnit(units, false);		
-	}
-
-
-	public VCUnitDefinition computeUnit(VCUnitDefinition units [], boolean assignTBDs) throws VCUnitException {
+//	public VCUnitDefinition computeUnit(VCUnitDefinition units []) throws VCUnitException {
+//		return computeUnit(units, false);		
+//	}
+	public VCUnitDefinition computeUnit(SimpleNode parent, VCUnitDefinition units [], boolean assignTBDs) throws VCUnitException {
 	
 		if (units == null || units.length == 0)
 			return null;
@@ -266,7 +263,8 @@ public class VCUnitEvaluator {
 				}
 			}
 			if (!unit.isEquivalent(units[i])){
-				throw new VCUnitException("Incompatible units: [" + unit.getSymbol() + "] and [" + units[i].getSymbol() + "]");
+				throw new VCUnitException("Incompatible units [" + unit.getSymbol() + "] and [" + units[i].getSymbol() + 
+						"] in Expression: " + parent.infixString(SimpleNode.LANGUAGE_DEFAULT));
 			}
 		}
 
@@ -277,7 +275,6 @@ public class VCUnitEvaluator {
 				}	
 			}
 		}
-		 
 		return unit;
 	}
 
@@ -314,14 +311,14 @@ public class VCUnitEvaluator {
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				units.add(getUnitDefinition((SimpleNode)node.jjtGetChild(i),unitsHashMap));
 			}
-			computeUnit((VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true); // looking for imcompatabilities
+			computeUnit(node, (VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true); // looking for imcompatabilities
 			return unitSystem.getInstance_DIMENSIONLESS();
 		} else if (node instanceof ASTAddNode || node instanceof ASTMinusTermNode) {
 			ArrayList<VCUnitDefinition> units = new ArrayList<VCUnitDefinition>();
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				units.add(getUnitDefinition((SimpleNode)node.jjtGetChild(i),unitsHashMap));
 			}
-			return computeUnit((VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true);
+			return computeUnit(node, (VCUnitDefinition [])units.toArray(new VCUnitDefinition[units.size()]), true);
 		} else if (node instanceof ASTMultNode) {
 			if (node.jjtGetNumChildren() == 1) {
 				return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap);
