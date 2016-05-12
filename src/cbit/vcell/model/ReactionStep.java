@@ -286,6 +286,22 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 				}
 			}
 		}
+		if(getPhysicsOptions() == PHYSICS_ELECTRICAL_ONLY || getPhysicsOptions() == PHYSICS_MOLECULAR_AND_ELECTRICAL){
+			Feature negFeature = getModel().getElectricalTopology().getNegativeFeature((Membrane)structure);
+			Feature posFeature = getModel().getElectricalTopology().getPositiveFeature((Membrane)structure);
+			if(negFeature == null || posFeature == null){
+				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers,
+					"Reaction '"+getName()+"' electrical structure '"+structure.getName()+"' negative and positive compartment must be set",
+					Issue.SEVERITY_ERROR));
+			}else{
+				for(ReactionParticipant rxParticipant:getReactionParticipants()){
+					if(rxParticipant.getStructure() != negFeature && rxParticipant.getStructure() != posFeature && rxParticipant.getStructure() != structure){
+						String msg = "Check STRUCTURE '"+structure.getName()+"' has pos/neg feature settings appropriate for reaction '"+getName()+"' participants";
+						issueList.add(new Issue(structure, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));					
+					}
+				}
+			}
+		}
 	}
 }
 /**
