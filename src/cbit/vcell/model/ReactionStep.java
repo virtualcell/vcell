@@ -312,9 +312,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			}else{
 				for(ReactionParticipant rxParticipant:getReactionParticipants()){
 					if(rxParticipant.getStructure() != negFeature && rxParticipant.getStructure() != posFeature && rxParticipant.getStructure() != structure){
-						issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers,
-							"Check STRUCTURE '"+structure.getName()+"' has pos/neg feature settings appropriate for reaction '"+getName()+"' participants",
-							Issue.Severity.ERROR));					
+						String msg = "Check STRUCTURE '"+structure.getName()+"' has pos/neg feature settings appropriate for reaction '"+getName()+"' participants";
+						issueList.add(new Issue(structure, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));					
 					}
 				}
 			}
