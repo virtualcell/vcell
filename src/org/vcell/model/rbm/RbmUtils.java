@@ -232,10 +232,12 @@ public class RbmUtils {
 		
 		public Object visit(ASTReactionRule node, Object data) {
 			if (data instanceof RbmModelContainer) {
-				// TODO: use the proper structure for the reaction once it gets implemented in the parser
+				// initialize with default structure as a placeholder, we'll set the structure properly a little below
 				ReactionRule reactionRule = model.getRbmModelContainer().createReactionRule(node.getLabel(), model.getStructures()[0], node.getArrowString().equals("<->"));
 				node.childrenAccept(this, reactionRule);
 				if(model.getStructures().length > 0) {
+					// pick a structure from the participants' structures
+					// TODO: use the proper structure for the keyword once it gets implemented in the parser
 					Structure structure = RbmUtils.findStructure(model, reactionRule);
 					reactionRule.setStructure(structure);
 				}
@@ -1833,6 +1835,7 @@ public class RbmUtils {
 	
 	// returns the structure with the lowest dimension of all reaction participants
 	// if different structures of the same dimension are encountered we return the first one found
+	// TODO: we should try first to get the explicit compartment name if given (through a bngl keyword)
 	// TODO: keep the 2 versions of findStructure synced!!!
 	public static Structure findStructure(Model model, ReactionRule rr) {
 		Structure ours = null;
@@ -1853,6 +1856,8 @@ public class RbmUtils {
 		}
 		return ours;
 	}
+	// not used; instead of this we should recover the structure of the rule that produced this reaction
+	@Deprecated
 	public static Structure findStructure(Model model, HashMap<Integer, String> speciesMap, BNGReaction forwardBNGReaction) {
 		Structure ours = null;
 		for (int j = 0; j < forwardBNGReaction.getReactants().length; j++) {
