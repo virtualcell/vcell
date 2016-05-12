@@ -27,6 +27,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -95,6 +96,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.graph.FluxReactionShape;
+import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShape;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
@@ -446,6 +448,23 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				locationContext.highlightDeepestShape();
 				locationContext.paintDeepestShape(g);
 			}
+		});
+		shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
+			public void mouseMoved(MouseEvent e) {
+				Point overWhat = e.getPoint();
+				PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
+				for (MolecularTypeLargeShape mtls : molecularTypeShapeList) {
+					if (mtls.contains(locationContext)) {
+						break;
+					}
+				}
+				HighlightableShapeInterface hsi = locationContext.getDeepestShape();
+				if(hsi == null) {
+					shapePanel.setToolTipText(null);
+				} else {
+					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
+				}
+			} 
 		});
 
 		// -------------------------------------------------------------------------------------------

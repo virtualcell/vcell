@@ -27,6 +27,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -87,6 +88,7 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.RbmDefaultTreeModel.SpeciesPatternLocal;
 import cbit.vcell.desktop.BioModelNode;
+import cbit.vcell.graph.HighlightableShapeInterface;
 import cbit.vcell.graph.LargeShapePanel;
 import cbit.vcell.graph.MolecularComponentLargeShape;
 import cbit.vcell.graph.MolecularTypeSmallShape;
@@ -481,6 +483,23 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			}
 		});
 //		shapePanel.addMouseListener(eventHandler);		// alternately use this
+		shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
+			public void mouseMoved(MouseEvent e) {
+				Point overWhat = e.getPoint();
+				PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
+				for (SpeciesPatternLargeShape sps : spsList) {
+					if (sps.contains(locationContext)) {
+						break;
+					}
+				}
+				HighlightableShapeInterface hsi = locationContext.getDeepestShape();
+				if(hsi == null) {
+					shapePanel.setToolTipText(null);
+				} else {
+					shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
+				}
+			} 
+		});
 		
 		JPanel optionsPanel = new JPanel();
 		optionsPanel.setPreferredSize(new Dimension(120, 200));		// gray options panel
