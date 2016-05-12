@@ -272,7 +272,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					super.mouseClicked(e);
-					if(viewSingleRowCheckbox.isSelected()) {
+					if(getViewSingleRowCheckbox().isSelected()) {
 						return;
 					}
 					if(e.getButton() == 1) {		// left click selects the object (we highlight it)
@@ -329,18 +329,22 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				}
 			});
 			shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
-			    public void mouseMoved(MouseEvent e) { 	
-			            Point overWhat = e.getPoint();
-			            PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
-			            reactantShape.contains(locationContext);
-			            productShape.contains(locationContext);
-			            HighlightableShapeInterface hsi = locationContext.getDeepestShape();
-			            if(hsi == null) {
-			            	shapePanel.setToolTipText("Right click anywhere for specific popup menus");
-			            } else {
-			            	shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
-			            }
-			    } 
+				public void mouseMoved(MouseEvent e) {
+					if(getViewSingleRowCheckbox().isSelected()) {
+						shapePanel.setToolTipText(null);
+						return;
+					}
+					Point overWhat = e.getPoint();
+					PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
+					reactantShape.contains(locationContext);
+					productShape.contains(locationContext);
+					HighlightableShapeInterface hsi = locationContext.getDeepestShape();
+					if(hsi == null) {
+						shapePanel.setToolTipText(null);
+					} else {
+						shapePanel.setToolTipText("Right click for " + hsi.getDisplayType() + " menus");
+					}
+				} 
 			});
 			
 			shapePanel.setLayout(new GridBagLayout());
@@ -854,7 +858,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 	private void updateShape() {
 		int maxXOffset;
 		
-		if(viewSingleRowCheckbox.isSelected()) {
+		if(getViewSingleRowCheckbox().isSelected()) {
 			reactantShape = new ReactionRulePatternLargeShape(xOffsetInitial, yOffsetReactantInitial, -1, shapePanel, reactionRule, true);
 			int xOffset = reactantShape.getRightEnd() + 70;
 			
