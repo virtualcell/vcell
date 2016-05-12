@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.vcell.util.Cacheable;
+import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
@@ -29,7 +30,7 @@ import cbit.vcell.units.VCUnitDefinition;
 
 @SuppressWarnings("serial")
 public abstract class Structure implements Serializable, ScopedSymbolTable, Matchable, Cacheable, VetoableChangeListener,
-		Identifiable
+		Identifiable, IssueSource
 {
 	public final static String TYPE_NAME_FEATURE = "Compartment";
 	public final static String TYPE_NAME_MEMBRANE = "Membrane";
