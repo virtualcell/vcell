@@ -12,7 +12,9 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.ParseException;
@@ -25,10 +27,12 @@ import org.vcell.util.Pair;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.bionetgen.BNGComplexSpecies;
+import cbit.vcell.bionetgen.BNGMultiStateSpecies;
 import cbit.vcell.bionetgen.BNGOutputFileParser;
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.bionetgen.BNGSpecies;
+import cbit.vcell.bionetgen.BNGSpeciesComponent;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem;
 import cbit.vcell.client.ClientRequestManager.BngUnitSystem.BngUnitOrigin;
 import cbit.vcell.mapping.BioNetGenUpdaterCallback;
@@ -41,6 +45,7 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.ExpressionBindingException;
 
 public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGenUpdaterCallback {
 
@@ -89,7 +94,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 
 	@Override
-	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException {
+	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException {
 		this.startTime = System.currentTimeMillis();
 		
 		String cBngInputString = cBngInput.getInputString();
@@ -218,28 +223,35 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			for(BNGReaction r : newReactionsList) {
 				
 				String message = "";						// console only message
-				int position = r.findProductPosition(s);
-				if(position == -1) {
-					continue;	// this species is not a product of this reaction, nothing to do
+				int reactionProductPosition = r.findProductPosition(s);	// position of this species in the product (0, 1...) or -1 if it's not a product of this reaction
+				if(reactionProductPosition == -1) {
+					continue;			// this species is not a product of this reaction, nothing to do
 				}
 				
 				String ruleName = r.getRuleName();
-				boolean isReversed = r.isRuleReversed();	// if the rule is reversed we need to search this species in the reactants!!
+				if(r.isRuleReversed()) {
+					throw new RuntimeException("Reaction " + ruleName + " cannot be 'reverse'.");
+				}
 //				System.out.println("Species " + s + " found in rule " + r.getRuleName() + ", at index " + position);
 			
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
+				
+				final Pair<Integer, String> pairS = findRuleProductPosition(s);
+				final int ruleProductPosition = pairS.one;
+				final String structureNameFromSpecies = pairS.two;
+				
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
-				String structureNameFromRule;
-				if(isReversed) {
-					final ReactantPattern reactantPattern = rr.getReactantPattern(position);
-					structureNameFromRule = reactantPattern.getStructure().getName();
-				} else {
-					final ProductPattern productPattern = rr.getProductPattern(position);
-					structureNameFromRule = productPattern.getStructure().getName();
+				final ProductPattern productPattern = rr.getProductPattern(ruleProductPosition);
+				String structureNameFromRule = productPattern.getStructure().getName();
+				
+				if(!structureNameFromSpecies.equals(structureNameFromRule)) {
+					throw new RuntimeException("Structure name from species '" + structureNameFromSpecies +
+							"' does not match the Structure name from rule product '" + structureNameFromRule + "'");
 				}
 				
+				// TODO: the code below may be greatly simplified using the more advanced BNGSpecies classes instead of using the strings
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
 				boolean needsRepairing = false;
 				if(pair.one.size() > 1) {
@@ -249,9 +261,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				} else {
 					String structure = pair.one.get(0);
 					if(!structure.equals(structureNameFromRule)) {
+						// This should never happen, if just one structure is present it must come directly from the rule
+						throw new RuntimeException("If one single structure is present in the species it must match the structure of the rule product");
 //						System.out.println(s.getName() + " single compartment, needs repairing.");
-						message += s.getName() + " needs repairing... ";
-						needsRepairing = true;
+//						message += s.getName() + " needs repairing... ";
+//						needsRepairing = true;
 					}
 				}
 				
@@ -262,14 +276,18 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// if not valid, correct the fake "compartment" site to be conform to the compartment of 
 				// the product pattern
 					String speciesRepairedName = RbmUtils.repairCompartment(s.getName(), structureNameFromRule);
+					speciesRepairedName = RbmUtils.resetProductIndex(speciesRepairedName);
 					candidate = new BNGComplexSpecies(speciesRepairedName, s.getConcentration(), firstAvailableIndex);
 //					System.out.println(candidate.getName() + " repaired!");
 					message += "repaired from rule " + rr.getDisplayName() + "... ";
 					summaryRepaired++;
 					System.out.println("");
 				} else {
-					candidate = new BNGComplexSpecies(s.getName(), s.getConcentration(), firstAvailableIndex);
+					String speciesName = s.getName();
+					speciesName = RbmUtils.resetProductIndex(speciesName);
+					candidate = new BNGComplexSpecies(speciesName, s.getConcentration(), firstAvailableIndex);
 				}
+				
 				//
 				// At this point we have a valid candidate - but we may not need it if it already exist in the list of old seed species or in the list of
 				// new seed species we're building now (it may exist in either if correction took place)
@@ -288,7 +306,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					message += "Candidate " + candidate.getName() + " added to the seed species list.";
 					summarySpecies++;
 					firstAvailableIndex++;
-					r.getProducts()[position] = candidate;		// correct the reaction
+					r.getProducts()[reactionProductPosition] = candidate;		// correct the reaction
 					
 					manageIndexesMap(indexesMap, s, candidate);
 					
@@ -301,7 +319,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						existingMatch = existingMatchInOld;
 					}
 					summaryExisted++;
-					r.getProducts()[position] = existingMatch;	// correct the reaction
+					r.getProducts()[reactionProductPosition] = existingMatch;	// correct the reaction
 					
 					manageIndexesMap(indexesMap, s, existingMatch);
 				}
@@ -330,6 +348,62 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		CorrectedSR sr = new CorrectedSR(newSpeciesList, newReactionsList);
 		return sr;
 	}
+	private static Pair<Integer, String> findRuleProductPosition(BNGSpecies s) {
+
+		boolean needsCorrection = false;
+		Set<String> structureNameSet = new TreeSet<>();		// the structures we encounter in this species (use tree set to avoid duplicates)
+		Set<String> ruleProductPositionSet = new TreeSet<>();	// the indexes of the products matching this species in the original rule
+		List<BNGSpecies> simpleSpeciesList = new ArrayList<>();	// if it's a complex species we break it down in simple ones and populate this list 
+		if(s instanceof BNGComplexSpecies) {
+			simpleSpeciesList.addAll(Arrays.asList(s.parseBNGSpeciesName()));
+		} else {
+			simpleSpeciesList.add(s);		// if it's a simple species to begin with we'll only have one element in this list
+		}
+		for(BNGSpecies simpleSpecies : simpleSpeciesList) {
+			// must be multi state (actually multi-site!), we have at least 2 components: RbmUtils.SiteStruct and RbmUtils.SiteProduct
+			if(!(simpleSpecies instanceof BNGMultiStateSpecies)) {
+				throw new RuntimeException("Species " + s.getName() + " must be instance of BNGMultiStateSpecies");
+			}
+			BNGMultiStateSpecies mss = (BNGMultiStateSpecies)simpleSpecies;
+			System.out.println("  " + mss.toString());
+			List<BNGSpeciesComponent> componentsList = new ArrayList<>(Arrays.asList(mss.getComponents()));
+			String structName = "";
+			String prodPosition = "";
+			for(BNGSpeciesComponent sc : componentsList) {
+				System.out.println("     " + sc.getComponentName() + "~" + sc.getCurrentState());
+				if(sc.getComponentName().equals(RbmUtils.SiteStruct)) {
+					structName = sc.getCurrentState();
+				} else if(sc.getComponentName().equals(RbmUtils.SiteProduct)) {
+					prodPosition = sc.getCurrentState();
+				}
+			}
+			if(structName == null || structName.isEmpty() || structName.equals("null")) {
+				throw new RuntimeException("Structure name site missing from BNGSpecies " + mss);
+			}
+			if(prodPosition == null || prodPosition.isEmpty() || prodPosition.equals("null")) {
+				throw new RuntimeException("Index of original rule product site missing from BNGSpecies " + mss);
+			}
+			switch(prodPosition) {
+			case "0":
+				break;
+			case "1":
+			case "2":
+			case "3":
+				structureNameSet.add(structName);
+				ruleProductPositionSet.add(prodPosition);
+				break;
+			default:
+				throw new RuntimeException("Product position must be 0,1,2 or 3 for " + mss.getName());
+			}
+		}
+		if(structureNameSet.size() != 1 || ruleProductPositionSet.size() != 1) {
+			throw new RuntimeException("The number of structures and product indexes for " + s.getName() + " must be exactly 1.");
+		}
+
+		int position = Integer.parseInt(ruleProductPositionSet.iterator().next())-1;		// position is 1-based, we translate it to 0-based
+		Pair<Integer, String> p = new Pair<>(position, structureNameSet.iterator().next());
+		return p;
+	}
 	
 	private String prepareObservableRun(String inputString) {
 		String outputString = "";
@@ -338,18 +412,18 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		String pattern = "end molecule types";
 		String prologue = inputString.substring(0, inputString.indexOf(pattern));
 		String epilogue = inputString.substring(inputString.indexOf(pattern));
-		outputString = prologue + "AAAAAA(AAA~x~y)\n" + epilogue;
+		outputString = prologue + "AAAAAA(" + RbmUtils.SiteStruct + "~x~y," +  RbmUtils.SiteProduct + "~0~1~2~3)\n" + epilogue;
 		
 		pattern = "end seed species";
 		prologue = outputString.substring(0, outputString.indexOf(pattern));
 		epilogue = outputString.substring(outputString.indexOf(pattern));
-		outputString = prologue + "AAAAAA(AAA~x) 0.0\n" + epilogue;
+		outputString = prologue + "AAAAAA(" + RbmUtils.SiteStruct + "~x," + RbmUtils.SiteProduct + "~0) 0.0\n" + epilogue;
 		
 		pattern = "begin reaction rules";
 		prologue = outputString.substring(0, outputString.indexOf(pattern)+pattern.length());
 		pattern = "end reaction rules";
 		epilogue = outputString.substring(outputString.indexOf(pattern));
-		outputString = prologue + "\nr0: AAAAAA(AAA~x) <-> AAAAAA(AAA~y) 1,1\n" + epilogue;
+		outputString = prologue + "\nr0: AAAAAA(" + RbmUtils.SiteStruct + "~x," + RbmUtils.SiteProduct + "~0) <-> AAAAAA(" + RbmUtils.SiteStruct + "~y," + RbmUtils.SiteProduct + "~1) 1,1\n" + epilogue;
 		return outputString;
 	}
 	private String extractCorrectedObservablesAsString(BNGOutput sBngOutput) {
@@ -413,7 +487,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	// where each molecule has an extra Site with the compartments as possible States
 	// a reserved name will be used for this Site
 	//
-	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException {
+	private String preprocessInput(String cBngInputString) throws ParseException, PropertyVetoException, ExpressionBindingException {
 		
 		// take the cBNGL file (as string), parse it to recover the rules (we'll need them later)
 		// and create the bngl string with the extra, fake site for the compartments
@@ -447,6 +521,22 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
 		
+		// replace all reversible rules with 2 direct rules
+		List<ReactionRule> newRRList = new ArrayList<>();
+		for(ReactionRule rr : model.getRbmModelContainer().getReactionRuleList()) {
+			if(rr.isReversible()) {
+				ReactionRule rr1 = ReactionRule.deriveDirectRule(rr);
+				newRRList.add(rr1);
+				ReactionRule rr2 = ReactionRule.deriveInverseRule(rr);
+				newRRList.add(rr2);
+			} else {
+				newRRList.add(rr);
+			}
+			model.getRbmModelContainer().removeReactionRule(rr);
+		}
+//		model.getRbmModelContainer().getReactionRuleList().clear();
+		model.getRbmModelContainer().setReactionRules(newRRList);
+				
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter writer = new PrintWriter(bnglStringWriter);
 		writer.println(RbmNetworkGenerator.BEGIN_MODEL);

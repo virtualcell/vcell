@@ -148,6 +148,7 @@ public static String extractCompartments (String inputString) {
 					Pair<List<String>, String> p = RbmUtils.extractCompartment(token2);
 					String structure = p.one.get(0);
 					String expression = p.two;
+					expression = RbmUtils.extractProduct(expression);
 					String s = "@" + structure + ":" + expression;
 					System.out.println(s);
 					result.append(" " + s);

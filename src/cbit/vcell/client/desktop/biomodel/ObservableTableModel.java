@@ -263,7 +263,7 @@ public class ObservableTableModel  extends BioModelEditorRightSideTableModel<Rbm
 				case structure:
 					return scale * o1.getStructure().getName().compareToIgnoreCase(o2.getStructure().getName());
 				case species_pattern:
-					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0), null, CompartmentMode.hide).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0), null, CompartmentMode.hide));
+					return scale * RbmUtils.toBnglString(o1.getSpeciesPattern(0), null, CompartmentMode.hide, 0).compareToIgnoreCase(RbmUtils.toBnglString(o2.getSpeciesPattern(0), null, CompartmentMode.hide, 0));
 				case type:					
 					return scale * o1.getType().name().compareToIgnoreCase(o2.getType().name());
 				}

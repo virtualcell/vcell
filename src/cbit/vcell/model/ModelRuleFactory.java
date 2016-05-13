@@ -218,7 +218,7 @@ public class ModelRuleFactory {
 
 		@Override
 		public String toBngl() {
-			return RbmUtils.toBnglString(this.molecularTypePattern, null, CompartmentMode.hide, false);	// in natural order, NOT sorted alphabetically
+			return RbmUtils.toBnglString(this.molecularTypePattern, null, CompartmentMode.hide, 0, false);	// in natural order, NOT sorted alphabetically
 			// TODO: perhaps we should sort alphabetically here too??
 		}
 

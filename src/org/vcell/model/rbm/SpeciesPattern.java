@@ -298,7 +298,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	
 	@Override
 	public String toString() {
-		return RbmUtils.toBnglString(this, null, CompartmentMode.hide);
+		return RbmUtils.toBnglString(this, null, CompartmentMode.hide, 0);
 	}
 	
 	public int nextBondId() {		

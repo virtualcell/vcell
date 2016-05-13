@@ -38,11 +38,14 @@ import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
+import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Model.StructureTopology;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
+import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -1292,6 +1295,76 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		}
 		return newName;
 	}
+	
+	// TODO: here derive the direct and inverse sides of the old rule
+	// returns a new rule consisting of the "direct" part of the reversible old rule
+	public static final String DirectHalf = "_DirectHalf";
+	public static final String InverseHalf = "_InverseHalf";
+	public static ReactionRule deriveDirectRule(ReactionRule oldRule) throws ExpressionBindingException, PropertyVetoException  {
+		Model m = oldRule.getModel();
+		Structure s = oldRule.getStructure();
+		boolean bR = false;
+		String newName = oldRule.getDisplayName() + DirectHalf;
+		ReactionRule newRule = new ReactionRule(m, newName, s, bR);
+		
+		RbmKineticLaw oldLaw = oldRule.getKineticLaw();
+		RateLawType rateLawType = oldLaw.getRateLawType();
+		if(rateLawType != RateLawType.MassAction) {
+			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
+		}
+		RbmKineticLaw newLaw = new RbmKineticLaw(newRule, rateLawType);
+		newRule.setKineticLaw(newLaw);
+		
+		LocalParameter oldfr = oldLaw.getLocalParameter(RbmKineticLawParameterType.MassActionForwardRate);
+		Expression exp = new Expression(oldfr.getExpression());
+		newLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, exp);
+		
+		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			ReactantPattern newrp = new ReactantPattern(newsp, oldrp.getStructure());
+			newRule.addReactant(newrp, false, false);		// don't try to resolve matches or bonds, we want to mirror whatever is in the old rule
+		}
+		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			ProductPattern newpp = new ProductPattern(newsp, oldpp.getStructure());
+			newRule.addProduct(newpp, false, false);
+		}
+		newLaw.bind(newRule);
+		return newRule;
+	}
+	// returns a new rule consisting of the "inverse" part of the reversible old rule
+	public static ReactionRule deriveInverseRule(ReactionRule oldRule) throws ExpressionBindingException, PropertyVetoException {
+		Model m = oldRule.getModel();
+		Structure s = oldRule.getStructure();
+		boolean bR = false;
+		String newName = oldRule.getDisplayName() + InverseHalf;
+		ReactionRule newRule = new ReactionRule(m, newName, s, bR);
+		
+		RbmKineticLaw oldLaw = oldRule.getKineticLaw();
+		RateLawType rateLawType = oldLaw.getRateLawType();
+		if(rateLawType != RateLawType.MassAction) {
+			throw new RuntimeException("Only Mass Action Kinetics supported at this time, " + ReactionRule.typeName + " \"" + oldRule.getName() + "\" uses kinetic law type \"" + rateLawType.toString() + "\"");
+		}
+		RbmKineticLaw newLaw = new RbmKineticLaw(newRule, rateLawType);
+		newRule.setKineticLaw(newLaw);
+
+		LocalParameter oldfr = oldLaw.getLocalParameter(RbmKineticLawParameterType.MassActionReverseRate);
+		Expression exp = oldfr.getExpression();
+		newLaw.setLocalParameterValue(RbmKineticLawParameterType.MassActionForwardRate, exp);
+		
+		for(ReactantPattern oldrp : oldRule.getReactantPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldrp.getSpeciesPattern());
+			ProductPattern newrp = new ProductPattern(newsp, oldrp.getStructure());
+			newRule.addProduct(newrp, false, false);
+		}
+		for(ProductPattern oldpp : oldRule.getProductPatterns()) {
+			SpeciesPattern newsp = new SpeciesPattern(oldpp.getSpeciesPattern());
+			ReactantPattern newpp = new ReactantPattern(newsp, oldpp.getStructure());
+			newRule.addReactant(newpp, false, false);
+		}
+		newLaw.bind(newRule);
+		return newRule;
+	}
 
 	//TODO: almost identical to findStateUsage() below - pay attention to keep both in sync
 	public void findComponentUsage(MolecularType mt, MolecularComponent mc, Map<String, Pair<Displayable, SpeciesPattern>> usedHere) {
@@ -1497,6 +1570,5 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		// TODO Auto-generated method stub
 		
 	}
-
 }
 

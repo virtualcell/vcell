@@ -1,5 +1,6 @@
 package org.vcell.model.rbm;
 
+import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -42,6 +43,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -133,12 +135,12 @@ public class RbmNetworkGenerator {
 			
 			String modified;
 			if(compartmentMode == CompartmentMode.show) {
-				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide);
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide, 0);
 				modified = "@" + sc.getStructure().getName() + ":" + modified;
 			} else if (compartmentMode == CompartmentMode.asSite) {
-				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), sc.getStructure(), CompartmentMode.asSite);
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), sc.getStructure(), CompartmentMode.asSite, 0);
 			} else {	// CompartmentMode.hide
-				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide);
+				modified = RbmUtils.toBnglString(sc.getSpeciesPattern(), null, CompartmentMode.hide, 0);
 			}
 
 			modified += " " + fakeSeedSpeciesParam.fakeParameterName;
