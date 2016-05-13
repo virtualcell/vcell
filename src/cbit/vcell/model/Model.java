@@ -1372,7 +1372,7 @@ public class Model implements Versionable, Matchable, PropertyChangeListener, Ve
 			firePropertyChange(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST, oldValue, newValue);
 		}
 
-		private final void setReactionRules(List<ReactionRule> newValue) throws PropertyVetoException {
+		public final void setReactionRules(List<ReactionRule> newValue) throws PropertyVetoException {
 			List<ReactionRule> oldValue = reactionRuleList;
 			fireVetoableChange(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST, oldValue, newValue);
 			if (oldValue != null) {

@@ -204,6 +204,12 @@ public void updateShape(int selectedRow) {
 	if(name.contains(GeneratedReactionTableModel.reverse)) {
 		name = name.substring(GeneratedReactionTableModel.reverse.length());
 	}
+	if(name.endsWith(ReactionRule.DirectHalf)) {
+		name = name.substring(0, name.indexOf(ReactionRule.DirectHalf));
+	}
+	if(name.endsWith(ReactionRule.InverseHalf)) {
+		name = name.substring(0, name.indexOf(ReactionRule.InverseHalf));
+	}
 	// get the name of the original structure from the original rule and make here another structure with the same name
 	String strStructure = null;
 	Structure ruleStructure;

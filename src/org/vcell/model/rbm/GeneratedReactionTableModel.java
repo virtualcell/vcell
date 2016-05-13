@@ -89,16 +89,20 @@ public class GeneratedReactionTableModel extends VCellSortTableModel<GeneratedRe
 			case iColIndex:
 				return reactionTableRow.getIndex();
 			case iColRule:
-				if(reactionObject.isRuleReversed()) {
+				if(name.endsWith(ReactionRule.DirectHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.DirectHalf));
+				}
+				if(name.endsWith(ReactionRule.InverseHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.InverseHalf));
 					name += " (rev)";
 				}
-//				if(name.contains(reverse)) {
-//					name = name.substring(reverse.length());
-//				}
 				return name;
 			case iColStructure:
-				if(name.contains(reverse)) {
-					name = name.substring(reverse.length());
+				if(name.endsWith(ReactionRule.DirectHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.DirectHalf));
+				}
+				if(name.endsWith(ReactionRule.InverseHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.InverseHalf));
 				}
 				SimulationContext sc = owner.getSimulationContext();
 				ReactionRule rr = sc.getModel().getRbmModelContainer().getReactionRule(name);
