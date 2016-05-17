@@ -71,17 +71,20 @@ class DataSetChooserDialog(QtGui.QDialog):
             self.simList.sort(key=attrgetter('simulationContextName'))
             self.simList.sort(key=attrgetter('modelName'))
         except Exception as simFromModelException:
-            self.simList = None
+            self.simList = simFromModelException
             print("Exception looking for open model datasets "+repr(simFromModelException))
         finally:
             vcellProxy2.close()
         print(self.simList)
-        if (self.simList==None or len(self.simList)==0):
+        if (isinstance(self.simList,Exception) or self.simList==None or len(self.simList)==0):
             msgBox = QtGui.QMessageBox()
-            msgBox.setText("VCell not running or no models open")
+            if (isinstance(self.simList,Exception)):
+                msgBox.setText("VCell communication error:\nCheck VCell is started and has at least 1 open model with spatial simulation data")
+            else:
+                msgBox.setText("no completed 2D or 3D spatial simulations found in open VCell models")
             msgBox.exec_()
             raise Exception("No simulations found")
-            return
+            #return
 
         # populate the QTableWidget if we found datasets
         self._simTable.setRowCount(len(self.simList))
