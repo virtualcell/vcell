@@ -2,6 +2,7 @@ package cbit.vcell.message.jms;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
@@ -62,18 +63,25 @@ public abstract class VCMessagingServiceJms extends VCMessagingService {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		System.out.println(toString()+" consumer close() invocations");
-		for (ConsumerContextJms consumerContext : consumerContexts){
-			consumerContexts.remove(consumerContext);
-			consumerContext.close();
+	//	System.out.println(toString()+" consumer close() invocations");
+		
+		{
+			Iterator<ConsumerContextJms> iter = consumerContexts.iterator();
+			while (iter.hasNext()) {
+				ConsumerContextJms cc = iter.next();
+				iter.remove();
+				cc.close();
+			}
 		}
 		
-		System.out.println(toString()+" message producer close requests");
-		for (MessageProducerSessionJms messageProducerSession : messagingProducerSessions){
-			messagingProducerSessions.remove(messageProducerSession);
-			messageProducerSession.close();
+//		System.out.println(toString()+" message producer close requests");
+		Iterator<MessageProducerSessionJms> iter = messagingProducerSessions.iterator();
+		while (iter.hasNext()) {
+			MessageProducerSessionJms mp = iter.next( );
+			iter.remove();
+			mp.close();
 		}
-		System.out.println(toString()+" closeAll() complete");
+//		System.out.println(toString()+" closeAll() complete");
 	}
 
 	@Override
