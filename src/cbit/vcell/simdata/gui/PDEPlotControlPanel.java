@@ -1722,10 +1722,10 @@ private void updateTimeTextField(double newTime){
 
 private AnnotatedFunction findFunction(DataIdentifier identifier) {
 	AnnotatedFunction f = null;
-	if (functionsList != null) {
+	if (functionsList != null && functionsList.size() > 0 && identifier != null) {
 		AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
 		for (int i = 0; i < funcs.length; i++) {
-			if (funcs[i].getName().equals(identifier.getName())) {
+			if (funcs[i] != null && funcs[i].getName() != null && funcs[i].getName().equals(identifier.getName())) {
 				f = funcs[i];
 				break;
 			}
