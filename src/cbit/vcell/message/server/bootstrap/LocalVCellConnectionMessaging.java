@@ -273,7 +273,7 @@ public void sendErrorReport(Throwable exception) throws RemoteException {
 public void sendErrorReport(Throwable exception, ExtraContext extra)
 		throws RemoteException {
 	VCMongoMessage.sendClientException(exception, getUserLoginInfo());
-	BeanUtils.sendErrorReport(exception,extra.toString( ));
+	BeanUtils.sendErrorReport(exception,(extra == null?null:extra.toString()));
 	
 }
 
