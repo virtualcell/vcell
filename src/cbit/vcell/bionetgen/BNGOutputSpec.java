@@ -111,8 +111,17 @@ public static int getFirstAvailableSpeciesIndex(List<BNGSpecies> bngSpecies) {
 public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList) {
 	for(BNGSpecies theirs : theirsList) {
 //		System.out.println("Comparing existing " + theirs.getName() + " with ours " + ours.getName());
+		// simplest verification, if strings are identical - should work most of the times
 		if(theirs.getName().equals(ours.getName())) {
-//			System.out.println(" --- MATCHED!");
+			return theirs;
+		}
+	}
+	
+	// more expensive and difficult - we verify if the 2 species are isomorphic (different only in bond numbering)
+	SpeciesIsomorphismInspector sii = new SpeciesIsomorphismInspector();
+	sii.initialize(ours);
+	for(BNGSpecies theirs : theirsList) {
+		if(sii.isIsomorphism(theirs)) {
 			return theirs;
 		}
 	}

@@ -96,12 +96,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	@Override
 	public BNGOutput executeBNG() throws BNGException, ParseException, PropertyVetoException, ExpressionBindingException {
 		this.startTime = System.currentTimeMillis();
+		long elt = 0;	// elapsed time in doWork
 		
 		String cBngInputString = cBngInput.getInputString();
 		
-		// the "trick" - the modified molecules, species, etc - everything has an extra Site 
-		// with the compartments as possible States
+		// the "trick" - the modified molecules, species, etc
+		// everything has an extra Site with the compartments as possible States
+		// and yet another site that we use to certify the compartment validity 
 		String sBngInputString = preprocessInput(cBngInputString);
+		
 		BNGInput sBngInput = new BNGInput(sBngInputString);
 		BNGOutput sBngOutput = null;		// output after each iteration
 		String sBngOutputString = null;
@@ -135,8 +138,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 //			s += "\n" + delta;
 //			s += "---------------------------------------\n" + rs;
 			consoleNotification(s);
-
+			long st = System.currentTimeMillis();
 			CorrectedSR correctedSR = doWork(oldSeedSpeciesString, sBngOutputString);
+			long et = System.currentTimeMillis();
+			elt += et - st;
 			String correctedSeedSpeciesString = extractCorrectedSeedSpeciesAsString(correctedSR);
 			correctedReactionsString = extractCorrectedReactionsAsString(correctedSR);
 			oldSeedSpeciesString += correctedSeedSpeciesString;
@@ -145,13 +150,11 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// if the current iteration didn't provide any VALID NEW species (after correction) then we are done
 				break;
 			}
-			
 			sBngInputString = prepareNewBnglString(sBngInputString, oldSeedSpeciesString);
 			sBngInput = new BNGInput(sBngInputString);		// the new input for next iteration
 		}
 		// run one more iteration with all the seed species calculated above and with one single fake 
 		// rule (so that no new seed species will be created), to properly compute the observables
-	
 		String obsInputString = prepareObservableRun(sBngInputString);	// the ObservableGroups
 		BNGInput obsBngInput = new BNGInput(obsInputString);
 		this.onepassBngService = new BNGExecutorServiceNative(obsBngInput, timeoutDurationMS);
@@ -168,6 +171,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		BNGOutput cBngOutput = sBngOutput;
 //		String cBngOutputString = cBngOutput.getNetFileContent();
 //		System.out.println(cBngOutputString);
+		long endTime = System.currentTimeMillis();
+		long elapsedTime = endTime - startTime;
+		System.out.println("Done " + i + " Iterations in " + (int)(elapsedTime/1000.0) + " s.");
+		System.out.println("out of which " + (int)(elt/1000.0) + " s was spent in 'doWork'.");
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	// -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -237,7 +244,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
-				
+				// 'one' is the position of this species in the list of rule products (0, 1, 2)
+				// 'two' is the name of the compartment where the species must be
 				final Pair<Integer, String> pairS = findRuleProductPosition(s);
 				final int ruleProductPosition = pairS.one;
 				final String structureNameFromSpecies = pairS.two;
@@ -246,6 +254,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				final ProductPattern productPattern = rr.getProductPattern(ruleProductPosition);
 				String structureNameFromRule = productPattern.getStructure().getName();
 				
+				// we obtain the structure 2 ways - directly from the generated species and indirectly from the corresponding rule product
+				// as sanity check we got both and make sure they are the same
 				if(!structureNameFromSpecies.equals(structureNameFromRule)) {
 					throw new RuntimeException("Structure name from species '" + structureNameFromSpecies +
 							"' does not match the Structure name from rule product '" + structureNameFromRule + "'");
@@ -263,9 +273,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					if(!structure.equals(structureNameFromRule)) {
 						// This should never happen, if just one structure is present it must come directly from the rule
 						throw new RuntimeException("If one single structure is present in the species it must match the structure of the rule product");
-//						System.out.println(s.getName() + " single compartment, needs repairing.");
-//						message += s.getName() + " needs repairing... ";
-//						needsRepairing = true;
 					}
 				}
 				
@@ -287,8 +294,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					speciesName = RbmUtils.resetProductIndex(speciesName);
 					candidate = new BNGComplexSpecies(speciesName, s.getConcentration(), firstAvailableIndex);
 				}
-				
-				//
 				// At this point we have a valid candidate - but we may not need it if it already exist in the list of old seed species or in the list of
 				// new seed species we're building now (it may exist in either if correction took place)
 				//
@@ -307,9 +312,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					summarySpecies++;
 					firstAvailableIndex++;
 					r.getProducts()[reactionProductPosition] = candidate;		// correct the reaction
-					
 					manageIndexesMap(indexesMap, s, candidate);
-					
 				} else {
 					message += "Candidate " + candidate.getName() + " already exists, not added.";
 					BNGSpecies existingMatch;		// at this point we know for sure that there's one and only one match
@@ -360,17 +363,17 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 			simpleSpeciesList.add(s);		// if it's a simple species to begin with we'll only have one element in this list
 		}
 		for(BNGSpecies simpleSpecies : simpleSpeciesList) {
-			// must be multi state (actually multi-site!), we have at least 2 components: RbmUtils.SiteStruct and RbmUtils.SiteProduct
+			// must be multi state (actually multi-site!), we have at least 2 components (sites): RbmUtils.SiteStruct and RbmUtils.SiteProduct
 			if(!(simpleSpecies instanceof BNGMultiStateSpecies)) {
 				throw new RuntimeException("Species " + s.getName() + " must be instance of BNGMultiStateSpecies");
 			}
 			BNGMultiStateSpecies mss = (BNGMultiStateSpecies)simpleSpecies;
-			System.out.println("  " + mss.toString());
+//			System.out.println("  " + mss.toString());
 			List<BNGSpeciesComponent> componentsList = new ArrayList<>(Arrays.asList(mss.getComponents()));
 			String structName = "";
 			String prodPosition = "";
 			for(BNGSpeciesComponent sc : componentsList) {
-				System.out.println("     " + sc.getComponentName() + "~" + sc.getCurrentState());
+//				System.out.println("     " + sc.getComponentName() + "~" + sc.getCurrentState());
 				if(sc.getComponentName().equals(RbmUtils.SiteStruct)) {
 					structName = sc.getCurrentState();
 				} else if(sc.getComponentName().equals(RbmUtils.SiteProduct)) {
@@ -401,6 +404,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		}
 
 		int position = Integer.parseInt(ruleProductPositionSet.iterator().next())-1;		// position is 1-based, we translate it to 0-based
+		if(position <0 || position >2) {
+			throw new RuntimeException("Position for " + s.getName() + " is " + position + ". It must be 0, 1 or 2");
+		}
 		Pair<Integer, String> p = new Pair<>(position, structureNameSet.iterator().next());
 		return p;
 	}
