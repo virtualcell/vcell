@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver;
 import java.beans.PropertyVetoException;
+import java.util.Collection;
+import java.util.Objects;
 
 import org.apache.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
@@ -21,6 +23,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.Constant;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
 import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
@@ -83,14 +86,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		super();
 		addPropertyChangeListener(this);
 		setSimulation(simulation);
-		try {
-			setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation.getMathDescription()));
-		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}
 		readVCML(tokenizer);
+		resetSolverTaskDescriptionIfNecessary();
 	}
-
 
 	/**
 	 * This constructor is for management console and VCell API only.
@@ -109,11 +107,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		super();
 		addPropertyChangeListener(this);
 		setSimulation(simulation);
-		try {
-			setSolverDescription(SolverDescription.getDefaultSolverDescription(simulation.getMathDescription()));
-		}catch (java.beans.PropertyVetoException e){
-			e.printStackTrace(System.out);
-		}
+		resetSolverTaskDescriptionIfNecessary();
 	}
 
 	/**
@@ -172,6 +166,24 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		}
 		numProcessors = solverTaskDescription.numProcessors;
 	}
+	
+	private void resetSolverTaskDescriptionIfNecessary() {
+		final MathDescription md = fieldSimulation.getMathDescription();
+		if (fieldSolverDescription != null) {
+			Collection<SolverDescription> valid = SolverDescription.getSupportingSolverDescriptions(md);
+			if (valid.contains(fieldSolverDescription)) {
+				if (lg.isTraceEnabled()) {
+					lg.trace("resetSolverTaskDescription leaving " + fieldSolverDescription + " in place");
+				}
+				return; //existing is okay, don't mess with it
+			}
+			if (lg.isTraceEnabled()) {
+				lg.trace("resetSolverTaskDescription replacing existing " + fieldSolverDescription);
+			}
+		}
+		fieldSolverDescription = SolverDescription.getDefaultSolverDescription(md);
+	}
+	
 
 
 	/**
@@ -1006,6 +1018,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
 	public void setStochOpt(StochSimOptions newStochOpt) {
+		if (lg.isTraceEnabled()) {
+			lg.trace("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
+		}
+		
 		if (!Matchable.areEqual(fieldStochOpt,newStochOpt)) {
 			StochSimOptions oldValue = fieldStochOpt;
 			fieldStochOpt = newStochOpt;
