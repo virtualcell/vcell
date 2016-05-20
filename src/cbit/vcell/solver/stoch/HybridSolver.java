@@ -38,6 +38,7 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.StochHybridOptions;
+import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -379,7 +380,8 @@ protected String[] getMathExecutableCommand() {
 	String paraString = "";
 
 	SolverTaskDescription solverTaskDescription = simTask.getSimulation().getSolverTaskDescription();
-	if(solverTaskDescription.getStochOpt() instanceof StochHybridOptions)
+	StochSimOptions so = solverTaskDescription.getStochOpt(); 
+	if(so instanceof StochHybridOptions)
 	{
 		StochHybridOptions sho = ((StochHybridOptions)solverTaskDescription.getStochOpt());
 		epsilon = " "+String.valueOf(sho.getEpsilon());
