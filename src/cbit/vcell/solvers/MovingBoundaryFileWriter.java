@@ -55,7 +55,7 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
 	private final Geometry geometry;
 	private MembraneSubDomain theMembrane = null;
 	private final String outputName;
-	private final MovingBoundarySolverSpec solverSpec; 
+	private final MovingBoundarySolverSpec solverSpec;
 	/**
 	 * temporary pending fixing MovingBoundary C++ to handle advection on per-species basis
 	 */
@@ -508,16 +508,17 @@ private Element getXMLTextReport() {
 		w.setText("6");
 		Element p = new Element(MBTags.PRECISION);
 		p.setText("6");
-		
+
 		markHardcoded(w);
 		markHardcoded(p);
-		
+
 		e.addContent(fn);
 		e.addContent(w);
 		e.addContent(p);
+		return e;
 	}
 	return null;
-	
+
 }
 
 private void markHardcoded(Element e) {
@@ -587,7 +588,7 @@ private class MBTags {
 	private static final String traceFilename			= "traceFilename";
 
 	private static final String matlabDebug				= "matlabDebug";
-	
+
 	private static final String TEXT_REPORT 			= "textReport";
 	private static final String WIDTH 					= "width";
 	private static final String PRECISION 				= "precision";
