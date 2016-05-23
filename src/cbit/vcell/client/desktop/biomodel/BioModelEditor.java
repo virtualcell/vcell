@@ -585,7 +585,7 @@ private void initialize() {
 		
 		bioModelsNetPanel = new BioModelsNetPanel();
 		bioModelEditorPathwayCommonsPanel = new BioModelEditorPathwayCommonsPanel();
-		leftBottomTabbedPane.addTab("BioModels.net", bioModelsNetPanel);
+		leftBottomTabbedPane.addTab(BioModelsNetPanel.BIO_MODELS_NET, bioModelsNetPanel);
 		leftBottomTabbedPane.addTab("Pathway Comm", bioModelEditorPathwayCommonsPanel);
 		bioModelEditorSabioPanel = new BioModelEditorSabioPanel();
 		leftBottomTabbedPane.addTab("Sabio", bioModelEditorSabioPanel);

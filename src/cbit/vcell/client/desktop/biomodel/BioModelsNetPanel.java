@@ -55,7 +55,7 @@ import cbit.vcell.xml.ExternalDocInfo;
 
 @SuppressWarnings("serial")
 public class BioModelsNetPanel extends DocumentEditorSubPanel {
-	private static final String BIO_MODELS_NET = "BioModels.net";	
+	public static final String BIO_MODELS_NET = "BMDB";	
 
 	private class BioModelsNetTreeCellRenderer extends DefaultTreeCellRenderer  {
 		public BioModelsNetTreeCellRenderer() {
@@ -128,7 +128,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 				}
 				nodeStructureChanged(rootNode);
 			} catch (Exception ex) {
-				rootNode.setUserObject("Failed to load BioModels.net databases.");
+				rootNode.setUserObject("Failed to load " + BIO_MODELS_NET + " databases.");
 			}
 		}
 
