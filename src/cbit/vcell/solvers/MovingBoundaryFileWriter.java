@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.movingboundary.MovingBoundarySolverSpec;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ISize;
 
@@ -54,26 +55,34 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
 	private final Geometry geometry;
 	private MembraneSubDomain theMembrane = null;
 	private final String outputName;
+	private final MovingBoundarySolverSpec solverSpec; 
 	/**
 	 * temporary pending fixing MovingBoundary C++ to handle advection on per-species basis
 	 */
 	private Element problem;
 
-public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName) {
+public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName,
+		MovingBoundarySolverSpec mbss) {
 	super(pw, simTask, arg_bMessaging);
-//	inputFile = new File(dir,"MovingBoundary" + simTask.getTaskID() + ".xml");
 
 	simulation = simTask.getSimulation();
 	mathDesc = simulation.getMathDescription();
 	geometry = mathDesc.getGeometry();
 	this.outputName = outputName;
+	solverSpec = mbss;
+}
+
+public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask,  Geometry resampledGeometry, boolean arg_bMessaging, String outputName) {
+	this(pw,simTask,resampledGeometry,arg_bMessaging,outputName, new MovingBoundarySolverSpec( ));
 }
 
 
-
+/**
+ * @throws UnsupportedOperationException
+ */
 @Override
 public void write(String[] parameterNames) throws Exception {
-	// TODO Auto-generated method stub
+	throw new UnsupportedOperationException( );
 
 }
 @Override
@@ -133,6 +142,10 @@ public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverExcep
 	rootElement.addContent(getXMLProgress());	// progress
 	rootElement.addContent(getXMLTrace());		// trace
 	rootElement.addContent(getXMLDebug());		// debug
+	Element tr = getXMLTextReport( );
+	if (tr != null) {
+		rootElement.addContent(tr);
+	}
 	return rootElement;
 	} catch (Exception e) {
 		throw new SolverException("Can't generate MovingBoundary input", e);
@@ -485,6 +498,32 @@ private Element getXMLDebug() {
 	return e;
 }
 
+private Element getXMLTextReport() {
+	if (solverSpec.isTextReport()) {
+		Element e = new Element(MBTags.TEXT_REPORT);
+		String filename = "MovingBoundary " + simulation.getSimulationID() + ".txt";
+		Element fn = new Element(MBTags.outputFilename);
+		fn.setText(filename);
+		Element w = new Element(MBTags.WIDTH);
+		w.setText("6");
+		Element p = new Element(MBTags.PRECISION);
+		p.setText("6");
+		
+		markHardcoded(w);
+		markHardcoded(p);
+		
+		e.addContent(fn);
+		e.addContent(w);
+		e.addContent(p);
+	}
+	return null;
+	
+}
+
+private void markHardcoded(Element e) {
+	e.setAttribute("mode", "HARDCODED");
+}
+
 
 @SuppressWarnings("unused")
 private class MBTags {
@@ -548,6 +587,10 @@ private class MBTags {
 	private static final String traceFilename			= "traceFilename";
 
 	private static final String matlabDebug				= "matlabDebug";
+	
+	private static final String TEXT_REPORT 			= "textReport";
+	private static final String WIDTH 					= "width";
+	private static final String PRECISION 				= "precision";
 }
 
 
