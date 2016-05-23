@@ -239,6 +239,7 @@ public class VCML {
 	public final static String KernelGaussianSigmaZ = "SigmaZ";
 	
 	public final static String ChomboSolverSpec = "ChomboSolverSpec";
+	public final static String MovingBoundarySpec = "MovingBoundarySpec";
 	public final static String MaxBoxSize = "MaxBoxSize";
 	public final static String FillRatio = "FillRatio";
 	public final static String ROIExpression = "ROIExpression";
