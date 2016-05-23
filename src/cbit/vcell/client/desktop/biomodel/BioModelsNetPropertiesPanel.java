@@ -130,7 +130,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(14,4,4,4);
 		gbc.weightx = 0.2;
 		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
-		JLabel label = new JLabel("BioModels.net:");
+		JLabel label = new JLabel(BioModelsNetPanel.BIO_MODELS_NET + ":");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		add(label, gbc);
 		
