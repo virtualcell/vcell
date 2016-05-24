@@ -557,7 +557,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			if (directBNGReactionsMap.containsValue(bngReaction)){
 				BNGReaction forwardBNGReaction = bngReaction;
 				BNGReaction reverseBNGReaction = reverseBNGReactionsMap.get(bngReaction.getKey());
-				ReactionRule rr = model.getRbmModelContainer().getReactionRule(bngReaction.extractRuleName());
+				
+				String name = forwardBNGReaction.getRuleName();
+				if(name.endsWith(ReactionRule.DirectHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.DirectHalf));
+				}
+				if(name.endsWith(ReactionRule.InverseHalf)) {
+					name = name.substring(0, name.indexOf(ReactionRule.InverseHalf));
+				}
+				ReactionRule rr = model.getRbmModelContainer().getReactionRule(name);
+
 				Structure structure = rr.getStructure();
 				boolean bReversible = reverseBNGReaction != null;
 				SimpleReaction sr = new SimpleReaction(model, structure, reactionName, bReversible);
