@@ -2056,6 +2056,12 @@ private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain vol
 			geoSurfaceDesc.updateAll();
 			VCImage vcImage = RayCaster.sampleGeometry(simGeometry, distanceMapMeshSize, bCellCentered);
 			SubvolumeSignedDistanceMap[] distanceMaps = DistanceMapGenerator.computeDistanceMaps(simGeometry, vcImage, bCellCentered);
+//			for(int i=0; i<distanceMaps.length; i++) {
+//				// save the maps in VisIt compatible format
+//				SubvolumeSignedDistanceMap ssdm = distanceMaps[i];
+//				ssdm.to3DFile(i);
+//			}
+			
 			if (dimension == 2)
 			{
 				distanceMaps = DistanceMapGenerator.extractMiddleSlice(distanceMaps);
