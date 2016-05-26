@@ -1,6 +1,7 @@
 package cbit.vcell.graph;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.util.List;
 
@@ -118,4 +119,6 @@ public abstract class AbstractComponentShape {
 	public boolean contains(PointLocationInShapeContext locationContext) {
 		return false;		// default behavior is that the shape doesn't contain the point
 	}
+	
+	public abstract void paintSelf(Graphics g);
 }

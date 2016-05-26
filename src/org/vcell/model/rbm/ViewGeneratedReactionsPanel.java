@@ -53,9 +53,11 @@ import cbit.vcell.bionetgen.BNGReaction;
 import cbit.vcell.client.desktop.biomodel.BioModelEditorReactionTableModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.graph.AbstractComponentShape;
 import cbit.vcell.graph.ResizeCanvasShape;
 import cbit.vcell.graph.RulesShapePanel;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
+import cbit.vcell.graph.SpeciesPatternRoundShape;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.graph.ZoomShape;
 import cbit.vcell.graph.ZoomShape.Sign;
@@ -81,8 +83,8 @@ public class ViewGeneratedReactionsPanel extends DocumentEditorSubPanel  {
 
 	private final NetworkConstraintsPanel owner;
 	RulesShapePanel shapePanel = null;
-	List<SpeciesPatternLargeShape> reactantPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
-	List<SpeciesPatternLargeShape> productPatternShapeList = new ArrayList<SpeciesPatternLargeShape>();
+	List<AbstractComponentShape> reactantPatternShapeList = new ArrayList<AbstractComponentShape>();
+	List<AbstractComponentShape> productPatternShapeList = new ArrayList<AbstractComponentShape>();
 
 	
 	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
@@ -304,6 +306,7 @@ public void updateShape(int selectedRow) {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 	reactantPatternShapeList.clear();
 	int xOffset = 20;
+	int xOffsetRound = 20;
 	if(rpList != null && rpList.size() > 0) {
 		for(int i = 0; i<rpList.size(); i++) {
 			SpeciesPattern sp = rpList.get(i).getSpeciesPattern();
@@ -311,6 +314,7 @@ public void updateShape(int selectedRow) {
 				mtp.setParticipantMatchLabel("*");
 			}
 			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+//			SpeciesPatternRoundShape sps = new SpeciesPatternRoundShape(xOffsetRound, 20, -1, sp, shapePanel, reactionRule);
 			if(i < rpList.size()-1) {
 				sps.addEndText("+");
 			} else {
@@ -321,6 +325,7 @@ public void updateShape(int selectedRow) {
 				}
 			}
 			xOffset = sps.getRightEnd() + 45;
+			xOffsetRound = sps.getRightEnd() + 45;
 			reactantPatternShapeList.add(sps);
 		}
 	}
@@ -334,6 +339,7 @@ public void updateShape(int selectedRow) {
 				mtp.setParticipantMatchLabel("*");
 			}
 			SpeciesPatternLargeShape sps = new SpeciesPatternLargeShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
+//			SpeciesPatternRoundShape sps = new SpeciesPatternRoundShape(xOffset, 20, -1, sp, shapePanel, reactionRule);
 			if(i < ppList.size()-1) {
 				sps.addEndText("+");
 			}
@@ -356,10 +362,10 @@ private void initialize() {
 			@Override
 			public void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				for(SpeciesPatternLargeShape stls : reactantPatternShapeList) {
+				for(AbstractComponentShape stls : reactantPatternShapeList) {
 					stls.paintSelf(g);
 				}
-				for(SpeciesPatternLargeShape stls : productPatternShapeList) {
+				for(AbstractComponentShape stls : productPatternShapeList) {
 					stls.paintSelf(g);
 				}
 			}
