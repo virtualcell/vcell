@@ -122,9 +122,19 @@ public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList)
 	sii.initialize(ours);
 	for(BNGSpecies theirs : theirsList) {
 		if(sii.isIsomorphism(theirs)) {
+//		if(sii.isSignatureIsomorphism(theirs)) {
 			return theirs;
 		}
 	}
+	
+	// using jgrapht
+//	SpeciesGraphIsomorphismInspector sgii = new SpeciesGraphIsomorphismInspector();
+//	for(BNGSpecies theirs : theirsList) {
+//		if(sgii.isIsomorphism(ours, theirs)) {
+//			return theirs;
+//		}
+//	}
+
 	return null;
 }
 

@@ -13,6 +13,8 @@ import cbit.function.DefaultScalarFunction;
 import cbit.function.DynamicScalarFunction;
 import cbit.vcell.parser.Expression;
 
+// detects if 2 species are isomorphic (identical except for the bond numbering)
+// brute force implementation, we just try all permutations of bond numbering (it's n! so extremely expensive)
 public class SpeciesIsomorphismInspector {
 	
 	class ComponentVertex {
@@ -176,6 +178,36 @@ public class SpeciesIsomorphismInspector {
 		List<Integer> bondsList = new ArrayList<>(ourBondsSet);
 		boolean ret = isIsomorphismInternal(theirsSorted, bondsList, 0);
 		return ret;
+	}
+	public boolean isSignatureIsomorphism(BNGSpecies their) {
+		if(!isInitialized) {
+			throw new RuntimeException("SpeciesIsomorphismInspector initialization failed, cannot continue.");
+		}
+
+		List<BNGSpecies> theirList = new ArrayList<>();
+		if(their instanceof BNGComplexSpecies) {
+			theirList.addAll(Arrays.asList(their.parseBNGSpeciesName()));
+		} else {
+			theirList.add(their);
+		}
+		if(ourVertexList.size() != theirList.size()) {
+			return false;
+		}
+
+		List<SimpleSpeciesVertex> theirVertexList = new ArrayList<>();
+		for(BNGSpecies ss : theirList) {
+			if(!(ss instanceof BNGMultiStateSpecies)) {
+				throw new RuntimeException("Species " + ss.getName() + " must be instance of BNGMultiStateSpecies");
+			}
+			BNGMultiStateSpecies mss = (BNGMultiStateSpecies)ss;
+			SimpleSpeciesVertex simpleSpeciesVertex = extractVertex(mss);
+			theirVertexList.add(simpleSpeciesVertex);
+		}
+		if(getSignature(ourVertexList).equals(getSignature(theirVertexList))) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	private boolean isIsomorphismInternal(String theirsSorted, List<Integer> arrayList, int element) {
