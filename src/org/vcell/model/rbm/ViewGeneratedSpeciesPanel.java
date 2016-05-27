@@ -372,7 +372,11 @@ public void updateShape(int selectedRow) {
 	Structure structure;
 	if(strStructure != null) {
 		if(tempModel.getStructure(strStructure) == null) {
-			tempModel.addFeature(strStructure);
+			if(owner.getSimulationContext().getModel().getStructure(strStructure).getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+				tempModel.addMembrane(strStructure);
+			} else {
+				tempModel.addFeature(strStructure);
+			}
 		}
 		structure = tempModel.getStructure(strStructure);
 	} else {
