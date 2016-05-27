@@ -223,7 +223,11 @@ public void updateShape(int selectedRow) {
 	if(strStructure != null) {
 		if(tempModel.getStructure(strStructure) == null) {
 			try {
-				tempModel.addFeature(strStructure);
+				if(rr.getStructure().getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+					tempModel.addMembrane(strStructure);
+				} else {
+					tempModel.addFeature(strStructure);
+				}
 			} catch (ModelException | PropertyVetoException e) {
 				e.printStackTrace();
 			}
@@ -248,7 +252,11 @@ public void updateShape(int selectedRow) {
 			Structure structure;
 			if(strStructure != null) {
 				if(tempModel.getStructure(strStructure) == null) {
-					tempModel.addFeature(strStructure);
+					if(sc.getModel().getStructure(strStructure).getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+						tempModel.addMembrane(strStructure);
+					} else {
+						tempModel.addFeature(strStructure);
+					}
 				}
 				structure = tempModel.getStructure(strStructure);
 			} else {
@@ -276,7 +284,11 @@ public void updateShape(int selectedRow) {
 			Structure structure;
 			if(strStructure != null) {
 				if(tempModel.getStructure(strStructure) == null) {
-					tempModel.addFeature(strStructure);
+					if(sc.getModel().getStructure(strStructure).getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+						tempModel.addMembrane(strStructure);
+					} else {
+						tempModel.addFeature(strStructure);
+					}
 				}
 				structure = tempModel.getStructure(strStructure);
 			} else {

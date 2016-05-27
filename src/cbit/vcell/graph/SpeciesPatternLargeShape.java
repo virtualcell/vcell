@@ -355,12 +355,8 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 			return;		// other things don't have structure
 		}
 		
-		if(structure == null) {
-			return;
-		}
-		// the fake flattened reactions we show in Specifications / Network Constraints / View
-		// don't have a real structure, so we show them structureless (for now)
-		if(structure.getName() == null) {
+		// for whatever lacks a structure, we show it structureless
+		if(structure == null || structure.getName() == null) {
 			return;
 		}
 		
@@ -394,7 +390,13 @@ public class SpeciesPatternLargeShape extends AbstractComponentShape implements 
 		Rectangle2D border = new Rectangle2D.Double(xPos-9, yPos-4, w, 58);
 		g2.setColor(darker);
 		g2.draw(border);
-		Color lighter = new Color(224, 224, 224);
+		
+		Color lighter;
+		if(structure.getTypeName().equals(Structure.TYPE_NAME_MEMBRANE)) {
+			lighter = new Color(192, 192, 192);		// 192	208
+		} else {
+			lighter = new Color(240, 240, 240);		// 244
+		}
 		Rectangle2D filling = new Rectangle2D.Double(xPos-9, yPos-3, w, 57);
 		g2.setPaint(lighter);
 		g2.fill(filling);
