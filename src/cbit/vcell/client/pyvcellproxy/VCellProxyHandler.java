@@ -5,6 +5,7 @@ import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
@@ -14,7 +15,9 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 
 import org.apache.thrift.TException;
+import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Origin;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -85,16 +88,18 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 				if (!isVtkSupported(simulation)){
 					continue;
 				}
+				Origin origin = simulation.getMathDescription().getGeometry().getOrigin();
+				Extent extent = simulation.getMathDescription().getGeometry().getExtent();
 			    SimulationInfo simInfo=simulation.getSimulationInfo();
 				SimulationStatus simStatus = vcellClient.getRequestManager().getServerSimulationStatus(simInfo);
 				for (int jobIndex = 0; jobIndex<simulation.getScanCount(); jobIndex++){
 					if (simStatus!=null && simStatus.getHasData()){
 						SimulationDataSetRef simulationDataSetReference = new SimulationDataSetRef();
 						simulationDataSetReference.setSimName(simInfo.getName());
-						String simName = simInfo.getName();
-						if (jobIndex!=0){
-							simName = simName + " job#"+String.valueOf(jobIndex);
-						}
+//						String simName = simInfo.getName();
+//						if (jobIndex!=0){
+//							simName = simName + " job#"+String.valueOf(jobIndex);
+//						}
 						
 						simulationDataSetReference.setSimId(simInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey().toString());
 						simulationDataSetReference.setModelId(modelDocument.getVersion().getVersionKey().toString());
@@ -103,12 +108,14 @@ public List<SimulationDataSetRef> getSimsFromOpenModels() throws cbit.vcell.clie
 						simulationDataSetReference.setIsMathModel(modelDocument instanceof MathModel);
 						simulationDataSetReference.setJobIndex(jobIndex);
 						simulationDataSetReference.setModelName(modelDocument.getName());
+						simulationDataSetReference.setOriginXYZ(Arrays.asList(new Double[] {origin.getX(),origin.getY(),origin.getZ()}));
+						simulationDataSetReference.setExtentXYZ(Arrays.asList(new Double[] {extent.getX(),extent.getY(),extent.getZ()}));
 						if (modelDocument instanceof BioModel){
-							BioModel bm = (BioModel) modelDocument; 
+//							BioModel bm = (BioModel) modelDocument; 
 							simulationDataSetReference.setSimulationContextName(simulation.getSimulationOwner().getName());
-							if (bm.getNumSimulationContexts()>0){
-								simName = simName + " application: "+simulation.getSimulationOwner().getName();
-							}
+//							if (bm.getNumSimulationContexts()>0){
+//								simName = simName + " application: "+simulation.getSimulationOwner().getName();
+//							}
 						}
 						simulationDataSetReference.setSimName(simInfo.getName());
 						simulationDataSetRefs.add(simulationDataSetReference);
