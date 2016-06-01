@@ -198,6 +198,8 @@ class SimulationDataSetRef:
    - isMathModel
    - simulationContextName
    - modelName
+   - originXYZ
+   - extentXYZ
   """
 
   thrift_spec = (
@@ -211,9 +213,11 @@ class SimulationDataSetRef:
     (7, TType.BOOL, 'isMathModel', None, None, ), # 7
     (8, TType.STRING, 'simulationContextName', None, None, ), # 8
     (9, TType.STRING, 'modelName', None, None, ), # 9
+    (10, TType.LIST, 'originXYZ', (TType.DOUBLE,None), None, ), # 10
+    (11, TType.LIST, 'extentXYZ', (TType.DOUBLE,None), None, ), # 11
   )
 
-  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None, modelName=None,):
+  def __init__(self, simId=None, simName=None, modelId=None, username=None, userkey=None, jobIndex=None, isMathModel=None, simulationContextName=None, modelName=None, originXYZ=None, extentXYZ=None,):
     self.simId = simId
     self.simName = simName
     self.modelId = modelId
@@ -223,6 +227,8 @@ class SimulationDataSetRef:
     self.isMathModel = isMathModel
     self.simulationContextName = simulationContextName
     self.modelName = modelName
+    self.originXYZ = originXYZ
+    self.extentXYZ = extentXYZ
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -278,6 +284,26 @@ class SimulationDataSetRef:
           self.modelName = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.LIST:
+          self.originXYZ = []
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = iprot.readDouble();
+            self.originXYZ.append(_elem5)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.LIST:
+          self.extentXYZ = []
+          (_etype9, _size6) = iprot.readListBegin()
+          for _i10 in xrange(_size6):
+            _elem11 = iprot.readDouble();
+            self.extentXYZ.append(_elem11)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -324,6 +350,20 @@ class SimulationDataSetRef:
       oprot.writeFieldBegin('modelName', TType.STRING, 9)
       oprot.writeString(self.modelName)
       oprot.writeFieldEnd()
+    if self.originXYZ is not None:
+      oprot.writeFieldBegin('originXYZ', TType.LIST, 10)
+      oprot.writeListBegin(TType.DOUBLE, len(self.originXYZ))
+      for iter12 in self.originXYZ:
+        oprot.writeDouble(iter12)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.extentXYZ is not None:
+      oprot.writeFieldBegin('extentXYZ', TType.LIST, 11)
+      oprot.writeListBegin(TType.DOUBLE, len(self.extentXYZ))
+      for iter13 in self.extentXYZ:
+        oprot.writeDouble(iter13)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -344,6 +384,10 @@ class SimulationDataSetRef:
       raise TProtocol.TProtocolException(message='Required field isMathModel is unset!')
     if self.modelName is None:
       raise TProtocol.TProtocolException(message='Required field modelName is unset!')
+    if self.originXYZ is None:
+      raise TProtocol.TProtocolException(message='Required field originXYZ is unset!')
+    if self.extentXYZ is None:
+      raise TProtocol.TProtocolException(message='Required field extentXYZ is unset!')
     return
 
 
@@ -358,6 +402,8 @@ class SimulationDataSetRef:
     value = (value * 31) ^ hash(self.isMathModel)
     value = (value * 31) ^ hash(self.simulationContextName)
     value = (value * 31) ^ hash(self.modelName)
+    value = (value * 31) ^ hash(self.originXYZ)
+    value = (value * 31) ^ hash(self.extentXYZ)
     return value
 
   def __repr__(self):
@@ -400,20 +446,20 @@ class PlotData:
       if fid == 1:
         if ftype == TType.LIST:
           self.timePoints = []
-          (_etype3, _size0) = iprot.readListBegin()
-          for _i4 in xrange(_size0):
-            _elem5 = iprot.readDouble();
-            self.timePoints.append(_elem5)
+          (_etype17, _size14) = iprot.readListBegin()
+          for _i18 in xrange(_size14):
+            _elem19 = iprot.readDouble();
+            self.timePoints.append(_elem19)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.data = []
-          (_etype9, _size6) = iprot.readListBegin()
-          for _i10 in xrange(_size6):
-            _elem11 = iprot.readDouble();
-            self.data.append(_elem11)
+          (_etype23, _size20) = iprot.readListBegin()
+          for _i24 in xrange(_size20):
+            _elem25 = iprot.readDouble();
+            self.data.append(_elem25)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -430,15 +476,15 @@ class PlotData:
     if self.timePoints is not None:
       oprot.writeFieldBegin('timePoints', TType.LIST, 1)
       oprot.writeListBegin(TType.DOUBLE, len(self.timePoints))
-      for iter12 in self.timePoints:
-        oprot.writeDouble(iter12)
+      for iter26 in self.timePoints:
+        oprot.writeDouble(iter26)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.data is not None:
       oprot.writeFieldBegin('data', TType.LIST, 2)
       oprot.writeListBegin(TType.DOUBLE, len(self.data))
-      for iter13 in self.data:
-        oprot.writeDouble(iter13)
+      for iter27 in self.data:
+        oprot.writeDouble(iter27)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -498,22 +544,22 @@ class PostProcessingData:
       if fid == 1:
         if ftype == TType.LIST:
           self.variableList = []
-          (_etype17, _size14) = iprot.readListBegin()
-          for _i18 in xrange(_size14):
-            _elem19 = VariableInfo()
-            _elem19.read(iprot)
-            self.variableList.append(_elem19)
+          (_etype31, _size28) = iprot.readListBegin()
+          for _i32 in xrange(_size28):
+            _elem33 = VariableInfo()
+            _elem33.read(iprot)
+            self.variableList.append(_elem33)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.plotData = []
-          (_etype23, _size20) = iprot.readListBegin()
-          for _i24 in xrange(_size20):
-            _elem25 = PlotData()
-            _elem25.read(iprot)
-            self.plotData.append(_elem25)
+          (_etype37, _size34) = iprot.readListBegin()
+          for _i38 in xrange(_size34):
+            _elem39 = PlotData()
+            _elem39.read(iprot)
+            self.plotData.append(_elem39)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -530,15 +576,15 @@ class PostProcessingData:
     if self.variableList is not None:
       oprot.writeFieldBegin('variableList', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.variableList))
-      for iter26 in self.variableList:
-        iter26.write(oprot)
+      for iter40 in self.variableList:
+        iter40.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.plotData is not None:
       oprot.writeFieldBegin('plotData', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.plotData))
-      for iter27 in self.plotData:
-        iter27.write(oprot)
+      for iter41 in self.plotData:
+        iter41.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
