@@ -434,11 +434,15 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	}
 	private String extractCorrectedObservablesAsString(BNGOutput sBngOutput) {
 		String input = sBngOutput.getNetFileContent();
-		
 		String pattern = "begin groups";
-		String observablesString = input.substring(input.indexOf(pattern)+pattern.length());
+		final int indexOfBeginGroups = input.indexOf(pattern);
+		if(indexOfBeginGroups == -1) {		// no observable group
+			return null;
+		}
+		String observablesString = input.substring(indexOfBeginGroups+pattern.length());
 		pattern = "end groups";
-		observablesString = observablesString.substring(0, observablesString.indexOf(pattern));
+		final int indexOfEndGroups = observablesString.indexOf(pattern);
+		observablesString = observablesString.substring(0, indexOfEndGroups);
 		return observablesString;
 	}
 	
