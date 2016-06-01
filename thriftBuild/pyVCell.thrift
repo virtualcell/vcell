@@ -40,6 +40,8 @@ struct SimulationDataSetRef {
    7: required bool isMathModel;
    8: optional string simulationContextName;
    9: required string modelName;
+  10: required list<double> originXYZ;
+  11: required list<double> extentXYZ;
 }
 typedef list<SimulationDataSetRef> SimulationDataSetRefList
 
