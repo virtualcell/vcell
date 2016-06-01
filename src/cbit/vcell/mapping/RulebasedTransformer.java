@@ -533,9 +533,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 		StringWriter bnglStringWriter = new StringWriter();
 		PrintWriter pw = new PrintWriter(bnglStringWriter);
 		//
-		// we ignore compartment info and ask bionetgen to behave as if there's only one compartment (old way of doing things with no  "@compartment:"  prefix
+		// we ignore compartment info and ask bionetgen to behave as if there's only one compartment 
+		// instead, we add an extra site with the compartments as states 
 		//
-		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
+		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
+//		RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
 		String bngl = bnglStringWriter.toString();
 		pw.close();
 		return bngl;
