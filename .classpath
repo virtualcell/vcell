@@ -42,29 +42,29 @@
 	<classpathentry kind="lib" path="testlib/miglayout-4.0-swing.jar"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4/nativelibs/mac64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_6.1/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry excluding="originalXML/topics/Introduction/" kind="src" path="UserDocumentation"/>
 	<classpathentry kind="src" path="resources_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4/nativelibs"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_6.1/nativelibs"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src_vfrap">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4/nativelibs/mac64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_6.1/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src_vmicro">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4/nativelibs"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_6.1/nativelibs"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_5.4/nativelibs/mac64"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell_6.1/nativelibs/win64"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/camel-jms-2.9.2.jar"/>
@@ -125,5 +125,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="testlib/copasi_build30.jar"/>
+	<classpathentry kind="lib" path="lib/jgrapht-core-0.9.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
