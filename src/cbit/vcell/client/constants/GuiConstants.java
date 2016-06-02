@@ -62,7 +62,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_CREATE_STOCHASTIC_APPLICATION = 
 			new ApplicationActionCommand.Create("Create Stochastic Application",Application.NETWORK_STOCHASTIC).getLabel();
 	public static final String ACTIONCMD_CREATE_DETERMINISTIC_APPLICATION = 
-			new ApplicationActionCommand.Create("Create Non-stochastic Application",Application.NETWORK_STOCHASTIC).getLabel();
+			new ApplicationActionCommand.Create("Create Non-stochastic Application",Application.NETWORK_DETERMINISTIC).getLabel();
 	public static final String ACTIONCMD_CREATE_RULEBASED_APPLICATION = 
 			new ApplicationActionCommand.Create("Create Network-Free Application",Application.RULE_BASED_STOCHASTIC).getLabel();
 	public static final String ACTIONCMD_EXPORT = "Export";
