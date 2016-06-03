@@ -67,4 +67,25 @@ public int getNumStates() {
 public String[] getStateNames() {
 	return stateNames;
 }
+
+/**
+ * this returns the pattern string where the bond indices are removed.
+ * @return
+ */
+public String extractComponentPatternSignature() {
+	String name = componentName;
+	if(currentState != null) {
+		name += "~" + currentState;
+	}
+//	System.out.println("   " + name);
+	String prefix;
+	int bond = 0;		// 0 means there is no bond; real bond is > 0
+	if(name.contains("!") && !(name.contains("!+") || name.contains("!?"))) {	// we have explicit bond
+		prefix = name.substring(0, name.indexOf("!")+1);
+		bond = Integer.parseInt(name.substring(name.indexOf("!")+1));
+	} else {
+		prefix = name;
+	}
+	return prefix;
+}
 }

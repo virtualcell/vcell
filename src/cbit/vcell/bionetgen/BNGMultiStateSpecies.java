@@ -9,7 +9,10 @@
  */
 
 package cbit.vcell.bionetgen;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
+
 import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
@@ -28,6 +31,29 @@ public BNGMultiStateSpecies(String argName, Expression argConc, int argNtwkFileI
 	setComponentStates();
 }
 
+public String extractMolecularPatternSignature(){
+	ArrayList<String> sigs = new ArrayList<String>();
+	for (BNGSpeciesComponent comp : speciesComponents){
+		sigs.add(comp.extractComponentPatternSignature());
+	}
+	Collections.sort(sigs);
+	StringBuffer buffer = new StringBuffer();
+	buffer.append(extractMolecularTypeName()+"(");
+	for (int i=0;i<sigs.size();i++){
+		buffer.append(sigs.get(i));
+		if (i<sigs.size()-1){
+			buffer.append(",");
+		}
+	}
+	buffer.append(")");
+	String molecularSignature = buffer.toString();
+	return molecularSignature;
+}
+
+public String extractMolecularTypeName(){
+	String molecularPatternString = getName();
+	return molecularPatternString.substring(0, molecularPatternString.indexOf("("));
+}
 
 /**
  * Insert the method's description here.
