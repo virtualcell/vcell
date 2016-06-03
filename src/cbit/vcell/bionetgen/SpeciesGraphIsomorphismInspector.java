@@ -1,7 +1,9 @@
 package cbit.vcell.bionetgen;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,6 +13,13 @@ import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
 import org.jgrapht.graph.SimpleGraph;
+import org.vcell.model.bngl.ASTBondState;
+import org.vcell.model.bngl.ASTMolecularComponentPattern;
+import org.vcell.model.bngl.ASTMolecularTypePattern;
+import org.vcell.model.bngl.ASTSpeciesPattern;
+import org.vcell.model.bngl.BNGLParser;
+import org.vcell.model.bngl.Node;
+import org.vcell.model.bngl.ParseException;
 import org.vcell.util.Pair;
 
 import cbit.vcell.parser.Expression;
@@ -26,68 +35,32 @@ public class SpeciesGraphIsomorphismInspector {
 		public BNGVertex(String name) {
 			this.name = name;
 		}
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (!(obj instanceof BNGVertex))
-				return false;
-			BNGVertex other = (BNGVertex) obj;
-			if (name == null) {
-				if (other.name != null) {
-					return false;
-				}
-			} else if (!name.equals(other.name)) {
-				return false;
-			}
-			return true;
+		public String getName(){
+			return name;
 		}
 	}
 	static class BNGEdge {
 		BNGVertex sourceVertex;
 		BNGVertex targetVertex;
+		String name;
 		public BNGEdge(BNGVertex sourceVertex, BNGVertex targetVertex) {
 			this.sourceVertex = sourceVertex;
 			this.targetVertex = targetVertex;
-		}
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((sourceVertex == null) ? 0 : sourceVertex.hashCode());
-			result = prime * result	+ ((targetVertex == null) ? 0 : targetVertex.hashCode());
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (!(obj instanceof BNGEdge))
-				return false;
-			BNGEdge other = (BNGEdge) obj;
-			if (sourceVertex == null) {
-				if (other.sourceVertex != null) {
-					return false;
-				}
-			} else if (!sourceVertex.equals(other.sourceVertex)) {
-				return false;
+			//
+			// sort edge name (because it should be undirected)
+			//
+			String name1 = sourceVertex.getName();
+			String name2 = targetVertex.getName();
+			if (name1.compareTo(name2)<0){
+				this.name = name1+"_"+name2;
+			}else{
+				this.name = name2+"_"+name1;
 			}
-			if (targetVertex == null) {
-				if (other.targetVertex != null) {
-					return false;
-				}
-			} else if (!targetVertex.equals(other.targetVertex)) {
-				return false;
-			}
-			return true;
 		}
+		public String getName(){
+			return this.name;
+		}
+		
 	}
 	
 	public UndirectedGraph<BNGVertex, BNGEdge> initialize(BNGSpecies bngSpecies) {
@@ -113,12 +86,12 @@ public class SpeciesGraphIsomorphismInspector {
 			if(!(ss instanceof BNGMultiStateSpecies)) {
 				throw new RuntimeException("Species " + ss.getName() + " must be instance of BNGMultiStateSpecies");
 			}
-			BNGMultiStateSpecies mss = (BNGMultiStateSpecies)ss;
-			String speciesName = mss.extractName();
-			speciesName = speciesName.substring(0, speciesName.indexOf("("));
-			BNGVertex speciesVertex  = new BNGVertex(speciesName);			// a species vertex
+			BNGMultiStateSpecies molecularPattern = (BNGMultiStateSpecies)ss;
+			String molecularPatternSignature = molecularPattern.extractMolecularPatternSignature();
+//			speciesName = speciesName.substring(0, speciesName.indexOf("("));
+			BNGVertex speciesVertex  = new BNGVertex(molecularPatternSignature);			// a species vertex
 			speciesGraph.addVertex(speciesVertex);
-			for(BNGSpeciesComponent c : mss.getComponents()) {
+			for(BNGSpeciesComponent c : molecularPattern.getComponents()) {
 				Integer bondIndex = 0;
 				String componentName = c.getComponentName();
 				String currentState = c.getCurrentState();
@@ -161,10 +134,88 @@ public class SpeciesGraphIsomorphismInspector {
 	public boolean isIsomorphism(BNGSpecies ours, BNGSpecies theirs) {
 		UndirectedGraph<BNGVertex, BNGEdge> ourGraph = initialize(ours);
 		UndirectedGraph<BNGVertex, BNGEdge> theirGraph = initialize(theirs);
-		VF2GraphIsomorphismInspector<BNGVertex, BNGEdge> inspector = new VF2GraphIsomorphismInspector<BNGVertex, BNGEdge>(ourGraph, theirGraph);
+		Comparator<BNGVertex> vertexComparator = new Comparator<BNGVertex>() {
+
+			@Override
+			public int compare(BNGVertex o1, BNGVertex o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+			
+		};
+		Comparator<BNGEdge> edgeComparator = new Comparator<BNGEdge>() {
+
+			@Override
+			public int compare(BNGEdge e1, BNGEdge e2) {
+				return e1.getName().compareTo(e2.getName());
+			}
+			
+		};
+		boolean bCacheEdges = true;
+		VF2GraphIsomorphismInspector<BNGVertex, BNGEdge> inspector = new VF2GraphIsomorphismInspector<BNGVertex, BNGEdge>(ourGraph, theirGraph, vertexComparator, edgeComparator, bCacheEdges);
 		boolean ret = inspector.isomorphismExists();
 		return ret;
 	}
+	
+//	public static class SpeciesPatternExpression {
+//		private final ASTSpeciesPattern astSpeciesPattern;
+//		private final MolecularPatternExpression[] molecularPatternExpression;
+//		
+//		public SpeciesPatternExpression(String speciesPatternString) throws ParseException{
+//			BNGLParser parser = new BNGLParser(new StringReader(speciesPatternString));
+//			this.astSpeciesPattern = parser.SpeciesPattern();
+//			.... create
+//			this.molecularPatternExpression = new MolecularPatternExpression[num];
+//			ddldl
+//		}
+//		
+//		public MolecularPatternExpression[] getMolecularPatternExpressions(){
+//			return this.molecularPatternExpression;
+//		}
+//	}
+//
+//	public static class MolecularPatternExpression {
+//		
+//		private final ComponentPatternExpression[] componentPatternExpression;
+//
+//		public MolecularPatternExpression(String speciesPatternString) throws ParseException{
+//			BNGLParser parser = new BNGLParser(new StringReader(speciesPatternString));
+//			this.astSpeciesPattern = parser.SpeciesPattern();
+//		}
+//		
+//		public String getName(){
+//			return ...
+//		}
+//		
+//	}
+//
+//	public static class ComponentPatternExpression {
+//		ASTMolecularComponentPattern pattern;
+//		
+//		private final MolecularPatternExpression[] molecularPatternExpression;
+//
+//		public MolecularPatternExpression(String speciesPatternString) throws ParseException{
+//			BNGLParser parser = new BNGLParser(new StringReader(speciesPatternString));
+//			this.astSpeciesPattern = parser.SpeciesPattern();
+//		}
+//		
+//		public String getName(){
+//			return pattern.getName();
+//		}
+//		
+//		public boolean hasBond(){
+//			for (int i=0;i<pattern.jjtGetNumChildren(); i++){
+//				Node child = pattern.jjtGetChild(i);
+//				if (child instanceof ASTBondState){
+//					((ASTBondState)child).getState()
+//				}
+//			}
+//			
+//		}
+//		
+//		public boolean hasState(){
+//			
+//		}
+//	}
 
 	// =================================================================================================================
 	public static void main(String[] argv)
@@ -172,14 +223,18 @@ public class SpeciesGraphIsomorphismInspector {
 //		permutingArray(java.util.Arrays.asList(9, 8, 7, 6, 4), 0);
 		
 		try {
-			String a = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~p,y1173~u).EGFR(ecd!2,tmd!3,y1068~u,y1173~p)";
-			String b = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~u)";
-			String c = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~v)";	// slightly different
+			String a = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~p,y1173~u).EGFR(ecd!2,tmd!3,y1068~u,y1173~p)";   // match (exact)
+			String b = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~u)";	// match (iso)
+			String c = "EGF(rb!1).EGF(rb!2).EGFR(ecd!1,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~v)";	// no match (slightly different in state)
 //			String c = "EGF(rb~Y!1).EGF(rb~pY!1).EGFR(ecd!2,tmd!3,y1068~u,y1173~p).EGFR(ecd!2,tmd!3,y1068~p,y1173~u)";
-			String d = "A(s,t!+,v!1).B(s~Y,t~Y!+,u~Y!?,v~Y!1)";
+			String d = "A(s,t!+,v!1).B(s~Y,t~Y!+,u~Y!?,v~Y!1)";		// no match (very different)
 //			String d = "A(v!1).B(v~Y!1)";
 
 			List<BNGSpecies> list = new ArrayList<>();
+			
+			BNGLParser parser = new BNGLParser(new StringReader(a));
+			//SpeciesPatternExpression spExpression = new SpeciesPatternExpression(a);
+			
 			
 			BNGSpecies aa = new  BNGComplexSpecies(a, new Expression("0.0"), 1);
 			BNGSpecies bb = new  BNGComplexSpecies(b, new Expression("0.0"), 2);
