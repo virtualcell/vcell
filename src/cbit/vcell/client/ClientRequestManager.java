@@ -1300,8 +1300,8 @@ public AsynchClientTask[] createNewGeometryTasks(final TopLevelWindowManager req
 								throw new Exception("No valid files in selected directory");
 							}
 							hashTable.put(IMPORT_SOURCE_NAME,"Directory: "+imageFile.getAbsolutePath());
+							origImageSizeInfo = ImageDatasetReaderFactory.createImageDatasetReader().getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
 							if(dirFiles.length > 1){
-								origImageSizeInfo = ImageDatasetReaderFactory.createImageDatasetReader().getImageSizeInfo(dirFiles[0].getAbsolutePath(),dirFiles.length);
 								final String importZ = "Import Z-Sections";
 								final String cancelOption = "Cancel";
 								String result = DialogUtils.showWarningDialog(guiParent, 
