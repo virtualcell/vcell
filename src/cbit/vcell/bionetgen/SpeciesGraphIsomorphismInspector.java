@@ -125,7 +125,7 @@ public class SpeciesGraphIsomorphismInspector {
 		// add the bonds (between components) as edges
 		for( Integer key : bondMap.keySet() ){
 			Pair<BNGVertex, BNGVertex> p = bondMap.get(key);
-			System.out.println(p.one + ", " + p.two);
+//			System.out.println(p.one + ", " + p.two);
 			speciesGraph.addEdge(p.one, p.two);
 		}
 		return speciesGraph;
@@ -270,7 +270,7 @@ public class SpeciesGraphIsomorphismInspector {
 			java.util.Collections.swap(arrayList, element, i);
 		}
 		if (element == arrayList.size() - 1) {
-			System.out.println(java.util.Arrays.toString(arrayList.toArray()));
+//			System.out.println(java.util.Arrays.toString(arrayList.toArray()));
 		}
 	}
 
