@@ -10,6 +10,8 @@
 
 package cbit.vcell.bionetgen;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import cbit.vcell.parser.Expression;
 
@@ -70,15 +72,16 @@ public boolean isRuleReversed() {
 	return bRuleReversed;
 }
 
-public int findProductPosition(BNGSpecies our) {
+public List<Integer> findProductPositions(BNGSpecies our) {
 	
+	List<Integer> productPositions = new ArrayList<>();
 	for(int i=0; i<products.length; i++) {		// always only look in the products
 		BNGSpecies candidate = products[i];
 		if(our.equals(candidate)) {
-			return i;
+			productPositions.add(i);
 		}
 	}
-	return -1;	// not found
+	return productPositions;
 }
 
 public Expression getParamExpression() {

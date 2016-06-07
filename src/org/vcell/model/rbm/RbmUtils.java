@@ -109,7 +109,7 @@ public class RbmUtils {
 	@Deprecated
 	public static ArrayList<String> reactionRuleNames = new ArrayList<String>();
 	public static final String SiteStruct = "AAA";		// site indicating compartment
-	public static final String SiteProduct = "AAB";		// site indicating product index, 0 if reactant (seed species)
+	public static final String SiteProduct = "AAB";		// site indicating 0 if it's reactant (seed species) or 1 if it's a product
 	
 	public static class BnglObjectConstructionVisitor implements BNGLParserVisitor {
 		private boolean stopOnError = true;	// throw exception if object which should have been there is missing
@@ -1609,6 +1609,9 @@ public class RbmUtils {
 			// insert a fake site, with bond "exists" and state named after the compartment of the species pattern
 //			String site = "struct~" + structure.getName() + "!+";
 			String site = SiteStruct + "~" + structure.getName() + ",";
+			if(productIndex > 0) {
+				productIndex = 1;	// we don't use product index anymore, we just set it to 1 if it's product (and 0 if it's reactant)
+			}
 			site += SiteProduct + "~" + productIndex;
 			bAddComma = true;		// if other components follow, we need a comma after this
 			buffer.append(site);
