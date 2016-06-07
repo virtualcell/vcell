@@ -449,7 +449,7 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			e.printStackTrace(System.out);
 		}
 	}
-	
+	fixFlags();
 	refreshDependencies();
 }
 
@@ -2579,6 +2579,15 @@ public void createDefaultParameterEstimationTask()
 	}
 }
 
+private void fixFlags() {
+	// takes care of incompatible flag combinations caused by copying while changing application types
+	if(!(getGeometry().getDimension() != 0 && applicationType == Application.NETWORK_DETERMINISTIC)) {
+		SpeciesContextSpec[] speciesContextSpec = getReactionContext().getSpeciesContextSpecs();
+		for(int i=0;i<speciesContextSpec.length;i++){
+			speciesContextSpec[i].setWellMixed(false);
+		}
+	}
+}
 
 public RateRule createRateRule(SymbolTableEntry varSTE) throws PropertyVetoException {
 	String rateRuleName = getFreeRateRuleName();
