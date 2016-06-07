@@ -1854,6 +1854,9 @@ protected void refreshMathDescription() throws MappingException, MatrixException
 			for (int i = 0; i < membraneDevices.length; i++){
 				if (membraneDevices[i].hasCapacitance() && membraneDevices[i].getDependentVoltageExpression()==null){
 					GeometryClass geometryClass = membraneMapping.getGeometryClass();
+					if(geometryClass == null){
+						throw new MappingException("Application '"+getSimulationContext().getName()+"'\nGeometry->StructureMapping->("+structureMappings[j].getStructure().getTypeName()+")'"+structureMappings[j].getStructure().getName()+"' must be mapped to geometry domain.\n(see 'Problems' tab)");
+					}
 					Domain domain = new Domain(geometryClass);
 					if (membraneMapping.getCalculateVoltage() && bCalculatePotential){
 						if (geometryClass instanceof SurfaceClass){
