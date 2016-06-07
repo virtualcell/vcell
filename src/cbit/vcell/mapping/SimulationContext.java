@@ -2230,6 +2230,13 @@ public void createDefaultParameterEstimationTask()
 	}
 }
 
+public void fixFlags() {	// called when not spatial deterministic
+	// takes care of incompatible flag combinations caused by copying while changing application types
+	SpeciesContextSpec[] speciesContextSpec = getReactionContext().getSpeciesContextSpecs();
+	for(int i=0;i<speciesContextSpec.length;i++){
+		speciesContextSpec[i].setWellMixed(false);
+	}
+}
 
 public RateRule createRateRule(SymbolTableEntry varSTE) throws PropertyVetoException {
 	String rateRuleName = getFreeRateRuleName();

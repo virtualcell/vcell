@@ -190,6 +190,9 @@ public class ClientTaskManager {
 			}
 			
 		}
+		if(!(bSpatial && !bStoch)) {
+			destSimContext.fixFlags();
+		}
 		destSimContext.setName(newSimulationContextName);	
 		return destSimContext;
 	}
