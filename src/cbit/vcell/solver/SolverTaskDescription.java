@@ -181,7 +181,12 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 				lg.trace("resetSolverTaskDescription replacing existing " + fieldSolverDescription);
 			}
 		}
-		fieldSolverDescription = SolverDescription.getDefaultSolverDescription(md);
+		try {
+			setSolverDescription(SolverDescription.getDefaultSolverDescription(md));
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new RuntimeException("failed to set SolverDescription for simulation "+getSimulation().getName(),e);
+		}
 	}
 	
 
