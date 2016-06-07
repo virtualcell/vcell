@@ -449,7 +449,6 @@ public SimulationContext(SimulationContext oldSimulationContext,Geometry newClon
 			e.printStackTrace(System.out);
 		}
 	}
-	fixFlags();
 	refreshDependencies();
 }
 
@@ -2579,7 +2578,7 @@ public void createDefaultParameterEstimationTask()
 	}
 }
 
-private void fixFlags() {
+public void fixFlags() {
 	// takes care of incompatible flag combinations caused by copying while changing application types
 	if(!(getGeometry().getDimension() != 0 && applicationType == Application.NETWORK_DETERMINISTIC)) {
 		SpeciesContextSpec[] speciesContextSpec = getReactionContext().getSpeciesContextSpecs();

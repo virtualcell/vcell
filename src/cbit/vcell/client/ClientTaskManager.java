@@ -209,6 +209,7 @@ public class ClientTaskManager {
 			}
 			
 		}
+		destSimContext.fixFlags();
 		destSimContext.setName(newSimulationContextName);	
 		return destSimContext;
 	}
