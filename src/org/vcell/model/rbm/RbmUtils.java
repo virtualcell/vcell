@@ -1520,7 +1520,7 @@ public class RbmUtils {
 			buffer.append(site + ",");
 			
 			site = SiteProduct;
-			site += "~0~1~2~3";		// index of (max 3) products, 0 means reactant, seed species or observables
+			site += "~0~1";		// 0 means reactant, seed species or observables, 1 means product
 			buffer.append(site);
 			if(molecularType.getComponentList().size() > 0) {
 				buffer.append(",");
