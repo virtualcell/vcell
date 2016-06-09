@@ -269,7 +269,7 @@ public class NFsimXMLWriter {
 		Element modelElement = new Element("model");
 		modelElement.setAttribute("id", "nameless");
 		
-		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getTaskID());
+		SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simTask.getSimulation(), simTask.getSimulationJob().getJobIndex());
 		
 		Element listOfParametersElement = getListOfParameters(mathDesc, simulationSymbolTable);
 		Element listOfMoleculeTypesElement = getListOfMoleculeTypes(mathDesc);
