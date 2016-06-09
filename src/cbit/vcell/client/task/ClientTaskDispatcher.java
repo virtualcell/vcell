@@ -242,20 +242,17 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 			}
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
-				Throwable e = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
-				String msg = e.getMessage();
-				if(msg == null || msg.length() == 0)
-				{
-					msg = "Exception: "+e.toString();
-				}
-				if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().length()>0){
-					msg+="\n"+e.getCause().getMessage();
-				}
+				StringBuffer allCausesErrorMessageSB = new StringBuffer();
+				Throwable causeError = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
+				do{
+					allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()+"-"+(causeError.getMessage()==null || causeError.getMessage().length()==0?"":causeError.getMessage()));
+					allCausesErrorMessageSB.append("\n");
+				}while((causeError = causeError.getCause()) != null);
 				if (requester == null) {
 					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 					Thread.dumpStack();
 				}
-				PopupGenerator.showErrorDialog(requester, msg, e);
+				PopupGenerator.showErrorDialog(requester, allCausesErrorMessageSB.toString(), (Throwable)hash.get(TASK_ABORTED_BY_ERROR));
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);
