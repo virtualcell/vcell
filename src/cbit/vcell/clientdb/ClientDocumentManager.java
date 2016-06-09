@@ -930,8 +930,37 @@ private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessExcep
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
+		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
+}
+
+public static class FailToLoadDocumentExc extends DataAccessException {
+//	private VCellSoftwareVersion documentSoftwareVersion;
+//	private VCellSoftwareVersion runningSoftwareVersion;
+	public FailToLoadDocumentExc(Throwable cause,VCellSoftwareVersion runningSoftwareVersion,VCellSoftwareVersion documentSoftwareVersion){
+		super(VCellErrorMessages.FAIL_LOAD_MESSAGE+"\n"+getVersionsString(runningSoftwareVersion,documentSoftwareVersion),cause);
+//		this.runningSoftwareVersion = runningSoftwareVersion;
+//		this.documentSoftwareVersion = documentSoftwareVersion;
+	}
+	public static FailToLoadDocumentExc createException(Throwable cause,KeyValue documentKey,ClientDocumentManager clientDocumentManager){
+		VCellSoftwareVersion documentSoftwareVersion = null;
+		try{
+			VCDocumentInfo docInfo = clientDocumentManager.getBioModelInfo(documentKey);
+			documentSoftwareVersion = docInfo.getSoftwareVersion();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return new FailToLoadDocumentExc(cause,VCellSoftwareVersion.fromSystemProperty(),documentSoftwareVersion);
+	}
+	public static String getVersionsString(VCellSoftwareVersion runningSoftwareVersion,VCellSoftwareVersion documentSoftwareVersion){
+		return "(run="+(runningSoftwareVersion==null?"unknown":runningSoftwareVersion.getSoftwareVersionString())+", doc="+(documentSoftwareVersion==null?"unknown":documentSoftwareVersion.getSoftwareVersionString())+")";
+	}
+//	public VCellSoftwareVersion getRunningSoftwareVersion(){
+//		return runningSoftwareVersion;
+//	}
+//	public VCellSoftwareVersion getDocumentSoftwareVersion(){
+//		return documentSoftwareVersion;
+//	}
 }
 
 
@@ -1131,8 +1160,7 @@ private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
-		//return null;
+		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
@@ -1193,8 +1221,7 @@ private String getImageXML(KeyValue vKey) throws DataAccessException {
 		return null;
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
-		//return null;
+		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
@@ -1352,8 +1379,7 @@ private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessExc
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
 		e.printStackTrace(System.out);
-		throw new DataAccessException(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n\n" + e.getMessage());
-		//return null;
+		throw FailToLoadDocumentExc.createException(e, vKey, this);
 	}
 }
 
