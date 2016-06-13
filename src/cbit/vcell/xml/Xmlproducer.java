@@ -3096,7 +3096,10 @@ private Element getXML(ParticleVariable param) {
 		e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
 	} else if(param instanceof VolumeParticleSpeciesPattern) {
 		e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
-		e.setAttribute(XMLTags.LocationAttrTag, mangle(((VolumeParticleSpeciesPattern) param).getLocationName()));
+		String locationName = ((VolumeParticleSpeciesPattern) param).getLocationName();
+		if (locationName != null){
+			e.setAttribute(XMLTags.LocationAttrTag, mangle(locationName));
+		}
 		for (ParticleMolecularTypePattern pp : ((VolumeParticleSpeciesPattern)param).getParticleMolecularTypePatterns()){
 			e.addContent(getXML(pp));
 		}

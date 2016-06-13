@@ -864,22 +864,22 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 				forwardRuleIndex++;
 			}
 		}
-        System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(forwardRuleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
-        ReactionRuleDirection forward = ReactionRuleDirection.forward;
-		System.out.println(RbmUtils.toBnglStringShort(reactionRule, CompartmentMode.show)+", direction="+forward);
-
-        MathRuleFactory mathRuleFactory = new MathRuleFactory();
-        MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
-        ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);	// compare the xml from BioNetGen with the one we build
-        
-        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule, true);
-        Set<String> ours = mathReport.getSummaryAsSet();
-        Set<String> theirs = getSummaryAsSet(rrarBiomodelForward);
-        if (compareSets(ours, theirs) == true){
-             System.out.println("Rule Analysis SAME\n");
-        }else{
-             System.out.println("Rule Analysis DIFFERENT\n");
-        }
+//        System.out.println("\n\n--------- new rule analysis report for ReactionRule \""+reactionRule.getName()+"\" (#"+(forwardRuleIndex+RuleAnalysis.INDEX_OFFSET)+") -----------\n");
+//        ReactionRuleDirection forward = ReactionRuleDirection.forward;
+//		System.out.println(RbmUtils.toBnglStringShort(reactionRule, CompartmentMode.show)+", direction="+forward);
+//
+//        MathRuleFactory mathRuleFactory = new MathRuleFactory();
+//        MathRuleEntry mathRule = mathRuleFactory.createRuleEntry(forward_particleJumpProcess, forwardRuleIndex);
+//        ((RulebasedTransformation)getTransformation()).compareOutputs(mathRule);	// compare the xml from BioNetGen with the one we build
+//        
+//        RuleAnalysisReport mathReport = RuleAnalysis.analyze(mathRule, true);
+//        Set<String> ours = mathReport.getSummaryAsSet();
+//        Set<String> theirs = getSummaryAsSet(rrarBiomodelForward);
+//        if (compareSets(ours, theirs) == true){
+//             System.out.println("Rule Analysis SAME\n");
+//        }else{
+//             System.out.println("Rule Analysis DIFFERENT\n");
+//        }
 		
 		//
 		// get reverse rate parameter and make sure it is missing or constant valued.
