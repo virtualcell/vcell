@@ -39,7 +39,8 @@ public class NfsimExtensionFilter extends SelectorExtensionFilter {
 		//long randomSeed = System.currentTimeMillis();
 		NFsimSimulationOptions nfsimSimulationOptions = new NFsimSimulationOptions();
 		// we get the data we need from the math description
-		Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions);
+		boolean bUseLocationMarks = true;
+		Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions, bUseLocationMarks);
 		Document doc = new Document();
 		doc.setRootElement(root);
 		XMLOutputter xmlOut = new XMLOutputter();

@@ -1041,33 +1041,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		}
 	}
 	
-	if(applicationType.equals(Application.RULE_BASED_STOCHASTIC) && getModel().getNumStructures() > 1) {
-		
-		Set<Structure> structures = new HashSet<> ();
-		RbmModelContainer rbmmc = getModel().getRbmModelContainer();
-		for(ReactionRule rr : rbmmc.getReactionRuleList()) {
-			structures.add(rr.getStructure());
-			for(ReactionRuleParticipant p : rr.getReactantPatterns()) {
-				structures.add(p.getStructure());
-			}
-			for(ReactionRuleParticipant p : rr.getProductPatterns()) {
-				structures.add(p.getStructure());
-			}
-		}
-		for(ReactionStep rs : getModel().getReactionSteps()) {
-			structures.add(rs.getStructure());
-			for(ReactionParticipant rp : rs.getReactionParticipants()) {
-				structures.add(rp.getStructure());
-			}
-		}
-		// TODO: add more checks to verify if we have cross structure transport
-		if(structures.size() > 1) {
-			// network free application requires one compartment only
-			String tooltip = "Please delete the Network Free application or the extra compartments.";
-			issueVector.add(new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel, 
-				VCellErrorMessages.OneStructureOnly, tooltip, Issue.Severity.WARNING));
-		}
-	}
 	if(applicationType.equals(Application.NETWORK_DETERMINISTIC) && getModel().getRbmModelContainer().getMolecularTypeList().size() > 0) {
 		// we're going to use network transformer to flatten (or we already did)
 		if(isInsufficientIterations()) {

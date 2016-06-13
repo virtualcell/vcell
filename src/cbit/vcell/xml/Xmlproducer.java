@@ -3096,6 +3096,7 @@ private Element getXML(ParticleVariable param) {
 		e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
 	} else if(param instanceof VolumeParticleSpeciesPattern) {
 		e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
+		e.setAttribute(XMLTags.LocationAttrTag, mangle(((VolumeParticleSpeciesPattern) param).getLocationName()));
 		for (ParticleMolecularTypePattern pp : ((VolumeParticleSpeciesPattern)param).getParticleMolecularTypePatterns()){
 			e.addContent(getXML(pp));
 		}

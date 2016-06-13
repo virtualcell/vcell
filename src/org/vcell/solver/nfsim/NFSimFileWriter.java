@@ -54,7 +54,8 @@ public NFSimFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessagin
 public void write(String[] parameterNames) throws Exception {	
 	WriterOutputStream wos = new WriterOutputStream(printWriter);
 	NFsimSimulationOptions nfsimSimulationOptions = simTask.getSimulation().getSolverTaskDescription().getNFSimSimulationOptions();
-	Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions);
+	boolean bUseLocationMarks = true;
+	Element root = NFsimXMLWriter.writeNFsimXML(simTask, randomSeed, nfsimSimulationOptions, bUseLocationMarks);
 	if (bUseMessaging) {
 		Element jms = super.xmlJMSParameters(); 
 		root.addContent(jms);

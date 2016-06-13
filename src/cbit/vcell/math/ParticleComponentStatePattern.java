@@ -21,6 +21,10 @@ public class ParticleComponentStatePattern implements Serializable, Matchable {
 		this.particleComponentStateDefinition = particleComponentStateDefinition;
 	}
 		
+	public ParticleComponentStatePattern(ParticleComponentStatePattern pattern) {
+		this.particleComponentStateDefinition = pattern.particleComponentStateDefinition;
+		this.bAny = pattern.bAny;
+	}
 	public boolean isAny(){
 		return bAny;
 	}

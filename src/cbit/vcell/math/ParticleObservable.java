@@ -1,9 +1,7 @@
 package cbit.vcell.math;
 
-import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -45,7 +43,7 @@ public class ParticleObservable extends Variable {
 		return name;
 	}
 	
-	public void setName(String newValue) throws PropertyVetoException {
+	public void setName(String newValue) {
 		name = newValue;
 	}
 	

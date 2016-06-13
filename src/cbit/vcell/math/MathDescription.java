@@ -2960,7 +2960,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				tokenStr = tokens.nextToken();
 				Domain domain = Variable.getDomainFromCombinedIdentifier(tokenStr);
 				String name = Variable.getNameFromCombinedIdentifier(tokenStr);
-				VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern(name,domain);
+				VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern(name,domain,null); // will set the locationName inside .read()
 				var.read(this,tokens);
 				// this is not really a variable and shouldn't be in the hash
 				// sadly the way we check consistency for compartments makes in necessary

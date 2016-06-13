@@ -148,6 +148,10 @@ public Variable getVar() {
 	return var;
 }
 
+public void setVar(VolumeParticleSpeciesPattern productPattern) {
+	this.var = productPattern;
+}
+
 
 /**
  * Write the instance of the class to VCML
@@ -187,4 +191,5 @@ public String toString() {
 	buffer.append(getVar().getName()+"  "+getOperation()+"  "+value);
 	return buffer.toString();
 }
+
 }

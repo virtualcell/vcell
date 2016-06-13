@@ -7,14 +7,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.jdom.Comment;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RuleAnalysis;
 import org.vcell.model.rbm.RuleAnalysisReport;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.PropertyLoader;
 
 import cbit.vcell.mapping.RulebasedTransformer;
@@ -41,11 +42,9 @@ import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleSpeciesPattern;
-import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeParticleSpeciesPattern;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.NFsimSimulationOptions;
@@ -263,7 +262,130 @@ public class NFsimXMLWriter {
 	static HashSet<BondSites> reactionProductBondSites = new HashSet<BondSites>();
 	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
-	public static Element writeNFsimXML(SimulationTask simTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions) throws SolverException {
+	public static Element writeNFsimXML(SimulationTask simTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
+	try {
+		System.out.println("VCML ORIGINAL .... START\n"+simTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
+	} catch (MathException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+		if (bUseLocationMarks){
+			try {
+				simTask = (SimulationTask) BeanUtils.cloneSerializable(simTask);
+				MathDescription mathDesc = simTask.getSimulation().getMathDescription();
+	
+				//
+				// get list of Compartment Names (stored in locations).
+				//
+				ArrayList<String> locations = new ArrayList<String>();
+				Enumeration<Variable> varEnum = mathDesc.getVariables();
+				ArrayList<VolumeParticleSpeciesPattern> volumeParticleSpeciesPatterns = new ArrayList<VolumeParticleSpeciesPattern>();
+				while (varEnum.hasMoreElements()){
+					Variable var = varEnum.nextElement();
+					if (var instanceof VolumeParticleSpeciesPattern){
+						VolumeParticleSpeciesPattern speciesPattern = (VolumeParticleSpeciesPattern)var;
+						if (!locations.contains(speciesPattern.getLocationName())){
+							locations.add(speciesPattern.getLocationName());
+						}
+						volumeParticleSpeciesPatterns.add(speciesPattern);
+					}
+				}
+				
+				//
+				// add location site and mark site to each ParticleMolecularType (definition of the molecular type)
+				//
+				for (ParticleMolecularType particleMolecularType : mathDesc.getParticleMolecularTypes()){
+					String pmcLocationName = RbmUtils.SiteStruct;
+					String pmcLocationId = particleMolecularType.getName() + "_" + RbmUtils.SiteStruct;
+					ParticleMolecularComponent locationComponent = new ParticleMolecularComponent(pmcLocationId, pmcLocationName);
+					for (String location : locations){
+						locationComponent.addComponentStateDefinition(new ParticleComponentStateDefinition(location));
+					}
+					particleMolecularType.insertMolecularComponent(0,locationComponent);
+					
+					String pmcMarkName = RbmUtils.SiteProduct;
+					String pmcMarkId = particleMolecularType.getName() + "_" + RbmUtils.SiteProduct;
+					ParticleMolecularComponent markComponent = new ParticleMolecularComponent(pmcMarkId, pmcMarkName);
+					markComponent.addComponentStateDefinition(new ParticleComponentStateDefinition("0"));
+					markComponent.addComponentStateDefinition(new ParticleComponentStateDefinition("1"));
+					particleMolecularType.insertMolecularComponent(1,markComponent);
+				}
+				
+				//
+				// for each VolumeParticleSpeciesPattern, add components for location and mark to Molecular Type Pattern
+				//
+				for (VolumeParticleSpeciesPattern speciesPattern : volumeParticleSpeciesPatterns){
+					for (ParticleMolecularTypePattern molTypePattern : speciesPattern.getParticleMolecularTypePatterns()){
+						//
+						// add location component to pattern ... state=<location>
+						//
+						{
+						final ParticleMolecularComponent locationComponentDefinition = molTypePattern.getMolecularType().getComponentList().get(0);
+						ParticleMolecularComponentPattern locationPattern = new ParticleMolecularComponentPattern(locationComponentDefinition);
+						ParticleComponentStateDefinition locationStateDefinition = null;
+						for (ParticleComponentStateDefinition stateDef : locationComponentDefinition.getComponentStateDefinitions()){
+							if (stateDef.getName().equals(speciesPattern.getLocationName())){
+								locationStateDefinition = stateDef;
+							}
+						}
+						ParticleComponentStatePattern locationStatePattern = new ParticleComponentStatePattern(locationStateDefinition);
+						locationPattern.setComponentStatePattern(locationStatePattern);
+						locationPattern.setBondType(ParticleBondType.None);
+						locationPattern.setBondId(-1);
+						molTypePattern.insertMolecularComponentPattern(0,locationPattern);
+						}
+						
+						//
+						// add mark component to pattern ... state="0" (for observables and reactants ... later we will clone and use "1" for products).
+						{
+						final ParticleMolecularComponent markComponentDefinition = molTypePattern.getMolecularType().getComponentList().get(1);
+						ParticleMolecularComponentPattern markPattern = new ParticleMolecularComponentPattern(markComponentDefinition);
+						final int clearStateIndex = 0;
+						final int setStateIndex = 1;
+						ParticleComponentStateDefinition markStateClearedDefinition = markComponentDefinition.getComponentStateDefinitions().get(clearStateIndex);
+						ParticleComponentStatePattern markStatePattern = new ParticleComponentStatePattern(markStateClearedDefinition);
+						markPattern.setComponentStatePattern(markStatePattern);
+						markPattern.setBondType(ParticleBondType.None);
+						markPattern.setBondId(-1);
+						molTypePattern.insertMolecularComponentPattern(1,markPattern);
+						}
+					}
+				}
+				
+				//
+				// when processing ParticleJumpProcesses, we add a new "product" species pattern (by cloning the original speciesPattern)
+				// and setting the mark site to "1", change name to name+"_PRODUCT", and add to math model if it doesn't already exist. 
+				//
+				// cloned the "standard" reactant/observable speciesPattern, set the mark for all molecules, and add to mathDesc.
+				//
+				CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
+				for (ParticleJumpProcess particleJumpProcess : subDomain.getParticleJumpProcesses()){
+					for (Action action : particleJumpProcess.getActions()){
+						if (action.getOperation().equals(Action.ACTION_CREATE)){
+							VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = (VolumeParticleSpeciesPattern)action.getVar();
+							String newSpeciesPatternName = volumeParticleSpeciesPattern.getName()+"_"+particleJumpProcess.getName();
+							VolumeParticleSpeciesPattern productPattern = new VolumeParticleSpeciesPattern(volumeParticleSpeciesPattern, newSpeciesPatternName);
+							//VolumeParticleSpeciesPattern productPattern = (VolumeParticleSpeciesPattern) BeanUtils.cloneSerializable(volumeParticleSpeciesPattern);
+							for (ParticleMolecularTypePattern productMolTypePattern : productPattern.getParticleMolecularTypePatterns()){
+								ParticleComponentStateDefinition markSet = productMolTypePattern.getMolecularType().getComponentList().get(1).getComponentStateDefinitions().get(1);
+								productMolTypePattern.getMolecularComponentPatternList().get(1).setComponentStatePattern(new ParticleComponentStatePattern(markSet));
+							}
+							
+							mathDesc.addVariable(productPattern);
+							action.setVar(productPattern);
+						}
+					}
+				}
+				try {
+					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+mathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
+				} catch (MathException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}catch (Exception e){
+				throw new SolverException("failed to apply location mark transformation: "+e.getMessage(), e);
+			}
+		}
 		MathDescription mathDesc = simTask.getSimulation().getMathDescription();
 		Element sbmlElement = new Element("sbml");
 		Element modelElement = new Element("model");
@@ -735,57 +857,6 @@ public class NFsimXMLWriter {
 			Element listOfBondsElement = getListOfBonds(bondSiteMapping);
 			reactionParticipantPatternElement.addContent(listOfBondsElement);
 			
-		}
-		return reactionParticipantPatternElement;
-	}
-	private static Element getReactionParticipantPattern1(String reactionRuleID, String patternID, VolumeParticleSpeciesPattern reactantSpeciesPattern, 
-			ArrayList<MolecularTypeOfReactionParticipant> currentParticipant, ArrayList<ComponentOfMolecularTypeOfReactionParticipant> currentComponentOfParticipant, 
-			String patternElementName) throws SolverException {
-		Element reactionParticipantPatternElement = new Element(patternElementName);
-		reactionParticipantPatternElement.setAttribute("id", reactionRuleID + "_" + patternID);
-		// reactionParticipantPatternElement.setAttribute("name",reactantSpeciesPattern.getName());
-
-		Element listOfMoleculesElement = new Element("ListOfMolecules");
-		HashMap<Bond,BondSites> bondSiteMapping = new HashMap<Bond,BondSites>();
-		for (int moleculeIndex =0; moleculeIndex < reactantSpeciesPattern.getParticleMolecularTypePatterns().size(); moleculeIndex++) {
-			ParticleMolecularTypePattern molecularTypePattern = reactantSpeciesPattern.getParticleMolecularTypePatterns().get(moleculeIndex);
-			Element moleculeElement = new Element("Molecule");
-			String moleculeID = "M" + (moleculeIndex + 1);
-			String id = reactionRuleID + "_" + patternID + "_" + moleculeID;
-			String name = molecularTypePattern.getMolecularType().getName();
-			String matchLabel = molecularTypePattern.getMatchLabel();
-			moleculeElement.setAttribute("id", id);
-			moleculeElement.setAttribute("name", name);
-			if(!("*".equals(molecularTypePattern.getMatchLabel()))) {
-				moleculeElement.setAttribute("label", molecularTypePattern.getMatchLabel());
-			}
-			MolecularTypeOfReactionParticipant per = new MolecularTypeOfReactionParticipant(name, id, matchLabel);
-			currentParticipant.add(per);
-			
-			Element listOfComponentsElement = getListOfComponents1(reactionRuleID, patternID, moleculeID, reactantSpeciesPattern, molecularTypePattern, 
-					currentComponentOfParticipant, bondSiteMapping);
-			moleculeElement.addContent(listOfComponentsElement);
-			
-			listOfMoleculesElement.addContent(moleculeElement);
-		}
-		reactionParticipantPatternElement.addContent(listOfMoleculesElement);
-		
-		if (bondSiteMapping.size()>0){
-			
-			Element listOfBondsElement = getListOfBonds(bondSiteMapping);
-			reactionParticipantPatternElement.addContent(listOfBondsElement);
-			
-			Iterator it = bondSiteMapping.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<Bond,BondSites> pairs = (Map.Entry)it.next();
-				if(patternElementName.equals("ProductPattern")) {
-					patternProductBondSites.add(pairs.getValue());
-				} else {
-					patternReactantBondSites.add(pairs.getValue());
-				}
-//				System.out.println(pairs.getKey() + " = " + pairs.getValue());
-//				it.remove(); // avoids a ConcurrentModificationException
-			}
 		}
 		return reactionParticipantPatternElement;
 	}

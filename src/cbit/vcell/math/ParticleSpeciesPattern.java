@@ -12,10 +12,28 @@ import cbit.vcell.math.ParticleMolecularComponentPattern.ParticleBondType;
 @SuppressWarnings("serial")
 public abstract class ParticleSpeciesPattern extends ParticleVariable {
 
+	private String locationName;
 	private List<ParticleMolecularTypePattern> molecularTypePatterns = new ArrayList<ParticleMolecularTypePattern>();
 	
-	public ParticleSpeciesPattern(String name, Domain domain) {
+	public ParticleSpeciesPattern(String name, Domain domain, String locationName) {
 		super(name, domain);
+		this.locationName = locationName;
+	}
+	
+	public ParticleSpeciesPattern(ParticleSpeciesPattern particleSpeciesPattern, String newName) {
+		super(newName, particleSpeciesPattern.getDomain());
+		this.locationName = particleSpeciesPattern.getLocationName();
+		for (ParticleMolecularTypePattern pattern : particleSpeciesPattern.molecularTypePatterns){
+			molecularTypePatterns.add(new ParticleMolecularTypePattern(pattern));
+		}
+	}
+
+	public String getLocationName(){
+		return this.locationName;
+	}
+	
+	void setLocationName(String locationName) {
+		this.locationName = locationName;
 	}
 	
 	public void addMolecularTypePattern(ParticleMolecularTypePattern molecularTypePattern) {
@@ -66,6 +84,9 @@ public abstract class ParticleSpeciesPattern extends ParticleVariable {
 				return false;
 			}
 			if (!Compare.isEqual(molecularTypePatterns, other.molecularTypePatterns)){
+				return false;
+			}
+			if (!Compare.isEqual(locationName, other.locationName)){
 				return false;
 			}
 			return true;

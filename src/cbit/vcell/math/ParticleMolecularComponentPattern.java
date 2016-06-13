@@ -2,6 +2,7 @@ package cbit.vcell.math;
 
 import java.io.Serializable;
 
+import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -43,6 +44,13 @@ public class ParticleMolecularComponentPattern implements Serializable, Matchabl
 		this.molecularComponent = molecularComponent;
 	}
 	
+	public ParticleMolecularComponentPattern(ParticleMolecularComponentPattern pattern) {
+		this.molecularComponent = pattern.molecularComponent;
+		this.componentStatePattern = new ParticleComponentStatePattern(pattern.getComponentStatePattern());
+		this.bondId = pattern.getBondId();
+		this.bondType = pattern.getBondType();
+	}
+
 	public  boolean isFullyDefined(){
 		return !componentStatePattern.isAny();
 	}

@@ -22,6 +22,14 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 //		}
 	}
 		
+	public ParticleMolecularTypePattern(ParticleMolecularTypePattern particleMolecularTypePattern) {
+		this.molecularType = particleMolecularTypePattern.molecularType;
+		this.matchLabel = particleMolecularTypePattern.matchLabel;
+		for (ParticleMolecularComponentPattern pattern : particleMolecularTypePattern.componentPatternList){
+			componentPatternList.add(new ParticleMolecularComponentPattern(pattern));
+		}
+	}
+
 	public ParticleMolecularComponentPattern getMolecularComponentPattern(ParticleMolecularComponent mc) {
 		for (ParticleMolecularComponentPattern mcp : componentPatternList) {
 			if (mcp.getMolecularComponent() == mc) {
@@ -57,6 +65,12 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 	public void addMolecularComponentPattern(ParticleMolecularComponentPattern componentPattern){
 		if (!componentPatternList.contains(componentPattern)){
 			componentPatternList.add(componentPattern);
+		}
+	}
+
+	public void insertMolecularComponentPattern(int position, ParticleMolecularComponentPattern componentPattern){
+		if (!componentPatternList.contains(componentPattern)){
+			componentPatternList.add(position,componentPattern);
 		}
 	}
 
