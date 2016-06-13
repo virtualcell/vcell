@@ -1047,21 +1047,23 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		// Assemble list of all Species Patterns (from observables, reaction rules, and seed species).
 		//
 		
-		LinkedHashSet<SpeciesPattern> speciesPatternSet = new LinkedHashSet<SpeciesPattern>();			// linked hash set maintains insertion order
+		LinkedHashMap<SpeciesPattern, Structure> speciesPatternStructureMap = new LinkedHashMap<SpeciesPattern, Structure>();			// linked hash set maintains insertion order
 		for (RbmObservable observable : observableList){
-			speciesPatternSet.addAll(observable.getSpeciesPatternList());
+			for (SpeciesPattern speciesPattern : observable.getSpeciesPatternList()){
+				speciesPatternStructureMap.put(speciesPattern, observable.getStructure());
+			}
 		}
 		for (ReactionRule reactionRule : rrList){
 			for (ReactantPattern rp : reactionRule.getReactantPatterns()){
-				speciesPatternSet.add(rp.getSpeciesPattern());
+				speciesPatternStructureMap.put(rp.getSpeciesPattern(), rp.getStructure());
 			}
 			for (ProductPattern pp : reactionRule.getProductPatterns()){
-				speciesPatternSet.add(pp.getSpeciesPattern());
+				speciesPatternStructureMap.put(pp.getSpeciesPattern(), pp.getStructure());
 			}
 		}
 		for (SpeciesContext sc : model.getSpeciesContexts()){
 			if(!sc.hasSpeciesPattern()) { continue; }
-			speciesPatternSet.add(sc.getSpeciesPattern());
+			speciesPatternStructureMap.put(sc.getSpeciesPattern(), sc.getStructure());
 		}
 		
 		//
@@ -1070,8 +1072,8 @@ protected RulebasedMathMapping(SimulationContext simContext, MathMappingCallback
 		HashMap<String,VolumeParticleSpeciesPattern> speciesPatternVCMLMap = new HashMap<String,VolumeParticleSpeciesPattern>();
 		HashMap<SpeciesPattern,VolumeParticleSpeciesPattern> speciesPatternMap = new HashMap<SpeciesPattern, VolumeParticleSpeciesPattern>();
 		String speciesPatternName = "speciesPattern0";
-		for (SpeciesPattern speciesPattern : speciesPatternSet) {
-			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = new VolumeParticleSpeciesPattern(speciesPatternName,domain);
+		for (SpeciesPattern speciesPattern : speciesPatternStructureMap.keySet()) {
+			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = new VolumeParticleSpeciesPattern(speciesPatternName,domain,speciesPatternStructureMap.get(speciesPattern).getName());
 			
 			for (MolecularTypePattern molecularTypePattern : speciesPattern.getMolecularTypePatterns()){
 				ParticleMolecularType particleMolecularType = mathDesc.getParticleMolecularType(molecularTypePattern.getMolecularType().getName());

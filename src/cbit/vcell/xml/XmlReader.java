@@ -7368,7 +7368,8 @@ private VolumeParticleSpeciesPattern getVolumeParticleSpeciesPattern(Element par
 	if (domainStr!=null){
 		domain = new Domain(domainStr);
 	}
-	VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern( name, domain );
+	String location = unMangle( param.getAttributeValue(XMLTags.LocationAttrTag) );
+	VolumeParticleSpeciesPattern var = new VolumeParticleSpeciesPattern( name, domain, location);
 	
 	List<Element> molecularTypeList = param.getChildren(XMLTags.ParticleMolecularTypePatternTag, vcNamespace);
 	for (Element molecularType : molecularTypeList) {

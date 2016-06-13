@@ -568,6 +568,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 		BNGInput bngInput = new BNGInput(input);
 		BNGOutput bngOutput = null;
 		try {
+			// for the writeXML command we don't want to run iteration by iteration - it wouldn't even make sense since we don't flatten anything
+			// so we run bionetgen the "old" way
 			final BNGExecutorService bngService = BNGExecutorService.getInstanceOld(bngInput,networkGenerationRequirements.timeoutDurationMS);
 			bngOutput = bngService.executeBNG();
 		} catch (RuntimeException ex) {

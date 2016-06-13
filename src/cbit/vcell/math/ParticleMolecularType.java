@@ -27,6 +27,14 @@ public class ParticleMolecularType implements Serializable, Matchable {
 		}
 	}
 	
+	public void insertMolecularComponent(int position, ParticleMolecularComponent molecularComponent) {
+		if (!componentList.contains(molecularComponent)) {
+			List<ParticleMolecularComponent> newValue = new ArrayList<ParticleMolecularComponent>(componentList);
+			newValue.add(position, molecularComponent);
+			setComponentList(newValue);
+		}
+	}
+	
 	public ParticleMolecularComponent createMolecularComponent() {
 		int count=0;
 		String name = null;

@@ -6,8 +6,12 @@ import org.vcell.util.Matchable;
 @SuppressWarnings("serial")
 public class VolumeParticleSpeciesPattern extends ParticleSpeciesPattern {
 
-	public VolumeParticleSpeciesPattern(String name, Domain domain) {
-		super(name, domain);
+	public VolumeParticleSpeciesPattern(String name, Domain domain, String locationName) {
+		super(name, domain, locationName);
+	}
+
+	public VolumeParticleSpeciesPattern(VolumeParticleSpeciesPattern volumeParticleSpeciesPattern, String newName) {
+		super(volumeParticleSpeciesPattern, newName);
 	}
 
 	@Override
@@ -18,6 +22,7 @@ public class VolumeParticleSpeciesPattern extends ParticleSpeciesPattern {
 	public String getVCML(String name) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(VCML.VolumeParticleSpeciesPattern+"    "+name + " {\n");
+		buffer.append("    "+VCML.SpeciesPatternLocation+"    "+getLocationName()+"\n");
 		for (ParticleMolecularTypePattern pattern : getParticleMolecularTypePatterns()) {
 			buffer.append(pattern.getVCML()+"\n");
 		}
@@ -47,6 +52,11 @@ public class VolumeParticleSpeciesPattern extends ParticleSpeciesPattern {
 			if (token.equalsIgnoreCase(VCML.EndBlock)){
 				break;
 			}			
+			if (token.equalsIgnoreCase(VCML.SpeciesPatternLocation)){
+				token = tokens.nextToken();
+				setLocationName(token);
+				continue;
+			}	
 			if (token.equalsIgnoreCase(VCML.ParticleMolecularTypePattern)){
 				token = tokens.nextToken();
 				String molecularTypeName = token;
@@ -64,5 +74,4 @@ public class VolumeParticleSpeciesPattern extends ParticleSpeciesPattern {
 		}	
 			
 	}
-
 }

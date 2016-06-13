@@ -215,6 +215,9 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			cmds.add("-seed");
 			cmds.add(seed.toString());
 		}
+		
+		cmds.add("-vcell");
+		
 		cmds.addAll(new ArrayList<String>(Arrays.asList(baseCommands)));
 		cmds.add(timeSpecOption1);
 		cmds.add(timeSpecOption2);
