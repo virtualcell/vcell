@@ -56,15 +56,18 @@ public abstract class VCDocumentDbTreeModel extends DefaultTreeModel implements 
 	public static final String USER_tutorial = "tutorial";
 	public static final String USER_Education = "Education";
 	public static final String USER_BioNetGen = "BioNetGen";
+	public static final String USER_BioNetGen61 = "BioNetGenC";
 	
 	protected BioModelNode tutorialModelsNode = null;
 	protected BioModelNode educationModelsNode = null;
 	protected BioModelNode bngRulesBasedModelsNode = null;
+	protected BioModelNode bngRulesBasedModelsNode61 = null;
 	protected BioModelNode publicModelsNode = null;
 	
 	public static final String Tutorials = "Tutorials";
 	public static final String Education = "Education";
 	public static final String BNGRulesBased = "Tutorial VCell 6.0 (Rule-based)";
+	public static final String BNGRulesBased61 = "Tutorial VCell 6.1 (Rule-based)";
 	
 	public static final String SHARED_BIO_MODELS = "Shared BioModels";
 	public static final String Public_BioModels = "Public BioModels";
@@ -120,9 +123,11 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 	boolean bTutorial = vcDocumentDbTreeModel.tutorialModelsNode != null;
 	boolean bEducation = vcDocumentDbTreeModel.educationModelsNode != null;
 	boolean bBNGRules = vcDocumentDbTreeModel.bngRulesBasedModelsNode != null;
+	boolean bBNGRules61 = vcDocumentDbTreeModel.bngRulesBasedModelsNode61 != null;
 	if(bTutorial){vcDocumentDbTreeModel.tutorialModelsNode.removeAllChildren();}
 	if(bEducation){vcDocumentDbTreeModel.educationModelsNode.removeAllChildren();}
 	if(bBNGRules){vcDocumentDbTreeModel.bngRulesBasedModelsNode.removeAllChildren();}
+	if(bBNGRules61){vcDocumentDbTreeModel.bngRulesBasedModelsNode61.removeAllChildren();}
 	for (String username : treeMap.keySet()) {
 		BioModelNode userNode = treeMap.get(username);
 		BioModelNode parentNode = vcDocumentDbTreeModel.sharedModelsNode;
@@ -133,6 +138,8 @@ protected synchronized static void initFinalTree(VCDocumentDbTreeModel vcDocumen
 			parentNode = vcDocumentDbTreeModel.educationModelsNode;
 		} else if (username.equals(USER_BioNetGen) && bBNGRules) {
 			parentNode = vcDocumentDbTreeModel.bngRulesBasedModelsNode;
+		} else if (username.equals(USER_BioNetGen61) && bBNGRules) {
+			parentNode = vcDocumentDbTreeModel.bngRulesBasedModelsNode61;
 		} else {
 			bSpecificUser = false;
 		}
