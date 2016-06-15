@@ -18,6 +18,7 @@ import org.vcell.util.IssueContext;
 import org.vcell.util.Issue.Severity;
 
 import cbit.vcell.graph.SpeciesPatternSmallShape.DisplayRequirements;
+import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SimpleReaction;
@@ -106,7 +107,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 			} else {
 				componentColor = componentHidden;
 			}
-		} else if(owner instanceof ReactionRule || owner instanceof SimpleReaction) {
+		} else if(owner instanceof ReactionRule || owner instanceof SimpleReaction || owner instanceof FluxReaction) {
 			if(mcp.getBondType() == BondType.Specified) {
 				componentColor = Color.green;
 			} else {
@@ -136,7 +137,7 @@ public class MolecularComponentSmallShape extends AbstractComponentShape impleme
 			if(csp != null && !csp.isAny()) {
 				componentColor = componentGreen;
 			}
-		} else if(owner instanceof SimpleReaction) {
+		} else if(owner instanceof SimpleReaction || owner instanceof FluxReaction) {
 			componentColor = componentHidden;
 			if(mcp.isbVisible()) {
 				componentColor = componentGreen;
