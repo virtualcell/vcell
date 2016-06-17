@@ -14,7 +14,7 @@ abstract class CygwinDLL implements VersionedLibrary {
 	/**
 	 * associated library names
 	 */
-	protected static final String[] LIB_64_NAMES = { "cyggcc_s-seh-1.dll","cygstdc++-6.dll","cyggfortran-3.dll", "cygquadmath-0.dll"};
+	protected static final String[] LIB_64_NAMES = { "cyggcc_s-seh-1.dll","cygstdc++-6.dll","cyggfortran-3.dll", "cygquadmath-0.dll", "cygz.dll"};
 	protected static final String[] LIB_32_NAMES = { "cyggcc_s-1.dll","cygstdc++-6.dll"};
 	private final OperatingSystemInfo operatingSystemInfo;
 	private Collection<ProvidedLibrary> libs;
