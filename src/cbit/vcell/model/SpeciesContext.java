@@ -357,22 +357,24 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 							String msg = MolecularType.typeName + "s " + mtThat.getName() + " and " + mtpThis.getMolecularType().getName() + " do not compare equal.";
 							issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_WARNING));
 						} else {
-							String msg = "All components in the " + mtThat.getDisplayType() + " definition must be present. Missing:";
-							boolean isInvalid = false;
-							for(int i=0; i< mtpThis.getComponentPatternList().size(); i++) {
-								MolecularComponentPattern mcp = mtpThis.getComponentPatternList().get(i);
-								if(mcp.isImplied()) {
-									if(isInvalid) {
-										msg += ",";
-									}
-									isInvalid = true;
-									msg += " " + mcp.getMolecularComponent().getName();
-								}
-							}
-							if(isInvalid) {
-								msg += ".";
-								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
-							}
+// TODO: components cannot be missing, see if this test is really needed
+// TODO: the isImplied test is wrong here
+//							String msg = "All components in the " + mtThat.getDisplayType() + " definition must be present. Missing:";
+//							boolean isInvalid = false;
+//							for(int i=0; i< mtpThis.getComponentPatternList().size(); i++) {
+//								MolecularComponentPattern mcp = mtpThis.getComponentPatternList().get(i);
+//								if(mcp.isImplied()) {
+//									if(isInvalid) {
+//										msg += ",";
+//									}
+//									isInvalid = true;
+//									msg += " " + mcp.getMolecularComponent().getName();
+//								}
+//							}
+//							if(isInvalid) {
+//								msg += ".";
+//								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+//							}
 						}
 					}
 				}
@@ -381,6 +383,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			for(MolecularTypePattern mtpThis : speciesPattern.getMolecularTypePatterns()) {
 				checkComponentStateConsistency(issueContext, issueList, mtpThis);
 			}
+			// the bond must not be ambiguous - seed species must be either unbound or specified (explicit) bond
+			for(MolecularTypePattern mtpThis : speciesPattern.getMolecularTypePatterns()) {
+				for(MolecularComponentPattern mcpThis : mtpThis.getComponentPatternList()) {
+					if(mcpThis.getBondType() == BondType.Possible || mcpThis.getBondType() == BondType.Exists) {
+						String msg = "The Bond of " + mcpThis.getMolecularComponent().getDisplayName() + " must be 'Unbound' or explicit.";
+						issueList.add(new Issue(this, mcpThis, issueContext, IssueCategory.Identifiers, msg, null, Issue.Severity.ERROR));
+					}
+				}
+			}
+			
 			for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
 				String name = mtp.getMolecularType().getDisplayName().toLowerCase();
 				if(name.equals("trash")) {
