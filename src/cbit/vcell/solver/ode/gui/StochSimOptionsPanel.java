@@ -29,10 +29,10 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.constants.GuiConstants;
+import cbit.vcell.solver.NonspatialStochHybridOptions;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochHybridOptions;
-import cbit.vcell.solver.StochSimOptions;
 
 @SuppressWarnings("serial")
 public class StochSimOptionsPanel extends CollapsiblePanel {
@@ -602,7 +602,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 			return;
 		}
 		try{
-			StochSimOptions stochOpt = getSolverTaskDescription().getStochOpt();
+			NonspatialStochSimOptions stochOpt = getSolverTaskDescription().getStochOpt();
 			long numTrials = 1;
 			if (getHistogramButton().isSelected()) {
 				numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());				
@@ -613,29 +613,27 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 				customSeed = (Integer.parseInt(getJTextFieldCustomSeed().getText()));
 			}
 		
-			if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))	{				
-				getSolverTaskDescription().setStochOpt(new StochSimOptions(bUseCustomSeed, customSeed, numTrials));
-			}
-			else {
-				StochHybridOptions stochHybridOptions = (StochHybridOptions)stochOpt;
-				double epsilon = stochHybridOptions.getEpsilon();
+			getSolverTaskDescription().setStochOpt(new NonspatialStochSimOptions(bUseCustomSeed, customSeed, numTrials));
+			
+			if (!getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)) {		
+				NonspatialStochHybridOptions stochHybridOpt = getSolverTaskDescription().getStochHybridOpt();
+				double epsilon = stochHybridOpt.getEpsilon();
 				if(getEpsilonTextField().isEnabled() && getEpsilonTextField().getText().length() > 0) {
 					epsilon = Double.parseDouble(getEpsilonTextField().getText());
 				}
-				double lambda = stochHybridOptions.getLambda();
+				double lambda = stochHybridOpt.getLambda();
 				if(getLambdaTextField().isEnabled() && getLambdaTextField().getText().length() > 0) {
 					lambda = Double.parseDouble(getLambdaTextField().getText());
 				}
-				double MSRTolerance = stochHybridOptions.getMSRTolerance();		
+				double MSRTolerance = stochHybridOpt.getMSRTolerance();		
 				if(getMSRToleranceTextField().isEnabled() && getMSRToleranceTextField().getText().length() > 0) {
 					MSRTolerance = Double.parseDouble(getMSRToleranceTextField().getText());
 				}
-				double SDETolerance = stochHybridOptions.getSDETolerance();
+				double SDETolerance = stochHybridOpt.getSDETolerance();
 				if(getSDEToleranceTextField().isEnabled() && getSDEToleranceTextField().getText().length() > 0) {
 					SDETolerance = Double.parseDouble(getSDEToleranceTextField().getText());
 				}
-				getSolverTaskDescription().setStochOpt(new StochHybridOptions(bUseCustomSeed, 
-						customSeed, numTrials, epsilon, lambda, MSRTolerance, SDETolerance));
+				getSolverTaskDescription().setStochHybridOpt(new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance));
 			}
 		} catch(Exception e){
 			PopupGenerator.showErrorDialog(this, e.getMessage(), e);
@@ -652,7 +650,7 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		}
 			
 		setVisible(true);		
-		StochSimOptions sso = getSolverTaskDescription().getStochOpt();	
+		NonspatialStochSimOptions sso = getSolverTaskDescription().getStochOpt();	
 		
 		long numTrials = sso.getNumOfTrials();		
 		if(numTrials == 1){ // 1 trial
@@ -676,7 +674,8 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		}
 		getJTextFieldCustomSeed().setText(customSeed+"");
 
-		boolean bHybrid = sso instanceof StochHybridOptions;
+		NonspatialStochHybridOptions hybridOptions = getSolverTaskDescription().getStochHybridOpt();
+		boolean bHybrid = hybridOptions!=null;
 		
 		getEpsilonLabel().setEnabled(bHybrid);
 		getEpsilonTextField().setEnabled(bHybrid);
@@ -689,11 +688,10 @@ public class StochSimOptionsPanel extends CollapsiblePanel {
 		
 		if (bHybrid)
 		{
-			StochHybridOptions sho = (StochHybridOptions)sso;
-			getEpsilonTextField().setText(sho.getEpsilon()+"");
-			getLambdaTextField().setText(sho.getLambda()+"");
-			getMSRToleranceTextField().setText(sho.getMSRTolerance()+"");
-			getSDEToleranceTextField().setText(sho.getSDETolerance()+"");
+			getEpsilonTextField().setText(hybridOptions.getEpsilon()+"");
+			getLambdaTextField().setText(hybridOptions.getLambda()+"");
+			getMSRToleranceTextField().setText(hybridOptions.getMSRTolerance()+"");
+			getSDEToleranceTextField().setText(hybridOptions.getSDETolerance()+"");
 			if(!getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
 			{
 				getSDEToleranceTextField().setEnabled(false);

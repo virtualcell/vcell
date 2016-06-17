@@ -25,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.TimeInterval;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Compare;
 import org.vcell.util.Extent;
@@ -40,10 +39,10 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -290,7 +289,7 @@ private void displayOverrides() {
 private void displayTask() {
 	SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 	try {
-		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
+		NonspatialStochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		if(stochOpt != null && stochOpt.getNumOfTrials() > 1 )
 		{
 			getJLabelOutput().setText("Histogram with "+stochOpt.getNumOfTrials()+" Trials(@last time point)");

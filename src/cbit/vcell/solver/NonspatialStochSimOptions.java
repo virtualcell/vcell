@@ -15,7 +15,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 
-public class StochSimOptions implements java.io.Serializable, Matchable {
+public class NonspatialStochSimOptions implements java.io.Serializable, Matchable {
 	protected boolean useCustomSeed = false;
 	protected int customSeed = 0;
 	protected long numOfTrials = 1;
@@ -24,7 +24,7 @@ public class StochSimOptions implements java.io.Serializable, Matchable {
  * StochSimOptions constructor comment.
  * @param status int
  */
-public StochSimOptions()
+public NonspatialStochSimOptions()
 {
 	useCustomSeed = false;
 	customSeed = 0;
@@ -37,14 +37,14 @@ public StochSimOptions()
  * @param status int
  * @param message java.lang.String
  */
-public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials) 
+public NonspatialStochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials) 
 {
 	useCustomSeed = arg_useCustomSeed;
 	customSeed = arg_customSeed;
 	numOfTrials = arg_numOfTrials;
 }
 
-public StochSimOptions(StochSimOptions sso) 
+public NonspatialStochSimOptions(NonspatialStochSimOptions sso) 
 {
 	useCustomSeed = sso.useCustomSeed;
 	customSeed = sso.customSeed;
@@ -61,8 +61,8 @@ public boolean compareEqual(Matchable obj)
 	if (this == obj) {
 		return true;
 	}
-	if (obj != null && obj instanceof StochSimOptions) {
-		StochSimOptions stochOpt = (StochSimOptions) obj;
+	if (obj != null && obj instanceof NonspatialStochSimOptions) {
+		NonspatialStochSimOptions stochOpt = (NonspatialStochSimOptions) obj;
 		if (isUseCustomSeed() != stochOpt.isUseCustomSeed()) {
 			return false;
 		}

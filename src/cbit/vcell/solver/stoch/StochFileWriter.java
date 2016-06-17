@@ -29,9 +29,9 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
 
@@ -180,7 +180,7 @@ public void write(String[] parameterNames) throws Exception,ExpressionException
 	cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 	cbit.vcell.solver.OutputTimeSpec outputTimeSpec = solverTaskDescription.getOutputTimeSpec();
 	ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
-	StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
+	NonspatialStochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 	printWriter.println("STARTING_TIME"+"\t"+ timeBounds.getStartingTime());
 	printWriter.println("ENDING_TIME "+"\t"+ timeBounds.getEndingTime());
 //		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());

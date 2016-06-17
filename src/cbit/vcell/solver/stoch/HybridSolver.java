@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.SessionLog;
@@ -26,26 +25,21 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.NonspatialStochHybridOptions;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochHybridOptions;
-import cbit.vcell.solver.StochSimOptions;
-import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.SimpleCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
+import cbit.vcell.solvers.SimpleCompiledSolver;
 /**
  * The HybridSolver is used to solve stochastic stiff problem.
  * Two types of solvers are provided in this class, which are fixed time step methods (Gibson_Euler
@@ -380,23 +374,21 @@ protected String[] getMathExecutableCommand() {
 	String paraString = "";
 
 	SolverTaskDescription solverTaskDescription = simTask.getSimulation().getSolverTaskDescription();
-	StochSimOptions so = solverTaskDescription.getStochOpt(); 
-	if(so instanceof StochHybridOptions)
-	{
-		StochHybridOptions sho = ((StochHybridOptions)solverTaskDescription.getStochOpt());
-		epsilon = " "+String.valueOf(sho.getEpsilon());
-	    lambda = " "+String.valueOf(sho.getLambda());
-	    MSR_Tolerance = " "+String.valueOf(sho.getMSRTolerance());
-	    if(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
-	    	SDE_Tolerance = " "+String.valueOf(sho.getSDETolerance());
-	    else SDE_Tolerance = "";
-	    SDE_dt = " "+String.valueOf(solverTaskDescription.getTimeStep().getDefaultTimeStep());
-	    paraString = epsilon + lambda + MSR_Tolerance + SDE_Tolerance + SDE_dt;
-	    if(sho.isUseCustomSeed())
-	    	randomNumber = " -R "+String.valueOf(sho.getCustomSeed());
-	}else{
+	NonspatialStochSimOptions stochOpts = solverTaskDescription.getStochOpt(); 
+	NonspatialStochHybridOptions hybridOpts = solverTaskDescription.getStochHybridOpt();
+	if (hybridOpts==null){
 		throw new RuntimeException("expecting StochHybridOptions for solver type "+solverTaskDescription.getSolverDescription().getDisplayLabel());
 	}
+	epsilon = " "+String.valueOf(hybridOpts.getEpsilon());
+    lambda = " "+String.valueOf(hybridOpts.getLambda());
+    MSR_Tolerance = " "+String.valueOf(hybridOpts.getMSRTolerance());
+    if(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
+    	SDE_Tolerance = " "+String.valueOf(hybridOpts.getSDETolerance());
+    else SDE_Tolerance = "";
+    SDE_dt = " "+String.valueOf(solverTaskDescription.getTimeStep().getDefaultTimeStep());
+    paraString = epsilon + lambda + MSR_Tolerance + SDE_Tolerance + SDE_dt;
+    if(stochOpts.isUseCustomSeed())
+    	randomNumber = " -R "+String.valueOf(stochOpts.getCustomSeed());
 	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
 	{

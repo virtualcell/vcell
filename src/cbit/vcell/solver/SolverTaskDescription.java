@@ -43,6 +43,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	public static final String PROPERTY_TIME_BOUNDS = "timeBounds";
 	public static final String PROPERTY_TIME_STEP = "timeStep";
 	public static final String PROPERTY_STOCH_SIM_OPTIONS = "StochSimOptions";
+	public static final String PROPERTY_STOCH_HYBRID_OPTIONS = "StochHybridOptions";
 	public static final String PROPERTY_STOP_AT_SPATIALLY_UNIFORM_ERROR_TOLERANCE = "stopAtSpatiallyUniformErrorTolerance";
 	public static final String PROPERTY_SMOLDYN_SIMULATION_OPTIONS = "smoldynSimulationOptions";
 	public static final String PROPERTY_NFSIM_SIMULATION_OPTIONS = "nfsimSimulationOptions";
@@ -62,10 +63,11 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private TimeBounds fieldTimeBounds = new TimeBounds();
 	private TimeStep fieldTimeStep = new TimeStep();
 	private ErrorTolerance fieldErrorTolerance = new ErrorTolerance();
-	private SolverDescription fieldSolverDescription = null;
+	private SolverDescription fieldSolverDescription;
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
-	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
+	private NonspatialStochSimOptions fieldNonspatialStochOpt = null; //added Dec 5th, 2006
+	private NonspatialStochHybridOptions fieldNonspatialStochHybridOpt = null; //added June 17, 2016
 	private ErrorTolerance stopAtSpatiallyUniformErrorTolerance = null;
 	private boolean bSerialParameterScan = false;
 	private SmoldynSimulationOptions smoldynSimulationOptions = null;
@@ -394,14 +396,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		return (getTaskType() == TASK_STEADY);
 	}
 
-
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (12/6/2006 6:16:42 PM)
 	 * @return cbit.vcell.solver.StochSimOptions
 	 */
-	public StochSimOptions getStochOpt() {
-		return fieldStochOpt;
+	public NonspatialStochSimOptions getStochOpt() {
+		return fieldNonspatialStochOpt;
 	}
 
 
@@ -623,19 +624,14 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					setOutputTimeSpec(solverDescription.createOutputTimeSpec(this));
 				}
 				if (solverDescription.isNonSpatialStochasticSolver()) {
-					if (solverDescription.equals(SolverDescription.StochGibson)) {
-						if (fieldStochOpt == null) {
-							setStochOpt(new StochSimOptions());
-						} else {
-							setStochOpt(new StochSimOptions(fieldStochOpt));
-						}
+					if (fieldNonspatialStochOpt == null) {
+						setStochOpt(new NonspatialStochSimOptions());
 					} else {
-						if (fieldStochOpt == null) {
-							setStochOpt(new StochHybridOptions());
-						} else if (fieldStochOpt instanceof StochHybridOptions) {
-							setStochOpt(new StochHybridOptions((StochHybridOptions)fieldStochOpt));
-						} else {
-							setStochOpt(new StochHybridOptions(fieldStochOpt.isUseCustomSeed(), fieldStochOpt.getCustomSeed(), fieldStochOpt.getNumOfTrials()));
+						setStochOpt(new NonspatialStochSimOptions(fieldNonspatialStochOpt));
+					}
+					if (!solverDescription.equals(SolverDescription.StochGibson)) {
+						if (fieldNonspatialStochHybridOpt == null) {
+							setStochHybridOpt(new NonspatialStochHybridOptions());
 						}
 					}
 				} else if (solverDescription.isSpatialStochasticSolver()) {
@@ -707,6 +703,8 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//			AbsoluteErrorTolerance 1e-8
 		//			RelativeErrorTolerance 1e-4
 		//		}
+
+		
 		//		StochSimOptions {
 		//			UseCustomSeed	false
 		//			CustomSeed	0
@@ -717,6 +715,21 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		//          MSRTolerance 0.01
 		//          SDETolerance 1e-4
 		//   	}
+		//
+		//  or
+		//
+		//		StochSimOptions {
+		//			UseCustomSeed	false
+		//			CustomSeed	0
+		//			NumOfTrials	1
+		//   	}
+		//		StochHybridOptions {
+		//          Epsilon 100
+		//          Lambda 10
+		//          MSRTolerance 0.01
+		//          SDETolerance 1e-4
+		//   	}
+
 		//		StopAtSpatiallyUniform {
 		//			AbsoluteErrorTolerance	1e-8
 		//			RelativeErrorTolerance 1e-4
@@ -818,16 +831,162 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
-					// Amended July 22nd, 2007
-					StochSimOptions temp = null;
-					if(sd != null && sd.equals(SolverDescription.StochGibson))
-						temp = new StochSimOptions();
-					else temp = new StochHybridOptions();
-					temp.readVCML(tokens);
+					boolean useCustomSeed = false;
+					int customSeed = -1;
+					long numOfTrials = 1;
+					Double epsilon = null;
+					Double lambda = null;
+					Double MSRTolerance = null;
+					Double SDETolerance = null;
+					
+					token = tokens.nextToken();
+					if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+					}
+					while (tokens.hasMoreTokens()) {
+						token = tokens.nextToken();
+						if (token.equalsIgnoreCase(VCML.EndBlock)) {
+							break;
+						}
+						if (token.equalsIgnoreCase(VCML.UseCustomSeed)) {
+							token = tokens.nextToken();
+							useCustomSeed = Boolean.parseBoolean(token);
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.CustomSeed)) {
+							token = tokens.nextToken();
+							int val1 = Integer.parseInt(token);
+							if(val1 < 0) {
+								throw new DataAccessException("unexpected token " + token + ", seed is required to be an unsigned interger. ");
+							} else {
+								customSeed = val1;
+							}
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.NumOfTrials)) {
+							token = tokens.nextToken();
+							int val2 = Integer.parseInt(token);
+							if(val2 < 1 ) {
+								throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
+							} else {
+								numOfTrials = val2;
+							}
+							continue;
+						}
+						
+						//
+						// for backward compatibility, try to read NonspatialStochHybridOptions also
+						//
+						if (token.equalsIgnoreCase(VCML.Epsilon)) {
+							token = tokens.nextToken();
+							double val3 = Double.parseDouble(token);
+							if(val3 < 1 )
+								throw new DataAccessException("unexpected token " + token + ", Minimum number of molecue is requied to be greater than or equal to 1. ");
+							else
+								epsilon = val3;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.Lambda)) {
+							token = tokens.nextToken();
+							double val4 = Double.parseDouble(token);
+							if(val4 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be greater than 0. ");
+							else
+								lambda = val4;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.MSRTolerance)) {
+							token = tokens.nextToken();
+							double val5 = Double.parseDouble(token);
+							if(val5 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", Maximum allowed effect of slow reactions is requied to be greater than 0. ");
+							else
+								MSRTolerance = val5;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.SDETolerance)) {
+							token = tokens.nextToken();
+							double val6 = Double.parseDouble(token);
+							if(val6 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", SDE allowed value of drift and diffusion errors is requied to be greater than 0. ");
+							else
+								SDETolerance = val6;
+							continue;
+						}
+						throw new DataAccessException("unexpected identifier " + token);
+					}
 					if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
 					{
-						if(getSimulation().getMathDescription().isNonSpatialStoch()) setStochOpt(temp);
-						else setStochOpt(null);
+						if(getSimulation().getMathDescription().isNonSpatialStoch()){
+							setStochOpt(new NonspatialStochSimOptions(useCustomSeed, customSeed, numOfTrials));
+							if (epsilon!=null && lambda!=null && MSRTolerance!=null && SDETolerance!=null){
+								setStochHybridOpt(new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance));
+							}
+						}else{
+							setStochOpt(null);
+						}
+					}
+					continue;
+				}
+				if (token.equalsIgnoreCase(VCML.StochHybridOptions)) {
+					Double epsilon = null;
+					Double lambda = null;
+					Double MSRTolerance = null;
+					Double SDETolerance = null;
+					token = tokens.nextToken();
+					if (!token.equalsIgnoreCase(VCML.BeginBlock)) {
+						throw new DataAccessException("unexpected token " + token + " expecting " + VCML.BeginBlock); 
+					}
+					while (tokens.hasMoreTokens()) {
+						token = tokens.nextToken();
+						if (token.equalsIgnoreCase(VCML.EndBlock)) {
+							break;
+						}
+						if (token.equalsIgnoreCase(VCML.Epsilon)) {
+							token = tokens.nextToken();
+							double val3 = Double.parseDouble(token);
+							if(val3 < 1 )
+								throw new DataAccessException("unexpected token " + token + ", Minimum number of molecue is requied to be greater than or equal to 1. ");
+							else
+								epsilon = val3;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.Lambda)) {
+							token = tokens.nextToken();
+							double val4 = Double.parseDouble(token);
+							if(val4 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be greater than 0. ");
+							else
+								lambda = val4;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.MSRTolerance)) {
+							token = tokens.nextToken();
+							double val5 = Double.parseDouble(token);
+							if(val5 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", Maximum allowed effect of slow reactions is requied to be greater than 0. ");
+							else
+								MSRTolerance = val5;
+							continue;
+						}
+						if (token.equalsIgnoreCase(VCML.SDETolerance)) {
+							token = tokens.nextToken();
+							double val6 = Double.parseDouble(token);
+							if(val6 <= 0 )
+								throw new DataAccessException("unexpected token " + token + ", SDE allowed value of drift and diffusion errors is requied to be greater than 0. ");
+							else
+								SDETolerance = val6;
+							continue;
+						}
+						throw new DataAccessException("unexpected identifier " + token);
+					}
+					if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
+					{
+						if(getSimulation().getMathDescription().isNonSpatialStoch()){
+							if (epsilon!=null && lambda!=null && MSRTolerance!=null && SDETolerance!=null){
+								setStochHybridOpt(new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETolerance));
+							}
+						}
 					}
 					continue;
 				}
@@ -1004,13 +1163,16 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @see #getSolverDescription
 	 */
 	public void setSolverDescription(SolverDescription solverDescription) throws java.beans.PropertyVetoException {
-		if (fieldSolverDescription != solverDescription) {
+		if (fieldSolverDescription != solverDescription && solverDescription.isNonSpatialStochasticSolver() && !solverDescription.isGibsonSolver()) {
 
 			SolverDescription oldValue = fieldSolverDescription;
 			fireVetoableChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 			fieldSolverDescription = solverDescription;
 			if (numProcessors > 1 &&  !fieldSolverDescription.supports(SolverFeature.Feature_Parallel)) {
 				numProcessors = 1;
+			}
+			if (fieldNonspatialStochHybridOpt == null){
+				fieldNonspatialStochHybridOpt = new NonspatialStochHybridOptions();
 			}
 			firePropertyChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 		}
@@ -1022,14 +1184,31 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * Creation date: (12/6/2006 6:16:42 PM)
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
-	public void setStochOpt(StochSimOptions newStochOpt) {
+	public void setStochOpt(NonspatialStochSimOptions newStochOpt) {
 		if (lg.isTraceEnabled()) {
 			lg.trace("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
 		}
 		
-		if (!Matchable.areEqual(fieldStochOpt,newStochOpt)) {
-			StochSimOptions oldValue = fieldStochOpt;
-			fieldStochOpt = newStochOpt;
+		if (!Matchable.areEqual(fieldNonspatialStochOpt,newStochOpt)) {
+			NonspatialStochSimOptions oldValue = fieldNonspatialStochOpt;
+			fieldNonspatialStochOpt = newStochOpt;
+			firePropertyChange(PROPERTY_STOCH_SIM_OPTIONS, oldValue, newStochOpt);
+		}
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (12/6/2006 6:16:42 PM)
+	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
+	 */
+	public void setStochHybridOpt(NonspatialStochHybridOptions newStochOpt) {
+		if (lg.isTraceEnabled()) {
+			lg.trace("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
+		}
+		
+		if (!Matchable.areEqual(fieldNonspatialStochOpt,newStochOpt)) {
+			NonspatialStochSimOptions oldValue = fieldNonspatialStochOpt;
+			fieldNonspatialStochHybridOpt = newStochOpt;
 			firePropertyChange(PROPERTY_STOCH_SIM_OPTIONS, oldValue, newStochOpt);
 		}
 	}
@@ -1230,6 +1409,10 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 */
 	public boolean isVtkUser( ) {
 		return chomboSolverSpec != null;
+	}
+
+	public NonspatialStochHybridOptions getStochHybridOpt() {
+		return fieldNonspatialStochHybridOpt;
 	}
 
 	//double calculateBindingRadius(ParticleJumpProcess pjp, SubDomain subDomain) throws Exception
