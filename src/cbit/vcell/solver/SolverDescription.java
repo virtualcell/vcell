@@ -60,7 +60,7 @@ public enum SolverDescription {
 	   IDA(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "IDA","IDA (Variable Order, Variable Time Step, ODE/DAE)","IDA (Variable Order, Variable Time Step, ODE/DAE)",
 	      SolverLongDesc.IDA, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, null, "KISAO:0000283", false),
+	      SolverExecutable.SundialsOde, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000283", false),
 
 	      /**
 	       * this is the compiled Solver we don't support any more. Left present to load old models that use it, but they
@@ -69,67 +69,69 @@ public enum SolverDescription {
 	   FiniteVolume(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit Compiled","Semi-Implicit Finite Volume Compiled, Regular Grid (Fixed Time Step) (DEPRECATED)","Finite Volume, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtSpatiallyUniform},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", true),
+	      SolverExecutable.FiniteVolume, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000285", true),
 
 	   StochGibson(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson","Gibson (Next Reaction Stochastic Method)","Gibson (Next Reaction Stochastic Method)",
 	      SolverLongDesc.STOCH_GIBSON, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Gibson, null, "KISAO:0000027", false),
+	      SolverExecutable.Gibson, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000027", false),
 
 	   HybridEuler(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Euler-Maruyama","Hybrid (Gibson + Euler-Maruyama Method)","Hybrid (Gibson + Euler-Maruyama Method)",
 	      SolverLongDesc.HYBRID_EULER, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_EM, null, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_EM, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000352", false),
 
 	   HybridMilstein(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Gibson + Milstein","Hybrid (Gibson + Milstein Method)","Hybrid (Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MILSTEIN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil, null, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000352", false),
 
 	   HybridMilAdaptive(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Adaptive Gibson + Milstein","Hybrid (Adaptive Gibson + Milstein Method)","Hybrid (Adaptive Gibson + Milstein Method)",
 	      SolverLongDesc.HYBRID_MIL_ADAPTIVE, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
-	      SolverExecutable.Hybrid_Mil_Adaptive, null, "KISAO:0000352", false),
+	      SolverExecutable.Hybrid_Mil_Adaptive, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000352", false),
 
 	   CVODE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "CVODE","CVODE (Variable Order, Variable Time Step)","CVODE (Variable Order, Variable Time Step)",
 	      SolverLongDesc.CVODE, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false),
+	      SolverExecutable.SundialsOde, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000019", false),
 
 	   FiniteVolumeStandalone(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.DEFAULT, "Semi-Implicit","Semi-Implicit Finite Volume-Particle Hybrid, Regular Grid (Fixed Time Step)","Finite Volume Standalone, Regular Grid",
 	      SolverLongDesc.FINITE_VOLUME_STANDALONE, 1,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_Hybrid, SolverFeature.Feature_FastSystem, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000285", false),
 
 	   CombinedSundials(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.DEFAULT, "Combined IDA/CVODE","Combined Stiff Solver (IDA/CVODE)","Combined Stiff Solver (IDA/CVODE)",
 	      SolverLongDesc.COMBINED_SUNDIALS, 3,SupportedTimeSpec.DEFAULT_EXPLICIT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_StopAtGeneralDiscontinuities, SolverFeature.Feature_Events},
-	      SolverExecutable.SundialsOde, null, "KISAO:0000019", false),
+	      SolverExecutable.SundialsOde, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000019", false),
 
       SundialsPDE(TimeStep.VARIABLE, ErrorTol.YES, TimeSpecCreated.UNIFORM, "Fully-Implicit","Fully-Implicit Finite Volume, Regular Grid (Variable Time Step)","Sundials Stiff PDE Solver (Variable Time Step)",
 	      SolverLongDesc.SUNDIALS_PDE, 3,SupportedTimeSpec.DEFAULT_UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_StopAtTimeDiscontinuities, SolverFeature.Feature_RandomVariables, SolverFeature.Feature_StopAtSpatiallyUniform, SolverFeature.Feature_DataProcessingInstructions, SolverFeature.Feature_PSF, SolverFeature.Feature_SerialParameterScans, SolverFeature.Feature_VolumeRegionEquations, SolverFeature.Feature_RegionSizeFunctions, SolverFeature.Feature_GradientSourceTerm, SolverFeature.Feature_PostProcessingBlock},
-	      SolverExecutable.FiniteVolume, null, "KISAO:0000285", false),
+	      SolverExecutable.FiniteVolume, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000285", false),
 
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_DataProcessingInstructions},
-	      SolverExecutable.Smoldyn, null, "KISAO:0000057", false),
+	      SolverExecutable.Smoldyn, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000057", false),
 
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step), Experimental","Chombo Standalone",
 	      SolverLongDesc.CHOMBO, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_RegionSizeFunctions,
 			   SolverFeature.Feature_DirichletAtMembraneBoundary, SolverFeature.Feature_Parallel,  SolverFeature.Feature_FastSystem},
-	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_CHOMBO, "KISAO:0000285",
+	      SolverExecutable.VCellChombo, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000285",
 	      VCellCodeVersion.CURRENT.compare(5,4) < 0),
 
 	   NFSim(TimeStep.VARIABLE, ErrorTol.NO, TimeSpecCreated.UNIFORM, "NFSim","NFSim (Network Free Simulator)","NFSim",
 	      SolverLongDesc.NFSIM, 1,SupportedTimeSpec.UNIFORM,
 	      new SolverFeature[]{SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased},
-	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_NFSIM, "KISAO:0000263", false),
+	      SolverExecutable.NFSIM, VersionedLibrary.CYGWIN_DLL_VCELL, "KISAO:0000263", false),
 
 	   MovingBoundary(TimeStep.VARIABLE,ErrorTol.NO,TimeSpecCreated.DEFAULT,"Moving","Moving Boundary","MovingB",
-	    		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,new SolverFeature[]{SolverFeature.Feature_Moving},SolverExecutable.MOVING_B,null,"KISAO",false)
+		  SolverLongDesc.MB,1,SupportedTimeSpec.DEFAULT,
+		  new SolverFeature[]{SolverFeature.Feature_Moving},
+		  SolverExecutable.MOVING_B, VersionedLibrary.CYGWIN_DLL_VCELL,"KISAO",false)
       ;
 
 	public enum SolverFeature {
