@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -287,14 +286,14 @@ import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
+import cbit.vcell.solver.NonspatialStochHybridOptions;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.OutputFunctionContext;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochHybridOptions;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.SundialsSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -6040,6 +6039,9 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 	try {
 		//set solver
 		sd = SolverDescription.fromDatabaseName(solverName);
+		if (sd == null){
+			System.err.println("====================================== couldn't find solver description name ==========================================");
+		}
 		solverTaskDesc.setSolverDescription(sd);
 		
 		if ( taskType.equalsIgnoreCase(XMLTags.UnsteadyTag) ) {
@@ -6069,10 +6071,10 @@ private SolverTaskDescription getSolverTaskDescription(Element param, Simulation
 		{
 			if( simulation.getMathDescription().isNonSpatialStoch() && param.getChild(XMLTags.StochSimOptionsTag, vcNamespace) != null)
 			{   //Amended July 22nd, 2007 to read either stochSimOptions or stochHybridOptions
-				if(sd != null && sd.equals(SolverDescription.StochGibson))
-					solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag, vcNamespace),false));
-				else 
-					solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag, vcNamespace),true));
+				solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag, vcNamespace)));
+				if(sd != null && !sd.equals(SolverDescription.StochGibson)){
+					solverTaskDesc.setStochHybridOpt(getStochHybridOptions(param.getChild(XMLTags.StochSimOptionsTag, vcNamespace)));
+				}
 			}
 		}
 		//get OutputOptions
@@ -6553,39 +6555,44 @@ private void getSpeciesContextSpecs(List<Element> scsChildren, ReactionContext r
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-private StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
+private NonspatialStochSimOptions getStochSimOptions(Element param) {
 	//get attributes
 	boolean isUseCustomSeed  = Boolean.parseBoolean( param.getAttributeValue(XMLTags.UseCustomSeedAttrTag) );
 	int customSeed = 0;
 	if(isUseCustomSeed)
 		customSeed = Integer.parseInt( param.getAttributeValue(XMLTags.CustomSeedAttrTag) );
 	int numOfTrials = Integer.parseInt( param.getAttributeValue(XMLTags.NumberOfTrialAttrTag) );
-	// Amended July 22nd,2007 to add StochHybridOptions
-	if(isHybrid)
-	{
-		// StochHybridOptions are immutable, so we grab the default values from the default constructor - and read the options which are stored in XML
-		StochHybridOptions defaultStochHybridOptions = new StochHybridOptions();
-		double epsilon = defaultStochHybridOptions.getEpsilon();
-		double lambda = defaultStochHybridOptions.getLambda();
-		double MSRTolerance = defaultStochHybridOptions.getMSRTolerance();
-		double SDETDolerance = defaultStochHybridOptions.getSDETolerance();
-		if (param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) != null){
-			epsilon = Double.parseDouble( param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) );
-		}
-		if (param.getAttributeValue(XMLTags.HybridLambdaAttrTag) != null){
-			lambda = Double.parseDouble( param.getAttributeValue(XMLTags.HybridLambdaAttrTag) );
-		}
-		if (param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) !=null){
-			MSRTolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) );
-		}
-		if (param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) !=null){
-			SDETDolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) );
-		}
-		//**** create a new StochHybridOptions object and return ****
-		return new StochHybridOptions(isUseCustomSeed, customSeed, numOfTrials, epsilon, lambda, MSRTolerance, SDETDolerance);
+	return new NonspatialStochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
+}
+
+
+/**
+ * This method returns a TimeStep object from a XML Element.
+ * Creation date: (5/22/2001 11:45:33 AM)
+ * @return cbit.vcell.solver.TimeStep
+ * @param param org.jdom.Element
+ */
+private NonspatialStochHybridOptions getStochHybridOptions(Element param) {
+	// StochHybridOptions are immutable, so we grab the default values from the default constructor - and read the options which are stored in XML
+	NonspatialStochHybridOptions defaultStochHybridOptions = new NonspatialStochHybridOptions();
+	double epsilon = defaultStochHybridOptions.getEpsilon();
+	double lambda = defaultStochHybridOptions.getLambda();
+	double MSRTolerance = defaultStochHybridOptions.getMSRTolerance();
+	double SDETDolerance = defaultStochHybridOptions.getSDETolerance();
+	if (param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) != null){
+		epsilon = Double.parseDouble( param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) );
 	}
-	//**** create new StochSimOptions object and return ****
-	return new StochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
+	if (param.getAttributeValue(XMLTags.HybridLambdaAttrTag) != null){
+		lambda = Double.parseDouble( param.getAttributeValue(XMLTags.HybridLambdaAttrTag) );
+	}
+	if (param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) !=null){
+		MSRTolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) );
+	}
+	if (param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) !=null){
+		SDETDolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) );
+	}
+	//**** create a new StochHybridOptions object and return ****
+	return new NonspatialStochHybridOptions(epsilon, lambda, MSRTolerance, SDETDolerance);
 }
 
 

@@ -113,7 +113,6 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.MicroscopeMeasurement;
-import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
@@ -251,12 +250,12 @@ import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
+import cbit.vcell.solver.NonspatialStochHybridOptions;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochHybridOptions;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.SundialsSolverOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
@@ -4383,21 +4382,20 @@ private Element getXML(OutputTimeSpec param) {
  * @return Element
  * @param param cbit.vcell.solver.StochSimOption
  */
-private Element getXML(StochSimOptions param) {
+private Element getXML(NonspatialStochSimOptions stochOpts, NonspatialStochHybridOptions hybridOptions) {
 	Element stochSimOptions = new Element(XMLTags.StochSimOptionsTag);
-	if(param != null)
+	if(stochOpts != null)
 	{
-		stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
-		if(param.isUseCustomSeed()){
-			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
+		stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(stochOpts.isUseCustomSeed()));
+		if(stochOpts.isUseCustomSeed()){
+			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(stochOpts.getCustomSeed()));
 		}
-		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
-		if (param instanceof StochHybridOptions) {
-			StochHybridOptions stochHybridOptions = (StochHybridOptions)param;
-			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(stochHybridOptions.getEpsilon()));
-			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(stochHybridOptions.getLambda()));
-			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(stochHybridOptions.getMSRTolerance()));
-			stochSimOptions.setAttribute(XMLTags.HybridSDEToleranceAttrTag, String.valueOf(stochHybridOptions.getSDETolerance()));
+		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(stochOpts.getNumOfTrials()));
+		if (hybridOptions != null) {
+			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(hybridOptions.getEpsilon()));
+			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(hybridOptions.getLambda()));
+			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(hybridOptions.getMSRTolerance()));
+			stochSimOptions.setAttribute(XMLTags.HybridSDEToleranceAttrTag, String.valueOf(hybridOptions.getSDETolerance()));
 		}
 	}
 	return stochSimOptions;
@@ -4476,7 +4474,7 @@ private Element getXML(SolverTaskDescription param) {
 	//Amended 2oth July, 2007. We need to distinguish hybrid and SSA options
 	// Jan 8, 2016 (jim) let getXML(stochOpt) write out the correct stochastic options
 	if (param.getStochOpt() != null) {
-		solvertask.addContent( getXML(param.getStochOpt()));
+		solvertask.addContent( getXML(param.getStochOpt(), param.getStochHybridOpt()));
 	}
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));

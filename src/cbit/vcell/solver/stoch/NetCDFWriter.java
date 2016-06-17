@@ -42,10 +42,10 @@ import cbit.vcell.message.VCellTopic;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 
@@ -166,7 +166,7 @@ public class NetCDFWriter {
 			TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 			UniformOutputTimeSpec timeSpec = (UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec();
 			UniformOutputTimeSpec outputTimeSpec = ((UniformOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
-			StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
+			NonspatialStochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 					
 			//create an empty NetCDF-3 file
 			//define dimensions

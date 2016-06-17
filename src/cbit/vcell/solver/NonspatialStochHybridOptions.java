@@ -10,40 +10,34 @@
 
 package cbit.vcell.solver;
 
+import java.io.Serializable;
+
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.math.VCML;
 
-public class StochHybridOptions extends StochSimOptions {
+public class NonspatialStochHybridOptions implements Serializable, Matchable {
 
 	private double epsilon = 100;
 	private double lambda = 10;
 	private double MSRTolerance = 1/epsilon;
 	private double SDETolerance = 1e-4;
-	public StochHybridOptions() {
-		super();
+	
+	public NonspatialStochHybridOptions() {
 	}
 
-	public StochHybridOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials,
-			double arg_epsilon, double arg_lambda, double arg_MSRTolerance, double arg_SDETolerance)
+	public NonspatialStochHybridOptions(double arg_epsilon, double arg_lambda, double arg_MSRTolerance, double arg_SDETolerance)
 	{
-		super(arg_useCustomSeed, arg_customSeed, arg_numOfTrials);
 		epsilon = arg_epsilon;
 		lambda = arg_lambda;
 		MSRTolerance = arg_MSRTolerance;
 		SDETolerance = arg_SDETolerance;
 	}
 
-	public StochHybridOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials)
+	public NonspatialStochHybridOptions(NonspatialStochHybridOptions sho)
 	{
-		super(arg_useCustomSeed, arg_customSeed, arg_numOfTrials);
-	}
-
-	public StochHybridOptions(StochHybridOptions sho)
-	{
-		super(sho);
 		epsilon = sho.epsilon;
 		lambda = sho.lambda;
 		MSRTolerance = sho.MSRTolerance;
@@ -75,9 +69,6 @@ public class StochHybridOptions extends StochSimOptions {
 		// write format as follows:
 		//
 		//   StochSimOptions {
-		//		UseCustomSeed false
-		//		CustomSeed 0
-		//		NumOfTrials	1
 		//		Epsilon 100
 		//		Lambda 10
 		//		MSRTolerance 0.01
@@ -88,11 +79,8 @@ public class StochHybridOptions extends StochSimOptions {
 		//
 		StringBuffer buffer = new StringBuffer();
 		
-		buffer.append(VCML.StochSimOptions+" "+VCML.BeginBlock+"\n");
+		buffer.append(VCML.StochHybridOptions+" "+VCML.BeginBlock+"\n");
 		
-		buffer.append("   " + VCML.UseCustomSeed + " " + isUseCustomSeed() + "\n");
-		buffer.append("   " + VCML.CustomSeed + " " + getCustomSeed() + "\n");
-		buffer.append("   " + VCML.NumOfTrials + " " + getNumOfTrials() + "\n");
 		buffer.append("   " + VCML.Epsilon + " " + getEpsilon() + "\n");
 		buffer.append("   " + VCML.Lambda + " " + getLambda() + "\n");
 		buffer.append("   " + VCML.MSRTolerance + " " + getMSRTolerance() + "\n");
@@ -134,29 +122,6 @@ public class StochHybridOptions extends StochSimOptions {
 				token = tokens.nextToken();
 				if (token.equalsIgnoreCase(VCML.EndBlock)) {
 					break;
-				}
-				if (token.equalsIgnoreCase(VCML.UseCustomSeed)) {
-					token = tokens.nextToken();
-					useCustomSeed = Boolean.parseBoolean(token);
-					continue;
-				}
-				if (token.equalsIgnoreCase(VCML.CustomSeed)) {
-					token = tokens.nextToken();
-					int val1 = Integer.parseInt(token);
-					if(val1 < 0)
-						throw new DataAccessException("unexpected token " + token + ", seed is required to be an unsigned interger. ");
-					else 
-						customSeed = val1;
-					continue;
-				}
-				if (token.equalsIgnoreCase(VCML.NumOfTrials)) {
-					token = tokens.nextToken();
-					int val2 = Integer.parseInt(token);
-					if(val2 < 1 )
-						throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
-					else
-						numOfTrials = val2;
-					continue;
 				}
 				if (token.equalsIgnoreCase(VCML.Epsilon)) {
 					token = tokens.nextToken();
@@ -212,14 +177,8 @@ public class StochHybridOptions extends StochSimOptions {
 		if (this == obj) {
 			return true;
 		}
-		if (obj != null && obj instanceof StochHybridOptions) {
-			StochHybridOptions hybridOpt = (StochHybridOptions) obj;
-			if (isUseCustomSeed() != hybridOpt.isUseCustomSeed()) return false;
-			if (isUseCustomSeed() == true)
-			{
-				if (getCustomSeed() != hybridOpt.getCustomSeed()) return false;
-			}
-			if (getNumOfTrials() != hybridOpt.getNumOfTrials()) return false;
+		if (obj != null && obj instanceof NonspatialStochHybridOptions) {
+			NonspatialStochHybridOptions hybridOpt = (NonspatialStochHybridOptions) obj;
 			if (getEpsilon() != hybridOpt.getEpsilon()) return false;
 			if (getLambda() != hybridOpt.getLambda()) return false;
 			if (getMSRTolerance() != hybridOpt.getMSRTolerance()) return false;
