@@ -24,8 +24,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Vector;
 
@@ -105,8 +105,8 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Structure;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.AddTestCasesOPBioModel;
 import cbit.vcell.numericstest.AddTestCasesOPMathModel;
@@ -153,12 +153,12 @@ import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
@@ -1315,7 +1315,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 			} catch (Exception ex) {
 				ex.printStackTrace(System.out);
 			}
-			StochSimOptions stochOpt = testSim.getSolverTaskDescription().getStochOpt();
+			NonspatialStochSimOptions stochOpt = testSim.getSolverTaskDescription().getStochOpt();
 			if ((stochOpt == null || stochOpt.getNumOfTrials() == 1)  && (timeArray == null || timeArray.length == 0)) {
 				reportTCBuffer.append("\t\t\tNO DATA : Simulation not run yet.\n");
 				simReportStatus = TestCriteriaNew.TCRIT_STATUS_NODATA;
