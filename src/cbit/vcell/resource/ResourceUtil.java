@@ -35,6 +35,7 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.PropertyLoader;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.VCAssert;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -529,7 +530,7 @@ public class ResourceUtil {
 	{
 		if(solversDirectory == null)
 		{
-			solversDirectory = new File(getVcellHome(), "solvers");
+			solversDirectory = new File(getVcellHome(), "solvers_"+TokenMangler.mangleToSName(VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString()));
 			if (!solversDirectory.exists()) {
 				solversDirectory.mkdirs();
 			}
