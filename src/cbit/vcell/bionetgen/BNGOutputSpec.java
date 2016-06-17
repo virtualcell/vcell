@@ -118,24 +118,24 @@ public static BNGSpecies findMatch(BNGSpecies ours, List<BNGSpecies> theirsList)
 	}
 	
 	// more expensive and difficult - we verify if the 2 species are isomorphic (different only in bond numbering)
-	SpeciesIsomorphismInspector sii = new SpeciesIsomorphismInspector();
-	BNGSpecies oneway = null;
-	sii.initialize(ours);
-	for(BNGSpecies theirs : theirsList) {
-		if(sii.isIsomorphism(theirs)) {
-			oneway = theirs;
-//			return theirs;
-			break;
-		}
-	}
+//	SpeciesIsomorphismInspector sii = new SpeciesIsomorphismInspector();
+//	BNGSpecies oneway = null;
+//	sii.initialize(ours);
+//	for(BNGSpecies theirs : theirsList) {
+//		if(sii.isIsomorphism(theirs)) {
+//			oneway = theirs;
+////			return theirs;
+//			break;
+//		}
+//	}
 	
 	// using jgrapht
 	SpeciesGraphIsomorphismInspector sgii = new SpeciesGraphIsomorphismInspector();
 	for(BNGSpecies theirs : theirsList) {
 		if(sgii.isIsomorphism(ours, theirs)) {
-			if(oneway != theirs) {
-				throw new RuntimeException(oneway + " and " + theirs + " should be the same");
-			}
+//			if(oneway != theirs) {
+//				throw new RuntimeException(oneway + " and " + theirs + " should be the same");
+//			}
 			return theirs;
 		}
 	}

@@ -475,8 +475,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
 		scMap.values().toArray(sca);
-		Species[] sa = new Species[sMap.size()];
-		sMap.values().toArray(sa); 
+		Species[] sa = new HashSet<Species>(sMap.values()).toArray(new Species[0]);
+		 
 
 		model.setSpecies(sa);
 		model.setSpeciesContexts(sca);
