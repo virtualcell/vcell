@@ -146,6 +146,15 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 		else {
 			setStochOpt(null);
 		}
+		if (simulation.getMathDescription().isNonSpatialStoch() && 
+			(!solverTaskDescription.getSolverDescription().isGibsonSolver()) &&
+			(solverTaskDescription.getStochHybridOpt() != null))
+		{
+			setStochHybridOpt(solverTaskDescription.getStochHybridOpt());
+		}
+		else {
+			setStochHybridOpt(null);
+		}
 		if (simulation.getMathDescription().isSpatialStoch() || simulation.getMathDescription().isSpatialHybrid()) {
 			smoldynSimulationOptions = new SmoldynSimulationOptions(solverTaskDescription.smoldynSimulationOptions);
 		} else {
@@ -1163,16 +1172,17 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * @see #getSolverDescription
 	 */
 	public void setSolverDescription(SolverDescription solverDescription) throws java.beans.PropertyVetoException {
-		if (fieldSolverDescription != solverDescription && solverDescription.isNonSpatialStochasticSolver() && !solverDescription.isGibsonSolver()) {
-
+		if (fieldSolverDescription != solverDescription) {
 			SolverDescription oldValue = fieldSolverDescription;
 			fireVetoableChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 			fieldSolverDescription = solverDescription;
 			if (numProcessors > 1 &&  !fieldSolverDescription.supports(SolverFeature.Feature_Parallel)) {
 				numProcessors = 1;
 			}
-			if (fieldNonspatialStochHybridOpt == null){
-				fieldNonspatialStochHybridOpt = new NonspatialStochHybridOptions();
+			if (solverDescription.isNonSpatialStochasticSolver() && !solverDescription.isGibsonSolver()){
+				if (fieldNonspatialStochHybridOpt == null){
+					fieldNonspatialStochHybridOpt = new NonspatialStochHybridOptions();
+				}
 			}
 			firePropertyChange(PROPERTY_SOLVER_DESCRIPTION, oldValue, solverDescription);
 		}
@@ -1201,15 +1211,15 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	 * Creation date: (12/6/2006 6:16:42 PM)
 	 * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
 	 */
-	public void setStochHybridOpt(NonspatialStochHybridOptions newStochOpt) {
+	public void setStochHybridOpt(NonspatialStochHybridOptions newStochHybridOpt) {
 		if (lg.isTraceEnabled()) {
-			lg.trace("setStochOption " + Objects.hashCode(newStochOpt) +  ' ' + Objects.toString(newStochOpt));
+			lg.trace("setStochOption " + Objects.hashCode(newStochHybridOpt) +  ' ' + Objects.toString(newStochHybridOpt));
 		}
 		
-		if (!Matchable.areEqual(fieldNonspatialStochOpt,newStochOpt)) {
-			NonspatialStochSimOptions oldValue = fieldNonspatialStochOpt;
-			fieldNonspatialStochHybridOpt = newStochOpt;
-			firePropertyChange(PROPERTY_STOCH_SIM_OPTIONS, oldValue, newStochOpt);
+		if (!Matchable.areEqual(fieldNonspatialStochHybridOpt,newStochHybridOpt)) {
+			NonspatialStochHybridOptions oldValue = fieldNonspatialStochHybridOpt;
+			fieldNonspatialStochHybridOpt = newStochHybridOpt;
+			firePropertyChange(PROPERTY_STOCH_HYBRID_OPTIONS, oldValue, newStochHybridOpt);
 		}
 	}
 
