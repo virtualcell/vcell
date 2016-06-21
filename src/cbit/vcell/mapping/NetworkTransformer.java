@@ -481,6 +481,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		model.setSpecies(sa);
 		model.setSpeciesContexts(sca);
 		
+		boolean isSpatial = transformedSimulationContext.getGeometry().getDimension()>0;
 		for(SpeciesContext sc : sca) {
 			if(noMapForThese.contains(sc)) {
 				continue;
@@ -495,6 +496,9 @@ public class NetworkTransformer implements SimContextTransformer {
 				entityMappings.add(em);
 			}else{
 				ModelEntityMapping em = new ModelEntityMapping(new GeneratedSpeciesSymbolTableEntry(sc),sc);
+				if (isSpatial){
+					scs.initializeForSpatial();
+				}
 				entityMappings.add(em);
 			}
 		}
