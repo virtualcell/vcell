@@ -346,7 +346,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 	}
 	if (lg.isInfoEnabled()) {
 		long end_time = System.currentTimeMillis();
-		lg.info("Time spent on Issue detection: " + (end_time - start_time));
+//		lg.info("Time spent on Issue detection: " + (end_time - start_time));
 	}
 //	for (Simulation simulation : fieldSimulations) {
 //		simulation.gatherIssues(issueContext,issueList);
