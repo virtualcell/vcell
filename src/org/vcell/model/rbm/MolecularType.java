@@ -4,7 +4,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
@@ -19,6 +22,7 @@ import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.PropertyConstants;
 
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class MolecularType extends RbmElementAbstract implements Matchable, VetoableChangeListener, 
@@ -27,8 +31,12 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	public static final String PROPERTY_NAME_COMPONENT_LIST = "componentList";
 	
 	private String name;	
-	private List<MolecularComponent> componentList = new ArrayList<MolecularComponent>();
+	private List<MolecularComponent> componentList = new ArrayList<>();
 	private transient Model model = null;
+	
+	private Set<Structure> anchorSet = new HashSet<>();	// list of structures where the molecule are allowed to exist (Feature or Membrane) 
+	private boolean bAnchorAll = true;					// if true ignore the anchorSet content (by default any compartment is allowed)
+
 	
 	public MolecularType(String name, Model model) {
 		this.name = name;
@@ -69,6 +77,10 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 		}
 		return null;
 	}
+	
+	// returns an array containing all the components of the same name
+	// useless for now since we right now don't allow more than 1 component with the same name
+	// TODO: make it into an array list, not array
 	public MolecularComponent[] getMolecularComponents(String componentName) {
 		ArrayList<MolecularComponent> molecularComponents = new ArrayList<MolecularComponent>();
 		for (MolecularComponent mc : componentList)  {
@@ -108,6 +120,22 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			}
 		}
 		firePropertyChange(PROPERTY_NAME_COMPONENT_LIST, oldValue, newValue);
+	}
+	
+	public Set<Structure> getAnchors() {
+//		for(Iterator<Structure> it = anchorSet.iterator(); it.hasNext(); ) {
+//			Structure element = it.next();
+//			if (model.getStructure(element.getName()) == null) {
+//				it.remove();
+//			}
+//		}		
+		return anchorSet;
+	}
+	public boolean isAnchorAll() {
+		return bAnchorAll;
+	}
+	public void setAnchorAll(boolean bAnchorAll) {
+		this.bAnchorAll = bAnchorAll;
 	}
 
 	public Model getModel() {
