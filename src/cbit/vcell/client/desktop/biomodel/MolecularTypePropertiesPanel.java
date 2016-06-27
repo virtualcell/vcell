@@ -12,6 +12,7 @@ package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -24,6 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -32,6 +35,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +44,11 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -50,6 +57,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -115,18 +123,20 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 @SuppressWarnings("serial")
 public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
-		TreeWillExpandListener, FocusListener
+		TreeWillExpandListener, FocusListener, ItemListener
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == molecularType) {
 				if (evt.getPropertyName().equals(PropertyConstants.PROPERTY_NAME_NAME)) {
-					titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
+//					titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
+//					titleLabel.setText("Anchor");
 				}
 			}
 		}
@@ -139,6 +149,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			} else if (source == getAddFromTreeMenuItem()) {
 				addNewFromTree();
+			} else if (source == getAnchorAllButton()) {
+				molecularType.setAnchorAll(true);
+				anchorPanel.enableAll(false);
+			} else if (source == getAnchorOnlyButton()) {
+				molecularType.setAnchorAll(false);
+				anchorPanel.enableAll(true);
 //			} else if (source == getRenameFromShapeMenuItem()) {
 //				molecularTypeTree.startEditingAtPath(molecularTypeTree.getSelectionPath());
 			}			
@@ -194,6 +210,96 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				changeFreeTextAnnotation();
 			}
 		}
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			Object source = e.getSource();
+			if(!(source instanceof JCheckBox)) {
+				return;
+			}
+			JCheckBox cb = (JCheckBox)source;
+			String name = cb.getText();
+			if(name == null) {
+				throw new RuntimeException("Checkbox name missing.");
+			}
+			Structure struct = bioModel.getModel().getStructure(name);
+			if(struct == null) {
+				throw new RuntimeException("Unable to find Structure " + name);
+			}
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				molecularType.getAnchors().add(struct);
+			} else {
+				molecularType.getAnchors().remove(struct);
+			}
+		}
+	}
+	
+	private class JAnchorPanel extends JPanel {
+		public List<JCheckBox> structureList = new ArrayList<>();
+		public JAnchorPanel() {
+			super();
+		}
+		
+		public void enableAll(boolean b) {
+			for(Component component : getComponents()) {
+				if(component instanceof JCheckBox) {
+					JCheckBox cb = (JCheckBox)component;
+					cb.setEnabled(b);
+				}
+			}
+		}
+		public void setAnchors() {
+			for(JCheckBox cb : structureList) {
+				String checkBoxText = cb.getText();
+				boolean found = false;
+				for(Structure struct : molecularType.getAnchors()) {
+					String structureName = struct.getName();
+					if(checkBoxText.equals(structureName)) {
+						found = true;
+						break;
+					}
+				}
+				cb.setSelected(found);
+			}
+		}
+		private void initialize() {
+			structureList.clear();
+			Model model = bioModel.getModel();
+			for(Structure struct : model.getStructures()) {
+				JCheckBox cb = new JCheckBox(struct.getName());
+				cb.addItemListener(eventHandler);
+				structureList.add(cb);
+			}
+			setLayout(new GridBagLayout());
+			int gridy = 0;
+			for(JCheckBox cb : structureList) {
+				GridBagConstraints gbc = new GridBagConstraints();
+				gbc.gridx = 0;
+				gbc.gridy = gridy;
+				gbc.anchor = GridBagConstraints.WEST;
+				gbc.fill = GridBagConstraints.HORIZONTAL;
+				gbc.insets = new Insets(2, 4, 2, 4);
+				add(cb, gbc);
+				gridy++;
+			}
+			gridy++;
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.gridwidth = 2;
+			gbc.weightx = 1;
+			gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.insets = new Insets(4, 4, 4, 10);
+			add(new JLabel(""), gbc);
+		}
+		@Override
+		public void removeAll() {
+			for(JCheckBox cb : structureList) {
+				cb.removeItemListener(eventHandler);
+			}
+			super.removeAll();
+			structureList.clear();
+		}
 	}
 	
 	private JTree molecularTypeTree = null;
@@ -201,6 +307,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private MolecularType molecularType;
 	private JLabel titleLabel = null;
 	private JTextArea annotationTextArea;
+
+	private JRadioButton anchorAllButton;
+	private JRadioButton anchorOnlyButton;
+	private JAnchorPanel anchorPanel;
+	private JScrollPane anchorScrollPanel;
 	
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -218,11 +329,12 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 	private JMenuItem renameFromShapeMenuItem;
 	
 	private BioModel bioModel;
+	
 	public MolecularTypePropertiesPanel() {
 		super();
 		initialize();
 	}
-	
+		
 	public void addNewFromTree() {
 		Object obj = molecularTypeTree.getLastSelectedPathComponent();
 		if (obj == null || !(obj instanceof BioModelNode)) {
@@ -340,11 +452,29 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		}
 	}
 
+	private JRadioButton getAnchorAllButton() {
+		if (anchorAllButton == null) {
+			anchorAllButton = new JRadioButton("No restrictions");
+			anchorAllButton.addActionListener(eventHandler);
+		}
+		return anchorAllButton;
+	}
+	private JRadioButton getAnchorOnlyButton() {
+		if (anchorOnlyButton == null) {
+			anchorOnlyButton = new JRadioButton("Only these:");
+			anchorOnlyButton.addActionListener(eventHandler);
+		}
+		return anchorOnlyButton;
+	}
+
 	private void initialize() {
 		
 		JPanel leftPanel = new JPanel();
 		leftPanel.setLayout(new GridBagLayout());
-		leftPanel.setBackground(Color.white);
+//		leftPanel.setBackground(Color.white);
+		
+		anchorPanel = new JAnchorPanel();
+		anchorScrollPanel = new JScrollPane(anchorPanel);
 		
 		molecularTypeTree = new BioModelNodeEditableTree();
 		molecularTypeTreeModel = new MolecularTypeTreeModel(molecularTypeTree);
@@ -378,6 +508,26 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 		leftPanel.add(titleLabel, gbc);
 		
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(getAnchorAllButton());
+		bg.add(getAnchorOnlyButton());
+		
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		leftPanel.add(getAnchorAllButton(), gbc);
+
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,4,4,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		leftPanel.add(getAnchorOnlyButton(), gbc);
+
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -386,7 +536,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.weighty = 1.0;
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.fill = GridBagConstraints.BOTH;
-		leftPanel.add(new JScrollPane(molecularTypeTree), gbc);
+		leftPanel.add(anchorScrollPanel, gbc);
 		
 		// ------------------------------------------------------------------------------
 		
@@ -503,10 +653,11 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(splitPaneHorizontal);
 		
-		splitPane.setResizeWeight(0.0d);
-		splitPane.getLeftComponent().setMinimumSize(new Dimension());
-		splitPane.getLeftComponent().setPreferredSize(new Dimension());
-		splitPane.setDividerLocation(0.0d);
+		splitPane.setResizeWeight(0.0);
+		splitPane.getLeftComponent().setMaximumSize(new Dimension(120, 200));
+		splitPane.getLeftComponent().setPreferredSize(new Dimension(120, 200));
+//		splitPane.setDividerLocation(0.0d);		// completely hides the left component
+		splitPane.setDividerLocation(-1);		// attempt to use the preferred size
 
 		setName("MolecularTypePropertiesPanel");
 		setLayout(new BorderLayout());
@@ -556,6 +707,18 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 		if(molecularType != null) {
 			// we want to start with a "normal" state for the depiction (not highlighted).
 			shapePanel.setHighlightedRecursively(molecularType, LargeShapePanel.Highlight.off);
+			
+			final boolean bAnchorAll = molecularType.isAnchorAll();
+			if(bAnchorAll) {
+				getAnchorAllButton().setSelected(true);
+			} else {
+				getAnchorOnlyButton().setSelected(true);
+			}
+			anchorPanel.removeAll();	// components
+			anchorPanel.initialize();
+			anchorPanel.enableAll(!bAnchorAll);
+			anchorPanel.setAnchors();
+			anchorPanel.validate();		// this must be called after finished removing or adding components to a panel
 		}
 	}
 	
@@ -587,7 +750,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 			VCMetaData vcMetaData = bioModel.getModel().getVcMetaData();
 			annotationTextArea.setText(vcMetaData.getFreeTextAnnotation(molecularType));
 			
-			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
+//			titleLabel.setText("Properties for " + molecularType.getDisplayType() + ": " + molecularType.getDisplayName());
+			titleLabel.setText("Anchor rule");
 			molecularTypeShapeList.clear();
 			int maxYOffset = computeStatesVerticalOffset(molecularType);
 			MolecularTypeLargeShape stls = new MolecularTypeLargeShape(xOffsetInitial, maxYOffset, molecularType, shapePanel, molecularType);

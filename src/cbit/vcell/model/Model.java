@@ -3452,7 +3452,13 @@ public void removeStructure(Structure removedStructure) throws PropertyVetoExcep
 			errorMessage = "cannot contain Observables";
 			throw new RuntimeException(prefix + errorMessage+".");
 		}
-	}	
+	}
+	for(MolecularType mt : getRbmModelContainer().getMolecularTypeList()) {
+		if(mt.getAnchors().contains(removedStructure)) {
+			errorMessage = "cannot be Molecule anchor";
+			throw new RuntimeException(prefix + errorMessage+".");
+		}
+	}
 	//
 	// remove this structure
 	//
