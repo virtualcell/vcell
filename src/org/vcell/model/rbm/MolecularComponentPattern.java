@@ -138,7 +138,9 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	}
 	
 	public boolean isImplied() {
-		return (componentStatePattern == null || componentStatePattern.isAny()) && bondType == BondType.Possible;
+		final boolean a = componentStatePattern == null || componentStatePattern.isAny();
+		final boolean b = bondType == BondType.Possible;
+		return a && b;
 	}
 
 	public final boolean isbVisible() {

@@ -61,6 +61,8 @@ import org.vcell.model.rbm.RbmObject;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.util.Displayable;
+import org.vcell.util.Issue;
+import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.VCellIcons;
 
@@ -1012,6 +1014,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				for (final Structure struct : bioModel.getModel().getStructures()) {
 					JMenuItem menuItem = new JMenuItem(struct.getName());
 					compartmentMenuItem.add(menuItem);
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						MolecularType mt = mtp.getMolecularType();
+						if(mt.isAnchorAll()) {
+							continue;		// no restrictions (no anchor exclusion) for this molecular type
+						}
+						if(!mt.getAnchors().contains(struct)) {
+							menuItem.setEnabled(false);		// sp can't be in this struct if any of its molecules is excluded (not anchored)
+							break;
+						}
+					}
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							String nameStruct = e.getActionCommand();
@@ -1174,7 +1186,7 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 						}
 					});
 				}
-				JMenu compartmentMenuItem = new JMenu("Specify structure");
+				JMenu compartmentMenuItem = new JMenu("Specify structure");		// specify structure
 				popupFromShapeMenu.add(compartmentMenuItem);
 				compartmentMenuItem.removeAll();
 				if(sp.getMolecularTypePatterns().isEmpty()) {
@@ -1183,6 +1195,16 @@ public class ReactionRuleEditorPropertiesPanel extends DocumentEditorSubPanel {
 				for (final Structure struct : bioModel.getModel().getStructures()) {
 					JMenuItem menuItem = new JMenuItem(struct.getName());
 					compartmentMenuItem.add(menuItem);
+					for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+						MolecularType mt = mtp.getMolecularType();
+						if(mt.isAnchorAll()) {
+							continue;	// no restrictions for this molecular type
+						}
+						if(!mt.getAnchors().contains(struct)) {
+							menuItem.setEnabled(false);		// sp can't be in this struct if any of its molecules is excluded (not anchored)
+							break;
+						}
+					}
 					menuItem.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							String nameStruct = e.getActionCommand();

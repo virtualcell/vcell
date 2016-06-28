@@ -912,6 +912,33 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 		if(molecularTypeMappings == null) {
 			issueList.add(new Issue(this, issueContext, IssueCategory.KineticsExpressionMissing, MolecularType.typeName + " Mapping is null", Issue.Severity.WARNING));
 		}
+		// the structure must be in the list of anchors, if anchors are being used -------------------------------
+		for(ReactantPattern rp : reactantPatterns) {
+			SpeciesPattern sp = rp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.isAnchorAll()) {
+					continue;	// no restrictions for this molecular type
+				}
+				if(!mt.getAnchors().contains(rp.getStructure())) {
+					String message = "The Structure " + structure.getName() + " is restricted for the Molecule " + mt.getDisplayName();
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+				}
+			}
+		}
+		for(ProductPattern pp : productPatterns) {
+			SpeciesPattern sp = pp.getSpeciesPattern();
+			for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.isAnchorAll()) {
+					continue;	// no restrictions for this molecular type
+				}
+				if(!mt.getAnchors().contains(pp.getStructure())) {
+					String message = "The Structure " + structure.getName() + " is restricted for the Molecule " + mt.getDisplayName();
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+				}
+			}
+		}	// ----------------------------------------------------------------------------------------------------
 		
 		for(ReactantPattern rp : reactantPatterns) {
 			SpeciesPattern sp = rp.getSpeciesPattern();
