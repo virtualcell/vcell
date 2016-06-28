@@ -392,7 +392,18 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 					}
 				}
 			}
-			
+			// the structure must be in the list of anchors, if anchors are being used
+			for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
+				MolecularType mt = mtp.getMolecularType();
+				if(mt.isAnchorAll()) {
+					continue;	// no restrictions for this molecular type
+				}
+				if(!mt.getAnchors().contains(structure)) {
+					String message = "The Structure " + structure.getName() + " is restricted for the Molecule " + mt.getDisplayName();
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+				}
+			}
+			// check for reserved name 'trash'
 			for (MolecularTypePattern mtp : speciesPattern.getMolecularTypePatterns()) {
 				String name = mtp.getMolecularType().getDisplayName().toLowerCase();
 				if(name.equals("trash")) {
