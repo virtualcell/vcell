@@ -68,6 +68,8 @@ public class RbmNetworkGenerator {
 	public static final String BEGIN_PARAMETERS = "begin parameters";
 	public static final String BEGIN_COMPARTMENTS = "begin compartments";
 	public static final String END_COMPARTMENTS = "end compartments";
+	public static final String BEGIN_ANCHORS = "begin anchors";
+	public static final String END_ANCHORS = "end anchors";
 
 	/*
 	 * Used for exporting to file with extension .bngl
@@ -263,14 +265,31 @@ public class RbmNetworkGenerator {
 		writer.println();
 	}
 	public static void writeMolecularTypes(PrintWriter writer, Model model, CompartmentMode compartmentMode) {
+		boolean hasAnchors = false;
 		writer.println(BEGIN_MOLECULE_TYPES);
 		RbmModelContainer rbmModelContainer = model.getRbmModelContainer();
 		List<MolecularType> molList = rbmModelContainer.getMolecularTypeList();
 		for (MolecularType mt : molList) {
+			if(!mt.isAnchorAll()) {
+				hasAnchors = true;
+			}
 			writer.println(RbmUtils.toBnglString(mt, model, compartmentMode));
 		}
 		writer.println(END_MOLECULE_TYPES);
 		writer.println();
+		
+		// --- write anchor ----------------------------------------
+		if(hasAnchors) {
+			writer.println(BEGIN_ANCHORS);
+			for (MolecularType mt : molList) {
+				if(!mt.isAnchorAll()) {
+					writer.println(RbmUtils.anchorToBnglString(mt));
+				}
+			}
+			writer.println(END_ANCHORS);
+			writer.println();
+			
+		}
 	}
 	public static void writeSpecies(PrintWriter writer, Model model, SimulationContext simulationContext, CompartmentMode compartmentMode) {
 		writer.println(BEGIN_SPECIES);
