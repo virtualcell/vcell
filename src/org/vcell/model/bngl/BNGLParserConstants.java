@@ -13,47 +13,48 @@ public interface BNGLParserConstants {
   int SEED = 7;
   int FUNCTIONS = 8;
   int ACTION = 9;
-  int COMPARTMENTS = 10;
-  int PARAMETERS = 11;
-  int REACTION = 12;
-  int RULES = 13;
-  int TYPES = 14;
-  int OBSERVABLES = 15;
-  int IDENTIFIER = 16;
-  int ID = 17;
-  int LETTER = 18;
-  int DIGIT = 19;
-  int INTEGER = 20;
-  int LABEL = 21;
-  int ATSIGN = 22;
-  int QUOTE = 27;
-  int RELATIONAL_OPERATOR_WITHOUT_LT_GT = 28;
-  int LT = 29;
-  int GT = 30;
-  int LE = 31;
-  int GE = 32;
-  int EQ = 33;
-  int NE = 34;
-  int AND = 35;
-  int OR = 36;
-  int NOT = 37;
-  int POWER = 38;
-  int ADD = 39;
-  int SUB = 40;
-  int MULT = 41;
-  int DIV = 42;
-  int FLOATING_POINT_LITERAL = 43;
-  int EXPONENT = 44;
-  int CLAMP = 45;
-  int QUESTION_MARK = 46;
-  int COMMA = 47;
-  int NAMED_ATTRIBUTE = 48;
-  int VARIABLE_ATTRIBUTE = 49;
-  int MINUS = 50;
-  int BOND = 51;
-  int DOT = 52;
-  int REACTION_ARROW_RIGHT = 53;
-  int REACTION_ARROW_BOTH = 54;
+  int ANCHORS = 10;
+  int COMPARTMENTS = 11;
+  int PARAMETERS = 12;
+  int REACTION = 13;
+  int RULES = 14;
+  int TYPES = 15;
+  int OBSERVABLES = 16;
+  int IDENTIFIER = 17;
+  int ID = 18;
+  int LETTER = 19;
+  int DIGIT = 20;
+  int INTEGER = 21;
+  int LABEL = 22;
+  int ATSIGN = 23;
+  int QUOTE = 28;
+  int RELATIONAL_OPERATOR_WITHOUT_LT_GT = 29;
+  int LT = 30;
+  int GT = 31;
+  int LE = 32;
+  int GE = 33;
+  int EQ = 34;
+  int NE = 35;
+  int AND = 36;
+  int OR = 37;
+  int NOT = 38;
+  int POWER = 39;
+  int ADD = 40;
+  int SUB = 41;
+  int MULT = 42;
+  int DIV = 43;
+  int FLOATING_POINT_LITERAL = 44;
+  int EXPONENT = 45;
+  int CLAMP = 46;
+  int QUESTION_MARK = 47;
+  int COMMA = 48;
+  int NAMED_ATTRIBUTE = 49;
+  int VARIABLE_ATTRIBUTE = 50;
+  int MINUS = 51;
+  int BOND = 52;
+  int DOT = 53;
+  int REACTION_ARROW_RIGHT = 54;
+  int REACTION_ARROW_BOTH = 55;
 
   int DEFAULT = 0;
 
@@ -68,6 +69,7 @@ public interface BNGLParserConstants {
     "\"seed\"",
     "\"functions\"",
     "\"action\"",
+    "\"anchors\"",
     "\"compartments\"",
     "\"parameters\"",
     "\"reaction\"",

@@ -84,6 +84,7 @@ TOKEN : /* IDENTIFIERS */
    < SEED: "seed" > | 
    < FUNCTIONS: "functions" > | 
    < ACTION: "action" > |
+   < ANCHORS: "anchors" > |
    < COMPARTMENTS: "compartments" > |
    < PARAMETERS: "parameters" > |
    < REACTION: "reaction" > |
@@ -213,7 +214,7 @@ ASTModel Model() :
 	LOOKAHEAD(2)
 	(
 	<BEGIN> <MODEL>
-	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | AnchorsBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	<END> <MODEL>
 	( Action() )* 
 	)
@@ -221,7 +222,7 @@ ASTModel Model() :
 |
 	LOOKAHEAD(2)
 	(
-	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | AnchorsBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	( Action() )* 
 	)
 	{ return jjtThis; }
@@ -258,6 +259,14 @@ void MolecularDefinitionBlock() #MolecularDefinitionBlock :
 	<MOLECULE> <TYPES>
 	( [ <INTEGER> ] MolecularTypePattern() )*
 	<END> <MOLECULE> <TYPES>
+}
+
+void AnchorsBlock() #AnchorsBlock :
+{}
+{
+	<ANCHORS>
+	( Anchors() )*
+	<END> <ANCHORS>
 }
 
 void SeedSpeciesBlock() #SeedSpeciesBlock :
@@ -378,6 +387,25 @@ ASTMolecularTypePattern MolecularTypePattern() :	// ------------- MolecularTypeP
   	if (label != null){
   		jjtThis.setMatchLabel(label.image);
   	}
+  	return jjtThis;
+  }
+}
+
+ASTAnchors Anchors() :								// ------------- Anchors --------------------------
+{ Token t; }
+{
+  (t = <IDENTIFIER>) "(" [ ( Anchor() ( [ <COMMA> ] Anchor())* ) ] ")"
+  { 
+  	jjtThis.setName(t.image); 
+  	return jjtThis;
+  }
+}
+ASTAnchor Anchor() :								// ------------- Anchor --------------------------
+{ Token t; }
+{
+  (t = <IDENTIFIER>)
+  { 
+  	jjtThis.setName(t.image); 
   	return jjtThis;
   }
 }

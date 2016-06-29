@@ -244,23 +244,50 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
-				// 'one' is the position of this species in the list of rule products (0, 1, 2)
-				// 'two' is the name of the compartment where the species must be
 				final String structureName = findRuleProductCompartment(s);
-				
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				
 				// TODO: the code below may be greatly simplified using the more advanced BNGSpecies classes instead of using the strings
+				// 'one' is the list of all the compartments mentioned in this product
+				// 'two' is the BNGSpecies string with the compartment info extracted (that is, the AAA sites extracted)
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
 				boolean needsRepairing = false;
 				if(pair.one.size() > 1) {
 //					System.out.println(s.getName() + " multiple compartments, needs repairing.");
 					message += s.getName() + " needs repairing... ";
 					needsRepairing = true;
+					
+				/*	At this point we have the 'probable' structure of this product, extracted from the rule (structureName)
+					However, we need to verify against the lists of anchors to make sure is not excluded from the possible list of anchors
+					for any of the molecules and choose a compatible structure name, as follows:
+
+					compartments x y z
+					molecules A B C		A comes as transport
+					rule says that this product belongs in x
+					cases:
+					1. A~y	 xB.xC.yA ->  yB.yC.yA	- can't use x as the rule says because A must be anchored to y and that takes precedence
+													- if B or C can't be in y throw exception, our anchors are too restrictive
+
+					2. A~x~y xB.xC.yA ->  xB.xC.xA	- correct to what the rule wants since x is acceptable as anchor for A
+
+					3. A~z	 xB.xC.yA ->  !!!		- impossible, there is no reactant such that A can get in y (throw exception)
+					4. A~x~z xB.xC.yA ->  !!!		- same as above
+
+					
+					step 1. look for exceptions: make sets with the compartments for each molecule in the species and see if 
+							they all are allowed by the anchor rules (if not, we are in cases 3 or 4 - throw exception
+					step 2. see if structureName is acceptable for all anchored molecules - if yes, use it
+					step 3. intersect all sets from step 1
+						 3.1 - if there's 1 compartment that is acceptable for all, use it
+						 3.2 - if there's no compartment then we can't put the species anywhere - throw exception
+						 3.3 - if there's more than 1 compartment, it's ambiguous - throw exception
+				*/
+					
 				} else {
 					String structure = pair.one.get(0);
 					if(!structure.equals(structureName)) {
-						// This should never happen, if just one structure is present it must come directly from the rule
+						// This should never happen, if just one structure is present it must come directly from 
+						// the rule (no transport caused by '?' is possible)
 						throw new RuntimeException("If one single structure is present in the species it must match the structure of the rule product");
 					}
 				}
@@ -283,6 +310,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					speciesName = RbmUtils.resetProductIndex(speciesName);
 					candidate = new BNGComplexSpecies(speciesName, s.getConcentration(), firstAvailableIndex);
 				}
+				
+				
+				
 				// At this point we have a valid candidate - but we may not need it if it already exist in the list of old seed species or in the list of
 				// new seed species we're building now (it may exist in either if correction took place)
 				//

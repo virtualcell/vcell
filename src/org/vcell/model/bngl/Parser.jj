@@ -86,6 +86,7 @@ TOKEN : /* IDENTIFIERS */
    < SEED: "seed" > | 
    < FUNCTIONS: "functions" > | 
    < ACTION: "action" > |
+   < ANCHORS: "anchors" > |
    < COMPARTMENTS: "compartments" > |
    < PARAMETERS: "parameters" > |
    < REACTION: "reaction" > |
@@ -221,7 +222,7 @@ ASTModel Model() :
 	LOOKAHEAD(2)
 	(
 	<BEGIN> <MODEL>
-	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | AnchorsBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	<END> <MODEL>
 	( Action() )* 
 	)/*@bgen(jjtree)*/
@@ -234,7 +235,7 @@ ASTModel Model() :
 |
 	LOOKAHEAD(2)
 	(
-	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
+	( <BEGIN> ( CompartmentsBlock() | ParameterBlock() | MolecularDefinitionBlock() | AnchorsBlock() | SeedSpeciesBlock() | ReactionRulesBlock() | ObservablesBlock() | FunctionsBlock() ) )+ 
 	( Action() )* 
 	)/*@bgen(jjtree)*/
         {
@@ -380,6 +381,40 @@ void MolecularDefinitionBlock()                           :
 	<MOLECULE> <TYPES>
 	( [ <INTEGER> ] MolecularTypePattern() )*
 	<END> <MOLECULE> <TYPES>/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+void AnchorsBlock()               :
+{/*@bgen(jjtree) AnchorsBlock */
+  ASTAnchorsBlock jjtn000 = new ASTAnchorsBlock(JJTANCHORSBLOCK);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) AnchorsBlock */
+        try {
+/*@egen*/
+	<ANCHORS>
+	( Anchors() )*
+	<END> <ANCHORS>/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -966,6 +1001,73 @@ ASTMolecularTypePattern MolecularTypePattern() :	// ------------- MolecularTypeP
       throw (ParseException)jjte000;
     }
     throw (Error)jjte000;
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+
+ASTAnchors Anchors() :								// ------------- Anchors --------------------------
+{/*@bgen(jjtree) Anchors */
+  ASTAnchors jjtn000 = new ASTAnchors(JJTANCHORS);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t; }
+{/*@bgen(jjtree) Anchors */
+  try {
+/*@egen*/
+  (t = <IDENTIFIER>) "(" [ ( Anchor() ( [ <COMMA> ] Anchor())* ) ] ")"/*@bgen(jjtree)*/
+  {
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+  }
+/*@egen*/
+  { 
+  	jjtn000.setName(t.image); 
+  	return jjtn000;
+  }/*@bgen(jjtree)*/
+  } catch (Throwable jjte000) {
+    if (jjtc000) {
+      jjtree.clearNodeScope(jjtn000);
+      jjtc000 = false;
+    } else {
+      jjtree.popNode();
+    }
+    if (jjte000 instanceof RuntimeException) {
+      throw (RuntimeException)jjte000;
+    }
+    if (jjte000 instanceof ParseException) {
+      throw (ParseException)jjte000;
+    }
+    throw (Error)jjte000;
+  } finally {
+    if (jjtc000) {
+      jjtree.closeNodeScope(jjtn000, true);
+    }
+  }
+/*@egen*/
+}
+ASTAnchor Anchor() :								// ------------- Anchor --------------------------
+{/*@bgen(jjtree) Anchor */
+  ASTAnchor jjtn000 = new ASTAnchor(JJTANCHOR);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t; }
+{/*@bgen(jjtree) Anchor */
+  try {
+/*@egen*/
+  (t = <IDENTIFIER>)/*@bgen(jjtree)*/
+  {
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
+  }
+/*@egen*/
+  { 
+  	jjtn000.setName(t.image); 
+  	return jjtn000;
+  }/*@bgen(jjtree)*/
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);

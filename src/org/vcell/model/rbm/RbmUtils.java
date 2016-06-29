@@ -18,6 +18,9 @@ import java.util.StringTokenizer;
 
 import org.vcell.model.bngl.ASTAction;
 import org.vcell.model.bngl.ASTAddNode;
+import org.vcell.model.bngl.ASTAnchor;
+import org.vcell.model.bngl.ASTAnchors;
+import org.vcell.model.bngl.ASTAnchorsBlock;
 import org.vcell.model.bngl.ASTAndNode;
 import org.vcell.model.bngl.ASTAttributePattern;
 import org.vcell.model.bngl.ASTBondExist;
@@ -98,6 +101,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.FunctionInvocation;
+import cbit.vcell.parser.ParserException;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry;
@@ -738,6 +742,47 @@ public class RbmUtils {
 			}
 			return null;
 		}
+		@Override
+		public Object visit(ASTAnchorsBlock node, Object data) {
+			node.childrenAccept(this, data);
+			return null;
+		}
+		@Override
+		public Object visit(ASTAnchors node, Object data) {
+			String name = node.getName();
+			if(name == null) {
+				throw new RuntimeException("Unexpected null Molecule name while visiting Anchors.");
+			}
+			if(!(data instanceof RbmModelContainer)) {
+				throw new RuntimeException("Unexpected 'data' object type while visiting Anchors for " + name);
+			}
+			RbmModelContainer rbmmc = (RbmModelContainer)data;
+			MolecularType mt = rbmmc.getMolecularType(name);
+			if(mt == null) {
+				throw new RuntimeException("MolecularType " + name + " not found while visiting Anchors.");
+			}
+			node.childrenAccept(this, mt);
+			mt.setAnchorAll(false);
+			return null;
+		}
+		@Override
+		public Object visit(ASTAnchor node, Object data) {
+
+			String name = node.getName();
+			if(name == null) {
+				throw new RuntimeException("Unexpected null Structure name type while visiting Anchors.");
+			}
+			if(!(data instanceof MolecularType)) {
+				throw new RuntimeException("Unexpected 'data' object type while visiting Anchor for " + name);
+			}
+			MolecularType mt = (MolecularType)data;
+			Structure struct = model.getStructure(name);
+			if(struct == null) {
+				throw new RuntimeException("Structure " + name + " not found while visiting Anchor.");
+			}
+			mt.addAnchor(struct);
+			return null;
+		}
 		
 	}
 	
@@ -871,6 +916,7 @@ public class RbmUtils {
 			boolean inProlog = true;
 			BnglLocation location = BnglLocation.OutsideBlock;
 			Set<String> compartments = new HashSet<> ();
+			Map<String, String> anchors = new HashMap<> ();
 			while (true) {
 				String line = br.readLine();
 				if (line == null) {
@@ -1239,7 +1285,7 @@ public class RbmUtils {
 	//
 	// this is called only when the compartment is faked by a site whose state is the name of the compartment
 	// all the molecules in the species pattern have this extra fake site, and in an identical state (compartment)
-	// we eliminate this species from all the molecule and return the state (compartment name)
+	// we eliminate this species from all the molecule and return the states (compartment names) - may be one or more
 	//
 	public static Pair<List<String>, String> extractCompartment(String original) {
 		String pattern = RbmUtils.SiteStruct;
@@ -1252,7 +1298,7 @@ public class RbmUtils {
 			}
 			String compartment = "";
 			cleaned += original.substring(0, original.indexOf(pattern));
-			original = original.substring(original.indexOf(pattern)+pattern.length()+1);	// ve get rid of all including the ~
+			original = original.substring(original.indexOf(pattern)+pattern.length()+1);	// we get rid of pattern including the ~ that follows
 			while(true) {
 				// we keep moving the name of the compartment from original to cleaned until we encounter ',' or ')'
 				char c = original.charAt(0);
@@ -1262,7 +1308,7 @@ public class RbmUtils {
 				} else if(c == ')') {
 					if(cleaned.endsWith(",")) {
 						// our pattern was the last element, so we need to get rid of the orphaned comma we have in 'cleaned'
-						cleaned = cleaned.substring(0,  cleaned.length()-1);
+						cleaned = cleaned.substring(0, cleaned.length()-1);
 					}
 					break;					// done cleaning this molecule and we are at its end, no comma to delete
 				} else {
@@ -1532,6 +1578,20 @@ public class RbmUtils {
 				buffer.append(",");
 			}
 			buffer.append(toBnglString(componentList.get(i)));
+		}
+		buffer.append(")");
+		return buffer.toString();
+	}
+	public static String anchorToBnglString(MolecularType molecularType) {
+		StringBuilder buffer = new StringBuilder(molecularType.getName());
+		buffer.append("(");
+		int i = 0;
+		for(Structure struct : molecularType.getAnchors()) {
+			if(i > 0) {
+				buffer.append(",");
+			}
+			buffer.append(struct.getName());
+			i++;
 		}
 		buffer.append(")");
 		return buffer.toString();

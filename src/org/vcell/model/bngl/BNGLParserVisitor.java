@@ -10,6 +10,7 @@ public interface BNGLParserVisitor
   public Object visit(ASTCompartmentsBlock node, Object data);
   public Object visit(ASTParameterBlock node, Object data);
   public Object visit(ASTMolecularDefinitionBlock node, Object data);
+  public Object visit(ASTAnchorsBlock node, Object data);
   public Object visit(ASTSeedSpeciesBlock node, Object data);
   public Object visit(ASTReactionRulesBlock node, Object data);
   public Object visit(ASTObservablesBlock node, Object data);
@@ -25,6 +26,8 @@ public interface BNGLParserVisitor
   public Object visit(ASTKineticsParameter node, Object data);
   public Object visit(ASTSpeciesPattern node, Object data);
   public Object visit(ASTMolecularTypePattern node, Object data);
+  public Object visit(ASTAnchors node, Object data);
+  public Object visit(ASTAnchor node, Object data);
   public Object visit(ASTAction node, Object data);
   public Object visit(ASTMolecularComponentPattern node, Object data);
   public Object visit(ASTAttributePattern node, Object data);

@@ -123,6 +123,9 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 	}
 	
 	public Set<Structure> getAnchors() {
+		if(anchorSet == null) {
+			anchorSet = new HashSet<>();
+		}
 //		for(Iterator<Structure> it = anchorSet.iterator(); it.hasNext(); ) {
 //			Structure element = it.next();
 //			if (model.getStructure(element.getName()) == null) {
@@ -131,6 +134,13 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 //		}		
 		return anchorSet;
 	}
+	public boolean addAnchor(Structure s) {
+		return getAnchors().add(s);
+	}
+	public boolean removeAnchor(Structure s) {
+		return getAnchors().remove(s);
+	}
+
 	public boolean isAnchorAll() {
 		return bAnchorAll;
 	}
@@ -196,20 +206,25 @@ public class MolecularType extends RbmElementAbstract implements Matchable, Veto
 			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "Name of " + getDisplayType() + " is invalid", Issue.Severity.ERROR));
 		}
 		if(componentList == null) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is null", Issue.SEVERITY_ERROR));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is null", Issue.Severity.ERROR));
 		} else if(componentList.isEmpty()) {
-			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is empty", Issue.SEVERITY_INFO));
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, getDisplayType() + " '" + getDisplayName() + MolecularComponent.typeName + "' List is empty", Issue.Severity.INFO));
 		} else {
 			for (MolecularComponent mc : componentList) {
 				MolecularComponent[] mcList = getMolecularComponents(mc.getName());
 				if(mcList.length > 1) {
 					String msg = "Duplicate " + mc.getDisplayType() + " '" + mc.getDisplayName() + "' in the definition of the " + MolecularType.typeName + ".";
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
 				}
 			}
 			for (MolecularComponent entity : componentList) {
 				entity.gatherIssues(issueContext, issueList);
 			}
+		}
+		if(!isAnchorAll() && getAnchors().isEmpty()) {
+			String msg = getDisplayType() + " " + getDisplayName() + " must be anchored to at least one Structure.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, Issue.Severity.ERROR));
+
 		}
 	}
 	
