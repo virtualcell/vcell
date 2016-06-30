@@ -226,7 +226,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC12(evt);
 			if (evt.getSource() == NewPDEExportPanel.this.getExportSettings1() && (evt.getPropertyName().equals("selectedFormat")))
 				connEtoC13(evt);
-			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals("pdeDataContext")))
+			if (evt.getSource() == NewPDEExportPanel.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)))
 				connPtoP3SetTarget();
 			if (evt.getSource() == NewPDEExportPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints")))
 				connEtoC14(evt);
@@ -2260,7 +2260,7 @@ public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameS
 	this.currentSimNameSimDataID = currentSimNameSimDataID;
 	PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
-	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
+	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, pdeDataContext);
 }
 
 
@@ -2285,7 +2285,7 @@ private void setpdeDataContext1(PDEDataContext newValue) {
 			}
 			connPtoP3SetSource();
 			connEtoC1(ivjpdeDataContext1);
-			firePropertyChange("pdeDataContext", oldValue, newValue);
+			firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, newValue);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

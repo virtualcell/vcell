@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata.gui;
 
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -42,6 +43,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeEvent;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -52,6 +54,7 @@ import org.vcell.util.gui.VCellIcons;
 
 import cbit.image.DisplayAdapterService;
 import cbit.vcell.client.UserMessage;
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
@@ -72,17 +75,15 @@ import cbit.vcell.solver.AnnotatedFunction;
  */
 @SuppressWarnings("serial")
 public class PDEPlotControlPanel extends JPanel {
-	private JComboBox filterComboBox;
+	private JComboBox<String> filterComboBox;
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
 	private PDEDataContext fieldPdeDataContext = null;
-	private boolean ivjConnPtoP1Aligning = false;
 	private DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
-	private JList ivjJList1 = null;
+	private JList<DataIdentifier> ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
 	private JScrollPane ivjJScrollPane1 = null;
-	private PDEDataContext ivjpdeDataContext1 = null;
 	private JLabel ivjJLabelMax = null;
 	private JLabel ivjJLabelMin = null;
 	private JSlider ivjJSliderTime = null;
@@ -233,9 +234,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		};
 		public void intervalRemoved(javax.swing.event.ListDataEvent e) {};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == PDEPlotControlPanel.this && (evt.getPropertyName().equals("pdeDataContext"))) 
-				connPtoP1SetTarget();
-			if (evt.getSource() == PDEPlotControlPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("timePoints"))) 
+			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals("timePoints"))) 
 				connEtoC3(evt);
 			if (evt.getSource() == PDEPlotControlPanel.this.getJSliderTime() && (evt.getPropertyName().equals("model"))) 
 				connPtoP4SetTarget();
@@ -245,7 +244,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC9(evt);
 			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("customScaleRange"))) 
 				connEtoC5(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getpdeDataContext1() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals("dataIdentifiers"))) 
 				connEtoM8(evt);
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
@@ -400,7 +399,7 @@ private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.newTimePoints(getpdeDataContext1().getTimePoints());
+		this.newTimePoints(getPdeDataContext().getTimePoints());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -420,8 +419,8 @@ private void connEtoC4(PDEDataContext value) {
 	try {
 		// user code begin {1}
 		// user code end
-		if ((getpdeDataContext1() != null)) {
-			this.newTimePoints(getpdeDataContext1().getTimePoints());
+		if ((getPdeDataContext() != null)) {
+			this.newTimePoints(getPdeDataContext().getTimePoints());
 		}
 		// user code begin {2}
 		// user code end
@@ -645,7 +644,7 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 }
 
 private void filterVariableNames(){
-	if ((getpdeDataContext1() != null)) {
+	if ((getPdeDataContext() != null)) {
   		final Object oldselection = getJList1().getSelectedValue();
 		AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
@@ -663,7 +662,7 @@ private void filterVariableNames(){
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
 				
-				if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
+				if(getPdeDataContext().getDataIdentifiers() != null && getPdeDataContext().getDataIdentifiers().length > 0){
 					DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
 					DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
 					System.arraycopy(originalDataIdentifierArr, 0, dataIdentifierArr, 0, originalDataIdentifierArr.length);
@@ -718,56 +717,6 @@ private void filterVariableNames(){
 			
 		};
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3});
-	}
-}
-
-/**
- * connPtoP1SetSource:  (PDEPlotControlPanel.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getpdeDataContext1() != null)) {
-				this.setPdeDataContext(getpdeDataContext1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connPtoP1SetTarget:  (PDEPlotControlPanel.pdeDataContext <--> pdeDataContext1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			setpdeDataContext1(this.getPdeDataContext());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
 	}
 }
 
@@ -980,7 +929,7 @@ private void initFunctionsList() {
 	bHasOldUserDefinedFunctions = false;
 	functionsList.clear();
 	try {
-		 AnnotatedFunction[] functions = getpdeDataContext1().getFunctions();
+		 AnnotatedFunction[] functions = getPdeDataContext().getFunctions();
 		 for (int i = 0; i < functions.length; i++) {
 			 if (functions[i].isOldUserDefined()) {
 				 bHasOldUserDefinedFunctions = true;
@@ -1066,10 +1015,10 @@ private javax.swing.JLabel getJLabelMin() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList getJList1() {
+private JList<DataIdentifier> getJList1() {
 	if (ivjJList1 == null) {
 		try {
-			ivjJList1 = new javax.swing.JList();
+			ivjJList1 = new JList<DataIdentifier>();
 			ivjJList1.setName("JList1");
 			ivjJList1.setBounds(0, 0, 131, 238);
 			ivjJList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -1152,7 +1101,7 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane1.weighty = 1.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 
-			filterComboBox = new JComboBox();
+			filterComboBox = new JComboBox<String>();
 			filterComboBox.insertItemAt("All Variables", 0);
 			filterComboBox.setSelectedIndex(0);
 			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -1348,19 +1297,6 @@ public PDEDataContext getPdeDataContext() {
 	return fieldPdeDataContext;
 }
 
-
-/**
- * Return the pdeDataContext1 property value.
- * @return cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private PDEDataContext getpdeDataContext1() {
-	// user code begin {1}
-	// user code end
-	return ivjpdeDataContext1;
-}
-
-
 /**
  * Return the JPanel3 property value.
  * @return javax.swing.JPanel
@@ -1431,7 +1367,6 @@ private void initConnections() throws java.lang.Exception {
 	getJList1().addListSelectionListener(ivjEventHandler);
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 	getViewFunctionButton().addActionListener(ivjEventHandler);
-	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
 	connPtoP3SetTarget();
@@ -1475,7 +1410,7 @@ private void setIdentifierListRenderer() {
 		IdentifierListCellRenderer() {
 			super();
 		}
-		public java.awt.Component getListCellRendererComponent(javax.swing.JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
 			DataIdentifier di = (DataIdentifier)value;
 			AnnotatedFunction f = findFunction(di);
@@ -1613,56 +1548,41 @@ private void setmodel1(javax.swing.BoundedRangeModel newValue) {
  * @see #getPdeDataContext
  */
 public void setPdeDataContext(PDEDataContext pdeDataContext) {
-	PDEDataContext oldValue = fieldPdeDataContext;
-	fieldPdeDataContext = pdeDataContext;
-	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
-}
-
-
-/**
- * Set the pdeDataContext1 to a new value.
- * @param newValue cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setpdeDataContext1(PDEDataContext newValue) {
-	if (ivjpdeDataContext1 != newValue) {
-		try {
-			PDEDataContext oldValue = getpdeDataContext1();
-			/* Stop listening for events from the current object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjpdeDataContext1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjpdeDataContext1 != null) {
-				ivjpdeDataContext1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP1SetSource();
-			connEtoM6(ivjpdeDataContext1);
-			connEtoM7(ivjpdeDataContext1);
-			connEtoC4(ivjpdeDataContext1);
-			connEtoM3(ivjpdeDataContext1);
-			connEtoM1(ivjpdeDataContext1);
-			firePropertyChange("pdeDataContext", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+	try{
+		PDEDataContext oldPdeDataContext = fieldPdeDataContext;
+		if (oldPdeDataContext != null) {
+			oldPdeDataContext.removePropertyChangeListener(ivjEventHandler);
 		}
-	};
-	// user code begin {3}
-	// user code end
+		fieldPdeDataContext = pdeDataContext;
+		if (getPdeDataContext() != null) {
+			getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
+		}
+		if(PDEDataViewer.isParameterScan(oldPdeDataContext, getPdeDataContext())){
+			//parameter scan change, full setup not needed, keep all current settings
+			//update timepoint display values and fire timepoint slider state change to cause PDEDataViewer update
+			connEtoM3(getPdeDataContext());//filter variable names
+			connEtoC4(getPdeDataContext());//new timespoints  newTimePoints(getPdeDataContext().getTimePoints());
+			ivjEventHandler.stateChanged(new ChangeEvent(getmodel1()));
+			getPdeDataContext().firePropertyChange(PDEDataContext.PROPERTY_NAME_TIME_POINT, new Double(-1), new Double(getPdeDataContext().getTimePoint()));
+		}else{
+			//Setup panel with new PDEDataContext info
+			connEtoM6(getPdeDataContext());//autoscale
+			connEtoM7(getPdeDataContext());//slider setval 0
+			connEtoC4(getPdeDataContext());//new timespoints
+			connEtoM3(getPdeDataContext());//filter variable names
+			connEtoM1(getPdeDataContext());//clear marked states and scale range
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
 }
 
 /**
  * Comment
  */
 private void setTimeFromSlider(int sliderPosition) {
-	if (getpdeDataContext1() != null && getpdeDataContext1().getTimePoints() != null) {
-		final double timepoint = getpdeDataContext1().getTimePoints()[sliderPosition];
+	if (getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null) {
+		final double timepoint = getPdeDataContext().getTimePoints()[sliderPosition];
 		
 		if (! getJSliderTime().getValueIsAdjusting()) {
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();			
@@ -1671,8 +1591,8 @@ private void setTimeFromSlider(int sliderPosition) {
 					if(getClientTaskStatusSupport() != null){
 						getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
 					}
-					getpdeDataContext1().waitWhileBusy();
-					getpdeDataContext1().setTimePoint(timepoint);
+					getPdeDataContext().waitWhileBusy();
+					getPdeDataContext().setTimePoint(timepoint);
 				}
 			};
 			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
@@ -1721,7 +1641,7 @@ private void setTimeFromSlider(int sliderPosition) {
  */
 private void setTimeFromTextField(String typedValue) {
 	int oldVal = getJSliderTime().getValue();
-	double[]times = getpdeDataContext1().getTimePoints();
+	double[]times = getPdeDataContext().getTimePoints();
 	double time = 0;
 	try {
 		time = Double.parseDouble(typedValue);
@@ -1776,7 +1696,7 @@ private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionE
 				if(getClientTaskStatusSupport() != null){
 					getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifier.getDisplayName());
 				}
-				getpdeDataContext1().waitWhileBusy();
+				getPdeDataContext().waitWhileBusy();
 				getPdeDataContext().setVariable(selectedDataIdentifier);
 			}
 		};

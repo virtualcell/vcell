@@ -85,7 +85,9 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 	double progressCounter = 0;
 	final int SIM_COUNT = simNameSimDataIDs.length;
 	final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null?asciiSpecs.getExportMultipleParamScans().length:1);
-	final int TIME_COUNT = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
+	final int endTimeIndex = timeSpecs.getEndTimeIndex();
+	final int beginTimeIndex = timeSpecs.getBeginTimeIndex();
+	final int TIME_COUNT = endTimeIndex - beginTimeIndex + 1;
 
 	double TOTAL_EXPORTS_OPS = 0;
 	switch (geometrySpecs.getModeID()) {
@@ -97,16 +99,21 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 			break;
 	}
 	for (int v = 0; v < SIM_COUNT; v++) {
+		int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
+		VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
 		//3 states for parameter scan
 		//1. simNameSimDataIDs[v].getExportParamScanInfo() == null, not a parameter scan
 		//2. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() == null, parameter scan use simNameSimDataIDs[v].getDefaultVCDataIdentifier()
 		//3. simNameSimDataIDs[v].getExportParamScanInfo() != null and asciiSpecs.getExportMultipleParamScans() != null, parameter scan use simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes() loop through
 		for (int ps = 0; ps < PARAMSCAN_COUNT; ps++) {
-			int simJobIndex = simNameSimDataIDs[v].getDefaultJobIndex();
-			VCDataIdentifier vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
 			if(asciiSpecs.getExportMultipleParamScans() != null){
 				simJobIndex = simNameSimDataIDs[v].getExportParamScanInfo().getParamScanJobIndexes()[asciiSpecs.getExportMultipleParamScans()[ps]];
 				vcdID = simNameSimDataIDs[v].getVCDataIdentifier(simJobIndex);
+			}
+			//Get times for each sim{paramscan} because they may be different
+			final double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
+			if(allTimes.length<= beginTimeIndex || allTimes.length<= endTimeIndex){
+				throw new DataAccessException("Sim '"+simNameSimDataIDs[v].getSimulationName()+"' id="+vcdID.getID()+" simJob="+simJobIndex+", time array length="+allTimes.length+" has no endTimeIndex="+endTimeIndex);
 			}
 			String paramScanInfo = "";
 			if(simNameSimDataIDs[v].getExportParamScanInfo() != null){
@@ -131,14 +138,14 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					}
 					Vector<ExportOutput> outputV = new Vector<ExportOutput>();
 					if (geometrySpecs.getPointCount() > 0) {//assemble single point data together (uses more compact formatting)
-						String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
+						String dataID = "_Points_vars("+geometrySpecs.getPointCount()+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
 						//StringBuffer data1 = new StringBuffer(data.toString());
 						ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 
 						for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-								getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+								getPointsTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs, allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 							progressCounter++;
 							exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
@@ -146,14 +153,14 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 						outputV.add(exportOutput1);
 					}
 					if(geometrySpecs.getCurves().length != 0){//assemble curve (non-single point) data together
-						String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1)+")";
+						String dataID = "_Curves_vars("+(geometrySpecs.getCurves().length)+")_times("+( endTimeIndex-beginTimeIndex+1)+")";
 						//StringBuffer data1 = new StringBuffer(data.toString());
 						ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 						fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 						for (int i=0;i<variableSpecs.getVariableNames().length;i++) {
 							for (int s = 0; s < geometrySpecs.getCurves().length; s++) {
 								if(!GeometrySpecs.isSinglePoint(geometrySpecs.getCurves()[s])){
-									fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+									fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),getCurveTimeSeries(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], allTimes, beginTimeIndex, endTimeIndex, asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 									fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),"\n");
 									progressCounter++;
 									exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progressCounter/TOTAL_EXPORTS_OPS);
@@ -170,7 +177,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 					ExportOutput[] output = new ExportOutput[variableSpecs.getVariableNames().length * TIME_COUNT];
 					for (int j=0;j<variableSpecs.getVariableNames().length;j++) {
 						for (int i=0;i<TIME_COUNT;i++) {
-							StringBuffer inset = new StringBuffer(Integer.toString(i + timeSpecs.getBeginTimeIndex()));
+							StringBuffer inset = new StringBuffer(Integer.toString(i + beginTimeIndex));
 								inset.reverse();
 								inset.append("000");
 								inset.setLength(4);
@@ -180,7 +187,7 @@ private ExportOutput[] exportPDEData(OutputContext outputContext,long jobID, Use
 							ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID1/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
 							fileDataContainerManager.append(exportOutput1.getFileDataContainerID(),
-								getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + timeSpecs.getBeginTimeIndex(), Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
+								getSlice(outputContext,user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[j], i + beginTimeIndex, Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()), geometrySpecs.getSliceNumber(), asciiSpecs.getSwitchRowsColumns(),fileDataContainerManager));
 							output[j * TIME_COUNT + i] = exportOutput1;
 
 							progressCounter++;
