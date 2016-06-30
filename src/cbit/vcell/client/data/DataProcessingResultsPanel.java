@@ -114,6 +114,9 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	}
 	
 	public void update(final PDEDataContext pdeDataContext) {
+		if(this.pdeDataContext == pdeDataContext){
+			return;
+		}
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
