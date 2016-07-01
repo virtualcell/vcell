@@ -3807,6 +3807,14 @@ private Element getXML(MolecularComponentPattern param) {
 private Element getXML(MolecularType param) {
 	Element e  = new Element(XMLTags.RbmMolecularTypeTag);
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
+	
+	boolean anchorAll = param.isAnchorAll();
+	e.setAttribute(XMLTags.RbmMolecularTypeAnchorAllAttrTag, String.valueOf(anchorAll));
+	for (Structure ss : param.getAnchors()){
+		Element es = new Element(XMLTags.RbmMolecularTypeAnchorTag);
+		es.setAttribute(XMLTags.StructureAttrTag, mangle(ss.getName()));
+		e.addContent(es);
+	}
 	for (MolecularComponent pp : param.getComponentList()){
 		e.addContent(getXML(pp));
 	}

@@ -574,6 +574,8 @@ public class XMLTags {
 	public static final String RbmMaxMoleculesPerSpeciesTag = "RbmMaxMoleculesPerSpecies";
 	public static final String RbmMaxStoichiometryTag = "MaxStoichiometry";
 	public static final String RbmIntegerAttrTag = "Integer";
+	public static final String RbmMolecularTypeAnchorAllAttrTag = "AnchorAll";
+	public static final String RbmMolecularTypeAnchorTag = "Anchor";
 	public static final String RbmIndexAttrTag = "Index";
 	public static final String RbmReactionRuleLabelTag = "ReactionRuleLabel";
 	public static final String RbmReactionRuleReversibleTag = "ReactionRuleReversible";
