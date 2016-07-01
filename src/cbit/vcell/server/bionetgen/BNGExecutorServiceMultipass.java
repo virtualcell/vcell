@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +73,10 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private int currentIterationTotalSpecies = 0;
 	private int needAdjustMaxMolecules = 0;			// TaskCallbackProcessor needs this to see if the number of molecules per species is sufficient
 
-	private Model model;
+	private Model model;							// model identical with the original, created from the compartmental bngl file
 	private SimulationContext simContext;
+	
+	private Map <String, Set<String>> anchorsMap;
 	
 
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
@@ -99,6 +103,9 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		long elt = 0;	// elapsed time in doWork
 		
 		String cBngInputString = cBngInput.getInputString();
+		
+		String anchorsString = extractAnchors(cBngInputString);
+		anchorsMap = parseAnchors(anchorsString);
 		
 		// the "trick" - the modified molecules, species, etc
 		// everything has an extra Site with the compartments as possible States
@@ -244,13 +251,14 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 				// check the product against the rule to see if it's valid
 				// sanity check: only "transport" rules can give incorrect products, any rule with all participants in the same
 				//   compartment should only give valid products (is that so?)
-				final String structureName = findRuleProductCompartment(s);
+				String structureName = findRuleProductCompartment(s);		// this is the structure where the product should be, according to the rule
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(ruleName);
 				
 				// TODO: the code below may be greatly simplified using the more advanced BNGSpecies classes instead of using the strings
 				// 'one' is the list of all the compartments mentioned in this product
 				// 'two' is the BNGSpecies string with the compartment info extracted (that is, the AAA sites extracted)
 				Pair<List<String>, String> pair = RbmUtils.extractCompartment(s.getName());
+				Map<String, Set<String>> speciesAnchorMap = extractSpeciesAnchorMap(s);			// ex of one entry: key T,  value  mem, cyt
 				boolean needsRepairing = false;
 				if(pair.one.size() > 1) {
 //					System.out.println(s.getName() + " multiple compartments, needs repairing.");
@@ -282,14 +290,69 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 						 3.2 - if there's no compartment then we can't put the species anywhere - throw exception
 						 3.3 - if there's more than 1 compartment, it's ambiguous - throw exception
 				*/
+//					anchorsMap
 					
-				} else {
+					// sanity check, step 1
+					for (Map.Entry<String, Set<String>> entry : speciesAnchorMap.entrySet()) {
+					    String molecule = entry.getKey();				// molecule in the newly generated species (product)
+				    	if(!anchorsMap.containsKey(molecule)) {
+				    		continue;	// this molecule can be anywhere, it's not anchored - nothing to verify
+				    	}
+					    Set<String> structures = entry.getValue();		// 1 or more location where we try to put it (before correction may be more than 1)
+						// these structures MUST all be allowed by the anchor rule, otherwise it would mean they are coming from a reactant that cannot exist (case 3 or 4 above)
+					    for(String wantedStructure : structures) {
+					    	Set<String> allowedStructures = anchorsMap.get(molecule);
+					    	if(!allowedStructures.contains(wantedStructure)) {
+					    		// should never happen: no reactant and no rule should have placed this molecule in this structure
+					    		throw new RuntimeException("Error in " + s.getName() + "\nMolecule " + molecule + " cannot possibly be in Structure " + wantedStructure);
+					    	}
+					    }
+					}
+					// step 2
+					boolean isCandidateStructureAcceptable = true;
+					for (Map.Entry<String, Set<String>> entry : speciesAnchorMap.entrySet()) {
+					    String molecule = entry.getKey();				// molecule in the newly generated species (product)
+				    	if(!anchorsMap.containsKey(molecule)) {
+				    		continue;	// this molecule can be anywhere, it's not anchored - nothing to verify
+				    	}
+					    Set<String> allowedStructures = anchorsMap.get(molecule);
+				    	if(!allowedStructures.contains(structureName)) {
+				    		// the structure 'wanted' by the rule for this product is not acceptable because of some anchor rule
+				    		isCandidateStructureAcceptable = false;
+				    		break;
+				    	}
+					}
+					// step 3
+					if(isCandidateStructureAcceptable == false) {	// we try to find one and only one structure that would satisfy all anchored molecules of this species
+						TreeSet<String> intersection = new TreeSet<>();
+						for(Structure str : model.getStructures()) {
+							intersection.add(str.getName());		// we start by adding all structures in the model
+						}
+						for (Map.Entry<String, Set<String>> entry : speciesAnchorMap.entrySet()) {
+						    String molecule = entry.getKey();			// molecule in the newly generated species (product)
+					    	if(!anchorsMap.containsKey(molecule)) {
+					    		continue;	// this molecule can be anywhere, it's not anchored - nothing to verify
+					    	}
+						    Set<String> structures = entry.getValue();	// we already know from step 1 that all structures here are acceptable by the anchor
+						    intersection.retainAll(structures);			// intersection retains only the elements in 'structures'
+						}
+						if(intersection.size() == 0) {			// no structure satisfies the anchor rules for the molecules in this species
+							throw new RuntimeException("Error in " + s.getName() + "\nThe Structures allowed for anchored molecules are mutually exclusive.");
+						} else if(intersection.size() > 1) {	// ambiguous, don't know which compartment to pick
+							throw new RuntimeException("Error in " + s.getName() + "\nMultiple Structures allowed by the anchor rules, don't know which to choose.");
+						} else {								// found one single structure everybody is happy about
+							structureName = intersection.first();
+						}
+					}
+				} else {		// no transport caused by a 'wild card', just direct rule application (no compartment ambiguity, nothing to correct)
 					String structure = pair.one.get(0);
 					if(!structure.equals(structureName)) {
 						// This should never happen, if just one structure is present it must come directly from 
 						// the rule (no transport caused by '?' is possible)
-						throw new RuntimeException("If one single structure is present in the species it must match the structure of the rule product");
+						throw new RuntimeException("Error in " + s.getName() + "\nIf one single structure is present in the species it must match the structure of the rule product");
 					}
+					// product structure (from rule) should not conflict with the anchor - we should have error issue in the rule itself reporting the conflict
+					// TODO: check here too anyway, just in case?
 				}
 				
 				BNGSpecies candidate;	// new generated species that we may add the list of species for the next iteration
@@ -310,8 +373,6 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 					speciesName = RbmUtils.resetProductIndex(speciesName);
 					candidate = new BNGComplexSpecies(speciesName, s.getConcentration(), firstAvailableIndex);
 				}
-				
-				
 				
 				// At this point we have a valid candidate - but we may not need it if it already exist in the list of old seed species or in the list of
 				// new seed species we're building now (it may exist in either if correction took place)
@@ -666,7 +727,82 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		String rawSeedSpeciesString = rawSeedSpecies.toString();
 		return rawSeedSpeciesString;
 	}
+	
+	private String extractAnchors(String s) {
+		// extract the species from the output
+		boolean inAnchorsBlock = false;
+		int index = 1;
+		boolean foundBlock = false;
+		StringBuilder rawAnchors = new StringBuilder();
+		StringTokenizer st = new StringTokenizer(s, "\n");
+		while (st.hasMoreElements()) {
+			String nextToken = st.nextToken().trim();
 
+			if(nextToken.equals("begin anchors")) {
+				inAnchorsBlock = true;
+				foundBlock = true;
+				continue;
+			} else if(nextToken.equals("end anchors")) {
+				inAnchorsBlock = false;
+				break;		// nothing more to do, we got all our species
+			}
+			if(inAnchorsBlock == false) {
+				continue;
+			}
+			// inside anchors block;
+			rawAnchors.append(nextToken);
+			rawAnchors.append("\n");
+			index++;
+		}
+		String rawAnchorsString = rawAnchors.toString();
+		if(foundBlock) {
+			return rawAnchorsString;
+		} else {
+			return null;
+		}
+	}
+	public Map <String, Set<String>> parseAnchors(String inputString) {
+		Map <String, Set<String>> anchorsMap = new HashMap<>();
+		if(inputString == null || inputString.isEmpty()) {
+			return anchorsMap;
+		}
+		StringTokenizer st = new StringTokenizer(inputString, "\n");
+		while (st.hasMoreElements()) {
+			String nextToken = st.nextToken().trim();
+			StringTokenizer lineTokenizer = new StringTokenizer(nextToken, "(,)");
+			String molecule = lineTokenizer.nextToken();
+			Set<String> structures = new HashSet<>();
+			while (lineTokenizer.hasMoreTokens()) {
+				String structure = lineTokenizer.nextToken();
+				structures.add(structure);
+			}
+			anchorsMap.put(molecule, structures);
+		}
+		return anchorsMap;
+	}
+	public Map <String, Set<String>> extractSpeciesAnchorMap(BNGSpecies species) {
+		Map <String, Set<String>> anchorsMap = new HashMap<>();
+		StringTokenizer st = new StringTokenizer(species.getName(), ".");			// T(AAA~mem,AAB~1,c!1).T(AAA~cyt,AAB~1,c!1)
+		while (st.hasMoreElements()) {
+			String nextToken = st.nextToken().trim();
+			StringTokenizer lineTokenizer = new StringTokenizer(nextToken, "(,)");
+			String molecule = lineTokenizer.nextToken();
+			String structureSite = lineTokenizer.nextToken();						// AAA~cyt
+			String structure = structureSite.substring(structureSite.indexOf("~")+1);
+			
+			if(anchorsMap.containsKey(molecule)) {
+				Set<String> structures = anchorsMap.get(molecule);
+				structures.add(structure);
+				anchorsMap.put(molecule, structures);
+			} else {
+				Set<String> structures = new HashSet<>();
+				structures.add(structure);
+				anchorsMap.put(molecule, structures);			// molecule: T   structures:  mem, cyt
+			}
+		}
+		return anchorsMap;
+	}
+	
 	private static String extractReactions(String output) {
 		// extract the species from the output
 		boolean inReactionsBlock = false;

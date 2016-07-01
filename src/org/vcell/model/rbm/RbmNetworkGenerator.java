@@ -279,7 +279,8 @@ public class RbmNetworkGenerator {
 		writer.println();
 		
 		// --- write anchor ----------------------------------------
-		if(hasAnchors) {
+		// don't write the anchors if the compartments are not properly represented
+		if(hasAnchors && compartmentMode == CompartmentMode.show) {
 			writer.println(BEGIN_ANCHORS);
 			for (MolecularType mt : molList) {
 				if(!mt.isAnchorAll()) {
