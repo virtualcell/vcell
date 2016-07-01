@@ -1902,7 +1902,7 @@ public void initDataManager(
 	
 	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			DataIdentifier[] sortedDataIDs = DataIdentifier.collectSimilarDataTypes(variable, dataManager.getDataIdentifiers());
+			DataIdentifier[] sortedDataIDs = DataIdentifier.collectSortedSimilarDataTypes(variable.getVariableType(), dataManager.getDataIdentifiers());
 			hashTable.put("sortedDataIDs", sortedDataIDs);
 		}
 	};

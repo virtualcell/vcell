@@ -21,6 +21,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -44,6 +46,7 @@ import java.util.Vector;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -55,6 +58,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -69,6 +73,7 @@ import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.NumberUtils;
@@ -80,8 +85,10 @@ import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TSJobResultsSpaceStats;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.gui.DefaultListModelCivilized;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 import org.vcell.util.gui.FileFilters;
@@ -102,6 +109,7 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.client.ChildWindowListener;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.ClientSimManager.LocalVCSimulationDataIdentifier;
@@ -186,7 +194,7 @@ import cbit.vcell.solvers.MembraneElement;
  * @author: Ion Moraru
  */
 @SuppressWarnings("serial")
-public class PDEDataViewer extends DataViewer {
+public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private boolean bCreatePostProcess = true;
 	public enum CurrentView {
 		SLICE_VIEW("Slice View"),
@@ -247,23 +255,22 @@ public class PDEDataViewer extends DataViewer {
 	};
 	
 	public static class TimeSeriesDataRetrievalTask extends AsynchClientTask {
-		private PDEDataViewer myPDEDataViewer;
+		private DataJobListenerHolder dataJobListenerHolder;
 		private PDEDataContext myPDEDataContext;
-		public TimeSeriesDataRetrievalTask(String title,PDEDataViewer myPDEDataViewer,PDEDataContext myPDEDataContext) {
+		public TimeSeriesDataRetrievalTask(String title,DataJobListenerHolder dataJobListenerHolder,PDEDataContext myPDEDataContext) {
 			super(title, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING);
-			this.myPDEDataViewer=myPDEDataViewer;
+			this.dataJobListenerHolder=dataJobListenerHolder;
 			this.myPDEDataContext=myPDEDataContext;
 		}
 	
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			long startTime = System.currentTimeMillis();
 			DataJobListener djl = null;
 			try {
 				TimeSeriesJobSpec timeSeriesJobSpec = (TimeSeriesJobSpec)hashTable.get(StringKey_timeSeriesJobSpec);
 				djl =
 					new TimeSeriesDataJobListener(timeSeriesJobSpec.getVcDataJobID(), hashTable, getClientTaskStatusSupport());
-				myPDEDataViewer.addDataJobListener(djl);
+				dataJobListenerHolder.addDataJobListener(djl);
 				myPDEDataContext.getTimeSeriesValues(timeSeriesJobSpec);
 				while (true) {
 					Throwable timeSeriesJobFailed = (Throwable)hashTable.get(StringKey_timeSeriesJobException);
@@ -287,8 +294,7 @@ public class PDEDataViewer extends DataViewer {
 					}
 				}
 			} finally {
-				if(djl != null){myPDEDataViewer.removeDataJobListener(djl);}
-				System.out.println("----------TimeRetrievalTask="+(System.currentTimeMillis()-startTime));
+				if(djl != null){dataJobListenerHolder.removeDataJobListener(djl);}
 			}
 		}
 	};
@@ -2629,10 +2635,10 @@ private void showKymograph() {
 				accumDistances = ssh.getWorldCoordinateLengths();
 			}	
 			
-			String title = "Kymograph: ";
-			if (getSimulationModelInfo()!=null){
-				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
-			}
+			String title = createContextTitle("Kymograph: ");
+//			if (getSimulationModelInfo()!=null){
+//				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+//			}
 			KymographPanel  kymographPanel = new KymographPanel(this, title, new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext()));
 			SymbolTable symbolTable;
 			if(getSimulation() != null && getSimulation().getMathDescription() != null){
@@ -2722,12 +2728,7 @@ private void showSpatialPlot() {
 					Plot2D plot2D = new Plot2D(symbolTableEntries, new String[] { varName },new PlotData[] { plotData },
 								new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"});
 					plotPane.setPlot2D(	plot2D);
-					String title = null;
-					if (getSimulation()!=null){
-						title = getSimulation().getName() + " : Spatial Plot : " + varName;
-					}else{
-						title = "Spatial Plot : " + varName;
-					}
+					String title = createContextTitle("Spatial Plot:'"+varName+"' ");
 					
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
 					ChildWindow childWindow = childWindowManager.addChildWindow(plotPane,plotPane,title);
@@ -2812,17 +2813,101 @@ private void showTimePlot() {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-			
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
-				PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(PDEDataViewer.this, 
-						getPDEPlotControlPanel1().getVariableListCellRenderer(),
-						getSimulation(), singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
-				
-				ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
-				ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, "Time Plot");
-				childWindow.setSize(900, 550);
-				childWindow.setIsCenteredOnParent();
-				childWindow.show();
+				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
+				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = new PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper() {
+					ArrayList<PropertyChangeListener> myPropertyChangeHolder = new ArrayList<>();
+					NewClientPDEDataContext myPdeDataContext = (NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext();
+					VariableType myVariableType = myPdeDataContext.getDataIdentifier().getVariableType();
+					PropertyChangeListener myPropertyChangeListener;//catch events from 'this' PDEDataViewer and pass with new source
+					User myUser = PDEDataViewer.this.getDataViewerManager().getUser();
+					@Override
+					public void removeDataJobListener(DataJobListener dataJobListener) {
+						PDEDataViewer.this.removeDataJobListener(dataJobListener);
+					}
+					@Override
+					public void addDataJobListener(DataJobListener dataJobListener) {
+						PDEDataViewer.this.addDataJobListener(dataJobListener);
+					}
+					@Override
+					public User getUser() {
+						return myUser;
+					}
+					@Override
+					public PDEDataContext getPdeDatacontext() {
+						return myPdeDataContext;
+					}
+					@Override
+					public DataIdentifier[] getCopyOfDisplayedDataIdentifiers() {
+						Object[] displayThese = ((DefaultListModelCivilized)(PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel())).toArray();
+						DataIdentifier[] displayThese2 = new DataIdentifier[displayThese.length];
+						for (int i = 0; i < displayThese2.length; i++) {
+							displayThese2[i] = (DataIdentifier)displayThese[i];
+						}
+						return displayThese2;//DataIdentifier.collectSimilarDataTypes(getPDEPlotControlPanel1().getJList1().getSelectedValue(), displayThese2);
+					}
+					@Override
+					public ListCellRenderer getListCellRenderer() {
+						return PDEDataViewer.this.getPDEPlotControlPanel1().getVariableListCellRenderer();
+					}
+					@Override
+					public Simulation getsimulation() {
+						return PDEDataViewer.this.getSimulation();
+					}
+					@Override
+					public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+						myPropertyChangeHolder.add(propertyChangeListener);
+						if(myPropertyChangeListener == null){
+							myPropertyChangeListener = new PropertyChangeListener() {
+									@Override
+									public void propertyChange(PropertyChangeEvent evt) {
+										if(evt.getSource() == PDEDataViewer.this && evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)){
+											//get output context from new parent pdedatacontext and make copy in case user has added or deleted 'user' functions
+											AnnotatedFunction[] annots = ((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions().clone();
+											myPdeDataContext.getDataManager().setOutputContext(new OutputContext(annots));
+											for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
+												myPropertyChangeHolder.get(i).propertyChange(new PropertyChangeEvent(this, PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
+											}
+										}
+									}
+								};
+							PDEDataViewer.this.addPropertyChangeListener(myPropertyChangeListener);
+						}
+					}
+					@Override
+					public void removeallPropertyChangeListeners() {
+						myPropertyChangeHolder.clear();
+						if(myPropertyChangeListener != null){
+							PDEDataViewer.this.removePropertyChangeListener(myPropertyChangeListener);
+						}
+					}
+					@Override
+					public VariableType getVariableType() {
+						return myVariableType;
+					}
+				};
+				try{
+					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
+					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
+					String prefix = "Time Plot ("+getPDEPlotControlPanel1().getJList1().getSelectedValue().getVariableType().getTypeName()+") ";
+					ChildWindow childWindow = childWindowManager.addChildWindow(pdeTimePlotPanel, pdeTimePlotPanel, createContextTitle(prefix));
+					childWindow.addChildWindowListener(new ChildWindowListener() {
+						@Override
+						public void closing(ChildWindow childWindow) {
+							multiTimePlotHelper.removeallPropertyChangeListeners();
+						}
+						@Override
+						public void closed(ChildWindow childWindow) {
+							multiTimePlotHelper.removeallPropertyChangeListeners();
+						}
+					});
+					childWindow.setSize(900, 550);
+					childWindow.setIsCenteredOnParent();
+					childWindow.show();
+				}catch(Exception e){
+					e.printStackTrace();
+					multiTimePlotHelper.removeallPropertyChangeListeners();
+				}
 				
 			}						
 		};	
@@ -2834,6 +2919,24 @@ private void showTimePlot() {
 	}
 }
 
+private String createContextTitle(String prefix){
+	String myTitle = (prefix==null?"":prefix);
+	try{
+		int parameterScanJobID = -1;
+		if(getPdeDataContext() != null && getPdeDataContext().getVCDataIdentifier() != null){
+			VCDataIdentifier vcDid = getPdeDataContext().getVCDataIdentifier();
+			boolean bIsOldStyle= vcDid instanceof VCSimulationDataIdentifierOldStyle;
+			parameterScanJobID = (bIsOldStyle?-1:(((VCSimulationDataIdentifier)vcDid).isParameterScanType()?((VCSimulationDataIdentifier)vcDid).getJobIndex():-1));
+		}
+		String simulationName = (getSimulationModelInfo()==null || getSimulationModelInfo().getSimulationName()==null?(getSimulation()==null || getSimulation().getName()==null?"?Sim?":getSimulation().getName()):getSimulationModelInfo().getSimulationName());
+		String contextTitle = (getSimulationModelInfo()==null?"":"["+getSimulationModelInfo().getContextName()+"]:")+"["+simulationName+"]"+(parameterScanJobID==-1?"":":ps="+parameterScanJobID);
+		myTitle+=contextTitle;
+	}catch(Exception e){
+		e.printStackTrace();
+		//just send back the prefix if this happens
+	}
+	return myTitle;
+}
 /**
  * Comment
  */

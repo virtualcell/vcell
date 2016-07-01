@@ -14,6 +14,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -22,7 +24,6 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
@@ -30,8 +31,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.Coordinate;
+import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.document.TSJobResultsNoStats;
 import org.vcell.util.document.TimeSeriesJobSpec;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
 import cbit.plot.Plot2D;
@@ -54,41 +57,79 @@ import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.solver.Simulation;
 
 public class PdeTimePlotMultipleVariablesPanel extends JPanel {
-	private PDEDataContext pdeDataContext = null;
 	private TSJobResultsNoStats tsJobResultsNoStats = null;
 	private PlotPane plotPane = null;
 	private Vector<SpatialSelection> pointVector = null;
 	private Vector<SpatialSelection> pointVector2 = null;
-	private JList variableJList = new JList();
+	private JList<DataIdentifier> variableJList = new JList<DataIdentifier>();
 	private EventHandler eventHandler = new EventHandler();
-	private Simulation simulation = null;
-	private PDEDataViewer pdeDataViewer = null;
-	private JList pointJList = new JList();
-	private ListCellRenderer listCellRenderer = null;
+	private JList<String> pointJList = new JList<String>();
+	MultiTimePlotHelper multiTimePlotHelper;
 	
-	private class EventHandler implements ListSelectionListener {
-
+	private class EventHandler implements ListSelectionListener,PropertyChangeListener {
+		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting()) {
 				showTimePlot();
 			}
 		}
-		
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS)){
+				try{
+					DataIdentifier selected = variableJList.getSelectedValue();
+					variableJList.removeListSelectionListener(eventHandler);
+					DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
+					if(selected != null){
+						newData = DataIdentifier.collectSortedSimilarDataTypes(selected.getVariableType(),newData);
+					}else{
+						newData = DataIdentifier.collectSortedSimilarDataTypes(multiTimePlotHelper.getVariableType(),newData);
+					}
+					variableJList.setListData(newData);
+					boolean bHasdataIdentifier = false;
+					for (int i = 0; i < variableJList.getModel().getSize(); i++) {
+						if(variableJList.getModel().getElementAt(i).equals(selected)){
+							bHasdataIdentifier = true;
+							break;
+						}
+					}
+					if(selected != null && bHasdataIdentifier){
+						variableJList.setSelectedValue(selected, true);
+					}
+					if(variableJList.getSelectedIndex() == -1){
+						variableJList.setSelectedIndex(0);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}finally{
+					variableJList.addListSelectionListener(eventHandler);
+				}
+				showTimePlot();
+			}
+		}	
 	}
-	public PdeTimePlotMultipleVariablesPanel(PDEDataViewer pdv, ListCellRenderer lcr, Simulation sim, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
-		pdeDataViewer = pdv;
-		listCellRenderer = lcr;
-		simulation = sim;
-		pdeDataContext = pdeDataViewer.getPdeDataContext();
+	
+	public interface MultiTimePlotHelper extends DataJobListenerHolder{
+		DataIdentifier[] getCopyOfDisplayedDataIdentifiers();
+		PDEDataContext getPdeDatacontext();
+		User getUser();
+		ListCellRenderer getListCellRenderer();
+		Simulation getsimulation();
+		void addPropertyChangeListener(PropertyChangeListener propertyChangeListener);
+		void removeallPropertyChangeListeners();
+		VariableType getVariableType();
+	}
+	public PdeTimePlotMultipleVariablesPanel(MultiTimePlotHelper multiTimePlotHelper, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
+		this.multiTimePlotHelper=multiTimePlotHelper;
 		pointVector = pv;
 		pointVector2 = pv2;
 		tsJobResultsNoStats = tsjr;
-		
+
 		initialize();
 	}
 
 	public void showTimePlot() {
-		VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
+		VariableType varType = multiTimePlotHelper.getPdeDatacontext().getDataIdentifier().getVariableType();
 		Object[] selectedValues = variableJList.getSelectedValues();
 		DataIdentifier[] selectedDataIdentifiers = new DataIdentifier[selectedValues.length];
 		System.arraycopy(selectedValues, 0, selectedDataIdentifiers, 0, selectedValues.length);
@@ -97,7 +138,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				if (!selectedDataIdentifier.getVariableType().getVariableDomain().equals(varType.getVariableDomain())) {
 					PopupGenerator.showErrorDialog(this, "Please choose VOLUME variables or MEMBRANE variables only");
 					variableJList.clearSelection();
-					variableJList.setSelectedValue(pdeDataContext.getVariableName(), true);
+					variableJList.setSelectedValue(multiTimePlotHelper.getPdeDatacontext().getVariableName(), true);
 					return;
 				}
 			}
@@ -134,10 +175,10 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			for (int i = 0; i < selectedVarNames.length; i++) {
 				selectedVarNames[i] = selectedDataIdentifiers[i].getName();
 			}
-			final double[] timePoints = pdeDataContext.getTimePoints();
+			final double[] timePoints = multiTimePlotHelper.getPdeDatacontext().getTimePoints();
 			TimeSeriesJobSpec tsjs = new TimeSeriesJobSpec(selectedVarNames,
 					indices, null, timePoints[0], 1, timePoints[timePoints.length-1],
-					VCDataJobID.createVCDataJobID(pdeDataViewer.getDataViewerManager().getUser(), true));
+					VCDataJobID.createVCDataJobID(multiTimePlotHelper.getUser(), true));
 
 			if (!tsjs.getVcDataJobID().isBackgroundTask()){
 				throw new RuntimeException("Use getTimeSeries(...) if not a background job");
@@ -146,7 +187,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 			hash.put(PDEDataViewer.StringKey_timeSeriesJobSpec, tsjs);
 			
-			AsynchClientTask task1 = new PDEDataViewer.TimeSeriesDataRetrievalTask("Retrieving Data",pdeDataViewer,pdeDataViewer.getPdeDataContext());	
+			AsynchClientTask task1 = new PDEDataViewer.TimeSeriesDataRetrievalTask("Retrieving Data",multiTimePlotHelper,multiTimePlotHelper.getPdeDatacontext());	
 			AsynchClientTask task2 = new AsynchClientTask("showing time plot", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 				@Override
@@ -162,7 +203,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 						String varName = selectedVarNames[v];
 						double[][] data = tsJobResultsNoStats.getTimesAndValuesForVariable(varName);
 						for (int i = 1; i < data.length; i++) {
-							symbolTableEntries[plotIndex] = simulation.getMathDescription().getEntry(varName);
+							symbolTableEntries[plotIndex] = multiTimePlotHelper.getsimulation().getMathDescription().getEntry(varName);
 							plotNames[plotIndex] = varName + " at P[" + (i-1) + "]";
 							plotDatas[plotIndex + 1] = data[i];
 							plotIndex ++;
@@ -174,7 +215,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				}						
 			};		
 			
-			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 }, true, true, null);
+			ClientTaskDispatcher.dispatch(this, hash, new AsynchClientTask[] { task1, task2 },false, true, true, null,false);
 
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
@@ -183,11 +224,11 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	}
 
 	private void initialize() {		
-		VariableType varType = pdeDataContext.getDataIdentifier().getVariableType();
-		String varName = pdeDataContext.getVariableName();
+		VariableType varType = multiTimePlotHelper.getPdeDatacontext().getDataIdentifier().getVariableType();
+		String varName = multiTimePlotHelper.getPdeDatacontext().getVariableName();
 		String[] plotNames = new String[pointVector.size()];
 		final SymbolTableEntry[] symbolTableEntries = new SymbolTableEntry[plotNames.length];
-		DefaultListModel pointListModel = new DefaultListModel();
+		DefaultListModel<String> pointListModel = new DefaultListModel<String>();
 		for (int i = 0; i < pointVector.size(); i++){
 			Coordinate tp = null;
 			if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
@@ -201,8 +242,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			plotNames[i] = varName + " at P[" + i +"]";
 			String point = "P[" + i +"]  (" + niceCoordinateString(tp)+")";
 			pointListModel.addElement(point);
-			if (simulation!=null){
-				symbolTableEntries[0] = simulation.getMathDescription().getEntry(varName);
+			if (multiTimePlotHelper.getsimulation()!=null){
+				symbolTableEntries[0] = multiTimePlotHelper.getsimulation().getMathDescription().getEntry(varName);
 			}else{
 				System.out.println("PdeTimePlotMultipleVariablesPanel.initialize() adding artificial symbol table entries for field data");
 				SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[] { varName });
@@ -222,7 +263,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 				new String[] {"Time Plot", ReservedVariable.TIME.getName(), ""});				
 		plotPane.setPlot2D(plot2D);
 		
-		DataIdentifier[] dis = DataIdentifier.collectSimilarDataTypes(pdeDataContext.getDataIdentifier(), pdeDataContext.getDataIdentifiers());
+		DataIdentifier[] dis = (multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers()!=null?multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers():DataIdentifier.collectSortedSimilarDataTypes(multiTimePlotHelper.getVariableType(), multiTimePlotHelper.getPdeDatacontext().getDataIdentifiers()));
 		Arrays.sort(dis, new Comparator<DataIdentifier>(){
 			public int compare(DataIdentifier o1, DataIdentifier o2) {
 				int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
@@ -233,8 +274,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			}
 		});
 		variableJList.setListData(dis);
-		variableJList.setSelectedValue(pdeDataContext.getDataIdentifier(), true);
-		variableJList.setCellRenderer(listCellRenderer);
+		variableJList.setSelectedValue(multiTimePlotHelper.getPdeDatacontext().getDataIdentifier(), true);
+		variableJList.setCellRenderer(multiTimePlotHelper.getListCellRenderer());
 		
 		setLayout(new GridBagLayout());		
 		
@@ -292,6 +333,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		add(sp, gbc);
 		
 		variableJList.addListSelectionListener(eventHandler);
+		multiTimePlotHelper.addPropertyChangeListener(eventHandler);
+
 	}
 	
 
@@ -306,7 +349,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		//reduce fraction digits of the form XX.xxxxxxxxxxxxxxy
 		//to something more reasonable
 
-		int dim = pdeDataContext.getCartesianMesh().getGeometryDimension();
+		int dim = multiTimePlotHelper.getPdeDatacontext().getCartesianMesh().getGeometryDimension();
 		final int MAX_CHARS = 3;
 		String result = "";
 		for(int i=0;i<dim;i+= 1){

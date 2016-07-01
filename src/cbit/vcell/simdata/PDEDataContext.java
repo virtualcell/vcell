@@ -37,6 +37,8 @@ public static final String PROPERTY_NAME_VCDATA_IDENTIFIER = "vcDataIdentifier";
 public static final String PROPERTY_NAME_TIME_POINTS = "timePoints";
 public static final String PROPERTY_NAME_TIME_POINT = "timePoint";
 public static final String PROPERTY_NAME_VARIABLE = "variable";
+public static final String PROPERTY_NAME_DATAIDENTIFIERS = "dataIdentifiers";
+
 	//	private class RefreshedData {
 //		public double[] newData;
 //		public VariableType newVarType;
@@ -98,7 +100,6 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
  */
 public PDEDataContext() {
 	addPropertyChangeListener(this);
-	Thread.dumpStack();
 }
 
 
@@ -506,7 +507,7 @@ protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws Da
 
 	if (fire) {
 		fieldDataIdentifier = null;
-		firePropertyChange("dataIdentifiers", oldDataIdentifiers, newDataIdentifiers);
+		firePropertyChange(PROPERTY_NAME_DATAIDENTIFIERS, oldDataIdentifiers, newDataIdentifiers);
 	}
 }
 
