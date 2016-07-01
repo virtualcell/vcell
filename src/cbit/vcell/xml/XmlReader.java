@@ -4362,6 +4362,21 @@ private MolecularType getRbmMolecularType(Element e, Model newModel) {
 		return null;
 	}
 	MolecularType mt = new MolecularType(s, newModel);
+	
+	final String attributeValue = e.getAttributeValue(XMLTags.RbmMolecularTypeAnchorAllAttrTag);
+	if(attributeValue != null) {
+		boolean anchorAll = Boolean.parseBoolean(attributeValue);
+		mt.setAnchorAll(anchorAll);
+	}
+	List<Element> anchors = e.getChildren(XMLTags.RbmMolecularTypeAnchorTag, vcNamespace);
+	for (Element element : anchors) {
+		String anchor = element.getAttributeValue(XMLTags.StructureAttrTag);
+		Structure structure = newModel.getStructure(anchor);
+		if(structure == null) {
+			System.out.println("XMLReader: getRbmMolecularType: anchor is missing from the structures list.");
+		}
+		if(structure != null) { mt.addAnchor(structure); }
+	}
 	List<Element> children = e.getChildren(XMLTags.RbmMolecularComponentTag, vcNamespace);
 	for (Element element : children) {
 		MolecularComponent mc = getRbmMolecularComponent(element, newModel);
