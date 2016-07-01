@@ -44,7 +44,7 @@ public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
 }
 
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
+public synchronized FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
 	try {
 		return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
 	}catch (RemoteException e){
@@ -77,7 +77,7 @@ private DataSetControllerProvider getDataSetControllerProvider() {
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
+public synchronized DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getDataIdentifiers(outputContext,vcdID);
 	}catch (RemoteException e){
@@ -115,7 +115,7 @@ private DataSetController getDataSetController() throws DataAccessException {
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException {
+public synchronized double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getDataSetTimes(vcdID);
 	}catch (RemoteException e){
@@ -170,7 +170,7 @@ public synchronized cbit.vcell.solver.AnnotatedFunction[] getFunctions(OutputCon
  *
  * @see PlotData
  */
-public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
+public synchronized PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID, String variable, double time, SpatialSelection spatialSelection) throws DataAccessException {
 	try {
 		return getDataSetController().getLineScan(outputContext,vcdID,variable,time,spatialSelection);
 	}catch (RemoteException e){
@@ -196,7 +196,7 @@ public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdID,
  *
  * @see CartesianMesh
  */
-public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
+public synchronized CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getMesh(vcdID);
 	}catch (RemoteException e){
@@ -220,7 +220,7 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
+public synchronized ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getODEData(vcdID);
 	}catch (RemoteException e){
@@ -246,7 +246,7 @@ public ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException 
  *
  * @see ParticleDataBlock
  */
-public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
+public synchronized ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
 	try {
 		return getDataSetController().getParticleDataBlock(vcdID,time);
 	}catch (RemoteException e){
@@ -260,7 +260,7 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 	}
 }
 
-public DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
+public synchronized DataOperationResults doDataOperation(DataOperation dataOperation) throws DataAccessException {
 	try {
 		return getDataSetController().doDataOperation(dataOperation);
 	}catch (RemoteException e){
@@ -312,7 +312,7 @@ public synchronized boolean getParticleDataExists(VCDataIdentifier vcdID) throws
  *
  * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
-public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
+public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdID, String varName, double time) throws DataAccessException {
 	try {
 		return getDataSetController().getSimDataBlock(outputContext,vcdID,varName,time);
 	}catch (RemoteException e){
@@ -340,7 +340,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifie
  *
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public synchronized TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdID, TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	try {
 		return getDataSetController().getTimeSeriesValues(outputContext,vcdID,timeSeriesJobSpec);
 	}catch (RemoteException e){

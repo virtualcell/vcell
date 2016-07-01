@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -39,6 +40,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -179,6 +181,7 @@ import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.simdata.gui.MeshDisplayAdapter;
 import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
+import cbit.vcell.simdata.gui.PDEPlotControlPanel.DefaultDataIdentifierFilter;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
@@ -347,6 +350,8 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private static final String POST_PROCESS_STATS_TABNAME = "Post Processing Stats Data";
 	private static final String POST_PROCESS_IMAGE_TABNAME = "Post Processing Image Data";
 	
+	private PDEPlotControlPanel.DefaultDataIdentifierFilter myDefaultDataIdentifierFilter;
+	
 	private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
@@ -386,10 +391,11 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				if (evt.getSource() == PDEDataViewer.this &&
 						(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) {
 					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
+						myDefaultDataIdentifierFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo());
 						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
-							getPDEPlotControlPanel1().setDataIdentifierFilter(getPDEPlotControlPanel1().new DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
+							getPDEPlotControlPanel1().setDataIdentifierFilter(new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
 						}
 					} else {
 						getPDEDataContextPanel1().setDataInfoProvider(null);
@@ -2483,7 +2489,7 @@ private void setupDataInfoProvider(){
 		getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 		getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
-			getPDEPlotControlPanel1().setDataIdentifierFilter(getPDEPlotControlPanel1().new DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
+			getPDEPlotControlPanel1().setDataIdentifierFilter(new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
 		}
 	} else {
 		getPDEDataContextPanel1().setDataInfoProvider(null);
@@ -2512,6 +2518,7 @@ public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	}
 	bSkipSurfaceCalc = true;
 	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, pdeDataContext);
+//	firePropertyChange(PROPERTY_PDEDC, oldValue, pdeDataContext);
 	bSkipSurfaceCalc = false;
 	if(!(getPdeDataContext() instanceof PostProcessDataPDEDataContext)){
 		updateDataValueSurfaceViewer();
@@ -2744,6 +2751,7 @@ private void showSpatialPlot() {
 }
 
 
+//private static final String PROPERTY_PDEDC = "pdedc";
 /**
  * Comment
  */
@@ -2839,12 +2847,16 @@ private void showTimePlot() {
 					}
 					@Override
 					public DataIdentifier[] getCopyOfDisplayedDataIdentifiers() {
-						Object[] displayThese = ((DefaultListModelCivilized)(PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel())).toArray();
-						DataIdentifier[] displayThese2 = new DataIdentifier[displayThese.length];
-						for (int i = 0; i < displayThese2.length; i++) {
-							displayThese2[i] = (DataIdentifier)displayThese[i];
-						}
-						return displayThese2;//DataIdentifier.collectSimilarDataTypes(getPDEPlotControlPanel1().getJList1().getSelectedValue(), displayThese2);
+						List<AnnotatedFunction> myAnnots = Arrays.asList(myPdeDataContext.getDataManager().getOutputContext().getOutputFunctions());
+						DataIdentifier[] newData = myDefaultDataIdentifierFilter.accept(DefaultDataIdentifierFilter.ALL, myPdeDataContext.getDataIdentifiers(), myAnnots).toArray(new DataIdentifier[0]);
+						return DataIdentifier.collectSortedSimilarDataTypes(this.getVariableType(),newData);
+//						return myPdeDataContext.getDataIdentifiers().clone();
+//						Object[] displayThese = ((DefaultListModelCivilized)(PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel())).toArray();
+//						DataIdentifier[] displayThese2 = new DataIdentifier[displayThese.length];
+//						for (int i = 0; i < displayThese2.length; i++) {
+//							displayThese2[i] = (DataIdentifier)displayThese[i];
+//						}
+//						return displayThese2;//DataIdentifier.collectSimilarDataTypes(getPDEPlotControlPanel1().getJList1().getSelectedValue(), displayThese2);
 					}
 					@Override
 					public ListCellRenderer getListCellRenderer() {
@@ -2865,6 +2877,7 @@ private void showTimePlot() {
 											//get output context from new parent pdedatacontext and make copy in case user has added or deleted 'user' functions
 											AnnotatedFunction[] annots = ((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions().clone();
 											myPdeDataContext.getDataManager().setOutputContext(new OutputContext(annots));
+											myPdeDataContext.refreshIdentifiers();
 											for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
 												myPropertyChangeHolder.get(i).propertyChange(new PropertyChangeEvent(this, PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
 											}

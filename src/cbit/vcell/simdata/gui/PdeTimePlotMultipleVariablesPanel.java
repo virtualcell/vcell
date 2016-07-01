@@ -80,11 +80,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 					DataIdentifier selected = variableJList.getSelectedValue();
 					variableJList.removeListSelectionListener(eventHandler);
 					DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
-					if(selected != null){
-						newData = DataIdentifier.collectSortedSimilarDataTypes(selected.getVariableType(),newData);
-					}else{
-						newData = DataIdentifier.collectSortedSimilarDataTypes(multiTimePlotHelper.getVariableType(),newData);
-					}
+//					newData = DataIdentifier.collectSortedSimilarDataTypes(multiTimePlotHelper.getVariableType(),newData);
+
 					variableJList.setListData(newData);
 					boolean bHasdataIdentifier = false;
 					for (int i = 0; i < variableJList.getModel().getSize(); i++) {
@@ -129,7 +126,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	}
 
 	public void showTimePlot() {
-		VariableType varType = multiTimePlotHelper.getPdeDatacontext().getDataIdentifier().getVariableType();
+		VariableType varType = multiTimePlotHelper.getVariableType();
 		Object[] selectedValues = variableJList.getSelectedValues();
 		DataIdentifier[] selectedDataIdentifiers = new DataIdentifier[selectedValues.length];
 		System.arraycopy(selectedValues, 0, selectedDataIdentifiers, 0, selectedValues.length);
