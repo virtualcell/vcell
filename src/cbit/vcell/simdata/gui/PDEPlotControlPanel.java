@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -100,8 +101,8 @@ public class PDEPlotControlPanel extends JPanel {
 
 	
 	public static interface DataIdentifierFilter{
-		boolean accept(String filterSetName,DataIdentifier dataidentifier);
-		ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers);
+		boolean accept(String filterSetName,DataIdentifier dataidentifier,List<AnnotatedFunction> myFunctionList);
+		ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers,List<AnnotatedFunction> myFunctionList);
 		String[] getFilterSetNames();
 		String getDefaultFilterName();
 		boolean isAcceptAll(String filterSetName);
@@ -109,9 +110,9 @@ public class PDEPlotControlPanel extends JPanel {
 		boolean isPostProcessingMode();
 	};
 	
-	public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
+	public static class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 		private boolean bPostProcessingMode = false;
-		private String ALL = "All Variables";
+		public static final String ALL = "All Variables";
 		private String VOLUME_FILTER_SET = "Volume Variables";
 		private String MEMBRANE_FILTER_SET = "Membrane Variables";
 		private String USER_DEFINED_FILTER_SET = "User Functions";
@@ -131,7 +132,7 @@ public class PDEPlotControlPanel extends JPanel {
 				FILTER_SET_NAMES = temp;
 			}
 		}
-		public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] filterTheseDataIdentifiers) {
+		public ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] filterTheseDataIdentifiers,List<AnnotatedFunction> myFunctionList) {
 			if(simulationWorkspaceModelInfo != null){
 				if(simulationWorkspaceModelInfo.hasFilter(filterSetName)){
 					try{
@@ -170,8 +171,8 @@ public class PDEPlotControlPanel extends JPanel {
 				}else if(filterSetName.equals(MEMBRANE_FILTER_SET) && filterTheseDataIdentifiers[i].getVariableType().getVariableDomain().equals(VariableDomain.VARIABLEDOMAIN_MEMBRANE)){
 					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
 				}else if(filterSetName.equals(USER_DEFINED_FILTER_SET)){
-					if(functionsList != null){
-						for (AnnotatedFunction f : functionsList) {
+					if(myFunctionList != null){
+						for (AnnotatedFunction f : myFunctionList) {
 							if(!f.isPredefined() && f.getName().equals(varName)){
 								acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
 								break;
@@ -200,8 +201,8 @@ public class PDEPlotControlPanel extends JPanel {
 		public void setPostProcessingMode(boolean bPostProcessingMode) {
 			this.bPostProcessingMode = bPostProcessingMode;
 		}
-		public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
-			return accept(filterSetName, new DataIdentifier[] {dataidentifier}) != null;
+		public boolean accept(String filterSetName,DataIdentifier dataidentifier,List<AnnotatedFunction> myFunctionList) {
+			return accept(filterSetName, new DataIdentifier[] {dataidentifier},myFunctionList) != null;
 		}
 	};
 	
@@ -684,7 +685,7 @@ private void filterVariableNames(){
 					if(dataIdentifierFilter == null){
 						displayDataIdentifiers.addAll(Arrays.asList(dataIdentifierArr));
 					}else{
-						ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr);
+						ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr,functionsList);
 						if(acceptedDataIdentifiers != null){
 							displayDataIdentifiers.addAll(acceptedDataIdentifiers);
 						}
