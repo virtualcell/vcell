@@ -97,6 +97,8 @@ public class PDEPlotControlPanel extends JPanel {
 	private JPanel ivjTimeSliderJPanel = null;
 	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
 
+
+	
 	public static interface DataIdentifierFilter{
 		boolean accept(String filterSetName,DataIdentifier dataidentifier);
 		ArrayList<DataIdentifier> accept(String filterSetName,DataIdentifier[] dataidentifiers);
@@ -244,8 +246,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC9(evt);
 			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("customScaleRange"))) 
 				connEtoC5(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals("dataIdentifiers"))) 
+			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS))){
 				connEtoM8(evt);
+//				//Fire after list setup with pdePlotControlPanel as source
+//				PDEPlotControlPanel.this.firePropertyChange(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, evt.getOldValue(), evt.getNewValue());
+			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getmodel1()) 
@@ -1015,7 +1020,7 @@ private javax.swing.JLabel getJLabelMin() {
  * @return javax.swing.JList
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private JList<DataIdentifier> getJList1() {
+public JList<DataIdentifier> getJList1() {
 	if (ivjJList1 == null) {
 		try {
 			ivjJList1 = new JList<DataIdentifier>();

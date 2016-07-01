@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
@@ -60,7 +61,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
  * Creation date: (5/24/2004 12:53:14 AM)
  * @author: Ion Moraru
  */
-public abstract class TopLevelWindowManager {
+public abstract class TopLevelWindowManager implements DataJobListenerHolder{
 	private RequestManager requestManager = null;
 	protected transient Vector<DataListener> aDataListener = null;
 	protected transient Vector<ExportListener> aExportListener = null;
