@@ -75,27 +75,13 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		}
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			if(evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS)){
+			if(evt.getSource() == multiTimePlotHelper && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS)){
 				try{
 					DataIdentifier selected = variableJList.getSelectedValue();
 					variableJList.removeListSelectionListener(eventHandler);
 					DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
-//					newData = DataIdentifier.collectSortedSimilarDataTypes(multiTimePlotHelper.getVariableType(),newData);
-
 					variableJList.setListData(newData);
-					boolean bHasdataIdentifier = false;
-					for (int i = 0; i < variableJList.getModel().getSize(); i++) {
-						if(variableJList.getModel().getElementAt(i).equals(selected)){
-							bHasdataIdentifier = true;
-							break;
-						}
-					}
-					if(selected != null && bHasdataIdentifier){
-						variableJList.setSelectedValue(selected, true);
-					}
-					if(variableJList.getSelectedIndex() == -1){
-						variableJList.setSelectedIndex(0);
-					}
+					initVariableListSelected(variableJList, selected);
 				}catch(Exception e){
 					e.printStackTrace();
 				}finally{
@@ -125,6 +111,21 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		initialize();
 	}
 
+	private static void initVariableListSelected(JList myVariableJList,DataIdentifier selected){
+		boolean bHasdataIdentifier = false;
+		for (int i = 0; i < myVariableJList.getModel().getSize(); i++) {
+			if(myVariableJList.getModel().getElementAt(i).equals(selected)){
+				bHasdataIdentifier = true;
+				break;
+			}
+		}
+		if(selected != null && bHasdataIdentifier){
+			myVariableJList.setSelectedValue(selected, true);
+		}
+		if(myVariableJList.getSelectedIndex() == -1){
+			myVariableJList.setSelectedIndex(0);
+		}
+	}
 	public void showTimePlot() {
 		VariableType varType = multiTimePlotHelper.getVariableType();
 		Object[] selectedValues = variableJList.getSelectedValues();
@@ -271,7 +272,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			}
 		});
 		variableJList.setListData(dis);
-		variableJList.setSelectedValue(multiTimePlotHelper.getPdeDatacontext().getDataIdentifier(), true);
+		initVariableListSelected(variableJList, multiTimePlotHelper.getPdeDatacontext().getDataIdentifier());
 		variableJList.setCellRenderer(multiTimePlotHelper.getListCellRenderer());
 		
 		setLayout(new GridBagLayout());		

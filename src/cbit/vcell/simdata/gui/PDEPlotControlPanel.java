@@ -278,7 +278,7 @@ public void viewFunction() {
 		return;
 	}
 	DataIdentifier di = (DataIdentifier)selectedValue;
-	AnnotatedFunction func = findFunction(di);
+	AnnotatedFunction func = findFunction(di,functionsList);
 	if (func == null || !func.isOldUserDefined()) {
 		return;
 	}
@@ -1410,28 +1410,41 @@ private void initialize() {
 	setIdentifierListRenderer();
 	// user code end
 }
-
-private void setIdentifierListRenderer() {
-	class IdentifierListCellRenderer extends DefaultListCellRenderer {
-		IdentifierListCellRenderer() {
-			super();
-		}
-		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-			java.awt.Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-			DataIdentifier di = (DataIdentifier)value;
-			AnnotatedFunction f = findFunction(di);
-			if (f != null) {
-				if (f.isOldUserDefined()) {
-					setIcon(VCellIcons.getOldOutputFunctionIcon());
-				} else if (f.isOutputFunction()) {
-					setIcon(VCellIcons.getOutputFunctionIcon());
-				}
-			}
-			setText(di.getDisplayName());
+public interface FunctionListProvider {
+	List<AnnotatedFunction> getAnnotatedFunctions();
+}
+public static class IdentifierListCellRenderer extends DefaultListCellRenderer {
+	FunctionListProvider functionListProvider;
+	public IdentifierListCellRenderer(FunctionListProvider functionListProvider) {
+		super();
+		this.functionListProvider=functionListProvider;
+	}
+	public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		Component component = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
+		if(value==null){
 			return component;
 		}
+		DataIdentifier di = (DataIdentifier)value;
+		AnnotatedFunction f = findFunction(di,functionListProvider.getAnnotatedFunctions());
+		if (f != null) {
+			if (f.isOldUserDefined()) {
+				((JLabel)component).setIcon(VCellIcons.getOldOutputFunctionIcon());
+			} else if (f.isOutputFunction()) {
+				((JLabel)component).setIcon(VCellIcons.getOutputFunctionIcon());
+			}
+		}
+		((JLabel)component).setText(di.getDisplayName());
+		return component;
 	}
-	getJList1().setCellRenderer(new IdentifierListCellRenderer());
+}
+
+private void setIdentifierListRenderer() {
+	getJList1().setCellRenderer(new IdentifierListCellRenderer(new FunctionListProvider() {
+		@Override
+		public List<AnnotatedFunction> getAnnotatedFunctions() {
+			return PDEPlotControlPanel.this.functionsList;
+		}
+	}));
 }
 
 /**
@@ -1689,7 +1702,7 @@ private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionE
 		Hashtable<String, Object> hash = new Hashtable<String, Object>();
 		AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				AnnotatedFunction f = findFunction(selectedDataIdentifier);
+				AnnotatedFunction f = findFunction(selectedDataIdentifier,functionsList);
 				getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
 				if(getDisplayAdapterService() != null){
 					getDisplayAdapterService().activateMarkedState(selectedDataIdentifier.getName());
@@ -1750,10 +1763,10 @@ private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));
 }
 
-private AnnotatedFunction findFunction(DataIdentifier identifier) {
+private static AnnotatedFunction findFunction(DataIdentifier identifier,List<AnnotatedFunction> myFunctionList) {
 	AnnotatedFunction f = null;
-	if (functionsList != null && functionsList.size() > 0 && identifier != null) {
-		AnnotatedFunction[] funcs = (AnnotatedFunction[])functionsList.toArray(new AnnotatedFunction[functionsList.size()]);
+	if (myFunctionList != null && myFunctionList.size() > 0 && identifier != null) {
+		AnnotatedFunction[] funcs = (AnnotatedFunction[])myFunctionList.toArray(new AnnotatedFunction[myFunctionList.size()]);
 		for (int i = 0; i < funcs.length; i++) {
 			if (funcs[i] != null && funcs[i].getName() != null && funcs[i].getName().equals(identifier.getName())) {
 				f = funcs[i];
