@@ -183,6 +183,7 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel.DefaultDataIdentifierFilter;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
+import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
@@ -2646,7 +2647,8 @@ private void showKymograph() {
 //			if (getSimulationModelInfo()!=null){
 //				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 //			}
-			KymographPanel  kymographPanel = new KymographPanel(this, title, new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext()));
+			MultiTimePlotHelper multiTimePlotHelper = createMultiTimePlotHelper();
+			KymographPanel  kymographPanel = new KymographPanel(this, title, new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext()),multiTimePlotHelper);
 			SymbolTable symbolTable;
 			if(getSimulation() != null && getSimulation().getMathDescription() != null){
 				symbolTable = getSimulation().getMathDescription();
@@ -2660,9 +2662,7 @@ private void showKymograph() {
 			childWindow.show();
 			
 			
-			
-			kymographPanel.initDataManager(getDataViewerManager().getUser(), ((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
-				getPdeDataContext().getDataIdentifier(), getPdeDataContext().getTimePoints()[0], 1,
+			kymographPanel.initDataManager(multiTimePlotHelper, getPdeDataContext().getTimePoints()[0], 1,
 				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 				indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
 				symbolTable);
@@ -2823,82 +2823,7 @@ private void showTimePlot() {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				TSJobResultsNoStats tsJobResultsNoStats = (TSJobResultsNoStats)hashTable.get(StringKey_timeSeriesJobResults);
 				//Make independent Plotviewer that is unaffected by changes (time,var,paramscan) in 'this' PDEDataviewer except to pass-thru OutputContext changes
-				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = new PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper() {
-					ArrayList<PropertyChangeListener> myPropertyChangeHolder = new ArrayList<>();
-					NewClientPDEDataContext myPdeDataContext = (NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext();
-					VariableType myVariableType = myPdeDataContext.getDataIdentifier().getVariableType();
-					PropertyChangeListener myPropertyChangeListener;//catch events from 'this' PDEDataViewer and pass with new source
-					User myUser = PDEDataViewer.this.getDataViewerManager().getUser();
-					@Override
-					public void removeDataJobListener(DataJobListener dataJobListener) {
-						PDEDataViewer.this.removeDataJobListener(dataJobListener);
-					}
-					@Override
-					public void addDataJobListener(DataJobListener dataJobListener) {
-						PDEDataViewer.this.addDataJobListener(dataJobListener);
-					}
-					@Override
-					public User getUser() {
-						return myUser;
-					}
-					@Override
-					public PDEDataContext getPdeDatacontext() {
-						return myPdeDataContext;
-					}
-					@Override
-					public DataIdentifier[] getCopyOfDisplayedDataIdentifiers() {
-						List<AnnotatedFunction> myAnnots = Arrays.asList(myPdeDataContext.getDataManager().getOutputContext().getOutputFunctions());
-						DataIdentifier[] newData = myDefaultDataIdentifierFilter.accept(DefaultDataIdentifierFilter.ALL, myPdeDataContext.getDataIdentifiers(), myAnnots).toArray(new DataIdentifier[0]);
-						return DataIdentifier.collectSortedSimilarDataTypes(this.getVariableType(),newData);
-//						return myPdeDataContext.getDataIdentifiers().clone();
-//						Object[] displayThese = ((DefaultListModelCivilized)(PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel())).toArray();
-//						DataIdentifier[] displayThese2 = new DataIdentifier[displayThese.length];
-//						for (int i = 0; i < displayThese2.length; i++) {
-//							displayThese2[i] = (DataIdentifier)displayThese[i];
-//						}
-//						return displayThese2;//DataIdentifier.collectSimilarDataTypes(getPDEPlotControlPanel1().getJList1().getSelectedValue(), displayThese2);
-					}
-					@Override
-					public ListCellRenderer getListCellRenderer() {
-						return PDEDataViewer.this.getPDEPlotControlPanel1().getVariableListCellRenderer();
-					}
-					@Override
-					public Simulation getsimulation() {
-						return PDEDataViewer.this.getSimulation();
-					}
-					@Override
-					public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-						myPropertyChangeHolder.add(propertyChangeListener);
-						if(myPropertyChangeListener == null){
-							myPropertyChangeListener = new PropertyChangeListener() {
-									@Override
-									public void propertyChange(PropertyChangeEvent evt) {
-										if(evt.getSource() == PDEDataViewer.this && evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)){
-											//get output context from new parent pdedatacontext and make copy in case user has added or deleted 'user' functions
-											AnnotatedFunction[] annots = ((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions().clone();
-											myPdeDataContext.getDataManager().setOutputContext(new OutputContext(annots));
-											myPdeDataContext.refreshIdentifiers();
-											for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
-												myPropertyChangeHolder.get(i).propertyChange(new PropertyChangeEvent(this, PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
-											}
-										}
-									}
-								};
-							PDEDataViewer.this.addPropertyChangeListener(myPropertyChangeListener);
-						}
-					}
-					@Override
-					public void removeallPropertyChangeListeners() {
-						myPropertyChangeHolder.clear();
-						if(myPropertyChangeListener != null){
-							PDEDataViewer.this.removePropertyChangeListener(myPropertyChangeListener);
-						}
-					}
-					@Override
-					public VariableType getVariableType() {
-						return myVariableType;
-					}
-				};
+				PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelper = createMultiTimePlotHelper();
 				try{
 					PdeTimePlotMultipleVariablesPanel pdeTimePlotPanel = new PdeTimePlotMultipleVariablesPanel(multiTimePlotHelper,singlePointSSOnly, singlePointSSOnly2, tsJobResultsNoStats);
 					ChildWindowManager childWindowManager = ChildWindowManager.findChildWindowManager(PDEDataViewer.this);
@@ -2930,6 +2855,89 @@ private void showTimePlot() {
 	} catch (Exception e) {
 		e.printStackTrace(System.out);
 	}
+}
+
+private MultiTimePlotHelper createMultiTimePlotHelper(){
+	return new PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper() {
+		ArrayList<PropertyChangeListener> myPropertyChangeHolder = new ArrayList<>();
+		NewClientPDEDataContext myPdeDataContext = (NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext();
+		VariableType myVariableType = myPdeDataContext.getDataIdentifier().getVariableType();
+		PropertyChangeListener myPropertyChangeListener;//catch events from 'this' PDEDataViewer and pass with new source
+		User myUser = PDEDataViewer.this.getDataViewerManager().getUser();
+		List<AnnotatedFunction> myAnnots;
+		PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelperThis = this;//access to anonymous outer class
+		PDEPlotControlPanel.IdentifierListCellRenderer myListCellRenderer;
+		@Override
+		public void removeDataJobListener(DataJobListener dataJobListener) {
+			PDEDataViewer.this.removeDataJobListener(dataJobListener);
+		}
+		@Override
+		public void addDataJobListener(DataJobListener dataJobListener) {
+			PDEDataViewer.this.addDataJobListener(dataJobListener);
+		}
+		@Override
+		public User getUser() {
+			return myUser;
+		}
+		@Override
+		public PDEDataContext getPdeDatacontext() {
+			return myPdeDataContext;
+		}
+		@Override
+		public DataIdentifier[] getCopyOfDisplayedDataIdentifiers() {
+			DataIdentifier[] newData = myDefaultDataIdentifierFilter.accept(DefaultDataIdentifierFilter.ALL, myPdeDataContext.getDataIdentifiers(), myAnnots).toArray(new DataIdentifier[0]);
+			return DataIdentifier.collectSortedSimilarDataTypes(this.getVariableType(),newData);
+		}
+		@Override
+		public PDEPlotControlPanel.IdentifierListCellRenderer getListCellRenderer() {
+			if(myListCellRenderer == null){
+				myListCellRenderer = new PDEPlotControlPanel.IdentifierListCellRenderer(new PDEPlotControlPanel.FunctionListProvider() {
+					@Override
+					public List<AnnotatedFunction> getAnnotatedFunctions() {
+						return myAnnots;
+					}
+				});				
+			}
+			return myListCellRenderer;
+		}
+		@Override
+		public Simulation getsimulation() {
+			return PDEDataViewer.this.getSimulation();
+		}
+		@Override
+		public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
+			myPropertyChangeHolder.add(propertyChangeListener);
+			if(myPropertyChangeListener == null){
+				myPropertyChangeListener = new PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent evt) {
+							if(evt.getSource() == PDEDataViewer.this && evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)){
+								//get output context from new parent pdedatacontext and make copy in case user has added or deleted 'user' functions
+								myAnnots = Arrays.asList(((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions());
+								AnnotatedFunction[] annots = myAnnots.toArray(new AnnotatedFunction[0]);
+								myPdeDataContext.getDataManager().setOutputContext(new OutputContext(annots));
+								myPdeDataContext.refreshIdentifiers();
+								for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
+									myPropertyChangeHolder.get(i).propertyChange(new PropertyChangeEvent(multiTimePlotHelperThis, PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
+								}
+							}
+						}
+					};
+				PDEDataViewer.this.addPropertyChangeListener(myPropertyChangeListener);
+			}
+		}
+		@Override
+		public void removeallPropertyChangeListeners() {
+			myPropertyChangeHolder.clear();
+			if(myPropertyChangeListener != null){
+				PDEDataViewer.this.removePropertyChangeListener(myPropertyChangeListener);
+			}
+		}
+		@Override
+		public VariableType getVariableType() {
+			return myVariableType;
+		}
+	};
 }
 
 private String createContextTitle(String prefix){
