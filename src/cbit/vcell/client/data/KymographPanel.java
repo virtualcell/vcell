@@ -41,6 +41,7 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.data.PDEDataViewer.TimeSeriesDataRetrievalTask;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
@@ -247,15 +248,15 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 	private javax.swing.JMenuItem ivjScaleImageUDJMenuItem = null;
 	private JCheckBox jCheckBoxColor = null;
 	private String title = null;
-	private AsynchClientTask timeSeriesDataRetrievalTask;
+//	private AsynchClientTask timeSeriesDataRetrievalTask;
 
 	private MultiTimePlotHelper multiTimePlotHelper;
 /**
  * Kymograph constructor comment.
  */
-public KymographPanel(PDEDataViewer pdeDataViewer, String title,AsynchClientTask timeSeriesDataRetrievalTask,MultiTimePlotHelper multiTimePlotHelper) {
+public KymographPanel(PDEDataViewer pdeDataViewer, String title,/*AsynchClientTask timeSeriesDataRetrievalTask,*/MultiTimePlotHelper multiTimePlotHelper) {
 	super();
-	this.timeSeriesDataRetrievalTask=timeSeriesDataRetrievalTask;
+//	this.timeSeriesDataRetrievalTask=timeSeriesDataRetrievalTask;
 	this.title = title;
 	this.multiTimePlotHelper=multiTimePlotHelper;
 	
@@ -2031,7 +2032,7 @@ private void initDataManagerVariable(final DataIdentifier dataIdentifer) {
 			hashTable.put(PDEDataViewer.StringKey_timeSeriesJobSpec, timeSeriesJobSpec);
 		}
 	};
-	AsynchClientTask task2 = timeSeriesDataRetrievalTask;
+	AsynchClientTask task2 = new PDEDataViewer.TimeSeriesDataRetrievalTask("Retrieving Data",multiTimePlotHelper,multiTimePlotHelper.getPdeDatacontext());//new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext());//timeSeriesDataRetrievalTask;
 	
 	AsynchClientTask task3  = new AsynchClientTask("Showing kymograph", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -2340,7 +2341,7 @@ public static void main(java.lang.String[] args) {
 			
 		javax.swing.JFrame frame = new javax.swing.JFrame();
 		KymographPanel aKymograph;
-		aKymograph = new KymographPanel(null, "Kymograph",null,null);
+		aKymograph = new KymographPanel(null, "Kymograph",null);
 		frame.setContentPane(aKymograph);
 		frame.setSize(aKymograph.getSize());
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {

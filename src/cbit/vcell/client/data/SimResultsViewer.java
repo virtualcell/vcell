@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
@@ -120,7 +121,7 @@ public ExportMonitorPanel getExportMonitorPanel() {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @return cbit.vcell.client.data.DataViewer
  */
-private DataViewer getMainViewer() {
+public DataViewer getMainViewer() {
 	return mainViewer;
 }
 
@@ -379,18 +380,36 @@ private void updateScanParamChoices(){
 				PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
 				PDEDataContext newPDEDC = pdeDatamanager.getPDEDataContext();
 				PDEDataContext oldPDEDC = pdeDataViewer.getPdeDataContext();
+				hashTable.put("newPDEDC", newPDEDC);
 				if(oldPDEDC != null && oldPDEDC.getTimePoints().length <= newPDEDC.getTimePoints().length){
 					DataIdentifier setDid = (newPDEDC.getDataIdentifier()==null?newPDEDC.getDataIdentifiers()[0]:newPDEDC.getDataIdentifier());
 					if(Arrays.asList(newPDEDC.getDataIdentifiers()).contains(oldPDEDC.getDataIdentifier())){
 						setDid = oldPDEDC.getDataIdentifier();
+						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
+//						newPDEDC.setVariableAndTime((DataIdentifier)hashTable.get("oldSelectedDid"), (Double)hashTable.get("oldSelectedTimePoint"));
 					}
-					newPDEDC.setVariableAndTime(setDid, newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
+//					hashTable.put("oldSelectedDid", setDid);
+//					hashTable.put("oldSelectedTimePoint", new Double(newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]));
 				}
+			}
+		};
+		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				PDEDataContext newPDEDC = (PDEDataContext)hashTable.get("newPDEDC");
+//				if(hashTable.get("oldSelectedDid") != null){
+//					newPDEDC.setVariableAndTime((DataIdentifier)hashTable.get("oldSelectedDid"), (Double)hashTable.get("oldSelectedTimePoint"));
+//				}
+				newPDEDC.refreshIdentifiers();
 				pdeDataViewer.setPdeDataContext(newPDEDC);
 				pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
 			}
 		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
+
+		ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(pdeDataViewer.getRefreshTasks()));
+		allTasks.add(0,task2);
+		allTasks.add(0,task1);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks.toArray(new AsynchClientTask[0]));
 	}
 }
 

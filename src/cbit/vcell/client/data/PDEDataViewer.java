@@ -383,25 +383,23 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 						dataProcessingResultsPanel.update(getPdeDataContext());
 					}
 				}
-//				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals("dataIdentifers")){
-//					System.out.println("here");
+//				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO))) {
+//					setupDataInfoProvider();
 //				}
-				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO))) {
-					setupDataInfoProvider();
-				}
 				if (evt.getSource() == PDEDataViewer.this &&
 						(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO) || evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) {
-					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
-						myDefaultDataIdentifierFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo());
-						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
-						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
-						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
-							getPDEPlotControlPanel1().setDataIdentifierFilter(new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
-						}
-					} else {
-						getPDEDataContextPanel1().setDataInfoProvider(null);
-						getPDEExportPanel1().setDataInfoProvider(null);
-					}
+					setupDataInfoProvider();
+//					if (getPdeDataContext() != null && getSimulationModelInfo() != null){
+//						myDefaultDataIdentifierFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo());
+//						getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
+//						getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+//						if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
+//							getPDEPlotControlPanel1().setDataIdentifierFilter(new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
+//						}
+//					} else {
+//						getPDEDataContextPanel1().setDataInfoProvider(null);
+//						getPDEExportPanel1().setDataInfoProvider(null);
+//					}
 				}
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) { 
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
@@ -610,6 +608,42 @@ public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dat
 	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
 }
 
+public AsynchClientTask[] getRefreshTasks(){
+	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
+	bothSets.addAll(Arrays.asList(getFilterVarNamesTasks()));
+	bothSets.addAll(Arrays.asList(getVariableChangeTasks()));
+	bothSets.addAll(Arrays.asList(getTimeChangeTasks()));
+	return bothSets.toArray(new AsynchClientTask[0]);
+}
+private AsynchClientTask[] getTimeChangeTasks(){
+	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
+	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getTimeChangeTasks()));
+	AsynchClientTask[] postProcessTasks = postProcessPdeDataViewerPanel.getPostProcessTimeChangeTasks();
+	if(postProcessTasks != null){
+		bothSets.addAll(Arrays.asList(postProcessTasks));
+	}
+	return bothSets.toArray(new AsynchClientTask[0]);
+}
+
+private AsynchClientTask[] getVariableChangeTasks(){
+	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
+	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getVariableChangeTasks()));
+	AsynchClientTask[] postProcessTasks = postProcessPdeDataViewerPanel.getPostProcessVariableChangeTasks();
+	if(postProcessTasks != null){
+		bothSets.addAll(Arrays.asList(postProcessTasks));
+	}
+	return bothSets.toArray(new AsynchClientTask[0]);
+}
+
+public AsynchClientTask[] getFilterVarNamesTasks(){
+	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
+	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getFilterVarNamesTasks()));
+	AsynchClientTask[] postProcessTasks = postProcessPdeDataViewerPanel.getPostProcessFilterVarNamesTasks();
+	if(postProcessTasks != null){
+		bothSets.addAll(Arrays.asList(postProcessTasks));
+	}
+	return bothSets.toArray(new AsynchClientTask[0]);
+}
 /**
  * Comment
  */
@@ -1813,6 +1847,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 private static class PostProcessImageDataPanel extends JPanel{
 	private PDEDataViewer myPDEDataViewer;
 	private PDEDataViewer parentPDEDataViewer;
+	private PDEDataContext previousChangeListener;
 	public PostProcessImageDataPanel(PDEDataViewer parentPDEDataViewer) {
 		super();
 		setLayout(new BorderLayout());
@@ -1830,14 +1865,24 @@ private static class PostProcessImageDataPanel extends JPanel{
 			}
 		}
 	};
-	public void update(PDEDataContext oldParentPDEDataContext,NewClientPDEDataContext newParentPDEDatacontext){
-		if(oldParentPDEDataContext != null){
-			oldParentPDEDataContext.removePropertyChangeListener(didPropChangeListener);
+	public AsynchClientTask[] getPostProcessTimeChangeTasks(){
+		return (myPDEDataViewer==null?null:myPDEDataViewer.getPDEPlotControlPanel1().getTimeChangeTasks());
+	}
+	public AsynchClientTask[] getPostProcessVariableChangeTasks(){
+		return (myPDEDataViewer==null?null:myPDEDataViewer.getPDEPlotControlPanel1().getVariableChangeTasks());
+	}
+	public AsynchClientTask[] getPostProcessFilterVarNamesTasks(){
+		return (myPDEDataViewer==null?null:myPDEDataViewer.getPDEPlotControlPanel1().getFilterVarNamesTasks());
+	}
+	public void update(NewClientPDEDataContext newParentPDEDatacontext){
+		if(previousChangeListener != null){
+			previousChangeListener.removePropertyChangeListener(didPropChangeListener);
 		}
 		if(newParentPDEDatacontext != null){
 			newParentPDEDatacontext.removePropertyChangeListener(didPropChangeListener);
 			newParentPDEDatacontext.addPropertyChangeListener(didPropChangeListener);
 		}
+		previousChangeListener = newParentPDEDatacontext;
 		if(myPDEDataViewer != null){
 			try{
 				myPDEDataViewer.setPdeDataContext(createPostProcessPDEDataContext(newParentPDEDatacontext));
@@ -1852,7 +1897,7 @@ private static class PostProcessImageDataPanel extends JPanel{
 				//Setup is done already
 				PostProcessDataPDEDataContext myPostProcessDataPDEDataContext = (PostProcessDataPDEDataContext)myPDEDataViewer.getPdeDataContext();
 				if(!myPostProcessDataPDEDataContext.getVCDataIdentifier().equals(parentPDEDataViewer.getPdeDataContext().getVCDataIdentifier())){
-					update(null,(NewClientPDEDataContext)parentPDEDataViewer.getPdeDataContext());					
+					update((NewClientPDEDataContext)parentPDEDataViewer.getPdeDataContext());					
 				}
 				return;
 			}
@@ -1911,9 +1956,14 @@ private static class PostProcessImageDataPanel extends JPanel{
 							getClientTaskStatusSupport().setMessage("Creating Post Process GUI...");
 						}
 						myPDEDataViewer = new PDEDataViewer();
+						myPDEDataViewer.setName("PostProcesPDEDV");
+						myPDEDataViewer.getPDEPlotControlPanel1().setName("PostProcessPDEPCP");
+//						PDEPlotControlPanel.DefaultDataIdentifierFilter plotFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)parentPDEDataViewer.getSimulationModelInfo());
+//						myPDEDataViewer.getPDEPlotControlPanel1().setDataIdentifierFilter(plotFilter);
+//						myPDEDataViewer.getPDEPlotControlPanel1().getDataIdentifierFilter().setPostProcessingMode(true);
 	//System.out.println("----------parentPDEDV="+PDEDataViewer.this.hashCode()+" PostProcessPDEDV="+postProcessPdeDataViewer.hashCode());
 						PostProcessImageDataPanel.this.add(myPDEDataViewer,BorderLayout.CENTER);
-						myPDEDataViewer.getPDEPlotControlPanel1().setPostProcessingMode(true);
+//						myPDEDataViewer.getPDEPlotControlPanel1().setPostProcessingMode(true);
 						myPDEDataViewer.setPostProcessingPanelVisible(false);
 						myPDEDataViewer.setDataViewerManager((DocumentWindowManager)documentWindow.getTopLevelWindowManager());
 //						hashTable.put(POST_PROCESS_PDEDV, postProcessPdeDataViewer);
@@ -1938,9 +1988,9 @@ private static class PostProcessImageDataPanel extends JPanel{
 							getClientTaskStatusSupport().setMessage("Getting Post Process Data...");
 						}
 //						myPDEDataViewer.setPdeDataContext((PostProcessDataPDEDataContext)hashTable.get(POST_PROCESS_PDEDC));
-						update(null, (NewClientPDEDataContext)parentPDEDataViewer.getPdeDataContext());
-						SimulationModelInfo simulationModelInfo =
-								new SimulationModelInfo() {
+						update((NewClientPDEDataContext)parentPDEDataViewer.getPdeDataContext());
+						SimulationWorkspaceModelInfo simulationWorkspaceModelInfo =
+								new SimulationWorkspaceModelInfo(parentPDEDataViewer.getSimulation().getSimulationOwner(),parentPDEDataViewer.getSimulation().getName()) {
 									@Override
 									public String getVolumeNamePhysiology(int subVolumeID) {
 										return "PostProcess";
@@ -1962,14 +2012,29 @@ private static class PostProcessImageDataPanel extends JPanel{
 										return parentPDEDataViewer.getSimulationModelInfo().getContextName();
 									}
 								};
-								myPDEDataViewer.setSimulationModelInfo(simulationModelInfo);
-								myPDEDataViewer.setSimNameSimDataID(
+							myPDEDataViewer.setSimulationModelInfo(simulationWorkspaceModelInfo);
+							myPDEDataViewer.setSimNameSimDataID(
 							new ExportSpecs.SimNameSimDataID(parentPDEDataViewer.getSimulation().getName(),
-									parentPDEDataViewer.getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null));
+								parentPDEDataViewer.getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null));
+							if(hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS) != null){
+//								AsynchClientTask filterTask = new AsynchClientTask("set PostProcess filter",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//									@Override
+//									public void run(Hashtable<String, Object> hashTable) throws Exception {
+//										PDEPlotControlPanel.DefaultDataIdentifierFilter plotFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)parentPDEDataViewer.getSimulationModelInfo());
+//										plotFilter.setPostProcessingMode(true);
+//										myPDEDataViewer.getPDEPlotControlPanel1().setDataIdentifierFilter(plotFilter);
+//									}
+//								};
+//								((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).add(filterTask);
+								((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(myPDEDataViewer.getPDEPlotControlPanel1().getFilterVarNamesTasks()));
+							}
+
 					}
 				};
-
-				ClientTaskDispatcher.dispatch(parentPDEDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] {postProcessInfoTask,createPostProcessPDEDataViewer,/*postProcessPDEDCTask,*/setPostProcessPDEDatacontext},true, false, false, null, true);
+//				ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(new AsynchClientTask[] {postProcessInfoTask,createPostProcessPDEDataViewer,setPostProcessPDEDatacontext}));
+//				allTasks.addAll(Arrays.asList(myPDEDataViewer.getPDEPlotControlPanel1().getFilterVarNamesTasks()));
+//				ClientTaskDispatcher.dispatch(parentPDEDataViewer, new Hashtable<String, Object>(), allTasks.toArray(new AsynchClientTask[0]),true, false, false, null, true);
+				ClientTaskDispatcher.dispatch(parentPDEDataViewer, new Hashtable<String, Object>(), new AsynchClientTask[] {postProcessInfoTask,createPostProcessPDEDataViewer,setPostProcessPDEDatacontext},true, false, false, null, true);
 		}catch(Exception e2){
 			e2.printStackTrace();
 		}
@@ -2080,13 +2145,20 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 				public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdataID) throws RemoteException,DataAccessException {
 //					return parentPDEDataContext.getDataIdentifiers();
 					ArrayList<DataIdentifier> postProcessDataIDs = new ArrayList<DataIdentifier>();
-					//get output functions
-					DataIdentifier[] parentDataIdentifiers = parentPDEDataContext.getDataIdentifiers();//parent pdedatacontext
-					for (int i = 0; i < parentDataIdentifiers.length; i++) {
-						if(parentDataIdentifiers[i].isFunction() && parentDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
-							postProcessDataIDs.add(parentDataIdentifiers[i]);
+					if(outputContext != null && outputContext.getOutputFunctions() != null){
+						for (int i = 0; i < outputContext.getOutputFunctions().length; i++) {
+							postProcessDataIDs.add(new DataIdentifier(outputContext.getOutputFunctions()[i].getName(), VariableType.POSTPROCESSING,null, false, outputContext.getOutputFunctions()[i].getDisplayName()));
 						}
 					}
+//					//get output functions
+//					DataIdentifier[] parentDataIdentifiers = parentPDEDataContext.getDataIdentifiers();//parent pdedatacontext
+//					for (int i = 0; i < parentDataIdentifiers.length; i++) {
+//						if(parentDataIdentifiers[i].isFunction() && parentDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
+//							if(!postProcessDataIDs.contains(parentDataIdentifiers[i])){
+//								postProcessDataIDs.add(parentDataIdentifiers[i]);
+//							}
+//						}
+//					}
 					//get 'state' variables
 					for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
 						if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(PostProcessDataType.image)){
@@ -2121,7 +2193,7 @@ private static PostProcessDataPDEDataContext createPostProcessPDEDataContext(fin
 	PDEDataManager postProcessPDEDataManager =
 		new PDEDataManager(((NewClientPDEDataContext)parentPDEDataContext).getDataManager().getOutputContext(), postProcessVCDataManager, parentPDEDataContext.getVCDataIdentifier());
 	PostProcessDataPDEDataContext postProcessDataPDEDataContext = new PostProcessDataPDEDataContext(postProcessPDEDataManager/*,dataProcessingOutputInfo*/);
-
+//	postProcessDataPDEDataContext.refreshIdentifiers();//this calls datasetcontroller.getdataidenifiers(...)
 	return postProcessDataPDEDataContext;
 }
 
@@ -2360,6 +2432,7 @@ private PDEPlotControlPanel getPDEPlotControlPanel1() {
 		try {
 			ivjPDEPlotControlPanel1 = new PDEPlotControlPanel();
 			ivjPDEPlotControlPanel1.setName("PDEPlotControlPanel1");
+			ivjPDEPlotControlPanel1.setExternalTasks(getDataVlaueSurfaceViewerTasks());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2490,7 +2563,11 @@ private void setupDataInfoProvider(){
 		getPDEDataContextPanel1().setDataInfoProvider(new PDEDataViewer.DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 		getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
 		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getFilterNames() != null){
-			getPDEPlotControlPanel1().setDataIdentifierFilter(new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo()));
+			PDEPlotControlPanel.DefaultDataIdentifierFilter newFilter = new PDEPlotControlPanel.DefaultDataIdentifierFilter((SimulationWorkspaceModelInfo)getSimulationModelInfo());
+			if(PDEDataViewer.this.getPdeDataContext() instanceof PostProcessDataPDEDataContext){
+				newFilter.setPostProcessingMode(true);
+			}
+			getPDEPlotControlPanel1().setDataIdentifierFilter(newFilter);
 		}
 	} else {
 		getPDEDataContextPanel1().setDataInfoProvider(null);
@@ -2518,17 +2595,17 @@ public void setPdeDataContext(PDEDataContext pdeDataContext) {
 		setupDataInfoProvider();
 	}
 	bSkipSurfaceCalc = true;
-	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, oldValue, pdeDataContext);
+	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, null, pdeDataContext);
 //	firePropertyChange(PROPERTY_PDEDC, oldValue, pdeDataContext);
 	bSkipSurfaceCalc = false;
 	if(!(getPdeDataContext() instanceof PostProcessDataPDEDataContext)){
 		updateDataValueSurfaceViewer();
 	}
 	if(ivjJTabbedPane1.getTitleAt(ivjJTabbedPane1.getSelectedIndex()).equals(POST_PROCESS_STATS_TABNAME)){
-		dataProcessingResultsPanel.update(getPdeDataContext());
+		dataProcessingResultsPanel.update(PDEDataViewer.this.getPdeDataContext());
 	}
 	if(ivjJTabbedPane1.getTitleAt(ivjJTabbedPane1.getSelectedIndex()).equals(POST_PROCESS_IMAGE_TABNAME)){
-		postProcessPdeDataViewerPanel.update(oldValue,(NewClientPDEDataContext)getPdeDataContext());
+		postProcessPdeDataViewerPanel.update((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext());
 	}
 
 //	if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) { 
@@ -2648,7 +2725,7 @@ private void showKymograph() {
 //				title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
 //			}
 			MultiTimePlotHelper multiTimePlotHelper = createMultiTimePlotHelper();
-			KymographPanel  kymographPanel = new KymographPanel(this, title, new TimeSeriesDataRetrievalTask(title, PDEDataViewer.this, PDEDataViewer.this.getPdeDataContext()),multiTimePlotHelper);
+			KymographPanel  kymographPanel = new KymographPanel(this, title, multiTimePlotHelper);
 			SymbolTable symbolTable;
 			if(getSimulation() != null && getSimulation().getMathDescription() != null){
 				symbolTable = getSimulation().getMathDescription();
@@ -2885,7 +2962,7 @@ private MultiTimePlotHelper createMultiTimePlotHelper(){
 		}
 		@Override
 		public DataIdentifier[] getCopyOfDisplayedDataIdentifiers() {
-			DataIdentifier[] newData = myDefaultDataIdentifierFilter.accept(DefaultDataIdentifierFilter.ALL, myPdeDataContext.getDataIdentifiers(), myAnnots).toArray(new DataIdentifier[0]);
+			DataIdentifier[] newData = PDEDataViewer.this.getPDEPlotControlPanel1().getDataIdentifierFilter().accept(DefaultDataIdentifierFilter.ALL, myPdeDataContext.getDataIdentifiers(), myAnnots).toArray(new DataIdentifier[0]);
 			return DataIdentifier.collectSortedSimilarDataTypes(this.getVariableType(),newData);
 		}
 		@Override
@@ -2917,6 +2994,20 @@ private MultiTimePlotHelper createMultiTimePlotHelper(){
 								AnnotatedFunction[] annots = myAnnots.toArray(new AnnotatedFunction[0]);
 								myPdeDataContext.getDataManager().setOutputContext(new OutputContext(annots));
 								myPdeDataContext.refreshIdentifiers();
+								DataIdentifier[] myDataIdentifiers = myPdeDataContext.getDataIdentifiers();
+								DataIdentifier selectedDid = PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getSelectedValue();
+								if(selectedDid != null){
+									if(!Arrays.asList(myDataIdentifiers).contains(selectedDid)){
+										for (int i = 0; i < PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel().getSize(); i++) {
+											if(Arrays.asList(myDataIdentifiers).contains(PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel().getElementAt(i))){
+												selectedDid = PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel().getElementAt(i);
+											}
+										}
+									}
+								}else{
+									selectedDid = PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().getModel().getElementAt(0);
+								}
+								PDEDataViewer.this.getPDEPlotControlPanel1().getJList1().setSelectedValue(selectedDid, true);
 								for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
 									myPropertyChangeHolder.get(i).propertyChange(new PropertyChangeEvent(multiTimePlotHelperThis, PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
 								}
@@ -2975,11 +3066,7 @@ private void updateDataSamplerContext(java.beans.PropertyChangeEvent propertyCha
 	
 }
 
-//private boolean bPdeIsParamScan=false;
-private void updateDataValueSurfaceViewer(){
-	if(bSkipSurfaceCalc){
-		return;
-	}
+private AsynchClientTask[] getDataVlaueSurfaceViewerTasks(){
 	AsynchClientTask createDataValueSurfaceViewerTask = new AsynchClientTask("Create surface viewer...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -3004,12 +3091,21 @@ private void updateDataValueSurfaceViewer(){
 			}
 		}
 	};
-	
+	return new AsynchClientTask[] {createDataValueSurfaceViewerTask,updateDataValueSurfaceViewerTask,resetDataValueSurfaceViewerTask};
+}
+//private boolean bPdeIsParamScan=false;
+private void updateDataValueSurfaceViewer(){
+	if(ClientTaskDispatcher.isBusy()){
+		return;
+	}
+	if(bSkipSurfaceCalc){
+		return;
+	}	
 	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {createDataValueSurfaceViewerTask,updateDataValueSurfaceViewerTask,resetDataValueSurfaceViewerTask},true,true,null);		
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getDataVlaueSurfaceViewerTasks(),true,true,null);		
 	}else{
 		try{
-			updateDataValueSurfaceViewerTask.run(null);
+			updateDataValueSurfaceViewer0();
 		}catch(Exception e){
 			e.printStackTrace();
 			DialogUtils.showErrorDialog(this, e.getMessage());
@@ -3021,6 +3117,10 @@ private void updateDataValueSurfaceViewer(){
  * Creation date: (9/25/2005 2:00:05 PM)
  */
 private void updateDataValueSurfaceViewer0() {
+	//viewDataTabbedPane.addTab(CurrentView.SURFACE_VIEW.title, getDataValueSurfaceViewer());
+	if(viewDataTabbedPane.getSelectedIndex() != CurrentView.SURFACE_VIEW.ordinal()){
+		return;
+	}
 //	Thread.dumpStack();
 	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
 	//SurfaceColors and DataValues
