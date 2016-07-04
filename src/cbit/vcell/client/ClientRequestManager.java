@@ -3431,6 +3431,10 @@ public void updateStatusNow() {
 			
 		}
 	};
+	if(ClientTaskDispatcher.isBusy()){
+//		((ArrayList<AsynchClientTask>)ClientTaskDispatcher.currentHash.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).add(task1);
+//		return;
+	}
 	ClientTaskDispatcher.dispatch(null, new Hashtable<String, Object>(), new AsynchClientTask[] {task1});
 }
 

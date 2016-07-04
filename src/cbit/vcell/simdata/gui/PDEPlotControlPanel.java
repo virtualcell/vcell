@@ -67,6 +67,7 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.DataSetIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.AnnotatedFunction;
 /**
@@ -247,15 +248,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC9(evt);
 			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("customScaleRange"))) 
 				connEtoC5(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS))){
-				connEtoM8(evt);
-//				//Fire after list setup with pdePlotControlPanel as source
-//				PDEPlotControlPanel.this.firePropertyChange(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, evt.getOldValue(), evt.getNewValue());
-			}
+//			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS))){
+//				connEtoM8(evt);
+//			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getmodel1()) 
-				connEtoC1(e);
+				setTimeFromSlider();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJList1()) 
@@ -335,6 +334,9 @@ public void viewFunction() {
 }
 
 public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
+	if(PDEPlotControlPanel.this.getName().equals("PostProcessPDEPCP")){
+		System.out.println("PostProcessPDEPCP");
+	}
 	this.dataIdentifierFilter = dataIdentifierFilter;
 	filterComboBox.removeActionListener(filterChangeActionListener);
 	filterComboBox.removeAllItems();
@@ -351,31 +353,29 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 	}
 	filterVariableNames();
 }
-
-public void setPostProcessingMode(boolean bPostProcessingMode){
-	this.dataIdentifierFilter.setPostProcessingMode(bPostProcessingMode);
+public DataIdentifierFilter getDataIdentifierFilter(){
+	return dataIdentifierFilter;
 }
-
-/**
- * connEtoC1:  (model1.change.stateChanged(javax.swing.event.ChangeEvent) --> PDEPlotControlPanel.setTimeFromSlider(I)V)
- * @param arg1 javax.swing.event.ChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(javax.swing.event.ChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getmodel1() != null)) {
-			this.setTimeFromSlider(getmodel1().getValue());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connEtoC1:  (model1.change.stateChanged(javax.swing.event.ChangeEvent) --> PDEPlotControlPanel.setTimeFromSlider(I)V)
+// * @param arg1 javax.swing.event.ChangeEvent
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connEtoC1(javax.swing.event.ChangeEvent arg1) {
+//	try {
+//		// user code begin {1}
+//		// user code end
+//		if ((getmodel1() != null)) {
+//			this.setTimeFromSlider(getmodel1().getValue());
+//		}
+//		// user code begin {2}
+//		// user code end
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
 /**
  * connEtoC2:  (JTextField1.action.actionPerformed(java.awt.event.ActionEvent) --> PDEPlotControlPanel.setTimeFromTextField()V)
@@ -633,96 +633,109 @@ private void connEtoM7(PDEDataContext value) {
 }
 
 
-/**
- * connEtoM8:  (pdeDataContext1.dataIdentifiers --> DefaultListModelCivilized1.contents)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
-	try {
-		getJList1().clearSelection();
-		filterVariableNames();
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+///**
+// * connEtoM8:  (pdeDataContext1.dataIdentifiers --> DefaultListModelCivilized1.contents)
+// * @param arg1 java.beans.PropertyChangeEvent
+// */
+///* WARNING: THIS METHOD WILL BE REGENERATED. */
+//private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
+//	try {
+//		getJList1().clearSelection();
+//		filterVariableNames();
+//	} catch (java.lang.Throwable ivjExc) {
+//		// user code begin {3}
+//		// user code end
+//		handleException(ivjExc);
+//	}
+//}
 
-private void filterVariableNames(){
-	if ((getPdeDataContext() != null)) {
-  		final Object oldselection = getJList1().getSelectedValue();
-		AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
-				// always, so we can display user-defined functions nicely...
-					initFunctionsList();
-//				}
+public AsynchClientTask[] getFilterVarNamesTasks(){
+		final Object oldselection = getJList1().getSelectedValue();
+	AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+			// always, so we can display user-defined functions nicely...
+				initFunctionsList();
+//			}
+		}
+	};
+	
+	final ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
+	AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(PDEPlotControlPanel.this.getName().equals("PostProcessPDEPCP")){
+				System.out.println("PostProcessPDEPCP");
 			}
-		};
-		
-		final ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
-		AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
-				
-				if(getPdeDataContext().getDataIdentifiers() != null && getPdeDataContext().getDataIdentifiers().length > 0){
-					DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
-					DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
-					System.arraycopy(originalDataIdentifierArr, 0, dataIdentifierArr, 0, originalDataIdentifierArr.length);
-					Arrays.sort(dataIdentifierArr, new Comparator<DataIdentifier>(){
-						public int compare(DataIdentifier o1, DataIdentifier o2) {
-							int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-							if (bEqualIgnoreCase == 0){
-								return o1.getDisplayName().compareTo(o2.getDisplayName());
-							}
-							return bEqualIgnoreCase;
-						}
-					});
-		
-					if(dataIdentifierFilter == null){
-						displayDataIdentifiers.addAll(Arrays.asList(dataIdentifierArr));
-					}else{
-						ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr,functionsList);
-						if(acceptedDataIdentifiers != null){
-							displayDataIdentifiers.addAll(acceptedDataIdentifiers);
-						}
-					}
-				}
-			}
-		};
-		
-		AsynchClientTask task3 = new AsynchClientTask("Update filtered variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				getDefaultListModelCivilized1().removeListDataListener(ivjEventHandler);
-				getDefaultListModelCivilized1().setContents(displayDataIdentifiers.size() == 0?null:displayDataIdentifiers.toArray(new DataIdentifier[0]));
-				getJList1().clearSelection();
-				getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
-				if(getJList1().getModel().getSize() > 0){
-					if(oldselection == null){
-						getJList1().setSelectedIndex(0);
-					}else{
-						boolean bFound = false;
-						for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-							if(oldselection.equals(getJList1().getModel().getElementAt(i))){
-								getJList1().setSelectedIndex(i);
-								bFound = true;
-								break;
-							}
-						}
-						if(!bFound){
-							getJList1().setSelectedIndex(0);
-						}
-					}
-					
-				}
-			}
+			getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
 			
-		};
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2, task3});
+			if(getPdeDataContext().getDataIdentifiers() != null && getPdeDataContext().getDataIdentifiers().length > 0){
+				DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+				DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
+				System.arraycopy(originalDataIdentifierArr, 0, dataIdentifierArr, 0, originalDataIdentifierArr.length);
+				Arrays.sort(dataIdentifierArr, new Comparator<DataIdentifier>(){
+					public int compare(DataIdentifier o1, DataIdentifier o2) {
+						int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+						if (bEqualIgnoreCase == 0){
+							return o1.getDisplayName().compareTo(o2.getDisplayName());
+						}
+						return bEqualIgnoreCase;
+					}
+				});
+	
+				if(dataIdentifierFilter == null){
+					displayDataIdentifiers.addAll(Arrays.asList(dataIdentifierArr));
+				}else{
+					ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr,functionsList);
+					if(acceptedDataIdentifiers != null){
+						displayDataIdentifiers.addAll(acceptedDataIdentifiers);
+					}
+				}
+			}
+		}
+	};
+	
+	AsynchClientTask task3 = new AsynchClientTask("Update filtered variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(PDEPlotControlPanel.this.getName().equals("PostProcessPDEPCP")){
+				System.out.println("PostProcessPDEPCP");
+			}
+			getDefaultListModelCivilized1().removeListDataListener(ivjEventHandler);
+			getDefaultListModelCivilized1().setContents(displayDataIdentifiers.size() == 0?null:displayDataIdentifiers.toArray(new DataIdentifier[0]));
+			getJList1().clearSelection();
+			getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
+			if(getJList1().getModel().getSize() > 0){
+				if(oldselection == null){
+					getJList1().setSelectedIndex(0);
+				}else{
+					boolean bFound = false;
+					for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+						if(oldselection.equals(getJList1().getModel().getElementAt(i))){
+							getJList1().setSelectedIndex(i);
+							bFound = true;
+							break;
+						}
+					}
+					if(!bFound){
+						getJList1().setSelectedIndex(0);
+					}
+				}
+				
+			}
+		}
+		
+	};
+
+	return new AsynchClientTask[] {task1, task2, task3};
+}
+private  void filterVariableNames(){
+	if(ClientTaskDispatcher.isBusy()){
+		return;
+	}
+	if ((getPdeDataContext() != null)) {
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getFilterVarNamesTasks());
 	}
 }
 
@@ -1596,65 +1609,76 @@ public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	}
 }
 
+public AsynchClientTask[] getTimeChangeTasks(){
+	int sliderPosition = getmodel1().getValue();
+	final double timepoint = getPdeDataContext().getTimePoints()[sliderPosition];
+	AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getClientTaskStatusSupport() != null){
+				getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
+			}
+			getPdeDataContext().waitWhileBusy();
+			getPdeDataContext().setTimePoint(timepoint);
+		}
+	};
+	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+			if (exc == null) {
+				updateTimeTextField(getPdeDataContext().getTimePoint());
+			} else {
+				int index = -1;
+				if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
+					double[] timePoints = getPdeDataContext().getTimePoints();
+					for(int i=0;i<timePoints.length;i+= 1){
+						if(timePoints[i] == getPdeDataContext().getTimePoint()){
+							index = i;
+							break;
+						}
+					}
+				}
+				if(index != -1){
+					getJSliderTime().setValue(index);
+				}else{
+					getJTextField1().setText("-Error-");
+				}
+			}
+		}
+	};
+	return new AsynchClientTask[]{task2, task3};
+}
+
 /**
  * Comment
  */
-private void setTimeFromSlider(int sliderPosition) {
+private void setTimeFromSlider(/*int sliderPosition*/) {
+	if(ClientTaskDispatcher.isBusy()){
+		return;
+	}
 	if (getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null) {
-		final double timepoint = getPdeDataContext().getTimePoints()[sliderPosition];
-		
 		if (! getJSliderTime().getValueIsAdjusting()) {
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();			
-			AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					if(getClientTaskStatusSupport() != null){
-						getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
-					}
-					getPdeDataContext().waitWhileBusy();
-					getPdeDataContext().setTimePoint(timepoint);
-				}
-			};
-			AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
-				public void run(Hashtable<String, Object> hashTable) throws Exception {
-					Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-					if (exc == null) {
-						updateTimeTextField(getPdeDataContext().getTimePoint());
-					} else {
-						int index = -1;
-						if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
-							double[] timePoints = getPdeDataContext().getTimePoints();
-							for(int i=0;i<timePoints.length;i+= 1){
-								if(timePoints[i] == getPdeDataContext().getTimePoint()){
-									index = i;
-									break;
-								}
-							}
-						}
-						if(index != -1){
-							getJSliderTime().setValue(index);
-						}else{
-							getJTextField1().setText("-Error-");
-						}
-					}
-				}
-			};
-			AsynchClientTask[] taskArray = new AsynchClientTask[]{task2, task3};
-			if(getPdeDataContext().isBusy()){
-				//Show waiting
-				ClientTaskDispatcher.dispatch(this, hash, taskArray,false,false,null,true);
-			}else{
-				//Not show waiting
-				ClientTaskDispatcher.dispatch(this, hash, taskArray);
-			}
+			ClientTaskDispatcher.dispatch(this, hash, creatAllTasks(getTimeChangeTasks()));
 		}else{
-			updateTimeTextField(timepoint);
+			updateTimeTextField(getmodel1().getValue());
 		}
 	} else {
 		getJTextField1().setText("");
 	}
 }
 
+private AsynchClientTask[] creatAllTasks(AsynchClientTask[] mainTasks){
+	ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(mainTasks));
+	if(externalTasks != null){
+		allTasks.addAll(Arrays.asList(externalTasks));
+	}
+	return allTasks.toArray(new AsynchClientTask[0]);
 
+}
+private AsynchClientTask[] externalTasks;
+public void setExternalTasks(AsynchClientTask[] externalTasks){
+	this.externalTasks = externalTasks;
+}
 /**
  * Comment
  */
@@ -1687,76 +1711,106 @@ private void setTimeFromTextField(String typedValue) {
 	getJSliderTime().setValue(val);
 }
 
+public AsynchClientTask[] getVariableChangeTasks(){
+	// Get selected DataIdentifer from gui list
+	final DataIdentifier[] selectedDataIdentifierHolder = new DataIdentifier[] {(DataIdentifier)getJList1().getSelectedValue()};
+	//If no selection get first dataIdentifier from list
+	if(selectedDataIdentifierHolder[0] == null && getJList1().getModel().getSize()>0){
+		selectedDataIdentifierHolder[0] = getJList1().getModel().getElementAt(0);
+	}
+	//If no list then select the dataIdentifier from pde data context
+	if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
+		if(selectedDataIdentifierHolder[0]==null){
+			selectedDataIdentifierHolder[0] = getPdeDataContext().getDataIdentifier();
+		}
+	}
+	//nothing found
+	if(selectedDataIdentifierHolder[0] == null){
+		return new AsynchClientTask[0];
+	}
+
+	AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			AnnotatedFunction f = findFunction(selectedDataIdentifierHolder[0],functionsList);
+			getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
+			if(getDisplayAdapterService() != null){
+				getDisplayAdapterService().activateMarkedState(selectedDataIdentifierHolder[0].getName());
+			}
+		}
+	};
+	
+	AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if(getClientTaskStatusSupport() != null){
+				getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifierHolder[0].getDisplayName());
+			}
+			DataIdentifier[] myDataIdentifiers = (getPdeDataContext()==null?null:getPdeDataContext().getDataIdentifiers());
+			if(myDataIdentifiers != null){
+				boolean bFound = false;
+				for (int i = 0; i < myDataIdentifiers.length; i++) {
+					if(myDataIdentifiers[i].equals(selectedDataIdentifierHolder[0])){
+						bFound = true;
+						break;
+					}
+				}
+				if(bFound){
+					getPdeDataContext().waitWhileBusy();
+					getPdeDataContext().setVariable(selectedDataIdentifierHolder[0]);
+				}else{
+					selectedDataIdentifierHolder[0] = getPdeDataContext().getDataIdentifier();
+				}
+			}
+		}
+	};
+		
+	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+			if (e != null) {
+				int index = -1;
+				if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
+					for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+						if(getPdeDataContext().getDataIdentifier().equals(getJList1().getModel().getElementAt(i))){
+							index = i;
+							break;
+						}
+					}
+				}
+				if(index != -1){
+					getJList1().setSelectedIndex(index);
+				}else{
+					getJList1().clearSelection();
+				}
+			}
+		}
+	};
+	
+	return new AsynchClientTask[]{task1, task2, task3};
+}
 /**
  * Comment
  */
-private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {	
+private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
+	if(ClientTaskDispatcher.isBusy()){
+		return;
+	}
 	if(getPdeDataContext() == null){
 		return;
 	}
 	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
 		return;
 	}
-	final DataIdentifier selectedDataIdentifier = (DataIdentifier)getJList1().getSelectedValue();
-	if(selectedDataIdentifier != null){
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-		AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				AnnotatedFunction f = findFunction(selectedDataIdentifier,functionsList);
-				getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
-				if(getDisplayAdapterService() != null){
-					getDisplayAdapterService().activateMarkedState(selectedDataIdentifier.getName());
-				}
-			}
-		};
-		
-		AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if(getClientTaskStatusSupport() != null){
-					getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifier.getDisplayName());
-				}
-				getPdeDataContext().waitWhileBusy();
-				getPdeDataContext().setVariable(selectedDataIdentifier);
-			}
-		};
-			
-		AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-				if (e != null) {
-					int index = -1;
-					if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-						for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-							if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-								index = i;
-								break;
-							}
-						}
-					}
-					if(index != -1){
-						getJList1().setSelectedIndex(index);
-					}else{
-						getJList1().clearSelection();
-					}
-				}
-			}
-		};
-		AsynchClientTask[] taskArray = new AsynchClientTask[]{task1, task2, task3};
-		if(getPdeDataContext().isBusy()){
-			//Show waiting
-			ClientTaskDispatcher.dispatch(this, hash, taskArray,false,false,null,true);
-		}else{
-			//Not show waiting
-			ClientTaskDispatcher.dispatch(this, hash, taskArray);
-		}
-	}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-		for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-			if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-				getJList1().setSelectedIndex(i);
-				break;
-			}
-		}
-	}
+	AsynchClientTask[] varChangeTasks = getVariableChangeTasks();
+//	if(varChangeTasks.length > 0){
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), creatAllTasks(varChangeTasks));
+//	}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+//		for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+//			if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+//				getJList1().setSelectedIndex(i);
+//				break;
+//			}
+//		}
+//	}
 }
 
 private void updateTimeTextField(double newTime){

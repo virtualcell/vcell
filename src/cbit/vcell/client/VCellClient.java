@@ -10,6 +10,8 @@
 
 package cbit.vcell.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 
 import javax.swing.JComponent;
@@ -314,7 +316,12 @@ public static void login(final RequestManager requestManager, final ClientServer
 					}
 				}
 			};
-			ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+			AsynchClientTask[] tasks = new AsynchClientTask[] { task1, task2};
+//			if(ClientTaskDispatcher.isBusy()){
+//				((ArrayList<AsynchClientTask>)ClientTaskDispatcher.currentHash.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(tasks));
+//				return;
+//			}
+			ClientTaskDispatcher.dispatch(currWindowManager.getComponent(), new Hashtable<String, Object>(),tasks);
 		}
 
 		public void registerRequest() {

@@ -482,10 +482,10 @@ protected void setCartesianMesh(CartesianMesh newCartesianMesh) {
  */
 protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws DataAccessException{
 	DataIdentifier[] oldDataIdentifiers = dataIdentifiers;
+	dataIdentifiers = newDataIdentifiers;
 	if (getVariableName()==null && dataIdentifiers!=null && dataIdentifiers.length>0){
 		setVariable(dataIdentifiers[0]);
 	}
-	dataIdentifiers = newDataIdentifiers;
 
 	boolean fire = false;
 	if (dataIdentifiers != null) {

@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Hashtable;
@@ -38,6 +39,8 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.data.SimResultsViewer;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetails;
 import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
@@ -336,6 +339,9 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 					Throwable ex = failures.get(sim); 
 					if (viewerController != null && ex == null) { // no failure
 						DataViewer viewer = viewerController.createViewer();
+						if(viewer instanceof SimResultsViewer && ((SimResultsViewer)viewer).getMainViewer() instanceof PDEDataViewer){
+							((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(((PDEDataViewer)((SimResultsViewer)viewer).getMainViewer()).getRefreshTasks()));
+						}
 						getSimWorkspace().getSimulationOwner().getOutputFunctionContext().addPropertyChangeListener(viewerController);
 						documentWindowManager.addExportListener(viewer);
 						documentWindowManager.addDataJobListener(viewer);//For data related activities such as calculating statistics

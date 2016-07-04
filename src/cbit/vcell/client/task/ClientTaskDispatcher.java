@@ -91,6 +91,18 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
+private static int entryCounter = 0;
+//public static Hashtable<String, Object> currentHash;
+public static boolean isBusy(){
+	if(entryCounter>0){
+		System.out.println("----------Busy----------");
+		Thread.dumpStack();
+		return true;
+	}
+	return false;
+}
+public static final String INTERMEDIATE_TASKS = "INTERMEDIATE_TASKS";
+
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
@@ -102,6 +114,19 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 //	if (bInProgress) {
 //		Thread.dumpStack();
 //	}
+//	currentHash = hash;
+	if(hash.get(INTERMEDIATE_TASKS) == null){
+		hash.put(INTERMEDIATE_TASKS,new ArrayList<AsynchClientTask>());
+	}
+	entryCounter++;
+	System.out.println("----------Enter----------entryCounter="+entryCounter);
+	Thread.dumpStack();
+	if(entryCounter>1){
+		System.out.println("Rentrant");
+//		entryCounter--;
+//		return;
+	}
+	
 	if (bShowProgressPopup && requester == null) {
 		System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
 		Thread.dumpStack();
@@ -156,87 +181,94 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				e.printStackTrace();
 			}
 			for (int i = 0; i < taskList.size(); i++){
-				// run all tasks
-				// after abort, run only non-skippable tasks
-				// also skip selected tasks specified by conditionalSkip tag 
-				final AsynchClientTask currentTask = taskList.get(i);
-				try {
-					currentTask.setClientTaskStatusSupport(pp);
-					setSwingWorkerThreadName(this,threadBaseName + currentTask.getTaskName());
-
-					//System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
-					if (pp != null ) {
-						pp.setVisible(currentTask.showProgressPopup());
-						if(!bKnowProgress)
-						{
-							pp.setProgress(i*100/taskList.size()); // beginning of task
-						}
-						pp.setMessage(currentTask.getTaskName());
+				boolean bIntermediate = false;
+				do{
+					// run all tasks
+					// after abort, run only non-skippable tasks
+					// also skip selected tasks specified by conditionalSkip tag
+					AsynchClientTask currentTask;
+					if(bIntermediate){
+						currentTask = ((ArrayList<AsynchClientTask>)hash.get(INTERMEDIATE_TASKS)).remove(0);
+					}else{
+						currentTask = taskList.get(i);
 					}
-					boolean shouldRun = true;
-					if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
-						shouldRun = false;
-					}
-					if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
-						String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
-						if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
-							shouldRun = false;
-						}
-					}
-					if (pp != null && pp.isInterrupted()) {
-						recordException(UserCancelException.CANCEL_GENERIC, hash);
-					}
-
-					if (hash.containsKey(TASK_ABORTED_BY_USER)) {
-						UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
-						if (currentTask.skipIfCancel(exc)) {
-							shouldRun = false;
-						}
-					}
-					if (shouldRun) {
-						try {
-							if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-								currentTask.run(hash);
-							} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-								SwingUtilities.invokeAndWait(new Runnable() {
-									public void run() {
-										try {
-											currentTask.run(hash);
-										} catch (Throwable exc) {
-											recordException(exc, hash);
-										}
-									}
-								});
-							} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-								SwingUtilities.invokeLater(new Runnable() {
-									public void run() {
-										try {
-											currentTask.run(hash);
-										} catch (Throwable exc) {
-											recordException(exc, hash);
-										}
-									}
-								});
+//					final AsynchClientTask currentTask = taskList.get(i);
+					try {
+						currentTask.setClientTaskStatusSupport(pp);
+						setSwingWorkerThreadName(this,threadBaseName + currentTask.getTaskName());
+	
+						//System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
+						if (pp != null ) {
+							pp.setVisible(currentTask.showProgressPopup());
+							if(!bKnowProgress)
+							{
+								pp.setProgress(i*100/taskList.size()); // beginning of task
 							}
-						} catch (Throwable exc) {
-							recordException(exc, hash);
+							pp.setMessage(currentTask.getTaskName());
+						}
+						boolean shouldRun = true;
+						if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
+							shouldRun = false;
+						}
+						if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
+							String[] toSkip = (String[])hash.get(TASKS_TO_BE_SKIPPED);
+							if (BeanUtils.arrayContains(toSkip, currentTask.getClass().getName())) {
+								shouldRun = false;
+							}
+						}
+						if (pp != null && pp.isInterrupted()) {
+							recordException(UserCancelException.CANCEL_GENERIC, hash);
+						}
+	
+						if (hash.containsKey(TASK_ABORTED_BY_USER)) {
+							UserCancelException exc = (UserCancelException)hash.get(TASK_ABORTED_BY_USER);
+							if (currentTask.skipIfCancel(exc)) {
+								shouldRun = false;
+							}
+						}
+						if (shouldRun) {
+							try {
+								if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+									currentTask.run(hash);
+								} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+									SwingUtilities.invokeAndWait(new Runnable() {
+										public void run() {
+											try {
+												currentTask.run(hash);
+											} catch (Throwable exc) {
+												recordException(exc, hash);
+											}
+										}
+									});
+								} else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+									SwingUtilities.invokeLater(new Runnable() {
+										public void run() {
+											try {
+												currentTask.run(hash);
+											} catch (Throwable exc) {
+												recordException(exc, hash);
+											}
+										}
+									});
+								}
+							} catch (Throwable exc) {
+								recordException(exc, hash);
+							}
 						}
 					}
-					//				AsynchClientTask[] followupTasks = currentTask.getFollowupTasks();
-					//				if (followupTasks != null) {
-					//					for (int j = 0; j < followupTasks.length; j++) {
-					//						taskList.add(i+j+1, followupTasks[j]);
-					//					}					
-					//				}
-				}
-				finally {
-					allTasks.remove(currentTask);
-				}
+					finally {
+						allTasks.remove(currentTask);
+					}
+					bIntermediate=true;
+				}while(hash.get(INTERMEDIATE_TASKS) != null && ((ArrayList<AsynchClientTask>)hash.get(INTERMEDIATE_TASKS)).size() > 0);
 			}
 			return hash;
 		}
 		public void finished() {
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
+			entryCounter--;
+			System.out.println("----------Leave----------entryCounter="+entryCounter);
+			
 			if (pp != null) {
 				pp.stop();
 			}
