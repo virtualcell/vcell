@@ -13,6 +13,7 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -320,7 +321,7 @@ private void initialize() {
 		gbc.gridwidth = 4;
 		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
 		
-		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotation and Pathway Links", false);
+		CollapsiblePanel collapsiblePanel = new CollapsiblePanel("Annotation and Pathway Links", true);
 		collapsiblePanel.getContentPanel().setLayout(new GridBagLayout());
 
 		JPanel jp1 = new JPanel();
@@ -369,6 +370,7 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.gridwidth = 4;
 		gbc.weightx = 1.0;
+		gbc.weighty = 0.2;
 		gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		add(collapsiblePanel, gbc);
 				
@@ -610,7 +612,7 @@ private String listLinkedPathwayObjects(){
 		return "no biomodel";
 	}
 	JPanel panel = new JPanel();
-	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+	panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 	String linkedPOlist = "";
 	for(RelationshipObject relObject : bioModel.getRelationshipModel().getRelationshipObjects(reactionStep)){
 		if(relObject == null) {
@@ -642,6 +644,9 @@ private String listLinkedPathwayObjects(){
 			panel.add(label);
 		}
 	}
+	Dimension dim = new Dimension(200, 20);
+	panel.setMinimumSize(dim);
+	panel.setPreferredSize(dim);
 	linkedPOScrollPane.setViewportView(panel);
 	return linkedPOlist;
 }
