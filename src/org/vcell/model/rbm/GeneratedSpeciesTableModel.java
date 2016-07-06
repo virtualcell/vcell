@@ -112,8 +112,13 @@ public class GeneratedSpeciesTableModel extends VCellSortTableModel<GeneratedSpe
 	}
 	
 	public boolean isCellEditable(int iRow, int iCol) {
-		return false;
+		switch(iCol) {
+		case iColExpression:
+			return true;
+		default:
+			return false;
 		}
+	}
 	
 	public void setValueAt(Object valueNew, int iRow, int iCol) {
 		return;
