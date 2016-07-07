@@ -703,17 +703,20 @@ void ObservablePattern()                   :
   ASTObservablePattern jjtn000 = new ASTObservablePattern(JJTOBSERVABLEPATTERN);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-/*@egen*/ Token t=null; }
+/*@egen*/ Token t=null; Token t1=null; Token t2=null; }
 {/*@bgen(jjtree) ObservablePattern */
         try {
 /*@egen*/
-	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()/*@bgen(jjtree)*/
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern() ( [ ( "=" t1=<INTEGER> ) | ( ">" t2=<INTEGER> ) ] )/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
         }
 /*@egen*/
-	{ if (t!=null) { jjtn000.setCompartment(t.image.replace(":","")); } }/*@bgen(jjtree)*/
+	{ if (t!=null) { jjtn000.setCompartment(t.image.replace(":","")); }
+ 	 if (t1 != null) {jjtn000.setLengthEqual(t1.image);}
+ 	 if (t2 != null) {jjtn000.setLengthGreater(t2.image);} 
+	}/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

@@ -329,10 +329,13 @@ void Observable() #Observable :						// --------- Observable -------------------
  	 }
 }
 void ObservablePattern() #ObservablePattern:
-{ Token t=null; }
+{ Token t=null; Token t1=null; Token t2=null; }
 {
-	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern()
-	{ if (t!=null) { jjtThis.setCompartment(t.image.replace(":","")); } }
+	[  <ATSIGN> (t = <LABEL>) ] SpeciesPattern() ( [ ( "=" t1=<INTEGER> ) | ( ">" t2=<INTEGER> ) ] )
+	{ if (t!=null) { jjtThis.setCompartment(t.image.replace(":","")); }
+ 	 if (t1 != null) {jjtThis.setLengthEqual(t1.image);}
+ 	 if (t2 != null) {jjtThis.setLengthGreater(t2.image);} 
+	}
 }
 
 void FunctionDecl() #FunctionDecl :					// ----------- Function -------------------------------------

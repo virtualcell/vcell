@@ -5,7 +5,9 @@ package org.vcell.model.bngl;
 public class ASTObservablePattern extends SimpleNode {
 	
 	private String compartment = null;
-	
+	private String lengthEqualStr = null;
+	private String lengthGreaterStr = null;
+
   public ASTObservablePattern(int id) {
     super(id);
   }
@@ -35,6 +37,19 @@ public String toBNGL(){
 	}else{
 		return jjtGetChild(0).toBNGL();
 	}
+}
+
+public void setLengthEqual(String image) {
+	lengthEqualStr = image;
+}
+public String getLengthEqual() {
+	return lengthEqualStr;
+}
+public void setLengthGreater(String image) {
+	lengthGreaterStr = image;
+}
+public String getLengthGreater() {
+	return lengthGreaterStr;
 }
 
 }
