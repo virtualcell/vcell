@@ -24,6 +24,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -43,10 +46,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -75,7 +80,9 @@ import org.vcell.model.rbm.MolecularComponentPattern.BondType;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 
 import cbit.vcell.model.RbmObservable;
+import cbit.vcell.model.RbmObservable.ObservableType;
 import cbit.vcell.model.Structure;
+import cbit.vcell.model.RbmObservable.Sequence;
 import cbit.vcell.model.common.VCellErrorMessages;
 
 import org.vcell.util.Compare;
@@ -104,7 +111,7 @@ import cbit.vcell.graph.SpeciesPatternSmallShape;
 public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	
 	private class InternalEventHandler implements PropertyChangeListener, ActionListener, MouseListener, TreeSelectionListener,
-		TreeWillExpandListener, FocusListener
+		TreeWillExpandListener, FocusListener, KeyListener
 	{
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
@@ -136,17 +143,89 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			} else if (source == getDeleteFromShapeMenuItem()) {
 				deleteFromShape();
 			} else if (source == getRenameFromShapeMenuItem()) {
-				
 //				observableTree.startEditingAtPath(observableTree.getSelectionPath());
 			} else if (source == getAddFromShapeMenu()) {
 				addNewFromShape();
 			} else if (source == getEditFromShapeMenuItem()) {
-				
 //				observableTree.startEditingAtPath(observableTree.getSelectionPath());
+				
+			} else if (source == getSequenceMultimolecularButton()) {
+				getLengthEqualTextField().setEnabled(false);
+				getLengthGreaterTextField().setEnabled(false);
+				observable.setSequence(Sequence.Multimolecular);
+				try {
+				observable.setType(ObservableType.Molecules);
+				} catch(Exception ex) {
+					System.out.println(ex);
+				}
+			} else if (source == getSequencePolimerEqualButton()) {
+				getLengthEqualTextField().setEnabled(true);
+				getLengthGreaterTextField().setEnabled(false);
+				observable.setSequence(Sequence.PolymerLengthEqual);
+				try {
+				observable.setType(ObservableType.Species);
+				} catch(Exception ex) {
+					System.out.println(ex);
+				}
+			} else if (source == getSequencePolimerGreaterButton()) {
+				getLengthEqualTextField().setEnabled(false);
+				getLengthGreaterTextField().setEnabled(true);
+				observable.setSequence(Sequence.PolymerLengthGreater);
+				try {
+				observable.setType(ObservableType.Species);
+				} catch(Exception ex) {
+					System.out.println(ex);
+				}
+			} else if (source == getLengthEqualTextField()) {
+			} else if (source == getLengthGreaterTextField()) {
 			}
-
-			
 		}
+		
+		@Override
+		public void keyTyped(KeyEvent e) {
+		}
+		@Override
+		public void keyPressed(KeyEvent e) {
+		}
+		@Override
+		public void keyReleased(KeyEvent e) {
+			Object source = e.getSource();
+			if (source == getLengthEqualTextField()) {
+				String str = getLengthEqualTextField().getText();
+				if(str.length() == 0) {
+					return;		// just deleted the number; do nothing and expect the user to type something
+				} else if(str.length() > 2) {
+					getLengthEqualTextField().setText(observable.getSequenceLength()+"");
+					return;		// don't allow anything larger than 2 digits
+				}
+				int value;
+				try {
+					value = Integer.parseInt(str);
+				} catch(NumberFormatException ex) {
+					// if error just put back whatever the observable has
+					getLengthEqualTextField().setText(observable.getSequenceLength()+"");
+					return;
+				}
+				observable.setSequence(Sequence.PolymerLengthEqual, value);
+			} else if (source == getLengthGreaterTextField()) {
+				String str = getLengthGreaterTextField().getText();
+				if(str.length() == 0) {
+					return;
+				} else if(str.length() > 2) {
+					getLengthGreaterTextField().setText(observable.getSequenceLength()+"");
+					return;
+				}
+				int value;
+				try {
+					value = Integer.parseInt(str);
+				} catch(NumberFormatException ex) {
+					getLengthGreaterTextField().setText(observable.getSequenceLength()+"");
+					return;
+				}
+				observable.setSequence(Sequence.PolymerLengthGreater, value);
+			}		
+		}
+		
 		@Override
 		public void mouseClicked(MouseEvent e) {
 //			System.out.println("click! " + e.getSource());
@@ -213,6 +292,12 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 	JScrollPane scrollPane;
 	private JTextArea annotationTextArea;
 	private JButton addSpeciesButton = null;
+	
+	private JRadioButton sequenceMultimolecularButton;
+	private JRadioButton sequencePolimerEqualButton;
+	private JRadioButton sequencePolimerGreaterButton;
+	private JTextField lengthEqualTextField;
+	private JTextField lengthGreaterTextField;
 
 	private InternalEventHandler eventHandler = new InternalEventHandler();
 	
@@ -359,6 +444,84 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 			System.out.println("deleting " + selectedUserObject.toString());
 		}
 	}
+	private JRadioButton getSequenceMultimolecularButton() {
+		if (sequenceMultimolecularButton == null) {
+			sequenceMultimolecularButton = new JRadioButton("Multimolecular");
+			sequenceMultimolecularButton.addActionListener(eventHandler);
+		}
+		return sequenceMultimolecularButton;
+	}
+	private JRadioButton getSequencePolimerEqualButton() {
+		if (sequencePolimerEqualButton == null) {
+			sequencePolimerEqualButton = new JRadioButton("length = ");
+			sequencePolimerEqualButton.addActionListener(eventHandler);
+		}
+		return sequencePolimerEqualButton;
+	}
+	private JRadioButton getSequencePolimerGreaterButton() {
+		if (sequencePolimerGreaterButton == null) {
+			sequencePolimerGreaterButton = new JRadioButton("length > ");
+			sequencePolimerGreaterButton.addActionListener(eventHandler);
+		}
+		return sequencePolimerGreaterButton;
+	}
+	private JTextField getLengthEqualTextField() {
+		if (lengthEqualTextField == null) {
+			lengthEqualTextField = new JTextField();
+			if(observable == null) {
+				lengthEqualTextField.setText(""+RbmObservable.DefaultLengthEqual);
+			} else {
+				lengthEqualTextField.setText(observable.getSequenceLength(RbmObservable.Sequence.PolymerLengthEqual)+"");
+			}
+			lengthEqualTextField.addActionListener(eventHandler);
+			lengthEqualTextField.addKeyListener(eventHandler);
+		}
+		return lengthEqualTextField;
+	}
+	private JTextField getLengthGreaterTextField() {
+		if (lengthGreaterTextField == null) {
+			lengthGreaterTextField = new JTextField();
+			if(observable == null) {
+				lengthGreaterTextField.setText(""+RbmObservable.DefaultLengthGreater);
+			} else {
+				lengthGreaterTextField.setText(observable.getSequenceLength(RbmObservable.Sequence.PolymerLengthGreater)+"");
+			}
+			lengthGreaterTextField.addActionListener(eventHandler);
+			lengthGreaterTextField.addKeyListener(eventHandler);
+		}
+		return lengthGreaterTextField;
+	}
+	
+	void updateSequence() {
+		if(observable == null) {
+			getSequenceMultimolecularButton().setSelected(true);
+			getLengthEqualTextField().setText(""+RbmObservable.DefaultLengthEqual);
+			getLengthGreaterTextField().setText(""+RbmObservable.DefaultLengthGreater);
+			getLengthEqualTextField().setEnabled(false);
+			getLengthGreaterTextField().setEnabled(false);
+		} else {
+			Sequence sequence = observable.getSequence();
+			switch(sequence) {
+			case Multimolecular:
+				getSequenceMultimolecularButton().setSelected(true);
+				getLengthEqualTextField().setEnabled(false);
+				getLengthGreaterTextField().setEnabled(false);
+				break;
+			case PolymerLengthEqual:
+				getSequencePolimerEqualButton().setSelected(true);
+				getLengthEqualTextField().setEnabled(true);
+				getLengthGreaterTextField().setEnabled(false);
+				break;
+			case PolymerLengthGreater:
+				getSequencePolimerGreaterButton().setSelected(true);
+				getLengthEqualTextField().setEnabled(false);
+				getLengthGreaterTextField().setEnabled(true);
+				break;
+			}
+			getLengthEqualTextField().setText(""+observable.getSequenceLength(Sequence.PolymerLengthEqual));
+			getLengthGreaterTextField().setText(""+observable.getSequenceLength(Sequence.PolymerLengthGreater));
+		}
+	}
 
 	private void initialize() {
 		
@@ -502,11 +665,10 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		});
 		
 		JPanel optionsPanel = new JPanel();
-		optionsPanel.setPreferredSize(new Dimension(120, 200));		// gray options panel
+		optionsPanel.setPreferredSize(new Dimension(112, 200));		// gray options panel
 		optionsPanel.setLayout(new GridBagLayout());
 		
 		gridy = 0;
-		gbc = new GridBagConstraints();
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
@@ -516,6 +678,63 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		optionsPanel.add(getAddSpeciesButton(), gbc);
 
+		
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(getSequenceMultimolecularButton());
+		bg.add(getSequencePolimerEqualButton());
+		bg.add(getSequencePolimerGreaterButton());
+
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(8,4,2,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(getSequenceMultimolecularButton(), gbc);
+
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(4,10,2,4);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(new JLabel("Polymer of"), gbc);
+
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(2,4,1,7);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(getSequencePolimerEqualButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(2,4,1,7);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(getLengthEqualTextField(), gbc);
+
+		gridy ++;
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = gridy;
+		gbc.insets = new Insets(1,4,4,7);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(getSequencePolimerGreaterButton(), gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = gridy;
+		gbc.gridwidth = 2;
+		gbc.insets = new Insets(1,4,4,7);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		optionsPanel.add(getLengthGreaterTextField(), gbc);
+
+		// --------------------------------------------------------------------------------
+		
 		gridy++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -672,7 +891,8 @@ public class ObservablePropertiesPanel extends DocumentEditorSubPanel {
 		if (selectedObjects.length == 1 && selectedObjects[0] instanceof RbmObservable) {
 			observable = (RbmObservable) selectedObjects[0];
 		}
-		setObservable(observable);	
+		setObservable(observable);
+		updateSequence();
 	}
 	
 	private void setObservable(RbmObservable newValue) {

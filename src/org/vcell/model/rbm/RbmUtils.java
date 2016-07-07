@@ -1922,6 +1922,23 @@ public class RbmUtils {
 				s += toBnglString(sp, null, CompartmentMode.hide, 0) + " ";
 			}
 		}
+		s = appendSequence(s, observable);
+		return s;
+	}
+	public static String appendSequence(String s, RbmObservable observable) {
+		if(s.endsWith(" ")) {
+			s = s.substring(0, s.length()-1);	// get rid of final " "
+		}
+		switch(observable.getSequence()) {
+		case PolymerLengthEqual:
+			s += "=" + observable.getSequenceLength();
+			break;
+		case PolymerLengthGreater:
+			s += ">" + observable.getSequenceLength();
+			break;
+		default:
+			break;
+		}
 		return s;
 	}
 

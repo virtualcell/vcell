@@ -55,17 +55,30 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 		public static ObservableType getTypeFromName(String name) {
 			for (int i = 0; i < ObservableType.values().length; i++) {
-				if (name.equals(ObservableType.values()[i].name))
+				if (name.equals(ObservableType.values()[i].name)) {
 					return ObservableType.values()[i];
 				}
+			}
 			throw new IllegalArgumentException("Unknown enum type named " + name + " for " + ObservableType.class.getSimpleName());
 		}
 	}
+	public static enum Sequence {
+		Multimolecular,
+		PolymerLengthEqual,
+		PolymerLengthGreater;
+	}
+	public static final int DefaultLengthEqual = 2;
+	public static final int DefaultLengthGreater = 1;
 	
 	private String name;
 	private List<SpeciesPattern> speciesPatternList; 
 	private RbmObservable.ObservableType type;
 	private Structure structure;
+	
+	private Sequence sequence;
+	private int lengthEqual;
+	private int lengthGreater;
+	
 	private transient Model model = null;
 	
 	public RbmObservable(Model model, String name, Structure structure, RbmObservable.ObservableType t) {
@@ -80,9 +93,60 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 		}
 		speciesPatternList = new ArrayList<SpeciesPattern>();
 //		speciesPatternList.addPropertyChangeListener(this);
+		
+		sequence = Sequence.Multimolecular;
+		lengthEqual = DefaultLengthEqual;
+		lengthGreater = DefaultLengthGreater;
 	}
+	
 	public void setModel(Model argModel) {
 		model = argModel;
+	}
+	
+	public void setSequence(Sequence sequence) {	// leaves the value unchanged
+		this.sequence = sequence;
+	}
+	public void setSequence(Sequence sequence, int length) {
+		switch(sequence) {
+		case Multimolecular:
+			this.sequence = Sequence.Multimolecular;
+			break;
+		case PolymerLengthEqual:
+			this.sequence = Sequence.PolymerLengthEqual;
+			lengthEqual = length;
+			break;
+		case PolymerLengthGreater:
+			this.sequence = Sequence.PolymerLengthGreater;
+			lengthGreater = length;
+			break;
+		}
+	}
+	public Sequence getSequence() {
+		return this.sequence;
+	}
+	public int getSequenceLength() {
+		switch(sequence) {
+		case Multimolecular:
+			return 0;
+		case PolymerLengthEqual:
+			return lengthEqual;
+		case PolymerLengthGreater:
+			return lengthGreater;
+		default:
+			return 0;
+		}
+	}
+	public int getSequenceLength(Sequence sequence) {
+		switch(sequence) {
+		case Multimolecular:
+			return 0;
+		case PolymerLengthEqual:
+			return lengthEqual;
+		case PolymerLengthGreater:
+			return lengthGreater;
+		default:
+			return 0;
+		}
 	}
 
 	public Structure getStructure() {
@@ -328,6 +392,34 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				}
 			}
+		}
+		boolean polymerAllowedSingle = true;
+		boolean polymerAllowedSimple = true;
+		if(speciesPatternList.size() > 1) {
+			polymerAllowedSingle = false;
+		}
+		SpeciesPattern sp = speciesPatternList.get(0);
+		if(sp != null && !sp.getMolecularTypePatterns().isEmpty()) {
+			if(sp.getMolecularTypePatterns().size() > 1) {
+				polymerAllowedSingle = false;
+			} else {
+				MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+				if(mtp != null) {
+					for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+						if(mcp.isbVisible()) {
+							polymerAllowedSimple = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if(!polymerAllowedSingle && sequence != Sequence.Multimolecular) {
+			String message = "Polymer may only be specified for Observable containing a single Molecule.";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+		} else if(!polymerAllowedSimple && sequence != Sequence.Multimolecular) {
+			String message = "Polymer may only be specified for Observable with all bonds set to 'Possible' and all States set to 'Any'";
+			issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
 		}
 	}
 	public void checkComponentStateConsistency(IssueContext issueContext, List<Issue> issueList, MolecularTypePattern mtpThis) {
