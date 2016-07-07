@@ -91,6 +91,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
+import cbit.vcell.model.RbmObservable.Sequence;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
@@ -590,6 +591,13 @@ public class RbmUtils {
 			if (data instanceof RbmObservable){
 				RbmObservable observable = (RbmObservable)data;
 				observable.setStructure(model.getStructure(node.getCompartment()));
+				if(node.getLengthEqual() != null) {
+					int length = Integer.parseInt(node.getLengthEqual());
+					observable.setSequence(Sequence.PolymerLengthEqual, length);
+				} else if(node.getLengthGreater() != null) {
+					int length = Integer.parseInt(node.getLengthGreater());
+					observable.setSequence(Sequence.PolymerLengthGreater, length);
+				}
 				node.childrenAccept(this, observable);
 			}
 			return null;

@@ -117,9 +117,9 @@ public interface BNGLParserConstants {
     "<REACTION_ARROW_BOTH>",
     "\"{\"",
     "\"}\"",
+    "\"=\"",
     "\"(\"",
     "\")\"",
-    "\"=\"",
     "\";\"",
   };
 
