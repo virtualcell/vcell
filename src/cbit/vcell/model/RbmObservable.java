@@ -148,6 +148,18 @@ public class RbmObservable implements Serializable, Matchable, SymbolTableEntry,
 			return 0;
 		}
 	}
+	public void setSequenceLength(Sequence sequence, int length) {	// leaves the sequence unchanged
+		switch(sequence) {
+		case PolymerLengthEqual:
+			lengthEqual = length;
+			break;
+		case PolymerLengthGreater:
+			lengthGreater = length;
+			break;
+		default:
+			break;
+		}
+	}
 
 	public Structure getStructure() {
 		return structure;
