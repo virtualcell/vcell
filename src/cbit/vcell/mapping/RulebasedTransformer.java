@@ -541,7 +541,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			//
 			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
 		} else {
-			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.hide);
+			RbmNetworkGenerator.writeBngl_internal(simulationContext, pw, kineticsParameterMap, speciesEquivalenceMap, networkGenerationRequirements, CompartmentMode.asSite);
 		}
 		String bngl = bnglStringWriter.toString();
 		pw.close();

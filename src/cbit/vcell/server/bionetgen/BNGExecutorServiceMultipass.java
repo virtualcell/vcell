@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ProductPattern;
+import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.Structure;
@@ -77,6 +79,8 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 	private SimulationContext simContext;
 	
 	private Map <String, Set<String>> anchorsMap;
+	private List <RbmObservable> polymerEqualObservables = new ArrayList<>();		// syntax  A()=xx
+	private List <RbmObservable> polymerGreaterObservables = new ArrayList<>();		// syntax  A()>xx
 	
 
 	BNGExecutorServiceMultipass(BNGInput cBngInput, Long timeoutDurationMS) {
@@ -168,6 +172,7 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		this.onepassBngService.registerBngUpdaterCallback(this);
 		BNGOutput obsBngOutput = this.onepassBngService.executeBNG();
 		String correctedObservablesString = extractCorrectedObservablesAsString(obsBngOutput);
+		correctedObservablesString = extractPolymerObservablesAsString(correctedObservablesString, oldSeedSpeciesString);
 		
 		// oldSeedSpeciesString contains the final list of seed species
 		sBngOutput.insertEntitiesInNetFile(oldSeedSpeciesString, "species");
@@ -185,6 +190,156 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		return cBngOutput;		// we basically return the "corrected" bng output from the last iteration run
 	}
 	// -------------------------------------------------------------------------------------------------------------------------------------------------
+
+	private String extractPolymerObservablesAsString(String prefix, String sBngInputString) {
+		if(polymerEqualObservables.isEmpty() && polymerEqualObservables.isEmpty()) {
+			return prefix;
+		}
+		String observablesString = "";
+		
+		List<BNGSpecies> bngSpeciesList = BNGOutputFileParser.createBngSpeciesOutputSpec(sBngInputString);
+		
+		Map<Integer, Map<String, Integer>> masterSignaturesMap = new LinkedHashMap<>();		// ordered by the network file index which is also key
+		Map<Integer, String> masterCompartmentMap = new LinkedHashMap<>();					// key = network file index, value = compartment of species
+		for(BNGSpecies species : bngSpeciesList) {
+			List<BNGSpecies> ourList = new ArrayList<>(); 
+			if(species instanceof BNGComplexSpecies) {
+				ourList.addAll(Arrays.asList(species.parseBNGSpeciesName()));
+			} else {
+				ourList.add(species);		// if it's a simple species to begin with we'll only have one element in this list
+			}
+			Map<String, Integer> signatureMap = new HashMap<>();	// key = name of molecules, value = number of occurrences
+			for(BNGSpecies mtp : ourList) {
+				if(!(mtp instanceof BNGMultiStateSpecies)) {
+					throw new RuntimeException("Species " + mtp.getName() + " must be instance of BNGMultiStateSpecies");
+				}
+				BNGMultiStateSpecies ss = (BNGMultiStateSpecies)mtp;
+				String mtpName = ss.extractMolecularTypeName();
+//				System.out.println(mtpName);
+				
+				if(signatureMap.containsKey(mtpName)) {
+					int value = signatureMap.get(mtpName);
+					value += 1;
+					signatureMap.put(mtpName, value);
+				} else {
+					signatureMap.put(mtpName, 1);
+				}
+			}
+			int networkFileIndex = species.getNetworkFileIndex();
+			masterSignaturesMap.put(networkFileIndex, signatureMap);
+			
+			// we look in first mtp of this seed species, the compartment is the same in all
+			BNGMultiStateSpecies ss = (BNGMultiStateSpecies)ourList.get(0);
+			String compartment = ss.extractCompartment();
+			masterCompartmentMap.put(networkFileIndex, compartment);
+		}
+		
+		// we need to find the next available index for observables
+		int nextAvailableIndex;
+		if(prefix != null) {
+			nextAvailableIndex = extractNextAvailableIndexFromObservables(prefix);
+		} else {
+			nextAvailableIndex = 1;
+		}
+		
+		// we assume this is an observable made of only 1 sp that contains only one mtp, ex:  A()=xx   where xx is number of occurrences of A
+		for(RbmObservable oo : polymerEqualObservables) {
+			// for each polymer observable, here we build the string with the network indexes of the species that satisfy the criteria
+			String speciesFoundIndexes = "";
+			String mtpName = oo.getSpeciesPatternList().get(0).getMolecularTypePatterns().get(0).getMolecularType().getDisplayName();
+			int sequenceLength = oo.getSequenceLength();
+			System.out.println(mtpName+"="+sequenceLength);
+			
+			int i = 0;		// comma counter
+			boolean found = false;
+			// check all seed species for those that satisfy this observable and build comma delimited string of network file indexes
+			for (Map.Entry<Integer, Map<String, Integer>> entry : masterSignaturesMap.entrySet()) {
+				Integer networkFileIndex = entry.getKey();
+				String compartment = masterCompartmentMap.get(networkFileIndex);	// only interested if compartment is the same for both obs and seed species
+				if(!compartment.equals(oo.getStructure().getName())) {
+					continue;	// seed species in other compartment than our observable
+				}
+				Map<String, Integer> value = entry.getValue();
+				if(value.containsKey(mtpName)) {
+					int occurences = value.get(mtpName);
+					if(sequenceLength == occurences) {
+						if(i>0) {
+							speciesFoundIndexes += ",";
+						}
+						speciesFoundIndexes += networkFileIndex;
+						found = true;
+						i++;
+					}
+				}
+			}
+			if(found == false) {
+				continue;		// desired number of occurrences for the polymer species has not been found in any seed species
+			}
+			// finished for this observable
+			System.out.println("Observable " + oo.getDisplayName() + ": " + mtpName + "()=" + sequenceLength + " found in species " + speciesFoundIndexes + ".");
+			observablesString += "\t" + nextAvailableIndex + " " + oo.getDisplayName() + "\t" + speciesFoundIndexes + "\n";
+			nextAvailableIndex++;
+		}
+		for(RbmObservable oo : polymerGreaterObservables) {		// same as above for the A()>xx polymer observables
+			String speciesFoundIndexes = "";
+			String mtpName = oo.getSpeciesPatternList().get(0).getMolecularTypePatterns().get(0).getMolecularType().getDisplayName();
+			int sequenceLength = oo.getSequenceLength();
+			System.out.println(mtpName+"="+sequenceLength);
+			
+			int i = 0;
+			boolean found = false;
+			// check all seed species for those that satisfy this observable and build comma delimited string of network file indexes
+			for (Map.Entry<Integer, Map<String, Integer>> entry : masterSignaturesMap.entrySet()) {
+				Integer networkFileIndex = entry.getKey();
+				String compartment = masterCompartmentMap.get(networkFileIndex);
+				if(!compartment.equals(oo.getStructure().getName())) {
+					continue;	// seed species in other compartment than our observable
+				}
+				Map<String, Integer> value = entry.getValue();
+				if(value.containsKey(mtpName)) {
+					int occurences = value.get(mtpName);
+					if(sequenceLength < occurences) {
+						if(i>0) {
+							speciesFoundIndexes += ",";
+						}
+						speciesFoundIndexes += networkFileIndex;
+						found = true;
+						i++;
+					}
+				}
+			}
+			if(found == false) {
+				continue;
+			}
+			System.out.println("Observable " + oo.getDisplayName() + ": " + mtpName + "()>" + sequenceLength + " found in species " + speciesFoundIndexes + ".");
+			observablesString += "\t" + nextAvailableIndex + " " + oo.getDisplayName() + "\t" + speciesFoundIndexes + "\n";
+			nextAvailableIndex++;
+		}
+		if(observablesString.isEmpty()) {
+			return prefix;		// may be null
+		}
+		if(prefix != null) {
+			observablesString = prefix + observablesString;
+		}
+		return observablesString;
+	}
+	
+	private int extractNextAvailableIndexFromObservables(String inputString) {
+		String newLineDelimiters = "\n\r";
+		String blankDelimiters = " \t";
+		
+		String lastLine = new String("");
+		StringTokenizer lineTokenizer = new StringTokenizer(inputString, newLineDelimiters);
+		while (lineTokenizer.hasMoreTokens()) {
+			lastLine = lineTokenizer.nextToken();
+		}
+		lastLine = lastLine.trim();
+		System.out.println(lastLine);
+		StringTokenizer line =  new StringTokenizer(lastLine, blankDelimiters);
+		String lastUsedIndexStr = line.nextToken();
+		int nextIndex = Integer.parseInt(lastUsedIndexStr) + 1;
+		return nextIndex;
+	}
 
 	private CorrectedSR doWork(String oldSpeciesString, String newNetFile) throws ParseException {
 
@@ -606,6 +761,21 @@ public class BNGExecutorServiceMultipass implements BNGExecutorService, BioNetGe
 		BnglObjectConstructionVisitor constructionVisitor = null;
 		constructionVisitor = new BnglObjectConstructionVisitor(model, appList, bngUnitSystem, true);
 		astModel.jjtAccept(constructionVisitor, model.getRbmModelContainer());
+		
+		// extract all polymer observables for special treatment at the end
+		for(RbmObservable oo : model.getRbmModelContainer().getObservableList()) {
+			if(oo.getSequence() == RbmObservable.Sequence.PolymerLengthEqual) {
+				polymerEqualObservables.add(oo);
+			} else if(oo.getSequence() == RbmObservable.Sequence.PolymerLengthGreater) {
+				polymerGreaterObservables.add(oo);
+			}
+		}
+		for(RbmObservable oo : polymerEqualObservables) {
+			model.getRbmModelContainer().removeObservable(oo);
+		}
+		for(RbmObservable oo : polymerGreaterObservables) {
+			model.getRbmModelContainer().removeObservable(oo);
+		}
 		
 		// replace all reversible rules with 2 direct rules
 		List<ReactionRule> newRRList = new ArrayList<>();
