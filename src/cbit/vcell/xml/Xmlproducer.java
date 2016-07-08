@@ -3725,6 +3725,12 @@ private Element getXML(RbmObservable param) {
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	RbmObservable.ObservableType ot = param.getType();
 	e.setAttribute(XMLTags.RbmObservableTypeTag, mangle(ot.name()));
+	
+	String sequenceName = param.getSequence().name();
+	e.setAttribute(XMLTags.RbmObservableSequenceAttrTag, sequenceName);
+	e.setAttribute(XMLTags.RbmObservableLenEqualAttrTag, ""+param.getSequenceLength(RbmObservable.Sequence.PolymerLengthEqual));
+	e.setAttribute(XMLTags.RbmObservableLenGreaterAttrTag, ""+param.getSequenceLength(RbmObservable.Sequence.PolymerLengthGreater));
+	
 	e.setAttribute(XMLTags.StructureAttrTag, mangle(param.getStructure().getName()));
 //	SpeciesPattern sp = param.getSpeciesPattern(0);
 //	Element e1 = new Element(XMLTags.RbmSpeciesPatternTag);

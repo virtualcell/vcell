@@ -4575,6 +4575,26 @@ private RbmObservable getRbmObservables(Element e, Model newModel) {
 	}
 	RbmObservable o = new RbmObservable(newModel, n, structure, ot);
 	
+	RbmObservable.Sequence se = RbmObservable.Sequence.Multimolecular;			// Sequence
+	String ses = e.getAttributeValue(XMLTags.RbmObservableSequenceAttrTag);
+	if(ses != null && ses.equals(RbmObservable.Sequence.PolymerLengthEqual.name())) {
+		se = RbmObservable.Sequence.PolymerLengthEqual;
+	} else if(ses != null && ses.equals(RbmObservable.Sequence.PolymerLengthGreater.name())) {
+		se = RbmObservable.Sequence.PolymerLengthGreater;
+	}
+	o.setSequence(se);
+	
+	String lens = e.getAttributeValue(XMLTags.RbmObservableLenEqualAttrTag);
+	if(lens != null) {	// may be null for older models in which case the observable has default initial values
+		int len = Integer.parseInt(lens);
+		o.setSequenceLength(RbmObservable.Sequence.PolymerLengthEqual, len);
+	}
+	lens = e.getAttributeValue(XMLTags.RbmObservableLenGreaterAttrTag);
+	if(lens != null) {
+		int len = Integer.parseInt(lens);
+		o.setSequenceLength(RbmObservable.Sequence.PolymerLengthGreater, len);
+	}
+	
 //	Element element = e.getChild(XMLTags.RbmSpeciesPatternTag, vcNamespace);
 //	SpeciesPattern sp = getSpeciesPattern(element, newModel);
 	List<Element> children = e.getChildren(XMLTags.RbmSpeciesPatternTag, vcNamespace);
