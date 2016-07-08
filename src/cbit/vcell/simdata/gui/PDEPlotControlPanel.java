@@ -44,6 +44,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 
 import org.vcell.util.BeanUtils;
@@ -67,7 +68,6 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.AnnotatedFunction;
 /**
@@ -487,7 +487,7 @@ private void connEtoC8(javax.swing.event.ListSelectionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.variableChanged(arg1);
+		this.variableChanged(/*arg1*/);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1383,13 +1383,73 @@ private void initConnections() throws java.lang.Exception {
 	getJTextField1().addActionListener(ivjEventHandler);
 	getJTextField1().addFocusListener(ivjEventHandler);
 	getJSliderTime().addPropertyChangeListener(ivjEventHandler);
+//	getJSliderTime().addMouseListener(new MouseAdapter() {
+//		@Override
+//		public void mouseClicked(MouseEvent e) {
+//			super.mouseClicked(e);
+//			processSliderChangedMouse();
+//		}
+//	});
 	getJList1().addListSelectionListener(ivjEventHandler);
+//	getJList1().addMouseListener(new MouseAdapter() {
+//		@Override
+//		public void mouseClicked(MouseEvent e) {
+//			super.mouseClicked(e);
+//			processVariableChangedMouse();
+//		}		
+//	});
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 	getViewFunctionButton().addActionListener(ivjEventHandler);
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
 	connPtoP3SetTarget();
 }
+
+private Timer varChangeTimer;
+private Timer sliderChangeTimer;
+
+private Timer getVarChangeTimer(){
+	if(varChangeTimer == null){
+		varChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {variableChanged();}});
+		varChangeTimer.setRepeats(false);
+	}
+	return varChangeTimer;
+}
+private Timer getSliderChangeTimer(){
+	if(sliderChangeTimer == null){
+		sliderChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {setTimeFromSlider();}});
+		sliderChangeTimer.setRepeats(false);
+	}
+	return sliderChangeTimer;
+}
+
+
+
+//private Timer varChangedTimer = new Timer("waitvarchangedbusyplot",true);
+//TimerTask variableChangedTimerTask = new TimerTask() {@Override public void run() {processVariableChangedMouse();}};
+//private void processVariableChangedMouse(){
+//	varChangedTimer.cancel();
+//	varChangedTimer.purge();
+//	if(!ClientTaskDispatcher.isBusy()){
+//		variableChanged(/*null*/);
+//	}else{
+//		varChangedTimer.schedule(variableChangedTimerTask, 0, 200);
+//	}
+//
+//}
+//
+//private Timer sliderChangedTimer = new Timer("waitsliderchangedbusyplot",true);
+//TimerTask sliderTimerTask = new TimerTask() {@Override public void run() {processSliderChangedMouse();}};
+//private void processSliderChangedMouse(){
+//	sliderChangedTimer.cancel();
+//	sliderChangedTimer.purge();
+//	if(!ClientTaskDispatcher.isBusy()){
+//		setTimeFromSlider();
+//	}else{
+//		sliderChangedTimer.schedule(sliderTimerTask, 0, 200);
+//	}
+//
+//}
 
 /**
  * Initialize the class.
@@ -1652,7 +1712,8 @@ public AsynchClientTask[] getTimeChangeTasks(){
  * Comment
  */
 private void setTimeFromSlider(/*int sliderPosition*/) {
-	if(ClientTaskDispatcher.isBusy()){
+	if(ClientTaskDispatcher.isBusy() || (getPdeDataContext() != null && getPdeDataContext().isBusy())){
+		getSliderChangeTimer().restart();
 		return;
 	}
 	if (getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null) {
@@ -1790,16 +1851,17 @@ public AsynchClientTask[] getVariableChangeTasks(){
 /**
  * Comment
  */
-private void variableChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
-	if(ClientTaskDispatcher.isBusy()){
+private void variableChanged(/*ListSelectionEvent listSelectionEvent*/) {
+	if(ClientTaskDispatcher.isBusy() || (getPdeDataContext() != null && getPdeDataContext().isBusy())){
+		getVarChangeTimer().restart();
 		return;
 	}
 	if(getPdeDataContext() == null){
 		return;
 	}
-	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
-		return;
-	}
+//	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
+//		return;
+//	}
 	AsynchClientTask[] varChangeTasks = getVariableChangeTasks();
 //	if(varChangeTasks.length > 0){
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), creatAllTasks(varChangeTasks));

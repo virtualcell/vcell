@@ -96,7 +96,7 @@ private static int entryCounter = 0;
 public static boolean isBusy(){
 	if(entryCounter>0){
 		System.out.println("----------Busy----------");
-		Thread.dumpStack();
+//		Thread.dumpStack();
 		return true;
 	}
 	return false;
@@ -120,7 +120,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	}
 	entryCounter++;
 	System.out.println("----------Enter----------entryCounter="+entryCounter);
-	Thread.dumpStack();
+//	Thread.dumpStack();
 	if(entryCounter>1){
 		System.out.println("Rentrant");
 //		entryCounter--;
