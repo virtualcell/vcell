@@ -83,12 +83,16 @@ public boolean hasCompartment() {
 	return true;
 }
 public java.lang.String extractCompartment() {
-	if(!(name.contains(":") && name.contains("@"))) {
-		return null;
-	} else {
+	if(name.contains(":") && name.contains("@")) {
+		// ex: @cyt:Grb2(sh2!1...   will return cyt
 		String compartmentName = name.substring(1, name.indexOf(":"));
 		return compartmentName;
+	} else if(name.contains(RbmUtils.SiteStruct) && name.contains(RbmUtils.SiteProduct)) {
+		//  ex: Grb2(AAA~cyt, AAB...   will return cyt
+		String compartment = name.substring(name.indexOf(RbmUtils.SiteStruct) + RbmUtils.SiteStruct.length() +1, name.indexOf(RbmUtils.SiteProduct) -1);
+		return compartment;
 	}
+	return null;
 }
 
 public int getNetworkFileIndex() {
