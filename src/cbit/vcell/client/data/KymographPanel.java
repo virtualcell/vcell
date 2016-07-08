@@ -10,9 +10,10 @@
 
 package cbit.vcell.client.data;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
@@ -20,12 +21,10 @@ import java.text.DecimalFormat;
 import java.util.Hashtable;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.Timer;
 
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -41,7 +40,6 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.data.PDEDataViewer.TimeSeriesDataRetrievalTask;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.VCellTransferable;
@@ -51,7 +49,6 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
 /**
  * Insert the type's description here.
@@ -226,21 +223,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 				connPtoP1SetTarget();
 			}
 			if(evt.getSource() == multiTimePlotHelper && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS)){
-				try{
-					DataIdentifier selected = (DataIdentifier)ivjVarNamesJComboBox.getSelectedItem();
-					ivjVarNamesJComboBox.removeActionListener(ivjEventHandler);
-					DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
-					((DefaultComboBoxModel<DataIdentifier>)ivjVarNamesJComboBox.getModel()).removeAllElements();  //setListData(newData);
-					for (int i = 0; i < newData.length; i++) {
-						((DefaultComboBoxModel<DataIdentifier>)ivjVarNamesJComboBox.getModel()).addElement(newData[i]);
-					}
-					initVariableListSelected(ivjVarNamesJComboBox, selected);
-				}catch(Exception e){
-					e.printStackTrace();
-				}finally{
-					ivjVarNamesJComboBox.addActionListener(ivjEventHandler);
-				}
-				initDataManagerVariable((DataIdentifier)ivjVarNamesJComboBox.getSelectedItem());
+				updateTheVariable(false);
 			}
 
 		};
@@ -261,6 +244,25 @@ public KymographPanel(PDEDataViewer pdeDataViewer, String title,/*AsynchClientTa
 	this.multiTimePlotHelper=multiTimePlotHelper;
 	
 	initialize();
+
+}
+
+private void updateTheVariable(boolean bFromGUI){
+	try{
+		DataIdentifier selected = (DataIdentifier)ivjVarNamesJComboBox.getSelectedItem();
+		ivjVarNamesJComboBox.removeActionListener(ivjEventHandler);
+		DataIdentifier[] newData = multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
+		((DefaultComboBoxModel<DataIdentifier>)ivjVarNamesJComboBox.getModel()).removeAllElements();  //setListData(newData);
+		for (int i = 0; i < newData.length; i++) {
+			((DefaultComboBoxModel<DataIdentifier>)ivjVarNamesJComboBox.getModel()).addElement(newData[i]);
+		}
+		initVariableListSelected(ivjVarNamesJComboBox, selected);
+	}catch(Exception e){
+		e.printStackTrace();
+	}finally{
+		ivjVarNamesJComboBox.addActionListener(ivjEventHandler);
+	}
+	initDataManagerVariable((DataIdentifier)ivjVarNamesJComboBox.getSelectedItem(),bFromGUI);
 
 }
 
@@ -1946,31 +1948,33 @@ public void initDataManager(
 
 	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	
-//	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+////	AsynchClientTask task1  = new AsynchClientTask("Retrieving list of variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+////		public void run(Hashtable<String, Object> hashTable) throws Exception {
+////			DataIdentifier[] sortedDataIDs = KymographPanel.this.multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
+////			hashTable.put("sortedDataIDs", sortedDataIDs);
+////		}
+////	};
+//	AsynchClientTask task2 = new AsynchClientTask("Setting list of variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			DataIdentifier[] sortedDataIDs = KymographPanel.this.multiTimePlotHelper.getCopyOfDisplayedDataIdentifiers();
-//			hashTable.put("sortedDataIDs", sortedDataIDs);
+//			ivjEventHandler.propertyChange(new PropertyChangeEvent(KymographPanel.this.multiTimePlotHelper,PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
+////			DataIdentifier[] sortedDataIDs = (DataIdentifier[])hashTable.get("sortedDataIDs");
+////	
+////			//Add to combobox
+////			getVarNamesJComboBox().setEnabled(true);
+////			getVarNamesJComboBox().removeAllItems();
+////			getVarNamesJComboBox().removeActionListener(ivjEventHandler);	
+////			for(int i=0;i<sortedDataIDs.length;i+= 1){
+////				getVarNamesJComboBox().addItem(sortedDataIDs[i]);
+////			}
+////			getVarNamesJComboBox().addActionListener(ivjEventHandler);
+////			DataIdentifier selected = KymographPanel.this.multiTimePlotHelper.getPdeDatacontext().getDataIdentifier();
+////			getVarNamesJComboBox().setSelectedItem((selected==null?getVarNamesJComboBox().getModel().getElementAt(0):selected));
 //		}
 //	};
-	AsynchClientTask task2 = new AsynchClientTask("Setting list of variables", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			ivjEventHandler.propertyChange(new PropertyChangeEvent(KymographPanel.this.multiTimePlotHelper,PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS, null, null));
-//			DataIdentifier[] sortedDataIDs = (DataIdentifier[])hashTable.get("sortedDataIDs");
-//	
-//			//Add to combobox
-//			getVarNamesJComboBox().setEnabled(true);
-//			getVarNamesJComboBox().removeAllItems();
-//			getVarNamesJComboBox().removeActionListener(ivjEventHandler);	
-//			for(int i=0;i<sortedDataIDs.length;i+= 1){
-//				getVarNamesJComboBox().addItem(sortedDataIDs[i]);
-//			}
-//			getVarNamesJComboBox().addActionListener(ivjEventHandler);
-//			DataIdentifier selected = KymographPanel.this.multiTimePlotHelper.getPdeDatacontext().getDataIdentifier();
-//			getVarNamesJComboBox().setSelectedItem((selected==null?getVarNamesJComboBox().getModel().getElementAt(0):selected));
-		}
-	};
-	AsynchClientTask[] taskArray = new AsynchClientTask[]{/*task1,*/ task2};
-	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
+//	AsynchClientTask[] taskArray = new AsynchClientTask[]{/*task1,*/ task2};
+//	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
+	
+	updateTheVariable(true);
 }
 
 
@@ -2009,13 +2013,28 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 		return false;
 	}
 }
+
+private Timer initVariableTimer;
+
+private Timer getIntVarTimer(DataIdentifier dataIdentifer,boolean bFromGUI){
+	if(initVariableTimer == null){
+		initVariableTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable(dataIdentifer,bFromGUI);}});
+		initVariableTimer.setRepeats(false);
+	}
+	return initVariableTimer;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
  * @param timeSeries double[][]
  * @param distances double[]
  */
-private void initDataManagerVariable(final DataIdentifier dataIdentifer) {
+private void initDataManagerVariable(final DataIdentifier dataIdentifer,boolean bFromGUI) {
+	if(ClientTaskDispatcher.isBusy() || (multiTimePlotHelper.getPdeDatacontext() != null && multiTimePlotHelper.getPdeDatacontext().isBusy())){
+		getIntVarTimer(dataIdentifer,bFromGUI).restart();
+		return;
+	}
 
 	//Create SymbolTableEntry for Copy/Paste functionality
 	currentSymbolTablEntry = (symbolTable != null?symbolTable.getEntry(dataIdentifer.getName()):null);
@@ -2092,9 +2111,12 @@ private void initDataManagerVariable(final DataIdentifier dataIdentifer) {
 			}
 		}
 	};
-	
-	ClientTaskDispatcher.dispatch(KymographPanel.this,  new Hashtable<String, Object>(), (task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 }), false, true, true, null, false);
-	System.out.println("Waiting here");
+	if(bFromGUI){
+		ClientTaskDispatcher.dispatch(KymographPanel.this,  new Hashtable<String, Object>(), (task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 }), false, true, true, null, false);
+		System.out.println("Waiting here");		
+	}else{
+		multiTimePlotHelper.addExtraTasks((task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 }));		
+	}
 }
 
 
@@ -2280,7 +2302,7 @@ private void jCheckBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
  */
 private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
-	initDataManagerVariable((DataIdentifier)getVarNamesJComboBox().getSelectedItem());
+	initDataManagerVariable((DataIdentifier)getVarNamesJComboBox().getSelectedItem(),true);
     getimagePaneView1().requestFocusInWindow();
 }
 

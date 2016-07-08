@@ -14,6 +14,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -27,6 +29,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -101,6 +104,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		void addPropertyChangeListener(PropertyChangeListener propertyChangeListener);
 		void removeallPropertyChangeListeners();
 		VariableType getVariableType();
+		void addExtraTasks(AsynchClientTask[] extraTasks);
 	}
 	public PdeTimePlotMultipleVariablesPanel(MultiTimePlotHelper multiTimePlotHelper, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
 		this.multiTimePlotHelper=multiTimePlotHelper;
@@ -126,7 +130,23 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			myVariableJList.setSelectedIndex(0);
 		}
 	}
+	
+	private Timer plotChangeTimer;
+
+	private Timer getVarChangeTimer(){
+		if(plotChangeTimer == null){
+			plotChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {showTimePlot();}});
+			plotChangeTimer.setRepeats(false);
+		}
+		return plotChangeTimer;
+	}
+
 	public void showTimePlot() {
+		if(ClientTaskDispatcher.isBusy() || (multiTimePlotHelper.getPdeDatacontext() != null && multiTimePlotHelper.getPdeDatacontext().isBusy())){
+			getVarChangeTimer().restart();
+			return;
+		}
+
 		VariableType varType = multiTimePlotHelper.getVariableType();
 		Object[] selectedValues = variableJList.getSelectedValues();
 		DataIdentifier[] selectedDataIdentifiers = new DataIdentifier[selectedValues.length];
@@ -150,7 +170,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 			for (int i = 0; i < numSelectedSpatialPoints; i++){
 				for (int v = 0; v < numSelectedVariables; v ++) {
 					if (selectedDataIdentifiers[v].getVariableType().equals(varType)) {
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector.get(i);
 							indices[v][i] = ssv.getIndex(0);
 						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
@@ -158,7 +178,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 							indices[v][i] = ssm.getIndex(0);
 						}
 					} else {
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION) || varType.equals(VariableType.POSTPROCESSING)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)pointVector2.get(i);
 							indices[v][i] = ssv.getIndex(0);
 						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
