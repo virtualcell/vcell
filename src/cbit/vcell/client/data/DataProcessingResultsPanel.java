@@ -15,12 +15,15 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Hashtable;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -113,15 +116,30 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 		}
 	}
 	
-	public void update(final PDEDataContext pdeDataContext) {
-		if(this.pdeDataContext == pdeDataContext){
+	
+	private Timer updateTimer;
+	private Timer getUpdateTimer(final PDEDataContext updateToThis){
+		if(updateTimer != null){
+			updateTimer.stop();
+		}
+		updateTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(updateToThis);}});
+		updateTimer.setRepeats(false);
+		return updateTimer;
+	}
+	
+	public void update(final PDEDataContext newPDEDataContext) {
+		if(ClientTaskDispatcher.isBusy() || (newPDEDataContext != null && newPDEDataContext.isBusy()) || (this.pdeDataContext != null && this.pdeDataContext.isBusy())){
+			getUpdateTimer(newPDEDataContext).restart();
+			return;
+		}
+		if(this.pdeDataContext == newPDEDataContext){
 			return;
 		}
 		AsynchClientTask task1 = new AsynchClientTask("retrieving data", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {		
-				read(pdeDataContext);
+				read(newPDEDataContext);
 			}
 		};
 		

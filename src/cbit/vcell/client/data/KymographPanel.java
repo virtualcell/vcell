@@ -16,7 +16,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import java.beans.PropertyChangeEvent;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 
@@ -223,7 +222,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 				connPtoP1SetTarget();
 			}
 			if(evt.getSource() == multiTimePlotHelper && evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS)){
-				updateTheVariable(false);
+				updateTheVariable(/*false*/);
 			}
 
 		};
@@ -247,7 +246,7 @@ public KymographPanel(PDEDataViewer pdeDataViewer, String title,/*AsynchClientTa
 
 }
 
-private void updateTheVariable(boolean bFromGUI){
+private void updateTheVariable(){
 	try{
 		DataIdentifier selected = (DataIdentifier)ivjVarNamesJComboBox.getSelectedItem();
 		ivjVarNamesJComboBox.removeActionListener(ivjEventHandler);
@@ -262,7 +261,7 @@ private void updateTheVariable(boolean bFromGUI){
 	}finally{
 		ivjVarNamesJComboBox.addActionListener(ivjEventHandler);
 	}
-	initDataManagerVariable((DataIdentifier)ivjVarNamesJComboBox.getSelectedItem(),bFromGUI);
+	initDataManagerVariable();
 
 }
 
@@ -1974,7 +1973,7 @@ public void initDataManager(
 //	AsynchClientTask[] taskArray = new AsynchClientTask[]{/*task1,*/ task2};
 //	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
 	
-	updateTheVariable(true);
+	updateTheVariable(/*true*/);
 }
 
 
@@ -2016,9 +2015,9 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 
 private Timer initVariableTimer;
 
-private Timer getIntVarTimer(DataIdentifier dataIdentifer,boolean bFromGUI){
+private Timer getIntVarTimer(){
 	if(initVariableTimer == null){
-		initVariableTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable(dataIdentifer,bFromGUI);}});
+		initVariableTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}});
 		initVariableTimer.setRepeats(false);
 	}
 	return initVariableTimer;
@@ -2030,9 +2029,12 @@ private Timer getIntVarTimer(DataIdentifier dataIdentifer,boolean bFromGUI){
  * @param timeSeries double[][]
  * @param distances double[]
  */
-private void initDataManagerVariable(final DataIdentifier dataIdentifer,boolean bFromGUI) {
+private void initDataManagerVariable(/*final DataIdentifier dataIdentifer,*//*boolean bFromGUI*/) {
+	final DataIdentifier dataIdentifer = (DataIdentifier)getVarNamesJComboBox().getSelectedItem();
+//	System.out.println("-----initDataManagerVariable-----"+dataIdentifer+" "+bFromGUI);
+//	Thread.dumpStack();
 	if(ClientTaskDispatcher.isBusy() || (multiTimePlotHelper.getPdeDatacontext() != null && multiTimePlotHelper.getPdeDatacontext().isBusy())){
-		getIntVarTimer(dataIdentifer,bFromGUI).restart();
+		getIntVarTimer().restart();
 		return;
 	}
 
@@ -2111,12 +2113,14 @@ private void initDataManagerVariable(final DataIdentifier dataIdentifer,boolean 
 			}
 		}
 	};
-	if(bFromGUI){
-		ClientTaskDispatcher.dispatch(KymographPanel.this,  new Hashtable<String, Object>(), (task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 }), false, true, true, null, false);
-		System.out.println("Waiting here");		
-	}else{
-		multiTimePlotHelper.addExtraTasks((task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 }));		
-	}
+	AsynchClientTask[] tasks = (task2==null?new AsynchClientTask[] { task1, task3 }:new AsynchClientTask[] { task1, task2, task3 });
+	ClientTaskDispatcher.dispatch(KymographPanel.this,  new Hashtable<String, Object>(), tasks, false, true, true, null, false);
+//	if(bFromGUI){
+//		ClientTaskDispatcher.dispatch(KymographPanel.this,  new Hashtable<String, Object>(), tasks, false, true, true, null, false);
+//		System.out.println("Waiting here");		
+//	}else{
+//		multiTimePlotHelper.addExtraTasks(tasks);		
+//	}
 }
 
 
@@ -2301,8 +2305,7 @@ private void jCheckBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
  * Comment
  */
 private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-
-	initDataManagerVariable((DataIdentifier)getVarNamesJComboBox().getSelectedItem(),true);
+	initDataManagerVariable();
     getimagePaneView1().requestFocusInWindow();
 }
 

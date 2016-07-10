@@ -104,7 +104,7 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 		void addPropertyChangeListener(PropertyChangeListener propertyChangeListener);
 		void removeallPropertyChangeListeners();
 		VariableType getVariableType();
-		void addExtraTasks(AsynchClientTask[] extraTasks);
+//		void addExtraTasks(AsynchClientTask[] extraTasks);
 	}
 	public PdeTimePlotMultipleVariablesPanel(MultiTimePlotHelper multiTimePlotHelper, Vector<SpatialSelection> pv, Vector<SpatialSelection> pv2, TSJobResultsNoStats tsjr) {
 		this.multiTimePlotHelper=multiTimePlotHelper;

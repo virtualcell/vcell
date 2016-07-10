@@ -122,7 +122,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	System.out.println("----------Enter----------entryCounter="+entryCounter);
 //	Thread.dumpStack();
 	if(entryCounter>1){
-		System.out.println("Rentrant");
+		System.out.println("Reentrant");
 //		entryCounter--;
 //		return;
 	}

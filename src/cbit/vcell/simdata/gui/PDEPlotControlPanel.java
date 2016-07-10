@@ -149,6 +149,9 @@ public class PDEPlotControlPanel extends JPanel {
 					acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
 					continue;
 				}
+				if (bPostProcessingMode && !filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
+					continue;
+				}
 				if (!bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
 					continue;
 				}
@@ -1422,34 +1425,6 @@ private Timer getSliderChangeTimer(){
 	}
 	return sliderChangeTimer;
 }
-
-
-
-//private Timer varChangedTimer = new Timer("waitvarchangedbusyplot",true);
-//TimerTask variableChangedTimerTask = new TimerTask() {@Override public void run() {processVariableChangedMouse();}};
-//private void processVariableChangedMouse(){
-//	varChangedTimer.cancel();
-//	varChangedTimer.purge();
-//	if(!ClientTaskDispatcher.isBusy()){
-//		variableChanged(/*null*/);
-//	}else{
-//		varChangedTimer.schedule(variableChangedTimerTask, 0, 200);
-//	}
-//
-//}
-//
-//private Timer sliderChangedTimer = new Timer("waitsliderchangedbusyplot",true);
-//TimerTask sliderTimerTask = new TimerTask() {@Override public void run() {processSliderChangedMouse();}};
-//private void processSliderChangedMouse(){
-//	sliderChangedTimer.cancel();
-//	sliderChangedTimer.purge();
-//	if(!ClientTaskDispatcher.isBusy()){
-//		setTimeFromSlider();
-//	}else{
-//		sliderChangedTimer.schedule(sliderTimerTask, 0, 200);
-//	}
-//
-//}
 
 /**
  * Initialize the class.
