@@ -12,11 +12,14 @@ package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -24,12 +27,14 @@ import java.util.WeakHashMap;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.apache.log4j.Logger;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgressDialogListener;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
 
@@ -37,6 +42,7 @@ import swingthreads.SwingWorker;
 import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.simdata.PDEDataContext;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)
@@ -102,6 +108,97 @@ public static boolean isBusy(){
 	return false;
 }
 public static final String INTERMEDIATE_TASKS = "INTERMEDIATE_TASKS";
+
+private static class BlockingTimer extends Timer{
+	private static AsynchProgressPopup pp;
+	private static ArrayList<BlockingTimer> allBlockingTimers = new ArrayList<>();
+	private static Timer ppStop = new Timer(1000, new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			synchronized (allBlockingTimers) {
+				if(pp != null && allBlockingTimers.size() == 0){
+					System.out.println("stopping "+System.currentTimeMillis());
+					pp.stop();
+					pp = null;
+				}
+				ppStop.stop();
+			}
+		}
+	});
+	private static ProgressDialogListener cancelListener = new ProgressDialogListener() {
+		@Override
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			synchronized (allBlockingTimers) {
+				while(allBlockingTimers.size() > 0){
+					BlockingTimer blockingTimer = allBlockingTimers.remove(0);
+//					if(blockingTimer.pp != null){
+//						blockingTimer.pp.stop();
+//					}
+				}
+				ppStop.restart();
+			}
+		}
+	};
+	public BlockingTimer(Component requester,int delay,ActionListener actionListener){
+		super(delay, actionListener);
+		ppStop.setRepeats(false);
+		setRepeats(false);
+		synchronized (allBlockingTimers) {
+			boolean bBlockerExists = false;
+//			for(BlockingTimer blockingTimer:allBlockingTimers){
+//				if(blockingTimer.pp != null){
+//					bBlockerExists = true;
+//					break;
+//				}
+//			}
+//			if(!bBlockerExists){
+//				System.out.println("create pp");
+//				pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
+//			}
+			if(pp == null){
+				pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
+				pp.start();
+			}
+			allBlockingTimers.add(this);
+		}
+	}
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		super.start();
+	}
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		super.stop();
+		synchronized (allBlockingTimers) {
+			allBlockingTimers.remove(BlockingTimer.this);
+			System.out.println("starting stop "+System.currentTimeMillis());
+			ppStop.restart();
+		}
+	}
+//	private boolean hasActiveBlocker(){
+//		return pp!=null;
+//	}
+}
+public static Timer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,Timer activeTimer,ActionListener actionListener){
+	if(ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy())){
+		if(activeTimer == null){
+			activeTimer = new BlockingTimer(requester,200,null);
+		}
+		ActionListener[] currentActionlListeners = activeTimer.getActionListeners();
+		for (int i = 0; i < currentActionlListeners.length; i++) {
+			activeTimer.removeActionListener(currentActionlListeners[i]);			
+		}
+		activeTimer.addActionListener(actionListener);
+		activeTimer.restart();
+		return activeTimer;		
+	}else if(activeTimer != null){
+		activeTimer.stop();
+		activeTimer = null;
+	}
+	return activeTimer;
+}
 
 /**
  * Insert the method's description here.

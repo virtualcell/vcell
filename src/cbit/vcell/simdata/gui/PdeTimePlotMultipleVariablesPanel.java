@@ -132,18 +132,8 @@ public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	}
 	
 	private Timer plotChangeTimer;
-
-	private Timer getVarChangeTimer(){
-		if(plotChangeTimer == null){
-			plotChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {showTimePlot();}});
-			plotChangeTimer.setRepeats(false);
-		}
-		return plotChangeTimer;
-	}
-
 	public void showTimePlot() {
-		if(ClientTaskDispatcher.isBusy() || (multiTimePlotHelper.getPdeDatacontext() != null && multiTimePlotHelper.getPdeDatacontext().isBusy())){
-			getVarChangeTimer().restart();
+		if((plotChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,plotChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {showTimePlot();}}))!=null){
 			return;
 		}
 

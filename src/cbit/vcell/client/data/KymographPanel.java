@@ -2014,15 +2014,6 @@ private boolean failMethod(final Throwable timeSeriesJobFailed,final DataIdentif
 }
 
 private Timer initVariableTimer;
-
-private Timer getIntVarTimer(){
-	if(initVariableTimer == null){
-		initVariableTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}});
-		initVariableTimer.setRepeats(false);
-	}
-	return initVariableTimer;
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (12/14/2004 9:47:38 AM)
@@ -2033,8 +2024,7 @@ private void initDataManagerVariable(/*final DataIdentifier dataIdentifer,*//*bo
 	final DataIdentifier dataIdentifer = (DataIdentifier)getVarNamesJComboBox().getSelectedItem();
 //	System.out.println("-----initDataManagerVariable-----"+dataIdentifer+" "+bFromGUI);
 //	Thread.dumpStack();
-	if(ClientTaskDispatcher.isBusy() || (multiTimePlotHelper.getPdeDatacontext() != null && multiTimePlotHelper.getPdeDatacontext().isBusy())){
-		getIntVarTimer().restart();
+	if((initVariableTimer = ClientTaskDispatcher.getBlockingTimer(this,multiTimePlotHelper.getPdeDatacontext(),null,initVariableTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {initDataManagerVariable();}}))!=null){
 		return;
 	}
 

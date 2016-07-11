@@ -256,11 +256,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 //			}
 		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == PDEPlotControlPanel.this.getmodel1()) 
+			if (e.getSource() == PDEPlotControlPanel.this.getmodel1() && !getJSliderTime().getValueIsAdjusting()) 
 				setTimeFromSlider();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-			if (e.getSource() == PDEPlotControlPanel.this.getJList1()) 
+			if (e.getSource() == PDEPlotControlPanel.this.getJList1() && !PDEPlotControlPanel.this.getJList1().getValueIsAdjusting()) 
 				connEtoC8(e);
 		};
 	};
@@ -1410,22 +1410,6 @@ private void initConnections() throws java.lang.Exception {
 
 private Timer varChangeTimer;
 private Timer sliderChangeTimer;
-
-private Timer getVarChangeTimer(){
-	if(varChangeTimer == null){
-		varChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {variableChanged();}});
-		varChangeTimer.setRepeats(false);
-	}
-	return varChangeTimer;
-}
-private Timer getSliderChangeTimer(){
-	if(sliderChangeTimer == null){
-		sliderChangeTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {setTimeFromSlider();}});
-		sliderChangeTimer.setRepeats(false);
-	}
-	return sliderChangeTimer;
-}
-
 /**
  * Initialize the class.
  */
@@ -1687,8 +1671,7 @@ public AsynchClientTask[] getTimeChangeTasks(){
  * Comment
  */
 private void setTimeFromSlider(/*int sliderPosition*/) {
-	if(ClientTaskDispatcher.isBusy() || (getPdeDataContext() != null && getPdeDataContext().isBusy())){
-		getSliderChangeTimer().restart();
+	if((sliderChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,sliderChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {setTimeFromSlider();}}))!=null){
 		return;
 	}
 	if (getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null) {
@@ -1827,8 +1810,7 @@ public AsynchClientTask[] getVariableChangeTasks(){
  * Comment
  */
 private void variableChanged(/*ListSelectionEvent listSelectionEvent*/) {
-	if(ClientTaskDispatcher.isBusy() || (getPdeDataContext() != null && getPdeDataContext().isBusy())){
-		getVarChangeTimer().restart();
+	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,varChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
 		return;
 	}
 	if(getPdeDataContext() == null){

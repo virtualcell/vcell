@@ -40,6 +40,8 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
@@ -48,6 +50,7 @@ import cbit.vcell.simdata.DataSetTimeSeries;
 import cbit.vcell.simdata.NewClientPDEDataContext;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.PDEDataInfo;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
@@ -79,22 +82,22 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 					
 					@Override
 					public TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID,TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteException,DataAccessException {
-						return parentPDEDataContext.getDataManager().getTimeSeriesValues(timeSeriesJobSpec);
-//						DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
-//								new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
-//						DataOperationResults.DataProcessingOutputTimeSeriesValues dataopDataProcessingOutputTimeSeriesValues =
-//								(DataOperationResults.DataProcessingOutputTimeSeriesValues)parentPDEDataContext.doDataOperation(dataProcessingOutputTimeSeriesOP);
-//						return dataopDataProcessingOutputTimeSeriesValues.getTimeSeriesJobResults();
+//						return parentPDEDataContext.getDataManager().getTimeSeriesValues(timeSeriesJobSpec);
+						DataOperation.DataProcessingOutputTimeSeriesOP dataProcessingOutputTimeSeriesOP =
+								new DataOperation.DataProcessingOutputTimeSeriesOP(vcdataID, timeSeriesJobSpec,outputContext,getDataSetTimes(vcdataID));
+						DataOperationResults.DataProcessingOutputTimeSeriesValues dataopDataProcessingOutputTimeSeriesValues =
+								(DataOperationResults.DataProcessingOutputTimeSeriesValues)parentPDEDataContext.doDataOperation(dataProcessingOutputTimeSeriesOP);
+						return dataopDataProcessingOutputTimeSeriesValues.getTimeSeriesJobResults();
 					}
 					
 					@Override
 					public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier vcdataID, String varName, double time) throws RemoteException, DataAccessException {
-						return parentPDEDataContext.getDataManager().getSimDataBlock(varName, time);
-//						DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
-//								parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
-//						PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdataID.getOwner(), vcdataID.getID(), varName, time, Long.MIN_VALUE);
-//						SimDataBlock simDataBlock = new SimDataBlock(pdeDataInfo, dataProcessingOutputValues.getDataValues()[0], VariableType.POSTPROCESSING);
-//						return simDataBlock;
+//						return parentPDEDataContext.getDataManager().getSimDataBlock(varName, time);
+						DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputValues = (DataOperationResults.DataProcessingOutputDataValues)
+								parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputDataValuesOP(vcdataID, varName, TimePointHelper.createSingleTimeTimePointHelper(time),DataIndexHelper.createAllDataIndexesDataIndexHelper(),outputContext,null));
+						PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdataID.getOwner(), vcdataID.getID(), varName, time, Long.MIN_VALUE);
+						SimDataBlock simDataBlock = new SimDataBlock(pdeDataInfo, dataProcessingOutputValues.getDataValues()[0], VariableType.POSTPROCESSING);
+						return simDataBlock;
 					}
 					
 					@Override
@@ -308,18 +311,8 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 		return simulationModelInfo;
 	}
 	private Timer updateTimer;
-
-	private Timer getUpdateTimer(){
-		if(updateTimer == null){
-			updateTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update();}});
-			updateTimer.setRepeats(false);
-		}
-		return updateTimer;
-	}
-
 	public void update(){
-		if(ClientTaskDispatcher.isBusy() || (getParentPdeDataContext() != null && getParentPdeDataContext().isBusy())){
-			getUpdateTimer().restart();
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,getParentPdeDataContext(),null,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {update();}}))!=null){
 			return;
 		}
 		dispatchPostProcessUpdate((NewClientPDEDataContext)getParentPdeDataContext());
