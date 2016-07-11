@@ -11,6 +11,7 @@
 package cbit.vcell.client.data;
 
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -29,6 +30,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.document.VerboseDataIdentifier;
+import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.plot.Plot2D;
@@ -118,18 +120,8 @@ public class DataProcessingResultsPanel extends JPanel/* implements PropertyChan
 	
 	
 	private Timer updateTimer;
-	private Timer getUpdateTimer(final PDEDataContext updateToThis){
-		if(updateTimer != null){
-			updateTimer.stop();
-		}
-		updateTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(updateToThis);}});
-		updateTimer.setRepeats(false);
-		return updateTimer;
-	}
-	
 	public void update(final PDEDataContext newPDEDataContext) {
-		if(ClientTaskDispatcher.isBusy() || (newPDEDataContext != null && newPDEDataContext.isBusy()) || (this.pdeDataContext != null && this.pdeDataContext.isBusy())){
-			getUpdateTimer(newPDEDataContext).restart();
+		if((updateTimer = ClientTaskDispatcher.getBlockingTimer(this,newPDEDataContext,this.pdeDataContext,updateTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e) {update(newPDEDataContext);}}))!=null){
 			return;
 		}
 		if(this.pdeDataContext == newPDEDataContext){

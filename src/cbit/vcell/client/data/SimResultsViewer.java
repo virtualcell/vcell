@@ -145,15 +145,6 @@ private Simulation getSimulation() {
 	return simulation;
 }
 
-private Timer paramScanChoiceTimer;
-
-private Timer getParamScanChoiceTimer(){
-	if(paramScanChoiceTimer == null){
-		paramScanChoiceTimer = new Timer(200, new ActionListener() {@Override public void actionPerformed(ActionEvent e) {updateScanParamChoices();}});
-		paramScanChoiceTimer.setRepeats(false);
-	}
-	return paramScanChoiceTimer;
-}
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)
@@ -348,9 +339,9 @@ private int getSelectedParamScanJobIndex(){
  * Insert the method's description here.
  * Creation date: (10/18/2005 12:44:06 AM)
  */
+private Timer paramScanChoiceTimer;
 private void updateScanParamChoices(){
-	if(ClientTaskDispatcher.isBusy()){
-		getParamScanChoiceTimer().restart();
+	if((paramScanChoiceTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,paramScanChoiceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateScanParamChoices();}}))!=null){
 		return;
 	}
 
