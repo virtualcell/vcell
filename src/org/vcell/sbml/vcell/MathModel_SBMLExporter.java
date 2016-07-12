@@ -16,6 +16,7 @@ import static org.vcell.sbml.SpatialAdapter.SPATIAL_Z;
 
 import java.io.File;
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import org.sbml.libsbml.ASTNode;
 import org.sbml.libsbml.AdjacentDomains;
@@ -26,10 +27,12 @@ import org.sbml.libsbml.Boundary;
 import org.sbml.libsbml.Compartment;
 import org.sbml.libsbml.CompartmentMapping;
 import org.sbml.libsbml.CoordinateComponent;
+import org.sbml.libsbml.Delay;
 import org.sbml.libsbml.Domain;
 import org.sbml.libsbml.DomainType;
 import org.sbml.libsbml.InitialAssignment;
 import org.sbml.libsbml.InteriorPoint;
+import org.sbml.libsbml.Model;
 import org.sbml.libsbml.OStringStream;
 import org.sbml.libsbml.RateRule;
 import org.sbml.libsbml.SBMLDocument;
@@ -43,6 +46,7 @@ import org.sbml.libsbml.SpatialCompartmentPlugin;
 import org.sbml.libsbml.SpatialModelPlugin;
 import org.sbml.libsbml.SpatialParameterPlugin;
 import org.sbml.libsbml.SpatialSymbolReference;
+import org.sbml.libsbml.Trigger;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLHelper;
 import org.vcell.sbml.SBMLUtils;
@@ -66,12 +70,15 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.math.Equation;
+import cbit.vcell.math.Event;
+import cbit.vcell.math.Event.EventAssignment;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
+import cbit.vcell.parser.ExpressionMathMLPrinter.MathType;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.xml.XMLSource;
 /**
@@ -159,7 +166,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 			//
 			// Function or Constant with expressions - create assignment rule and add to model.
 			//
-			ASTNode mathNode = getFormulaFromExpression(vcVar.getExpression());
+			ASTNode mathNode = getFormulaFromExpression(vcVar.getExpression(), MathType.REAL);
 			AssignmentRule assignmentRule = sbmlModel.createAssignmentRule();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			assignmentRule.setId(dummyID);
@@ -186,18 +193,24 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 			// try to obtain the constant to which the init expression evaluates.
 			RateRule rateRule = sbmlModel.createRateRule();
 			rateRule.setVariable(TokenMangler.mangleToSName(equ.getVariable().getName()));
-			rateRule.setMath(getFormulaFromExpression(equ.getRateExpression()));
+			rateRule.setMath(getFormulaFromExpression(equ.getRateExpression(), MathType.REAL));
 
 			InitialAssignment initialAssignment = sbmlModel.createInitialAssignment();
 			dummyID = TokenMangler.getNextEnumeratedToken(dummyID);
 			initialAssignment.setId(dummyID);
-			initialAssignment.setMath(getFormulaFromExpression(equ.getInitialExpression()));
+			initialAssignment.setMath(getFormulaFromExpression(equ.getInitialExpression(), MathType.REAL));
 			initialAssignment.setSymbol(TokenMangler.mangleToSName(equ.getVariable().getName()));
 		 }else{
 		 	throw new RuntimeException("equation type "+equ.getClass().getName()+" not supported");
 		 }
 	}
 	
+	Iterator<Event> vcellEvents = mathDesc.getEvents();
+	while (vcellEvents.hasNext()){
+		Event vcellEvent = vcellEvents.next();
+		addSbmlEvent(sbmlModel, vcellEvent);
+	}
+	System.out.println(new org.sbml.libsbml.SBMLWriter().writeToString(sbmlDocument));
 	//validate the sbml document
 	sbmlDocument.checkInternalConsistency();
 	long internalErrCount = sbmlDocument.getNumErrors();
@@ -259,6 +272,43 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	return sbmlStr;
 }
 
+protected static void addSbmlEvent(Model sbmlModel, Event vcellMathEvent) {
+	org.sbml.libsbml.Event sbmlEvent = sbmlModel.createEvent();
+	sbmlEvent.setId(vcellMathEvent.getName());
+	// create trigger
+	Trigger trigger = sbmlEvent.createTrigger();
+	Expression triggerExpr = vcellMathEvent.getTriggerExpression();
+	//
+	// if trigger expression is not already in "boolean" form, then new expression is (exp != 0.0) ...nonzero is true. 
+	//
+	ASTNode triggerMath = getFormulaFromExpression(triggerExpr, MathType.BOOLEAN);
+	trigger.setMath(triggerMath);
+	
+	// create delay
+	cbit.vcell.math.Event.Delay vcellMathDelay = vcellMathEvent.getDelay();
+	if (vcellMathDelay != null && vcellMathDelay.getDurationExpression() != null && !vcellMathDelay.getDurationExpression().isZero()) {
+		Delay delay = sbmlEvent.createDelay();
+		Expression delayExpr = vcellMathDelay.getDurationExpression();
+		ASTNode delayMath = getFormulaFromExpression(delayExpr, MathType.REAL);
+		delay.setMath(delayMath);
+		sbmlEvent.setUseValuesFromTriggerTime(vcellMathDelay.useValuesFromTriggerTime());
+	}
+	
+	// create eventAssignments
+	Iterator<EventAssignment> vcEventAssignments = vcellMathEvent.getEventAssignments();
+	while (vcEventAssignments.hasNext()){
+		EventAssignment vcEventAssignment = vcEventAssignments.next();
+		org.sbml.libsbml.EventAssignment sbmlEA = sbmlEvent.createEventAssignment();
+		Variable target = vcEventAssignment.getVariable();
+		sbmlEA.setVariable(target.getName());
+		Expression eventAssgnExpr = new Expression(vcEventAssignment.getAssignmentExpression());
+		
+		ASTNode eaMath = getFormulaFromExpression(eventAssgnExpr, MathType.REAL);
+		sbmlEA.setMath(eaMath);
+	}
+}
+
+
 /**
  * 	getFormulaFromExpression : 
  *  Expression infix strings are not handled gracefully by libSBML, esp when ligical or inequality operators are used.
@@ -268,7 +318,7 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
  *		returns the new formula string.
  *  
  */
-public static ASTNode getFormulaFromExpression(Expression expression) { 
+public static ASTNode getFormulaFromExpression(Expression expression, MathType mathType) { 
 	// Convert expression into MathML string
 	String expMathMLStr = null;
 
@@ -285,7 +335,7 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 				}
 			}
 		}
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(mangledExpression, false, mathType);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
