@@ -212,9 +212,13 @@ public class PDEPlotControlPanel extends JPanel {
 	
 	private DataIdentifierFilter dataIdentifierFilter;// = new DefaultDataIdentifierFilter();
 	
+	private Timer filterSelectTimer;
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
+				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,getPdeDataContext(),null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
+					return;
+				}
 				filterVariableNames();
 			}
 	};
@@ -734,9 +738,9 @@ public AsynchClientTask[] getFilterVarNamesTasks(){
 	return new AsynchClientTask[] {task1, task2, task3};
 }
 private  void filterVariableNames(){
-	if(ClientTaskDispatcher.isBusy()){
-		return;
-	}
+//	if(ClientTaskDispatcher.isBusy()){
+//		return;
+//	}
 	if ((getPdeDataContext() != null)) {
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getFilterVarNamesTasks());
 	}
@@ -1228,7 +1232,7 @@ private void sliderUpDownBusyActions(){
 	//having the "wait" popup appear when using the up and down arrows on the JSlider
 	am.put(downArrowActionID, new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
-			if(getPdeDataContext().isBusy()){
+			if(ClientTaskDispatcher.isBusy(getPdeDataContext(),null)){
 				return;
 			}
 			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMaximum()){
@@ -1239,7 +1243,7 @@ private void sliderUpDownBusyActions(){
 	});
 	am.put(upArrowActionID, new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
-			if(getPdeDataContext().isBusy()){
+			if(ClientTaskDispatcher.isBusy(getPdeDataContext(),null)){
 				return;
 			}
 			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMinimum()){
