@@ -2179,6 +2179,7 @@ private MultiTimePlotHelper createMultiTimePlotHelper(final NewClientPDEDataCont
 //		List<AnnotatedFunction> myAnnots;
 		private PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper multiTimePlotHelperThis = this;//access to anonymous outer class
 		private PDEPlotControlPanel.IdentifierListCellRenderer myListCellRenderer;
+		private AnnotatedFunction[] lastAnnotatedFunctions;
 		private PDEPlotControlPanel.FunctionListProvider functionListProvider = new PDEPlotControlPanel.FunctionListProvider() {
 			@Override
 			public List<AnnotatedFunction> getAnnotatedFunctions() {
@@ -2247,16 +2248,20 @@ private MultiTimePlotHelper createMultiTimePlotHelper(final NewClientPDEDataCont
 						@Override
 						public void propertyChange(PropertyChangeEvent evt) {
 							if(evt.getSource() == PDEDataViewer.this && evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT)){
-								
-								List<AnnotatedFunction> currentOutputFunctions = functionListProvider.getAnnotatedFunctions();
-								currentOutputFunctions = efficiencyFilter(currentOutputFunctions);
-								currentOutputFunctions.sort(nameComparator);
+//								List<AnnotatedFunction> currentOutputFunctions = functionListProvider.getAnnotatedFunctions();
+//								currentOutputFunctions = efficiencyFilter(currentOutputFunctions);
+//								currentOutputFunctions.sort(nameComparator);
 								List<AnnotatedFunction> newOutputFunctions0 = Arrays.asList(((NewClientPDEDataContext)PDEDataViewer.this.getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions());
 								List<AnnotatedFunction> newOutputFunctions = efficiencyFilter(newOutputFunctions0);
 								newOutputFunctions.sort(nameComparator);
-								if(Compare.isEqualOrNullStrict(currentOutputFunctions.toArray(new AnnotatedFunction[0]), newOutputFunctions.toArray(new AnnotatedFunction[0]))){
+								if(lastAnnotatedFunctions != null && Compare.isEqualOrNullStrict(lastAnnotatedFunctions, newOutputFunctions.toArray(new AnnotatedFunction[0]))){
 									return;
 								}
+								lastAnnotatedFunctions = new AnnotatedFunction[newOutputFunctions.size()];
+								for (int i = 0; i < newOutputFunctions.size(); i++) {
+									lastAnnotatedFunctions[i] = new AnnotatedFunction(newOutputFunctions.get(i));
+								}
+//								lastAnnotatedFunctions = newOutputFunctions0.toArray(new AnnotatedFunction[0]);
 								myPdeDataContext.getDataManager().setOutputContext(new OutputContext(newOutputFunctions0.toArray(new AnnotatedFunction[0])));
 								myPdeDataContext.refreshIdentifiers();
 								for (int i = 0; i < myPropertyChangeHolder.size(); i++) {
@@ -2352,13 +2357,16 @@ private AsynchClientTask[] getDataVlaueSurfaceViewerTasks(){
 private Timer dataValueSurfaceTimer;
 //private boolean bPdeIsParamScan=false;
 private void updateDataValueSurfaceViewer(){
-	if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
-		return;
-	}
+//	if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
+//		return;
+//	}
 	if(bSkipSurfaceCalc){
 		return;
 	}	
 	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfoProvider() == null){
+		if((dataValueSurfaceTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,dataValueSurfaceTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {updateDataValueSurfaceViewer();}}))!=null){
+			return;
+		}
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getDataVlaueSurfaceViewerTasks(),true,true,null);		
 	}else{
 		try{

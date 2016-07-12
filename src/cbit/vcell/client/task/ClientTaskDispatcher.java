@@ -181,8 +181,11 @@ private static class BlockingTimer extends Timer{
 //		return pp!=null;
 //	}
 }
+public static boolean isBusy(PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2){
+	return ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy());
+}
 public static Timer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,Timer activeTimer,ActionListener actionListener){
-	if(ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy())){
+	if(isBusy(busyPDEDatacontext1,busyPDEDatacontext2)){
 		if(activeTimer == null){
 			activeTimer = new BlockingTimer(requester,200,null);
 		}

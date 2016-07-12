@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -16,6 +17,7 @@ import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.UserCancelException;
 import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
@@ -38,10 +40,12 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
@@ -69,6 +73,9 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 		final DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
 				parentPDEDataContext.doDataOperation(new DataOperation.DataProcessingOutputInfoOP(parentPDEDataContext.getVCDataIdentifier(),false,parentPDEDataContext.getDataManager().getOutputContext()));
 
+		if(dataProcessingOutputInfo == null){
+			return null;
+		}
 		DataSetControllerProvider dataSetControllerProvider = new DataSetControllerProvider() {
 			@Override
 			public DataSetController getDataSetController() throws DataAccessException {
@@ -319,6 +326,73 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 	}
 	private void dispatchPostProcessUpdate(NewClientPDEDataContext newClientPDEDataContext) {
 		ArrayList<AsynchClientTask> allTasks = new ArrayList<>();
+		final String SPATIAL_ERROR_KEY = "SPATIAL_ERROR_KEY";
+		AsynchClientTask postProcessInfoTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(postProcessPDEDataViewer != null){//already initialized
+					return;
+				}
+				if(getClientTaskStatusSupport() != null){
+					getClientTaskStatusSupport().setMessage("Getting Simulation status...");
+				}
+				SimulationStatus simStatus =
+						PDEDataViewerPostProcess.this.getDataViewerManager().getRequestManager().getServerSimulationStatus(PDEDataViewerPostProcess.this.getSimulation().getSimulationInfo());
+				if(simStatus == null){
+					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, no simulation status");
+					return;
+				}else if(!simStatus.isCompleted()){
+					//sim still busy, no postprocessing data
+					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
+					return;
+				}
+				if(getClientTaskStatusSupport() != null){
+					getClientTaskStatusSupport().setMessage("Getting Post Process Info...");
+				}
+				//Get PostProcess Image state variables info
+				DataProcessingOutputInfoOP dataProcessingOutputInfoOP =
+					new DataProcessingOutputInfoOP(PDEDataViewerPostProcess.this.getParentPdeDataContext().getVCDataIdentifier(), false, null);
+				DataProcessingOutputInfo dataProcessingOutputInfo = 
+						(DataProcessingOutputInfo)PDEDataViewerPostProcess.this.getParentPdeDataContext().doDataOperation(dataProcessingOutputInfoOP);
+				boolean bFoundImageStateVariables = false;
+				if(dataProcessingOutputInfo != null && dataProcessingOutputInfo.getVariableNames() != null){
+					for (int i = 0; i < dataProcessingOutputInfo.getVariableNames().length; i++) {
+						if(dataProcessingOutputInfo.getPostProcessDataType(dataProcessingOutputInfo.getVariableNames()[i]).equals(DataProcessingOutputInfo.PostProcessDataType.image)){
+							bFoundImageStateVariables = true;
+							break;
+						}
+					}
+				}
+				if(!bFoundImageStateVariables){
+					hashTable.put(SPATIAL_ERROR_KEY,"No spatial PostProcessing variables found. (see Application->Protocols->Microscope Measurement)");
+				}
+			};
+		};
+
+		AsynchClientTask addPanelTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+			
+			@Override
+			public void run(Hashtable<String, Object> hashTable) throws Exception {
+				if(postProcessPDEDataViewer != null){
+					return;
+				}
+				if(hashTable.get(SPATIAL_ERROR_KEY) != null){
+					if(PDEDataViewerPostProcess.this.getComponentCount() == 0){
+						PDEDataViewerPostProcess.this.add(new JLabel((String)hashTable.get(SPATIAL_ERROR_KEY)),BorderLayout.CENTER);
+					}else{
+						((JLabel)PDEDataViewerPostProcess.this.getComponent(0)).setText((String)hashTable.get(SPATIAL_ERROR_KEY));
+					}
+					throw UserCancelException.CANCEL_GENERIC;
+				}
+				postProcessPDEDataViewer = new PDEDataViewer();
+				parentDataJobListenerHolder.addDataJobListener(postProcessPDEDataViewer);
+				PDEDataViewerPostProcess.this.postProcessPDEDataViewer.setPostProcessingPanelVisible(false);
+				PDEDataViewerPostProcess.this.add(PDEDataViewerPostProcess.this.postProcessPDEDataViewer,BorderLayout.CENTER);
+				postProcessPDEDataViewer.setDataViewerManager(getDataViewerManager());
+				postProcessPDEDataViewer.setSimulationModelInfo(getSimulationModelInfo());
+				postProcessPDEDataViewer.setSimulation(getSimulation());	
+			}
+		};
 //		AsynchClientTask listenerTaskbefore = new AsynchClientTask("before query listenrs",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 //			@Override
 //			public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -362,6 +436,8 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 //		};
 //		allTasks.add(listenerTaskafter);
 
+		allTasks.add(0, addPanelTask);
+		allTasks.add(0,postProcessInfoTask);
 		ClientTaskDispatcher.dispatch(this, new Hashtable<>(), allTasks.toArray(new AsynchClientTask[0]),false, false, false, null,true);
 	}
 
@@ -375,7 +451,7 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				hashTable.put(POST_PROCESS_PDEDC_KEY,createPostProcessPDEDataContext((NewClientPDEDataContext)getParentPdeDataContext()));
-			}
+				}
 		};
 		AsynchClientTask setPostProcessPDETask = new AsynchClientTask("set postproces pdedc",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
@@ -386,19 +462,10 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 		return new AsynchClientTask[] {/*listenersTask,*/createPostProcessPDETask,setPostProcessPDETask};
 //		ClientTaskDispatcher.dispatch(myPDEDataViewer, new Hashtable<>(), new AsynchClientTask[] {listenersTask,createPostProcessPDETask,setPostProcessPDETask},false,false,null);
 	}
-	public void init(DataJobListenerHolder dataJobListenerHolder){
-		try{
-			postProcessPDEDataViewer = new PDEDataViewer();
-			dataJobListenerHolder.addDataJobListener(postProcessPDEDataViewer);
-			PDEDataViewerPostProcess.this.postProcessPDEDataViewer.setPostProcessingPanelVisible(false);
-			PDEDataViewerPostProcess.this.add(PDEDataViewerPostProcess.this.postProcessPDEDataViewer,BorderLayout.CENTER);
-			postProcessPDEDataViewer.setDataViewerManager(getDataViewerManager());
-			postProcessPDEDataViewer.setSimulationModelInfo(getSimulationModelInfo());
-			postProcessPDEDataViewer.setSimulation(getSimulation());
-			update();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+	private DataJobListenerHolder parentDataJobListenerHolder;
+	public void init(DataJobListenerHolder parentDataJobListenerHolder){
+		this.parentDataJobListenerHolder = parentDataJobListenerHolder;
+		update();
 	}
 //	public void initPostProcessImageDataPanel(){
 //		try{
