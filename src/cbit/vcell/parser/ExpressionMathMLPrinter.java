@@ -21,7 +21,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
  */
 public class ExpressionMathMLPrinter {
 	private SimpleNode rootNode = null;
-	enum MathType {REAL, BOOLEAN};
+	public enum MathType {REAL, BOOLEAN};
 /**
  * This method was created by a SmartGuide.
  * @param font java.awt.Font
@@ -34,10 +34,10 @@ ExpressionMathMLPrinter (SimpleNode rootNode) {
  * Creation date: (2/8/2002 5:51:09 PM)
  * @return java.lang.String
  */
-String getMathML(boolean bOnlyMathMLFragment) throws ExpressionException, java.io.IOException {
+String getMathML(boolean bOnlyMathMLFragment, MathType desiredMathType) throws ExpressionException, java.io.IOException {
 	org.jdom.output.XMLOutputter xmlwriter = new org.jdom.output.XMLOutputter();
 	Element mathElement = new Element("math",Namespace.getNamespace("http://www.w3.org/1998/Math/MathML"));
-	mathElement.addContent(getMathML(rootNode, MathType.REAL));
+	mathElement.addContent(getMathML(rootNode, desiredMathType));
 	if (!bOnlyMathMLFragment) {
 		Document mathDoc = new Document(mathElement);
 		return xmlwriter.outputString(mathDoc);
@@ -56,30 +56,59 @@ private Element castChild(Element element, MathType outputType, MathType inputTy
 	Element castedElement = null;
 	if (outputType == inputType) {
 		castedElement = element;
+//	} else if (inputType.equals(MathType.REAL) && outputType.equals(MathType.BOOLEAN)) {
+//		// convert a REAL to BOOLEAN piecewise.
+//		// <piecewise>                           
+//		//    <piece>                            
+//		//       <cn> 1 < /cn>                        
+//		//       <apply>                                 
+//		//          <neq/>
+//		//  		<cn> 0 </cn>
+//		//	  		<apply>
+//		//				realElementCondn - 'element'
+//		//			</apply>
+//		//       </apply>                            
+//		//    </piece>                                  
+//		//    <otherwise>                                    
+//		//       <cn> 0.0 </cn>
+//		//    </othewise>                       
+//		// </piecewise>                             
+//
+//		// Construct the piecewise element : create piece and otherwise separately and add.
+//		Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
+//		// construct the piece element :  create const (1.0) element and apply element and add to piece - refer to pseudocode above.
+//		Element pieceElement  = new org.jdom.Element(MathMLTags.PIECE);
+//		Element constElement_1 = new org.jdom.Element(MathMLTags.CONSTANT);
+//		constElement_1.addContent("1.0");
+//		Object a = MathMLTags.TRUE;
+//		Element applyElement = new org.jdom.Element(MathMLTags.APPLY);	
+//		Element neqElement = new org.jdom.Element(MathMLTags.NOT_EQUAL);
+//		Element constElement_0 = new org.jdom.Element(MathMLTags.CONSTANT);
+//		constElement_0.addContent("0.0");
+//		applyElement.addContent(neqElement);
+//		applyElement.addContent(constElement_0);
+//		applyElement.addContent(element);
+//		pieceElement.addContent(constElement_1);
+//		pieceElement.addContent(applyElement);
+//		// construct the otherwise element : add
+//		Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
+//		Element constElement = new org.jdom.Element(MathMLTags.CONSTANT);
+//		constElement.addContent("0.0");
+//		otherwiseElement.addContent(constElement);
+//		// Now put together the piecewise element with the piece and otherwise. 
+//		piecewiseElement.addContent(pieceElement);
+//		piecewiseElement.addContent(otherwiseElement);
+//		castedElement = piecewiseElement;
 	} else if (inputType.equals(MathType.REAL) && outputType.equals(MathType.BOOLEAN)) {
 		// convert a REAL to BOOLEAN piecewise.
-		// <piecewise>                           
-		//    <piece>                            
-		//       <cn> 1 < /cn>                        
-		//       <apply>                                 
-		//          <neq/>
-		//  		<cn> 0 </cn>
-		//	  		<apply>
-		//				realElementCondn - 'element'
-		//			</apply>
-		//       </apply>                            
-		//    </piece>                                  
-		//    <otherwise>                                    
-		//       <cn> 0.0 </cn>
-		//    </othewise>                       
-		// </piecewise>                             
+		// <apply>                                 
+		//    <neq/>
+		//    <cn> 0 </cn>
+		//	  <apply>
+		//		realElementCondn - 'element'
+		//	  </apply>
+		// </apply>                            
 
-		// Construct the piecewise element : create piece and otherwise separately and add.
-		Element piecewiseElement = new org.jdom.Element(MathMLTags.PIECEWISE);
-		// construct the piece element :  create const (1.0) element and apply element and add to piece - refer to pseudocode above.
-		Element pieceElement  = new org.jdom.Element(MathMLTags.PIECE);
-		Element constElement_1 = new org.jdom.Element(MathMLTags.CONSTANT);
-		constElement_1.addContent("1.0");
 		Element applyElement = new org.jdom.Element(MathMLTags.APPLY);	
 		Element neqElement = new org.jdom.Element(MathMLTags.NOT_EQUAL);
 		Element constElement_0 = new org.jdom.Element(MathMLTags.CONSTANT);
@@ -87,17 +116,7 @@ private Element castChild(Element element, MathType outputType, MathType inputTy
 		applyElement.addContent(neqElement);
 		applyElement.addContent(constElement_0);
 		applyElement.addContent(element);
-		pieceElement.addContent(constElement_1);
-		pieceElement.addContent(applyElement);
-		// construct the otherwise element : add
-		Element otherwiseElement = new org.jdom.Element(MathMLTags.OTHERWISE);
-		Element constElement = new org.jdom.Element(MathMLTags.CONSTANT);
-		constElement.addContent("0.0");
-		otherwiseElement.addContent(constElement);
-		// Now put together the piecewise element with the piece and otherwise. 
-		piecewiseElement.addContent(pieceElement);
-		piecewiseElement.addContent(otherwiseElement);
-		castedElement = piecewiseElement;
+		castedElement = applyElement;
 	} else if (inputType.equals(MathType.BOOLEAN) && outputType.equals(MathType.REAL)) {
 		// convert a BOOLEAN to REAL piecewise.
 		// <piecewise>                           
@@ -141,8 +160,12 @@ private Element castChild(Element element, MathType outputType, MathType inputTy
  * @return java.lang.String
  */
 public static String getMathML(Expression exp, boolean bOnlyMathMLFragment) throws ExpressionException, java.io.IOException {
+	return getMathML(exp, bOnlyMathMLFragment, MathType.REAL);
+}
+
+public static String getMathML(Expression exp, boolean bOnlyMathMLFragment, MathType desiredMathType) throws ExpressionException, java.io.IOException {
 	ExpressionMathMLPrinter mathMLPrinter = new ExpressionMathMLPrinter(exp.getRootNode());
-	return mathMLPrinter.getMathML(bOnlyMathMLFragment);
+	return mathMLPrinter.getMathML(bOnlyMathMLFragment, desiredMathType);
 }
 /**
  * draw the expression with y at the center and x at the left
