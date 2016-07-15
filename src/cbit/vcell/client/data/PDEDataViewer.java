@@ -343,14 +343,33 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 //			System.out.println("----------"+evt.getPropertyName()+" "+evt.getSource().getClass().getName());
 			try {
-//				if(evt.getSource() == getPdeDataContext() && evt.getPropertyName().equals(ClientPDEDataContext.PDE_DATA_MANAGER_CHANGED)){
-//					if(getJTabbedPane1().indexOfTab(POST_PROCESS_STATS_TABNAME) == getJTabbedPane1().getSelectedIndex()){
-//						dataProcessingResultsPanel.update(getPdeDataContext());
-//					}
-//				}
+				if(evt.getSource() == getPDEDataContextPanel1().getdisplayAdapterService1() && evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_AUTOSCALE)){
+					DisplayAdapterService displayAdapterService = getPDEDataContextPanel1().getdisplayAdapterService1();
+					if(getPDEDataContextPanel1().getdisplayAdapterService1().getAutoScale()){
+						displayAdapterService.clearMarkedState(getPdeDataContext().getVariableName());
+						displayAdapterService.setCustomScaleRange(null);
+					}else{
+						displayAdapterService.setCustomScaleRange(displayAdapterService.getActiveScaleRange());
+						displayAdapterService.markCurrentState(getPdeDataContext().getVariableName());
+					}
+					System.out.println("PDEDV asr="+displayAdapterService.getActiveScaleRange()+" csr="+displayAdapterService.getCustomScaleRange()+" vd="+displayAdapterService.getValueDomain()+" auto="+displayAdapterService.getAutoScale()+" sid="+displayAdapterService.getCurrentStateID());
+				}
+				
+				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))){
+					getPdeDataContext().setTimePoint((Double)evt.getNewValue());
+//					updateDataValueSurfaceViewer();
+				}
+				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER))){
+					getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+					getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
+					getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
+
+					getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
+//					updateDataValueSurfaceViewer();
+				}
+				
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) { 
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
-					getPDEPlotControlPanel1().setPdeDataContext(getPdeDataContext());
 					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
 							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
 					CartesianMesh cartesianMesh = getPdeDataContext().getCartesianMesh();
@@ -399,7 +418,6 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPDEExportPanel1().setIsSmoldyn(isSmoldyn);
 				}
 				if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("displayAdapterService1"))) {
-					getPDEPlotControlPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
 					getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
 					if (fieldDataValueSurfaceViewer != null) {
 						fieldDataValueSurfaceViewer.setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
@@ -559,37 +577,11 @@ public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dat
 	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
 }
 
-public AsynchClientTask[] getRefreshTasks(){
-	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
-	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getFilterVarNamesTasks()/*getFilterVarNamesTasks()*/));
-	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getVariableChangeTasks()/*getVariableChangeTasks()*/));
-	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getTimeChangeTasks()/*getTimeChangeTasks()*/));
-	return bothSets.toArray(new AsynchClientTask[0]);
-}
-//private AsynchClientTask[] getTimeChangeTasks(){
+//public AsynchClientTask[] getRefreshTasks(){
 //	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
-//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getTimeChangeTasks()));
-////	if(postProcessPdeDataViewerPanel != null){
-////		bothSets.addAll(Arrays.asList(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer().getTimeChangeTasks()));
-////	}
-//	return bothSets.toArray(new AsynchClientTask[0]);
-//}
-
-//private AsynchClientTask[] getVariableChangeTasks(){
-//	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
-//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getVariableChangeTasks()));
-////	if(postProcessPdeDataViewerPanel != null){
-////		bothSets.addAll(Arrays.asList(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer().getVariableChangeTasks()));
-////	}
-//	return bothSets.toArray(new AsynchClientTask[0]);
-//}
-
-//public AsynchClientTask[] getFilterVarNamesTasks(){
-//	ArrayList<AsynchClientTask> bothSets = new ArrayList<>();
-//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getFilterVarNamesTasks()));
-////	if(postProcessPdeDataViewerPanel != null){
-////		bothSets.addAll(Arrays.asList(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer().getFilterVarNamesTasks()));
-////	}
+//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getFilterVarNamesTasks()/*getFilterVarNamesTasks()*/));
+//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getVariableChangeTasks()/*getVariableChangeTasks()*/));
+//	bothSets.addAll(Arrays.asList(getPDEPlotControlPanel1().getTimeChangeTasks()/*getTimeChangeTasks()*/));
 //	return bothSets.toArray(new AsynchClientTask[0]);
 //}
 /**
@@ -1668,7 +1660,6 @@ private PDEPlotControlPanel getPDEPlotControlPanel1() {
 		try {
 			ivjPDEPlotControlPanel1 = new PDEPlotControlPanel();
 			ivjPDEPlotControlPanel1.setName("PDEPlotControlPanel1");
-			ivjPDEPlotControlPanel1.setExternalTasks(getDataVlaueSurfaceViewerTasks());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1737,15 +1728,20 @@ private void handleException(java.lang.Throwable exception) {
  * @exception java.lang.Exception The exception description.
  */
 private void initConnections() throws java.lang.Exception {
+	
+	getPDEDataContextPanel1().getdisplayAdapterService1().setAutoScale(true);
+	getPDEDataContextPanel1().getdisplayAdapterService1().clearMarkedStates();
+	getPDEDataContextPanel1().getdisplayAdapterService1().setCustomScaleRange(null);
+
 	this.addPropertyChangeListener(ivjEventHandler);
 	getPDEDataContextPanel1().addPropertyChangeListener(ivjEventHandler);
-//	getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
 	getPDEExportPanel1().addPropertyChangeListener(ivjEventHandler);
-	getPDEPlotControlPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
+	
 	getPDEExportPanel1().setSlice(getPDEDataContextPanel1().getSlice());
 	getPDEExportPanel1().setNormalAxis(getPDEDataContextPanel1().getNormalAxis());
 	getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
 	getPDEExportPanel1().setDataViewerManager(this.getDataViewerManager());
+	
 	getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 
 }
@@ -1820,17 +1816,53 @@ private void setupDataInfoProvider(){
 private boolean bSkipSurfaceCalc = false;
 public void setPdeDataContext(PDEDataContext pdeDataContext) {
 	PDEDataContext oldValue = fieldPdeDataContext;
+	String setVarName = null;
+	Integer setTimePoint = null;
 	if (oldValue != null) {
+		setVarName = oldValue.getVariableName();
+		setTimePoint = getPDEPlotControlPanel1().getTimeSliderValue();
+		try{
+			if(pdeDataContext != null){
+				pdeDataContext.setVariableNameAndTime(setVarName, pdeDataContext.getTimePoints()[setTimePoint]);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			setVarName = null;
+			setTimePoint = null;
+		}
 		oldValue.removePropertyChangeListener(ivjEventHandler);
 	}
 	fieldPdeDataContext = pdeDataContext;
+	if(getPdeDataContext() != null && (setVarName==null || setTimePoint==null)){
+		setVarName = getPdeDataContext().getVariableNames()[0];
+		setTimePoint = 0;
+		try{
+			pdeDataContext.setVariableNameAndTime(setVarName, pdeDataContext.getTimePoints()[setTimePoint]);
+		}catch(Exception e2){
+			e2.printStackTrace();
+			DialogUtils.showErrorDialog(this, "Couldn't set time and variable on pdeDataContext");
+			return;
+		}
+	}
+
 	if (getPdeDataContext() != null) {
 		getPdeDataContext().removePropertyChangeListener(ivjEventHandler);
 		getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
-	}					
-//	if(getSimulation() != null && !getSimulation().isSerialParameterScan()){
-//		setupDataInfoProvider();
-//	}
+	}
+	try{
+		getPDEPlotControlPanel1().removePropertyChangeListener(ivjEventHandler);
+		try{
+			getPDEPlotControlPanel1().setup(/*getPDEPlotControlPanel1().getDataIdentifierFilter(),*/ ((NewClientPDEDataContext)getPdeDataContext()).getDataManager().getOutputContext().getOutputFunctions(), getPdeDataContext().getDataIdentifiers(), getPdeDataContext().getTimePoints(),setVarName,setTimePoint);
+		}catch(Exception e){
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this, "Couldn't setup PDEPlotControlPanel");
+			return;
+		}
+	}finally{
+		getPDEPlotControlPanel1().addPropertyChangeListener(ivjEventHandler);
+	}
+		
+	
 	bSkipSurfaceCalc = true;
 	firePropertyChange(PDEDataContext.PROP_PDE_DATA_CONTEXT, null, pdeDataContext);
 	bSkipSurfaceCalc = false;
@@ -2681,5 +2713,189 @@ public void setPostProcessingPanelVisible(boolean bVisible){
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+///**
+// * Sets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
+// * @param pdeDataContext The new value for the property.
+// * @see #getPdeDataContext
+// */
+//public void setPdeDataContext0(PDEDataContext pdeDataContext) {
+//	try{
+//		PDEDataContext oldPdeDataContext = fieldPdeDataContext;
+//		if (oldPdeDataContext != null) {
+//			oldPdeDataContext.removePropertyChangeListener(ivjEventHandler);
+//		}
+//		fieldPdeDataContext = pdeDataContext;
+//		if (getPdeDataContext() != null) {
+//			getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
+//		}
+//		if(PDEDataViewer.isParameterScan(oldPdeDataContext, getPdeDataContext())){
+//			//parameter scan change, full setup not needed, keep all current settings
+//			//update timepoint display values and fire timepoint slider state change to cause PDEDataViewer update
+//			connEtoM3(getPdeDataContext());//filter variable names
+//			connEtoC4(getPdeDataContext());//new timespoints  newTimePoints(getPdeDataContext().getTimePoints());
+//			ivjEventHandler.stateChanged(new ChangeEvent(getmodel1()));
+//			getPdeDataContext().firePropertyChange(PDEDataContext.PROPERTY_NAME_TIME_POINT, new Double(-1), new Double(getPdeDataContext().getTimePoint()));
+//		}else{
+//			//Setup panel with new PDEDataContext info
+//			connEtoM6(getPdeDataContext());//autoscale
+//			connEtoM7(getPdeDataContext());//slider setval 0
+//			connEtoC4(getPdeDataContext());//new timespoints
+//			connEtoM3(getPdeDataContext());//filter variable names
+//			connEtoM1(getPdeDataContext());//clear marked states and scale range
+//		}
+//	} catch (java.lang.Throwable ivjExc) {
+//		handleException(ivjExc);
+//	}
+//}
+//
+//public AsynchClientTask[] getTimeChangeTasks(){
+//	int sliderPosition = getmodel1().getValue();
+//	final double timepoint = getPdeDataContext().getTimePoints()[sliderPosition];
+//	AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if(getClientTaskStatusSupport() != null){
+//				getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
+//			}
+//			getPdeDataContext().waitWhileBusy();
+//			getPdeDataContext().setTimePoint(timepoint);
+//		}
+//	};
+//	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+//			if (exc == null) {
+//				updateTimeTextField(getPdeDataContext().getTimePoint());
+//			} else {
+//				int index = -1;
+//				if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
+//					double[] timePoints = getPdeDataContext().getTimePoints();
+//					for(int i=0;i<timePoints.length;i+= 1){
+//						if(timePoints[i] == getPdeDataContext().getTimePoint()){
+//							index = i;
+//							break;
+//						}
+//					}
+//				}
+//				if(index != -1){
+//					getJSliderTime().setValue(index);
+//				}else{
+//					getJTextField1().setText("-Error-");
+//				}
+//			}
+//		}
+//	};
+//	return new AsynchClientTask[]{task2, task3};
+//}
+//public AsynchClientTask[] getVariableChangeTasks(){
+//	// Get selected DataIdentifer from gui list
+//	final DataIdentifier[] selectedDataIdentifierHolder = new DataIdentifier[] {(DataIdentifier)getJList1().getSelectedValue()};
+//	//If no selection get first dataIdentifier from list
+//	if(selectedDataIdentifierHolder[0] == null && getJList1().getModel().getSize()>0){
+//		selectedDataIdentifierHolder[0] = getJList1().getModel().getElementAt(0);
+//	}
+//	//nothing found
+//	if(selectedDataIdentifierHolder[0] == null){
+//		return new AsynchClientTask[0];
+//	}
+//
+//	AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			AnnotatedFunction f = findFunction(selectedDataIdentifierHolder[0],functionsList);
+//			getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
+//			if(getDisplayAdapterService() != null){
+//				getDisplayAdapterService().activateMarkedState(selectedDataIdentifierHolder[0].getName());
+//			}
+//		}
+//	};
+//	
+//	AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			if(getClientTaskStatusSupport() != null){
+//				getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifierHolder[0].getDisplayName());
+//			}
+//			if(myDataIdentifiers != null){
+//				boolean bFound = false;
+//				for (int i = 0; i < myDataIdentifiers.length; i++) {
+//					if(myDataIdentifiers[i].equals(selectedDataIdentifierHolder[0])){
+//						bFound = true;
+//						break;
+//					}
+//				}
+//				if(bFound){
+//					getPdeDataContext().waitWhileBusy();
+//					getPdeDataContext().setVariable(selectedDataIdentifierHolder[0]);
+//				}else{
+//					selectedDataIdentifierHolder[0] = getPdeDataContext().getDataIdentifier();
+//				}
+//			}
+//		}
+//	};
+//		
+//	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
+//		public void run(Hashtable<String, Object> hashTable) throws Exception {
+//			Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+//			if (e != null) {
+//				int index = -1;
+//				if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
+//					for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+//						if(getPdeDataContext().getDataIdentifier().equals(getJList1().getModel().getElementAt(i))){
+//							index = i;
+//							break;
+//						}
+//					}
+//				}
+//				if(index != -1){
+//					getJList1().setSelectedIndex(index);
+//				}else{
+//					getJList1().clearSelection();
+//				}
+//			}
+//		}
+//	};
+//	
+//	return new AsynchClientTask[]{task1, task2, task3};
+//}
+//private AsynchClientTask[] creatAllTasks(AsynchClientTask[] mainTasks){
+//	ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(mainTasks));
+//	if(externalTasks != null){
+//		allTasks.addAll(Arrays.asList(externalTasks));
+//	}
+//	return allTasks.toArray(new AsynchClientTask[0]);
+//
+//}
+//private AsynchClientTask[] externalTasks;
+//public void setExternalTasks(AsynchClientTask[] externalTasks){
+//	this.externalTasks = externalTasks;
+//}
+//AsynchClientTask[] varChangeTasks = getVariableChangeTasks();
+//ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), creatAllTasks(varChangeTasks));
+//
+
+
 
 }

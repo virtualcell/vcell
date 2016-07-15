@@ -77,10 +77,10 @@ import cbit.vcell.solver.AnnotatedFunction;
  */
 @SuppressWarnings("serial")
 public class PDEPlotControlPanel extends JPanel {
+	
 	private JComboBox<String> filterComboBox;
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
-	private PDEDataContext fieldPdeDataContext = null;
 	private DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
 	private JList<DataIdentifier> ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
@@ -91,15 +91,11 @@ public class PDEPlotControlPanel extends JPanel {
 	private JSlider ivjJSliderTime = null;
 	private JSplitPane ivjJSplitPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
-	private BoundedRangeModel ivjmodel1 = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private DisplayAdapterService fieldDisplayAdapterService = new DisplayAdapterService();
-	private boolean ivjConnPtoP3Aligning = false;
-	private DisplayAdapterService ivjdisplayAdapterService1 = null;
 	private JPanel ivjTimeSliderJPanel = null;
-	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
-
-
+	private double[] myTimePoints;
+	private DataIdentifier[] myDataIdentifiers;
+	private AnnotatedFunction[] myAnnotFunctions;
 	
 	public static interface DataIdentifierFilter{
 		boolean accept(String filterSetName,DataIdentifier dataidentifier,List<AnnotatedFunction> myFunctionList);
@@ -216,16 +212,20 @@ public class PDEPlotControlPanel extends JPanel {
 	private ActionListener filterChangeActionListener =
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,getPdeDataContext(),null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
+				if((filterSelectTimer = ClientTaskDispatcher.getBlockingTimer(PDEPlotControlPanel.this,null,null,filterSelectTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {filterChangeActionListener.actionPerformed(e);}}))!=null){
 					return;
 				}
-				filterVariableNames();
+				try{
+					filterVariableNames();
+				}catch(Exception e2){
+					e2.printStackTrace();
+				}
 			}
 	};
 	private JButton viewFunctionButton = null;
 	private boolean bHasOldUserDefinedFunctions = false;
 	
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJTextField1()) 
 				connEtoC2(e);
@@ -244,28 +244,13 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoM4(e);
 		};
 		public void intervalRemoved(javax.swing.event.ListDataEvent e) {};
-		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals("timePoints"))) 
-				connEtoC3(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getJSliderTime() && (evt.getPropertyName().equals("model"))) 
-				connPtoP4SetTarget();
-			if (evt.getSource() == PDEPlotControlPanel.this && (evt.getPropertyName().equals("displayAdapterService"))) 
-				connPtoP3SetTarget();
-			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("autoScale"))) 
-				connEtoC9(evt);
-			if (evt.getSource() == PDEPlotControlPanel.this.getdisplayAdapterService1() && (evt.getPropertyName().equals("customScaleRange"))) 
-				connEtoC5(evt);
-//			if (evt.getSource() == PDEPlotControlPanel.this.getPdeDataContext() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_DATAIDENTIFIERS))){
-//				connEtoM8(evt);
-//			}
-		};
 		public void stateChanged(javax.swing.event.ChangeEvent e) {
-			if (e.getSource() == PDEPlotControlPanel.this.getmodel1() && !getJSliderTime().getValueIsAdjusting()) 
+			if (e.getSource() == getJSliderTime().getModel()) 
 				setTimeFromSlider();
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJList1() && !PDEPlotControlPanel.this.getJList1().getValueIsAdjusting()) 
-				connEtoC8(e);
+				PDEPlotControlPanel.this.variableChanged();
 		};
 	};
 
@@ -284,14 +269,14 @@ public void viewFunction() {
 		return;
 	}
 	DataIdentifier di = (DataIdentifier)selectedValue;
-	AnnotatedFunction func = findFunction(di,functionsList);
+	AnnotatedFunction func = findFunction(di,Arrays.asList(myAnnotFunctions));
 	if (func == null || !func.isOldUserDefined()) {
 		return;
 	}
 	
 	try {
 		Expression newexp = new Expression(func.getExpression());
-		for (AnnotatedFunction af : functionsList) {
+		for (AnnotatedFunction af : myAnnotFunctions) {
 			if (af.isOldUserDefined()) {
 				newexp.substituteInPlace(new Expression(af.getName()), new Expression(af.getDisplayName()));
 			}					 
@@ -340,10 +325,10 @@ public void viewFunction() {
 	
 }
 
+private void setDataIdentifiers(DataIdentifier[] dataIdentifiers){
+	myDataIdentifiers = dataIdentifiers;
+}
 public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
-	if(PDEPlotControlPanel.this.getName().equals("PostProcessPDEPCP")){
-		System.out.println("PostProcessPDEPCP");
-	}
 	this.dataIdentifierFilter = dataIdentifierFilter;
 	filterComboBox.removeActionListener(filterChangeActionListener);
 	filterComboBox.removeAllItems();
@@ -358,7 +343,6 @@ public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
 		filterComboBox.addItem("All Variables");
 		filterComboBox.setSelectedIndex(0);
 	}
-	filterVariableNames();
 }
 public DataIdentifierFilter getDataIdentifierFilter(){
 	return dataIdentifierFilter;
@@ -404,68 +388,6 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 }
 
 /**
- * connEtoC3:  (pdeDataContext1.timePoints --> PDEPlotControlPanel.newTimePoints([D)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.newTimePoints(getPdeDataContext().getTimePoints());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC4:  (pdeDataContext1.this --> PDEPlotControlPanel.newTimePoints([D)V)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getPdeDataContext() != null)) {
-			this.newTimePoints(getPdeDataContext().getTimePoints());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC5:  (displayAdapterService1.customScaleRange --> PDEPlotControlPanel.displayAdapterService1_CustomScaleRange(Lcbit.image.Range;)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.displayAdapterService1_CustomScaleRange(getdisplayAdapterService1().getCustomScaleRange());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC6:  (JTextField1.focus.focusLost(java.awt.event.FocusEvent) --> PDEPlotControlPanel.setTimeFromTextField(Ljava.lang.String;)V)
  * @param arg1 java.awt.event.FocusEvent
  */
@@ -483,86 +405,6 @@ private void connEtoC6(java.awt.event.FocusEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-
-
-/**
- * connEtoC8:  (JList1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEPlotControlPanel.variableNameChanged(Ljavax.swing.event.ListSelectionEvent;)V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.variableChanged(/*arg1*/);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC9:  (displayAdapterService1.autoScale --> PDEPlotControlPanel.displayAdapterService1_AutoScale(Z)V)
- * @param arg1 java.beans.PropertyChangeEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(java.beans.PropertyChangeEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.displayAdapterService1_AutoScale(getdisplayAdapterService1().getAutoScale());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (pdeDataContext1.this --> displayAdapterService1.clearMarkedStates()V)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getdisplayAdapterService1().clearMarkedStates();
-		connEtoM2();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM2:  ( (pdeDataContext1,this --> displayAdapterService1,clearMarkedStates()V).normalResult --> displayAdapterService1.customScaleRange)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2() {
-	try {
-		// user code begin {1}
-		// user code end
-		getdisplayAdapterService1().setCustomScaleRange(null);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 
 /**
  * connEtoM3:  (pdeDataContext1.this --> DefaultListModelCivilized1.contents)
@@ -600,26 +442,6 @@ private void connEtoM4(javax.swing.event.ListDataEvent arg1) {
 	}
 }
 
-
-/**
- * connEtoM6:  (pdeDataContext1.this --> displayAdapterService1.autoScale)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getdisplayAdapterService1().setAutoScale(true);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
 /**
  * connEtoM7:  (pdeDataContext1.this --> JSliderTime.value)
  * @param value cbit.vcell.simdata.PDEDataContext
@@ -639,35 +461,8 @@ private void connEtoM7(PDEDataContext value) {
 	}
 }
 
-
-///**
-// * connEtoM8:  (pdeDataContext1.dataIdentifiers --> DefaultListModelCivilized1.contents)
-// * @param arg1 java.beans.PropertyChangeEvent
-// */
-///* WARNING: THIS METHOD WILL BE REGENERATED. */
-//private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
-//	try {
-//		getJList1().clearSelection();
-//		filterVariableNames();
-//	} catch (java.lang.Throwable ivjExc) {
-//		// user code begin {3}
-//		// user code end
-//		handleException(ivjExc);
-//	}
-//}
-
-public AsynchClientTask[] getFilterVarNamesTasks(){
-		final Object oldselection = getJList1().getSelectedValue();
-	AsynchClientTask task1 = new AsynchClientTask("get functions", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			if(dataIdentifierFilter != null && !dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
-			// always, so we can display user-defined functions nicely...
-				initFunctionsList();
-//			}
-		}
-	};
-	
+private AsynchClientTask[] getFilterVarNamesTasks(){
+	final Object oldselection = getJList1().getSelectedValue();	
 	final ArrayList<DataIdentifier> displayDataIdentifiers = new ArrayList<DataIdentifier>(); 
 	AsynchClientTask task2 = new AsynchClientTask("filter variables", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
@@ -677,10 +472,9 @@ public AsynchClientTask[] getFilterVarNamesTasks(){
 			}
 			getViewFunctionButton().setVisible(bHasOldUserDefinedFunctions);
 			
-			if(getPdeDataContext().getDataIdentifiers() != null && getPdeDataContext().getDataIdentifiers().length > 0){
-				DataIdentifier[] originalDataIdentifierArr = getPdeDataContext().getDataIdentifiers();
-				DataIdentifier[] dataIdentifierArr = new DataIdentifier[originalDataIdentifierArr.length];
-				System.arraycopy(originalDataIdentifierArr, 0, dataIdentifierArr, 0, originalDataIdentifierArr.length);
+			if(myDataIdentifiers != null && myDataIdentifiers.length > 0){
+				DataIdentifier[] dataIdentifierArr = new DataIdentifier[myDataIdentifiers.length];
+				System.arraycopy(myDataIdentifiers, 0, dataIdentifierArr, 0, myDataIdentifiers.length);
 				Arrays.sort(dataIdentifierArr, new Comparator<DataIdentifier>(){
 					public int compare(DataIdentifier o1, DataIdentifier o2) {
 						int bEqualIgnoreCase = o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
@@ -694,7 +488,7 @@ public AsynchClientTask[] getFilterVarNamesTasks(){
 				if(dataIdentifierFilter == null){
 					displayDataIdentifiers.addAll(Arrays.asList(dataIdentifierArr));
 				}else{
-					ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr,functionsList);
+					ArrayList<DataIdentifier> acceptedDataIdentifiers = dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), dataIdentifierArr,Arrays.asList(myAnnotFunctions));
 					if(acceptedDataIdentifiers != null){
 						displayDataIdentifiers.addAll(acceptedDataIdentifiers);
 					}
@@ -735,171 +529,16 @@ public AsynchClientTask[] getFilterVarNamesTasks(){
 		
 	};
 
-	return new AsynchClientTask[] {task1, task2, task3};
+	return new AsynchClientTask[] {task2, task3};
 }
-private  void filterVariableNames(){
-//	if(ClientTaskDispatcher.isBusy()){
-//		return;
-//	}
-	if ((getPdeDataContext() != null)) {
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), getFilterVarNamesTasks());
+private  void filterVariableNames() throws Exception{
+	AsynchClientTask[] filterVarNamesTasks = getFilterVarNamesTasks();
+	Hashtable<String, Object> hashTable = new Hashtable<>();
+	for (int i = 0; i < filterVarNamesTasks.length; i++) {
+		final AsynchClientTask nextTask = filterVarNamesTasks[i];
+		nextTask.run(hashTable);
 	}
 }
-
-/**
- * connPtoP2SetTarget:  (DefaultListModelCivilized1.this <--> JList1.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP2SetTarget() {
-	/* Set the target from the source */
-	try {
-		getJList1().setModel(getDefaultListModelCivilized1());
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetSource:  (PDEPlotControlPanel.displayAdapterService <--> displayAdapterService1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			if ((getdisplayAdapterService1() != null)) {
-				this.setDisplayAdapterService(getdisplayAdapterService1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP3SetTarget:  (PDEPlotControlPanel.displayAdapterService <--> displayAdapterService1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP3SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP3Aligning = true;
-			setdisplayAdapterService1(this.getDisplayAdapterService());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP3Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetSource:  (JSliderTime.model <--> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			if ((getmodel1() != null)) {
-				getJSliderTime().setModel(getmodel1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP4SetTarget:  (JSliderTime.model <--> model1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP4SetTarget() {
-	/* Set the target from the source */
-	try {
-		if (ivjConnPtoP4Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP4Aligning = true;
-			setmodel1(getJSliderTime().getModel());
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP4Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP4Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * Comment
- */
-private void displayAdapterService1_AutoScale(boolean arg1) {
-	if(getDisplayAdapterService() != null && getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-		DataIdentifier var = (DataIdentifier)getJList1().getSelectedValue();
-		if(var != null){
-			if(!arg1){
-				getDisplayAdapterService().setCustomScaleRange(getDisplayAdapterService().getActiveScaleRange());
-				getDisplayAdapterService().markCurrentState(var.getName());
-			}else{
-				getDisplayAdapterService().clearMarkedState(var.getName());
-				getDisplayAdapterService().setCustomScaleRange(null);
-			}
-		}
-	}
-}
-
-
-/**
- * Comment
- */
-private void displayAdapterService1_CustomScaleRange(org.vcell.util.Range arg1) {
-	DataIdentifier var = (DataIdentifier)getJList1().getSelectedValue();
-	if(var != null){
-		if(arg1 == null){
-			getDisplayAdapterService().clearMarkedState(var.getName());
-		}else{
-			getDisplayAdapterService().markCurrentState(var.getName());
-		}
-	}
-}
-
 
 /**
  * Return the DefaultListModelCivilized1 property value.
@@ -921,52 +560,35 @@ private DefaultListModelCivilized getDefaultListModelCivilized1() {
 	return ivjDefaultListModelCivilized1;
 }
 
-
-/**
- * Gets the displayAdapterService property (cbit.image.DisplayAdapterService) value.
- * @return The displayAdapterService property value.
- * @see #setDisplayAdapterService
- */
-public DisplayAdapterService getDisplayAdapterService() {
-	return fieldDisplayAdapterService;
-}
-
-
-/**
- * Return the displayAdapterService1 property value.
- * @return cbit.image.DisplayAdapterService
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private DisplayAdapterService getdisplayAdapterService1() {
-	// user code begin {1}
-	// user code end
-	return ivjdisplayAdapterService1;
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (3/3/2004 5:29:59 PM)
  * @return cbit.vcell.math.AnnotatedFunction[]
  */
-private void initFunctionsList() {
-	if (functionsList == null){
-		functionsList = new Vector<AnnotatedFunction>();
-	}
+private void setFunctions(AnnotatedFunction[] newFunctions) {
+	myAnnotFunctions = newFunctions.clone();
 	bHasOldUserDefinedFunctions = false;
-	functionsList.clear();
-	try {
-		 AnnotatedFunction[] functions = getPdeDataContext().getFunctions();
-		 for (int i = 0; i < functions.length; i++) {
-			 if (functions[i].isOldUserDefined()) {
-				 bHasOldUserDefinedFunctions = true;
-			 }
-			 functionsList.addElement(functions[i]);
-		 }
-	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
+	for (int i = 0; i < myAnnotFunctions.length; i++) {
+		if (myAnnotFunctions[i].isOldUserDefined()) {
+			bHasOldUserDefinedFunctions = true;
+		}
 	}
 }
 
+public void setup(AnnotatedFunction[] newFunctions,DataIdentifier[] newDataIdentifiers,double[] newTimePoints,String selectedVar,int selectedTimeIndex) throws Exception{
+	setTimePoints(newTimePoints);
+//	setDataIdentifierFilter(newDataIdentifierFilter);
+	setFunctions(newFunctions);
+	setDataIdentifiers(newDataIdentifiers);
+	filterVariableNames();
+	for (int i = 0; i < getJList1().getModel().getSize(); i++) {
+		if(getJList1().getModel().getElementAt(i).getName().equals(selectedVar)){
+			getJList1().setSelectedIndex(i);
+			break;
+		}
+	}
+	getJSliderTime().setValue(selectedTimeIndex);	
+}
 
 /**
  * Return the JLabel1 property value.
@@ -1217,6 +839,8 @@ private javax.swing.JSlider getJSliderTime() {
 	return ivjJSliderTime;
 }
 
+private Timer arrowTimer;
+
 private void sliderUpDownBusyActions(){
 	InputMap im_focus = ivjJSliderTime.getInputMap();//map KeyStroke to actionID (for WHEN_FOCUS condition)
 	ActionMap am = ivjJSliderTime.getActionMap();//map actionID to Action
@@ -1232,24 +856,54 @@ private void sliderUpDownBusyActions(){
 	//having the "wait" popup appear when using the up and down arrows on the JSlider
 	am.put(downArrowActionID, new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
-			if(ClientTaskDispatcher.isBusy(getPdeDataContext(),null)){
+			if(ClientTaskDispatcher.isBusy(null,null)){
 				return;
 			}
 			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMaximum()){
 				return;
 			}
-			ivjJSliderTime.setValue(ivjJSliderTime.getValue()+1);
+			if(arrowTimer == null){
+				arrowTimer = new Timer(100, new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						synchronized (arrowTimer) {
+							PDEPlotControlPanel.this.arrowTimer.stop();
+							PDEPlotControlPanel.this.arrowTimer = null;
+						}
+						ivjJSliderTime.setValue(ivjJSliderTime.getValue()+1);
+					}
+				});
+				arrowTimer.setRepeats(false);
+				arrowTimer.start();					
+			}else{
+				return;
+			}
 		}
 	});
 	am.put(upArrowActionID, new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
-			if(ClientTaskDispatcher.isBusy(getPdeDataContext(),null)){
+			if(ClientTaskDispatcher.isBusy(null,null)){
 				return;
 			}
 			if(ivjJSliderTime.getValue() == ivjJSliderTime.getMinimum()){
 				return;
 			}
-			ivjJSliderTime.setValue(ivjJSliderTime.getValue()-1);
+			if(arrowTimer == null){
+				arrowTimer = new Timer(100, new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						synchronized (arrowTimer) {
+							PDEPlotControlPanel.this.arrowTimer.stop();
+							PDEPlotControlPanel.this.arrowTimer = null;
+						}
+						ivjJSliderTime.setValue(ivjJSliderTime.getValue()-1);
+					}
+				});
+				arrowTimer.setRepeats(false);
+				arrowTimer.start();					
+			}else{
+				return;
+			}
 		}
 	});
 
@@ -1301,28 +955,6 @@ private javax.swing.JTextField getJTextField1() {
 	return ivjJTextField1;
 }
 
-
-/**
- * Return the model1 property value.
- * @return javax.swing.BoundedRangeModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.BoundedRangeModel getmodel1() {
-	// user code begin {1}
-	// user code end
-	return ivjmodel1;
-}
-
-
-/**
- * Gets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
- * @return The pdeDataContext property value.
- * @see #setPdeDataContext
- */
-public PDEDataContext getPdeDataContext() {
-	return fieldPdeDataContext;
-}
-
 /**
  * Return the JPanel3 property value.
  * @return javax.swing.JPanel
@@ -1366,6 +998,9 @@ private javax.swing.JPanel getTimeSliderJPanel() {
 	return ivjTimeSliderJPanel;
 }
 
+public int getTimeSliderValue(){
+	return getJSliderTime().getValue();
+}
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -1386,30 +1021,13 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	this.addPropertyChangeListener(ivjEventHandler);
 	getJTextField1().addActionListener(ivjEventHandler);
 	getJTextField1().addFocusListener(ivjEventHandler);
-	getJSliderTime().addPropertyChangeListener(ivjEventHandler);
-//	getJSliderTime().addMouseListener(new MouseAdapter() {
-//		@Override
-//		public void mouseClicked(MouseEvent e) {
-//			super.mouseClicked(e);
-//			processSliderChangedMouse();
-//		}
-//	});
-	getJList1().addListSelectionListener(ivjEventHandler);
-//	getJList1().addMouseListener(new MouseAdapter() {
-//		@Override
-//		public void mouseClicked(MouseEvent e) {
-//			super.mouseClicked(e);
-//			processVariableChangedMouse();
-//		}		
-//	});
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 	getViewFunctionButton().addActionListener(ivjEventHandler);
-	connPtoP2SetTarget();
-	connPtoP4SetTarget();
-	connPtoP3SetTarget();
+	getJList1().setModel(getDefaultListModelCivilized1());
+	getJSliderTime().getModel().addChangeListener(ivjEventHandler);
+	getJList1().addListSelectionListener(ivjEventHandler);
 }
 
 private Timer varChangeTimer;
@@ -1446,6 +1064,15 @@ private void initialize() {
 	setIdentifierListRenderer();
 	// user code end
 }
+private void setIdentifierListRenderer() {
+	getJList1().setCellRenderer(new IdentifierListCellRenderer(new FunctionListProvider() {
+		@Override
+		public List<AnnotatedFunction> getAnnotatedFunctions() {
+			return Arrays.asList(myAnnotFunctions);
+		}
+	}));
+}
+
 public interface FunctionListProvider {
 	List<AnnotatedFunction> getAnnotatedFunctions();
 }
@@ -1474,28 +1101,21 @@ public static class IdentifierListCellRenderer extends DefaultListCellRenderer {
 	}
 }
 
-private void setIdentifierListRenderer() {
-	getJList1().setCellRenderer(new IdentifierListCellRenderer(new FunctionListProvider() {
-		@Override
-		public List<AnnotatedFunction> getAnnotatedFunctions() {
-			return PDEPlotControlPanel.this.functionsList;
-		}
-	}));
-}
-
 /**
  * Comment
  */
-private void newTimePoints(double[] newTimes) {
+private void setTimePoints(double[] newTimePoints) {
+	double[] oldValue = myTimePoints;
+	myTimePoints = newTimePoints;
 	//
 	getJSliderTime().setSnapToTicks(true);//So arrow keys work correctly with no minor tick marks
 	//
-	if (newTimes == null || newTimes.length == 1) {
+	if (myTimePoints == null || myTimePoints.length == 1) {
 		getJSliderTime().setMinimum(0);
 		getJSliderTime().setMaximum(0);
-		getJLabelMin().setText((newTimes == null?"":newTimes[0]+""));
-		getJLabelMax().setText((newTimes == null?"":newTimes[0]+""));
-		getJTextField1().setText((newTimes == null?"":newTimes[0]+""));
+		getJLabelMin().setText((myTimePoints == null?"":myTimePoints[0]+""));
+		getJLabelMax().setText((myTimePoints == null?"":myTimePoints[0]+""));
+		getJTextField1().setText((myTimePoints == null?"":myTimePoints[0]+""));
 		if(getJSliderTime().isEnabled()){
 			BeanUtils.enableComponents(getTimeSliderJPanel(),false);
 		}
@@ -1506,334 +1126,73 @@ private void newTimePoints(double[] newTimes) {
 		int sValue = getJSliderTime().getValue();
 		getJSliderTime().setMinimum(0);
 		//getJSliderTime().setExtent(1);//Can't do this because of bug in JSlider won't set last value
-		getJSliderTime().setMaximum(newTimes.length - 1);
-		if(sValue >= 0 && sValue < newTimes.length){
+		getJSliderTime().setMaximum(myTimePoints.length - 1);
+		if(sValue >= 0 && sValue < myTimePoints.length){
 			getJSliderTime().setValue(sValue);
 		}else{
 			getJSliderTime().setValue(0);
 		}
-		getJSliderTime().setMajorTickSpacing((newTimes.length < 10?1:newTimes.length/10));
+		getJSliderTime().setMajorTickSpacing((myTimePoints.length < 10?1:myTimePoints.length/10));
 //		getJSliderTime().setMinorTickSpacing(getJSliderTime().getMajorTickSpacing());//hides minor tick marks
 		getJSliderTime().setMinorTickSpacing(1);// testing....
 		//
-		getJLabelMin().setText(NumberUtils.formatNumber(newTimes[0],8));
-		getJLabelMax().setText(NumberUtils.formatNumber(newTimes[newTimes.length - 1],8));
+		getJLabelMin().setText(NumberUtils.formatNumber(myTimePoints[0],8));
+		getJLabelMax().setText(NumberUtils.formatNumber(myTimePoints[myTimePoints.length - 1],8));
 	}
-}
-
-/**
- * Sets the displayAdapterService property (cbit.image.DisplayAdapterService) value.
- * @param displayAdapterService The new value for the property.
- * @see #getDisplayAdapterService
- */
-public void setDisplayAdapterService(DisplayAdapterService displayAdapterService) {
-	DisplayAdapterService oldValue = fieldDisplayAdapterService;
-	fieldDisplayAdapterService = displayAdapterService;
-	firePropertyChange("displayAdapterService", oldValue, displayAdapterService);
-}
-
-
-/**
- * Set the displayAdapterService1 to a new value.
- * @param newValue cbit.image.DisplayAdapterService
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdisplayAdapterService1(DisplayAdapterService newValue) {
-	if (ivjdisplayAdapterService1 != newValue) {
-		try {
-			DisplayAdapterService oldValue = getdisplayAdapterService1();
-			/* Stop listening for events from the current object */
-			if (ivjdisplayAdapterService1 != null) {
-				ivjdisplayAdapterService1.removePropertyChangeListener(ivjEventHandler);
-			}
-			ivjdisplayAdapterService1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjdisplayAdapterService1 != null) {
-				ivjdisplayAdapterService1.addPropertyChangeListener(ivjEventHandler);
-			}
-			connPtoP3SetSource();
-			firePropertyChange("displayAdapterService", oldValue, newValue);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Set the model1 to a new value.
- * @param newValue javax.swing.BoundedRangeModel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmodel1(javax.swing.BoundedRangeModel newValue) {
-	if (ivjmodel1 != newValue) {
-		try {
-			/* Stop listening for events from the current object */
-			if (ivjmodel1 != null) {
-				ivjmodel1.removeChangeListener(ivjEventHandler);
-			}
-			ivjmodel1 = newValue;
-
-			/* Listen for events from the new object */
-			if (ivjmodel1 != null) {
-				ivjmodel1.addChangeListener(ivjEventHandler);
-			}
-			connPtoP4SetSource();
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
- * Sets the pdeDataContext property (cbit.vcell.simdata.PDEDataContext) value.
- * @param pdeDataContext The new value for the property.
- * @see #getPdeDataContext
- */
-public void setPdeDataContext(PDEDataContext pdeDataContext) {
-	try{
-		PDEDataContext oldPdeDataContext = fieldPdeDataContext;
-		if (oldPdeDataContext != null) {
-			oldPdeDataContext.removePropertyChangeListener(ivjEventHandler);
-		}
-		fieldPdeDataContext = pdeDataContext;
-		if (getPdeDataContext() != null) {
-			getPdeDataContext().addPropertyChangeListener(ivjEventHandler);
-		}
-		if(PDEDataViewer.isParameterScan(oldPdeDataContext, getPdeDataContext())){
-			//parameter scan change, full setup not needed, keep all current settings
-			//update timepoint display values and fire timepoint slider state change to cause PDEDataViewer update
-			connEtoM3(getPdeDataContext());//filter variable names
-			connEtoC4(getPdeDataContext());//new timespoints  newTimePoints(getPdeDataContext().getTimePoints());
-			ivjEventHandler.stateChanged(new ChangeEvent(getmodel1()));
-			getPdeDataContext().firePropertyChange(PDEDataContext.PROPERTY_NAME_TIME_POINT, new Double(-1), new Double(getPdeDataContext().getTimePoint()));
-		}else{
-			//Setup panel with new PDEDataContext info
-			connEtoM6(getPdeDataContext());//autoscale
-			connEtoM7(getPdeDataContext());//slider setval 0
-			connEtoC4(getPdeDataContext());//new timespoints
-			connEtoM3(getPdeDataContext());//filter variable names
-			connEtoM1(getPdeDataContext());//clear marked states and scale range
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-}
-
-public AsynchClientTask[] getTimeChangeTasks(){
-	int sliderPosition = getmodel1().getValue();
-	final double timepoint = getPdeDataContext().getTimePoints()[sliderPosition];
-	AsynchClientTask task2  = new AsynchClientTask("Setting TimePoint", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {		
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(getClientTaskStatusSupport() != null){
-				getClientTaskStatusSupport().setMessage("Waiting for timepoint data:"+ timepoint);
-			}
-			getPdeDataContext().waitWhileBusy();
-			getPdeDataContext().setTimePoint(timepoint);
-		}
-	};
-	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-			if (exc == null) {
-				updateTimeTextField(getPdeDataContext().getTimePoint());
-			} else {
-				int index = -1;
-				if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
-					double[] timePoints = getPdeDataContext().getTimePoints();
-					for(int i=0;i<timePoints.length;i+= 1){
-						if(timePoints[i] == getPdeDataContext().getTimePoint()){
-							index = i;
-							break;
-						}
-					}
-				}
-				if(index != -1){
-					getJSliderTime().setValue(index);
-				}else{
-					getJTextField1().setText("-Error-");
-				}
-			}
-		}
-	};
-	return new AsynchClientTask[]{task2, task3};
 }
 
 /**
  * Comment
  */
-private void setTimeFromSlider(/*int sliderPosition*/) {
-	if((sliderChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,sliderChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {setTimeFromSlider();}}))!=null){
-		return;
+private void setTimeFromSlider() {
+	if (!getJSliderTime().getValueIsAdjusting()) {
+//		if((sliderChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,sliderChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {setTimeFromSlider();}}))!=null){
+//			return;
+//		}
+		firePropertyChange(PDEDataContext.PROPERTY_NAME_TIME_POINT, -1, myTimePoints[getJSliderTime().getValue()]);
 	}
-	if (getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null) {
-		if (! getJSliderTime().getValueIsAdjusting()) {
-			Hashtable<String, Object> hash = new Hashtable<String, Object>();			
-			ClientTaskDispatcher.dispatch(this, hash, creatAllTasks(getTimeChangeTasks()));
-		}else{
-			updateTimeTextField(getmodel1().getValue());
-		}
-	} else {
-		getJTextField1().setText("");
-	}
+	updateTimeTextField(myTimePoints[getJSliderTime().getValue()]);
 }
 
-private AsynchClientTask[] creatAllTasks(AsynchClientTask[] mainTasks){
-	ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(mainTasks));
-	if(externalTasks != null){
-		allTasks.addAll(Arrays.asList(externalTasks));
-	}
-	return allTasks.toArray(new AsynchClientTask[0]);
-
-}
-private AsynchClientTask[] externalTasks;
-public void setExternalTasks(AsynchClientTask[] externalTasks){
-	this.externalTasks = externalTasks;
-}
 /**
  * Comment
  */
 private void setTimeFromTextField(String typedValue) {
 	int oldVal = getJSliderTime().getValue();
-	double[]times = getPdeDataContext().getTimePoints();
 	double time = 0;
 	try {
 		time = Double.parseDouble(typedValue);
 	} catch (NumberFormatException e) {
 		// if typedTime is crap, put back old value
-		updateTimeTextField(times[oldVal]);
+		updateTimeTextField(myTimePoints[oldVal]);
 		return;
 	}
 	// we find neighboring time value; if out of bounds, it is set to corresponding extreme
 	// we correct text, then adjust slider; change in slider will fire other updates
 	int val = 0;
-	if (time > times[0]) {
-		if (time >= times[times.length - 1]) {
-			val = times.length - 1;
+	if (time > myTimePoints[0]) {
+		if (time >= myTimePoints[myTimePoints.length - 1]) {
+			val = myTimePoints.length - 1;
 		} else {
-			for (int i=0;i<times.length;i++) {
+			for (int i=0;i<myTimePoints.length;i++) {
 				val = i;
-				if ((time >= times[i]) && (time < times[i+1]))
+				if ((time >= myTimePoints[i]) && (time < myTimePoints[i+1]))
 					break;
 			}
 		}
 	}
-	updateTimeTextField(times[val]);
+	updateTimeTextField(myTimePoints[val]);
 	getJSliderTime().setValue(val);
 }
 
-public AsynchClientTask[] getVariableChangeTasks(){
-	// Get selected DataIdentifer from gui list
-	final DataIdentifier[] selectedDataIdentifierHolder = new DataIdentifier[] {(DataIdentifier)getJList1().getSelectedValue()};
-	//If no selection get first dataIdentifier from list
-	if(selectedDataIdentifierHolder[0] == null && getJList1().getModel().getSize()>0){
-		selectedDataIdentifierHolder[0] = getJList1().getModel().getElementAt(0);
-	}
-	//If no list then select the dataIdentifier from pde data context
-	if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
-		if(selectedDataIdentifierHolder[0]==null){
-			selectedDataIdentifierHolder[0] = getPdeDataContext().getDataIdentifier();
-		}
-	}
-	//nothing found
-	if(selectedDataIdentifierHolder[0] == null){
-		return new AsynchClientTask[0];
-	}
-
-	AsynchClientTask task1  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			AnnotatedFunction f = findFunction(selectedDataIdentifierHolder[0],functionsList);
-			getViewFunctionButton().setEnabled(f != null && f.isOldUserDefined());
-			if(getDisplayAdapterService() != null){
-				getDisplayAdapterService().activateMarkedState(selectedDataIdentifierHolder[0].getName());
-			}
-		}
-	};
-	
-	AsynchClientTask task2  = new AsynchClientTask("Setting Variable", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if(getClientTaskStatusSupport() != null){
-				getClientTaskStatusSupport().setMessage("Waiting for variable data: "+selectedDataIdentifierHolder[0].getDisplayName());
-			}
-			DataIdentifier[] myDataIdentifiers = (getPdeDataContext()==null?null:getPdeDataContext().getDataIdentifiers());
-			if(myDataIdentifiers != null){
-				boolean bFound = false;
-				for (int i = 0; i < myDataIdentifiers.length; i++) {
-					if(myDataIdentifiers[i].equals(selectedDataIdentifierHolder[0])){
-						bFound = true;
-						break;
-					}
-				}
-				if(bFound){
-					getPdeDataContext().waitWhileBusy();
-					getPdeDataContext().setVariable(selectedDataIdentifierHolder[0]);
-				}else{
-					selectedDataIdentifierHolder[0] = getPdeDataContext().getDataIdentifier();
-				}
-			}
-		}
-	};
-		
-	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
-			if (e != null) {
-				int index = -1;
-				if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
-					for(int i=0;i<getJList1().getModel().getSize();i+= 1){
-						if(getPdeDataContext().getDataIdentifier().equals(getJList1().getModel().getElementAt(i))){
-							index = i;
-							break;
-						}
-					}
-				}
-				if(index != -1){
-					getJList1().setSelectedIndex(index);
-				}else{
-					getJList1().clearSelection();
-				}
-			}
-		}
-	};
-	
-	return new AsynchClientTask[]{task1, task2, task3};
-}
 /**
  * Comment
  */
-private void variableChanged(/*ListSelectionEvent listSelectionEvent*/) {
-	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,getPdeDataContext(),null,varChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
-		return;
-	}
-	if(getPdeDataContext() == null){
-		return;
-	}
-//	if(listSelectionEvent == null || listSelectionEvent.getValueIsAdjusting()){
+private void variableChanged() {
+//	if((varChangeTimer = ClientTaskDispatcher.getBlockingTimer(this,null,null,varChangeTimer,new ActionListener() {@Override public void actionPerformed(ActionEvent e2) {variableChanged();}}))!=null){
 //		return;
 //	}
-	AsynchClientTask[] varChangeTasks = getVariableChangeTasks();
-//	if(varChangeTasks.length > 0){
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), creatAllTasks(varChangeTasks));
-//	}else if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
-//		for (int i = 0; i < getJList1().getModel().getSize(); i++) {
-//			if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
-//				getJList1().setSelectedIndex(i);
-//				break;
-//			}
-//		}
-//	}
+	firePropertyChange(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER, null, getJList1().getSelectedValue());
 }
 
 private void updateTimeTextField(double newTime){

@@ -385,18 +385,13 @@ private void updateScanParamChoices(){
 				PDEDataManager pdeDatamanager = ((PDEDataManager)dataManager).createNewPDEDataManager(vcdid, null);
 				PDEDataContext newPDEDC = pdeDatamanager.getPDEDataContext();
 				PDEDataContext oldPDEDC = pdeDataViewer.getPdeDataContext();
-//				newPDEDC.refreshIdentifiers();
-//				newPDEDC.refreshTimes();
 				hashTable.put("newPDEDC", newPDEDC);
 				if(oldPDEDC != null && oldPDEDC.getTimePoints().length <= newPDEDC.getTimePoints().length){
 					DataIdentifier setDid = (newPDEDC.getDataIdentifier()==null?newPDEDC.getDataIdentifiers()[0]:newPDEDC.getDataIdentifier());
 					if(Arrays.asList(newPDEDC.getDataIdentifiers()).contains(oldPDEDC.getDataIdentifier())){
 						setDid = oldPDEDC.getDataIdentifier();
 						newPDEDC.setVariableAndTime(setDid,newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]);
-//						newPDEDC.setVariableAndTime((DataIdentifier)hashTable.get("oldSelectedDid"), (Double)hashTable.get("oldSelectedTimePoint"));
 					}
-//					hashTable.put("oldSelectedDid", setDid);
-//					hashTable.put("oldSelectedTimePoint", new Double(newPDEDC.getTimePoints()[BeanUtils.firstIndexOf(oldPDEDC.getTimePoints(), oldPDEDC.getTimePoint())]));
 				}
 			}
 		};
@@ -404,24 +399,18 @@ private void updateScanParamChoices(){
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				PDEDataContext newPDEDC = (PDEDataContext)hashTable.get("newPDEDC");
-//				if(hashTable.get("oldSelectedDid") != null){
-//					newPDEDC.setVariableAndTime((DataIdentifier)hashTable.get("oldSelectedDid"), (Double)hashTable.get("oldSelectedTimePoint"));
-//				}
 				pdeDataViewer.setPdeDataContext(newPDEDC);
 				pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), SimResultsViewer.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
 			}
 		};
 
-		AsynchClientTask refreshTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(pdeDataViewer.getRefreshTasks()));
-			}
-		};
-//		ArrayList<AsynchClientTask> allTasks = new ArrayList<>(Arrays.asList(pdeDataViewer.getRefreshTasks()));
-//		allTasks.add(0,task2);
-//		allTasks.add(0,task1);
-		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1,task2,refreshTask}/*allTasks.toArray(new AsynchClientTask[0])*/);
+//		AsynchClientTask refreshTask = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//			@Override
+//			public void run(Hashtable<String, Object> hashTable) throws Exception {
+//				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(pdeDataViewer.getRefreshTasks()));
+//			}
+//		};
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), new AsynchClientTask[] {task1,task2/*,refreshTask*/});
 	}
 }
 

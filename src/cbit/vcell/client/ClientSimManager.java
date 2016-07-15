@@ -339,9 +339,9 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal) {
 					Throwable ex = failures.get(sim); 
 					if (viewerController != null && ex == null) { // no failure
 						DataViewer viewer = viewerController.createViewer();
-						if(viewer instanceof SimResultsViewer && ((SimResultsViewer)viewer).getMainViewer() instanceof PDEDataViewer){
-							((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(((PDEDataViewer)((SimResultsViewer)viewer).getMainViewer()).getRefreshTasks()));
-						}
+//						if(viewer instanceof SimResultsViewer && ((SimResultsViewer)viewer).getMainViewer() instanceof PDEDataViewer){
+//							((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(((PDEDataViewer)((SimResultsViewer)viewer).getMainViewer()).getRefreshTasks()));
+//						}
 						getSimWorkspace().getSimulationOwner().getOutputFunctionContext().addPropertyChangeListener(viewerController);
 						documentWindowManager.addExportListener(viewer);
 						documentWindowManager.addDataJobListener(viewer);//For data related activities such as calculating statistics
