@@ -98,7 +98,7 @@ public class DisplayAdapterServicePanel extends JPanel implements java.awt.event
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("colorModelIDs"))) {
 					updateColorModelRadioButtons();
 				}
-				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("autoScale"))) {
+				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals(DisplayAdapterService.PROP_NAME_AUTOSCALE))) {
 					getAutoScaleCheckbox().setSelected(getDisplayAdapterService().getAutoScale());
 				}
 				if (evt.getSource() == DisplayAdapterServicePanel.this.getDisplayAdapterService() && (evt.getPropertyName().equals("activeColorModelID"))) {

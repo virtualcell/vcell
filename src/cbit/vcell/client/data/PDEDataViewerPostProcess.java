@@ -393,48 +393,14 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 				postProcessPDEDataViewer.setSimulation(getSimulation());	
 			}
 		};
-//		AsynchClientTask listenerTaskbefore = new AsynchClientTask("before query listenrs",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//			@Override
-//			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				System.out.println("----------before----------");
-//				System.out.println("PDEDV="+PDEDataViewer.this.hashCode()+" pdedc="+PDEDataViewer.this.getPdeDataContext().hashCode()+" pdedc_type="+PDEDataViewer.this.getPdeDataContext().getClass().getName());
-//				System.out.println("is_postprocess="+(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer()==PDEDataViewer.this));
-//				for (int i = 0; i < PDEDataViewer.this.getPropertyChangeListeners().length; i++) {
-//					System.out.println(PDEDataViewer.this.getPropertyChangeListeners()[i].hashCode());
-//				}
-//				System.out.println("--------------------------");
-//			}
-//		};
-//		allTasks.add(listenerTaskbefore);
 		allTasks.addAll(Arrays.asList(PDEDataViewerPostProcess.this.getUpdateTasks()));
-//		allTasks.addAll(Arrays.asList(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer().getRefreshTasks()));
-		AsynchClientTask refreshTask = new AsynchClientTask("refreshPostProcess",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-			@Override
-			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(PDEDataViewerPostProcess.this.postProcessPDEDataViewer.getRefreshTasks()));
-			}
-		};
-		allTasks.add(refreshTask);
-//		AsynchClientTask moreTasks = new AsynchClientTask("",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+//		AsynchClientTask refreshTask = new AsynchClientTask("refreshPostProcess",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 //			@Override
 //			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(getExtraTasks()));
+//				((ArrayList<AsynchClientTask>)hashTable.get(ClientTaskDispatcher.INTERMEDIATE_TASKS)).addAll(Arrays.asList(PDEDataViewerPostProcess.this.postProcessPDEDataViewer.getRefreshTasks()));
 //			}
 //		};
-//		allTasks.add(moreTasks);
-//		AsynchClientTask listenerTaskafter = new AsynchClientTask("before query listenrs",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-//			@Override
-//			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				System.out.println("----------after----------");
-//				System.out.println("PDEDV="+PDEDataViewer.this.hashCode()+" pdedc="+PDEDataViewer.this.getPdeDataContext().hashCode()+" pdedc_type="+PDEDataViewer.this.getPdeDataContext().getClass().getName());
-//				System.out.println("is_postprocess="+(postProcessPdeDataViewerPanel.getPostProcessPDEDataViewer()==PDEDataViewer.this));
-//				for (int i = 0; i < PDEDataViewer.this.getPropertyChangeListeners().length; i++) {
-//					System.out.println(PDEDataViewer.this.getPropertyChangeListeners()[i].hashCode());
-//				}
-//				System.out.println("--------------------------");
-//			}
-//		};
-//		allTasks.add(listenerTaskafter);
+//		allTasks.add(refreshTask);
 
 		allTasks.add(0, addPanelTask);
 		allTasks.add(0,postProcessInfoTask);
