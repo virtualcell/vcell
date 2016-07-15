@@ -112,7 +112,7 @@ private static class BlockingTimer extends Timer{
 		public void actionPerformed(ActionEvent e) {
 			synchronized (allBlockingTimers) {
 				if(pp != null && allBlockingTimers.size() == 0){
-					System.out.println("stopping "+System.currentTimeMillis());
+//					System.out.println("stopping "+System.currentTimeMillis());
 					pp.stop();
 					pp = null;
 				}
@@ -155,7 +155,7 @@ private static class BlockingTimer extends Timer{
 		super.stop();
 		synchronized (allBlockingTimers) {
 			allBlockingTimers.remove(BlockingTimer.this);
-			System.out.println("starting stop "+System.currentTimeMillis());
+//			System.out.println("starting stop "+System.currentTimeMillis());
 			ppStop.restart();
 		}
 	}
