@@ -2422,7 +2422,7 @@ private void updateDataValueSurfaceViewer0() {
 		return;
 	}
 //	Thread.dumpStack();
-	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
+//	System.out.println("***************PDEDataViewer.updateDataValueSurfaceViewer()");
 	//SurfaceColors and DataValues
 	if(getDataValueSurfaceViewer().getSurfaceCollectionDataInfo() == null){//happens with PostProcessingImageData version of PDEDataViewer
 		return;
