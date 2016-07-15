@@ -352,7 +352,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 						displayAdapterService.setCustomScaleRange(displayAdapterService.getActiveScaleRange());
 						displayAdapterService.markCurrentState(getPdeDataContext().getVariableName());
 					}
-					System.out.println("PDEDV asr="+displayAdapterService.getActiveScaleRange()+" csr="+displayAdapterService.getCustomScaleRange()+" vd="+displayAdapterService.getValueDomain()+" auto="+displayAdapterService.getAutoScale()+" sid="+displayAdapterService.getCurrentStateID());
+//					System.out.println("PDEDV asr="+displayAdapterService.getActiveScaleRange()+" csr="+displayAdapterService.getCustomScaleRange()+" vd="+displayAdapterService.getValueDomain()+" auto="+displayAdapterService.getAutoScale()+" sid="+displayAdapterService.getCurrentStateID());
 				}
 				
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_TIME_POINT))){
@@ -360,9 +360,12 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 //					updateDataValueSurfaceViewer();
 				}
 				if(evt.getSource() == getPDEPlotControlPanel1() && (evt.getPropertyName().equals(PDEDataContext.PROPERTY_NAME_VCDATA_IDENTIFIER))){
-					getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
-					getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
-					getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
+					try{
+						getPDEDataContextPanel1().getdisplayAdapterService1().removePropertyChangeListener(ivjEventHandler);
+						getPDEDataContextPanel1().getdisplayAdapterService1().activateMarkedState(((DataIdentifier)evt.getNewValue()).getName());
+					}finally{
+						getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
+					}
 
 					getPdeDataContext().setVariable((DataIdentifier)evt.getNewValue());
 //					updateDataValueSurfaceViewer();
