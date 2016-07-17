@@ -22,6 +22,8 @@ import org.vcell.util.Range;
  */
 public class DisplayAdapterService implements org.vcell.util.Stateful, java.beans.PropertyChangeListener {
 
+	public static final String PROP_NAME_AUTOSCALE = "autoScale";
+	
 	public static final String BLUERED = "BlueRed";
 	public static final String GRAY = "Gray";
 	
@@ -631,7 +633,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			updateScaleRange();
 		}else if (evt.getPropertyName().equals("customScaleRange")){
 			updateScaleRange();
-		}else if (evt.getPropertyName().equals("autoScale")){
+		}else if (evt.getPropertyName().equals(PROP_NAME_AUTOSCALE)){
 			updateScaleRange();
 		}else if (evt.getPropertyName().equals("activeScaleRange")){
 		}else if (evt.getPropertyName().equals("activeColorModelID")){
@@ -740,7 +742,7 @@ public void setActiveScaleRange(Range activeScaleRange) {
 public void setAutoScale(boolean autoScale) {
 	boolean oldValue = fieldAutoScale;
 	fieldAutoScale = autoScale;
-	firePropertyChange("autoScale", new Boolean(oldValue), new Boolean(autoScale));
+	firePropertyChange(PROP_NAME_AUTOSCALE, new Boolean(oldValue), new Boolean(autoScale));
 }
 
 

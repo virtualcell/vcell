@@ -130,7 +130,9 @@ public AsynchProgressPopup(Component requester, String title, String message, Th
 			if (bCancelable) {
 				getDialog().dispose();
 				interrupt();
-				nonswingThread.interrupt();
+				if(nonswingThread !=null){
+					nonswingThread.interrupt();
+				}
 			}
 		}
 	};

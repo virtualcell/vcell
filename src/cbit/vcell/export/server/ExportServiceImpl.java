@@ -229,26 +229,26 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		}
 
 		
-		// see if we've done this before, and try to get it
-		// for now, works only for the life of the server (eventually will be persistent)
-		Object completed = completedExportRequests.get(exportSpecs);
-		if (completed != null) {
-			try {
-				JobRequest previousRequest = (JobRequest)completedExportRequests.get(exportSpecs);
-				File file = new File(exportBaseDir + previousRequest.getJobID() + ".zip");
-				if (file.exists()) {
-					URL url = new URL(exportBaseURL + file.getName());
-					log.print("ExportServiceImpl.makeRemoteFile(): Found previously made file: " + file.getName());
-					fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
-					// now that we start logging exports, we should do the persistence thing soon...
-					// so far retutn null, so we at least don't double log during the same server session
-					return null;
-				}
-			} catch (Throwable exc) {
-				completedExportRequests.remove(exportSpecs);
-				log.print("ExportServiceImpl.makeRemoteFile(): WARNING: did not find previous export output; attempting to export again");
-			}
-		}
+//		// see if we've done this before, and try to get it
+//		// for now, works only for the life of the server (eventually will be persistent)
+//		Object completed = completedExportRequests.get(exportSpecs);
+//		if (completed != null) {
+//			try {
+//				JobRequest previousRequest = (JobRequest)completedExportRequests.get(exportSpecs);
+//				File file = new File(exportBaseDir + previousRequest.getJobID() + ".zip");
+//				if (file.exists()) {
+//					URL url = new URL(exportBaseURL + file.getName());
+//					log.print("ExportServiceImpl.makeRemoteFile(): Found previously made file: " + file.getName());
+//					fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
+//					// now that we start logging exports, we should do the persistence thing soon...
+//					// so far retutn null, so we at least don't double log during the same server session
+//					return null;
+//				}
+//			} catch (Throwable exc) {
+//				completedExportRequests.remove(exportSpecs);
+//				log.print("ExportServiceImpl.makeRemoteFile(): WARNING: did not find previous export output; attempting to export again");
+//			}
+//		}
 
 		// we need to make new output
 		log.print("ExportServiceImpl.makeRemoteFile(): Starting new export job: " + newExportJob);

@@ -15,6 +15,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -37,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -104,13 +106,22 @@ public class OutputFunctionsPanel extends DocumentEditorSubPanel {
 	private JButton cancelGeomClassPanelButton = null;
 	private JDialog addFunctionDialog;
 
+	private Timer outputContextFnBtnTimer;
 	private class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			try {
-				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()) 
+				if (e.getSource() == OutputFunctionsPanel.this.getAddFnButton()){
+					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+						return;
+					}
 					addOutputFunction();
-				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()) 
+				}
+				if (e.getSource() == OutputFunctionsPanel.this.getDeleteFnButton()){
+					if((outputContextFnBtnTimer = ClientTaskDispatcher.getBlockingTimer(OutputFunctionsPanel.this, null, null, outputContextFnBtnTimer, new ActionListener() {@Override public void actionPerformed(ActionEvent e2){ivjEventHandler.actionPerformed(e);}})) != null){
+						return;
+					}
 					deleteOutputFunction();	
+				}
 				if (e.getSource() == previousButton) {
 					cardLayout.show(functionPanel, funcNameAndExprPanel.getName());
 				} else if (e.getSource() == finishButton) {

@@ -12,11 +12,14 @@ package cbit.vcell.client.task;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +27,7 @@ import java.util.WeakHashMap;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +46,7 @@ import cbit.vcell.client.ClientMDIManager;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.AsynchClientTask.KeyInfo;
+import cbit.vcell.simdata.PDEDataContext;
 /**
  * Insert the type's description here.
  * Creation date: (5/28/2004 2:44:22 AM)
@@ -109,6 +114,93 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 	dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
+private static int entryCounter = 0;
+public static boolean isBusy(){
+	if(entryCounter>0){
+//		System.out.println("----------Busy----------");
+		return true;
+	}
+	return false;
+}
+
+private static class BlockingTimer extends Timer{
+	private static AsynchProgressPopup pp;
+	private static ArrayList<BlockingTimer> allBlockingTimers = new ArrayList<>();
+	private static Timer ppStop = new Timer(1000, new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			synchronized (allBlockingTimers) {
+				if(pp != null && allBlockingTimers.size() == 0){
+//					System.out.println("stopping "+System.currentTimeMillis());
+					pp.stop();
+					pp = null;
+				}
+				ppStop.stop();
+			}
+		}
+	});
+	private static ProgressDialogListener cancelListener = new ProgressDialogListener() {
+		@Override
+		public void cancelButton_actionPerformed(EventObject newEvent) {
+			synchronized (allBlockingTimers) {
+				while(allBlockingTimers.size() > 0){
+					BlockingTimer blockingTimer = allBlockingTimers.remove(0);
+				}
+				ppStop.restart();
+			}
+		}
+	};
+	public BlockingTimer(Component requester,int delay,ActionListener actionListener){
+		super(delay, actionListener);
+		ppStop.setRepeats(false);
+		setRepeats(false);
+		synchronized (allBlockingTimers) {
+			boolean bBlockerExists = false;
+			if(pp == null){
+				pp = new AsynchProgressPopup(requester, "Waiting for actions to finish...", "busy...", null, true, false,true,cancelListener);
+				pp.start();
+			}
+			allBlockingTimers.add(this);
+		}
+	}
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		super.start();
+	}
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		super.stop();
+		synchronized (allBlockingTimers) {
+			allBlockingTimers.remove(BlockingTimer.this);
+//			System.out.println("starting stop "+System.currentTimeMillis());
+			ppStop.restart();
+		}
+	}
+}
+public static boolean isBusy(PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2){
+	return ClientTaskDispatcher.isBusy() || (busyPDEDatacontext1 != null && busyPDEDatacontext1.isBusy()) || (busyPDEDatacontext2 != null && busyPDEDatacontext2.isBusy());
+}
+public static Timer getBlockingTimer(Component requester,PDEDataContext busyPDEDatacontext1,PDEDataContext busyPDEDatacontext2,Timer activeTimer,ActionListener actionListener){
+	if(isBusy(busyPDEDatacontext1,busyPDEDatacontext2)){
+		if(activeTimer == null){
+			activeTimer = new BlockingTimer(requester,200,null);
+		}
+		ActionListener[] currentActionlListeners = activeTimer.getActionListeners();
+		for (int i = 0; i < currentActionlListeners.length; i++) {
+			activeTimer.removeActionListener(currentActionlListeners[i]);			
+		}
+		activeTimer.addActionListener(actionListener);
+		activeTimer.restart();
+		return activeTimer;		
+	}else if(activeTimer != null){
+		activeTimer.stop();
+		activeTimer = null;
+	}
+	return activeTimer;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/31/2004 5:37:06 PM)
@@ -117,6 +209,11 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final ProgressDialog customDialog,
 		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
 	// check tasks - swing non-blocking can be only at the end
+		entryCounter++;
+	if(entryCounter>1){
+		System.out.println("Reentrant");
+	}
+	
 //	if (bInProgress) {
 //		Thread.dumpStack();
 //	}
@@ -260,6 +357,9 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		
 		public void finished() {
 //System.out.println("DISPATCHING: finished() called at "+ new Date(System.currentTimeMillis()));
+			entryCounter--;
+//			System.out.println("----------Leave----------entryCounter="+entryCounter);
+			
 			if (pp != null) {
 				pp.stop();
 			}

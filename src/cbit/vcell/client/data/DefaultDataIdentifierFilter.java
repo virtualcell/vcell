@@ -13,10 +13,9 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.AnnotatedFunction;
 
-public class DefaultDataIdentifierFilter implements DataIdentifierFilter{
+public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 	private boolean bPostProcessingMode = false;
-	
-	private String ALL = "All Variables";
+	public static final String ALL = "All Variables";
 	private String VOLUME_FILTER_SET = "Volume Variables";
 	private String MEMBRANE_FILTER_SET = "Membrane Variables";
 	private String USER_DEFINED_FILTER_SET = "User Functions";
@@ -33,8 +32,15 @@ public class DefaultDataIdentifierFilter implements DataIdentifierFilter{
 		this(null);
 	}
 	public DefaultDataIdentifierFilter(DataSymbolMetadataResolver dataSymbolMetadataResolver){
-		this.dataSymbolMetadataResolver = dataSymbolMetadataResolver;
-	}
+	this.dataSymbolMetadataResolver = dataSymbolMetadataResolver;
+//		this.simulationWorkspaceModelInfo = simulationWorkspaceModelInfo;
+//		FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET, REGION_SIZE_FILTER_SET};
+//		if(simulationWorkspaceModelInfo != null && simulationWorkspaceModelInfo.getFilterNames() != null){
+//			String[] temp = new String[FILTER_SET_NAMES.length+simulationWorkspaceModelInfo.getFilterNames().length];
+//			System.arraycopy(FILTER_SET_NAMES, 0, temp, 0, FILTER_SET_NAMES.length);
+//			System.arraycopy(simulationWorkspaceModelInfo.getFilterNames(),0, temp, FILTER_SET_NAMES.length, simulationWorkspaceModelInfo.getFilterNames().length);
+//			FILTER_SET_NAMES = temp;
+		}
 
 	public ArrayList<DataIdentifier> accept(String filterSetName, List<AnnotatedFunction> functionList, DataIdentifier[] filterTheseDataIdentifiers) {
 		//
@@ -54,16 +60,18 @@ public class DefaultDataIdentifierFilter implements DataIdentifierFilter{
 					DataSymbolMetadata metadata = dataSymbolMetadataResolver.getDataSymbolMetadata(dataID.getName());
 					if (metadata!=null && metadata.filterCategory.getName().equals(filterSetName)){
 						acceptedDataIdentifiers.add(dataID);
-					}
-				}
+	}
+				}					
 				return acceptedDataIdentifiers;
 			}
-		}
-		
+		}			
 		ArrayList<DataIdentifier> acceptedDataIdentifiers = new ArrayList<DataIdentifier>();
 		for (int i = 0; i < filterTheseDataIdentifiers.length; i++) {
 			if (bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
 				acceptedDataIdentifiers.add(filterTheseDataIdentifiers[i]);
+				continue;
+			}
+			if (bPostProcessingMode && !filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
 				continue;
 			}
 			if (!bPostProcessingMode && filterTheseDataIdentifiers[i].getVariableType().equals(VariableType.POSTPROCESSING)){
@@ -104,7 +112,6 @@ public class DefaultDataIdentifierFilter implements DataIdentifierFilter{
 		}
 		return null;
 	}
-
 	public String getDefaultFilterName() {
 		return ALL;
 	}
@@ -128,8 +135,7 @@ public class DefaultDataIdentifierFilter implements DataIdentifierFilter{
 	public void setPostProcessingMode(boolean bPostProcessingMode) {
 		this.bPostProcessingMode = bPostProcessingMode;
 	}
-	@Override
-	public boolean accept(String filterSetName, List<AnnotatedFunction> functions, DataIdentifier dataidentifier) {
-		return accept(filterSetName, functions, new DataIdentifier[] {dataidentifier}) != null;
+	public boolean accept(String filterSetName,List<AnnotatedFunction> myFunctionList,DataIdentifier dataidentifier) {
+		return accept(filterSetName,myFunctionList, new DataIdentifier[] {dataidentifier}) != null;
 	}
-}
+};

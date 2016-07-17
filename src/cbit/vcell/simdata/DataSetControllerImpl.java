@@ -46,6 +46,7 @@ import org.vcell.util.CacheException;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.DataJobListenerHolder;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
@@ -127,7 +128,7 @@ import cbit.vcell.xml.XmlParseException;
  * 
  */
 
-public class DataSetControllerImpl implements SimDataConstants {
+public class DataSetControllerImpl implements SimDataConstants,DataJobListenerHolder {
 	
 	private boolean bAllowOptimizedTimeDataRetrieval = true;
 	

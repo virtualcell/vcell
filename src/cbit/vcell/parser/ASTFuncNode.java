@@ -21,9 +21,8 @@ import cbit.vcell.parser.Expression.FunctionFilter;
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 
-@SuppressWarnings("serial")
 public class ASTFuncNode extends SimpleNode {
-	
+	private static final long serialVersionUID = 6409714707358596459L;
 	private String funcName = null;
  	private FunctionType funcType = FunctionType.USERDEFINED;
  	private transient SymbolTableFunctionEntry symbolTableFunctionEntry = null;

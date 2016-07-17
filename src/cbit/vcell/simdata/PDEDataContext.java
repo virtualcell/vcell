@@ -84,6 +84,8 @@ public static final String PROPERTY_NAME_VARIABLE = "variable";
 //	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
 	private VCDataIdentifier vcDataIdentifier = null;
+	public static final String PROP_PDE_DATA_CONTEXT = "pdeDataContext";
+
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
@@ -491,10 +493,10 @@ protected void setCartesianMesh(CartesianMesh newCartesianMesh) {
  */
 protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws DataAccessException{
 	DataIdentifier[] oldDataIdentifiers = dataIdentifiers;
+	dataIdentifiers = newDataIdentifiers;
 	if (getVariableName()==null && dataIdentifiers!=null && dataIdentifiers.length>0){
 		setVariable(dataIdentifiers[0]);
 	}
-	dataIdentifiers = newDataIdentifiers;
 
 	boolean fire = false;
 	if (dataIdentifiers != null) {

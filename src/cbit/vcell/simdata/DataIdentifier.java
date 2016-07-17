@@ -120,7 +120,7 @@ public String getDisplayName(){
  * Insert the method's description here.
  * Creation date: (4/28/2005 11:44:25 AM)
  */
-public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, DataIdentifier[] dataIDs){
+public static DataIdentifier[] collectSortedSimilarDataTypes(VariableType varType/*DataIdentifier variable*/, DataIdentifier[] dataIDs){
 
 	//Sort variable names, ignore case
 	java.util.TreeSet<DataIdentifier> treeSet = new java.util.TreeSet<DataIdentifier>(
@@ -135,7 +135,7 @@ public static DataIdentifier[] collectSimilarDataTypes(DataIdentifier variable, 
 		}
 	);
 	for(int i = 0; i <dataIDs.length; i += 1){
-		if (variable.getVariableType().getVariableDomain().equals(dataIDs[i].getVariableType().getVariableDomain())) {
+		if (varType.getVariableDomain().equals(dataIDs[i].getVariableType().getVariableDomain())) {
 			treeSet.add(dataIDs[i]);
 		}
 	}
